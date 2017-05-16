@@ -5,6 +5,7 @@ import com.google.gwt.xml.client.Element;
 import com.butent.bee.client.data.HasActiveRow;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
+import com.butent.bee.client.event.logical.DataReceivedEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.event.logical.RowCountChangeEvent;
@@ -48,7 +49,7 @@ import java.util.Map;
 public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent.Handler,
     ParentRowEvent.Handler, EditStartEvent.Handler, EditEndEvent.Handler,
     ProvidesGridColumnRenderer, DynamicColumnEnumerator, HasViewName, EditorBuilder,
-    HasActiveRow, ModificationPreviewer {
+    HasActiveRow, ModificationPreviewer, DataReceivedEvent.Handler {
 
   enum DeleteMode {
     CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI, DENY
@@ -145,8 +146,6 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
   boolean isRowEditable(IsRow row);
 
   boolean onClose(GridPresenter presenter);
-
-  void onDataReceived(List<? extends IsRow> rows);
 
   void onLoad(GridView gridView);
 

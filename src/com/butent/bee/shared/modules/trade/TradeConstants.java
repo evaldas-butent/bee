@@ -76,8 +76,6 @@ public final class TradeConstants {
   public static final String VIEW_DEBTS = "Debts";
   public static final String VIEW_DEBT_REPORTS = "DebtReports";
   public static final String VIEW_DEBT_REMINDER_TEMPLATE = "DebtReminderTemplates";
-  public static final String VIEW_PURCHASE_OPERATIONS = "PurchaseOperations";
-  public static final String VIEW_SALE_OPERATIONS = "SaleOperations";
 
   public static final String VIEW_PURCHASES = "Purchases";
   public static final String VIEW_PURCHASE_ITEMS = "PurchaseItems";
@@ -194,7 +192,6 @@ public final class TradeConstants {
 
   public static final String COL_STATUS_NAME = "StatusName";
   public static final String COL_STATUS_ACTIVE = "StatusActive";
-  public static final String COL_TEMPLATE_NAME = "Name";
   public static final String COL_TEMPLATE_SUBJECT = "Subject";
   public static final String COL_TEMPLATE_FIRST_PARAGRAPH = "FirstParagraph";
   public static final String COL_TEMPLATE_LAST_PARAGRAPH = "LastParagraph";
@@ -234,8 +231,12 @@ public final class TradeConstants {
   public static final String COL_TRADE_PAYMENT_ACCOUNT = "PaymentAccount";
   public static final String COL_TRADE_PAYMENT_SERIES = "PaymentSeries";
   public static final String COL_TRADE_PAYMENT_NUMBER = "PaymentNumber";
+  public static final String COL_TRADE_PREPAYMENT_PARENT = "PrepaymentParent";
 
   public static final String COL_TRADE_PAYMENT_TYPE_ACCOUNT = "PaymentTypeAccount";
+
+  public static final String COL_TRADE_PAYMENT_TERM_DATE = "PaymentDate";
+  public static final String COL_TRADE_PAYMENT_TERM_AMOUNT = "PaymentAmount";
 
   public static final String COL_EXPENDITURE_TYPE_NAME = "ExpenditureTypeName";
   public static final String COL_EXPENDITURE_TYPE_DEBIT = "Debit";
@@ -273,13 +274,6 @@ public final class TradeConstants {
   public static final String ALS_STATUS_BACKGROUND = "StatusBackground";
   public static final String ALS_STATUS_FOREGROUND = "StatusForeground";
 
-  public static final String ALS_OVERDUE_COUNT = "OverdueCount";
-  public static final String ALS_OVERDUE_SUM = "OverdueSum";
-  public static final String ALS_SALES_COUNT = "SalesCount";
-  public static final String ALS_SALES_SUM = "SalesSum";
-  public static final String ALS_TRADE_STATUS_NAME = "TradeStatusName";
-  public static final String ALS_TRADE_STATUS = "TradeStatus";
-
   public static final String ALS_EXPENDITURE_TYPE_SUPPLIER = "TypeSupplier";
 
   public static final String ALS_WAREHOUSE_FROM_CODE = "WarehouseFromCode";
@@ -294,12 +288,21 @@ public final class TradeConstants {
   public static final String ALS_PARENT_COST_CURRENCY = "ParentCostCurrency";
 
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
-  public static final String PROP_OVERALL_TOTAL = "OveralTotal";
+
   public static final String PROP_STOCK = "Stock";
   public static final String PROP_RESERVED = "Reserved";
   public static final String PROP_WAREHOUSES = "Warehouses";
   public static final String PROP_COST = "Cost";
   public static final String PROP_LEVEL = "Level";
+
+  public static final String PROP_TD_AMOUNT = "TdAmount";
+  public static final String PROP_TD_DISCOUNT = "TdDiscount";
+  public static final String PROP_TD_WITHOUT_VAT = "TdWithoutVat";
+  public static final String PROP_TD_VAT = "TdVat";
+  public static final String PROP_TD_TOTAL = "TdTotal";
+
+  public static final String PROP_TD_PAID = "TdPaid";
+  public static final String PROP_TD_DEBT = "TdDebt";
 
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";
@@ -318,11 +321,10 @@ public final class TradeConstants {
   public static final String GRID_DEBT_REPORTS = "DebtReports";
   public static final String GRID_SALES = "Sales";
 
-  public static final String FORM_DEBT_REPORT_TEMPLATE = "DebtReportTemplate";
-
   public static final String GRID_TRADE_DOCUMENTS = "TradeDocuments";
   public static final String GRID_TRADE_DOCUMENT_ITEMS = "TradeDocumentItems";
   public static final String GRID_TRADE_PAYMENTS = "TradePayments";
+  public static final String GRID_TRADE_PAYMENT_TERMS = "TradePaymentTerms";
   public static final String GRID_TRADE_DOCUMENT_FILES = "TradeDocumentFiles";
 
   public static final String GRID_TRADE_STOCK = "TradeStock";
@@ -333,15 +335,22 @@ public final class TradeConstants {
   public static final String GRID_ITEM_MOVEMENT = "ItemMovement";
   public static final String GRID_TRADE_RELATED_ITEMS = "TradeRelatedItems";
 
+  public static final String GRID_TRADE_PAYABLES = "TradePayables";
+  public static final String GRID_TRADE_RECEIVABLES = "TradeReceivables";
+
   public static final String FORM_SALES_INVOICE = "SalesInvoice";
-  public static final String FORM_PRINT_SALES_INVOICE = "PrintSalesInvoice";
+  public static final String FORM_DEBT_REPORT_TEMPLATE = "DebtReportTemplate";
 
   public static final String FORM_TRADE_DOCUMENT = "TradeDocument";
+
+  public static final String FORM_PAYMENT_SUPPLIERS = "PaymentSuppliers";
+  public static final String FORM_PAYMENT_CUSTOMERS = "PaymentCustomers";
 
   public static final String PRM_PROTECT_TRADE_DOCUMENTS_BEFORE = "ProtectTradeDocumentsBefore";
 
   public static final String FILTER_ITEM_HAS_STOCK = "item_has_stock";
   public static final String FILTER_USER_TRADE_SERIES = "user_trade_series";
+  public static final String FILTER_HAS_TRADE_DEBT = "has_trade_debt";
 
   public static final int MAX_STOCK_DEPTH = 1_000;
   public static final int DEFAULT_SERIES_NUMBER_LENGTH = 6;
@@ -352,8 +361,6 @@ public final class TradeConstants {
   public static final String PREFIX_END_STOCK = "End_";
 
   public static final String EMPTY_VALUE_SUFFIX = "_0";
-  public static final String SUFFIX_QUANTITY = "_qty";
-  public static final String SUFFIX_AMOUNT = "_amt";
 
   public static final String RP_DATE = "Date";
   public static final String RP_START_DATE = "StartDate";
@@ -388,8 +395,10 @@ public final class TradeConstants {
   public static final String RP_ROW_GROUP_LABEL_COLUMNS = "RowGroupLabelColums";
 
   public static final String RP_STOCK_COLUMN_GROUPS = "StockColumnGroups";
-  public static final String RP_STOCK_COLUMN_GROUP_LABELS = "StockColumnGroupLabels";
-  public static final String RP_STOCK_COLUMN_GROUP_VALUES = "StockColumnGroupValues";
+  public static final String RP_STOCK_START_COLUMN_LABELS = "StockStartColumnLabels";
+  public static final String RP_STOCK_END_COLUMN_LABELS = "StockEndColumnLabels";
+  public static final String RP_STOCK_START_COLUMN_VALUES = "StockStartColumnValues";
+  public static final String RP_STOCK_END_COLUMN_VALUES = "StockEndColumnValues";
 
   public static final String RP_MOVEMENT_COLUMN_GROUPS = "MovementColumnGroups";
   public static final String RP_MOVEMENT_IN_COLUMNS = "MovementInColumns";

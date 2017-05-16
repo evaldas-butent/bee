@@ -5,6 +5,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,9 @@ public final class TradeMovementColumn implements BeeSerializable {
         .map(TradeMovementColumn::restore)
         .collect(Collectors.toList());
   }
+
+  private static final String SUFFIX_QUANTITY = "_qty";
+  private static final String SUFFIX_AMOUNT = "_amt";
 
   private String label;
 
@@ -131,6 +135,32 @@ public final class TradeMovementColumn implements BeeSerializable {
     }
 
     return Codec.beeSerialize(arr);
+  }
+
+  public List<String> getCaptions() {
+    List<String> captions = new ArrayList<>();
+
+    if (getOperationType() != null) {
+      captions.add(getOperationType().getCaption());
+    }
+
+    if (!BeeUtils.isEmpty(getOperationName())) {
+      captions.add(getOperationName());
+    }
+
+    if (BeeUtils.anyNotEmpty(getWarehouseFromCode(), getWarehouseToCode())) {
+      captions.add(BeeUtils.joinWords(getWarehouseFromCode(), getWarehouseToCode()));
+    }
+
+    return captions;
+  }
+
+  public String getQuantityColumn() {
+    return getLabel() + SUFFIX_QUANTITY;
+  }
+
+  public String getAmountColumn() {
+    return getLabel() + SUFFIX_AMOUNT;
   }
 
   public String getLabel() {

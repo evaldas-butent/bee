@@ -38,12 +38,15 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.PredefinedFormat;
@@ -69,15 +72,6 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   private static final BeeLogger logger = LogUtils.getLogger(TradeDocumentForm.class);
 
   private static final String NAME_SPLIT = "Split";
-
-  private static final String NAME_AMOUNT = "TdAmount";
-  private static final String NAME_DISCOUNT = "TdDiscount";
-  private static final String NAME_WITHOUT_VAT = "TdWithoutVat";
-  private static final String NAME_VAT = "TdVat";
-  private static final String NAME_TOTAL = "TdTotal";
-
-  private static final String NAME_PAID = "TdPaid";
-  private static final String NAME_DEBT = "TdDebt";
 
   private static final String NAME_STATUS_UPDATED = "StatusUpdated";
 
@@ -143,11 +137,12 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
       TradePaymentsGrid tpGrid = new TradePaymentsGrid();
 
       tpGrid.setTdsSupplier(() -> tdSums);
-      tpGrid.setTdsListener(() -> {
+      tpGrid.setTdsListener((update) -> {
         double paid = tdSums.getPaid();
+        IsRow row = BeeUtils.isTrue(update) ? getActiveRow() : null;
 
-        refreshSum(NAME_PAID, paid);
-        refreshSum(NAME_DEBT, tdSums.getTotal() - paid);
+        refreshSum(PROP_TD_PAID, paid, row);
+        refreshDebt(tdSums.getTotal(), paid, row);
       });
 
       ((ChildGrid) widget).setGridInterceptor(tpGrid);
@@ -286,7 +281,7 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
       tdSums.updateVatMode(getVatMode(row));
     }
 
-    refreshSums();
+    refreshSums(false);
     refreshStatusLastUpdated(row);
 
     super.onSetActiveRow(row);
@@ -298,20 +293,20 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
       switch (source) {
         case COL_TRADE_DOCUMENT_DISCOUNT:
           if (tdSums.updateDocumentDiscount(BeeUtils.toDoubleOrNull(value))) {
-            refreshSums();
+            refreshSums(true);
           }
           break;
 
         case COL_TRADE_DOCUMENT_DISCOUNT_MODE:
           if (tdSums.updateDiscountMode(EnumUtils.getEnumByIndex(TradeDiscountMode.class, value))) {
-            refreshSums();
+            refreshSums(true);
             refreshItems();
           }
           break;
 
         case COL_TRADE_DOCUMENT_VAT_MODE:
           if (tdSums.updateVatMode(EnumUtils.getEnumByIndex(TradeVatMode.class, value))) {
-            refreshSums();
+            refreshSums(true);
             refreshItems();
           }
           break;
@@ -357,6 +352,10 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
     }
 
     super.onStartNewRow(form, oldRow, newRow);
+  }
+
+  double getTotal() {
+    return tdSums.getTotal();
   }
 
   private Double getDocumentDiscount(IsRow row) {
@@ -660,15 +659,42 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
     }
   }
 
-  private void refreshSum(String name, double value) {
+  private void clearSum(String name, IsRow row) {
     Widget widget = getFormView().getWidgetByName(name);
-
     if (widget instanceof DecimalLabel) {
-      ((DecimalLabel) widget).setValue(BeeUtils.toDecimalOrNull(value));
+      ((DecimalLabel) widget).setValue(null);
+    }
+
+    if (row != null) {
+      String oldValue = row.getProperty(name);
+      row.removeProperty(name);
+
+      if (!BeeUtils.isEmpty(oldValue)) {
+        CellUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), row.getId(), row.getVersion(),
+            CellSource.forProperty(name, null, ValueType.DECIMAL), null);
+      }
     }
   }
 
-  private void refreshSums() {
+  private void refreshSum(String name, double value, IsRow row) {
+    Widget widget = getFormView().getWidgetByName(name);
+    if (widget instanceof DecimalLabel) {
+      ((DecimalLabel) widget).setValue(BeeUtils.toDecimalOrNull(Localized.normalizeMoney(value)));
+    }
+
+    if (row != null) {
+      String oldValue = row.getProperty(name);
+      row.setNonZero(name, value);
+
+      String newValue = row.getProperty(name);
+      if (!Objects.equals(oldValue, newValue)) {
+        CellUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), row.getId(), row.getVersion(),
+            CellSource.forProperty(name, null, ValueType.DECIMAL), newValue);
+      }
+    }
+  }
+
+  private void refreshSums(Boolean update) {
     double amount = tdSums.getAmount();
     double discount = tdSums.getDiscount();
     double vat = tdSums.getVat();
@@ -676,14 +702,29 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
 
     double paid = tdSums.getPaid();
 
-    refreshSum(NAME_AMOUNT, amount);
-    refreshSum(NAME_DISCOUNT, discount);
-    refreshSum(NAME_WITHOUT_VAT, total - vat);
-    refreshSum(NAME_VAT, vat);
-    refreshSum(NAME_TOTAL, total);
+    IsRow row = BeeUtils.isTrue(update) ? getActiveRow() : null;
 
-    refreshSum(NAME_PAID, paid);
-    refreshSum(NAME_DEBT, total - paid);
+    refreshSum(PROP_TD_AMOUNT, amount, row);
+    refreshSum(PROP_TD_DISCOUNT, discount, row);
+    refreshSum(PROP_TD_WITHOUT_VAT, total - vat, row);
+    refreshSum(PROP_TD_VAT, vat, row);
+    refreshSum(PROP_TD_TOTAL, total, row);
+
+    refreshSum(PROP_TD_PAID, paid, row);
+    refreshDebt(total, paid, row);
+  }
+
+  private void refreshDebt(double total, double paid, IsRow row) {
+    if (Localized.isMoney(total - paid) && (BeeUtils.isPositive(paid) || showDebt())) {
+      refreshSum(PROP_TD_DEBT, total - paid, row);
+    } else {
+      clearSum(PROP_TD_DEBT, row);
+    }
+  }
+
+  private boolean showDebt() {
+    OperationType operationType = getOperationType();
+    return operationType != null && operationType.hasDebt();
   }
 
   private static void saveSplitLayout(Split split) {

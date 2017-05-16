@@ -162,6 +162,7 @@ public final class PayrollConstants {
   public static final String SVC_GET_SCHEDULE_OVERLAP = "getScheduleOverlap";
   public static final String SVC_GET_SCHEDULED_MONTHS = "getScheduledMonths";
   public static final String SVC_GET_EARNINGS = "getEarnings";
+  public static final String SVC_PAYROLL_FUND_REPORT = "PayrollFundReport";
 
   public static final String TBL_EMPLOYEES = "Employees";
   public static final String TBL_LOCATIONS = "Locations";
@@ -250,6 +251,8 @@ public final class PayrollConstants {
   public static final String ALS_LOCATION_MANAGER_FIRST_NAME = "ManagerFirstName";
   public static final String ALS_LOCATION_MANAGER_LAST_NAME = "ManagerLastName";
 
+  public static final String ALS_REPORT_TIME_PERIOD = "ReportTimePeriod";
+
   public static final String ALS_TC_BACKGROUND = "TcBackground";
   public static final String ALS_TC_FOREGROUND = "TcForeground";
 
@@ -277,6 +280,16 @@ public final class PayrollConstants {
   public static final String FORM_WORK_SCHEDULE_EDITOR = "WorkScheduleEditor";
   public static final String FORM_ACTUAL_WORK_SCHEDULE_EDITOR = "ActualWorkScheduleEditor";
   public static final String FORM_NEW_SUBSTITUTION = "NewSubstitution";
+
+  public static final String PRM_ERP_SYNC_PAYROLL_DATA = "ERPSyncPayrollData";
+  public static final String PRM_ERP_SYNC_PAYROLL_DELTA_HOURS = "ERPSyncPayrollDeltaHours";
+  public static final String PRM_ERP_SYNC_EMPLOYEES = "ERPSyncEmployees";
+  public static final String PRM_ERP_SYNC_LOCATIONS = "ERPSyncLocations";
+  public static final String PRM_ERP_SYNC_TIME_CARDS = "ERPSyncTimeCards";
+
+
+  public static final String SFX_HOURS = "Hours";
+  public static final String SFX_TIME = "Time";
 
   public static void register() {
     EnumUtils.register(ObjectStatus.class);

@@ -105,6 +105,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class BeeView implements BeeObject, HasExtendedInfo {
 
+  @FunctionalInterface
   public interface ConditionProvider {
     IsCondition getCondition(BeeView view, List<String> args);
   }

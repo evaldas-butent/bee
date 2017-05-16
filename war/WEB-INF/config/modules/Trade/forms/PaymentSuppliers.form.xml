@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+    <!ENTITY dt "width: 10em;">
+    <!ENTITY w1 "width: 5em;">
+    <!ENTITY w2 "width: 10em;">
+    ]>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+
+        name="PaymentSuppliers" caption="=paymentSuppliers"
+>
+  <FlowPanel class="flexBox-vertical">
+    <Table kind="controls" style="margin-top: 1vh; margin-bottom: 2vh;">
+      <col index="0" kind="label" />
+      <col index="2" kind="label" />
+      <col index="4" kind="label" />
+      <col index="6" kind="label" />
+      <col index="8" kind="label" />
+
+      <row>
+        <Label text="=supplier" class="bee-required" />
+        <cell colSpan="5">
+          <UnboundSelector name="Payer" viewName="Companies" renderColumns="Name TypeName"
+                           searchableColumns="Name" newRowEnabled="false" required="true"
+                           style="width: 100%;" />
+        </cell>
+
+        <Label text="=dateTo" />
+        <InputDateTime name="DateTo" style="&dt;" />
+
+        <Label text="=trdTermTo" />
+        <InputDateTime name="TermTo" style="&dt;" />
+      </row>
+
+      <row>
+        <Label text="=date" class="bee-required" />
+        <InputDateTime name="Date" required="true" style="&dt;" />
+
+        <Label text="=amount" />
+        <InputMoney name="Amount" style="&w2;" />
+
+        <Label text="=currency" />
+        <UnboundSelector name="Currency" viewName="Currencies" renderColumns="Name"
+                         newRowEnabled="false" editEnabled="false" style="&w1;" />
+      </row>
+
+      <row>
+        <Label text="=account" />
+        <UnboundSelector name="Account" viewName="ChartOfAccounts" renderColumns="AccountCode"
+                         choiceColumns="AccountCode AccountName"
+                         newRowEnabled="false" editEnabled="false" style="&w2;" />
+
+        <Label text="=paymentType" />
+        <UnboundSelector name="PaymentType" viewName="PaymentTypes" renderColumns="PaymentName"
+                         filter="PaymentTypeAccount" newRowEnabled="false" editEnabled="false"
+                         style="&w2;" />
+
+        <Label text="=trdSeries" />
+        <InputText name="Series" maxLength="10" upperCase="true" style="&w1;" />
+
+        <Label text="=trdNumber" />
+        <InputText name="Number" maxLength="50" style="&w2;" />
+      </row>
+    </Table>
+
+    <TabbedPages class="flexible">
+      <page>
+        <text>=trdAccountsPayable</text>
+        <GridPanel name="TradePayables" />
+      </page>
+      <page>
+        <text>=prepaymentGiven</text>
+        <GridPanel name="Paid" gridName="PrepaymentSuppliers" />
+      </page>
+
+      <page>
+        <text>=trdAccountsReceivable</text>
+        <GridPanel name="TradeReceivables" />
+      </page>
+      <page>
+        <text>=prepaymentReceived</text>
+        <GridPanel name="Received" gridName="PrepaymentCustomers" />
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

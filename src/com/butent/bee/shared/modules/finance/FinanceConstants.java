@@ -38,6 +38,7 @@ public final class FinanceConstants {
   public static final String TBL_ANALYSIS_RESULTS = "AnalysisResults";
 
   public static final String VIEW_FINANCIAL_RECORDS = "FinancialRecords";
+  public static final String VIEW_FINANCE_PREPAYMENTS = "FinancePrepayments";
 
   public static final String VIEW_FINANCE_CONFIGURATION = "FinanceConfiguration";
   public static final String VIEW_FINANCE_CONTENTS = "FinanceContents";
@@ -76,6 +77,8 @@ public final class FinanceConstants {
   public static final String COL_FIN_QUANTITY = "Quantity";
   public static final String COL_FIN_TRADE_DOCUMENT = "TradeDocument";
   public static final String COL_FIN_TRADE_PAYMENT = "TradePayment";
+  public static final String COL_FIN_PREPAYMENT_KIND = "PrepaymentKind";
+  public static final String COL_FIN_PREPAYMENT_PARENT = "PrepaymentParent";
   public static final String COL_FIN_EMPLOYEE = "Employee";
 
   public static final String COL_DEFAULT_JOURNAL = "DefaultJournal";
@@ -275,6 +278,8 @@ public final class FinanceConstants {
   public static final String ALS_EMPLOYEE_FIRST_NAME = "EmployeeFirstName";
   public static final String ALS_EMPLOYEE_LAST_NAME = "EmployeeLastName";
 
+  public static final String PROP_PREPAYMENT_USED = "PrepaymentUsed";
+
   public static final String GRID_FINANCIAL_RECORDS = "FinancialRecords";
   public static final String GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS =
       "TradeDocumentFinancialRecords";
@@ -301,9 +306,14 @@ public final class FinanceConstants {
   public static final String GRID_BUDGET_HEADERS = "BudgetHeaders";
   public static final String GRID_BUDGET_ENTRIES = "BudgetEntries";
 
+  public static final String GRID_ANALYSIS_HEADERS = "AnalysisHeaders";
   public static final String GRID_ANALYSIS_COLUMNS = "AnalysisColumns";
   public static final String GRID_ANALYSIS_ROWS = "AnalysisRows";
   public static final String GRID_ANALYSIS_RESULTS = "AnalysisResults";
+
+  public static final String GRID_PREPAYMENT_SUPPLIERS = "PrepaymentSuppliers";
+  public static final String GRID_PREPAYMENT_CUSTOMERS = "PrepaymentCustomers";
+  public static final String GRID_PREPAYMENT_USE = "PrepaymentUse";
 
   public static final String FORM_FINANCE_DEFAULT_ACCOUNTS = "FinanceDefaultAccounts";
   public static final String FORM_FINANCE_POSTING_PRECEDENCE = "FinancePostingPrecedence";
@@ -369,6 +379,8 @@ public final class FinanceConstants {
     EnumUtils.register(IndicatorKind.class);
     EnumUtils.register(IndicatorSource.class);
     EnumUtils.register(TurnoverOrBalance.class);
+
+    EnumUtils.register(PrepaymentKind.class);
   }
 
   private FinanceConstants() {

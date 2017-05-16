@@ -67,7 +67,7 @@
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Middle" markup="none">
 						<font fontName="DejaVu Sans" size="10" isBold="true"/>
@@ -110,7 +110,7 @@
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Middle" markup="none">
 						<font fontName="DejaVu Sans" size="10" isBold="true"/>
@@ -153,7 +153,7 @@
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Middle" markup="none">
 						<font fontName="DejaVu Sans" size="10" isBold="true"/>
@@ -195,7 +195,7 @@
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Middle" markup="none">
 						<font fontName="DejaVu Sans" size="10" isBold="true"/>
@@ -237,7 +237,7 @@
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Middle" markup="none">
 						<font fontName="DejaVu Sans" size="10" isBold="true"/>
@@ -280,7 +280,7 @@
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Middle" markup="none">
 						<font fontName="DejaVu Sans" size="10" isBold="false"/>
@@ -294,6 +294,7 @@
 					</reportElement>
 					<box>
 						<leftPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
 						<font fontName="DejaVu Sans" size="10" isBold="true"/>
@@ -338,7 +339,7 @@
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Middle" markup="none">
 						<font fontName="DejaVu Sans" size="10" isBold="true"/>
@@ -352,6 +353,7 @@
 					</reportElement>
 					<box>
 						<leftPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
 						<font fontName="DejaVu Sans" size="10"/>
@@ -393,7 +395,7 @@
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Middle" markup="none">
 						<font fontName="DejaVu Sans" size="10" isBold="true"/>
@@ -407,6 +409,7 @@
 					</reportElement>
 					<box>
 						<leftPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
 						<font fontName="DejaVu Sans" size="10"/>
@@ -448,7 +451,7 @@
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Middle" markup="none">
 						<font fontName="DejaVu Sans" size="10" isBold="true"/>
@@ -462,6 +465,7 @@
 					</reportElement>
 					<box>
 						<leftPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
 						<font fontName="DejaVu Sans" size="10"/>
@@ -648,7 +652,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="187" height="16" uuid="e4008eea-9c2d-4ebe-8d8b-ace828a368e0">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="183" height="16" uuid="e4008eea-9c2d-4ebe-8d8b-ace828a368e0">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -665,7 +669,7 @@
 					<textFieldExpression><![CDATA[$R{arrived}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="145" y="16" width="42" height="16" uuid="c6dfb8ed-8bff-4608-a397-fd2cc04ba586">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="127" y="16" width="56" height="16" uuid="c6dfb8ed-8bff-4608-a397-fd2cc04ba586">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -681,7 +685,7 @@
 					<textFieldExpression><![CDATA[BeeUtils.parenthesize($V{d}.date().toLowerCase())]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="187" y="0" width="187" height="16" uuid="456cd7c9-7e55-4164-878c-56c08e507a17">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="183" y="0" width="183" height="16" uuid="456cd7c9-7e55-4164-878c-56c08e507a17">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -697,7 +701,7 @@
 					<textFieldExpression><![CDATA[$R{left}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="332" y="16" width="42" height="16" uuid="fadce04a-bf5b-4bbd-be14-f9456e4324b5">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="310" y="16" width="56" height="16" uuid="fadce04a-bf5b-4bbd-be14-f9456e4324b5">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -715,7 +719,7 @@
 					<textFieldExpression><![CDATA[BeeUtils.parenthesize($V{d}.date().toLowerCase())]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="374" y="0" width="63" height="32" uuid="d469f180-5cfa-4e6e-96ed-d3a1986c660c">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="366" y="0" width="72" height="32" uuid="d469f180-5cfa-4e6e-96ed-d3a1986c660c">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -731,7 +735,7 @@
 					<textFieldExpression><![CDATA[$R{distance}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="437" y="0" width="60" height="32" uuid="e025aa8d-4094-4de3-85d9-fea3418a9908">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="438" y="0" width="67" height="32" uuid="e025aa8d-4094-4de3-85d9-fea3418a9908">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -746,7 +750,7 @@
 					<textFieldExpression><![CDATA[$R{weight}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="497" y="0" width="58" height="32" uuid="8ecc0ce0-b143-4245-b53f-66c85f5463ab">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="505" y="0" width="50" height="32" uuid="8ecc0ce0-b143-4245-b53f-66c85f5463ab">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -761,7 +765,7 @@
 					<textFieldExpression><![CDATA[$R{cmr}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="16" width="144" height="16" uuid="3d4c8c8c-bf8a-4254-9291-15e20b771ed4">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="16" width="126" height="16" uuid="3d4c8c8c-bf8a-4254-9291-15e20b771ed4">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -779,7 +783,7 @@
 					<textFieldExpression><![CDATA[BeeUtils.parenthesize($R{countryCity})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="187" y="16" width="144" height="16" uuid="44669394-7538-4187-bf38-3e2d843c122e">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="183" y="16" width="126" height="16" uuid="44669394-7538-4187-bf38-3e2d843c122e">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -807,7 +811,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="145" height="16" uuid="68a05875-53b5-4538-8d86-f57bda72bdef">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="126" height="16" uuid="68a05875-53b5-4538-8d86-f57bda72bdef">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -824,7 +828,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="145" y="0" width="42" height="16" uuid="da01e7ef-1d59-4bcc-a973-def0373bd29d">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="127" y="0" width="56" height="16" uuid="da01e7ef-1d59-4bcc-a973-def0373bd29d">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -840,7 +844,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="187" y="0" width="145" height="16" uuid="eef35912-3345-4dbe-9fde-4a0c0b147d66">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="183" y="0" width="126" height="16" uuid="eef35912-3345-4dbe-9fde-4a0c0b147d66">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -855,7 +859,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="332" y="0" width="42" height="16" uuid="7340a1fe-2627-467f-a47e-707381a027b8">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="310" y="0" width="56" height="16" uuid="7340a1fe-2627-467f-a47e-707381a027b8">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -873,7 +877,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="374" y="0" width="63" height="16" uuid="32afbeec-9be1-4cc9-abee-9db08cd54dbd">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="366" y="0" width="72" height="16" uuid="32afbeec-9be1-4cc9-abee-9db08cd54dbd">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -889,7 +893,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="437" y="0" width="60" height="16" uuid="283e98c7-2762-4dc8-8091-eb20801aec64">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="438" y="0" width="67" height="16" uuid="283e98c7-2762-4dc8-8091-eb20801aec64">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -904,7 +908,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="497" y="0" width="58" height="16" uuid="d4d1f934-7675-42e3-9fed-e4192ff6a562">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="505" y="0" width="50" height="16" uuid="d4d1f934-7675-42e3-9fed-e4192ff6a562">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -932,7 +936,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="145" height="16" uuid="0bbebe16-1b26-4a2e-b37c-e2209b1f8ce0">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="126" height="16" uuid="0bbebe16-1b26-4a2e-b37c-e2209b1f8ce0">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -949,7 +953,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="145" y="0" width="42" height="16" uuid="858fa8c5-98a7-4916-99de-b8ff8e6b40ee">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="127" y="0" width="56" height="16" uuid="858fa8c5-98a7-4916-99de-b8ff8e6b40ee">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -965,7 +969,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="187" y="0" width="145" height="16" uuid="da79bae4-0df3-4e9f-bd15-20a524a781a9">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="183" y="0" width="126" height="16" uuid="da79bae4-0df3-4e9f-bd15-20a524a781a9">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -980,7 +984,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="332" y="0" width="42" height="16" uuid="00beda9a-e089-4030-9617-34b32a0f58a3">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="310" y="0" width="56" height="16" uuid="00beda9a-e089-4030-9617-34b32a0f58a3">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -998,7 +1002,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="374" y="0" width="63" height="16" uuid="82127962-502b-430e-b5b7-e450559f5b5b">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="366" y="0" width="72" height="16" uuid="82127962-502b-430e-b5b7-e450559f5b5b">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1014,7 +1018,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="437" y="0" width="60" height="16" uuid="808be0b6-743e-4ed4-b6e2-7104f718a9c5">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="438" y="0" width="67" height="16" uuid="808be0b6-743e-4ed4-b6e2-7104f718a9c5">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -1029,7 +1033,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="497" y="0" width="58" height="16" uuid="6bb9c322-5488-4c76-977f-1ecc4bed243d">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="505" y="0" width="50" height="16" uuid="6bb9c322-5488-4c76-977f-1ecc4bed243d">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -1057,7 +1061,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="145" height="16" uuid="b08a24cf-839c-427d-b187-a4a19028a514">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="126" height="16" uuid="b08a24cf-839c-427d-b187-a4a19028a514">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1074,7 +1078,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="145" y="0" width="42" height="16" uuid="0ecf1c4a-e846-4476-bd99-644e262cf3b5">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="127" y="0" width="56" height="16" uuid="0ecf1c4a-e846-4476-bd99-644e262cf3b5">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -1090,7 +1094,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="187" y="0" width="145" height="16" uuid="2daf6e41-6f90-48bb-b640-92f81097122b">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="183" y="0" width="126" height="16" uuid="2daf6e41-6f90-48bb-b640-92f81097122b">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -1105,7 +1109,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="332" y="0" width="42" height="16" uuid="205998f6-1f76-4bd8-96b2-9e52b4458ba0">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="310" y="0" width="56" height="16" uuid="205998f6-1f76-4bd8-96b2-9e52b4458ba0">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1123,7 +1127,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="374" y="0" width="63" height="16" uuid="b36121b3-1f83-4436-8cb9-741cc4674274">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="366" y="0" width="72" height="16" uuid="b36121b3-1f83-4436-8cb9-741cc4674274">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1139,7 +1143,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="437" y="0" width="60" height="16" uuid="7bb92367-622a-4d7c-9096-82adc98d98c2">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="438" y="0" width="67" height="16" uuid="7bb92367-622a-4d7c-9096-82adc98d98c2">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -1154,7 +1158,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="497" y="0" width="58" height="16" uuid="4583b9ba-278a-4a72-81b9-ad38507485c1">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="505" y="0" width="50" height="16" uuid="4583b9ba-278a-4a72-81b9-ad38507485c1">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -1182,7 +1186,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="145" height="16" uuid="a6ac7184-7288-47c7-af28-3e2e6082dda0">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="126" height="16" uuid="a6ac7184-7288-47c7-af28-3e2e6082dda0">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1199,7 +1203,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="145" y="0" width="42" height="16" uuid="b0a602ce-5813-4190-8be9-ed78c695b681">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="127" y="0" width="56" height="16" uuid="b0a602ce-5813-4190-8be9-ed78c695b681">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -1215,7 +1219,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="187" y="0" width="145" height="16" uuid="70fd1c9a-4488-43e6-887f-9d65bda83519">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="183" y="0" width="126" height="16" uuid="70fd1c9a-4488-43e6-887f-9d65bda83519">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -1230,7 +1234,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="332" y="0" width="42" height="16" uuid="25032c14-f53a-476c-a812-97393cad6c6d">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="310" y="0" width="56" height="16" uuid="25032c14-f53a-476c-a812-97393cad6c6d">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1248,7 +1252,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="374" y="0" width="63" height="16" uuid="704e2f97-2515-425f-bf1a-f647dc398503">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="366" y="0" width="72" height="16" uuid="704e2f97-2515-425f-bf1a-f647dc398503">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1264,7 +1268,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="437" y="0" width="60" height="16" uuid="30990892-540e-4a75-a75d-7d634d1ddf2d">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="438" y="0" width="67" height="16" uuid="30990892-540e-4a75-a75d-7d634d1ddf2d">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -1279,7 +1283,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="497" y="0" width="58" height="16" uuid="9305533c-edba-451c-a720-d9f82f4081c8">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="505" y="0" width="50" height="16" uuid="9305533c-edba-451c-a720-d9f82f4081c8">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -1307,7 +1311,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="145" height="16" uuid="0968fb10-eaed-459a-94e9-5bf03d216588">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="126" height="16" uuid="0968fb10-eaed-459a-94e9-5bf03d216588">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1324,7 +1328,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="145" y="0" width="42" height="16" uuid="0b0a9c06-a5f7-4400-95a6-cced70c61334">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="127" y="0" width="56" height="16" uuid="0b0a9c06-a5f7-4400-95a6-cced70c61334">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -1340,7 +1344,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="187" y="0" width="145" height="16" uuid="90198f42-be75-4854-92a0-5fa185e45002">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="183" y="0" width="126" height="16" uuid="90198f42-be75-4854-92a0-5fa185e45002">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -1355,7 +1359,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="332" y="0" width="42" height="16" uuid="736140d2-98aa-43d4-a1a1-a881b6e86031">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="310" y="0" width="56" height="16" uuid="736140d2-98aa-43d4-a1a1-a881b6e86031">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1373,7 +1377,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="374" y="0" width="63" height="16" uuid="48c0050b-6907-40e4-b058-f0d2134733bc">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="366" y="0" width="72" height="16" uuid="48c0050b-6907-40e4-b058-f0d2134733bc">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1389,7 +1393,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="437" y="0" width="60" height="16" uuid="952b52c7-48b1-4550-92de-56e413210b5f">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="438" y="0" width="67" height="16" uuid="952b52c7-48b1-4550-92de-56e413210b5f">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -1404,7 +1408,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="497" y="0" width="58" height="16" uuid="32bfbf41-2ff5-477f-86fb-39f88fd5fe0b">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="505" y="0" width="50" height="16" uuid="32bfbf41-2ff5-477f-86fb-39f88fd5fe0b">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -1432,7 +1436,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="145" height="16" uuid="5e8c7659-4727-4c36-83bc-5095a30ff5e8">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="126" height="16" uuid="5e8c7659-4727-4c36-83bc-5095a30ff5e8">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1449,7 +1453,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="145" y="0" width="42" height="16" uuid="cf7b84b7-e9a3-46b4-b41d-989a56949ba7">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="127" y="0" width="56" height="16" uuid="cf7b84b7-e9a3-46b4-b41d-989a56949ba7">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -1465,7 +1469,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="187" y="0" width="145" height="16" uuid="7e3c445e-6ce8-499e-869a-8ce291459a9f">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="183" y="0" width="126" height="16" uuid="7e3c445e-6ce8-499e-869a-8ce291459a9f">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -1480,7 +1484,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="332" y="0" width="42" height="16" uuid="e0824490-87b5-42dd-af2c-a989d8a2e5e5">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="310" y="0" width="56" height="16" uuid="e0824490-87b5-42dd-af2c-a989d8a2e5e5">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1498,7 +1502,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="374" y="0" width="63" height="16" uuid="408911b7-2ddb-4b0f-8217-4171b5f7e77b">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="366" y="0" width="72" height="16" uuid="408911b7-2ddb-4b0f-8217-4171b5f7e77b">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1514,7 +1518,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="437" y="0" width="60" height="16" uuid="e3a435ff-362c-404d-9d22-c2d1eed3b00b">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="438" y="0" width="67" height="16" uuid="e3a435ff-362c-404d-9d22-c2d1eed3b00b">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -1529,7 +1533,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="497" y="0" width="58" height="16" uuid="d2e8426c-4ffb-4ac7-a7f3-9b2b5c4726b5">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="505" y="0" width="50" height="16" uuid="d2e8426c-4ffb-4ac7-a7f3-9b2b5c4726b5">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -1557,7 +1561,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="145" height="16" uuid="ecd9a531-cbaf-4b5c-a9f8-b0434e7a8d4a">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="126" height="16" uuid="ecd9a531-cbaf-4b5c-a9f8-b0434e7a8d4a">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1574,7 +1578,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="145" y="0" width="42" height="16" uuid="c029da54-05ae-469d-ad10-a5a8aafb2d44">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="127" y="0" width="56" height="16" uuid="c029da54-05ae-469d-ad10-a5a8aafb2d44">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -1590,7 +1594,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="187" y="0" width="145" height="16" uuid="aa792c0a-6ade-4b3b-a488-4c758ff01c83">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="183" y="0" width="126" height="16" uuid="aa792c0a-6ade-4b3b-a488-4c758ff01c83">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -1605,7 +1609,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="332" y="0" width="42" height="16" uuid="fdd8a942-8a63-4fcb-8874-eba92226b3b6">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="310" y="0" width="56" height="16" uuid="fdd8a942-8a63-4fcb-8874-eba92226b3b6">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1623,7 +1627,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="374" y="0" width="63" height="16" uuid="3fbb5d23-0f9c-4e85-8e49-26367f6bc190">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="366" y="0" width="72" height="16" uuid="3fbb5d23-0f9c-4e85-8e49-26367f6bc190">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1639,7 +1643,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="437" y="0" width="60" height="16" uuid="f18425ed-1890-4ac5-ae1d-5e01d14d83ca">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="438" y="0" width="67" height="16" uuid="f18425ed-1890-4ac5-ae1d-5e01d14d83ca">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -1654,7 +1658,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="497" y="0" width="58" height="16" uuid="d6d9c72f-bae9-461b-8e23-e22f3042e2a1">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="505" y="0" width="50" height="16" uuid="d6d9c72f-bae9-461b-8e23-e22f3042e2a1">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -1682,7 +1686,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="145" height="16" uuid="30bd5af3-a338-4a62-93c7-b64dd8158df8">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="126" height="16" uuid="30bd5af3-a338-4a62-93c7-b64dd8158df8">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1699,7 +1703,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="145" y="0" width="42" height="16" uuid="630052c7-8a5b-4853-891f-fe041a03ad01">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="127" y="0" width="56" height="16" uuid="630052c7-8a5b-4853-891f-fe041a03ad01">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -1715,7 +1719,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="187" y="0" width="145" height="16" uuid="1dd80043-c8c6-4050-8dc5-5de5724deb65">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="183" y="0" width="126" height="16" uuid="1dd80043-c8c6-4050-8dc5-5de5724deb65">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -1730,7 +1734,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="332" y="0" width="42" height="16" uuid="391e8f5a-fb7b-4eb0-bae0-96b4d038ef58">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="310" y="0" width="56" height="16" uuid="391e8f5a-fb7b-4eb0-bae0-96b4d038ef58">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1748,7 +1752,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="374" y="0" width="63" height="16" uuid="739cbed7-e467-4729-b937-da29d8e4476c">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="366" y="0" width="72" height="16" uuid="739cbed7-e467-4729-b937-da29d8e4476c">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1764,7 +1768,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="437" y="0" width="60" height="16" uuid="71bb10c3-6f64-479c-8f18-e9041680758a">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="438" y="0" width="67" height="16" uuid="71bb10c3-6f64-479c-8f18-e9041680758a">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -1779,7 +1783,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="497" y="0" width="58" height="16" uuid="b0f1a1ad-25b2-482a-9168-90a78e218cdb">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="505" y="0" width="50" height="16" uuid="b0f1a1ad-25b2-482a-9168-90a78e218cdb">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -1807,7 +1811,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="145" height="16" uuid="5a945cbb-774d-4c66-aaf3-5d42c44149f8">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="126" height="16" uuid="5a945cbb-774d-4c66-aaf3-5d42c44149f8">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1824,7 +1828,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="145" y="0" width="42" height="16" uuid="5965dd5f-8c1e-4080-babf-5e97c8c38e73">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="127" y="0" width="56" height="16" uuid="5965dd5f-8c1e-4080-babf-5e97c8c38e73">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -1840,7 +1844,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="187" y="0" width="145" height="16" uuid="c4b7c0de-5444-41d4-962d-26635fedd90c">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="183" y="0" width="126" height="16" uuid="c4b7c0de-5444-41d4-962d-26635fedd90c">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -1855,7 +1859,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="332" y="0" width="42" height="16" uuid="9cf5deaa-e4f8-4202-810f-7558470a2979">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="310" y="0" width="56" height="16" uuid="9cf5deaa-e4f8-4202-810f-7558470a2979">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1873,7 +1877,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="374" y="0" width="63" height="16" uuid="23c9fa32-b352-4d90-8749-a4f324ded80f">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="366" y="0" width="72" height="16" uuid="23c9fa32-b352-4d90-8749-a4f324ded80f">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1889,7 +1893,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="437" y="0" width="60" height="16" uuid="768b8f6c-b087-445b-8c92-d7d0dfc05739">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="438" y="0" width="67" height="16" uuid="768b8f6c-b087-445b-8c92-d7d0dfc05739">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -1904,7 +1908,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="497" y="0" width="58" height="16" uuid="6aec39b6-f0da-44ae-ad02-f4088fc6868d">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="505" y="0" width="50" height="16" uuid="6aec39b6-f0da-44ae-ad02-f4088fc6868d">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -1932,7 +1936,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="145" height="16" uuid="1a5ba82c-1337-43f9-a2b1-004bf3f27f01">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="126" height="16" uuid="1a5ba82c-1337-43f9-a2b1-004bf3f27f01">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1949,7 +1953,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="145" y="0" width="42" height="16" uuid="46582265-90f7-44b1-a092-e895790d48ee">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="127" y="0" width="56" height="16" uuid="46582265-90f7-44b1-a092-e895790d48ee">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -1965,7 +1969,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="187" y="0" width="145" height="16" uuid="1a0e63c3-9e7a-49ee-88f0-8556e610dfd3">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="183" y="0" width="126" height="16" uuid="1a0e63c3-9e7a-49ee-88f0-8556e610dfd3">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -1980,7 +1984,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="332" y="0" width="42" height="16" uuid="4cd7a4f4-f439-4c3d-a77c-25a4ffa76562">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="310" y="0" width="56" height="16" uuid="4cd7a4f4-f439-4c3d-a77c-25a4ffa76562">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1998,7 +2002,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="374" y="0" width="63" height="16" uuid="12a28050-db1d-447e-be2f-3c3a687ec80b">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="366" y="0" width="72" height="16" uuid="12a28050-db1d-447e-be2f-3c3a687ec80b">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -2014,7 +2018,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="437" y="0" width="60" height="16" uuid="3fbe5ed2-3579-46ab-8a78-5b491e5ce3ad">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="438" y="0" width="67" height="16" uuid="3fbe5ed2-3579-46ab-8a78-5b491e5ce3ad">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -2029,7 +2033,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="497" y="0" width="58" height="16" uuid="ec152223-718e-4c4e-b5f4-062e0effc5da">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="505" y="0" width="50" height="16" uuid="ec152223-718e-4c4e-b5f4-062e0effc5da">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -2057,7 +2061,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="145" height="16" uuid="7dfa6607-34d3-4119-b3ef-35a3c9df9c61">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="126" height="16" uuid="7dfa6607-34d3-4119-b3ef-35a3c9df9c61">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -2074,7 +2078,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="145" y="0" width="42" height="16" uuid="315adc64-1c31-4168-84d3-daaa8b7979c6">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="127" y="0" width="56" height="16" uuid="315adc64-1c31-4168-84d3-daaa8b7979c6">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -2090,7 +2094,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="187" y="0" width="145" height="16" uuid="687b745c-fd88-4b14-ba40-77406079d45e">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="183" y="0" width="126" height="16" uuid="687b745c-fd88-4b14-ba40-77406079d45e">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -2105,7 +2109,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="332" y="0" width="42" height="16" uuid="cabc5380-5960-47bd-b4b8-903e9b49fcc8">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="310" y="0" width="56" height="16" uuid="cabc5380-5960-47bd-b4b8-903e9b49fcc8">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -2123,7 +2127,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="374" y="0" width="63" height="16" uuid="3ad87e6b-28a7-4686-b0ef-9b56ea77b93a">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="366" y="0" width="72" height="16" uuid="3ad87e6b-28a7-4686-b0ef-9b56ea77b93a">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -2139,7 +2143,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="437" y="0" width="60" height="16" uuid="ff3b14c6-6347-4630-a234-00e69cf7fc9c">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="438" y="0" width="67" height="16" uuid="ff3b14c6-6347-4630-a234-00e69cf7fc9c">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -2154,7 +2158,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="497" y="0" width="58" height="16" uuid="d6335b05-69ea-4418-88ac-937ad35e9e9a">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="505" y="0" width="50" height="16" uuid="d6335b05-69ea-4418-88ac-937ad35e9e9a">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -2182,7 +2186,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="145" height="16" uuid="36c13a39-ed64-49a2-8449-8ae9959f8542">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="126" height="16" uuid="36c13a39-ed64-49a2-8449-8ae9959f8542">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -2199,7 +2203,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="145" y="0" width="42" height="16" uuid="cb329c05-df3a-4d4f-8240-8a59335e740e">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="127" y="0" width="56" height="16" uuid="cb329c05-df3a-4d4f-8240-8a59335e740e">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -2215,7 +2219,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="187" y="0" width="145" height="16" uuid="48363ab9-201b-4aa3-be33-114a26102c25">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="183" y="0" width="126" height="16" uuid="48363ab9-201b-4aa3-be33-114a26102c25">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -2230,7 +2234,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="332" y="0" width="42" height="16" uuid="5c90caf9-0180-42ee-b190-683f11f12ae6">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="310" y="0" width="56" height="16" uuid="5c90caf9-0180-42ee-b190-683f11f12ae6">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -2248,7 +2252,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="374" y="0" width="63" height="16" uuid="baa4d2d7-ee49-4a3a-a7a7-793e648ca9e0">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="366" y="0" width="72" height="16" uuid="baa4d2d7-ee49-4a3a-a7a7-793e648ca9e0">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -2264,7 +2268,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="437" y="0" width="60" height="16" uuid="7d7e6993-fca1-4241-a292-6fbf9fb6d652">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="438" y="0" width="67" height="16" uuid="7d7e6993-fca1-4241-a292-6fbf9fb6d652">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -2279,7 +2283,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="497" y="0" width="58" height="16" uuid="5e8319cf-d426-4c84-b07a-9d398aa9d83e">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="505" y="0" width="50" height="16" uuid="5e8319cf-d426-4c84-b07a-9d398aa9d83e">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -2307,7 +2311,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="145" height="16" uuid="6fe9cb48-6a45-404c-84f1-020cfd58219f">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="126" height="16" uuid="6fe9cb48-6a45-404c-84f1-020cfd58219f">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -2324,7 +2328,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="145" y="0" width="42" height="16" uuid="0f63a2b3-1dd8-41a9-bf69-e12360aa2586">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="127" y="0" width="56" height="16" uuid="0f63a2b3-1dd8-41a9-bf69-e12360aa2586">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -2340,7 +2344,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="187" y="0" width="145" height="16" uuid="f37a0701-f14f-40f8-92a8-a1ff2406d7c5">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="183" y="0" width="126" height="16" uuid="f37a0701-f14f-40f8-92a8-a1ff2406d7c5">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -2355,7 +2359,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="332" y="0" width="42" height="16" uuid="e8ed3508-094a-4f7c-a678-d2fe29f33e96">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="310" y="0" width="56" height="16" uuid="e8ed3508-094a-4f7c-a678-d2fe29f33e96">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -2373,7 +2377,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="374" y="0" width="63" height="16" uuid="dafe24dd-c9d9-41e4-890b-32d5af4e7187">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="366" y="0" width="72" height="16" uuid="dafe24dd-c9d9-41e4-890b-32d5af4e7187">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -2389,7 +2393,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="437" y="0" width="60" height="16" uuid="d34bed58-3068-436a-9af2-a366de9dc3b1">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="438" y="0" width="67" height="16" uuid="d34bed58-3068-436a-9af2-a366de9dc3b1">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -2404,7 +2408,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="497" y="0" width="58" height="16" uuid="fa2d44ac-63fe-43ac-be5e-3c6565dfc2c9">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="505" y="0" width="50" height="16" uuid="fa2d44ac-63fe-43ac-be5e-3c6565dfc2c9">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -2432,7 +2436,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="145" height="16" uuid="38930dff-d451-4199-81aa-3c62f1d7a37e">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="126" height="16" uuid="38930dff-d451-4199-81aa-3c62f1d7a37e">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -2449,7 +2453,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="145" y="0" width="42" height="16" uuid="b4f722d0-ae1e-42b9-9694-5041e3b96a7a">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="127" y="0" width="56" height="16" uuid="b4f722d0-ae1e-42b9-9694-5041e3b96a7a">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -2465,7 +2469,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="187" y="0" width="145" height="16" uuid="205ea157-ea7a-44b9-8dde-fc440c20e913">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="183" y="0" width="126" height="16" uuid="205ea157-ea7a-44b9-8dde-fc440c20e913">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -2480,7 +2484,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="332" y="0" width="42" height="16" uuid="ac20c46f-8669-4ce1-8b08-ca52ce75a547">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="310" y="0" width="56" height="16" uuid="ac20c46f-8669-4ce1-8b08-ca52ce75a547">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -2498,7 +2502,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="374" y="0" width="63" height="16" uuid="c0bcc2bf-c271-43b2-859e-87887b09bf76">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="366" y="0" width="72" height="16" uuid="c0bcc2bf-c271-43b2-859e-87887b09bf76">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -2514,7 +2518,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="437" y="0" width="60" height="16" uuid="c9a29a65-7f41-4f6c-8b3c-7b17d2877a9f">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="438" y="0" width="67" height="16" uuid="c9a29a65-7f41-4f6c-8b3c-7b17d2877a9f">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -2529,7 +2533,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="497" y="0" width="58" height="16" uuid="b1284c4e-27b1-42fa-85a0-e62695a5a797">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="505" y="0" width="50" height="16" uuid="b1284c4e-27b1-42fa-85a0-e62695a5a797">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -2557,7 +2561,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="145" height="16" uuid="35b84f8a-c787-4a8a-b354-47806f228ba6">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="0" y="0" width="126" height="16" uuid="35b84f8a-c787-4a8a-b354-47806f228ba6">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -2574,7 +2578,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="145" y="0" width="42" height="16" uuid="57725ef8-2084-4ffa-8d35-4aa3aa259d54">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="127" y="0" width="56" height="16" uuid="57725ef8-2084-4ffa-8d35-4aa3aa259d54">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -2590,7 +2594,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="187" y="0" width="145" height="16" uuid="dc3b5776-a7de-48e7-aef9-33131d329168">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="183" y="0" width="126" height="16" uuid="dc3b5776-a7de-48e7-aef9-33131d329168">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -2605,7 +2609,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="332" y="0" width="42" height="16" uuid="eae82da4-a755-4955-9284-bc4fcb1c9dd9">
+					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="310" y="0" width="56" height="16" uuid="eae82da4-a755-4955-9284-bc4fcb1c9dd9">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -2623,7 +2627,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="374" y="0" width="63" height="16" uuid="7f7eb27e-dc75-4949-bfe6-135c8c312791">
+					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="366" y="0" width="72" height="16" uuid="7f7eb27e-dc75-4949-bfe6-135c8c312791">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -2639,7 +2643,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="437" y="0" width="60" height="16" uuid="0e034c9a-1fb3-43a0-9cae-86b9dba3a500">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="438" y="0" width="67" height="16" uuid="0e034c9a-1fb3-43a0-9cae-86b9dba3a500">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -2654,7 +2658,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="497" y="0" width="58" height="16" uuid="445edb90-ff6b-4116-b7c6-e898b38a48d7">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="505" y="0" width="50" height="16" uuid="445edb90-ff6b-4116-b7c6-e898b38a48d7">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>

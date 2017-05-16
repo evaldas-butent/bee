@@ -233,13 +233,13 @@ public class TestSqlUtilsIsQuery {
     assertEquals(
         "SELECT \"t\".\"relname\" AS \"tblName\", \"t\".\"reltuples\" AS \"rowCount\" FROM"
             + " \"pg_class\" \"t\" INNER JOIN \"pg_namespace\" \"s\" ON \"t\".\"relnamespace\" = "
-            + "\"s\".\"oid\"",
+            + "\"s\".\"oid\" WHERE 1 = 0",
         SqlUtils.dbTables("MyDB", null, null).getQuery());
 
     assertEquals(
         "SELECT \"t\".\"relname\" AS \"tblName\", \"t\".\"reltuples\" AS \"rowCount\" FROM"
             + " \"pg_class\" \"t\" INNER JOIN \"pg_namespace\" \"s\" ON \"t\".\"relnamespace\" = "
-            + "\"s\".\"oid\"",
+            + "\"s\".\"oid\" WHERE 1 = 0",
         SqlUtils.dbTables(null, null, null).getQuery());
 
     SqlBuilderFactory.setDefaultBuilder(SqlEngine.ORACLE);

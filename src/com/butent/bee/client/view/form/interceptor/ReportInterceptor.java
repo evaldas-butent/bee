@@ -17,7 +17,6 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.output.Report;
-import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.HasIndexedWidgets;
@@ -35,6 +34,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -706,6 +706,13 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       Integer index = getSelectedIndex(name);
       String value = (index != null && index >= minValue) ? getSelectedItemValue(name) : null;
 
+      BeeKeeper.getStorage().set(storageKey(user, name), value);
+    }
+  }
+
+  protected void storeValue(String name, String value) {
+    Long user = BeeKeeper.getUser().getUserId();
+    if (DataUtils.isId(user)) {
       BeeKeeper.getStorage().set(storageKey(user, name), value);
     }
   }

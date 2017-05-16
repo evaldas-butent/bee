@@ -370,6 +370,8 @@ public class TransportModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_TEXT_CONSTANT)) {
       response = getTextConstant(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_TRIP_COSTS_REPORT)) {
+      response = rep.getTripCostsReport(reqInfo);
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
       logger.warning(msg);

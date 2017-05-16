@@ -272,6 +272,62 @@ public class TradeStockReport extends ReportInterceptor {
     return TradeKeeper.STYLE_PREFIX + "report-stock-";
   }
 
+  protected String styleTable() {
+    return styleTable;
+  }
+
+  protected String styleHeader() {
+    return styleHeader;
+  }
+
+  protected String styleBody() {
+    return styleBody;
+  }
+
+  protected String styleFooter() {
+    return styleFooter;
+  }
+
+  protected String styleColumnEmptyLabel() {
+    return styleColumnEmptyLabel;
+  }
+
+  protected String styleColumnLabel() {
+    return styleColumnLabel;
+  }
+
+  protected String stylePrice() {
+    return stylePrice;
+  }
+
+  protected String styleQuantity() {
+    return styleQuantity;
+  }
+
+  protected String styleAmount() {
+    return styleAmount;
+  }
+
+  protected String styleQuantityRow() {
+    return styleQuantityRow;
+  }
+
+  protected String styleAmountRow() {
+    return styleAmountRow;
+  }
+
+  protected String styleRowTotal() {
+    return styleRowTotal;
+  }
+
+  protected String styleTotal() {
+    return styleTotal;
+  }
+
+  protected String styleEditable() {
+    return styleEditable;
+  }
+
   @Override
   protected boolean validateParameters(ReportParameters parameters) {
     DateTime receivedFrom = parameters.getDateTime(RP_RECEIVED_FROM);
@@ -283,6 +339,10 @@ public class TradeStockReport extends ReportInterceptor {
 
   protected String getDateCaption() {
     return Format.renderDateLong(getDateTime(RP_DATE));
+  }
+
+  protected XSheet sheet() {
+    return sheet;
   }
 
   private List<String> getCaptions(String dateCaption, boolean qty, boolean amount,
@@ -392,8 +452,8 @@ public class TradeStockReport extends ReportInterceptor {
     List<String> columnGroupValues = new ArrayList<>();
 
     if (columnGroup != null) {
-      columnGroupLabels.addAll(Codec.deserializeList(data.get(RP_STOCK_COLUMN_GROUP_LABELS)));
-      columnGroupValues.addAll(Codec.deserializeList(data.get(RP_STOCK_COLUMN_GROUP_VALUES)));
+      columnGroupLabels.addAll(Codec.deserializeList(data.get(RP_STOCK_END_COLUMN_LABELS)));
+      columnGroupValues.addAll(Codec.deserializeList(data.get(RP_STOCK_END_COLUMN_VALUES)));
     }
 
     List<String> quantityColumns = NameUtils.toList(data.get(RP_QUANTITY_COLUMNS));
@@ -552,7 +612,6 @@ public class TradeStockReport extends ReportInterceptor {
 
     for (SimpleRowSet.SimpleRow row : rowSet) {
       xr = new XRow(r);
-
       c = 0;
 
       if (!rowGroups.isEmpty()) {
@@ -837,7 +896,7 @@ public class TradeStockReport extends ReportInterceptor {
     container.add(table);
   }
 
-  private void maybeMakeEditable(Element cell, TradeReportGroup group, String value) {
+  protected void maybeMakeEditable(Element cell, TradeReportGroup group, String value) {
     if (DataUtils.isId(value)) {
       DomUtils.setDataProperty(cell, KEY_GROUP, group.ordinal());
       DomUtils.setDataProperty(cell, KEY_ID, value);

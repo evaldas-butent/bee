@@ -14,6 +14,7 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.finance.analysis.AnalysisColumnsGrid;
+import com.butent.bee.client.modules.finance.analysis.AnalysisHeadersGrid;
 import com.butent.bee.client.modules.finance.analysis.AnalysisResultsGrid;
 import com.butent.bee.client.modules.finance.analysis.AnalysisRowsGrid;
 import com.butent.bee.client.modules.finance.analysis.BudgetEntriesGrid;
@@ -31,6 +32,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.finance.Dimensions;
+import com.butent.bee.shared.modules.finance.PrepaymentKind;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorKind;
 import com.butent.bee.shared.rights.Module;
 
@@ -51,8 +53,9 @@ public final class FinanceKeeper {
     MenuService.FINANCE_POSTING_PRECEDENCE.setHandler(parameters ->
         openConfiguration(FORM_FINANCE_POSTING_PRECEDENCE));
 
-    List<String> gridNames = ImmutableList.of(GRID_FINANCIAL_RECORDS,
-        GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS);
+    List<String> gridNames = ImmutableList.of(
+        GRID_FINANCIAL_RECORDS, GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS,
+        GRID_PREPAYMENT_SUPPLIERS, GRID_PREPAYMENT_CUSTOMERS);
     String viewName = VIEW_FINANCIAL_RECORDS;
 
     ConditionalStyle.registerGridColumnColorProvider(gridNames,
@@ -96,6 +99,11 @@ public final class FinanceKeeper {
     GridFactory.registerGridInterceptor(GRID_FINANCIAL_RECORDS, new FinancialRecordsGrid());
     GridFactory.registerGridInterceptor(GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS,
         new TradeDocumentFinancialRecordsGrid());
+
+    GridFactory.registerGridInterceptor(GRID_PREPAYMENT_SUPPLIERS,
+        new PrepaymentGrid(PrepaymentKind.SUPPLIERS));
+    GridFactory.registerGridInterceptor(GRID_PREPAYMENT_CUSTOMERS,
+        new PrepaymentGrid(PrepaymentKind.CUSTOMERS));
 
     GridFactory.registerGridInterceptor(ClassifierConstants.GRID_CHART_OF_ACCOUNTS,
         new ChartOfAccountsGrid());
@@ -146,6 +154,7 @@ public final class FinanceKeeper {
     GridFactory.registerGridInterceptor(GRID_BUDGET_HEADERS, new BudgetHeadersGrid());
     GridFactory.registerGridInterceptor(GRID_BUDGET_ENTRIES, new BudgetEntriesGrid());
 
+    GridFactory.registerGridInterceptor(GRID_ANALYSIS_HEADERS, new AnalysisHeadersGrid());
     GridFactory.registerGridInterceptor(GRID_ANALYSIS_COLUMNS, new AnalysisColumnsGrid());
     GridFactory.registerGridInterceptor(GRID_ANALYSIS_ROWS, new AnalysisRowsGrid());
     GridFactory.registerGridInterceptor(GRID_ANALYSIS_RESULTS, new AnalysisResultsGrid());
