@@ -14,7 +14,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -165,6 +167,17 @@ public class TradeDocumentSums {
     }
   }
 
+  public static final List<String> DOCUMENT_COLUMNS = Arrays.asList(COL_TRADE_DOCUMENT_VAT_MODE,
+      COL_TRADE_DOCUMENT_DISCOUNT_MODE, COL_TRADE_DOCUMENT_DISCOUNT);
+
+  public static final List<String> ITEM_COLUMNS = Arrays.asList(
+      COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
+      COL_TRADE_DOCUMENT_ITEM_DISCOUNT, COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT,
+      COL_TRADE_DOCUMENT_ITEM_VAT, COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT);
+
+  public static final List<String> PAYMENT_COLUMNS =
+      Collections.singletonList(COL_TRADE_PAYMENT_AMOUNT);
+
   private static BeeLogger logger = LogUtils.getLogger(TradeDocumentSums.class);
 
   private static final int DEFAULT_AMOUNT_SCALE = 2;
@@ -200,20 +213,15 @@ public class TradeDocumentSums {
 
     TradeDocumentSums tds = new TradeDocumentSums(
         docData.getEnum(docRowIndex, COL_TRADE_DOCUMENT_VAT_MODE, TradeVatMode.class),
-        docData.getEnum(docRowIndex, COL_TRADE_DOCUMENT_DISCOUNT_MODE, TradeDiscountMode.class));
-
-    tds.updateDocumentDiscount(docData.getDouble(docRowIndex, COL_TRADE_DOCUMENT_DISCOUNT));
+        docData.getEnum(docRowIndex, COL_TRADE_DOCUMENT_DISCOUNT_MODE, TradeDiscountMode.class),
+        docData.getDouble(docRowIndex, COL_TRADE_DOCUMENT_DISCOUNT));
 
     if (!DataUtils.isEmpty(itemData)) {
       tds.addItems(itemData);
     }
 
     if (!DataUtils.isEmpty(paymentData)) {
-      int amountIndex = paymentData.getColumnIndex(COL_TRADE_PAYMENT_AMOUNT);
-
-      for (BeeRow row : paymentData) {
-        tds.addPayment(row.getId(), row.getDouble(amountIndex));
-      }
+      tds.addPayments(paymentData);
     }
 
     return tds;
@@ -256,9 +264,13 @@ public class TradeDocumentSums {
   public TradeDocumentSums() {
   }
 
-  public TradeDocumentSums(TradeVatMode vatMode, TradeDiscountMode discountMode) {
+  public TradeDocumentSums(TradeVatMode vatMode, TradeDiscountMode discountMode,
+      Double documentDiscount) {
+
     this.vatMode = vatMode;
     this.discountMode = discountMode;
+
+    this.documentDiscount = normalize(documentDiscount);
   }
 
   public TradeDocumentSums add(long id, Double quantity, Double price,
@@ -312,6 +324,16 @@ public class TradeDocumentSums {
       payments.put(id, amount);
     } else {
       payments.remove(id);
+    }
+  }
+
+  public void addPayments(BeeRowSet rowSet) {
+    if (!DataUtils.isEmpty(rowSet)) {
+      int amountIndex = rowSet.getColumnIndex(COL_TRADE_PAYMENT_AMOUNT);
+
+      for (BeeRow row : rowSet) {
+        addPayment(row.getId(), row.getDouble(amountIndex));
+      }
     }
   }
 

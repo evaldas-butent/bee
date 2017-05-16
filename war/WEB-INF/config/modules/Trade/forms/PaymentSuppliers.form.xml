@@ -66,7 +66,7 @@
     <TabbedPages class="flexible">
       <page>
         <text>=trdAccountsPayable</text>
-        <GridPanel name="Payable" gridName="TradeDocuments" />
+        <GridPanel name="TradePayables" />
       </page>
       <page>
         <text>=prepaymentGiven</text>
@@ -75,7 +75,7 @@
 
       <page>
         <text>=trdAccountsReceivable</text>
-        <GridPanel name="Receivable" gridName="TradeDocuments" />
+        <GridPanel name="TradeReceivables" />
       </page>
       <page>
         <text>=prepaymentReceived</text>

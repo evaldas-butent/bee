@@ -335,6 +335,9 @@ public final class TradeConstants {
   public static final String GRID_ITEM_MOVEMENT = "ItemMovement";
   public static final String GRID_TRADE_RELATED_ITEMS = "TradeRelatedItems";
 
+  public static final String GRID_TRADE_PAYABLES = "TradePayables";
+  public static final String GRID_TRADE_RECEIVABLES = "TradeReceivables";
+
   public static final String FORM_SALES_INVOICE = "SalesInvoice";
   public static final String FORM_DEBT_REPORT_TEMPLATE = "DebtReportTemplate";
 
@@ -347,6 +350,7 @@ public final class TradeConstants {
 
   public static final String FILTER_ITEM_HAS_STOCK = "item_has_stock";
   public static final String FILTER_USER_TRADE_SERIES = "user_trade_series";
+  public static final String FILTER_HAS_TRADE_DEBT = "has_trade_debt";
 
   public static final int MAX_STOCK_DEPTH = 1_000;
   public static final int DEFAULT_SERIES_NUMBER_LENGTH = 6;

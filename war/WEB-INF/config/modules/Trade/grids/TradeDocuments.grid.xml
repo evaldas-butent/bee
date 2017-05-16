@@ -39,31 +39,11 @@
     <PropColumn name="TdWithoutVat" type="decimal" label="=amountWithoutVat" scale="2"
                 visible="false" />
     <PropColumn name="TdVat" type="decimal" label="=vat" scale="2" visible="false" />
+  </g:columns>
 
-    <PropColumn name="TdTotal" type="decimal" label="=total" scale="2">
-      <style>
-        <bodyStyle>
-          <ui:inline>color: mediumblue;</ui:inline>
-        </bodyStyle>
-      </style>
-    </PropColumn>
+  <xi:include href="columns/TradeDocumentTotals.columns.xml" />
 
-    <PropColumn name="TdPaid" type="decimal" label="=trdPaid" scale="2">
-      <style>
-        <bodyStyle>
-          <ui:inline>color: darkgreen;</ui:inline>
-        </bodyStyle>
-      </style>
-    </PropColumn>
-
-    <PropColumn name="TdDebt" type="decimal" label="=debt" scale="2">
-      <style>
-        <bodyStyle>
-          <ui:inline>color: fuchsia;</ui:inline>
-        </bodyStyle>
-      </style>
-    </PropColumn>
-
+  <g:columns>
     <RelColumn name="Payer" renderColumns="PayerName" visible="false" />
     <DataColumn name="Term" visible="false" />
 
