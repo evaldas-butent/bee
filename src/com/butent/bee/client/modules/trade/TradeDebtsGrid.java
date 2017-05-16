@@ -15,6 +15,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.trade.DebtKind;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.Map;
@@ -58,7 +59,7 @@ class TradeDebtsGrid extends AbstractGridInterceptor {
   }
 
   private Filter buildFilter(Long company) {
-    String arg1 = (debtKind == null) ? null : BeeUtils.toString(debtKind.ordinal());
+    String arg1 = Codec.pack(debtKind);
     String arg2 = BeeUtils.toStringOrNull(company);
 
     return Filter.custom(FILTER_HAS_TRADE_DEBT, arg1, arg2);

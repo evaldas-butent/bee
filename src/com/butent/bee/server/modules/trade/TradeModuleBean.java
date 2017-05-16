@@ -122,7 +122,6 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
@@ -1333,7 +1332,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
           switch (i) {
             case 0:
-              debtKind = EnumUtils.getEnumByIndex(DebtKind.class, arg);
+              debtKind = Codec.unpack(DebtKind.class, arg);
               break;
 
             case 1:

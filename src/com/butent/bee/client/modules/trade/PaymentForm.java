@@ -3,12 +3,14 @@ package com.butent.bee.client.modules.trade;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.modules.finance.OutstandingPrepaymentGrid;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.shared.modules.finance.FinanceConstants;
 import com.butent.bee.shared.modules.trade.DebtKind;
 
 class PaymentForm extends AbstractFormInterceptor {
@@ -44,6 +46,9 @@ class PaymentForm extends AbstractFormInterceptor {
   private void onPayerChange(Long payer) {
     refreshDebts(GRID_TRADE_PAYABLES, payer);
     refreshDebts(GRID_TRADE_RECEIVABLES, payer);
+
+    refreshPrepayments(FinanceConstants.GRID_OUTSTANDING_PREPAYMENT_GIVEN, payer, null);
+    refreshPrepayments(FinanceConstants.GRID_OUTSTANDING_PREPAYMENT_RECEIVED, payer, null);
   }
 
   private void refreshDebts(String gridName, Long payer) {
@@ -51,6 +56,14 @@ class PaymentForm extends AbstractFormInterceptor {
 
     if (gridView != null && gridView.getGridInterceptor() instanceof TradeDebtsGrid) {
       ((TradeDebtsGrid) gridView.getGridInterceptor()).onCompanyChange(payer);
+    }
+  }
+
+  private void refreshPrepayments(String gridName, Long payer, Long currency) {
+    GridView gridView = ViewHelper.getChildGrid(getFormView(), gridName);
+
+    if (gridView != null && gridView.getGridInterceptor() instanceof OutstandingPrepaymentGrid) {
+      ((OutstandingPrepaymentGrid) gridView.getGridInterceptor()).onParentChange(payer, currency);
     }
   }
 }

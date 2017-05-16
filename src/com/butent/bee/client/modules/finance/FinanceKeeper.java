@@ -55,7 +55,8 @@ public final class FinanceKeeper {
 
     List<String> gridNames = ImmutableList.of(
         GRID_FINANCIAL_RECORDS, GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS,
-        GRID_PREPAYMENT_SUPPLIERS, GRID_PREPAYMENT_CUSTOMERS);
+        GRID_PREPAYMENT_SUPPLIERS, GRID_PREPAYMENT_CUSTOMERS,
+        GRID_OUTSTANDING_PREPAYMENT_GIVEN, GRID_OUTSTANDING_PREPAYMENT_RECEIVED);
     String viewName = VIEW_FINANCIAL_RECORDS;
 
     ConditionalStyle.registerGridColumnColorProvider(gridNames,
@@ -104,6 +105,11 @@ public final class FinanceKeeper {
         new PrepaymentGrid(PrepaymentKind.SUPPLIERS));
     GridFactory.registerGridInterceptor(GRID_PREPAYMENT_CUSTOMERS,
         new PrepaymentGrid(PrepaymentKind.CUSTOMERS));
+
+    GridFactory.registerGridInterceptor(GRID_OUTSTANDING_PREPAYMENT_GIVEN,
+        new OutstandingPrepaymentGrid(PrepaymentKind.SUPPLIERS));
+    GridFactory.registerGridInterceptor(GRID_OUTSTANDING_PREPAYMENT_RECEIVED,
+        new OutstandingPrepaymentGrid(PrepaymentKind.CUSTOMERS));
 
     GridFactory.registerGridInterceptor(ClassifierConstants.GRID_CHART_OF_ACCOUNTS,
         new ChartOfAccountsGrid());

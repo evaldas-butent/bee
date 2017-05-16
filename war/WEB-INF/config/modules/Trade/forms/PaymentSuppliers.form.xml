@@ -70,7 +70,7 @@
       </page>
       <page>
         <text>=prepaymentGiven</text>
-        <GridPanel name="Paid" gridName="PrepaymentSuppliers" />
+        <GridPanel name="OutstandingPrepaymentGiven" />
       </page>
 
       <page>
@@ -79,7 +79,7 @@
       </page>
       <page>
         <text>=prepaymentReceived</text>
-        <GridPanel name="Received" gridName="PrepaymentCustomers" />
+        <GridPanel name="OutstandingPrepaymentReceived" />
       </page>
     </TabbedPages>
   </FlowPanel>
