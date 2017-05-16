@@ -543,7 +543,7 @@ public class TradeDocumentSums {
       total += getVat();
     }
 
-    return total;
+    return round(total, documentScale);
   }
 
   public double getPaid() {
@@ -555,7 +555,7 @@ public class TradeDocumentSums {
   }
 
   public double getDebt() {
-    return getTotal() - getPaid();
+    return round(getTotal() - getPaid(), documentScale);
   }
 
   public double getItemAmount(Long id) {
