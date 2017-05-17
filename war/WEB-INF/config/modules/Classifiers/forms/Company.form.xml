@@ -258,7 +258,7 @@
             </row>
             <row>
               <Label style="&lbl;" for="Operation" />
-              <DataSelector source="Operation"/>
+              <DataSelector source="Operation" viewName="SaleOperations"/>
             </row>
           </Table>
         </FlowPanel>
