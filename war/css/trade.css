@@ -500,6 +500,10 @@
 .bee-trade-report-movement-of-goods-header .bee-trade-report-movement-of-goods-column-empty-label {
   font-weight: normal;
 }
+.bee-trade-report-stock-table .bee-trade-report-stock-header td,
+.bee-trade-report-movement-of-goods-table .bee-trade-report-movement-of-goods-header td {
+  white-space: pre;
+}
 
 .bee-trade-report-stock-amount-row,
 .bee-trade-report-movement-of-goods-amount-row {

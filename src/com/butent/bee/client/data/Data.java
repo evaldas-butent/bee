@@ -326,8 +326,8 @@ public final class Data {
 
   public static void onTableChange(String tableName, EnumSet<DataChangeEvent.Effect> effects) {
     Collection<String> viewNames = DATA_INFO_PROVIDER.getViewNames(tableName);
-    for (String viewName : viewNames) {
-      DataChangeEvent.fire(BeeKeeper.getBus(), viewName, effects);
+    if (!viewNames.isEmpty()) {
+      DataChangeEvent.fire(BeeKeeper.getBus(), viewNames, effects);
     }
   }
 
@@ -339,6 +339,12 @@ public final class Data {
     DataInfo info = getDataInfo(viewOrTableName, false);
     DATA_INFO_PROVIDER.getViewNames(Objects.isNull(info) ? viewOrTableName : info.getTableName())
         .forEach(view -> DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), view));
+  }
+
+  public static void resetLocal(String viewOrTableName) {
+    DataInfo info = getDataInfo(viewOrTableName, false);
+    DATA_INFO_PROVIDER.getViewNames(Objects.isNull(info) ? viewOrTableName : info.getTableName())
+        .forEach(view -> DataChangeEvent.fireLocalReset(BeeKeeper.getBus(), view, null));
   }
 
   public static Double round(String viewName, String colName, Double value) {

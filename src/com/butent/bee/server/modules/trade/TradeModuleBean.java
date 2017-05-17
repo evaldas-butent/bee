@@ -103,6 +103,7 @@ import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.TradeAccounts;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
+import com.butent.bee.shared.modules.trade.DebtKind;
 import com.butent.bee.shared.modules.trade.ItemQuantities;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeCostBasis;
@@ -129,6 +130,7 @@ import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -1200,6 +1202,51 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           }
         }
       }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void setTradeDocumentSums(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_TRADE_DOCUMENTS) && !DataUtils.isEmpty(event.getRowset())) {
+          BeeRowSet docData = event.getRowset();
+
+          int operationTypeIndex = docData.getColumnIndex(COL_OPERATION_TYPE);
+
+          for (int index = 0; index < docData.getNumberOfRows(); index++) {
+            BeeRow docRow = docData.getRow(index);
+            long docId = docRow.getId();
+
+            BeeRowSet itemData = qs.getViewData(VIEW_TRADE_DOCUMENT_ITEMS,
+                Filter.equals(COL_TRADE_DOCUMENT, docId), null, TradeDocumentSums.ITEM_COLUMNS);
+            BeeRowSet paymentData = qs.getViewData(VIEW_TRADE_PAYMENTS,
+                Filter.equals(COL_TRADE_DOCUMENT, docId), null, TradeDocumentSums.PAYMENT_COLUMNS);
+
+            TradeDocumentSums tds = TradeDocumentSums.of(docData, index, itemData, paymentData);
+
+            if (tds != null) {
+              double vat = tds.getVat();
+              double total = tds.getTotal();
+              double paid = tds.getPaid();
+
+              docRow.setNonZero(PROP_TD_AMOUNT, tds.getAmount());
+              docRow.setNonZero(PROP_TD_DISCOUNT, tds.getDiscount());
+              docRow.setNonZero(PROP_TD_WITHOUT_VAT, total - vat);
+              docRow.setNonZero(PROP_TD_VAT, vat);
+              docRow.setNonZero(PROP_TD_TOTAL, total);
+
+              boolean ok = BeeUtils.isPositive(paid);
+              if (!ok) {
+                OperationType opType = docRow.getEnum(operationTypeIndex, OperationType.class);
+                ok = opType != null && opType.hasDebt();
+              }
+
+              if (ok) {
+                docRow.setNonZero(PROP_TD_PAID, paid);
+                docRow.setNonZero(PROP_TD_DEBT, total - paid);
+              }
+            }
+          }
+        }
+      }
     });
 
     MenuService.TRADE_DOCUMENTS.setTransformer(input -> {
@@ -1296,6 +1343,92 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       } else {
         return SqlUtils.sqlTrue();
       }
+    });
+
+    BeeView.registerConditionProvider(FILTER_HAS_TRADE_DEBT, (view, args) -> {
+      DebtKind debtKind = null;
+      Long company = null;
+
+      if (!BeeUtils.isEmpty(args)) {
+        for (int i = 0; i < args.size(); i++) {
+          String arg = args.get(i);
+
+          switch (i) {
+            case 0:
+              debtKind = Codec.unpack(DebtKind.class, arg);
+              break;
+
+            case 1:
+              if (DataUtils.isId(arg)) {
+                company = BeeUtils.toLongOrNull(arg);
+              }
+              break;
+          }
+        }
+      }
+
+      if (debtKind != null) {
+        HasConditions where = SqlUtils.and();
+        where.add(SqlUtils.inList(TBL_TRADE_DOCUMENTS, COL_TRADE_OPERATION,
+            getOperationsByDebtKind(debtKind)));
+
+        if (DataUtils.isId(company)) {
+          where.add(
+              SqlUtils.or(
+                  SqlUtils.equals(TBL_TRADE_DOCUMENTS, COL_TRADE_PAYER, company),
+                  SqlUtils.and(
+                      SqlUtils.isNull(TBL_TRADE_DOCUMENTS, COL_TRADE_PAYER),
+                      SqlUtils.equals(TBL_TRADE_DOCUMENTS, debtKind.tradeDocumentCompanyColumn(),
+                          company))));
+        }
+
+        String idName = sys.getIdName(TBL_TRADE_DOCUMENTS);
+
+        SqlSelect query = new SqlSelect()
+            .addFields(TBL_TRADE_DOCUMENTS, idName)
+            .addFields(TBL_TRADE_DOCUMENTS, TradeDocumentSums.DOCUMENT_COLUMNS)
+            .addFrom(TBL_TRADE_DOCUMENTS)
+            .setWhere(where);
+
+        SimpleRowSet docData = qs.getData(query);
+
+        if (!DataUtils.isEmpty(docData)) {
+          Set<Long> docIds = new HashSet<>();
+
+          for (SimpleRow docRow : docData) {
+            long docId = docRow.getLong(idName);
+
+            TradeVatMode vatMode = docRow.getEnum(COL_TRADE_DOCUMENT_VAT_MODE, TradeVatMode.class);
+            TradeDiscountMode discountMode = docRow.getEnum(COL_TRADE_DOCUMENT_DISCOUNT_MODE,
+                TradeDiscountMode.class);
+            Double docDiscount = docRow.getDouble(COL_TRADE_DOCUMENT_DISCOUNT);
+
+            BeeRowSet itemData = qs.getViewData(VIEW_TRADE_DOCUMENT_ITEMS,
+                Filter.equals(COL_TRADE_DOCUMENT, docId), null, TradeDocumentSums.ITEM_COLUMNS);
+            BeeRowSet paymentData = qs.getViewData(VIEW_TRADE_PAYMENTS,
+                Filter.equals(COL_TRADE_DOCUMENT, docId), null, TradeDocumentSums.PAYMENT_COLUMNS);
+
+            TradeDocumentSums tds = new TradeDocumentSums(vatMode, discountMode, docDiscount);
+
+            if (!DataUtils.isEmpty(itemData)) {
+              tds.addItems(itemData);
+            }
+            if (!DataUtils.isEmpty(paymentData)) {
+              tds.addPayments(paymentData);
+            }
+
+            if (BeeUtils.nonZero(tds.getDebt())) {
+              docIds.add(docId);
+            }
+          }
+
+          if (!docIds.isEmpty()) {
+            return SqlUtils.inList(TBL_TRADE_DOCUMENTS, idName, docIds);
+          }
+        }
+      }
+
+      return SqlUtils.sqlFalse();
     });
 
     registerStockReservationsProvider(ModuleAndSub.of(getModule()),
@@ -2043,7 +2176,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       query = new SqlSelect()
           .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE)
           .addFields(tradeItems, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_VAT_PLUS,
-              COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_ITEM_ARTICLE, COL_TRADE_ITEM_NOTE)
+              COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_ITEM_ARTICLE, COL_TRADE_ITEM_NOTE,
+              COL_TRADE_DISCOUNT)
           .addFrom(tradeItems)
           .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, tradeItems, COL_ITEM))
           .setWhere(SqlUtils.equals(tradeItems, itemsRelation, invoice.getLong(itemsRelation)));
@@ -2063,6 +2197,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             item.getValue(COL_TRADE_ITEM_QUANTITY));
 
         wsItem.setPrice(item.getValue(COL_TRADE_ITEM_PRICE));
+        wsItem.setDiscount(item.getValue(COL_TRADE_DISCOUNT), true);
         wsItem.setVat(item.getValue(COL_TRADE_VAT), item.getBoolean(COL_TRADE_VAT_PERC),
             item.getBoolean(COL_TRADE_VAT_PLUS));
 
@@ -2763,6 +2898,19 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return qs.getEnum(query, OperationType.class);
   }
 
+  private Collection<Long> getOperationsByDebtKind(DebtKind debtKind) {
+    Collection<OperationType> operationTypes = Arrays.stream(OperationType.values())
+        .filter(type -> type.getDebtKind() == debtKind)
+        .collect(Collectors.toSet());
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_OPERATIONS, sys.getIdName(TBL_TRADE_OPERATIONS))
+        .addFrom(TBL_TRADE_OPERATIONS)
+        .setWhere(SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE, operationTypes));
+
+    return qs.getLongSet(query);
+  }
+
   private String getDocumentFieldByTradeItem(long itemId, String fieldName) {
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_DOCUMENTS, fieldName)
@@ -3416,10 +3564,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     SimpleRowSet docItems = qs.getData(itemQuery);
 
-    TradeDocumentSums tdSums = new TradeDocumentSums(docVatMode, docDiscountMode);
+    TradeDocumentSums tdSums = new TradeDocumentSums(docVatMode, docDiscountMode, docDiscount);
     tdSums.disableRounding();
-
-    tdSums.updateDocumentDiscount(docDiscount);
 
     Map<Long, Double> costs = new HashMap<>();
 

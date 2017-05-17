@@ -9,4 +9,6 @@
         parameters="FuelUsageReport" />
   <Item name="IncomeInvoicesReport" label="Pajamų sąskaitos" service="report"
         parameters="IncomeInvoicesReport" />
+  <Item name="TransportTripCostsReport" label="=trImportCosts" service="report"
+        parameters="TripCostsReport" />
 </Entry>

@@ -485,7 +485,7 @@ public class TestDateTime {
     assertEquals(varDate.toString(), d1.toString());
 
     DateTime dn = TimeUtils.parseDateTime("2011-", DateOrdering.YMD);
-    assertEquals("2011-01-01 00:00:00", dn.toString());
+    assertEquals("2011-01-01", dn.toString());
   }
 
   @Test
@@ -527,14 +527,30 @@ public class TestDateTime {
     varDate = new DateTime(2011, 3, 27, 4, 1, 45);
     assertEquals("2011-03-27 04:01:45", varDate.toString());
 
+    varDate = new DateTime(2011, 3, 27, 4, 1, 0);
+    assertEquals("2011-03-27 04:01", varDate.toString());
+
+    varDate = new DateTime(2011, 3, 27, 4, 0, 0);
+    assertEquals("2011-03-27 04:00", varDate.toString());
+
+    varDate = new DateTime(2011, 3, 27);
+    assertEquals("2011-03-27", varDate.toString());
+
     varDate = new DateTime(2011, 1, 1, 0, 1, 2);
     assertEquals("2011-01-01 00:01:02", varDate.toString());
+
+    varDate = new DateTime(2011, 1, 1, 0, 1, 0);
+    assertEquals("2011-01-01 00:01", varDate.toString());
+
+    varDate = new DateTime(2011, 1, 1, 0, 0, 0);
+    assertEquals("2011-01-01", varDate.toString());
   }
 
   @Test
   public final void testToTimeString() {
     varDate = new DateTime(2011, 2, 22, 8, 13, 8, 446);
     assertEquals("08:13:08.446", varDate.toTimeString());
+
     varDate = new DateTime(2011, 3, 6, 5, 1, 45, 1);
     assertEquals("05:01:45.001", varDate.toTimeString());
 
@@ -543,6 +559,15 @@ public class TestDateTime {
 
     varDate = new DateTime(2011, 3, 27, 4, 1, 45);
     assertEquals("04:01:45", varDate.toTimeString());
+
+    varDate = new DateTime(2011, 3, 27, 4, 1, 0);
+    assertEquals("04:01", varDate.toTimeString());
+
+    varDate = new DateTime(2011, 3, 27, 4, 0, 0);
+    assertEquals("04:00", varDate.toTimeString());
+
+    varDate = new DateTime(2011, 3, 27, 0, 0, 0);
+    assertEquals("00:00", varDate.toTimeString());
 
     varDate = new DateTime(2011, 1, 1, 0, 1, 2);
     assertEquals("00:01:02", varDate.toTimeString());

@@ -43,6 +43,7 @@ public final class ClassifierConstants {
   public static final String TBL_COMPANY_RELATION_TYPE_STORE = "CompRelTypeStore";
 
   public static final String TBL_COMPANY_ACTIVITY_STORE = "CompActStore";
+  public static final String TBL_COMPANY_DEPARTMENTS = "CompanyDepartments";
 
   public static final String TBL_PERSONS = "Persons";
   public static final String TBL_POSITIONS = "Positions";

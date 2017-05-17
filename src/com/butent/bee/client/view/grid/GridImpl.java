@@ -1505,7 +1505,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   @Override
   public void onDataReceived(DataReceivedEvent event) {
     if (getGridInterceptor() != null && event != null) {
-      getGridInterceptor().onDataReceived(event.getRows());
+      getGridInterceptor().onDataReceived(event);
     }
   }
 
@@ -1688,7 +1688,14 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   @Override
   public boolean previewDataChange(DataChangeEvent event) {
-    return getGridInterceptor() == null || getGridInterceptor().previewDataChange(event);
+    if (event != null && DataUtils.isId(event.getParentId())
+        && isChild() && !Objects.equals(event.getParentId(), getRelId())) {
+
+      return false;
+
+    } else {
+      return getGridInterceptor() == null || getGridInterceptor().previewDataChange(event);
+    }
   }
 
   @Override

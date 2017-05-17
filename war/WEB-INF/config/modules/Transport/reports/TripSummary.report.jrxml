@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-04-07T15:54:58 -->
+<!-- 2017-05-11T16:30:42 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TripSummary" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="3ad2372d-bb52-4e1f-9dfe-aaf5bdceb74c">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.Invocation"/>
@@ -426,7 +426,7 @@
 				<textFieldExpression><![CDATA[$R{sheetInfo}]]></textFieldExpression>
 			</textField>
 			<frame>
-				<reportElement positionType="Float" x="0" y="132" width="380" height="16" uuid="107e3744-e125-4ade-92d2-06ace0c4dd0c">
+				<reportElement positionType="Float" x="0" y="132" width="388" height="16" uuid="107e3744-e125-4ade-92d2-06ace0c4dd0c">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -447,7 +447,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="90" y="0" width="60" height="16" uuid="134ef9bc-b78d-457a-af86-6ab431bc8704">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="90" y="0" width="64" height="16" uuid="134ef9bc-b78d-457a-af86-6ab431bc8704">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -462,7 +462,7 @@
 					<textFieldExpression><![CDATA[$V{d}.transportDeparture()]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="150" y="0" width="60" height="16" uuid="f9301cc0-c283-4f02-a0c7-4eb208c84c22">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="154" y="0" width="64" height="16" uuid="f9301cc0-c283-4f02-a0c7-4eb208c84c22">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -477,7 +477,7 @@
 					<textFieldExpression><![CDATA[$V{d}.transportArrival()]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="210" y="0" width="170" height="16" uuid="8113305e-079f-4d7c-8946-7b58e663a081">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="218" y="0" width="170" height="16" uuid="8113305e-079f-4d7c-8946-7b58e663a081">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -493,7 +493,7 @@
 				</textField>
 			</frame>
 			<frame>
-				<reportElement positionType="Float" x="0" y="148" width="380" height="16" uuid="6ffa396b-66fe-41de-bdae-892dfb06f68f">
+				<reportElement positionType="Float" x="0" y="148" width="388" height="16" uuid="6ffa396b-66fe-41de-bdae-892dfb06f68f">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -514,7 +514,7 @@
 					<textFieldExpression><![CDATA[$V{d}.date()]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="90" y="0" width="60" height="16" uuid="62cf4f23-f99a-4a6a-bf5f-18bd08c7c4f1">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="90" y="0" width="64" height="16" uuid="62cf4f23-f99a-4a6a-bf5f-18bd08c7c4f1">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -529,7 +529,7 @@
 					<textFieldExpression><![CDATA[BeeUtils.isEmpty($P{DateFrom}) ? "" : new JustDate(BeeUtils.toInt($P{DateFrom}))]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="150" y="0" width="60" height="16" uuid="2f6aa00a-1662-4f22-a21a-79493fd657a4">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="154" y="0" width="64" height="16" uuid="2f6aa00a-1662-4f22-a21a-79493fd657a4">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -544,7 +544,7 @@
 					<textFieldExpression><![CDATA[BeeUtils.isEmpty($P{DateTo}) ? "" : new JustDate(BeeUtils.toInt($P{DateTo}))]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="210" y="0" width="170" height="16" uuid="bcfe7835-7330-44fa-868d-941b84e02434">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="218" y="0" width="170" height="16" uuid="bcfe7835-7330-44fa-868d-941b84e02434">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -559,7 +559,7 @@
 				</textField>
 			</frame>
 			<frame>
-				<reportElement positionType="Float" x="0" y="164" width="380" height="16" uuid="b0244ebc-751b-45ad-8714-c7e0fb774355">
+				<reportElement positionType="Float" x="0" y="164" width="388" height="16" uuid="b0244ebc-751b-45ad-8714-c7e0fb774355">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -578,7 +578,7 @@
 					<textFieldExpression><![CDATA[$V{d}.transportSpeedometer()]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="90" y="0" width="60" height="16" uuid="79486175-7ded-4e30-b5cf-57ccb32b4c7e">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="90" y="0" width="64" height="16" uuid="79486175-7ded-4e30-b5cf-57ccb32b4c7e">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					</reportElement>
@@ -591,7 +591,7 @@
 					<textFieldExpression><![CDATA[BeeUtils.nvl($P{SpeedometerBefore}, "")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="150" y="0" width="60" height="16" uuid="9c5e1e4e-a8f5-4f49-baf6-b98de353de9b">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="154" y="0" width="64" height="16" uuid="9c5e1e4e-a8f5-4f49-baf6-b98de353de9b">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
@@ -604,10 +604,11 @@
 					<textFieldExpression><![CDATA[BeeUtils.nvl($P{SpeedometerAfter}, "")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="210" y="0" width="170" height="16" uuid="54190947-ad3f-411e-887e-f15f98121307">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="218" y="0" width="170" height="16" uuid="54190947-ad3f-411e-887e-f15f98121307">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					</reportElement>
 					<box>
 						<leftPen lineWidth="1.0"/>
@@ -619,7 +620,7 @@
 				</textField>
 			</frame>
 			<frame>
-				<reportElement positionType="Float" x="0" y="180" width="380" height="16" uuid="bec78bfd-ba37-49c4-a8e9-b1dfeaabc1cc">
+				<reportElement positionType="Float" x="0" y="180" width="388" height="16" uuid="bec78bfd-ba37-49c4-a8e9-b1dfeaabc1cc">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -638,9 +639,10 @@
 					<textFieldExpression><![CDATA[$V{d}.transportFuelBalanceInTank()]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="90" y="0" width="60" height="16" uuid="832ec61a-b996-4606-ab39-072df54efc66">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="90" y="0" width="64" height="16" uuid="832ec61a-b996-4606-ab39-072df54efc66">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<box>
 						<leftPen lineWidth="1.0"/>
@@ -651,7 +653,7 @@
 					<textFieldExpression><![CDATA[BeeUtils.nvl($P{FuelBefore}, "")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="150" y="0" width="60" height="16" uuid="09ccc949-edac-4d73-b3a4-d5ba177fffdc">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="154" y="0" width="64" height="16" uuid="09ccc949-edac-4d73-b3a4-d5ba177fffdc">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
@@ -664,7 +666,7 @@
 					<textFieldExpression><![CDATA[BeeUtils.nvl($P{FuelAfter}, "")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="ContainerBottom" x="210" y="0" width="170" height="16" uuid="6e15b5f9-4976-4c7f-b168-f583adf5e19e">
+					<reportElement positionType="Float" stretchType="ContainerBottom" x="218" y="0" width="170" height="16" uuid="6e15b5f9-4976-4c7f-b168-f583adf5e19e">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -803,7 +805,7 @@
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Middle" markup="none">
 						<font fontName="DejaVu Sans" size="10" isBold="false"/>
@@ -850,7 +852,7 @@
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Middle" markup="none">
 						<font fontName="DejaVu Sans" size="10" isBold="true"/>
@@ -1015,7 +1017,7 @@
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Middle" markup="none">
 						<font fontName="DejaVu Sans" size="10" isBold="false"/>

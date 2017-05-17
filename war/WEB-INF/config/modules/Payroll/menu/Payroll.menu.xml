@@ -16,4 +16,7 @@ name="Payroll" label="=payroll" order="120" module="Payroll"
   <Item name="TimeRanges" label="=timeRanges" service="grid" parameters="TimeRanges" />
   <Item name="TimeSheetPayroll" label="=payrollFundReport" service="report"
         parameters="PayrollFundReport" separator="true" />
+
+  <Item name="Parameters" label="=parameters" service="parameters" parameters="Payroll"
+        separator="true" />
 </Entry>

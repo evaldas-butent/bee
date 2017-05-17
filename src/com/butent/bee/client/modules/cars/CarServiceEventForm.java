@@ -66,7 +66,7 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
 
   @Override
   public void afterDeleteRow(long rowId) {
-    Data.refreshLocal(TBL_SERVICE_JOB_PROGRESS);
+    Data.resetLocal(TBL_SERVICE_JOB_PROGRESS);
   }
 
   @Override

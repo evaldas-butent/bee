@@ -155,6 +155,7 @@ public class SimpleAnalysisForm extends AbstractFormInterceptor {
     if (BeeKeeper.getUser().canCreateData(VIEW_ANALYSIS_RESULTS)) {
       enabledActions.add(Action.SAVE);
     }
+    enabledActions.add(Action.EXPORT);
     enabledActions.add(Action.PRINT);
 
     AnalysisViewer viewer = new AnalysisViewer(results, enabledActions);

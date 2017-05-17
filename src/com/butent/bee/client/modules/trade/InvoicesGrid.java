@@ -95,7 +95,7 @@ public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandle
 
           if (!response.hasErrors()) {
             getERPStocks(ids);
-            Data.refreshLocal(view.getViewName());
+            Data.resetLocal(view.getViewName());
           }
         }
       });
@@ -149,7 +149,7 @@ public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandle
                     @Override
                     public void onSuccess(RowInfoList result) {
                       payAction.idle();
-                      Data.refreshLocal(view.getViewName());
+                      Data.resetLocal(view.getViewName());
                     }
                   });
                 } else {

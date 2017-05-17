@@ -386,16 +386,20 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     addStyleName(STYLE_PREFIX + scheduleParent.getStyleSuffix());
 
     this.table = new HtmlTable(STYLE_TABLE);
-    add(table);
 
     this.inputMode = new Toggle(FontAwesome.TOGGLE_OFF, FontAwesome.TOGGLE_ON,
-        STYLE_INPUT_MODE_TOGGLE, readBoolean(NAME_INPUT_MODE));
-
-    inputMode.addClickHandler(event -> activateInputMode(inputMode.isChecked()));
+      STYLE_INPUT_MODE_TOGGLE, readBoolean(NAME_INPUT_MODE));
 
     this.dndMode = new Toggle(FontAwesome.ARROW_RIGHT, FontAwesome.RETWEET,
-        STYLE_DND_MODE_TOGGLE, readBoolean(NAME_DND_MODE));
+      STYLE_DND_MODE_TOGGLE, readBoolean(NAME_DND_MODE));
 
+    if (!PayrollHelper.isWorkScheduleWidgetEnabled(kind)) {
+      StyleUtils.setStyleName(getElement(), StyleUtils.NAME_DISABLED, true);
+      return;
+    }
+    add(table);
+
+    inputMode.addClickHandler(event -> activateInputMode(inputMode.isChecked()));
     dndMode.addClickHandler(event -> activateDndMode(dndMode.isChecked()));
 
     table.addClickHandler(event -> {
@@ -2220,7 +2224,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         controlPanel.add(substitutionCommand);
       }
 
-      if (kind == WorkScheduleKind.ACTUAL) {
+      if (kind == WorkScheduleKind.ACTUAL
+        && PayrollHelper.isWorkScheduleWidgetEnabled(WorkScheduleKind.PLANNED)) {
         Button fetchCommand = new Button(Localized.dictionary().fetchWorkSchedule());
         fetchCommand.addStyleName(STYLE_COMMAND);
         fetchCommand.addStyleName(STYLE_COMMAND_FETCH);

@@ -19,6 +19,8 @@ public class WSDocument {
     private String vatPercent;
     private String article;
     private String note;
+    private String discount;
+    private String discountPercent;
     private String expenseId;
 
     private WSDocumentItem(String itemId, String quantity) {
@@ -28,6 +30,13 @@ public class WSDocument {
 
     public void setArticle(String article) {
       this.article = article;
+    }
+
+    public void setDiscount(String discountAmount, Boolean isPercent) {
+      if (!BeeUtils.isEmpty(discountAmount)) {
+        this.discount = discountAmount;
+        this.discountPercent = BeeUtils.unbox(isPercent) ? "%" : null;
+      }
     }
 
     public void setExpenseId(String expenseId) {
@@ -164,6 +173,12 @@ public class WSDocument {
           sb.append(XmlUtils.tag("pvm_stat", item.vatMode))
               .append(XmlUtils.tag("pvm", item.vat))
               .append(XmlUtils.tag("pvm_p_md", item.vatPercent));
+        }
+
+        if (!BeeUtils.isEmpty(item.discount)) {
+          sb.append(XmlUtils.tag("nuolaida", item.discount));
+          sb.append(XmlUtils.tag("nuol_p_md", item.discountPercent));
+
         }
       }
       sb.append("</row>");

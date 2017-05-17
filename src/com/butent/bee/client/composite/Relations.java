@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.mail;
+package com.butent.bee.client.composite;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -19,7 +19,6 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
@@ -282,14 +281,12 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     return relations;
   }
 
-  public Collection<RowChildren> getOldRowChildren(boolean all) {
+  public Collection<RowChildren> getOldRowChildren() {
     List<RowChildren> relations = new ArrayList<>();
 
-     widgetMap.entrySet().forEach(entry -> {
-      MultiSelector multi = entry.getValue();
-
-      if (multi != null && (all || multi.isValueChanged())) {
-        relations.add(RowChildren.create(STORAGE, column, id, entry.getKey(), multi.getOldValue()));
+    widgetMap.forEach((key, multi) -> {
+      if (multi != null) {
+        relations.add(RowChildren.create(STORAGE, column, id, key, multi.getOldValue()));
       }
     });
     return relations;
@@ -475,6 +472,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
         multi.clearValue();
       }
     }
+    setParentExclusion();
   }
 
   @Override
@@ -503,6 +501,13 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
               }
             }
           }
+          Runnable exec = () -> {
+            id = parent;
+
+            if (inline) {
+              refresh();
+            }
+          };
           if (ids.containsKey(COL_RELATION)) {
             Queries.getRowSet(STORAGE, Collections.singletonList(column),
                 Filter.idIn(ids.get(COL_RELATION)), new RowSetCallback() {
@@ -515,21 +520,14 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
                         ids.put(column, relId);
                       }
                     }
-                    if (inline) {
-                      refresh();
-                    }
-                    id = parent;
+                    exec.run();
                   }
                 });
           } else {
-            if (inline) {
-              refresh();
-            }
-            id = parent;
+            exec.run();
           }
         }
       });
-
     } else if (!rowProperties.isEmpty() && DataUtils.isNewRow(row)) {
       for (Map.Entry<String, String> entry : rowProperties.entrySet()) {
         String col = entry.getKey();
@@ -710,8 +708,8 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
         return null;
       }
       if (!relation.getAttributes().containsKey(UiConstants.ATTR_PROPERTY)) {
-        relation.getAttributes().put(UiConstants.ATTR_PROPERTY, PFX_RELATED
-          + relation.getViewName());
+        relation.getAttributes().put(UiConstants.ATTR_PROPERTY,
+            PFX_RELATED + relation.getViewName());
       }
     }
     List<String> cols = relation.getOriginalRenderColumns();
@@ -740,7 +738,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     if (!BeeUtils.isEmpty(property)) {
       rowProperties.put(col, property);
     }
-
+    setParentExclusion();
     setEnabled(isEnabled());
 
     return multi;
@@ -763,6 +761,15 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     }
     if (handler != null) {
       registry.put(multi, multi.addSelectorHandler(handler));
+    }
+  }
+
+  private void setParentExclusion() {
+    MultiSelector self = widgetMap.get(column);
+
+    if (Objects.nonNull(self)) {
+      self.setAdditionalFilter(DataUtils.isId(id) ? Filter.idNotIn(Collections.singleton(id))
+          : null);
     }
   }
 

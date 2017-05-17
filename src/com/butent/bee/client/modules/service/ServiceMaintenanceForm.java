@@ -683,6 +683,11 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     clearReason();
   }
 
+  @Override
+  public boolean saveOnPrintNewRow() {
+    return true;
+  }
+
   private void clearReason() {
     reasonComment = null;
   }

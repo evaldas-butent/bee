@@ -431,7 +431,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                       public void onSuccess(Integer result) {
                         if (reset) {
                           DataChangeEvent.fireLocal(BeeKeeper.getBus(), viewName,
-                              DataChangeEvent.CANCEL_RESET_REFRESH);
+                              DataChangeEvent.CANCEL_RESET_REFRESH, null);
                         } else {
                           DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(),
                               VIEW_CHILD_ASSESSMENTS);
@@ -440,7 +440,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                     });
               } else if (reset) {
                 DataChangeEvent.fireLocal(BeeKeeper.getBus(), viewName,
-                    DataChangeEvent.CANCEL_RESET_REFRESH);
+                    DataChangeEvent.CANCEL_RESET_REFRESH, null);
               }
             }
           });

@@ -203,10 +203,6 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor
         setWidgetsVisibility(isWarrantyVisible,
             form.getWidgetByName(COL_WARRANTY + WIDGET_LABEL_NAME, false), warrantyValidToDate);
 
-        if (warrantyValidToDate != null) {
-          warrantyValidToDate.setNullable(!isWarrantyVisible);
-        }
-
         setWidgetsVisibility(isWarrantyVisible, form.getWidgetByName(
             COL_WARRANTY_TYPE + WIDGET_LABEL_NAME, false), widgetTypeSelector);
 
