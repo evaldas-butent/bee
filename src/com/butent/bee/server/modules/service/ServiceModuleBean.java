@@ -148,7 +148,7 @@ public class ServiceModuleBean implements BeeModule {
             AdministrationConstants.ALS_FILE_NAME), query)));
 
     result.addAll(qs.getSearchResults(TBL_SERVICE_MAINTENANCE,
-        src.buildSearchFilter(TBL_SERVICE_MAINTENANCE, Sets.newHashSet(DataUtils.ID_TAG,
+        src.buildSearchFilter(TBL_SERVICE_MAINTENANCE, Sets.newHashSet(COL_MAINTENANCE_NUMBER,
             ALS_COMPANY_NAME, ALS_CONTACT_FIRST_NAME, ALS_CONTACT_LAST_NAME), query)));
 
     return result;
