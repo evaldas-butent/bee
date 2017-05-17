@@ -396,6 +396,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     } else if (BeeUtils.same(svc, SVC_GET_MANUAL_DAILY_COST)) {
       response = getManualDailyCost(BeeUtils.toLong(reqInfo.getParameter(COL_TRIP_COST_ID)));
 
+    } else if (BeeUtils.same(svc, SVC_TRIP_COSTS_REPORT)) {
+      response = rep.getTripCostsReport(reqInfo);
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
       logger.warning(msg);

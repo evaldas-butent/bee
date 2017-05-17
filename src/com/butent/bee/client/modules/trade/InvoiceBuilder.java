@@ -103,7 +103,7 @@ public abstract class InvoiceBuilder extends AbstractGridInterceptor
                     if (popup != null) {
                       popup.close();
                     }
-                    Data.refreshLocal(getViewName());
+                    Data.resetLocal(getViewName());
                     RowEditor.openForm(dataInfo.getEditForm(), dataInfo,
                         Filter.compareId(row.getId()), Opener.MODAL);
                   }

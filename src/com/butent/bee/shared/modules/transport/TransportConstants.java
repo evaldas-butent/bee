@@ -369,6 +369,7 @@ public final class TransportConstants {
 
   public static final String SVC_TRIP_PROFIT_REPORT = "TripProfitReport";
   public static final String SVC_FUEL_USAGE_REPORT = "FuelUsageReport";
+  public static final String SVC_TRIP_COSTS_REPORT = "TripCostsReport";
 
   public static final String PRM_MESSAGE_TEMPLATE = "MessageTemplate";
   public static final String PRM_TRIP_PREFIX = "DefaultTripPrefix";

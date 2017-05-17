@@ -16,6 +16,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.DataReceivedEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.cell.AbstractCell;
@@ -153,8 +154,7 @@ public class TradeExpendituresGrid extends AbstractGridInterceptor {
     if (COL_EXPENDITURE_GENERATED_DOCUMENT.equals(columnName)) {
       column.getCell().addClickHandler(event -> {
         Element target = EventUtils.getEventTargetElement(event);
-        IsRow row = (event.getSource() instanceof AbstractCell)
-            ? ((AbstractCell<?>) event.getSource()).getEventRow() : null;
+        IsRow row = AbstractCell.getEventRow(event);
 
         if (target != null && row != null) {
           if (target.hasClassName(GEN_STYLE_BUILD) && canGenerate(row)) {
@@ -194,10 +194,10 @@ public class TradeExpendituresGrid extends AbstractGridInterceptor {
   }
 
   @Override
-  public void onDataReceived(List<? extends IsRow> rows) {
+  public void onDataReceived(DataReceivedEvent event) {
     TradeUtils.configureCostCalculation(getGridView());
 
-    super.onDataReceived(rows);
+    super.onDataReceived(event);
   }
 
   private boolean canGenerate(IsRow row) {

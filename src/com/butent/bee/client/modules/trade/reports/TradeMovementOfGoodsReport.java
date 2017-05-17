@@ -24,7 +24,6 @@ import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.TradeMovementColumn;
-import com.butent.bee.shared.modules.trade.TradeMovementGroup;
 import com.butent.bee.shared.modules.trade.TradeReportGroup;
 import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.shared.time.DateTime;
@@ -179,9 +178,6 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
       stockEndLabels.addAll(Codec.deserializeList(data.get(RP_STOCK_END_COLUMN_LABELS)));
       stockEndValues.addAll(Codec.deserializeList(data.get(RP_STOCK_END_COLUMN_VALUES)));
     }
-
-    List<TradeMovementGroup> movementGroups = EnumUtils.parseIndexList(TradeMovementGroup.class,
-        data.get(RP_MOVEMENT_COLUMN_GROUPS));
 
     List<TradeMovementColumn> movementInColumns =
         TradeMovementColumn.restoreList(data.get(RP_MOVEMENT_IN_COLUMNS));
@@ -371,7 +367,8 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
         if (needsStartTotals) {
           rowStartTotalColumnIndex = c;
 
-          text = Localized.dictionary().total();
+          text = BeeUtils.notEmpty(Format.renderDate(parameters.getDateTime(RP_START_DATE)),
+              Localized.dictionary().total());
 
           table.setText(r, c, text, styleStart, styleRowTotal());
           xr.add(new XCell(c, text, headerStyleRef));
@@ -391,11 +388,12 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
         }
 
         List<String> captions = column.getCaptions();
-        text = captions.isEmpty()
-            ? Localized.dictionary().trdReportMovementIn() : BeeUtils.joinItems(captions);
+        if (captions.isEmpty()) {
+          captions.add(Localized.dictionary().trdReportMovementIn());
+        }
 
-        table.setText(r, c, text, styleIn, styleColumnLabel());
-        xr.add(new XCell(c, text, headerStyleRef));
+        table.setText(r, c, BeeUtils.buildLines(captions), styleIn, styleColumnLabel());
+        xr.add(new XCell(c, BeeUtils.joinItems(captions), headerStyleRef));
 
         c++;
       }
@@ -403,7 +401,7 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
       if (needsInTotals) {
         rowInTotalColumnIndex = c;
 
-        text = Localized.dictionary().total();
+        text = Localized.dictionary().trdReportMovementIn();
 
         table.setText(r, c, text, styleIn, styleRowTotal());
         xr.add(new XCell(c, text, headerStyleRef));
@@ -422,11 +420,12 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
         }
 
         List<String> captions = column.getCaptions();
-        text = captions.isEmpty()
-            ? Localized.dictionary().trdReportMovementOut() : BeeUtils.joinItems(captions);
+        if (captions.isEmpty()) {
+          captions.add(Localized.dictionary().trdReportMovementOut());
+        }
 
-        table.setText(r, c, text, styleOut, styleColumnLabel());
-        xr.add(new XCell(c, text, headerStyleRef));
+        table.setText(r, c, BeeUtils.buildLines(captions), styleOut, styleColumnLabel());
+        xr.add(new XCell(c, BeeUtils.joinItems(captions), headerStyleRef));
 
         c++;
       }
@@ -434,7 +433,7 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
       if (needsOutTotals) {
         rowOutTotalColumnIndex = c;
 
-        text = Localized.dictionary().total();
+        text = Localized.dictionary().trdReportMovementOut();
 
         table.setText(r, c, text, styleOut, styleRowTotal());
         xr.add(new XCell(c, text, headerStyleRef));
@@ -456,8 +455,6 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
 
         table.setText(r, c, text, styleEnd);
         xr.add(new XCell(c, text, headerStyleRef));
-
-        c++;
 
       } else {
         if (hasEmptyEndGroupValue) {
@@ -488,12 +485,11 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
         if (needsEndTotals) {
           rowEndTotalColumnIndex = c;
 
-          text = Localized.dictionary().total();
+          text = BeeUtils.notEmpty(Format.renderDate(parameters.getDateTime(RP_END_DATE)),
+              Localized.dictionary().total());
 
           table.setText(r, c, text, styleEnd, styleRowTotal());
           xr.add(new XCell(c, text, headerStyleRef));
-
-          c++;
         }
       }
     }
@@ -545,8 +541,6 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
         if (!BeeUtils.isEmpty(text)) {
           xr.add(new XCell(c, value, numberStyleRef));
         }
-
-        c++;
       }
 
       rowStartQuantity = BeeConst.DOUBLE_ZERO;
@@ -838,10 +832,9 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
     }
 
     if (rowSet.getNumberOfRows() > 1) {
-      int rq = r;
       int ra = r;
 
-      XRow xq = new XRow(rq);
+      XRow xq = new XRow(r);
       XRow xa = xq;
 
       if (hasQuantity && hasAmount) {
@@ -859,7 +852,7 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
       if (minIndex > 0) {
         text = Localized.dictionary().totalOf();
 
-        table.setText(rq, minIndex - 1, text, styleTotal());
+        table.setText(r, minIndex - 1, text, styleTotal());
         xq.add(new XCell(minIndex - 1, text, footerStyleRef));
       }
 
@@ -869,7 +862,7 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
           text = TradeUtils.formatQuantity(qty);
           int j = columnIndexes.get(column);
 
-          table.setText(rq, j, text, styleQuantity(), getColumnStyle(column));
+          table.setText(r, j, text, styleQuantity(), getColumnStyle(column));
           if (!BeeUtils.isEmpty(text)) {
             xq.add(new XCell(j, qty, footerStyleRef));
           }
@@ -878,7 +871,7 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
         if (needsStartTotals) {
           text = TradeUtils.formatQuantity(totalStartQuantity);
 
-          table.setText(rq, rowStartTotalColumnIndex, text, styleStart, styleQuantity(),
+          table.setText(r, rowStartTotalColumnIndex, text, styleStart, styleQuantity(),
               styleRowTotal());
           if (!BeeUtils.isEmpty(text)) {
             xq.add(new XCell(rowStartTotalColumnIndex, totalStartQuantity, footerStyleRef));
@@ -888,7 +881,7 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
         if (needsInTotals) {
           text = TradeUtils.formatQuantity(totalInQuantity);
 
-          table.setText(rq, rowInTotalColumnIndex, text, styleIn, styleQuantity(),
+          table.setText(r, rowInTotalColumnIndex, text, styleIn, styleQuantity(),
               styleRowTotal());
           if (!BeeUtils.isEmpty(text)) {
             xq.add(new XCell(rowInTotalColumnIndex, totalInQuantity, footerStyleRef));
@@ -898,7 +891,7 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
         if (needsOutTotals) {
           text = TradeUtils.formatQuantity(totalOutQuantity);
 
-          table.setText(rq, rowOutTotalColumnIndex, text, styleOut, styleQuantity(),
+          table.setText(r, rowOutTotalColumnIndex, text, styleOut, styleQuantity(),
               styleRowTotal());
           if (!BeeUtils.isEmpty(text)) {
             xq.add(new XCell(rowOutTotalColumnIndex, totalOutQuantity, footerStyleRef));
@@ -908,7 +901,7 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
         if (needsEndTotals) {
           text = TradeUtils.formatQuantity(totalEndQuantity);
 
-          table.setText(rq, rowEndTotalColumnIndex, text, styleEnd, styleQuantity(),
+          table.setText(r, rowEndTotalColumnIndex, text, styleEnd, styleQuantity(),
               styleRowTotal());
           if (!BeeUtils.isEmpty(text)) {
             xq.add(new XCell(rowEndTotalColumnIndex, totalEndQuantity, footerStyleRef));
@@ -974,8 +967,8 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
       }
 
       if (hasQuantity && hasAmount) {
-        table.getRowFormatter().addStyleName(rq, styleFooter());
-        table.getRowFormatter().addStyleName(rq, styleQuantityRow());
+        table.getRowFormatter().addStyleName(r, styleFooter());
+        table.getRowFormatter().addStyleName(r, styleQuantityRow());
         sheet().add(xq);
 
         table.getRowFormatter().addStyleName(ra, styleFooter());

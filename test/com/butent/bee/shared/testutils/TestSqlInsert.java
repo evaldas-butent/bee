@@ -95,7 +95,7 @@ public class TestSqlInsert {
     insert.setDataSource(select);
 
     Object[] rez = insert.getSources().toArray();
-    Object[] expected = {"Table1", "Table2", "TableName"};
+    Object[] expected = {"Table2", "TableName", "Table1"};
 
     assertArrayEquals(expected, rez);
   }

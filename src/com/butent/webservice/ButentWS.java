@@ -143,7 +143,7 @@ public final class ButentWS {
     } catch (Exception e) {
       throw BeeException.error(e);
     }
-    SimpleRowSet data = xmlToSimpleRowSet(answer, "CODE", "NAME", "SURNAME", "BIRTHDAY",
+    SimpleRowSet data = xmlToSimpleRowSet(answer, "CODE", "NAME", "SURNAME", "BIRTHDAY", "ETATAS",
         "DEPARTCODE", "POSITIONCODE", "ADDRESS1", "MOBILEPHONE", "EMAIL", "DIRBA_NUO", "DISMISSED",
         "PERSONALCODE", "PASSPORTNO");
     logger.debug("GetEmployees cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
@@ -181,6 +181,20 @@ public final class ButentWS {
     }
     SimpleRowSet data = xmlToSimpleRowSet(answer, "PAVAD_2", "PREKE");
     logger.debug("GetGoodsR cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
+    return data;
+  }
+
+  public SimpleRowSet getObjects() throws BeeException {
+    logger.debug("GetObjects");
+    String answer;
+
+    try {
+      answer = process("GetObjects", "");
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+    SimpleRowSet data = xmlToSimpleRowSet(answer, "OBJEKTAS", "OBJEKT_ID");
+    logger.debug("GetObjects cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
     return data;
   }
 
@@ -223,7 +237,7 @@ public final class ButentWS {
       throw BeeException.error(e);
     }
     SimpleRowSet data = xmlToSimpleRowSet(answer, "TAB_NR", "DATA_NUO", "DATA_IKI", "TAB_KODAS",
-        "PAVAD", "ISAK_PAVAD", "D_TAB_ID");
+      "PAVAD", "ISAK_PAVAD", "D_TAB_ID");
     logger.debug("GetTimeCards cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
     return data;
   }

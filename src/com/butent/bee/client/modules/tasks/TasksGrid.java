@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
-import static com.butent.bee.client.modules.mail.Relations.*;
+import static com.butent.bee.client.composite.Relations.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;

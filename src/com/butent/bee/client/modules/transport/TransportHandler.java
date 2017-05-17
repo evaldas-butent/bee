@@ -51,6 +51,7 @@ import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.report.ReportInfo;
+import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -58,6 +59,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -91,7 +93,8 @@ public final class TransportHandler {
               break;
             }
           }
-          report.showModal(reportInfo);
+          report.showModal(new ReportParameters(Collections.singletonMap(COL_RS_REPORT,
+              reportInfo.serialize())));
         };
 
         if (reports.size() > 1) {
@@ -190,7 +193,7 @@ public final class TransportHandler {
 
     ViewFactory.registerSupplier(GridFactory.getSupplierKey(GRID_ASSESSMENT_REQUESTS,
         new AssessmentRequestsGrid()), callback -> openAssessment(GRID_ASSESSMENT_REQUESTS,
-            ViewFactory.getPresenterCallback(callback)));
+        ViewFactory.getPresenterCallback(callback)));
     ViewFactory.registerSupplier(GridFactory.getSupplierKey(GRID_ASSESSMENT_ORDERS, null),
         callback -> openAssessment(GRID_ASSESSMENT_ORDERS,
             ViewFactory.getPresenterCallback(callback)));

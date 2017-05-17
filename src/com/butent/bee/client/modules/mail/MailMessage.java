@@ -26,6 +26,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;

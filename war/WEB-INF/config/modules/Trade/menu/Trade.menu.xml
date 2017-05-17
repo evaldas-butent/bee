@@ -5,6 +5,11 @@
 >
   <Item name="TradeDocuments" label="=trdDocuments" service="trade_documents" />
 
+  <Item name="PaymentSuppliers" label="=paymentSuppliers" service="form"
+        parameters="PaymentSuppliers" separator="true" />
+  <Item name="PaymentCustomers" label="=paymentCustomers" service="form"
+        parameters="PaymentCustomers" />
+
   <Item name="TradeStock" label="=trdStock" service="grid" parameters="TradeStock"
         separator="true" />
   <Item name="RebuildTradeStock" label="=rebuildTradeStockCaption" service="rebuild_trade_stock"

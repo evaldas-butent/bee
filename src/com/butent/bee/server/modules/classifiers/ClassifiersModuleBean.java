@@ -280,7 +280,7 @@ public class ClassifiersModuleBean implements BeeModule {
   public Collection<BeeParameter> getDefaultParameters() {
     return Collections.singletonList(BeeParameter.createMap(getModule().getName(),
         PRM_RECORD_DEPENDENCY, false, ImmutableMap.of(TBL_DOCUMENTS, COL_DOCUMENT_CATEGORY,
-            VIEW_RELATED_DOCUMENTS, COL_DOCUMENT_CATEGORY)));
+            VIEW_RELATED_DOCUMENTS, COL_DOCUMENT)));
   }
 
   @Override
