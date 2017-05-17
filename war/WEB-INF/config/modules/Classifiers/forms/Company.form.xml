@@ -22,7 +22,7 @@
           <InputText source="Name" style="width: 425px;" visible="true" />
         </cell>
         <DataSelector source="CompanyType" style="width: 80px;" required="true"
-                      choiceColumns="Name" renderColumns="TypeName"/>
+                      choiceColumns="Name" renderColumns="TypeName" placeholder="=companyStatus" />
         <Label style="&lbl;" for="CompanyPriority" />
         <DataSelector source="CompanyPriority" style="width: 180px" />
         <FlowPanel name="qrFlowPanel" style="margin-left: 10px" />
