@@ -647,24 +647,8 @@ public class TransportReportsBean {
     clause.add(report.getCondition(tmp, VAR_EXPENSE + COL_TRADE_INVOICE_NO));
     clause.add(report.getCondition(tmp, VAR_EXPENSE + COL_TRADE_OPERATION));
 
-    query = new SqlSelect()
-        .addFrom(tmp)
-        .setWhere(clause);
-
-    for (String column : qs.getData(new SqlSelect()
-        .addAllFields(tmp)
-        .addFrom(tmp)
-        .setWhere(SqlUtils.sqlFalse())).getColumnNames()) {
-
-      if (report.requiresField(column)) {
-        query.addFields(tmp, column);
-      }
-    }
-    SimpleRowSet rs = qs.getData(query);
-
-    qs.sqlDropTemp(tmp);
-
-    return ResponseObject.response(rs);
+    return report.getResultResponse(qs, tmp,
+        Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)), clause);
   }
 
   /**
