@@ -1,7 +1,5 @@
 package com.butent.bee.server.sql;
 
-import com.butent.bee.server.sql.HasSource;
-
 import java.util.ArrayList;
 import java.util.Collection;
 

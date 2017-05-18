@@ -335,14 +335,14 @@ public class TestBeeUtils extends TestCase implements ILogger {
 
   @Test
   public void testCompare() {
-    List<Object> testc1 = new ArrayList<>();
-    List<Object> testc2 = new ArrayList<>();
-    testc1.add("Text");
-    testc1.add(5);
+    List<Object> list1 = new ArrayList<>();
+    List<Object> list2 = new ArrayList<>();
+    list1.add("Text");
+    list1.add(5);
 
-    testc2.add(5);
-    testc2.add(2);
-    testc2.add(10);
+    list2.add(5);
+    list2.add(2);
+    list2.add(10);
 
     assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compareNullsFirst("", ""));
     assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compareNullsFirst("Compare", "Compare"));
@@ -413,11 +413,11 @@ public class TestBeeUtils extends TestCase implements ILogger {
 
   @Test
   public void testFilterContext() {
-    List<String> testc1 = new ArrayList<>();
-    List<String> testc2 = new ArrayList<>();
-    testc1.add("A");
-    testc1.add("simple text");
-    testc1.add("TEXT2");
+    List<String> list1 = new ArrayList<>();
+    List<String> list2 = new ArrayList<>();
+    list1.add("A");
+    list1.add("simple text");
+    list1.add("TEXT2");
 
     List<String> rez1 = new ArrayList<>();
     rez1.add("simple text");
@@ -428,11 +428,11 @@ public class TestBeeUtils extends TestCase implements ILogger {
 
     List<String> rez3 = new ArrayList<>();
 
-    assertEquals(rez1, BeeUtils.filterContext(testc1, "text"));
-    assertEquals(rez2, BeeUtils.filterContext(testc1, "text2"));
-    assertEquals(rez3, BeeUtils.filterContext(testc1, "texx"));
-    assertEquals(rez3, BeeUtils.filterContext(testc1, ""));
-    assertEquals(testc2, BeeUtils.filterContext(testc2, "text"));
+    assertEquals(rez1, BeeUtils.filterContext(list1, "text"));
+    assertEquals(rez2, BeeUtils.filterContext(list1, "text2"));
+    assertEquals(rez3, BeeUtils.filterContext(list1, "texx"));
+    assertEquals(rez3, BeeUtils.filterContext(list1, ""));
+    assertEquals(list2, BeeUtils.filterContext(list2, "text"));
   }
 
   @Test
@@ -494,18 +494,18 @@ public class TestBeeUtils extends TestCase implements ILogger {
 
   @Test
   public void testGetQuietly() {
-    List<CharSequence> testc1 = new ArrayList<>();
-    List<CharSequence> testc2 = new ArrayList<>();
+    List<CharSequence> list1 = new ArrayList<>();
+    List<CharSequence> list2 = new ArrayList<>();
     List<CharSequence> rez1 = new ArrayList<>();
-    testc1.add("A");
-    testc1.add("simple text");
-    testc1.add("TEXT2");
+    list1.add("A");
+    list1.add("simple text");
+    list1.add("TEXT2");
 
     rez1.add("simple text");
 
-    assertEquals("simple text", BeeUtils.getQuietly(testc1, 1));
-    assertEquals(null, BeeUtils.getQuietly(testc1, -1));
-    assertEquals(null, BeeUtils.getQuietly(testc2, 5));
+    assertEquals("simple text", BeeUtils.getQuietly(list1, 1));
+    assertEquals(null, BeeUtils.getQuietly(list1, -1));
+    assertEquals(null, BeeUtils.getQuietly(list2, 5));
   }
 
   @Test

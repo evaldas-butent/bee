@@ -1,6 +1,5 @@
 package com.butent.bee.shared;
 
-import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.communication.ContentType;
 
 import static org.junit.Assert.assertEquals;

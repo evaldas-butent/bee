@@ -1,9 +1,6 @@
 package com.butent.bee.shared.time;
 
 import com.butent.bee.shared.i18n.DateOrdering;
-import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.JustDate;
-import com.butent.bee.shared.time.TimeUtils;
 
 import static org.junit.Assert.assertEquals;
 

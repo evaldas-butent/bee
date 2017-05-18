@@ -2,13 +2,8 @@ package com.butent.bee.shared.time;
 
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.i18n.DateOrdering;
-import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.JustDate;
-import com.butent.bee.shared.time.TimeUtils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import org.junit.After;
 import org.junit.Before;

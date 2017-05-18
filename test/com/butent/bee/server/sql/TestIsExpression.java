@@ -1,11 +1,5 @@
 package com.butent.bee.server.sql;
 
-import com.butent.bee.server.sql.IsCondition;
-import com.butent.bee.server.sql.IsExpression;
-import com.butent.bee.server.sql.SqlBuilder;
-import com.butent.bee.server.sql.SqlBuilderFactory;
-import com.butent.bee.server.sql.SqlSelect;
-import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
@@ -13,9 +7,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import org.junit.After;
 import org.junit.Before;
@@ -76,7 +68,8 @@ public class TestIsExpression {
         "pair2", SqlUtils.constant("pair3"), "pair4", "pair5"), "Name1");
 
     assertEquals("SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' "
-        + "THEN 'pair2' WHEN 'pair3' THEN 'pair4' ELSE 'pair5' END AS Name1 FROM Table1", sql.getQuery());
+            + "THEN 'pair2' WHEN 'pair3' THEN 'pair4' ELSE 'pair5' END AS Name1 FROM Table1",
+        sql.getQuery());
 
     sql = new SqlSelect();
     sql.addFields("Table1", "field11", "field12");
@@ -86,7 +79,8 @@ public class TestIsExpression {
         "pair2", SqlUtils.constant("pair3"), "pair4", null), "Name1");
 
     assertEquals("SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' "
-        + "THEN 'pair2' WHEN 'pair3' THEN 'pair4' ELSE null END AS Name1 FROM Table1", sql.getQuery());
+            + "THEN 'pair2' WHEN 'pair3' THEN 'pair4' ELSE null END AS Name1 FROM Table1",
+        sql.getQuery());
 
     try {
       sql = new SqlSelect();
@@ -97,7 +91,8 @@ public class TestIsExpression {
           "pair2", SqlUtils.constant("pair3"), "pair4", ""), "Name1");
 
       assertEquals("SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' "
-          + "THEN 'pair2' WHEN 'pair3' THEN 'pair4' ELSE '' END AS Name1 FROM Table1", sql.getQuery());
+              + "THEN 'pair2' WHEN 'pair3' THEN 'pair4' ELSE '' END AS Name1 FROM Table1",
+          sql.getQuery());
     } catch (BeeRuntimeException e) {
       assertTrue(false);
     } catch (Exception e) {
@@ -181,7 +176,8 @@ public class TestIsExpression {
           "pair4", ""), "Name1");
 
       assertEquals("SELECT Table1.field11, Table1.field12, CASE WHEN 'pair1' "
-          + "THEN 'pair2' WHEN 'pair3' THEN 'pair4' ELSE '' END AS Name1 FROM Table1", sql.getQuery());
+              + "THEN 'pair2' WHEN 'pair3' THEN 'pair4' ELSE '' END AS Name1 FROM Table1",
+          sql.getQuery());
 
     } catch (BeeRuntimeException e) {
       assertTrue(true);
@@ -646,7 +642,7 @@ public class TestIsExpression {
 
     IsExpression ce4 = SqlUtils.expression(select);
     assertEquals("SELECT [users].[username] AS [vardas] FROM [users], "
-        + "(SELECT [phones].[phone_names] AS [tel_vardai] FROM [phones]) [alias2]",
+            + "(SELECT [phones].[phone_names] AS [tel_vardai] FROM [phones]) [alias2]",
         ce4.getSqlString(SqlBuilderFactory.getBuilder()));
 
     select2 = select2.reset();
@@ -687,7 +683,7 @@ public class TestIsExpression {
 
     IsExpression ce4 = SqlUtils.expression(select);
     assertEquals("SELECT \"users\".\"username\" AS \"vardas\" FROM \"users\", "
-        + "(SELECT \"phones\".\"phone_names\" AS \"tel_vardai\" FROM \"phones\") \"alias2\"",
+            + "(SELECT \"phones\".\"phone_names\" AS \"tel_vardai\" FROM \"phones\") \"alias2\"",
         ce4.getSqlString(SqlBuilderFactory.getBuilder()));
 
     select2 = select2.reset();
@@ -728,7 +724,7 @@ public class TestIsExpression {
 
     IsExpression ce4 = SqlUtils.expression(select);
     assertEquals("SELECT \"users\".\"username\" AS \"vardas\" FROM \"users\", "
-        + "(SELECT \"phones\".\"phone_names\" AS \"tel_vardai\" FROM \"phones\") \"alias2\"",
+            + "(SELECT \"phones\".\"phone_names\" AS \"tel_vardai\" FROM \"phones\") \"alias2\"",
         ce4.getSqlString(SqlBuilderFactory.getBuilder()));
 
     select2 = select2.reset();
@@ -867,7 +863,7 @@ public class TestIsExpression {
     IsExpression ie4oracle = SqlUtils
         .name("Select * from table where name=\"tester\" or table1.type=table.*.concret.type");
     assertEquals("\"Select * from table where name=\"tester\" or "
-        + "table1\".\"type=table\".*.\"concret\".\"type\"",
+            + "table1\".\"type=table\".*.\"concret\".\"type\"",
         ie4oracle.getSqlString(SqlBuilderFactory.getBuilder()));
 
     IsExpression iepg = SqlUtils.name("A longer name");
@@ -885,7 +881,7 @@ public class TestIsExpression {
     IsExpression ie4pg = SqlUtils
         .name("Select * from table where name=\"tester\" or table1.type=table.*.concret.type");
     assertEquals("\"Select * from table where name=\"tester\" or "
-        + "table1\".\"type=table\".*.\"concret\".\"type\"",
+            + "table1\".\"type=table\".*.\"concret\".\"type\"",
         ie4pg.getSqlString(SqlBuilderFactory.getBuilder()));
   }
 
@@ -906,7 +902,7 @@ public class TestIsExpression {
     select.addExpr(expr, "expr1");
 
     assertEquals("SELECT Table1.field1, CASE WHEN value1 = 'pirmadienis' THEN Table2.field1 ELSE "
-        + "Table3.field1 END AS expr1 FROM Table1",
+            + "Table3.field1 END AS expr1 FROM Table1",
         select.getQuery());
   }
 

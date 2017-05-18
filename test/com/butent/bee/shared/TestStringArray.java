@@ -1,7 +1,5 @@
 package com.butent.bee.shared;
 
-import com.butent.bee.shared.StringArray;
-
 import static org.junit.Assert.assertArrayEquals;
 
 import org.junit.After;

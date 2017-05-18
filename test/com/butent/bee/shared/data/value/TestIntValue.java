@@ -1,7 +1,5 @@
 package com.butent.bee.shared.data.value;
 
-import com.butent.bee.shared.data.value.IntegerValue;
-
 import static org.junit.Assert.assertEquals;
 
 import org.junit.After;

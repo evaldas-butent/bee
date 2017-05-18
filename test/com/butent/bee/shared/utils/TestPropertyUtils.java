@@ -1,12 +1,8 @@
 package com.butent.bee.shared.utils;
 
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.Property;
-import com.butent.bee.shared.utils.PropertyUtils;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import org.junit.After;
 import org.junit.Before;

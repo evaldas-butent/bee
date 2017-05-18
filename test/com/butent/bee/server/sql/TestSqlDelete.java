@@ -1,15 +1,8 @@
 package com.butent.bee.server.sql;
 
-import com.butent.bee.server.sql.SqlBuilder;
-import com.butent.bee.server.sql.SqlBuilderFactory;
-import com.butent.bee.server.sql.SqlDelete;
-import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.junit.After;
 import org.junit.Before;
