@@ -11,6 +11,11 @@ public enum DebtKind implements HasLocalizedCaption {
     }
 
     @Override
+    public String getPayerLabel(Dictionary dictionary) {
+      return dictionary.supplier();
+    }
+
+    @Override
     public String tradeDocumentCompanyColumn() {
       return TradeConstants.COL_TRADE_SUPPLIER;
     }
@@ -23,10 +28,17 @@ public enum DebtKind implements HasLocalizedCaption {
     }
 
     @Override
+    public String getPayerLabel(Dictionary dictionary) {
+      return dictionary.payer();
+    }
+
+    @Override
     public String tradeDocumentCompanyColumn() {
       return TradeConstants.COL_TRADE_CUSTOMER;
     }
   };
+
+  public abstract String getPayerLabel(Dictionary dictionary);
 
   public abstract String tradeDocumentCompanyColumn();
 }
