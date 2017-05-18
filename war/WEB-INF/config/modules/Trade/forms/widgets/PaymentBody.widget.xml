@@ -14,7 +14,7 @@
   <col index="8" kind="label" />
 
   <row>
-    <Label name="PayerLabel" text="=payer" class="bee-required" />
+    <Label name="PayerLabel" class="bee-required" />
     <cell colSpan="5">
       <UnboundSelector name="Payer" viewName="Companies" renderColumns="Name TypeName"
                        searchableColumns="Name" newRowEnabled="false" required="true"

@@ -1323,48 +1323,52 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     });
 
     BeeView.registerConditionProvider(FILTER_HAS_TRADE_DEBT, (view, args) -> {
-      DebtKind debtKind = null;
-      Long company = null;
-
-      if (!BeeUtils.isEmpty(args)) {
-        for (int i = 0; i < args.size(); i++) {
-          String arg = args.get(i);
-
-          switch (i) {
-            case 0:
-              debtKind = Codec.unpack(DebtKind.class, arg);
-              break;
-
-            case 1:
-              if (DataUtils.isId(arg)) {
-                company = BeeUtils.toLongOrNull(arg);
-              }
-              break;
-          }
-        }
-      }
+      int index = 0;
+      DebtKind debtKind = Codec.unpack(DebtKind.class, BeeUtils.getQuietly(args, index++));
 
       if (debtKind != null) {
+        Long company = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, index++));
+        Long currency = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, index++));
+
+        Long dateTo = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, index++));
+        Long termTo = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, index));
+
+        String source = TBL_TRADE_DOCUMENTS;
+        String idName = sys.getIdName(source);
+
         HasConditions where = SqlUtils.and();
-        where.add(SqlUtils.inList(TBL_TRADE_DOCUMENTS, COL_TRADE_OPERATION,
-            getOperationsByDebtKind(debtKind)));
+        where.add(SqlUtils.inList(source, COL_TRADE_OPERATION, getOperationsByDebtKind(debtKind)));
 
         if (DataUtils.isId(company)) {
           where.add(
               SqlUtils.or(
-                  SqlUtils.equals(TBL_TRADE_DOCUMENTS, COL_TRADE_PAYER, company),
+                  SqlUtils.equals(source, COL_TRADE_PAYER, company),
                   SqlUtils.and(
-                      SqlUtils.isNull(TBL_TRADE_DOCUMENTS, COL_TRADE_PAYER),
-                      SqlUtils.equals(TBL_TRADE_DOCUMENTS, debtKind.tradeDocumentCompanyColumn(),
-                          company))));
+                      SqlUtils.isNull(source, COL_TRADE_PAYER),
+                      SqlUtils.equals(source, debtKind.tradeDocumentCompanyColumn(), company))));
         }
 
-        String idName = sys.getIdName(TBL_TRADE_DOCUMENTS);
+        if (DataUtils.isId(currency)) {
+          where.add(SqlUtils.equals(source, COL_TRADE_CURRENCY, currency));
+        }
+
+        if (dateTo != null) {
+          where.add(SqlUtils.less(source, COL_TRADE_DATE, dateTo));
+        }
+
+        if (termTo != null) {
+          where.add(
+              SqlUtils.or(
+                  SqlUtils.less(source, COL_TRADE_TERM, termTo),
+                  SqlUtils.in(source, idName, TBL_TRADE_PAYMENT_TERMS, COL_TRADE_DOCUMENT,
+                      SqlUtils.less(TBL_TRADE_PAYMENT_TERMS, COL_TRADE_PAYMENT_TERM_DATE,
+                          termTo))));
+        }
 
         SqlSelect query = new SqlSelect()
-            .addFields(TBL_TRADE_DOCUMENTS, idName)
-            .addFields(TBL_TRADE_DOCUMENTS, TradeDocumentSums.DOCUMENT_COLUMNS)
-            .addFrom(TBL_TRADE_DOCUMENTS)
+            .addFields(source, idName)
+            .addFields(source, TradeDocumentSums.DOCUMENT_COLUMNS)
+            .addFrom(source)
             .setWhere(where);
 
         SimpleRowSet docData = qs.getData(query);
@@ -1400,7 +1404,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           }
 
           if (!docIds.isEmpty()) {
-            return SqlUtils.inList(TBL_TRADE_DOCUMENTS, idName, docIds);
+            return SqlUtils.inList(source, idName, docIds);
           }
         }
       }

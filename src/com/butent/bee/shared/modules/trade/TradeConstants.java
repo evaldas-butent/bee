@@ -67,6 +67,8 @@ public final class TradeConstants {
   public static final String TBL_EXPENDITURE_TYPES = "ExpenditureTypes";
   public static final String TBL_TRADE_EXPENDITURES = "TradeExpenditures";
 
+  public static final String TBL_TRADE_PAYMENT_TERMS = "TradePaymentTerms";
+
   public static final String VAR_VIEW_NAME = "view_name";
   public static final String VAR_ID_LIST = "IdList";
   public static final String VAR_SUBJECT = "Subject";

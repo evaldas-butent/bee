@@ -6,6 +6,7 @@ import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.finance.PrepaymentKind;
 import com.butent.bee.shared.ui.Action;
@@ -30,7 +31,7 @@ public class OutstandingPrepaymentGrid extends PrepaymentGrid {
 
   @Override
   public Map<String, Filter> getInitialParentFilters(Collection<UiOption> uiOptions) {
-    return Provider.createDefaultParentFilters(buildFilter(null, null));
+    return Provider.createDefaultParentFilters(Filter.isFalse());
   }
 
   public void onParentChange(Long company, Long currency) {
@@ -44,9 +45,13 @@ public class OutstandingPrepaymentGrid extends PrepaymentGrid {
   }
 
   private Filter buildFilter(Long company, Long currency) {
-    List<String> args = Arrays.asList(Codec.pack(getKind()),
-        BeeUtils.toStringOrNull(company), BeeUtils.toStringOrNull(currency));
+    if (DataUtils.isId(company)) {
+      List<String> args = Arrays.asList(Codec.pack(getKind()),
+          BeeUtils.toStringOrNull(company), BeeUtils.toStringOrNull(currency));
 
-    return Filter.custom(FILTER_OUTSTANDING_PREPAYMENT, args);
+      return Filter.custom(FILTER_OUTSTANDING_PREPAYMENT, args);
+    } else {
+      return Filter.isFalse();
+    }
   }
 }

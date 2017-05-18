@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.trade;
 
-import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
@@ -13,9 +12,12 @@ import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.widget.InputDateTime;
+import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.finance.FinanceConstants;
 import com.butent.bee.shared.modules.trade.DebtKind;
+import com.butent.bee.shared.time.DateTime;
 
 class PaymentForm extends AbstractFormInterceptor {
 
@@ -50,8 +52,8 @@ class PaymentForm extends AbstractFormInterceptor {
     if (name != null) {
       switch (name) {
         case NAME_PAYER_LABEL:
-          if (widget instanceof HasText) {
-            ((HasText) widget).setText(debtKind.getPayerLabel(Localized.dictionary()));
+          if (widget instanceof HasHtml) {
+            ((HasHtml) widget).setText(debtKind.getPayerLabel(Localized.dictionary()));
           }
           break;
 
@@ -71,6 +73,16 @@ class PaymentForm extends AbstractFormInterceptor {
     super.afterCreateWidget(name, widget, callback);
   }
 
+  private DateTime getDateTime(String name) {
+    Widget widget = getFormView().getWidgetByName(name);
+
+    if (widget instanceof InputDateTime) {
+      return ((InputDateTime) widget).getDateTime();
+    } else {
+      return null;
+    }
+  }
+
   private Long getSelectorValue(String name) {
     Widget widget = getFormView().getWidgetByName(name);
 
@@ -85,18 +97,24 @@ class PaymentForm extends AbstractFormInterceptor {
     Long payer = getSelectorValue(NAME_PAYER);
     Long currency = getSelectorValue(NAME_CURRENCY);
 
-    refreshDebts(GRID_TRADE_PAYABLES, payer);
-    refreshDebts(GRID_TRADE_RECEIVABLES, payer);
+    DateTime dateTo = getDateTime(NAME_DATE_TO);
+    DateTime termTo = getDateTime(NAME_TERM_TO);
+
+    refreshDebts(GRID_TRADE_PAYABLES, payer, currency, dateTo, termTo);
+    refreshDebts(GRID_TRADE_RECEIVABLES, payer, currency, dateTo, termTo);
 
     refreshPrepayments(FinanceConstants.GRID_OUTSTANDING_PREPAYMENT_GIVEN, payer, currency);
     refreshPrepayments(FinanceConstants.GRID_OUTSTANDING_PREPAYMENT_RECEIVED, payer, currency);
   }
 
-  private void refreshDebts(String gridName, Long payer) {
+  private void refreshDebts(String gridName, Long payer, Long currency,
+      DateTime dateTo, DateTime termTo) {
+
     GridView gridView = ViewHelper.getChildGrid(getFormView(), gridName);
 
     if (gridView != null && gridView.getGridInterceptor() instanceof TradeDebtsGrid) {
-      ((TradeDebtsGrid) gridView.getGridInterceptor()).onCompanyChange(payer);
+      ((TradeDebtsGrid) gridView.getGridInterceptor()).onParentChange(payer, currency,
+          dateTo, termTo);
     }
   }
 

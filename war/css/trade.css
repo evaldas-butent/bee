@@ -537,3 +537,7 @@
 .bee-trade-report-movement-of-goods-editable:hover {
   color: #00e;
 }
+
+.bee-trade-debts-phase-toggle {
+  padding-right: 1vw;
+}
