@@ -5886,6 +5886,8 @@ public interface Dictionary {
 
   default String trContractPrinting() {return g("trContractPrinting");}
 
+   default String trCopyOrder() {return g("trCopyOrder");}
+
   default String trCountryNorm() {return g("trCountryNorm");}
 
   default String trCountryNorms() {return g("trCountryNorms");}
