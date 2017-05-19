@@ -6,4 +6,5 @@ name="Contacts" label="=contacts" order="10" module="Classifiers.Contacts"
   <Item name="Companies" label="=clients" service="grid" parameters="Companies" />
   <Item name="CompanyPersons" label="=companyPersons" service="grid" parameters="CompanyPersons" />
   <Item name="Persons" label="=persons" service="grid" parameters="Persons" />
+  <Item name="CustomSales" label="=trdInvoices" service="grid" parameters="CustomSales" separator="true" />
 </Entry>

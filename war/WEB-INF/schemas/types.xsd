@@ -347,6 +347,7 @@
       <xs:enumeration value="Currencies" />
       <xs:enumeration value="CurrencyRates" />
       <xs:enumeration value="CustomConfig" />
+      <xs:enumeration value="CustomSales" />
       <xs:enumeration value="DataCriteria" />
       <xs:enumeration value="Debts" />
       <xs:enumeration value="DebtReminderTemplates" />

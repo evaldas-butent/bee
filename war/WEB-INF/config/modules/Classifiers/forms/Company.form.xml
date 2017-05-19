@@ -5,8 +5,6 @@
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
         xmlns:ui="http://www.butent.com/ui"
-        xmlns:xi="http://www.w3.org/2001/XInclude"
-
         name="Company"
         viewName="Companies"
         favorite="Name"
@@ -21,8 +19,7 @@
         <cell colSpan="3">
           <InputText source="Name" style="width: 425px;" visible="true" />
         </cell>
-        <DataSelector source="CompanyType" style="width: 80px;" required="true"
-                      choiceColumns="Name" renderColumns="TypeName"/>
+        <DataSelector source="CompanyType" style="width: 80px;" required="true"/>
         <Label style="&lbl;" for="CompanyPriority" />
         <DataSelector source="CompanyPriority" style="width: 180px" />
         <FlowPanel name="qrFlowPanel" style="margin-left: 10px" />
@@ -106,10 +103,10 @@
     </Disclosure>
 
     <TabbedPages class="flexible" style="margin-top: 1ex; min-height: 200px;">
-      <page data="Sales">
+      <page data="CustomSales">
         <text>=financialInfo</text>
         <FlowPanel>
-          <Table kind="controls" style="margin-right: 8px;">
+          <Table kind="controls" style="margin-right: 8px;" >
             <row>
               <Label text="=creditLimit" for="CreditLimit" style="&lbl;" />
               <FlowPanel>
@@ -163,16 +160,6 @@
       </page>
 
       <page>
-        <text>=dimensions</text>
-        <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
-      </page>
-
-      <page module="Finance" data="TradeAccounts">
-        <text>=finAccounts</text>
-        <xi:include href="widgets/TradeAccounts.widget.xml" />
-      </page>
-
-      <page>
         <text>=additionalInfo</text>
         <FlowPanel style="margin:5px;">
           <Table kind="controls">
@@ -193,22 +180,18 @@
             <row>
               <Label text="=mailRecipientsGroups" style="&lbl;" />
               <cell colSpan="3">
-                <ChildSelector name="RecipientsGroup" viewName="RecipientsGroups"
-                               childTable="RcpsGroupsContacts"
-                               targetRelColumn="Company" sourceRelColumn="RecipientsGroup"
-                               renderColumns="GroupName"
-                               choiceColumns="GroupName" label="=mailRecipientsGroups"
-                               style="width: 100%;" summarize="true"
+                <ChildSelector name="RecipientsGroup" viewName="RecipientsGroups" childTable="RcpsGroupsContacts"
+                               targetRelColumn="Company" sourceRelColumn="RecipientsGroup" renderColumns="GroupName"
+                               choiceColumns="GroupName" label="=mailRecipientsGroups" style="width: 100%;" summarize="true"
                                filter="Creator {u} or Visibility = 0" />
               </cell>
             </row>
             <row>
-              <Label for="Turnover" text="=trdTurnover" style="&lbl;" />
+              <Label for="Turnover" text="=trdTurnover" style="&lbl;"/>
               <DataSelector source="Turnover" summarize="true" />
               <DataSelector source="TurnoverCurrency" editEnabled="false"
                             placeholder="=currencyShort"
-                            style="width:5em; margin-left:5px; display:inline-block;"
-                            for="Turnover" />
+                            style="width:5em; margin-left:5px; display:inline-block;" for="Turnover" />
             </row>
             <row>
               <Label text="=clientGroup" style="&lbl;" for="CompanyGroup" />
@@ -218,10 +201,8 @@
               <Label text="=companyRelation" style="&lbl;" data="CompRelTypeStore" />
               <cell colSpan="2">
                 <ChildSelector viewName="CompanyRelationTypes" childTable="CompRelTypeStore"
-                               targetRelColumn="Company" sourceRelColumn="RelationType"
-                               newRowEnabled="true"
-                               label="=companyRelationType" data="CompRelTypeStore"
-                               summarize="true" />
+                               targetRelColumn="Company" sourceRelColumn="RelationType" newRowEnabled="true"
+                               label="=companyRelationType" data="CompRelTypeStore" summarize="true" />
               </cell>
               <Label style="&lbl;" for="CompanyRelationTypeState" />
               <DataSelector source="CompanyRelationTypeState" summarize="true" />
@@ -230,7 +211,7 @@
         </FlowPanel>
       </page>
 
-      <page module="Trade Orders Service">
+      <page module="Orders">
         <text>=discounts</text>
         <FlowPanel class="flexBox-vertical">
           <HorizontalPanel style="margin-bottom: 1em;">
@@ -287,11 +268,6 @@
       <page data="Orders">
         <text>=offers</text>
         <ChildGrid name="CompanyOrders" relColumn="Company" />
-      </page>
-
-      <page data="Cars" module="Cars" >
-        <text>=cars</text>
-        <ChildGrid name="CompanyCars" relColumn="Owner" />
       </page>
 
       <page for="Notes">
