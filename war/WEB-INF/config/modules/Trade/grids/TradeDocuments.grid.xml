@@ -4,6 +4,7 @@
 
         name="TradeDocuments" viewName="TradeDocuments"
         caption="=trdDocuments" editShowId="true"
+        order="Date desc"
 >
   <g:columns>
     <IdColumn name="Id" />

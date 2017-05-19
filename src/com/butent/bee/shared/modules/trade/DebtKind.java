@@ -1,5 +1,7 @@
 package com.butent.bee.shared.modules.trade;
 
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
@@ -16,8 +18,18 @@ public enum DebtKind implements HasLocalizedCaption {
     }
 
     @Override
+    public String tradeDebtsMainGrid() {
+      return GRID_TRADE_PAYABLES;
+    }
+
+    @Override
+    public String tradeDebtsOtherGrid() {
+      return GRID_TRADE_RECEIVABLES;
+    }
+
+    @Override
     public String tradeDocumentCompanyColumn() {
-      return TradeConstants.COL_TRADE_SUPPLIER;
+      return COL_TRADE_SUPPLIER;
     }
   },
 
@@ -33,12 +45,26 @@ public enum DebtKind implements HasLocalizedCaption {
     }
 
     @Override
+    public String tradeDebtsMainGrid() {
+      return GRID_TRADE_RECEIVABLES;
+    }
+
+    @Override
+    public String tradeDebtsOtherGrid() {
+      return GRID_TRADE_PAYABLES;
+    }
+
+    @Override
     public String tradeDocumentCompanyColumn() {
-      return TradeConstants.COL_TRADE_CUSTOMER;
+      return COL_TRADE_CUSTOMER;
     }
   };
 
   public abstract String getPayerLabel(Dictionary dictionary);
+
+  public abstract String tradeDebtsMainGrid();
+
+  public abstract String tradeDebtsOtherGrid();
 
   public abstract String tradeDocumentCompanyColumn();
 }

@@ -12,20 +12,20 @@
     <TabbedPages class="flexible">
       <page>
         <text>=trdAccountsPayable</text>
-        <GridPanel name="TradePayables" />
+        <GridPanel name="TradePayables" paging="false" />
       </page>
       <page>
         <text>=prepaymentGiven</text>
-        <GridPanel name="OutstandingPrepaymentGiven" />
+        <GridPanel name="OutstandingPrepaymentGiven" paging="false" />
       </page>
 
       <page>
         <text>=trdAccountsReceivable</text>
-        <GridPanel name="TradeReceivables" />
+        <GridPanel name="TradeReceivables" paging="false" />
       </page>
       <page>
         <text>=prepaymentReceived</text>
-        <GridPanel name="OutstandingPrepaymentReceived" />
+        <GridPanel name="OutstandingPrepaymentReceived" paging="false" />
       </page>
     </TabbedPages>
   </FlowPanel>
