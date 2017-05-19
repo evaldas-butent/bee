@@ -4,6 +4,8 @@ import com.google.gwt.dom.client.Element;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Storage;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -11,10 +13,14 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
+import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.CheckBox;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
@@ -45,17 +51,44 @@ class TradeDebtsGrid extends AbstractGridInterceptor {
   private final DebtKind debtKind;
 
   private EnumSet<TradeDocumentPhase> phases = EnumSet.noneOf(TradeDocumentPhase.class);
+  private String phasesStorageKey;
 
   TradeDebtsGrid(DebtKind debtKind) {
     this.debtKind = debtKind;
   }
 
   @Override
-  public void afterCreatePresenter(GridPresenter presenter) {
-    if (presenter != null && presenter.getHeader() != null) {
-      initPhases();
+  public GridInterceptor getInstance() {
+    return new TradeDebtsGrid(debtKind);
+  }
 
-      HeaderView header = presenter.getHeader();
+  @Override
+  public Map<String, Filter> getInitialParentFilters(Collection<UiOption> uiOptions) {
+    Map<String, Filter> filters = new HashMap<>();
+    filters.put(PARENT_FILTER_KEY, Filter.isFalse());
+
+    return filters;
+  }
+
+  @Override
+  public void onEditStart(EditStartEvent event) {
+    event.consume();
+
+    IsRow row = event.getRowValue();
+    if (row != null) {
+      RowEditor.open(getViewName(), row, Opener.NEW_TAB);
+    }
+  }
+
+  @Override
+  public void onLoad(GridView gridView) {
+    GridPresenter presenter = getGridPresenter();
+    HeaderView header = (presenter == null) ? null : presenter.getHeader();
+
+    if (header != null) {
+      initPhases(gridView);
+      presenter.getDataProvider().setParentFilter(PHASE_FILTER_KEY, buildPhaseFilter());
+
       header.clearCommandPanel();
 
       for (TradeDocumentPhase phase : TradeDocumentPhase.values()) {
@@ -87,30 +120,7 @@ class TradeDebtsGrid extends AbstractGridInterceptor {
       }
     }
 
-    super.afterCreatePresenter(presenter);
-  }
-
-  @Override
-  public GridInterceptor getInstance() {
-    return new TradeDebtsGrid(debtKind);
-  }
-
-  @Override
-  public Map<String, Filter> getInitialParentFilters(Collection<UiOption> uiOptions) {
-    Map<String, Filter> filters = new HashMap<>();
-    filters.put(PARENT_FILTER_KEY, Filter.isFalse());
-
-    return filters;
-  }
-
-  @Override
-  public void onEditStart(EditStartEvent event) {
-    event.consume();
-
-    IsRow row = event.getRowValue();
-    if (row != null) {
-      RowEditor.open(getViewName(), row, Opener.NEW_TAB);
-    }
+    super.onLoad(gridView);
   }
 
   void onParentChange(Long company, Long currency, DateTime dateTo, DateTime termTo) {
@@ -119,6 +129,7 @@ class TradeDebtsGrid extends AbstractGridInterceptor {
   }
 
   private void onPhaseChange() {
+    storePhases();
     maybeRefresh(PHASE_FILTER_KEY, buildPhaseFilter());
   }
 
@@ -148,11 +159,42 @@ class TradeDebtsGrid extends AbstractGridInterceptor {
     }
   }
 
-  private void initPhases() {
+  private String getPhasesStorageKey() {
+    return phasesStorageKey;
+  }
+
+  private void setPhasesStorageKey(String phasesStorageKey) {
+    this.phasesStorageKey = phasesStorageKey;
+  }
+
+  private void initPhases(GridView gridView) {
+    FormView form = ViewHelper.getForm(gridView);
+    String value = null;
+
+    if (form != null) {
+      String key = Storage.getUserKey(form.getFormName() + gridView.getGridName(), "phases");
+      setPhasesStorageKey(key);
+
+      value = BeeKeeper.getStorage().get(key);
+    }
+
     phases.clear();
-    phases.addAll(Arrays.stream(TradeDocumentPhase.values())
-        .filter(TradeDocumentPhase::modifyStock)
-        .collect(Collectors.toSet()));
+
+    if (BeeUtils.isEmpty(value)) {
+      phases.addAll(Arrays.stream(TradeDocumentPhase.values())
+          .filter(TradeDocumentPhase::modifyStock)
+          .collect(Collectors.toSet()));
+
+    } else if (!BeeConst.STRING_MINUS.equals(value)) {
+      phases.addAll(EnumUtils.parseIndexSet(TradeDocumentPhase.class, value));
+    }
+  }
+
+  private void storePhases() {
+    if (!BeeUtils.isEmpty(getPhasesStorageKey())) {
+      String value = phases.isEmpty() ? BeeConst.STRING_MINUS : EnumUtils.joinIndexes(phases);
+      BeeKeeper.getStorage().set(getPhasesStorageKey(), value);
+    }
   }
 
   private void maybeRefresh(String key, Filter filter) {
