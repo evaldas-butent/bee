@@ -135,7 +135,7 @@ class AnalysisViewer extends Flow implements HasCaption, HandlesActions, Printab
 
   private static BeeLogger logger = LogUtils.getLogger(AnalysisViewer.class);
 
-  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "fin-AnalysisViewer-";
+  private static final String STYLE_PREFIX = FinanceKeeper.STYLE_PREFIX + "AnalysisViewer-";
 
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
   private static final String STYLE_BODY = STYLE_PREFIX + "body";

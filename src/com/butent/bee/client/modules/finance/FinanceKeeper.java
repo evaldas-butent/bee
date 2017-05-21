@@ -26,6 +26,7 @@ import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.Localized;
@@ -42,6 +43,8 @@ import java.util.Collections;
 import java.util.List;
 
 public final class FinanceKeeper {
+
+  public static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "fin-";
 
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.FINANCE, method);

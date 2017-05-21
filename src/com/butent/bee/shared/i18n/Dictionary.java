@@ -2944,6 +2944,8 @@ public interface Dictionary {
 
   default String finBudgetNew() {return g("finBudgetNew");}
 
+  default String finBudgetRepeatRight() {return g("finBudgetRepeatRight");}
+
   default String finBudgetShowDimension(Object p0) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{0}", p0);

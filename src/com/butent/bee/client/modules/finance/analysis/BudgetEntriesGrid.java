@@ -2,16 +2,25 @@ package com.butent.bee.client.modules.finance.analysis;
 
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.modules.finance.FinanceKeeper;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasRowValue;
@@ -20,6 +29,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -29,6 +39,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class BudgetEntriesGrid extends AbstractGridInterceptor {
 
@@ -92,7 +103,7 @@ public class BudgetEntriesGrid extends AbstractGridInterceptor {
 
             if (AnalysisUtils.isValidScale(pair.getB())) {
               scale = pair.getB();
-            } else  {
+            } else {
               scale = AnalysisUtils.getRatioScale(total, scale);
             }
 
@@ -109,6 +120,8 @@ public class BudgetEntriesGrid extends AbstractGridInterceptor {
       Arrays.asList("Quarter1", "Quarter2", "Quarter3", "Quarter4");
 
   private static final String TOTAL_COLUMN = "Total";
+
+  private static final String STYLE_REPEAT = FinanceKeeper.STYLE_PREFIX + "budget-repeat-right";
 
   private final int headerIndicatorIndex;
   private final int headerRatioIndex;
@@ -133,6 +146,21 @@ public class BudgetEntriesGrid extends AbstractGridInterceptor {
   @Override
   public GridInterceptor getInstance() {
     return new BudgetEntriesGrid();
+  }
+
+  @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    if (presenter != null && presenter.getHeader() != null
+        && BeeKeeper.getUser().canEditData(VIEW_BUDGET_ENTRIES)) {
+
+      Button repeatCommand = new Button(Localized.dictionary().finBudgetRepeatRight());
+      repeatCommand.addStyleName(STYLE_REPEAT);
+      repeatCommand.addClickHandler(event -> repeat());
+
+      presenter.getHeader().addCommandItem(repeatCommand);
+    }
+
+    super.afterCreatePresenter(presenter);
   }
 
   @Override
@@ -282,6 +310,54 @@ public class BudgetEntriesGrid extends AbstractGridInterceptor {
         return Pair.of(parentRow.isTrue(headerRatioIndex), parentRow.getInteger(headerScaleIndex));
       } else {
         return null;
+      }
+    }
+  }
+
+  private void repeat() {
+    final IsRow row = getActiveRow();
+    String columnId = getGridView().getGrid().getActiveColumnId();
+
+    if (row != null && row.isEditable() && columnId != null) {
+      final Integer month = getBudgetEntryMonth(columnId);
+
+      if (month != null && month < 12) {
+        final String newValue = row.getString(getDataIndex(columnId));
+
+        final List<BeeColumn> columns = new ArrayList<>();
+        final List<String> oldValues = new ArrayList<>();
+        final List<String> newValues = new ArrayList<>();
+
+        for (int i = month + 1; i <= 12; i++) {
+          int index = getDataIndex(colBudgetEntryValue(i));
+          String oldValue = row.getString(index);
+
+          if (!Objects.equals(oldValue, newValue)) {
+            columns.add(getDataColumns().get(index));
+
+            oldValues.add(oldValue);
+            newValues.add(newValue);
+          }
+        }
+
+        if (!columns.isEmpty()) {
+          List<String> messages = new ArrayList<>();
+
+          if (month < 11) {
+            messages.add(TimeUtils.renderPeriod(Format.renderMonthFullStandalone(month + 1),
+                Format.renderMonthFullStandalone(12)));
+          } else {
+            messages.add(Format.renderMonthFullStandalone(month + 1));
+          }
+
+          if (!BeeUtils.isEmpty(newValue)) {
+            messages.add(newValue);
+          }
+
+          Global.confirm(Localized.dictionary().finBudgetRepeatRight(), Icon.QUESTION, messages,
+              () -> Queries.update(getViewName(), row.getId(), row.getVersion(),
+                  columns, oldValues, newValues, null, RowCallback.refreshRow(getViewName())));
+        }
       }
     }
   }
