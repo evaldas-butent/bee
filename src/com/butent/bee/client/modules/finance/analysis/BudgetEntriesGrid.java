@@ -5,21 +5,129 @@ import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasRowValue;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.value.NumberValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.modules.finance.Dimensions;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class BudgetEntriesGrid extends AbstractGridInterceptor {
 
+  private final class AggregateRenderer extends AbstractCellRenderer implements HasRowValue {
+
+    private final List<String> sources = new ArrayList<>();
+    private final List<Integer> indexes = new ArrayList<>();
+
+    private AggregateRenderer(List<? extends IsColumn> dataColumns, int startMonth, int endMonth) {
+      super(null);
+
+      for (int i = startMonth; i <= endMonth; i++) {
+        String source = colBudgetEntryValue(i);
+
+        sources.add(source);
+        indexes.add(DataUtils.getColumnIndex(source, dataColumns));
+      }
+    }
+
+    @Override
+    public boolean dependsOnSource(String source) {
+      return sources.contains(source);
+    }
+
+    @Override
+    public Value getRowValue(IsRow row) {
+      return new NumberValue(evaluate(row));
+    }
+
+    @Override
+    public String render(IsRow row) {
+      return BeeUtils.toStringOrNull(evaluate(row));
+    }
+
+    private Double evaluate(IsRow row) {
+      if (row == null) {
+        return null;
+
+      } else {
+        double total = BeeConst.DOUBLE_ZERO;
+        int count = 0;
+
+        int scale = 0;
+
+        for (int index : indexes) {
+          Double value = row.getDouble(index);
+
+          if (BeeUtils.isDouble(value)) {
+            total += value;
+            count++;
+
+            scale = Math.max(scale, BeeUtils.getDecimals(row.getString(index)));
+          }
+        }
+
+        if (count > 1 && BeeUtils.nonZero(total)) {
+          Pair<Boolean, Integer> pair = getRatioAndScale(row);
+
+          if (pair != null && BeeUtils.isTrue(pair.getA())) {
+            total /= count;
+
+            if (AnalysisUtils.isValidScale(pair.getB())) {
+              scale = pair.getB();
+            } else  {
+              scale = AnalysisUtils.getRatioScale(total, scale);
+            }
+
+            total = BeeUtils.round(total, scale);
+          }
+        }
+
+        return total;
+      }
+    }
+  }
+
+  private static final List<String> QUARTER_COLUMNS =
+      Arrays.asList("Quarter1", "Quarter2", "Quarter3", "Quarter4");
+
+  private static final String TOTAL_COLUMN = "Total";
+
+  private final int headerIndicatorIndex;
+  private final int headerRatioIndex;
+  private final int headerScaleIndex;
+
+  private final int entryIndicatorIndex;
+  private final int entryRatioIndex;
+  private final int entryScaleIndex;
+
   public BudgetEntriesGrid() {
+    this.headerIndicatorIndex = Data.getColumnIndex(VIEW_BUDGET_HEADERS,
+        COL_BUDGET_HEADER_INDICATOR);
+    this.headerRatioIndex = Data.getColumnIndex(VIEW_BUDGET_HEADERS, COL_FIN_INDICATOR_RATIO);
+    this.headerScaleIndex = Data.getColumnIndex(VIEW_BUDGET_HEADERS, COL_FIN_INDICATOR_SCALE);
+
+    this.entryIndicatorIndex = Data.getColumnIndex(VIEW_BUDGET_ENTRIES,
+        COL_BUDGET_ENTRY_INDICATOR);
+    this.entryRatioIndex = Data.getColumnIndex(VIEW_BUDGET_ENTRIES, COL_FIN_INDICATOR_RATIO);
+    this.entryScaleIndex = Data.getColumnIndex(VIEW_BUDGET_ENTRIES, COL_FIN_INDICATOR_SCALE);
   }
 
   @Override
@@ -38,8 +146,8 @@ public class BudgetEntriesGrid extends AbstractGridInterceptor {
         columnDescription.setLabel(Format.properMonthFull(month));
         columnDescription.setCaption(Format.properMonthShort(month));
 
-      } else if (columnDescription.getId().startsWith("Quarter")) {
-        Integer quarter = BeeUtils.toIntOrNull(BeeUtils.right(columnDescription.getId(), 1));
+      } else if (QUARTER_COLUMNS.contains(columnDescription.getId())) {
+        int quarter = QUARTER_COLUMNS.indexOf(columnDescription.getId()) + 1;
 
         if (TimeUtils.isQuarter(quarter)) {
           columnDescription.setLabel(Format.quarterFull(quarter));
@@ -92,6 +200,22 @@ public class BudgetEntriesGrid extends AbstractGridInterceptor {
   }
 
   @Override
+  public AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
+      ColumnDescription columnDescription, CellSource cellSource) {
+
+    if (QUARTER_COLUMNS.contains(columnName)) {
+      int quarter = QUARTER_COLUMNS.indexOf(columnDescription.getId()) + 1;
+      return new AggregateRenderer(dataColumns, quarter * 3 - 2, quarter * 3);
+
+    } else if (TOTAL_COLUMN.equals(columnName)) {
+      return new AggregateRenderer(dataColumns, 1, 12);
+
+    } else {
+      return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
+    }
+  }
+
+  @Override
   public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
     if (gridView != null && oldRow != null && newRow != null) {
       if (copy && gridView.getGrid().isColumnVisible(COL_BUDGET_ENTRY_ORDINAL)) {
@@ -140,6 +264,24 @@ public class BudgetEntriesGrid extends AbstractGridInterceptor {
 
       if (!BeeUtils.isEmpty(value)) {
         newRow.setValue(index, value);
+      }
+    }
+  }
+
+  private Pair<Boolean, Integer> getRatioAndScale(IsRow row) {
+    if (row == null) {
+      return null;
+
+    } else if (DataUtils.isId(row.getLong(entryIndicatorIndex))) {
+      return Pair.of(row.isTrue(entryRatioIndex), row.getInteger(entryScaleIndex));
+
+    } else {
+      IsRow parentRow = ViewHelper.getParentRow(getGridView().asWidget(), VIEW_BUDGET_HEADERS);
+
+      if (parentRow != null && DataUtils.isId(parentRow.getLong(headerIndicatorIndex))) {
+        return Pair.of(parentRow.isTrue(headerRatioIndex), parentRow.getInteger(headerScaleIndex));
+      } else {
+        return null;
       }
     }
   }

@@ -116,6 +116,7 @@ public final class FinanceConstants {
   public static final String COL_FIN_INDICATOR_TURNOVER_OR_BALANCE = "IndicatorTurnoverOrBalance";
   public static final String COL_FIN_INDICATOR_NORMAL_BALANCE = "IndicatorNormalBalance";
   public static final String COL_FIN_INDICATOR_CLOSING_ENTRIES = "IndicatorClosingEntries";
+  public static final String COL_FIN_INDICATOR_RATIO = "IndicatorRatio";
   public static final String COL_FIN_INDICATOR_SCALE = "IndicatorScale";
 
   public static final String COL_FIN_INDICATOR = "Indicator";

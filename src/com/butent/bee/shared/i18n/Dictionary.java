@@ -3088,6 +3088,8 @@ public interface Dictionary {
 
   default String finIndicatorPrimaryNew() {return g("finIndicatorPrimaryNew");}
 
+  default String finIndicatorRatio() {return g("finIndicatorRatio");}
+
   default String finIndicatorScale() {return g("finIndicatorScale");}
 
   default String finIndicatorSecondary() {return g("finIndicatorSecondary");}
@@ -5886,7 +5888,7 @@ public interface Dictionary {
 
   default String trContractPrinting() {return g("trContractPrinting");}
 
-   default String trCopyOrder() {return g("trCopyOrder");}
+  default String trCopyOrder() {return g("trCopyOrder");}
 
   default String trCountryNorm() {return g("trCountryNorm");}
 
