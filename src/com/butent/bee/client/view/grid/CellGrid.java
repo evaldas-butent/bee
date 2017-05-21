@@ -1348,6 +1348,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return BeeConst.UNDEF;
   }
 
+  public String getActiveColumnId() {
+    return isColumnWithinBounds(getActiveColumnIndex())
+        ? getColumnInfo(getActiveColumnIndex()).getColumnId() : null;
+  }
+
   @Override
   public IsRow getActiveRow() {
     int index = getActiveRowIndex();
