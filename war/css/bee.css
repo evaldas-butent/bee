@@ -4130,3 +4130,7 @@ textarea,
 .bee-ExportController-completed .bee-ExportController-cancel {
   display: none;
 }
+
+.bee-CheckBox {
+  white-space: nowrap;
+}
