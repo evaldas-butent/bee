@@ -727,7 +727,7 @@ public enum Report implements HasWidgetSupplier {
 
           new ReportTextItem(TradeConstants.COL_TRADE_DEBT, dict.trdItemStock()),
 
-          new ReportTextItem(COL_LOCATION_NAME, dict.object()),
+          new ReportTextItem(COL_LOCATION_NAME, dict.objectLocation()),
 
           new ReportEnumItem(COL_LOCATION_STATUS,
               Data.getColumnLabel(VIEW_LOCATIONS, COL_LOCATION_STATUS), ObjectStatus.class),

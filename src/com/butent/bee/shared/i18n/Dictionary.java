@@ -3894,6 +3894,8 @@ public interface Dictionary {
 
   default String newObject() {return g("newObject");}
 
+  default String newObjectLocation() {return g("newObjectLocation");}
+
   default String newOffer() {return g("newOffer");}
 
   default String newOrder() {return g("newOrder");}
@@ -4021,6 +4023,10 @@ public interface Dictionary {
   default String objectData() {return g("objectData");}
 
   default String objectField() {return g("objectField");}
+
+  default String objectLocation() {return g("objectLocation");}
+
+  default String objectLocations() {return g("objectLocations");}
 
   default String objectMenu() {return g("objectMenu");}
 

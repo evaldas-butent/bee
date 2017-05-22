@@ -8,7 +8,7 @@
     <String name="Name" precision="100" notNull="true" label="=documentName" />
 
     <Relation name="Company" relation="Companies" label="=company" />
-    <Relation name="Location" relation="Locations" label="=object" />
+    <Relation name="Location" relation="Locations" label="=objectLocation" />
 
     <DateTime name="DocumentDate" label="=documentDate" defExpr="CURRENT_TIME" />
     <DateTime name="Expires" label="=documentExpires" />
