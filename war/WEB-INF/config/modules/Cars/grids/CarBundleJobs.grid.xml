@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
         name="CarBundleJobs" viewName="CarBundleItems" autoFlex="true"
-        newRowCaption="=newServiceJob" filter="Job"
+        filter="Job" newRowCaption="=newServiceJob"
 >
   <g:columns>
     <RelColumn name="Item" viewName="CarJobs" valueSource="Item" visible="true"

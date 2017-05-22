@@ -1737,6 +1737,12 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       return false;
     }
 
+    if (getViewPresenter() == null
+        || BeeUtils.anyNotNull(getViewPresenter().getDataProvider().getImmutableFilter(),
+        getViewPresenter().getDataProvider().getUserFilter())) {
+      return false;
+    }
+
     if (isChild()) {
       if (!DataUtils.isId(getRelId())) {
         return false;
@@ -1750,9 +1756,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       if (!Objects.equals(getRelId(), event.getRow().getLong(index))) {
         return false;
       }
-
-    } else if (getViewPresenter() == null || getViewPresenter().hasFilter()) {
-      return false;
     }
 
     getGrid().insertRow(event.getRow(), false);

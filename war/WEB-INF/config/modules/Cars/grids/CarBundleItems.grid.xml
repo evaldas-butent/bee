@@ -3,7 +3,7 @@
         xmlns:ui="http://www.butent.com/ui"
 
         name="CarBundleItems" viewName="CarBundleItems" autoFlex="true"
-        newRowCaption="=newItem" filter="!(Job)"
+        filter="!(Job)" newRowCaption="=newItem"
 >
   <g:columns>
     <RelColumn name="Item" viewName="CarItems" choiceColumns="Name Article" renderColumns="ItemName"
