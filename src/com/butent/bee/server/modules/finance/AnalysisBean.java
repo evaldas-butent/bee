@@ -159,6 +159,8 @@ public class AnalysisBean {
     Map<Long, String> indicatorAbbreviations = new HashMap<>();
     Map<Long, Pattern> indicatorVariables = new HashMap<>();
 
+    Set<Long> indicatorRatios = new HashSet<>();
+
     BeeRowSet indicatorData = qs.getViewData(VIEW_FINANCIAL_INDICATORS);
     if (!DataUtils.isEmpty(indicatorData)) {
       int kindIndex = indicatorData.getColumnIndex(COL_FIN_INDICATOR_KIND);
@@ -171,6 +173,8 @@ public class AnalysisBean {
 
       int abbreviationIndex = indicatorData.getColumnIndex(COL_FIN_INDICATOR_ABBREVIATION);
       int scriptIndex = indicatorData.getColumnIndex(COL_FIN_INDICATOR_SCRIPT);
+
+      int ratioIndex = indicatorData.getColumnIndex(COL_FIN_INDICATOR_RATIO);
 
       for (BeeRow indicatorRow : indicatorData) {
         long indicator = indicatorRow.getId();
@@ -206,6 +210,10 @@ public class AnalysisBean {
           String script = indicatorRow.getString(scriptIndex);
           if (!BeeUtils.isEmpty(script)) {
             indicatorScripts.put(indicator, script);
+          }
+
+          if (indicatorRow.isTrue(ratioIndex)) {
+            indicatorRatios.add(indicator);
           }
         }
       }
@@ -453,7 +461,7 @@ public class AnalysisBean {
               boolean needsBudget = budgetCursor != null;
 
               if (needsBudget && !response.hasErrors()) {
-                boolean ratio = isRatio(indicator);
+                boolean ratio = indicatorRatios.contains(indicator);
 
                 if (ratio) {
                   budgetExchange = false;
@@ -1448,15 +1456,6 @@ public class AnalysisBean {
     }
 
     return (normalBalance == null) ? NormalBalance.DEFAULT : normalBalance;
-  }
-
-  private boolean isRatio(long indicator) {
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_FINANCIAL_INDICATORS, COL_FIN_INDICATOR_RATIO)
-        .addFrom(TBL_FINANCIAL_INDICATORS)
-        .setWhere(sys.idEquals(TBL_FINANCIAL_INDICATORS, indicator));
-
-    return BeeUtils.isTrue(qs.getBoolean(query));
   }
 
   private static Map<AnalysisSplitType, AnalysisSplitValue> getRootSplit() {
