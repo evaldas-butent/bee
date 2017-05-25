@@ -564,16 +564,9 @@ final class AnalysisScripting {
       messages.add(BeeUtils.joinWords(name, "script engine not available"));
 
     } else {
-      Bindings bindings;
+      Bindings bindings = createActualBindings(engine);
 
-      if (BeeUtils.isEmpty(variables)
-          || variables.containsKey(indicator) && variables.size() == 1) {
-
-        bindings = null;
-
-      } else {
-        bindings = engine.createBindings();
-
+      if (!BeeUtils.isEmpty(variables)) {
         for (Map.Entry<Long, String> entry : variables.entrySet()) {
           if (!Objects.equals(entry.getKey(), indicator)) {
             bindings.put(entry.getValue(), BeeConst.DOUBLE_ZERO);
@@ -582,11 +575,7 @@ final class AnalysisScripting {
       }
 
       try {
-        if (bindings == null) {
-          engine.eval(script);
-        } else {
-          engine.eval(script, bindings);
-        }
+        engine.eval(script, bindings);
 
       } catch (ScriptException ex) {
         logger.severe(name, script, bindings, ex.getMessage());
