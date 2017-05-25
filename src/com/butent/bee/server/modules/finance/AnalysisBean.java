@@ -268,26 +268,20 @@ public class AnalysisBean {
               List<AnalysisSplitType> rowSplitTypes = results.getRowSplitTypes(row.getId());
 
               boolean needsActual = AnalysisCellType.needsActual(columnCellTypes, rowCellTypes);
+              boolean needsBudget = DataUtils.isId(budgetType)
+                  && AnalysisCellType.needsBudget(columnCellTypes, rowCellTypes);
 
               String budgetCursor = null;
               IsCondition budgetCondition = null;
-              boolean budgetExchange;
 
-              if (DataUtils.isId(budgetType)
-                  && AnalysisCellType.needsBudget(columnCellTypes, rowCellTypes)) {
+              if (needsBudget) {
+                Pair<String, IsCondition> budget = prepareBudget(indicator, indicatorTOB,
+                    budgetType, turnoverOrBalance, headerAnalysisFilter, columnAnalysisFilter,
+                    rowAnalysisFilter);
 
-                budgetCursor = getBudgetCursor(indicator, indicatorTOB,
-                    budgetType, turnoverOrBalance);
-
-                if (qs.isEmpty(budgetCursor)) {
-                  if (!BeeUtils.isEmpty(budgetCursor)) {
-                    qs.sqlDropTemp(budgetCursor);
-                  }
-                  budgetCursor = null;
-
-                } else {
-                  budgetCondition = getBudgetCondition(budgetCursor, COL_BUDGET_ENTRY_EMPLOYEE,
-                      headerAnalysisFilter, columnAnalysisFilter, rowAnalysisFilter);
+                if (budget != null) {
+                  budgetCursor = budget.getA();
+                  budgetCondition = budget.getB();
                 }
               }
 
@@ -318,12 +312,15 @@ public class AnalysisBean {
 
                 Filter finSplitFilter = Filter.and(valueFilter, Filter.or(plusFilter, minusFilter));
 
+                Map<String, IsCondition> budgetCursors = new HashMap<>();
+                if (budgetCursor != null) {
+                  budgetCursors.put(budgetCursor, budgetCondition);
+                }
+
                 columnSplitValues = getPotentialSplit(columnSplitTypes,
-                    finView, userId, finSplitFilter, budgetCursor, budgetCondition,
-                    range, turnoverOrBalance);
+                    finView, userId, finSplitFilter, budgetCursors, range, turnoverOrBalance);
                 rowSplitValues = getPotentialSplit(rowSplitTypes,
-                    finView, userId, finSplitFilter, budgetCursor, budgetCondition,
-                    range, turnoverOrBalance);
+                    finView, userId, finSplitFilter, budgetCursors, range, turnoverOrBalance);
 
                 if (needsActual) {
                   results.addValues(computeActualValues(column.getId(), row.getId(),
@@ -331,8 +328,6 @@ public class AnalysisBean {
                       columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
                       indicatorSource, finView, userId, sourceCurrency, actualValueStats));
                 }
-
-                budgetExchange = indicatorSource.hasCurrency();
 
               } else {
 
@@ -352,6 +347,8 @@ public class AnalysisBean {
                   Map<Long, Filter> minusFilters = new HashMap<>();
 
                   Map<Long, Filter> valueFilters = new HashMap<>();
+
+                  Map<Long, Pair<String, IsCondition>> budgets = new HashMap<>();
 
                   for (long primary : primaries) {
                     IndicatorSource indicatorSource = indicatorSources.get(primary);
@@ -377,30 +374,73 @@ public class AnalysisBean {
                     minusFilters.put(primary, minusFilter);
 
                     valueFilters.put(primary, valueFilter);
+
+                    if (needsBudget) {
+                      Pair<String, IsCondition> budget = prepareBudget(primary,
+                          indicatorTurnoverOrBalance.get(primary), budgetType, turnoverOrBalance,
+                          headerAnalysisFilter, columnAnalysisFilter, rowAnalysisFilter);
+
+                      if (budget != null) {
+                        budgets.put(primary, budget);
+                      }
+                    }
                   }
 
-                  columnSplitValues = getPotentialSplit(columnSplitTypes,
-                      finView, userId, finSplitFilter, budgetCursor, budgetCondition,
-                      range, turnoverOrBalance);
-                  rowSplitValues = getPotentialSplit(rowSplitTypes,
-                      finView, userId, finSplitFilter, budgetCursor, budgetCondition,
-                      range, turnoverOrBalance);
+                  boolean calculateBudget = !budgets.isEmpty();
 
-                  if (needsActual) {
+                  if (needsActual || calculateBudget) {
+                    Map<String, IsCondition> budgetCursors = new HashMap<>();
+                    if (!budgets.isEmpty()) {
+                      budgets.values().forEach(pair -> budgetCursors.put(pair.getA(), pair.getB()));
+                    }
+                    if (budgetCursor != null) {
+                      budgetCursors.put(budgetCursor, budgetCondition);
+                    }
+
+                    columnSplitValues = getPotentialSplit(columnSplitTypes,
+                        finView, userId, finSplitFilter, budgetCursors, range, turnoverOrBalance);
+                    rowSplitValues = getPotentialSplit(rowSplitTypes,
+                        finView, userId, finSplitFilter, budgetCursors, range, turnoverOrBalance);
+
                     for (long primary : primaries) {
-                      IndicatorSource indicatorSource = indicatorSources.get(primary);
-                      Long sourceCurrency = indicatorSource.hasCurrency() ? currency : null;
+                      List<AnalysisValue> primaryValues = new ArrayList<>();
 
-                      Collection<AnalysisValue> primaryValues = computeActualValues(
-                          column.getId(), row.getId(), valueFilters.get(primary),
-                          plusFilters.get(primary), minusFilters.get(primary),
-                          range, turnoverOrBalance,
-                          columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
-                          indicatorSource, finView, userId, sourceCurrency, actualValueStats);
+                      IndicatorSource indicatorSource = indicatorSources.get(primary);
+
+                      if (needsActual) {
+                        Long sourceCurrency = indicatorSource.hasCurrency() ? currency : null;
+
+                        primaryValues.addAll(computeActualValues(
+                            column.getId(), row.getId(), valueFilters.get(primary),
+                            plusFilters.get(primary), minusFilters.get(primary),
+                            range, turnoverOrBalance,
+                            columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
+                            indicatorSource, finView, userId, sourceCurrency, actualValueStats));
+                      }
+
+                      if (calculateBudget && budgets.containsKey(primary)) {
+                        String cursor = budgets.get(primary).getA();
+                        IsCondition condition = budgets.get(primary).getB();
+
+                        TurnoverOrBalance tob = BeeUtils.nvl(turnoverOrBalance,
+                            indicatorTurnoverOrBalance.get(primary));
+
+                        Long exchangeTo = getBudgetExchangeTo(cursor, condition,
+                            indicatorSources.get(primary), currency);
+
+                        AnalysisUtils.mergeValues(primaryValues, computeBudgetValues(
+                            column.getId(), row.getId(), cursor, condition, range, tob, false,
+                            columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
+                            exchangeTo));
+                      }
 
                       if (!BeeUtils.isEmpty(primaryValues)) {
                         values.putAll(indicatorAbbreviations.get(primary), primaryValues);
                       }
+                    }
+
+                    if (!budgets.isEmpty()) {
+                      budgets.values().forEach(pair -> qs.sqlDropTemp(pair.getA()));
                     }
 
                     List<Integer> levels = new ArrayList<>(calculationSequence.keySet());
@@ -416,7 +456,8 @@ public class AnalysisBean {
                                   indicatorScripts.get(secondary), column.getId(), row.getId(),
                                   indicatorAbbreviations.values(), values,
                                   columnSplitTypes, columnSplitValues,
-                                  rowSplitTypes, rowSplitValues, response);
+                                  rowSplitTypes, rowSplitValues,
+                                  needsActual, calculateBudget, response);
 
                           if (response.hasErrors()) {
                             break;
@@ -447,8 +488,6 @@ public class AnalysisBean {
                     }
                   }
                 }
-
-                budgetExchange = true;
               }
 
               if (!BeeUtils.isEmpty(columnSplitValues)) {
@@ -458,24 +497,18 @@ public class AnalysisBean {
                 results.addRowSplitValues(row.getId(), rowSplitValues);
               }
 
-              boolean needsBudget = budgetCursor != null;
+              if (budgetCursor != null) {
+                if (!response.hasErrors()) {
+                  boolean ratio = indicatorRatios.contains(indicator);
 
-              if (needsBudget && !response.hasErrors()) {
-                boolean ratio = indicatorRatios.contains(indicator);
+                  Long exchangeTo = getBudgetExchangeTo(budgetCursor, budgetCondition,
+                      indicatorSources.get(indicator), currency);
 
-                if (ratio) {
-                  budgetExchange = false;
-                } else if (budgetExchange) {
-                  budgetExchange = qs.sqlExists(budgetCursor,
-                      SqlUtils.notEqual(budgetCursor, COL_BUDGET_HEADER_CURRENCY, currency));
+                  results.updateBudget(computeBudgetValues(column.getId(), row.getId(),
+                      budgetCursor, budgetCondition, range, turnoverOrBalance, ratio,
+                      columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
+                      exchangeTo));
                 }
-
-                Long exchangeTo = budgetExchange ? currency : null;
-
-                results.mergeValues(computeBudgetValues(column.getId(), row.getId(),
-                    budgetCursor, budgetCondition, range, turnoverOrBalance, ratio,
-                    columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
-                    exchangeTo));
 
                 qs.sqlDropTemp(budgetCursor);
               }
@@ -1141,7 +1174,7 @@ public class AnalysisBean {
 
   private Map<AnalysisSplitType, List<AnalysisSplitValue>> getPotentialSplit(
       List<AnalysisSplitType> splitTypes, BeeView finView, Long userId, Filter finFilter,
-      String budgetCursor, IsCondition budgetCondition,
+      Map<String, IsCondition> budgetCursors,
       MonthRange range, TurnoverOrBalance turnoverOrBalance) {
 
     Map<AnalysisSplitType, List<AnalysisSplitValue>> result =
@@ -1150,7 +1183,7 @@ public class AnalysisBean {
     if (!BeeUtils.isEmpty(splitTypes)) {
       for (AnalysisSplitType splitType : splitTypes) {
         List<AnalysisSplitValue> splitValues = getSplitValues(splitType,
-            finView, userId, finFilter, budgetCursor, budgetCondition, range, turnoverOrBalance);
+            finView, userId, finFilter, budgetCursors, range, turnoverOrBalance);
 
         if (!BeeUtils.isEmpty(splitValues)) {
           result.put(splitType, splitValues);
@@ -1162,8 +1195,7 @@ public class AnalysisBean {
   }
 
   private List<AnalysisSplitValue> getSplitValues(AnalysisSplitType type,
-      BeeView finView, Long userId, Filter finFilter,
-      String budgetCursor, IsCondition budgetCondition,
+      BeeView finView, Long userId, Filter finFilter, Map<String, IsCondition> budgetCursors,
       MonthRange range, TurnoverOrBalance turnoverOrBalance) {
 
     List<AnalysisSplitValue> result = new ArrayList<>();
@@ -1201,15 +1233,8 @@ public class AnalysisBean {
       finTmp = null;
     }
 
-    boolean hasBudget = !BeeUtils.isEmpty(budgetCursor);
-    IsCondition budgetYearCondition = null;
+    boolean hasBudget = !BeeUtils.isEmpty(budgetCursors);
     String budgetColumn = type.getBudgetColumn();
-
-    if (hasBudget) {
-      budgetYearCondition = getBudgetYearCondition(budgetCursor, COL_BUDGET_ENTRY_YEAR,
-          range, turnoverOrBalance);
-      hasBudget = qs.sqlExists(budgetCursor, SqlUtils.and(budgetCondition, budgetYearCondition));
-    }
 
     if (finTmp != null || hasBudget) {
       if (type.isPeriod()) {
@@ -1219,7 +1244,7 @@ public class AnalysisBean {
 
         Collection<YearMonth> budgetMonths;
         if (hasBudget) {
-          budgetMonths = getBudgetMonths(budgetCursor, budgetCondition, range, turnoverOrBalance);
+          budgetMonths = getBudgetMonths(budgetCursors, range, turnoverOrBalance);
         } else {
           budgetMonths = Collections.emptySet();
         }
@@ -1312,11 +1337,16 @@ public class AnalysisBean {
         }
 
         if (hasBudget && !BeeUtils.isEmpty(budgetColumn)) {
-          ids.addAll(qs.getLongSet(new SqlSelect()
-              .addFields(budgetCursor, budgetColumn)
-              .addFrom(budgetCursor)
-              .setWhere(SqlUtils.and(budgetCondition, budgetYearCondition,
-                  SqlUtils.notNull(budgetCursor, budgetColumn)))));
+          budgetCursors.forEach((budgetCursor, budgetCondition) -> {
+            IsCondition budgetYearCondition = getBudgetYearCondition(budgetCursor,
+                COL_BUDGET_ENTRY_YEAR, range, turnoverOrBalance);
+
+            ids.addAll(qs.getLongSet(new SqlSelect()
+                .addFields(budgetCursor, budgetColumn)
+                .addFrom(budgetCursor)
+                .setWhere(SqlUtils.and(budgetCondition, budgetYearCondition,
+                    SqlUtils.notNull(budgetCursor, budgetColumn)))));
+          });
         }
 
         if (ids.contains(null)) {
@@ -1363,11 +1393,16 @@ public class AnalysisBean {
         }
 
         if (hasBudget && !BeeUtils.isEmpty(budgetColumn)) {
-          ids.addAll(qs.getLongSet(new SqlSelect()
-              .addFields(budgetCursor, budgetColumn)
-              .addFrom(budgetCursor)
-              .setWhere(SqlUtils.and(budgetCondition, budgetYearCondition,
-                  SqlUtils.notNull(budgetCursor, budgetColumn)))));
+          budgetCursors.forEach((budgetCursor, budgetCondition) -> {
+            IsCondition budgetYearCondition = getBudgetYearCondition(budgetCursor,
+                COL_BUDGET_ENTRY_YEAR, range, turnoverOrBalance);
+
+            ids.addAll(qs.getLongSet(new SqlSelect()
+                .addFields(budgetCursor, budgetColumn)
+                .addFrom(budgetCursor)
+                .setWhere(SqlUtils.and(budgetCondition, budgetYearCondition,
+                    SqlUtils.notNull(budgetCursor, budgetColumn)))));
+          });
         }
 
         if (ids.contains(null)) {
@@ -1805,6 +1840,33 @@ public class AnalysisBean {
     return value;
   }
 
+  private Pair<String, IsCondition> prepareBudget(long indicator, TurnoverOrBalance indicatorTOB,
+      long budgetType, TurnoverOrBalance parentTOB,
+      AnalysisFilter headerFilter, AnalysisFilter columnFilter, AnalysisFilter rowFilter) {
+
+    String cursor = getBudgetCursor(indicator, indicatorTOB, budgetType, parentTOB);
+
+    if (qs.isEmpty(cursor)) {
+      if (!BeeUtils.isEmpty(cursor)) {
+        qs.sqlDropTemp(cursor);
+      }
+
+      return null;
+
+    } else {
+      IsCondition condition = getBudgetCondition(cursor, COL_BUDGET_ENTRY_EMPLOYEE,
+          headerFilter, columnFilter, rowFilter);
+
+      if (condition != null && !qs.sqlExists(cursor, condition)) {
+        qs.sqlDropTemp(cursor);
+        return null;
+
+      } else {
+        return Pair.of(cursor, condition);
+      }
+    }
+  }
+
   private String getBudgetCursor(long indicator, TurnoverOrBalance indicatorTurnoverOrBalance,
       long budgetType, TurnoverOrBalance parentTurnoverOrBalance) {
 
@@ -1934,6 +1996,21 @@ public class AnalysisBean {
           SqlUtils.moreEqual(source, column, lower.getYear()),
           SqlUtils.lessEqual(source, column, upper.getYear()));
     }
+  }
+
+  private Long getBudgetExchangeTo(String cursor, IsCondition condition,
+      IndicatorSource indicatorSource, Long currency) {
+
+    boolean exchange;
+
+    if (indicatorSource != null && !indicatorSource.hasCurrency()) {
+      exchange = false;
+    } else {
+      exchange = qs.sqlExists(cursor,
+          SqlUtils.and(condition, SqlUtils.notEqual(cursor, COL_BUDGET_HEADER_CURRENCY, currency)));
+    }
+
+    return exchange ? currency : null;
   }
 
   private Collection<AnalysisValue> computeBudgetValues(long columnId, long rowId,
@@ -2193,7 +2270,7 @@ public class AnalysisBean {
     return aggregate;
   }
 
-  private Collection<YearMonth> getBudgetMonths(String source, IsCondition condition,
+  private Collection<YearMonth> getBudgetMonths(Map<String, IsCondition> budgetCursors,
       MonthRange range, TurnoverOrBalance turnoverOrBalance) {
 
     Set<YearMonth> result = new HashSet<>();
@@ -2203,31 +2280,35 @@ public class AnalysisBean {
 
     String yearColumn = COL_BUDGET_ENTRY_YEAR;
 
-    IsCondition yearCondition = getBudgetYearCondition(source, yearColumn,
-        range, turnoverOrBalance);
+    for (Map.Entry<String, IsCondition> entry : budgetCursors.entrySet()) {
+      String source = entry.getKey();
+      IsCondition condition = entry.getValue();
 
-    SqlSelect query = new SqlSelect()
-        .addFields(source, COL_BUDGET_ENTRY_YEAR)
-        .addFields(source, COL_BUDGET_ENTRY_VALUES)
-        .addFrom(source)
-        .setWhere(SqlUtils.and(condition, yearCondition));
+      IsCondition yearCondition = getBudgetYearCondition(source, yearColumn,
+          range, turnoverOrBalance);
 
-    SimpleRowSet data = qs.getData(query);
-    if (DataUtils.isEmpty(data)) {
-      return result;
-    }
+      SqlSelect query = new SqlSelect()
+          .addFields(source, COL_BUDGET_ENTRY_YEAR)
+          .addFields(source, COL_BUDGET_ENTRY_VALUES)
+          .addFrom(source)
+          .setWhere(SqlUtils.and(condition, yearCondition));
 
-    for (SimpleRow row : data) {
-      int year = row.getInt(yearColumn);
+      SimpleRowSet data = qs.getData(query);
 
-      for (int month = 1; month <= 12; month++) {
-        Double value = row.getDouble(colBudgetEntryValue(month));
+      if (!DataUtils.isEmpty(data)) {
+        for (SimpleRow row : data) {
+          int year = row.getInt(yearColumn);
 
-        if (BeeUtils.isDouble(value)) {
-          YearMonth ym = new YearMonth(year, month);
+          for (int month = 1; month <= 12; month++) {
+            Double value = row.getDouble(colBudgetEntryValue(month));
 
-          if (budgetMonthMatch(ym, range, turnoverOrBalance)) {
-            result.add(ym);
+            if (BeeUtils.isDouble(value)) {
+              YearMonth ym = new YearMonth(year, month);
+
+              if (budgetMonthMatch(ym, range, turnoverOrBalance)) {
+                result.add(ym);
+              }
+            }
           }
         }
       }

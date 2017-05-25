@@ -13,11 +13,14 @@ import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 public final class AnalysisUtils {
+
+  private static final double MIN_VALUE = 1e-5;
 
   public static String formatYearMonth(Integer year, Integer month) {
     String y = (year == null) ? null : TimeUtils.yearToString(year);
@@ -201,6 +204,10 @@ public final class AnalysisUtils {
     return year >= ANALYSIS_MIN_YEAR && year <= ANALYSIS_MAX_YEAR;
   }
 
+  public static boolean isValue(Double value) {
+    return BeeUtils.isDouble(value) && Math.abs(value) >= MIN_VALUE;
+  }
+
   public static Filter joinFilters(CompoundFilter include, CompoundFilter exclude) {
     if (include.isEmpty() && exclude.isEmpty()) {
       return null;
@@ -213,6 +220,31 @@ public final class AnalysisUtils {
 
     } else {
       return Filter.and(include, Filter.isNot(exclude));
+    }
+  }
+
+  public static boolean mergeValue(Collection<AnalysisValue> values, AnalysisValue value) {
+    if (values == null || value == null) {
+      return false;
+
+    } else {
+      for (AnalysisValue av : values) {
+        if (av.matches(value)) {
+          av.add(value);
+          return true;
+        }
+      }
+
+      values.add(value);
+      return true;
+    }
+  }
+
+  public static void mergeValues(Collection<AnalysisValue> target,
+      Collection<AnalysisValue> source) {
+
+    if (target != null && source != null) {
+      source.forEach(value -> mergeValue(target, value));
     }
   }
 
