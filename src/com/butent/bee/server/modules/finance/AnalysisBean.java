@@ -374,14 +374,18 @@ public class AnalysisBean {
                     minusFilters.put(primary, minusFilter);
 
                     valueFilters.put(primary, valueFilter);
+                  }
 
-                    if (needsBudget) {
-                      Pair<String, IsCondition> budget = prepareBudget(primary,
-                          indicatorTurnoverOrBalance.get(primary), budgetType, turnoverOrBalance,
-                          headerAnalysisFilter, columnAnalysisFilter, rowAnalysisFilter);
+                  if (needsBudget) {
+                    for (Long ind : calculationSequence.values()) {
+                      if (!Objects.equals(ind, indicator)) {
+                        Pair<String, IsCondition> budget = prepareBudget(ind,
+                            indicatorTurnoverOrBalance.get(ind), budgetType, turnoverOrBalance,
+                            headerAnalysisFilter, columnAnalysisFilter, rowAnalysisFilter);
 
-                      if (budget != null) {
-                        budgets.put(primary, budget);
+                        if (budget != null) {
+                          budgets.put(ind, budget);
+                        }
                       }
                     }
                   }
@@ -439,10 +443,6 @@ public class AnalysisBean {
                       }
                     }
 
-                    if (!budgets.isEmpty()) {
-                      budgets.values().forEach(pair -> qs.sqlDropTemp(pair.getA()));
-                    }
-
                     List<Integer> levels = new ArrayList<>(calculationSequence.keySet());
                     levels.sort(null);
 
@@ -461,6 +461,22 @@ public class AnalysisBean {
 
                           if (response.hasErrors()) {
                             break;
+                          }
+
+                          if (calculateBudget && budgets.containsKey(secondary)) {
+                            String cursor = budgets.get(secondary).getA();
+                            IsCondition condition = budgets.get(secondary).getB();
+
+                            TurnoverOrBalance tob = BeeUtils.nvl(turnoverOrBalance,
+                                indicatorTurnoverOrBalance.get(secondary));
+
+                            Long exchangeTo = getBudgetExchangeTo(cursor, condition, null,
+                                currency);
+
+                            AnalysisUtils.updateBudget(secondaryValues, computeBudgetValues(
+                                column.getId(), row.getId(), cursor, condition, range, tob, false,
+                                columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
+                                exchangeTo));
                           }
 
                           if (Objects.equals(secondary, indicator)) {
@@ -485,6 +501,10 @@ public class AnalysisBean {
                       if (response.hasErrors()) {
                         break;
                       }
+                    }
+
+                    if (!budgets.isEmpty()) {
+                      budgets.values().forEach(pair -> qs.sqlDropTemp(pair.getA()));
                     }
                   }
                 }

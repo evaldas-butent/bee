@@ -256,6 +256,27 @@ public final class AnalysisUtils {
     }
   }
 
+  public static void updateBudget(Collection<AnalysisValue> values, AnalysisValue value) {
+    if (values != null && value != null && value.hasBudgetValue()) {
+      for (AnalysisValue av : values) {
+        if (av.matches(value)) {
+          av.setBudgetValue(value.getBudgetNumber());
+          return;
+        }
+      }
+
+      values.add(value);
+    }
+  }
+
+  public static void updateBudget(Collection<AnalysisValue> target,
+      Collection<AnalysisValue> source) {
+
+    if (target != null && source != null) {
+      source.forEach(value -> updateBudget(target, value));
+    }
+  }
+
   private AnalysisUtils() {
   }
 }
