@@ -3,6 +3,7 @@ package com.butent.bee.shared.modules.finance.analysis;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.modules.finance.FinanceConstants;
 import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -84,7 +85,7 @@ public final class AnalysisValue implements BeeSerializable {
   }
 
   private static String format(double value) {
-    return BeeUtils.toString(value);
+    return BeeUtils.toString(value, FinanceConstants.ANALYSIS_MAX_SCALE);
   }
 
   private enum Serial {
