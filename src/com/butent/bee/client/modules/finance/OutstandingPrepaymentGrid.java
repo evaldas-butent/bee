@@ -3,8 +3,11 @@ package com.butent.bee.client.modules.finance;
 import static com.butent.bee.shared.modules.finance.FinanceConstants.FILTER_OUTSTANDING_PREPAYMENT;
 
 import com.butent.bee.client.data.Provider;
+import com.butent.bee.client.event.logical.RowCountChangeEvent;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
@@ -42,6 +45,17 @@ public class OutstandingPrepaymentGrid extends PrepaymentGrid {
 
       presenter.handleAction(Action.REFRESH);
     }
+  }
+
+  @Override
+  public void onLoad(GridView gridView) {
+    gridView.getGrid().addMutationHandler(event -> SummaryChangeEvent.maybeFire(gridView));
+    super.onLoad(gridView);
+  }
+
+  @Override
+  public boolean onRowCountChange(GridView gridView, RowCountChangeEvent event) {
+    return false;
   }
 
   private Filter buildFilter(Long company, Long currency) {

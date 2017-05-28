@@ -541,3 +541,17 @@
 .bee-trade-debts-phase-toggle {
   padding-right: 1vw;
 }
+.bee-form-PaymentSuppliers .bee-TabbedPages-tabCaption,
+.bee-form-PaymentCustomers .bee-TabbedPages-tabCaption {
+  align-self: center;
+  -webkit-align-self: center;
+  -ms-flex-item-align: center;
+}
+.bee-trade-payment-summary-amount {
+  padding-left: 5px;
+  text-align: right;
+  font-size: large;
+}
+.bee-trade-payment-summary-currency {
+  vertical-align: middle;
+}

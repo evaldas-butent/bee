@@ -9,6 +9,8 @@ import com.butent.bee.client.Storage;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.RowCountChangeEvent;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiOption;
@@ -120,7 +122,14 @@ class TradeDebtsGrid extends AbstractGridInterceptor {
       }
     }
 
+    gridView.getGrid().addMutationHandler(event -> SummaryChangeEvent.maybeFire(gridView));
+
     super.onLoad(gridView);
+  }
+
+  @Override
+  public boolean onRowCountChange(GridView gridView, RowCountChangeEvent event) {
+    return false;
   }
 
   void onParentChange(Long company, Long currency, DateTime dateTo, DateTime termTo) {
