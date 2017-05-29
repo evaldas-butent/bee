@@ -8,6 +8,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.modules.finance.OutstandingPrepaymentGrid;
@@ -19,11 +20,14 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.PrepaymentKind;
 import com.butent.bee.shared.modules.trade.DebtKind;
 import com.butent.bee.shared.time.DateTime;
@@ -35,6 +39,8 @@ import java.util.Objects;
 import java.util.TreeMap;
 
 class PaymentForm extends AbstractFormInterceptor {
+
+  private static final BeeLogger logger = LogUtils.getLogger(PaymentForm.class);
 
   private static final String STYLE_PREFIX = TradeKeeper.STYLE_PREFIX + "payment-";
   private static final String STYLE_DEBT_SUMMARY = STYLE_PREFIX + "debt-summary";
@@ -117,10 +123,45 @@ class PaymentForm extends AbstractFormInterceptor {
                     GRID_OUTSTANDING_PREPAYMENT_RECEIVED));
           }
           break;
+
+        case GRID_OUTSTANDING_PREPAYMENT_GIVEN:
+        case GRID_OUTSTANDING_PREPAYMENT_RECEIVED:
+          if (widget instanceof GridPanel) {
+            GridInterceptor interceptor = ((GridPanel) widget).getGridInterceptor();
+            if (interceptor instanceof OutstandingPrepaymentGrid) {
+              ((OutstandingPrepaymentGrid) interceptor).setDischarger(this::dischargePrepayments);
+            }
+          }
+          break;
+
+        case GRID_TRADE_PAYABLES:
+        case GRID_TRADE_RECEIVABLES:
+          if (widget instanceof GridPanel) {
+            GridInterceptor interceptor = ((GridPanel) widget).getGridInterceptor();
+            if (interceptor instanceof TradeDebtsGrid) {
+              TradeDebtsGrid debtsGrid = (TradeDebtsGrid) interceptor;
+
+              if (debtsGrid.getDebtKind() == debtKind) {
+                debtsGrid.initDischarger(Localized.dictionary().pay(), this::onPay);
+              } else {
+                debtsGrid.initDischarger(Localized.dictionary().paymentDischargeDebt(),
+                    this::dischargeDebts);
+              }
+            }
+          }
+          break;
       }
     }
 
     super.afterCreateWidget(name, widget, callback);
+  }
+
+  private void dischargeDebts(GridView gridView) {
+    logger.debug("debts", gridView.getGridName());
+  }
+
+  private void dischargePrepayments(GridView gridView, PrepaymentKind kind) {
+    logger.debug(gridView.getGridName(), kind);
   }
 
   private DateTime getDateTime(String name) {
@@ -155,6 +196,10 @@ class PaymentForm extends AbstractFormInterceptor {
 
       refreshMainDebts(payer, currency);
     }
+  }
+
+  private void onPay(GridView gridView) {
+    logger.debug("pay", gridView.getGridName());
   }
 
   private void refreshChildren() {
