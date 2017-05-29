@@ -8,7 +8,7 @@
     <Enum name="Status" key="OrderStatus" notNull="true" label="=trOrderStatus" defValue="1" />
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=orderDate" />
     <String name="OrderNo" precision="60" unique="true" notNull="true" label="=orderNumber"
-            defExpr="NEXT_NUMBER" defValue="HTR" />
+            defExpr="NEXT_NUMBER" defValue="HOO" />
     <Relation name="Customer" relation="Companies" notNull="true" label="=customer" />
     <Relation name="CustomerPerson" relation="CompanyPersons" label="=personContact" />
     <Relation name="Payer" relation="Companies" label="=payer" />
