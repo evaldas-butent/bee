@@ -122,7 +122,8 @@ class TradeDebtsGrid extends AbstractGridInterceptor {
       }
     }
 
-    gridView.getGrid().addMutationHandler(event -> SummaryChangeEvent.maybeFire(gridView));
+    gridView.getGrid().addMutationHandler(e -> SummaryChangeEvent.maybeFire(gridView));
+    gridView.getGrid().addSelectionCountChangeHandler(e -> SummaryChangeEvent.maybeFire(gridView));
 
     super.onLoad(gridView);
   }
@@ -208,7 +209,9 @@ class TradeDebtsGrid extends AbstractGridInterceptor {
 
   private void maybeRefresh(String key, Filter filter) {
     GridPresenter presenter = getGridPresenter();
+
     if (presenter != null && presenter.getDataProvider().setParentFilter(key, filter)) {
+      getGridView().getGrid().clearSelection();
       presenter.handleAction(Action.REFRESH);
     }
   }

@@ -40,16 +40,17 @@ public class OutstandingPrepaymentGrid extends PrepaymentGrid {
   public void onParentChange(Long company, Long currency) {
     GridPresenter presenter = getGridPresenter();
 
-    if (presenter != null
-        && presenter.getDataProvider().setDefaultParentFilter(buildFilter(company, currency))) {
-
+    if (presenter.getDataProvider().setDefaultParentFilter(buildFilter(company, currency))) {
+      getGridView().getGrid().clearSelection();
       presenter.handleAction(Action.REFRESH);
     }
   }
 
   @Override
   public void onLoad(GridView gridView) {
-    gridView.getGrid().addMutationHandler(event -> SummaryChangeEvent.maybeFire(gridView));
+    gridView.getGrid().addMutationHandler(e -> SummaryChangeEvent.maybeFire(gridView));
+    gridView.getGrid().addSelectionCountChangeHandler(e -> SummaryChangeEvent.maybeFire(gridView));
+
     super.onLoad(gridView);
   }
 

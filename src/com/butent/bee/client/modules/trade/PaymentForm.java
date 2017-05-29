@@ -200,14 +200,17 @@ class PaymentForm extends AbstractFormInterceptor {
     GridView gridView = ViewHelper.getChildGrid(getFormView(), gridName);
 
     if (gridView != null && !gridView.isEmpty()) {
+      boolean hasSelection = gridView.hasSelection();
       int currencyIndex = gridView.getDataIndex(ALS_CURRENCY_NAME);
 
       for (IsRow row : gridView.getRowData()) {
-        String currencyName = row.getString(currencyIndex);
-        Double debt = row.getPropertyDouble(PROP_TD_DEBT);
+        if (!hasSelection || gridView.isRowSelected(row.getId())) {
+          String currencyName = row.getString(currencyIndex);
+          Double debt = row.getPropertyDouble(PROP_TD_DEBT);
 
-        if (!BeeUtils.isEmpty(currencyName) && BeeUtils.nonZero(debt)) {
-          totals.merge(currencyName, debt, Double::sum);
+          if (!BeeUtils.isEmpty(currencyName) && BeeUtils.nonZero(debt)) {
+            totals.merge(currencyName, debt, Double::sum);
+          }
         }
       }
     }
@@ -237,16 +240,20 @@ class PaymentForm extends AbstractFormInterceptor {
     GridView gridView = ViewHelper.getChildGrid(getFormView(), gridName);
 
     if (gridView != null && !gridView.isEmpty()) {
+      boolean hasSelection = gridView.hasSelection();
+
       int amountIndex = gridView.getDataIndex(COL_FIN_AMOUNT);
       int currencyIndex = gridView.getDataIndex(ALS_CURRENCY_NAME);
 
       for (IsRow row : gridView.getRowData()) {
-        double debt = BeeUtils.unbox(row.getDouble(amountIndex))
-            - BeeUtils.unbox(row.getPropertyDouble(PROP_PREPAYMENT_USED));
-        String currencyName = row.getString(currencyIndex);
+        if (!hasSelection || gridView.isRowSelected(row.getId())) {
+          double debt = BeeUtils.unbox(row.getDouble(amountIndex))
+              - BeeUtils.unbox(row.getPropertyDouble(PROP_PREPAYMENT_USED));
+          String currencyName = row.getString(currencyIndex);
 
-        if (!BeeUtils.isEmpty(currencyName) && BeeUtils.nonZero(debt)) {
-          totals.merge(currencyName, debt, Double::sum);
+          if (!BeeUtils.isEmpty(currencyName) && BeeUtils.nonZero(debt)) {
+            totals.merge(currencyName, debt, Double::sum);
+          }
         }
       }
     }
