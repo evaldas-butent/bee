@@ -4825,6 +4825,8 @@ public interface Dictionary {
 
   default String prmProjectHourUnit() {return g("prmProjectHourUnit");}
 
+  default String prmRESTEarningsFundsOnly() {return g("prmRESTEarningsFundsOnly");}
+
   default String prmReturnedActStatus() {return g("prmReturnedActStatus");}
 
   default String prmRole() {return g("prmRole");}
