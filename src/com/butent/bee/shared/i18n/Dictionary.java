@@ -4216,6 +4216,10 @@ public interface Dictionary {
 
   default String paymentDueDate() {return g("paymentDueDate");}
 
+  default String paymentEnterAccountOrType() {return g("paymentEnterAccountOrType");}
+
+  default String paymentSubmitQuestion() {return g("paymentSubmitQuestion");}
+
   default String paymentSuppliers() {return g("paymentSuppliers");}
 
   default String paymentType() {return g("paymentType");}
