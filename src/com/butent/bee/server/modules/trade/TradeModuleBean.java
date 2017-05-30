@@ -35,6 +35,7 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.AdministrationModuleBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
+import com.butent.bee.server.modules.finance.FinanceModuleBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
@@ -177,6 +178,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   DataEditorBean deb;
   @EJB
   AdministrationModuleBean adm;
+  @EJB
+  FinanceModuleBean fin;
 
   @Resource
   TimerService timerService;
@@ -316,6 +319,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       case SVC_TRADE_STOCK_REPORT:
       case SVC_TRADE_MOVEMENT_OF_GOODS_REPORT:
         response = rep.doService(svc, reqInfo);
+        break;
+
+      case SVC_SUBMIT_PAYMENT:
+        response = submitPayment(reqInfo);
         break;
 
       default:
@@ -4277,5 +4284,63 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     } else {
       return ResponseObject.response(result);
     }
+  }
+
+  private ResponseObject submitPayment(RequestInfo reqInfo) {
+    Long time = reqInfo.getParameterLong(COL_TRADE_PAYMENT_DATE);
+    if (time == null) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), COL_TRADE_PAYMENT_DATE);
+    }
+
+    Long account = reqInfo.getParameterLong(COL_TRADE_PAYMENT_ACCOUNT);
+    Long paymentType = reqInfo.getParameterLong(COL_TRADE_PAYMENT_TYPE);
+
+    String series = reqInfo.getParameter(COL_TRADE_PAYMENT_SERIES);
+    String number = reqInfo.getParameter(COL_TRADE_PAYMENT_NUMBER);
+
+    if (reqInfo.hasParameter(VAR_PAYMENTS)) {
+      Map<String, String> payments = Codec.deserializeHashMap(reqInfo.getParameter(VAR_PAYMENTS));
+
+      for (Map.Entry<String, String> entry : payments.entrySet()) {
+        Long docId = BeeUtils.toLongOrNull(entry.getKey());
+        double amount = Localized.normalizeMoney(BeeUtils.toDoubleOrNull(entry.getValue()));
+
+        if (DataUtils.isId(docId) && BeeUtils.isPositive(amount)) {
+          SqlInsert insert = new SqlInsert(TBL_TRADE_PAYMENTS)
+              .addConstant(COL_TRADE_DOCUMENT, docId)
+              .addConstant(COL_TRADE_PAYMENT_DATE, time)
+              .addConstant(COL_TRADE_PAYMENT_AMOUNT, amount)
+              .addNotNull(COL_TRADE_PAYMENT_ACCOUNT, account)
+              .addNotNull(COL_TRADE_PAYMENT_TYPE, paymentType)
+              .addNotEmpty(COL_TRADE_PAYMENT_SERIES, series)
+              .addNotEmpty(COL_TRADE_PAYMENT_NUMBER, number);
+
+          ResponseObject insertResponse = qs.insertDataWithResponse(insert);
+          if (insertResponse.hasErrors()) {
+            return insertResponse;
+          }
+        }
+      }
+    }
+
+    if (reqInfo.hasParameter(VAR_PREPAYMENT)) {
+      double prepayment = Localized.normalizeMoney(reqInfo.getParameterDouble(VAR_PREPAYMENT));
+      DebtKind debtKind = reqInfo.getParameterEnum(VAR_KIND, DebtKind.class);
+
+      Long payer = reqInfo.getParameterLong(COL_TRADE_PAYER);
+      Long currency = reqInfo.getParameterLong(COL_TRADE_CURRENCY);
+
+      if (BeeUtils.isPositive(prepayment) && debtKind != null
+          && DataUtils.isId(payer) && DataUtils.isId(currency)) {
+
+        ResponseObject finResponse = fin.addPrepayment(debtKind.getPrepaymentKind(),
+            new DateTime(time), payer, account, series, number, prepayment, currency);
+        if (finResponse.hasErrors()) {
+          return finResponse;
+        }
+      }
+    }
+
+    return ResponseObject.emptyResponse();
   }
 }

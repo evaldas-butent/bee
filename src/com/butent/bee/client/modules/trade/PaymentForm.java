@@ -6,7 +6,10 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dom.DomUtils;
@@ -27,6 +30,8 @@ import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
+import com.butent.bee.shared.State;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
@@ -38,12 +43,14 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasStringValue;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -56,6 +63,7 @@ class PaymentForm extends AbstractFormInterceptor {
   private static final String STYLE_PREPAYMENT_SUMMARY = STYLE_PREFIX + "prepayment-summary";
   private static final String STYLE_SUMMARY_AMOUNT = STYLE_PREFIX + "summary-amount";
   private static final String STYLE_SUMMARY_CURRENCY = STYLE_PREFIX + "summary-currency";
+  private static final String STYLE_UPDATING = STYLE_PREFIX + "updating";
 
   private static final String NAME_PAYER_LABEL = "PayerLabel";
   private static final String NAME_PAYER = "Payer";
@@ -75,6 +83,8 @@ class PaymentForm extends AbstractFormInterceptor {
   private final DebtKind debtKind;
 
   private final Map<String, DateTime> dateTimeValues = new HashMap<>();
+
+  private State state;
 
   PaymentForm(DebtKind debtKind) {
     this.debtKind = debtKind;
@@ -171,6 +181,13 @@ class PaymentForm extends AbstractFormInterceptor {
     super.afterCreateWidget(name, widget, callback);
   }
 
+  private void clearValue(String name) {
+    Widget widget = getWidgetByName(name);
+    if (widget instanceof Editor) {
+      ((Editor) widget).clearValue();
+    }
+  }
+
   private void dischargeDebts(GridView gridView) {
     logger.debug("debts", gridView.getGridName());
   }
@@ -192,7 +209,7 @@ class PaymentForm extends AbstractFormInterceptor {
 
     if (widget instanceof InputNumber) {
       Double value = ((InputNumber) widget).getNumber();
-      return BeeUtils.isDouble(value) ? Localized.normalizeMoney(value) : null;
+      return BeeUtils.isDouble(value) ? normalize(value) : null;
     } else {
       return null;
     }
@@ -262,9 +279,24 @@ class PaymentForm extends AbstractFormInterceptor {
     }
   }
 
+  private static double normalize(Double value) {
+    return Localized.normalizeMoney(value);
+  }
+
   private void onPay(GridView gridView) {
+    if (isUpdating()) {
+      return;
+    }
+
     if (gridView == null || gridView.isEmpty()) {
       getFormView().notifyWarning(Localized.dictionary().noData());
+      return;
+    }
+
+    final Long payer = getSelectorValue(NAME_PAYER);
+    if (!DataUtils.isId(payer)) {
+      notifyRequired(debtKind.getPayerLabel(Localized.dictionary()));
+      focusName(NAME_PAYER);
       return;
     }
 
@@ -283,7 +315,7 @@ class PaymentForm extends AbstractFormInterceptor {
     }
 
     int currencyIndex = gridView.getDataIndex(COL_TRADE_CURRENCY);
-    final Long currency = getSelectorValue(NAME_CURRENCY);
+    Long currency = getSelectorValue(NAME_CURRENCY);
 
     final List<? extends IsRow> rows;
     if (DataUtils.isId(currency)) {
@@ -292,7 +324,15 @@ class PaymentForm extends AbstractFormInterceptor {
     } else {
       rows = getRows(gridView);
 
-      if (rows.stream().map(row -> row.getLong(currencyIndex)).distinct().count() != 1) {
+      Set<Long> currencies = rows.stream()
+          .map(row -> row.getLong(currencyIndex))
+          .filter(Objects::nonNull)
+          .collect(Collectors.toSet());
+
+      if (currencies.size() == 1) {
+        currency = currencies.stream().findFirst().get();
+
+      } else {
         notifyRequired(Localized.dictionary().currency());
         focusName(NAME_CURRENCY);
         return;
@@ -325,13 +365,82 @@ class PaymentForm extends AbstractFormInterceptor {
     }
     messages.add(Localized.dictionary().paymentSubmitQuestion());
 
+    final Long pc = currency;
+
     Global.confirm(Localized.dictionary().newPayment(), Icon.QUESTION, messages,
-        () -> doPay(rows, date, amount, currency, account, paymentType, series, number));
+        () -> doPay(rows, payer, date, amount, pc, account, paymentType, series, number));
   }
 
-  private void doPay(List<? extends IsRow> rows, DateTime date, double amount, Long currency,
-      Long account, Long paymentType, String series, String number) {
+  private void doPay(List<? extends IsRow> rows, Long payer, DateTime date, double amount,
+      Long currency, Long account, Long paymentType, String series, String number) {
 
+    Map<Long, Double> payments = new HashMap<>();
+    double sum = BeeConst.DOUBLE_ZERO;
+
+    for (IsRow row : rows) {
+      double debt = normalize(row.getPropertyDouble(PROP_TD_DEBT));
+
+      if (BeeUtils.isPositive(debt)) {
+        debt = normalize(Math.min(debt, amount - sum));
+        payments.put(row.getId(), debt);
+
+        sum = normalize(sum + debt);
+        if (sum >= amount) {
+          break;
+        }
+      }
+    }
+
+    final double prepayment = normalize(amount - sum);
+
+    ParameterList parameters = TradeKeeper.createArgs(SVC_SUBMIT_PAYMENT);
+    if (!payments.isEmpty()) {
+      parameters.addDataItem(VAR_PAYMENTS, Codec.beeSerialize(payments));
+    }
+
+    parameters.addDataItem(COL_TRADE_PAYMENT_DATE, date.getTime());
+
+    if (DataUtils.isId(account)) {
+      parameters.addDataItem(COL_TRADE_PAYMENT_ACCOUNT, account);
+    }
+    if (DataUtils.isId(paymentType)) {
+      parameters.addDataItem(COL_TRADE_PAYMENT_TYPE, paymentType);
+    }
+
+    if (!BeeUtils.isEmpty(series)) {
+      parameters.addDataItem(COL_TRADE_PAYMENT_SERIES, series);
+    }
+    if (!BeeUtils.isEmpty(number)) {
+      parameters.addDataItem(COL_TRADE_PAYMENT_NUMBER, number);
+    }
+
+    if (BeeUtils.isPositive(prepayment)) {
+      parameters.addDataItem(VAR_PREPAYMENT, prepayment);
+      parameters.addDataItem(VAR_KIND, debtKind.ordinal());
+      parameters.addDataItem(COL_TRADE_PAYER, payer);
+      parameters.addDataItem(COL_TRADE_CURRENCY, currency);
+    }
+
+    setUpdating(true);
+
+    BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        setUpdating(false);
+
+        if (!response.hasErrors()) {
+          clearValue(NAME_AMOUNT);
+
+          Long pv = getSelectorValue(NAME_PAYER);
+          Long cv = getSelectorValue(NAME_CURRENCY);
+          refreshMainDebts(pv, cv);
+
+          if (BeeUtils.isPositive(prepayment)) {
+            refreshPrepayments(debtKind.getPrepaymentKind().tradePaymentsMainGrid(), pv, cv);
+          }
+        }
+      }
+    });
   }
 
   private void refreshChildren() {
@@ -381,7 +490,7 @@ class PaymentForm extends AbstractFormInterceptor {
 
       for (IsRow row : getRows(gridView)) {
         String currencyName = row.getString(currencyIndex);
-        Double debt = Localized.normalizeMoney(row.getPropertyDouble(PROP_TD_DEBT));
+        double debt = normalize(row.getPropertyDouble(PROP_TD_DEBT));
 
         if (!BeeUtils.isEmpty(currencyName) && BeeUtils.nonZero(debt)) {
           totals.merge(currencyName, debt, Double::sum);
@@ -418,7 +527,7 @@ class PaymentForm extends AbstractFormInterceptor {
       int currencyIndex = gridView.getDataIndex(ALS_CURRENCY_NAME);
 
       for (IsRow row : getRows(gridView)) {
-        double balance = Localized.normalizeMoney(BeeUtils.unbox(row.getDouble(amountIndex))
+        double balance = normalize(BeeUtils.unbox(row.getDouble(amountIndex))
             - BeeUtils.unbox(row.getPropertyDouble(PROP_PREPAYMENT_USED)));
         String currencyName = row.getString(currencyIndex);
 
@@ -448,8 +557,18 @@ class PaymentForm extends AbstractFormInterceptor {
   }
 
   private static double totalDebt(List<? extends IsRow> rows) {
-    return Localized.normalizeMoney(rows.stream()
-        .mapToDouble(row -> Localized.normalizeMoney(row.getPropertyDouble(PROP_TD_DEBT)))
+    return normalize(rows.stream()
+        .mapToDouble(row -> normalize(row.getPropertyDouble(PROP_TD_DEBT)))
+        .filter(BeeUtils::isPositive)
         .sum());
+  }
+
+  private boolean isUpdating() {
+    return state == State.UPDATING;
+  }
+
+  private void setUpdating(boolean updating) {
+    this.state = updating ? State.UPDATING : null;
+    getFormView().setStyleName(STYLE_UPDATING, updating);
   }
 }

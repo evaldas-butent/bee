@@ -27,6 +27,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.PrepaymentKind;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -199,5 +200,11 @@ public class FinanceModuleBean implements BeeModule {
 
       return SqlUtils.sqlFalse();
     });
+  }
+
+  public ResponseObject addPrepayment(PrepaymentKind kind, DateTime date, Long company,
+      Long account, String series, String document, double amount, Long currency) {
+
+    return ResponseObject.emptyResponse();
   }
 }
