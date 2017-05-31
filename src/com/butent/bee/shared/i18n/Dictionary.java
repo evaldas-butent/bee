@@ -2996,6 +2996,8 @@ public interface Dictionary {
 
   default String finDefaultJournal() {return g("finDefaultJournal");}
 
+  default String finDischargeAccount() {return g("finDischargeAccount");}
+
   default String finDistribution() {return g("finDistribution");}
 
   default String finDistributionOfItems() {return g("finDistributionOfItems");}
