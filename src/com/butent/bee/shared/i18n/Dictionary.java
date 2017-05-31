@@ -4190,6 +4190,12 @@ public interface Dictionary {
 
   default String parameterName() {return g("parameterName");}
 
+  default String parameterNotFound(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("parameterNotFound"), _m);
+  }
+
   default String parameterType() {return g("parameterType");}
 
   default String parameters() {return g("parameters");}

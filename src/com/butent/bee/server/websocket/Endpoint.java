@@ -116,6 +116,21 @@ public class Endpoint {
     return MODIFICATION_SHOOTER;
   }
 
+  public static int refreshChildren(String viewName, Collection<Long> parents) {
+    int count = 0;
+
+    if (!BeeUtils.isEmpty(viewName) && !BeeUtils.isEmpty(parents)) {
+      for (Long parent : parents) {
+        if (DataUtils.isId(parent)) {
+          DataChangeEvent.fireRefresh(MODIFICATION_SHOOTER, viewName, parent);
+          count++;
+        }
+      }
+    }
+
+    return count;
+  }
+
   public static int refreshRows(BeeRowSet rowSet) {
     int count = 0;
 

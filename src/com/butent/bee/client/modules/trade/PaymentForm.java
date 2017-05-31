@@ -225,6 +225,10 @@ class PaymentForm extends AbstractFormInterceptor {
     }
   }
 
+  private GridView getGrid(String gridName) {
+    return ViewHelper.getChildGrid(getFormView(), gridName);
+  }
+
   private static List<? extends IsRow> getRows(GridView gridView) {
     if (gridView == null || gridView.isEmpty()) {
       return new ArrayList<>();
@@ -374,7 +378,7 @@ class PaymentForm extends AbstractFormInterceptor {
   private void doPay(List<? extends IsRow> rows, Long payer, DateTime date, double amount,
       Long currency, Long account, Long paymentType, String series, String number) {
 
-    Map<Long, Double> payments = new HashMap<>();
+    final Map<Long, Double> payments = new HashMap<>();
     double sum = BeeConst.DOUBLE_ZERO;
 
     for (IsRow row : rows) {
@@ -431,12 +435,18 @@ class PaymentForm extends AbstractFormInterceptor {
         if (!response.hasErrors()) {
           clearValue(NAME_AMOUNT);
 
-          Long pv = getSelectorValue(NAME_PAYER);
-          Long cv = getSelectorValue(NAME_CURRENCY);
-          refreshMainDebts(pv, cv);
+          GridView mainDebts = getGrid(debtKind.tradeDebtsMainGrid());
+          if (mainDebts != null) {
+            mainDebts.getGrid().clearSelection();
+            ViewHelper.refresh(mainDebts);
+          }
 
           if (BeeUtils.isPositive(prepayment)) {
-            refreshPrepayments(debtKind.getPrepaymentKind().tradePaymentsMainGrid(), pv, cv);
+            ViewHelper.refresh(getGrid(debtKind.getPrepaymentKind().tradePaymentsMainGrid()));
+          }
+
+          if (response.hasMessages()) {
+            response.notify(getFormView());
           }
         }
       }
@@ -457,7 +467,7 @@ class PaymentForm extends AbstractFormInterceptor {
   private void refreshDebts(String gridName, Long payer, Long currency,
       DateTime dateTo, DateTime termTo) {
 
-    GridView gridView = ViewHelper.getChildGrid(getFormView(), gridName);
+    GridView gridView = getGrid(gridName);
 
     if (gridView != null && gridView.getGridInterceptor() instanceof TradeDebtsGrid) {
       ((TradeDebtsGrid) gridView.getGridInterceptor()).onParentChange(payer, currency,
@@ -473,7 +483,7 @@ class PaymentForm extends AbstractFormInterceptor {
   }
 
   private void refreshPrepayments(String gridName, Long payer, Long currency) {
-    GridView gridView = ViewHelper.getChildGrid(getFormView(), gridName);
+    GridView gridView = getGrid(gridName);
 
     if (gridView != null && gridView.getGridInterceptor() instanceof OutstandingPrepaymentGrid) {
       ((OutstandingPrepaymentGrid) gridView.getGridInterceptor()).onParentChange(payer, currency);
@@ -483,7 +493,7 @@ class PaymentForm extends AbstractFormInterceptor {
   private String summarizeDebts(DebtKind kind, String gridName) {
     Map<String, Double> totals = new TreeMap<>();
 
-    GridView gridView = ViewHelper.getChildGrid(getFormView(), gridName);
+    GridView gridView = getGrid(gridName);
 
     if (gridView != null && !gridView.isEmpty()) {
       int currencyIndex = gridView.getDataIndex(ALS_CURRENCY_NAME);
@@ -520,7 +530,7 @@ class PaymentForm extends AbstractFormInterceptor {
   private String summarizePrepayments(PrepaymentKind kind, String gridName) {
     Map<String, Double> totals = new TreeMap<>();
 
-    GridView gridView = ViewHelper.getChildGrid(getFormView(), gridName);
+    GridView gridView = getGrid(gridName);
 
     if (gridView != null && !gridView.isEmpty()) {
       int amountIndex = gridView.getDataIndex(COL_FIN_AMOUNT);
@@ -542,7 +552,7 @@ class PaymentForm extends AbstractFormInterceptor {
 
     } else {
       HtmlTable table = new HtmlTable(STYLE_PREPAYMENT_SUMMARY);
-      table.addStyleName(StyleUtils.joinName(STYLE_DEBT_SUMMARY, kind.getStyleSuffix()));
+      table.addStyleName(StyleUtils.joinName(STYLE_DEBT_SUMMARY, kind.styleSuffix()));
 
       int r = 0;
       for (Map.Entry<String, Double> entry : totals.entrySet()) {

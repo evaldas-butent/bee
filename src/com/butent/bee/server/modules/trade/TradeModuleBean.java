@@ -4298,26 +4298,39 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     String series = reqInfo.getParameter(COL_TRADE_PAYMENT_SERIES);
     String number = reqInfo.getParameter(COL_TRADE_PAYMENT_NUMBER);
 
+    if (!BeeUtils.isEmpty(series) && BeeUtils.isEmpty(number)) {
+      number = qs.getNextNumber(TBL_TRADE_PAYMENTS, COL_TRADE_PAYMENT_NUMBER,
+          series, COL_TRADE_PAYMENT_SERIES);
+    }
+
+    Set<Long> docIds = new HashSet<>();
+
+    ResponseObject response = ResponseObject.emptyResponse();
+
     if (reqInfo.hasParameter(VAR_PAYMENTS)) {
       Map<String, String> payments = Codec.deserializeHashMap(reqInfo.getParameter(VAR_PAYMENTS));
 
-      for (Map.Entry<String, String> entry : payments.entrySet()) {
-        Long docId = BeeUtils.toLongOrNull(entry.getKey());
-        double amount = Localized.normalizeMoney(BeeUtils.toDoubleOrNull(entry.getValue()));
+      if (!payments.isEmpty()) {
+        for (Map.Entry<String, String> entry : payments.entrySet()) {
+          Long docId = BeeUtils.toLongOrNull(entry.getKey());
+          double amount = Localized.normalizeMoney(BeeUtils.toDoubleOrNull(entry.getValue()));
 
-        if (DataUtils.isId(docId) && BeeUtils.isPositive(amount)) {
-          SqlInsert insert = new SqlInsert(TBL_TRADE_PAYMENTS)
-              .addConstant(COL_TRADE_DOCUMENT, docId)
-              .addConstant(COL_TRADE_PAYMENT_DATE, time)
-              .addConstant(COL_TRADE_PAYMENT_AMOUNT, amount)
-              .addNotNull(COL_TRADE_PAYMENT_ACCOUNT, account)
-              .addNotNull(COL_TRADE_PAYMENT_TYPE, paymentType)
-              .addNotEmpty(COL_TRADE_PAYMENT_SERIES, series)
-              .addNotEmpty(COL_TRADE_PAYMENT_NUMBER, number);
+          if (DataUtils.isId(docId) && BeeUtils.isPositive(amount)) {
+            SqlInsert insert = new SqlInsert(TBL_TRADE_PAYMENTS)
+                .addConstant(COL_TRADE_DOCUMENT, docId)
+                .addConstant(COL_TRADE_PAYMENT_DATE, time)
+                .addConstant(COL_TRADE_PAYMENT_AMOUNT, amount)
+                .addNotNull(COL_TRADE_PAYMENT_ACCOUNT, account)
+                .addNotNull(COL_TRADE_PAYMENT_TYPE, paymentType)
+                .addNotEmpty(COL_TRADE_PAYMENT_SERIES, series)
+                .addNotEmpty(COL_TRADE_PAYMENT_NUMBER, number);
 
-          ResponseObject insertResponse = qs.insertDataWithResponse(insert);
-          if (insertResponse.hasErrors()) {
-            return insertResponse;
+            ResponseObject insertResponse = qs.insertDataWithResponse(insert);
+            if (insertResponse.hasErrors()) {
+              return insertResponse;
+            }
+
+            docIds.add(docId);
           }
         }
       }
@@ -4325,22 +4338,55 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     if (reqInfo.hasParameter(VAR_PREPAYMENT)) {
       double prepayment = Localized.normalizeMoney(reqInfo.getParameterDouble(VAR_PREPAYMENT));
-      DebtKind debtKind = reqInfo.getParameterEnum(VAR_KIND, DebtKind.class);
 
-      Long payer = reqInfo.getParameterLong(COL_TRADE_PAYER);
-      Long currency = reqInfo.getParameterLong(COL_TRADE_CURRENCY);
+      if (BeeUtils.isPositive(prepayment)) {
+        DebtKind debtKind = reqInfo.getParameterEnum(VAR_KIND, DebtKind.class);
 
-      if (BeeUtils.isPositive(prepayment) && debtKind != null
-          && DataUtils.isId(payer) && DataUtils.isId(currency)) {
+        Long payer = reqInfo.getParameterLong(COL_TRADE_PAYER);
+        Long currency = reqInfo.getParameterLong(COL_TRADE_CURRENCY);
 
-        ResponseObject finResponse = fin.addPrepayment(debtKind.getPrepaymentKind(),
-            new DateTime(time), payer, account, series, number, prepayment, currency);
-        if (finResponse.hasErrors()) {
-          return finResponse;
+        if (!DataUtils.isId(account) && DataUtils.isId(paymentType)) {
+          account = qs.getLongById(TBL_PAYMENT_TYPES, paymentType, COL_TRADE_PAYMENT_TYPE_ACCOUNT);
+        }
+
+        List<String> messages = new ArrayList<>();
+
+        if (debtKind == null) {
+          messages.add(Localized.dictionary().parameterNotFound(VAR_KIND));
+        }
+
+        if (!DataUtils.isId(payer)) {
+          messages.add(Localized.dictionary().parameterNotFound(COL_TRADE_PAYER));
+        }
+        if (!DataUtils.isId(currency)) {
+          messages.add(Localized.dictionary().parameterNotFound(COL_TRADE_CURRENCY));
+        }
+
+        if (!DataUtils.isId(currency)) {
+          messages.add("payment account not available");
+        }
+
+        if (messages.isEmpty()) {
+          ResponseObject finResponse = fin.addPrepayment(debtKind.getPrepaymentKind(),
+              new DateTime(time), payer, account, series, number, prepayment, currency);
+          if (finResponse.hasErrors()) {
+            return finResponse;
+          }
+
+          response.addMessagesFrom(finResponse);
+
+        } else {
+          response.addWarning(reqInfo.getLabel(), "cannot build prepayment");
+          messages.forEach(response::addWarning);
         }
       }
     }
 
-    return ResponseObject.emptyResponse();
+    if (!docIds.isEmpty()) {
+      Endpoint.refreshRows(qs.getViewData(VIEW_TRADE_DOCUMENTS, Filter.idIn(docIds)));
+      Endpoint.refreshChildren(VIEW_TRADE_PAYMENTS, docIds);
+    }
+
+    return response;
   }
 }

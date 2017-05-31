@@ -8,8 +8,18 @@ import com.butent.bee.shared.ui.HasLocalizedCaption;
 public enum PrepaymentKind implements HasLocalizedCaption {
   CUSTOMERS {
     @Override
+    public String defaultAccountColumn() {
+      return COL_ADVANCE_PAYMENTS_RECEIVED;
+    }
+
+    @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.prepaymentCustomersShort();
+    }
+
+    @Override
+    public NormalBalance normalBalance() {
+      return NormalBalance.CREDIT;
     }
 
     @Override
@@ -25,8 +35,18 @@ public enum PrepaymentKind implements HasLocalizedCaption {
 
   SUPPLIERS {
     @Override
+    public String defaultAccountColumn() {
+      return COL_ADVANCE_PAYMENTS_GIVEN;
+    }
+
+    @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.prepaymentSuppliersShort();
+    }
+
+    @Override
+    public NormalBalance normalBalance() {
+      return NormalBalance.DEBIT;
     }
 
     @Override
@@ -40,7 +60,11 @@ public enum PrepaymentKind implements HasLocalizedCaption {
     }
   };
 
-  public String getStyleSuffix() {
+  public abstract String defaultAccountColumn();
+
+  public abstract NormalBalance normalBalance();
+
+  public String styleSuffix() {
     return name().toLowerCase();
   }
 
