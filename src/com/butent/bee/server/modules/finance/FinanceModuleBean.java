@@ -18,6 +18,7 @@ import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -30,6 +31,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.PrepaymentKind;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -123,7 +125,7 @@ public class FinanceModuleBean implements BeeModule {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       @AllowConcurrentEvents
-      public void setTradeDocumentSums(DataEvent.ViewQueryEvent event) {
+      public void setPrepaymentUsage(DataEvent.ViewQueryEvent event) {
         if (event.isAfter(VIEW_FINANCE_PREPAYMENTS) && event.hasData()) {
           SqlSelect query = new SqlSelect()
               .addFields(TBL_FINANCIAL_RECORDS, COL_FIN_PREPAYMENT_PARENT)
@@ -149,6 +151,34 @@ public class FinanceModuleBean implements BeeModule {
                 }
               }
             }
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void onDeleteTradePayment(DataEvent.ViewDeleteEvent event) {
+        if (event.isBefore(TradeConstants.VIEW_TRADE_PAYMENTS)) {
+          Set<Long> ids = event.getIds();
+
+          if (!BeeUtils.isEmpty(ids)) {
+            SqlSelect query = new SqlSelect()
+                .addFields(TBL_FINANCIAL_RECORDS, sys.getIdName(TBL_FINANCIAL_RECORDS))
+                .addFrom(TBL_FINANCIAL_RECORDS)
+                .setWhere(SqlUtils.inList(TBL_FINANCIAL_RECORDS, COL_FIN_TRADE_PAYMENT, ids));
+
+            Set<Long> finIds = qs.getLongSet(query);
+            if (!BeeUtils.isEmpty(finIds)) {
+              event.setAttribute(COL_FIN_TRADE_PAYMENT, finIds);
+            }
+          }
+
+        } else if (event.isAfter(TradeConstants.VIEW_TRADE_PAYMENTS)
+            && event.hasAttribute(COL_FIN_TRADE_PAYMENT)) {
+
+          Set<Long> finIds = DataUtils.asIdSet(event.getAttribute(COL_FIN_TRADE_PAYMENT));
+          if (!BeeUtils.isEmpty(finIds)) {
+            Endpoint.fireDelete(VIEW_FINANCIAL_RECORDS, finIds);
           }
         }
       }
