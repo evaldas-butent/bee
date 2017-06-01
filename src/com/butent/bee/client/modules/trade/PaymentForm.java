@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.trade;
 
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.xml.client.Element;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
@@ -39,6 +40,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.PrepaymentKind;
 import com.butent.bee.shared.modules.trade.DebtKind;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasStringValue;
@@ -81,6 +83,7 @@ class PaymentForm extends AbstractFormInterceptor {
   private static final String NAME_PAGES = "pages";
 
   private final DebtKind debtKind;
+  private final boolean financeEnabled = Module.FINANCE.isEnabled();
 
   private final Map<String, DateTime> dateTimeValues = new HashMap<>();
 
@@ -93,6 +96,22 @@ class PaymentForm extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new PaymentForm(debtKind);
+  }
+
+  @Override
+  public boolean beforeCreateWidget(String name, Element description) {
+    if (name != null) {
+      switch (name) {
+        case GRID_OUTSTANDING_PREPAYMENT_GIVEN:
+        case GRID_OUTSTANDING_PREPAYMENT_RECEIVED:
+          if (!financeEnabled) {
+            return false;
+          }
+          break;
+      }
+    }
+
+    return super.beforeCreateWidget(name, description);
   }
 
   @Override
@@ -141,11 +160,14 @@ class PaymentForm extends AbstractFormInterceptor {
             pages.setSummaryRenderer(GRID_TRADE_RECEIVABLES, summary ->
                 summarizeDebts(DebtKind.RECEIVABLE, GRID_TRADE_RECEIVABLES));
 
-            pages.setSummaryRenderer(GRID_OUTSTANDING_PREPAYMENT_GIVEN, summary ->
-                summarizePrepayments(PrepaymentKind.SUPPLIERS, GRID_OUTSTANDING_PREPAYMENT_GIVEN));
-            pages.setSummaryRenderer(GRID_OUTSTANDING_PREPAYMENT_RECEIVED, summary ->
-                summarizePrepayments(PrepaymentKind.CUSTOMERS,
-                    GRID_OUTSTANDING_PREPAYMENT_RECEIVED));
+            if (financeEnabled) {
+              pages.setSummaryRenderer(GRID_OUTSTANDING_PREPAYMENT_GIVEN, summary ->
+                  summarizePrepayments(PrepaymentKind.SUPPLIERS,
+                      GRID_OUTSTANDING_PREPAYMENT_GIVEN));
+              pages.setSummaryRenderer(GRID_OUTSTANDING_PREPAYMENT_RECEIVED, summary ->
+                  summarizePrepayments(PrepaymentKind.CUSTOMERS,
+                      GRID_OUTSTANDING_PREPAYMENT_RECEIVED));
+            }
           }
           break;
 
@@ -362,8 +384,10 @@ class PaymentForm extends AbstractFormInterceptor {
     if (amount > debt) {
       messages.add(BeeUtils.joinWords(Localized.dictionary().debt(),
           TradeUtils.formatAmount(debt)));
-      messages.add(BeeUtils.joinWords(Localized.dictionary().prepayment(),
-          TradeUtils.formatAmount(amount - debt)));
+      if (financeEnabled) {
+        messages.add(BeeUtils.joinWords(Localized.dictionary().prepayment(),
+            TradeUtils.formatAmount(amount - debt)));
+      }
 
       messages.add(BeeConst.STRING_EMPTY);
     }
@@ -418,7 +442,7 @@ class PaymentForm extends AbstractFormInterceptor {
       parameters.addDataItem(COL_TRADE_PAYMENT_NUMBER, number);
     }
 
-    if (BeeUtils.isPositive(prepayment)) {
+    if (financeEnabled && BeeUtils.isPositive(prepayment)) {
       parameters.addDataItem(VAR_PREPAYMENT, prepayment);
       parameters.addDataItem(VAR_KIND, debtKind.ordinal());
       parameters.addDataItem(COL_TRADE_PAYER, payer);
@@ -441,7 +465,7 @@ class PaymentForm extends AbstractFormInterceptor {
             ViewHelper.refresh(mainDebts);
           }
 
-          if (BeeUtils.isPositive(prepayment)) {
+          if (financeEnabled && BeeUtils.isPositive(prepayment)) {
             ViewHelper.refresh(getGrid(debtKind.getPrepaymentKind().tradePaymentsMainGrid()));
           }
 
@@ -483,10 +507,12 @@ class PaymentForm extends AbstractFormInterceptor {
   }
 
   private void refreshPrepayments(String gridName, Long payer, Long currency) {
-    GridView gridView = getGrid(gridName);
+    if (financeEnabled) {
+      GridView gridView = getGrid(gridName);
 
-    if (gridView != null && gridView.getGridInterceptor() instanceof OutstandingPrepaymentGrid) {
-      ((OutstandingPrepaymentGrid) gridView.getGridInterceptor()).onParentChange(payer, currency);
+      if (gridView != null && gridView.getGridInterceptor() instanceof OutstandingPrepaymentGrid) {
+        ((OutstandingPrepaymentGrid) gridView.getGridInterceptor()).onParentChange(payer, currency);
+      }
     }
   }
 
