@@ -988,6 +988,7 @@ public final class TransportConstants {
   public static final String PROP_VEHICLE_SERVICES = "VehicleServices";
   public static final String PROP_ORDER_CARGO = "OrderCargo";
   public static final String PROP_TRIPS = "Trips";
+  public static final String PROP_TRIPS_CREATOR = "TripsCreator";
   public static final String PROP_TRIP_DRIVERS = "TripDrivers";
   public static final String PROP_FREIGHTS = "Freights";
   public static final String PROP_CARGO_HANDLING = "CargoHandling";

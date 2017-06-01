@@ -4,10 +4,11 @@ import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_DATE_TO;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -279,6 +280,27 @@ public class CustomTransportModuleBean {
           }
         }
       }
+    });
+
+    BeeView.registerConditionProvider(PROP_TRIPS_CREATOR, (view, args) -> {
+      String col = BeeUtils.getQuietly(args, 0);
+      String val = BeeUtils.getQuietly(args, 1);
+
+      if (BeeUtils.anyEmpty(col, val)) {
+        return null;
+      }
+
+      SqlSelect query = new SqlSelect()
+          .addFields(TBL_TRIP_COSTS, COL_TRIP)
+          .addFrom(TBL_TRIP_COSTS)
+          .addFromInner(TBL_USERS, sys.joinTables(TBL_USERS, TBL_TRIP_COSTS, COL_TRIP_COST_CREATOR))
+          .addFromInner(TBL_COMPANY_PERSONS, sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS,
+              COL_COMPANY_PERSON))
+          .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+          .setWhere(SqlUtils.or(SqlUtils.contains(TBL_PERSONS, COL_FIRST_NAME, val),
+              SqlUtils.contains(TBL_PERSONS, COL_LAST_NAME, val)));
+
+      return SqlUtils.in(view.getSourceAlias(), view.getSourceIdName(), query);
     });
   }
 }
