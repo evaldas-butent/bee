@@ -60,8 +60,7 @@ public abstract class CustomCompanyForm extends AbstractFormInterceptor implemen
                   for (IsRow row : getGridView().getRowData()) {
                     ids.add(row.getLong(idx));
                   }
-                  event.getSelector()
-                      .setAdditionalFilter(Filter.and(Filter.equals(COL_COMPANY,
+                  event.getSelector().setAdditionalFilter(Filter.and(Filter.equals(COL_COMPANY,
                           Global.getParameterRelation(AdministrationConstants.PRM_COMPANY)),
                           Filter.idNotIn(ids)));
                 }

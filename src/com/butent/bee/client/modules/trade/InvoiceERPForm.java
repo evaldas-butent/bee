@@ -3,8 +3,7 @@ package com.butent.bee.client.modules.trade;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_SALE_PROFORMA;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_EXPORTED;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -25,6 +24,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public abstract class InvoiceERPForm extends PrintFormInterceptor implements ClickHandler {
@@ -44,6 +44,7 @@ public abstract class InvoiceERPForm extends PrintFormInterceptor implements Cli
     int exportedIndex = getDataIndex(COL_TRADE_EXPORTED);
     erpAction.setVisible(!BeeUtils.isEmpty(Global
         .getParameterText(AdministrationConstants.PRM_ERP_ADDRESS))
+        && BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.TO_ERP)
         && (BeeConst.isUndef(proformaIndex) || BeeUtils.isEmpty(row.getString(proformaIndex)))
         && (BeeConst.isUndef(exportedIndex) || row.getDateTime(exportedIndex) == null));
     super.afterRefresh(form, row);
