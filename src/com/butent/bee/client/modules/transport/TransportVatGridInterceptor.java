@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.transport;
 
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_VAT_PERCENT;
 import static com.butent.bee.shared.modules.transport.TransportConstants.COL_COSTS_VAT;
 
 import com.butent.bee.client.Global;
@@ -31,8 +32,8 @@ public abstract class TransportVatGridInterceptor extends ParentRowRefreshGrid {
           String vat = form.getActiveRow().getString(vatColumnIndex);
 
           if (BeeUtils.toBoolean(valueChangeEvent.getValue()) && BeeUtils.isEmpty(vat)) {
-            getActiveRow().setValue(vatColumnIndex, BeeUtils.unbox(Global
-                .getParameterNumber(ClassifierConstants.COL_ITEM_VAT_PERCENT)));
+            getActiveRow().setValue(vatColumnIndex,
+                BeeUtils.unbox(Global.getParameterNumber(PRM_VAT_PERCENT)));
             getActiveRow().setValue(Data.getColumnIndex(getViewName(),
                 ClassifierConstants.COL_ITEM_VAT_PERCENT), true);
 
