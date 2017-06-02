@@ -17,6 +17,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.TabbedPages;
+import com.butent.bee.client.modules.finance.FinanceKeeper;
 import com.butent.bee.client.modules.finance.OutstandingPrepaymentGrid;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
@@ -471,6 +472,10 @@ class PaymentForm extends AbstractFormInterceptor {
 
           if (response.hasMessages()) {
             response.notify(getFormView());
+          }
+
+          if (financeEnabled && !payments.isEmpty()) {
+            FinanceKeeper.postTradeDocuments(payments.keySet(), null);
           }
         }
       }

@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.finance;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
@@ -100,6 +101,10 @@ public class FinanceModuleBean implements BeeModule {
         } else {
           response = ResponseObject.parameterNotFound(svc, Service.VAR_ID);
         }
+        break;
+
+      case SVC_POST_TRADE_DOCUMENTS:
+        response = postTradeDocuments(reqInfo);
         break;
 
       case SVC_SAVE_ANALYSIS_RESULTS:
@@ -331,6 +336,34 @@ public class FinanceModuleBean implements BeeModule {
       messages.forEach(response::addWarning);
     }
 
+    return response;
+  }
+
+  private ResponseObject postTradeDocuments(RequestInfo reqInfo) {
+    Set<Long> docIds = DataUtils.parseIdSet(reqInfo.getParameter(Service.VAR_LIST));
+    if (BeeUtils.isEmpty(docIds)) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), Service.VAR_LIST);
+    }
+
+    ResponseObject response = ResponseObject.emptyResponse();
+
+    int count = 0;
+    Stopwatch stopwatch = Stopwatch.createStarted();
+
+    for (Long docId : docIds) {
+      ResponseObject postResponse = posting.postTradeDocument(docId);
+      if (postResponse.hasErrors()) {
+        return postResponse;
+      }
+
+      response.addMessagesFrom(postResponse);
+      if (postResponse.hasResponse(Integer.class)) {
+        count += BeeUtils.unbox(postResponse.getResponseAsInt());
+      }
+    }
+
+    response.setResponse(BeeUtils.joinWords(docIds.size(), count,
+        BeeUtils.bracket(stopwatch.toString())));
     return response;
   }
 }

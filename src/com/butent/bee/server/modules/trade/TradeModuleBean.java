@@ -36,7 +36,6 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.AdministrationModuleBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.finance.FinanceModuleBean;
-import com.butent.bee.server.modules.finance.FinancePostingBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
@@ -181,8 +180,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   AdministrationModuleBean adm;
   @EJB
   FinanceModuleBean fin;
-  @EJB
-  FinancePostingBean posting;
 
   @Resource
   TimerService timerService;
@@ -4333,13 +4330,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             ResponseObject insertResponse = qs.insertDataWithResponse(insert);
             if (insertResponse.hasErrors()) {
               return insertResponse;
-            }
-
-            if (finEnabled) {
-              ResponseObject postResponse = posting.postTradeDocument(docId);
-              if (postResponse.hasErrors()) {
-                return postResponse;
-              }
             }
 
             docIds.add(docId);

@@ -11,6 +11,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class FinanceConstants {
 
   public static final String SVC_POST_TRADE_DOCUMENT = "postTradeDocument";
+  public static final String SVC_POST_TRADE_DOCUMENTS = "postTradeDocuments";
 
   public static final String SVC_VERIFY_ANALYSIS_FORM = "verifyAnalysisForm";
   public static final String SVC_CALCULATE_ANALYSIS_FORM = "calculateAnalysisForm";
