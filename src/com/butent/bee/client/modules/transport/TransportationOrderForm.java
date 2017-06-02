@@ -27,7 +27,6 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
@@ -61,7 +60,7 @@ class TransportationOrderForm extends PrintFormInterceptor implements ClickHandl
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       FormFactory.WidgetDescriptionCallback callback) {
     if (widget instanceof ChildGrid && BeeUtils.equals(name, VIEW_ORDER_CARGO)) {
-      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+      ((ChildGrid) widget).setGridInterceptor(new CargoInvoiceChecker() {
         @Override
         public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
           presenter.getGridView().ensureRelId(result -> {
