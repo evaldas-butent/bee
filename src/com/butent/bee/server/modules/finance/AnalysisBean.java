@@ -2221,7 +2221,7 @@ public class AnalysisBean {
       return null;
 
     } else if (DataUtils.isId(splitValue.getId())) {
-      return SqlUtils.equals(source, splitType.getBudgetColumn(), splitValue.getId());
+      return SqlUtils.equalsOrIsNull(source, splitType.getBudgetColumn(), splitValue.getId());
 
     } else {
       return SqlUtils.isNull(source, splitType.getBudgetColumn());
