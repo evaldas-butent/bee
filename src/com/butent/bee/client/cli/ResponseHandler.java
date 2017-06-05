@@ -67,7 +67,7 @@ final class ResponseHandler {
         Global.showTable(caption, rowSet);
       }
 
-    } else if (response.hasResponse(String.class)) {
+    } else if (response.getResponse() instanceof String) {
       if (BeeUtils.isEmpty(response.getResponseAsString())) {
         onEmptyResponse(caption);
       } else {
@@ -85,7 +85,7 @@ final class ResponseHandler {
     Map<String, String> serverData;
 
     if (response != null && response.hasResponse()) {
-      serverData = Codec.deserializeMap(response.getResponseAsString());
+      serverData = Codec.deserializeLinkedHashMap(response.getResponseAsString());
     } else {
       serverData = null;
     }

@@ -5,10 +5,6 @@ import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -62,7 +58,7 @@ public final class TimeBoardHelper {
 
   private static final BeeLogger logger = LogUtils.getLogger(TimeBoardHelper.class);
 
-  private static final String STYLE_MOHTH_SEPARATOR = TimeBoard.STYLE_PREFIX + "month-separator";
+  private static final String STYLE_MONTH_SEPARATOR = TimeBoard.STYLE_PREFIX + "month-separator";
   private static final String STYLE_DAY_SEPARATOR = TimeBoard.STYLE_PREFIX + "day-separator";
   private static final String STYLE_RIGHT_SEPARATOR = TimeBoard.STYLE_PREFIX + "right-separator";
 
@@ -884,52 +880,46 @@ public final class TimeBoardHelper {
   private static void addVisibleRangeDatePicker(final HasVisibleRange owner,
       final Widget widget, final boolean isStart) {
 
-    Binder.addClickHandler(widget, new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
+    Binder.addClickHandler(widget, event -> {
 
-        final JustDate startBound = owner.getMaxRange().lowerEndpoint();
-        final JustDate endBound = owner.getMaxRange().upperEndpoint();
+      final JustDate startBound = owner.getMaxRange().lowerEndpoint();
+      final JustDate endBound = owner.getMaxRange().upperEndpoint();
 
-        final JustDate oldStart = owner.getVisibleRange().lowerEndpoint();
-        final JustDate oldEnd = owner.getVisibleRange().upperEndpoint();
+      final JustDate oldStart = owner.getVisibleRange().lowerEndpoint();
+      final JustDate oldEnd = owner.getVisibleRange().upperEndpoint();
 
-        final JustDate oldValue = isStart ? oldStart : oldEnd;
+      final JustDate oldValue = isStart ? oldStart : oldEnd;
 
-        final Popup popup = new Popup(OutsideClick.CLOSE);
-        DatePicker datePicker = new DatePicker(oldValue, startBound, endBound);
+      final Popup popup = new Popup(OutsideClick.CLOSE);
+      DatePicker datePicker = new DatePicker(oldValue, startBound, endBound);
 
-        datePicker.addValueChangeHandler(new ValueChangeHandler<JustDate>() {
-          @Override
-          public void onValueChange(ValueChangeEvent<JustDate> vce) {
-            popup.close();
-            JustDate newValue = vce.getValue();
+      datePicker.addValueChangeHandler(vce -> {
+        popup.close();
+        JustDate newValue = vce.getValue();
 
-            if (newValue != null && !newValue.equals(oldValue)
-                && owner.getMaxRange().contains(newValue)) {
+        if (newValue != null && !newValue.equals(oldValue)
+            && owner.getMaxRange().contains(newValue)) {
 
-              int maxSize = owner.getMaxSize();
-              JustDate newStart;
-              JustDate newEnd;
+          int maxSize = owner.getMaxSize();
+          JustDate newStart;
+          JustDate newEnd;
 
-              if (isStart) {
-                newStart = newValue;
-                newEnd = TimeUtils.clamp(oldEnd, newValue,
-                    getUpperBound(newValue, maxSize, endBound));
-              } else {
-                newStart = TimeUtils.clamp(oldStart, getLowerBound(startBound, maxSize, newValue),
-                    newValue);
-                newEnd = newValue;
-              }
-
-              owner.setVisibleRange(newStart, newEnd);
-            }
+          if (isStart) {
+            newStart = newValue;
+            newEnd = TimeUtils.clamp(oldEnd, newValue,
+                getUpperBound(newValue, maxSize, endBound));
+          } else {
+            newStart = TimeUtils.clamp(oldStart, getLowerBound(startBound, maxSize, newValue),
+                newValue);
+            newEnd = newValue;
           }
-        });
 
-        popup.setWidget(datePicker);
-        popup.showRelativeTo(EventUtils.getTargetElement(event.getNativeEvent().getEventTarget()));
-      }
+          owner.setVisibleRange(newStart, newEnd);
+        }
+      });
+
+      popup.setWidget(datePicker);
+      popup.showRelativeTo(EventUtils.getTargetElement(event.getNativeEvent().getEventTarget()));
     });
   }
 
@@ -1062,7 +1052,7 @@ public final class TimeBoardHelper {
     if (index == count - 1) {
       styleName = STYLE_RIGHT_SEPARATOR;
     } else if (date.getDom() == 1) {
-      styleName = STYLE_MOHTH_SEPARATOR;
+      styleName = STYLE_MONTH_SEPARATOR;
     } else {
       styleName = STYLE_DAY_SEPARATOR;
     }

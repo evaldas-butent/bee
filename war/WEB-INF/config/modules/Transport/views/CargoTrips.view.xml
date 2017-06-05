@@ -1,17 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
       xmlns:xpr="http://www.butent.com/expression"
-      xmlns:xi="http://www.w3.org/2001/XInclude"
 
-      name="CargoTrips" source="CargoTrips" caption="=cargos"
-    >
+      name="CargoTrips" source="CargoTrips" caption="=cargo+ +=trips"
+>
   <Columns>
     <SimpleColumn name="Cargo" />
-    <SimpleJoin name="Cargo" joinType="LEFT">
-      <HiddenColumn name="CargoHandling" alias="DefaultHandling" />
-    </SimpleJoin>
     <SimpleColumn name="CargoPercent" />
     <SimpleColumn name="TripPercent" />
+    <SimpleColumn name="Message" />
 
     <SimpleColumn name="Trip" />
     <SimpleJoin joinType="LEFT" name="Trip">
@@ -57,15 +54,6 @@
           </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>
-    </SimpleJoin>
-
-    <SimpleColumn name="CargoHandling" />
-    <SimpleJoin name="CargoHandling" joinType="LEFT"
-                filter="OR !(CargoHandling) AND Handling=DefaultHandling">
-
-      <IdColumn name="Handling" hidden="true" />
-
-      <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
     </SimpleJoin>
 
     <SimpleJoin name="Trailer" joinType="LEFT">

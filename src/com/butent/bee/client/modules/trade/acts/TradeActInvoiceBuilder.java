@@ -60,7 +60,6 @@ import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -72,6 +71,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
@@ -94,6 +94,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     SelectorEvent.Handler {
@@ -499,7 +500,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   }
 
   @Override
-  public void onShow(Presenter presenter) {
+  public void afterCreatePresenter(Presenter presenter) {
     HeaderView header = presenter.getHeader();
 
     if (header != null && !header.hasCommands()) {
@@ -538,7 +539,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       header.addCommandItem(commandSave);
     }
 
-    super.onShow(presenter);
+    super.afterCreatePresenter(presenter);
   }
 
   private void doCompose(final Collection<Integer> holidays) {
@@ -620,6 +621,11 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
                 builderRange, act.range);
 
             if (serviceRange == null) {
+              if (tu == null && dateFrom == null && dateTo == null) {
+                Service empty = new Service(row, tu);
+                empty.quantity = row.getDouble(qtyIndex);
+                services.add(empty);
+              }
               continue;
             }
 
@@ -672,6 +678,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             Double discount = row.getDouble(discountIndex);
 
             for (Range<DateTime> r : ranges) {
+              LogUtils.getRootLogger().debug("Creating service", row.getId(), r.toString());
               if (tu == null) {
                 svc.add(r, factor, dpw, discount);
 
@@ -852,7 +859,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS);
 
           refresh(false);
-          RowEditor.open(VIEW_SALES, result, Opener.MODAL);
+          RowEditor.open(VIEW_SALES, result.getId(), Opener.MODAL);
         }
       }
     });
@@ -1053,12 +1060,12 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     List<String> messages = new ArrayList<>();
 
     if (start == null) {
-      Collections.addAll(messages, Localized.dictionary().dateFrom(),
-          Localized.dictionary().valueRequired());
+      Collections.addAll(messages, Localized.dictionary()
+          .fieldRequired(Localized.dictionary().dateFrom()));
 
     } else if (end == null) {
-      Collections.addAll(messages, Localized.dictionary().dateTo(),
-          Localized.dictionary().valueRequired());
+      Collections.addAll(messages, Localized.dictionary()
+          .fieldRequired(Localized.dictionary().dateTo()));
 
     } else if (TimeUtils.isMeq(start, end)) {
       Collections.addAll(messages, Localized.dictionary().invalidRange(),
@@ -1145,9 +1152,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     Long company = getCompany();
     if (!DataUtils.isId(company)) {
       if (notify) {
-        List<String> messages = Lists.newArrayList(Localized.dictionary().client(),
-            Localized.dictionary().valueRequired());
-        Global.showError(messages);
+        Global.showError(Localized.dictionary().fieldRequired(Localized.dictionary().client()));
       }
       return;
     }
@@ -1475,7 +1480,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     r++;
     for (Service svc : services) {
-      for (int idx = 0; idx < svc.ranges.size(); idx++) {
+      for (int idx = svc.ranges.size() > 0 ? 0 : BeeConst.UNDEF; idx < svc.ranges.size(); idx++) {
 
         c = 0;
         long svcActId = svc.row.getLong(actIndex);
@@ -1483,7 +1488,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           act = findAct(svcActId);
         }
 
-        if (svc.quantity != null && svc.quantity > 0) {
+        if (svc.quantity != null && svc.quantity > 0 && !BeeConst.isUndef(idx)) {
           toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
               STYLE_SVC_TOGGLE_WIDGET, false);
 
@@ -1508,9 +1513,9 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         table.setText(r, c++, BeeUtils.toString(svcActId),
             STYLE_SVC_ACT_PREFIX + STYLE_CELL_SUFFIX);
 
-        table.setText(r, c++, TimeUtils.renderDate(svc.dateFrom(idx)),
+        table.setText(r, c++, BeeConst.isUndef(idx) ? "" : Format.renderDate(svc.dateFrom(idx)),
             STYLE_SVC_FROM_PREFIX + STYLE_CELL_SUFFIX);
-        table.setText(r, c++, TimeUtils.renderDate(svc.dateTo(idx)),
+        table.setText(r, c++, BeeConst.isUndef(idx) ? "" : Format.renderDate(svc.dateTo(idx)),
             STYLE_SVC_TO_PREFIX + STYLE_CELL_SUFFIX);
 
         table.setText(r, c++, svc.row.getString(itemIndex),
@@ -1535,15 +1540,18 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             STYLE_SVC_CURRENCY_PREFIX + STYLE_CELL_SUFFIX);
 
         if (svc.timeUnit == null) {
-          table.setText(r, c++, TimeUtils.renderDate(svc.dateFrom(idx)),
+          table.setText(r, c++, BeeConst.isUndef(idx) ? "" : Format.renderDate(svc.dateFrom(idx)),
               STYLE_SVC_FACTOR_PREFIX + STYLE_CELL_SUFFIX);
         } else {
-          table.setWidget(r, c++, createFactorWidget(svc.factors.get(idx)),
-              STYLE_SVC_FACTOR_PREFIX + STYLE_CELL_SUFFIX);
+          table.setWidget(r, c++, BeeConst.isUndef(idx)
+              ? null
+              : createFactorWidget(svc.factors.get(idx)),
+            STYLE_SVC_FACTOR_PREFIX + STYLE_CELL_SUFFIX);
         }
 
         if (svc.timeUnit == TradeActTimeUnit.DAY) {
-          table.setWidget(r, c++, createDpwWidget(svc.dpws.get(idx), holidays),
+          table.setWidget(r, c++, BeeConst.isUndef(idx) ? null : createDpwWidget(svc.dpws.get(idx),
+            holidays),
               STYLE_SVC_DPW_PREFIX + STYLE_CELL_SUFFIX);
         } else {
           table.setText(r, c++, null, STYLE_SVC_DPW_PREFIX + STYLE_CELL_SUFFIX);
@@ -1552,10 +1560,16 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         table.setText(r, c++, render(svc.minTerm), STYLE_SVC_MIN_TERM_CELL,
             svc.minTermWarn(idx, holidays) ? STYLE_SVC_MIN_TERM_WARN : null);
 
-        table.setWidget(r, c++, createDiscountWidget(svc.discounts.get(idx)),
+        table.setWidget(r, c++, BeeConst.isUndef(idx) ? null : createDiscountWidget(svc.discounts
+          .get(idx)),
             STYLE_SVC_DISCOUNT_PREFIX + STYLE_CELL_SUFFIX);
 
-        Double amount = svc.amount(idx, currency, date);
+        Double amount = null;
+        if (BeeConst.isUndef(idx)) {
+          amount = 0D;
+        } else {
+          amount = svc.amount(idx, currency, date);
+        }
         table.setText(r, c++, renderAmount(amount), STYLE_SVC_AMOUNT_CELL);
 
         if (BeeUtils.isDouble(amount)) {
@@ -1570,7 +1584,10 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         }
 
         DomUtils.setDataProperty(rowElement, KEY_SERVICE_ID, svc.id());
-        DomUtils.setDataProperty(rowElement, KEY_RANGE_INDEX, idx);
+
+        if (!BeeConst.isUndef(idx)) {
+          DomUtils.setDataProperty(rowElement, KEY_RANGE_INDEX, idx);
+        }
 
         r++;
       }

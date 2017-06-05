@@ -10,6 +10,21 @@
       <SimpleColumn name="Date" />
       <SimpleColumn name="Parent" alias="TAParent"/>
       <SimpleColumn name="Kind" />
+
+      <SimpleJoin joinType="LEFT" name="Series">
+        <SimpleColumn name="SeriesName" alias="TradeSeriesName" />
+      </SimpleJoin>
+      <SimpleColumn name="Number" alias="TradeNumber" />
+
+      <SimpleJoin joinType="LEFT" name="Object">
+        <SimpleColumn name="ObjectName" />
+        <SimpleColumn name="ObjectAddress" />
+      </SimpleJoin>
+
+      <SimpleJoin name="Contract" joinType="LEFT">
+        <SimpleColumn name="Name" alias="ContractName" />
+        <SimpleColumn name="Number" alias="ContractNumber" />
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="Parent" />

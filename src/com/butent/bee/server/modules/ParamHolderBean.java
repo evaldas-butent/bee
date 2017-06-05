@@ -9,7 +9,6 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.server.data.BeeView;
-import com.butent.bee.server.data.BeeView.ConditionProvider;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -23,6 +22,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -43,12 +43,12 @@ import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.websocket.messages.ParameterMessage;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -77,15 +77,12 @@ public class ParamHolderBean {
   SystemBean sys;
 
   private final Table<String, String, BeeParameter> parameters = TreeBasedTable.create();
-  private final EventBus parameterEventBus = new EventBus();
+  private EventBus parameterEventBus;
 
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
 
-    if (BeeUtils.same(svc, SVC_GET_PARAMETER)) {
-      response = ResponseObject.response(getValue(reqInfo.getParameter(COL_PARAMETER)));
-
-    } else if (BeeUtils.same(svc, SVC_GET_RELATION_PARAMETER)) {
+    if (BeeUtils.same(svc, SVC_GET_RELATION_PARAMETER)) {
       response = ResponseObject.response(getRelationInfo(reqInfo.getParameter(COL_PARAMETER)));
 
     } else if (BeeUtils.same(svc, SVC_SET_PARAMETER)) {
@@ -164,6 +161,13 @@ public class ParamHolderBean {
         ? parameter.getNumber(usr.getCurrentUserId()) : parameter.getNumber();
   }
 
+  public BeeParameter getParameter(String name) {
+    Assert.notEmpty(name);
+    Assert.state(hasParameter(name), "Unknown parameter: " + name);
+
+    return BeeUtils.peek(parameters.row(BeeUtils.normalize(name)).values());
+  }
+
   public Collection<BeeParameter> getParameters(String module) {
     Assert.notEmpty(module);
     Collection<BeeParameter> params = new ArrayList<>();
@@ -209,6 +213,8 @@ public class ParamHolderBean {
   }
 
   public void init() {
+    parameterEventBus = new EventBus();
+
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       @AllowConcurrentEvents
@@ -238,12 +244,7 @@ public class ParamHolderBean {
       }
     });
 
-    BeeView.registerConditionProvider(VAR_PARAMETERS_MODULE, new ConditionProvider() {
-      @Override
-      public IsCondition getCondition(BeeView view, List<String> args) {
-        return null;
-      }
-    });
+    BeeView.registerConditionProvider(VAR_PARAMETERS_MODULE, (view, args) -> null);
 
     QueryServiceBean.registerViewDataProvider(TBL_PARAMETERS, new ViewDataProvider() {
       @Override
@@ -415,14 +416,14 @@ public class ParamHolderBean {
 
       param.setValue(value);
     }
+    ParameterMessage message = new ParameterMessage(param);
+
+    if (!param.supportsUsers() || defaultMode) {
+      Endpoint.sendToAll(message);
+    } else {
+      Endpoint.sendToUser(usr.getCurrentUserId(), message);
+    }
     postParameterEvent(new ParameterEvent(name));
-  }
-
-  private BeeParameter getParameter(String name) {
-    Assert.notEmpty(name);
-    Assert.state(hasParameter(name), "Unknown parameter: " + name);
-
-    return BeeUtils.peek(parameters.row(BeeUtils.normalize(name)).values());
   }
 
   private Pair<Long, String> getRelationInfo(String name, boolean defaultMode) {

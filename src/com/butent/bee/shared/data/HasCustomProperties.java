@@ -76,6 +76,10 @@ public interface HasCustomProperties {
     removeProperty(userPropertyName(key, userId));
   }
 
+  default boolean sameProperties(HasCustomProperties other) {
+    return other != null && BeeUtils.sameEntries(getProperties(), other.getProperties());
+  }
+
   void setProperties(CustomProperties properties);
 
   default void setProperty(String key, Double value) {

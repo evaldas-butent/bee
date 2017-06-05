@@ -7,82 +7,19 @@ import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.NodeList;
-import com.google.gwt.event.dom.client.BlurEvent;
-import com.google.gwt.event.dom.client.BlurHandler;
-import com.google.gwt.event.dom.client.CanPlayThroughEvent;
-import com.google.gwt.event.dom.client.CanPlayThroughHandler;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.ContextMenuEvent;
-import com.google.gwt.event.dom.client.ContextMenuHandler;
-import com.google.gwt.event.dom.client.DoubleClickEvent;
-import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.DragDropEventBase;
-import com.google.gwt.event.dom.client.DragEndEvent;
 import com.google.gwt.event.dom.client.DragEndHandler;
-import com.google.gwt.event.dom.client.DragEnterEvent;
 import com.google.gwt.event.dom.client.DragEnterHandler;
-import com.google.gwt.event.dom.client.DragEvent;
 import com.google.gwt.event.dom.client.DragHandler;
-import com.google.gwt.event.dom.client.DragLeaveEvent;
 import com.google.gwt.event.dom.client.DragLeaveHandler;
 import com.google.gwt.event.dom.client.DragOverEvent;
 import com.google.gwt.event.dom.client.DragOverHandler;
 import com.google.gwt.event.dom.client.DragStartEvent;
 import com.google.gwt.event.dom.client.DragStartHandler;
-import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.event.dom.client.DropHandler;
-import com.google.gwt.event.dom.client.EndedEvent;
-import com.google.gwt.event.dom.client.EndedHandler;
-import com.google.gwt.event.dom.client.ErrorEvent;
-import com.google.gwt.event.dom.client.ErrorHandler;
-import com.google.gwt.event.dom.client.FocusEvent;
-import com.google.gwt.event.dom.client.FocusHandler;
-import com.google.gwt.event.dom.client.GestureChangeEvent;
-import com.google.gwt.event.dom.client.GestureChangeHandler;
-import com.google.gwt.event.dom.client.GestureEndEvent;
-import com.google.gwt.event.dom.client.GestureEndHandler;
-import com.google.gwt.event.dom.client.GestureStartEvent;
-import com.google.gwt.event.dom.client.GestureStartHandler;
 import com.google.gwt.event.dom.client.HasAllDragAndDropHandlers;
 import com.google.gwt.event.dom.client.HasNativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.event.dom.client.LoadEvent;
-import com.google.gwt.event.dom.client.LoadHandler;
-import com.google.gwt.event.dom.client.LoseCaptureEvent;
-import com.google.gwt.event.dom.client.LoseCaptureHandler;
-import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.event.dom.client.MouseDownHandler;
-import com.google.gwt.event.dom.client.MouseMoveEvent;
-import com.google.gwt.event.dom.client.MouseMoveHandler;
-import com.google.gwt.event.dom.client.MouseOutEvent;
-import com.google.gwt.event.dom.client.MouseOutHandler;
-import com.google.gwt.event.dom.client.MouseOverEvent;
-import com.google.gwt.event.dom.client.MouseOverHandler;
-import com.google.gwt.event.dom.client.MouseUpEvent;
-import com.google.gwt.event.dom.client.MouseUpHandler;
-import com.google.gwt.event.dom.client.MouseWheelEvent;
-import com.google.gwt.event.dom.client.MouseWheelHandler;
-import com.google.gwt.event.dom.client.ProgressEvent;
-import com.google.gwt.event.dom.client.ProgressHandler;
-import com.google.gwt.event.dom.client.ScrollEvent;
-import com.google.gwt.event.dom.client.ScrollHandler;
-import com.google.gwt.event.dom.client.TouchCancelEvent;
-import com.google.gwt.event.dom.client.TouchCancelHandler;
-import com.google.gwt.event.dom.client.TouchEndEvent;
-import com.google.gwt.event.dom.client.TouchEndHandler;
-import com.google.gwt.event.dom.client.TouchMoveEvent;
-import com.google.gwt.event.dom.client.TouchMoveHandler;
-import com.google.gwt.event.dom.client.TouchStartEvent;
-import com.google.gwt.event.dom.client.TouchStartHandler;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.media.dom.client.MediaError;
 import com.google.gwt.user.client.Event;
@@ -112,6 +49,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import elemental.js.dom.JsElement;
 
 public final class EventUtils {
 
@@ -214,372 +153,187 @@ public final class EventUtils {
     final JsFunction handler = getDomHandler(body);
 
     if (BeeUtils.same(type, EVENT_TYPE_BLUR)) {
-      Binder.addBlurHandler(widget, new BlurHandler() {
-        @Override
-        public void onBlur(BlurEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addBlurHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_CAN_PLAY_THROUGH)) {
-      Binder.addCanPlayThroughHandler(widget, new CanPlayThroughHandler() {
-        @Override
-        public void onCanPlayThrough(CanPlayThroughEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addCanPlayThroughHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_CHANGE)) {
-      Binder.addChangeHandler(widget, new ChangeHandler() {
-        @Override
-        public void onChange(ChangeEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addChangeHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_CLICK)) {
-      Binder.addClickHandler(widget, new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addClickHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_CONTEXT_MENU)) {
-      Binder.addContextMenuHandler(widget, new ContextMenuHandler() {
-        @Override
-        public void onContextMenu(ContextMenuEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addContextMenuHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_DBL_CLICK)) {
-      Binder.addDoubleClickHandler(widget, new DoubleClickHandler() {
-        @Override
-        public void onDoubleClick(DoubleClickEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addDoubleClickHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_DRAG)) {
-      Binder.addDragHandler(widget, new DragHandler() {
-        @Override
-        public void onDrag(DragEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addDragHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_DRAG_END)) {
-      Binder.addDragEndHandler(widget, new DragEndHandler() {
-        @Override
-        public void onDragEnd(DragEndEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addDragEndHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_DRAG_ENTER)) {
-      Binder.addDragEnterHandler(widget, new DragEnterHandler() {
-        @Override
-        public void onDragEnter(DragEnterEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addDragEnterHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_DRAG_LEAVE)) {
-      Binder.addDragLeaveHandler(widget, new DragLeaveHandler() {
-        @Override
-        public void onDragLeave(DragLeaveEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addDragLeaveHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_DRAG_OVER)) {
-      Binder.addDragOverHandler(widget, new DragOverHandler() {
-        @Override
-        public void onDragOver(DragOverEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addDragOverHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_DRAG_START)) {
-      Binder.addDragStartHandler(widget, new DragStartHandler() {
-        @Override
-        public void onDragStart(DragStartEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addDragStartHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_DROP)) {
-      Binder.addDropHandler(widget, new DropHandler() {
-        @Override
-        public void onDrop(DropEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addDropHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_ENDED)) {
-      Binder.addEndedHandler(widget, new EndedHandler() {
-        @Override
-        public void onEnded(EndedEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addEndedHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_ERROR)) {
-      Binder.addErrorHandler(widget, new ErrorHandler() {
-        @Override
-        public void onError(ErrorEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addErrorHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_FOCUS)) {
-      Binder.addFocusHandler(widget, new FocusHandler() {
-        @Override
-        public void onFocus(FocusEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addFocusHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_GESTURE_CHANGE)) {
-      Binder.addGestureChangeHandler(widget, new GestureChangeHandler() {
-        @Override
-        public void onGestureChange(GestureChangeEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addGestureChangeHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_GESTURE_END)) {
-      Binder.addGestureEndHandler(widget, new GestureEndHandler() {
-        @Override
-        public void onGestureEnd(GestureEndEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addGestureEndHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_GESTURE_START)) {
-      Binder.addGestureStartHandler(widget, new GestureStartHandler() {
-        @Override
-        public void onGestureStart(GestureStartEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addGestureStartHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_INPUT)) {
-      Binder.addInputHandler(widget, new InputHandler() {
-        @Override
-        public void onInput(InputEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addInputHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_KEY_DOWN)) {
-      Binder.addKeyDownHandler(widget, new KeyDownHandler() {
-        @Override
-        public void onKeyDown(KeyDownEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addKeyDownHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_KEY_PRESS)) {
-      Binder.addKeyPressHandler(widget, new KeyPressHandler() {
-        @Override
-        public void onKeyPress(KeyPressEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addKeyPressHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_KEY_UP)) {
-      Binder.addKeyUpHandler(widget, new KeyUpHandler() {
-        @Override
-        public void onKeyUp(KeyUpEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addKeyUpHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_LOAD)) {
-      Binder.addLoadHandler(widget, new LoadHandler() {
-        @Override
-        public void onLoad(LoadEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addLoadHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_LOSE_CAPTURE)) {
-      Binder.addLoseCaptureHandler(widget, new LoseCaptureHandler() {
-        @Override
-        public void onLoseCapture(LoseCaptureEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addLoseCaptureHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_MOUSE_DOWN)) {
-      Binder.addMouseDownHandler(widget, new MouseDownHandler() {
-        @Override
-        public void onMouseDown(MouseDownEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addMouseDownHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_MOUSE_MOVE)) {
-      Binder.addMouseMoveHandler(widget, new MouseMoveHandler() {
-        @Override
-        public void onMouseMove(MouseMoveEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addMouseMoveHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_MOUSE_OUT)) {
-      Binder.addMouseOutHandler(widget, new MouseOutHandler() {
-        @Override
-        public void onMouseOut(MouseOutEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addMouseOutHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_MOUSE_OVER)) {
-      Binder.addMouseOverHandler(widget, new MouseOverHandler() {
-        @Override
-        public void onMouseOver(MouseOverEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addMouseOverHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_MOUSE_UP)) {
-      Binder.addMouseUpHandler(widget, new MouseUpHandler() {
-        @Override
-        public void onMouseUp(MouseUpEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addMouseUpHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_MOUSE_WHEEL)) {
-      Binder.addMouseWheelHandler(widget, new MouseWheelHandler() {
-        @Override
-        public void onMouseWheel(MouseWheelEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addMouseWheelHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_PROGRESS)) {
-      Binder.addProgressHandler(widget, new ProgressHandler() {
-        @Override
-        public void onProgress(ProgressEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addProgressHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_SCROLL)) {
-      Binder.addScrollHandler(widget, new ScrollHandler() {
-        @Override
-        public void onScroll(ScrollEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addScrollHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_TOUCH_CANCEL)) {
-      Binder.addTouchCancelHandler(widget, new TouchCancelHandler() {
-        @Override
-        public void onTouchCancel(TouchCancelEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addTouchCancelHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_TOUCH_END)) {
-      Binder.addTouchEndHandler(widget, new TouchEndHandler() {
-        @Override
-        public void onTouchEnd(TouchEndEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addTouchEndHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_TOUCH_MOVE)) {
-      Binder.addTouchMoveHandler(widget, new TouchMoveHandler() {
-        @Override
-        public void onTouchMove(TouchMoveEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addTouchMoveHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
     if (BeeUtils.same(type, EVENT_TYPE_TOUCH_START)) {
-      Binder.addTouchStartHandler(widget, new TouchStartHandler() {
-        @Override
-        public void onTouchStart(TouchStartEvent event) {
-          dispatchDomEvent(widget, handler, event);
-        }
-      });
+      Binder.addTouchStartHandler(widget, event -> dispatchDomEvent(widget, handler, event));
       return true;
     }
 
@@ -609,6 +363,16 @@ public final class EventUtils {
       }
       registry.clear();
     }
+  }
+
+  public static void click(Element element) {
+    Assert.notNull(element);
+    ((JsElement) element.cast()).click();
+  }
+
+  public static void click(UIObject obj) {
+    Assert.notNull(obj);
+    click(obj.getElement());
   }
 
   public static NativeEvent createKeyDown(int keyCode) {
@@ -654,7 +418,8 @@ public final class EventUtils {
   }
 
   public static Integer getClickSensitivityMillis(Element element) {
-    return DomUtils.getDataPropertyInt(element, DATA_KEY_CLICK_SENSITIVITY_MILLIS);
+    return BeeUtils.toIntOrNull(
+        DomUtils.getParentDataProperty(element, DATA_KEY_CLICK_SENSITIVITY_MILLIS, true));
   }
 
   public static String getCurrentTargetId(NativeEvent ev) {
@@ -717,6 +482,11 @@ public final class EventUtils {
     }
   }
 
+  public static Element getRelatedEventTargetElement(NativeEvent ev) {
+    EventTarget target = (ev == null) ? null : ev.getRelatedEventTarget();
+    return (target == null) ? null : getTargetElement(target);
+  }
+
   public static Element getSourceElement(GwtEvent<?> ev) {
     Assert.notNull(ev);
     Object source = ev.getSource();
@@ -768,6 +538,16 @@ public final class EventUtils {
       return ((Event) ev).getTypeInt();
     }
     return Event.getTypeInt(ev.getType());
+  }
+
+  public static boolean hasClassName(NativeEvent ev, String className) {
+    if (ev != null && !BeeUtils.isEmpty(className)) {
+      Element element = getEventTargetElement(ev);
+      if (element != null) {
+        return element.hasClassName(className);
+      }
+    }
+    return false;
   }
 
   public static boolean hasModifierKey(HasNativeEvent ev) {
@@ -897,7 +677,7 @@ public final class EventUtils {
   }
 
   public static boolean isLeftButton(NativeEvent event) {
-    return (event == null) ? false : isLeftButton(event.getButton());
+    return event != null && isLeftButton(event.getButton());
   }
 
   public static boolean isMouseButtonEvent(String type) {
@@ -933,7 +713,7 @@ public final class EventUtils {
   }
 
   public static boolean isTargetId(HasNativeEvent ev, String id) {
-    return (ev == null) ? false : isTargetId(ev.getNativeEvent().getEventTarget(), id);
+    return ev != null && isTargetId(ev.getNativeEvent().getEventTarget(), id);
   }
 
   public static boolean isTargetId(EventTarget et, String id) {
@@ -1145,20 +925,20 @@ public final class EventUtils {
 
     int x = ev.getClientX();
     if (x != 0) {
-      sb.append(" x=" + x);
+      sb.append(" x=").append(x);
     }
     int y = ev.getClientY();
     if (y != 0) {
-      sb.append(" y=" + y);
+      sb.append(" y=").append(y);
     }
 
     int k = ev.getKeyCode();
     if (k != 0) {
-      sb.append(" k=" + k);
+      sb.append(" k=").append(k);
     }
     int c = ev.getCharCode();
     if (c != 0 && c != k) {
-      sb.append(" c=" + c);
+      sb.append(" c=").append(c);
     }
 
     if (ev.getAltKey()) {
@@ -1176,25 +956,25 @@ public final class EventUtils {
 
     int b = ev.getButton();
     if (b != 0) {
-      sb.append(" b=" + b);
+      sb.append(" b=").append(b);
     }
     int v = ev.getMouseWheelVelocityY();
     if (v != 0) {
-      sb.append(" mwv=" + v);
+      sb.append(" mwv=").append(v);
     }
 
     if (targets) {
       EventTarget et = ev.getEventTarget();
       if (et != null) {
-        sb.append(" et=" + transformEventTarget(et));
+        sb.append(" et=").append(transformEventTarget(et));
       }
       EventTarget cet = ev.getCurrentEventTarget();
       if (cet != null && cet != et) {
-        sb.append(" cet=" + transformEventTarget(cet));
+        sb.append(" cet=").append(transformEventTarget(cet));
       }
       EventTarget ret = ev.getRelatedEventTarget();
       if (ret != null) {
-        sb.append(" ret=" + transformEventTarget(ret));
+        sb.append(" ret=").append(transformEventTarget(ret));
       }
     }
     return sb.toString();

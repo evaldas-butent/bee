@@ -8,7 +8,6 @@ import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.data.BeeRow;
@@ -46,8 +45,6 @@ public class Worker {
   SystemBean sys;
   @EJB
   UserServiceBean usr;
-  @EJB
-  FileStorageBean fs;
 
   @GET
   @Path("companytypes")

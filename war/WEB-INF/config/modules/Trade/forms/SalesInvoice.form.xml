@@ -10,7 +10,7 @@
   caption="=trdInvoice" showRowId="true"
   width="840" height="600"
   >
-  <f:properties reports="PrintTransrifusSalesInvoice"/>
+  <f:properties jasperReports="SalesInvoice_lt" />
   <FlowPanel class="flexBox-vertical">
     <br/>
     <Table kind="controls">

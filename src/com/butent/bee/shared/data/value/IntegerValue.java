@@ -42,6 +42,11 @@ public class IntegerValue extends Value {
   }
 
   @Override
+  public boolean equals(Object o) {
+    return o instanceof IntegerValue && compareTo((IntegerValue) o) == BeeConst.COMPARE_EQUAL;
+  }
+
+  @Override
   public Boolean getBoolean() {
     if (isNull()) {
       return null;

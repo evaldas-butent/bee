@@ -94,12 +94,6 @@ public final class TransportConstants {
   }
 
   public enum TextConstant implements HasLocalizedCaption {
-    SHIPPING_TERMS {
-      @Override
-      public String getCaption(Dictionary constants) {
-        return constants.trShippingTerms();
-      }
-    },
     CONTRACT_MAIL_CONTENT {
       @Override
       public String getCaption(Dictionary constants) {
@@ -110,7 +104,7 @@ public final class TransportConstants {
       public String getDefaultContent() {
         return "Follow the link below to confirm or reject the agreement"
             + " which is attached to this letter<br><br>"
-            + "http://127.0.0.1:8080/Bee/{contract_path}<br><br><br>"
+            + "http://127.0.0.1:8080/Bee/{CONTRACT_PATH}<br><br><br>"
             + "This message was created automatically by mail delivery software. "
             + "Thank You for using our services.";
       }
@@ -125,8 +119,8 @@ public final class TransportConstants {
       public String getDefaultContent() {
         return "The login which is given below is to connect to Your user account<br><br>"
             + "Address: http://127.0.0.1:8080/Bee<br>"
-            + "Login: {login}<br>"
-            + "Password: {password}<br><br>"
+            + "Login: {LOGIN}<br>"
+            + "Password: {PASSWORD}<br><br>"
             + "This message was created automatically by mail delivery software. "
             + "Thank You for using our services.";
       }
@@ -139,7 +133,7 @@ public final class TransportConstants {
 
       @Override
       public String getDefaultContent() {
-        return "Your order is in progress!<br><br><br>"
+        return "Your order (id:{CONTRACT_ID}) is in progress!<br><br><br>"
             + "This message was created automatically by mail delivery software. "
             + "Thank You for using our services.";
       }
@@ -152,9 +146,31 @@ public final class TransportConstants {
 
       @Override
       public String getDefaultContent() {
-        return "Your inquiry is denied.<br><br><br>"
+        return "Your inquiry (id:{CONTRACT_ID}) is denied.<br><br><br>"
             + "This message was created automatically by mail delivery software. "
             + "Thank You for using our services.";
+      }
+    },
+    SUMBMITTED_REQUEST_CONTENT {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trRequestSubmittedContent();
+      }
+
+      @Override
+      public String getDefaultContent() {
+        return "Your request has been received. Will contact You soon!";
+      }
+    },
+    REQUEST_COMMON_TERMS {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trRequestCommonTerms();
+      }
+
+      @Override
+      public String getDefaultContent() {
+        return "";
       }
     };
 
@@ -261,6 +277,13 @@ public final class TransportConstants {
       public String getCaption(Dictionary constants) {
         return constants.trConstantCosts();
       }
+    },
+
+    ECONOMY_BONUS {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trEconomyBonus();
+      }
     };
   }
 
@@ -317,15 +340,16 @@ public final class TransportConstants {
   public static final String SVC_GET_TRAILER_TB_DATA = "GetTrailerTbData";
   public static final String SVC_GET_COLORS = "GetColors";
   public static final String SVC_GET_CARGO_USAGE = "GetCargoUsage";
-  public static final String SVC_GET_CARGO_TOTAL = "GetCargoTotal";
-  public static final String SVC_GET_ASSESSMENT_TOTALS = "GetAssessmentTotals";
+  public static final String SVC_GET_CARGO_PLACES = "GetCargoPlaces";
   public static final String SVC_GET_ASSESSMENT_QUANTITY_REPORT = "GetAssessmentQuantityReport";
   public static final String SVC_GET_ASSESSMENT_TURNOVER_REPORT = "GetAssessmentTurnoverReport";
+  public static final String SVC_UPDATE_PERCENT = "UpdatePercent";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
   public static final String SVC_GET_TRIP_INFO = "GetTripInfo";
   public static final String SVC_GET_VEHICLE_BUSY_DATES = "GetVehicleBusyDates";
   public static final String SVC_GET_DRIVER_BUSY_DATES = "GetDriverBusyDates";
+  public static final String SVC_GET_TEXT_CONSTANT = "GetTextConstant";
 
   public static final String SVC_SEND_MESSAGE = "SendMessage";
 
@@ -337,7 +361,6 @@ public final class TransportConstants {
   public static final String PRM_INVOICE_PREFIX = "DefaultInvoicePrefix";
   public static final String PRM_CARGO_TYPE = "CargoType";
   public static final String PRM_CARGO_SERVICE = "CargoService";
-  public static final String PRM_BIND_EXPENSES_TO_INCOMES = "BindExpensesToIncomes";
   public static final String PRM_EXCLUDE_VAT = "ExcludeVAT";
   public static final String PRM_SELF_SERVICE_ROLE = "SelfServiceRole";
 
@@ -346,6 +369,7 @@ public final class TransportConstants {
 
   public static final String VAR_LOADING = "Loading";
   public static final String VAR_UNLOADING = "Unloading";
+  public static final String VAR_UNBOUND = "Unbound";
 
   public static final String TBL_TRANSPORT_GROUPS = "TransportGroups";
 
@@ -378,6 +402,8 @@ public final class TransportConstants {
   public static final String TBL_CARGO_INCOMES_USAGE = "CargoIncomesUsage";
   public static final String TBL_CARGO_EXPENSES = "CargoExpenses";
   public static final String TBL_CARGO_EXPENSES_USAGE = "CargoExpensesUsage";
+  public static final String TBL_CARGO_LOADING = "CargoLoading";
+  public static final String TBL_CARGO_UNLOADING = "CargoUnloading";
   public static final String TBL_CARGO_HANDLING = "CargoHandling";
   public static final String TBL_CARGO_TYPES = "CargoTypes";
 
@@ -397,7 +423,6 @@ public final class TransportConstants {
   public static final String TBL_FUEL_TYPES = "FuelTypes";
 
   public static final String TBL_SHIPMENT_REQUESTS = "ShipmentRequests";
-  public static final String TBL_LOSS_REASONS = "LossReasons";
 
   public static final String TBL_COUNTRY_NORMS = "CountryNorms";
   public static final String TBL_COUNTRY_DAILY_COSTS = "CountryDailyCosts";
@@ -406,7 +431,6 @@ public final class TransportConstants {
 
   public static final String VIEW_ORDER_CARGO = "OrderCargo";
   public static final String VIEW_CARGO_TRIPS = "CargoTrips";
-  public static final String VIEW_CARGO_HANDLING = "CargoHandling";
 
   public static final String VIEW_ALL_CARGO = "AllCargo";
   public static final String VIEW_WAITING_CARGO = "WaitingCargo";
@@ -417,6 +441,7 @@ public final class TransportConstants {
   public static final String VIEW_CARGO_CREDIT_INVOICES = "CargoCreditInvoices";
   public static final String VIEW_CARGO_PURCHASE_INVOICES = "CargoPurchaseInvoices";
   public static final String VIEW_CARGO_INCOMES = "CargoIncomes";
+  public static final String VIEW_CARGO_FILES = "CargoFiles";
 
   public static final String VIEW_CARGO_TYPES = "CargoTypes";
   public static final String VIEW_CARGO_GROUPS = "CargoGroups";
@@ -452,7 +477,6 @@ public final class TransportConstants {
   public static final String VIEW_ASSESSMENT_EXECUTORS = "AssessmentExecutors";
 
   public static final String VIEW_SHIPMENT_REQUESTS = "ShipmentRequests";
-  public static final String VIEW_SHIPMENT_REQUEST_FILES = "ShipmentRequestFiles";
 
   public static final String VIEW_TEXT_CONSTANTS = "TextConstants";
 
@@ -499,7 +523,7 @@ public final class TransportConstants {
   public static final String COL_CARGO_TRIP_ID = "CargoTripID";
   public static final String COL_CARGO_CMR = "Cmr";
   public static final String COL_CARGO_NOTES = "Notes";
-  public static final String COL_CARGO_SHIPPING_TERM = "ShippingTerm";
+  public static final String COL_SHIPPING_TERM = "ShippingTerm";
   public static final String COL_CARGO_QUANTITY = "Quantity";
   public static final String COL_CARGO_WEIGHT = "Weight";
   public static final String COL_CARGO_VOLUME = "Volume";
@@ -507,14 +531,12 @@ public final class TransportConstants {
   public static final String COL_CARGO_LENGTH = "Length";
   public static final String COL_CARGO_WIDTH = "Width";
   public static final String COL_CARGO_HEIGHT = "Height";
+  public static final String COL_CARGO_OUTSIZED = "Outsized";
   public static final String COL_CARGO_PARTIAL = "Partial";
   public static final String COL_CARGO_PALETTES = "Palettes";
   public static final String COL_CARGO_VALUE = "Value";
   public static final String COL_CARGO_VALUE_CURRENCY = "ValueCurrency";
   public static final String COL_CARGO_TYPE = "CargoType";
-
-  public static final String COL_CARGO_HANDLING = "CargoHandling";
-  public static final String COL_CARGO_HANDLING_NOTES = "Notes";
 
   public static final String COL_DAILY_COSTS_ITEM = "DailyCostsItem";
   public static final String COL_ROAD_COSTS_ITEM = "RoadCostsItem";
@@ -586,6 +608,7 @@ public final class TransportConstants {
   public static final String COL_UNLOADING_PLACE = "UnloadingPlace";
   public static final String COL_LOADING_PLACE = "LoadingPlace";
 
+  public static final String COL_PLACE_ORDINAL = "Ordinal";
   public static final String COL_PLACE_DATE = "Date";
   public static final String COL_PLACE_COMPANY = "Company";
   public static final String COL_PLACE_CONTACT = "Contact";
@@ -593,8 +616,6 @@ public final class TransportConstants {
   public static final String COL_PLACE_COUNTRY = "Country";
   public static final String COL_PLACE_ADDRESS = "Address";
   public static final String COL_PLACE_POST_INDEX = "PostIndex";
-  public static final String COL_PLACE_PHONE = "Phone";
-  public static final String COL_PLACE_FAX = "Fax";
   public static final String COL_PLACE_NUMBER = "Number";
   public static final String COL_PLACE_NOTE = "Note";
 
@@ -653,6 +674,9 @@ public final class TransportConstants {
   public static final String COL_FX_HEADER_HEIGHT = "FxHeaderHeight";
   public static final String COL_FX_FOOTER_HEIGHT = "FxFooterHeight";
 
+  public static final String COL_FX_REFRESH_LOCAL_CHANGES = "FxRefreshLocalChanges";
+  public static final String COL_FX_REFRESH_REMOTE_CHANGES = "FxRefreshRemoteChanges";
+
   public static final String COL_FX_THEME = "FxTheme";
 
   public static final String COL_FX_ITEM_OPACITY = "FxItemOpacity";
@@ -680,11 +704,17 @@ public final class TransportConstants {
 
   public static final String COL_SS_ADDITIONAL_INFO = "SsAdditionalInfo";
 
+  public static final String COL_SS_ORDER_CUSTOMER = "SsOrderCustomer";
+  public static final String COL_SS_ORDER_NO = "SsOrderNo";
+
   public static final String COL_SS_PIXELS_PER_DAY = "SsPixelsPerDay";
   public static final String COL_SS_PIXELS_PER_ROW = "SsPixelsPerRow";
 
   public static final String COL_SS_HEADER_HEIGHT = "SsHeaderHeight";
   public static final String COL_SS_FOOTER_HEIGHT = "SsFooterHeight";
+
+  public static final String COL_SS_REFRESH_LOCAL_CHANGES = "SsRefreshLocalChanges";
+  public static final String COL_SS_REFRESH_REMOTE_CHANGES = "SsRefreshRemoteChanges";
 
   public static final String COL_SS_THEME = "SsTheme";
 
@@ -715,6 +745,9 @@ public final class TransportConstants {
 
   public static final String COL_DTB_HEADER_HEIGHT = "DtbHeaderHeight";
   public static final String COL_DTB_FOOTER_HEIGHT = "DtbFooterHeight";
+
+  public static final String COL_DTB_REFRESH_LOCAL_CHANGES = "DtbRefreshLocalChanges";
+  public static final String COL_DTB_REFRESH_REMOTE_CHANGES = "DtbRefreshRemoteChanges";
 
   public static final String COL_DTB_COLOR = "DtbColor";
 
@@ -748,6 +781,9 @@ public final class TransportConstants {
   public static final String COL_TRUCK_HEADER_HEIGHT = "TruckHeaderHeight";
   public static final String COL_TRUCK_FOOTER_HEIGHT = "TruckFooterHeight";
 
+  public static final String COL_TRUCK_REFRESH_LOCAL_CHANGES = "TruckRefreshLocalChanges";
+  public static final String COL_TRUCK_REFRESH_REMOTE_CHANGES = "TruckRefreshRemoteChanges";
+
   public static final String COL_TRUCK_THEME = "TruckTheme";
 
   public static final String COL_TRUCK_ITEM_OPACITY = "TruckItemOpacity";
@@ -778,6 +814,9 @@ public final class TransportConstants {
 
   public static final String COL_TRAILER_HEADER_HEIGHT = "TrailerHeaderHeight";
   public static final String COL_TRAILER_FOOTER_HEIGHT = "TrailerFooterHeight";
+
+  public static final String COL_TRAILER_REFRESH_LOCAL_CHANGES = "TrailerRefreshLocalChanges";
+  public static final String COL_TRAILER_REFRESH_REMOTE_CHANGES = "TrailerRefreshRemoteChanges";
 
   public static final String COL_TRAILER_THEME = "TrailerTheme";
 
@@ -818,6 +857,7 @@ public final class TransportConstants {
   public static final String COL_QUERY_CUSTOMER_COUNTRY = "CustomerCountry";
   public static final String COL_QUERY_CUSTOMER_CITY = "CustomerCity";
   public static final String COL_QUERY_CUSTOMER_ADDRESS = "CustomerAddress";
+  public static final String COL_QUERY_CUSTOMER_POST_INDEX = "CustomerPostIndex";
   public static final String COL_QUERY_CUSTOMER_PHONE = "CustomerPhone";
   public static final String COL_QUERY_CUSTOMER_FAX = "CustomerFax";
   public static final String COL_QUERY_CUSTOMER_EMAIL = "CustomerEmail";
@@ -849,8 +889,6 @@ public final class TransportConstants {
   public static final String COL_SHIPPING_TERM_NAME = "Name";
   public static final String COL_SELF_SERVICE = "SelfService";
   public static final String COL_SHIPMENT_REQUEST = "ShipmentRequest";
-  public static final String COL_LOSS_REASON_NAME = "ReasonName";
-  public static final String COL_LOSS_REASON_TEMPLATE = "Template";
 
   public static final String COL_CARGO_TYPE_NAME = "CargoTypeName";
   public static final String COL_CARGO_TYPE_COLOR = "Color";
@@ -880,8 +918,8 @@ public final class TransportConstants {
   public static final String FORM_TRAILER_SETTINGS = "TrailerTbSettings";
 
   public static final String FORM_SHIPMENT_REQUEST = "ShipmentRequest";
-  public static final String FORM_CARGO_PLACE_UNBOUND = "CargoPlaceUnbound";
-  public static final String GRID_CARGO_HANDLING_UNBOUND = "CargoHandlingUnbound";
+  public static final String FORM_CARGO_PLACE = "CargoPlace";
+  public static final String FORM_CARGO_PLACE_UNBOUND = FORM_CARGO_PLACE + VAR_UNBOUND;
 
   public static final String GRID_ASSESSMENT_REQUESTS = "AssessmentRequests";
   public static final String GRID_ASSESSMENT_ORDERS = "AssessmentOrders";
@@ -917,6 +955,8 @@ public final class TransportConstants {
   public static final String ALS_VEHICLE_NUMBER = "VehicleNumber";
   public static final String ALS_TRAILER_NUMBER = "TrailerNumber";
 
+  public static final String ALS_TRIP_MANAGER = "TripManager";
+
   public static final String ALS_TRIP_VERSION = "TripVersion";
   public static final String ALS_CARGO_TRIP_VERSION = "CargoTripVersion";
 
@@ -948,13 +988,14 @@ public final class TransportConstants {
   public static final String ALS_UNLOADING_COUNTRY_CODE = "UnloadingCountryCode";
 
   public static final String ALS_PAYER_NAME = "PayerName";
+  public static final String ALS_PAYER_TYPE_NAME = "PayerTypeName";
 
   public static final String ALS_REQUEST_CUSTOMER_FIRST_NAME = "CustomerFirstName";
   public static final String ALS_REQUEST_CUSTOMER_LAST_NAME = "CustomerLastName";
   public static final String ALS_REQUEST_CUSTOMER_COMPANY = "CustomerCompany";
-  public static final String ALS_CARGO_HANDLING_NOTES = "HandlingNotes";
 
   public static final String ALS_CARGO_CMR_NUMBER = "CmrNumber";
+  public static final String ALS_CARGO_NOTES = "CargoNotes";
 
   public static final String ALS_SERVICE_NAME = "ServiceName";
 
@@ -965,7 +1006,7 @@ public final class TransportConstants {
   public static final String DATA_TYPE_TRAILER = "Trailer";
   public static final String DATA_TYPE_DRIVER = "Driver";
 
-  public static final String REP_CONTRACT = "Contract";
+  public static final String REP_CONTRACT = "OrderContract";
 
   public static final String AR_DEPARTMENT = "Department";
   public static final String AR_MANAGER = "Manager";
@@ -985,22 +1026,6 @@ public final class TransportConstants {
 
   public static final List<String> TRIP_DATE_COLUMNS = Lists.newArrayList(COL_TRIP_DATE,
       COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO, COL_TRIP_PLANNED_END_DATE);
-
-  public static String defaultLoadingColumnAlias(String colName) {
-    return "DefLoad" + colName;
-  }
-
-  public static String defaultUnloadingColumnAlias(String colName) {
-    return "DefUnload" + colName;
-  }
-
-  public static String loadingColumnAlias(String colName) {
-    return VAR_LOADING + colName;
-  }
-
-  public static String unloadingColumnAlias(String colName) {
-    return VAR_UNLOADING + colName;
-  }
 
   private TransportConstants() {
   }

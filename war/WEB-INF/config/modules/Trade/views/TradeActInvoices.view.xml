@@ -9,12 +9,28 @@
     <SimpleColumn name="TradeActService" />
     <SimpleJoin joinType="LEFT" name="TradeActService">
       <SimpleColumn name="TradeAct" />
-  
+      <SimpleJoin name="TradeAct" joinType="LEFT">
+        <SimpleJoin joinType="LEFT" name="Series">
+          <SimpleColumn name="SeriesName" alias="TradeSeriesName" />
+        </SimpleJoin>
+        <SimpleColumn name="Number" alias="TradeNumber" />
+
+        <SimpleJoin joinType="LEFT" name="Object">
+          <SimpleColumn name="ObjectName" />
+          <SimpleColumn name="ObjectAddress" />
+        </SimpleJoin>
+
+        <SimpleJoin name="Contract" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ContractName" />
+          <SimpleColumn name="Number" alias="ContractNumber" />
+        </SimpleJoin>
+      </SimpleJoin>
+
       <SimpleColumn name="Item" />
       <SimpleJoin joinType="LEFT" name="Item">
         <SimpleColumn name="Name" alias="ItemName" />
         <SimpleColumn name="Article" />
-      
+
         <SimpleColumn name="TimeUnit" />
       </SimpleJoin>
     </SimpleJoin>
@@ -31,7 +47,6 @@
         <SimpleColumn name="Date" />
 
         <SimpleColumn name="Number" />
-        <SimpleColumn name="InvoicePrefix" />
         <SimpleColumn name="SaleSeries" label="=trdInvoicePrefix"/>
         <SimpleJoin name="SaleSeries" joinType="LEFT">
           <SimpleColumn name="SeriesName" />
@@ -50,7 +65,7 @@
           <SimpleColumn name="Name" alias="CurrencyName" />
           <SimpleColumn name="MinorName" />
         </SimpleJoin>
-    
+
         <SimpleColumn name="PaymentTime" />
         <SimpleColumn name="Paid" />
 
@@ -69,7 +84,7 @@
           <SimpleColumn alias="WarehouseFromCode" name="Code" />
           <SimpleColumn alias="WarehouseFromName" name="Name" />
         </SimpleJoin>
-    
+
         <SimpleColumn name="Supplier" />
         <SimpleJoin joinType="LEFT" name="Supplier">
           <SimpleColumn name="Name" alias="SupplierName" />
@@ -90,7 +105,7 @@
               <SimpleColumn name="Name" alias="PayerTypeName" />
           </SimpleJoin>
         </SimpleJoin>
-    
+
         <SimpleColumn name="Manager" />
         <SimpleJoin name="Manager" joinType="LEFT">
           <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />

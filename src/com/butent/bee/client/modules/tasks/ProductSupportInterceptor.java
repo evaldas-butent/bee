@@ -11,10 +11,11 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.function.Consumer;
 
 abstract class ProductSupportInterceptor extends AbstractFormInterceptor {
 
@@ -34,8 +35,8 @@ abstract class ProductSupportInterceptor extends AbstractFormInterceptor {
     if (isProductRequired(getActiveRow())
         && Data.isNull(getViewName(), getActiveRow(), COL_PRODUCT)) {
 
-      notifier.accept(BeeUtils.joinWords(Localized.dictionary().crmTaskProduct(),
-          Localized.dictionary().valueRequired()));
+      notifier.accept(Localized.dictionary()
+          .fieldRequired(Localized.dictionary().crmTaskProduct()));
 
       return true;
     }

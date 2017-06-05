@@ -11,6 +11,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -22,12 +23,15 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -160,6 +164,18 @@ public final class ProjectsHelper {
 
     Queries.insert(eventsViewName, columns, values, null, getEventRowCallback(eventFilesViewName,
         projectId, files, eventIdCallback, filesUploadedCallBack));
+
+    Filter flt = Filter.and(Filter.equals(COL_PROJECT, projectId),
+        Filter.equals(AdministrationConstants.COL_USER, currentUserId));
+
+    Queries.update(TBL_PROJECT_USAGE, flt, COL_ACCESS,
+        BeeUtils.toString(System.currentTimeMillis()), new Queries.IntCallback() {
+          @Override
+          public void onSuccess(Integer result) {
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECTS);
+          }
+        });
+
   }
 
   public static void registerReason(FormView form, IsRow row, CellValidateEvent event,
@@ -226,6 +242,9 @@ public final class ProjectsHelper {
     } else if (info.hasRelation(column) && row != null) {
       result = BeeConst.STRING_EMPTY;
       for (ViewColumn vCol : info.getDescendants(column, false)) {
+        if (BeeUtils.same(ALS_OWNER_PERSON, vCol.getName())) {
+          continue;
+        }
         result =
             BeeUtils.joinWords(result, getDisplayValue(viewName, vCol.getName(), row.getString(info
                 .getColumnIndex(vCol.getName())), null));
@@ -243,7 +262,7 @@ public final class ProjectsHelper {
         return result;
       }
 
-      Queries.getRow(relView, BeeUtils.toLong(value), cols, new RowCallback() {
+      Queries.getRow(relView, Filter.compareId(BeeUtils.toLong(value)), cols, new RowCallback() {
 
         @Override
         public void onSuccess(BeeRow wResult) {
@@ -270,7 +289,7 @@ public final class ProjectsHelper {
     } else if (ValueType.DATE.equals(type)) {
       JustDate date = TimeUtils.toDateOrNull(value);
 
-      result = date == null ? result : date.toString();
+      result = date == null ? result : Format.renderDate(date);
     } else if (col != null ? !BeeUtils.isEmpty(col.getEnumKey()) : false) {
       return EnumUtils.getCaption(col.getEnumKey(), BeeUtils.toInt(value));
     }

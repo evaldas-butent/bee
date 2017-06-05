@@ -216,7 +216,7 @@ public final class TradeActUtils {
       } else if (serviceTo != null) {
         date = serviceTo.getDateTime();
       } else {
-        date = actRange.lowerEndpoint();
+        return null;
       }
 
       if (builderRange.contains(date)) {

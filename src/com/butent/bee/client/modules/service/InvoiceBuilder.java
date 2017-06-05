@@ -20,7 +20,6 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -40,6 +39,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 final class InvoiceBuilder {
 
@@ -78,17 +78,39 @@ final class InvoiceBuilder {
     }
 
     final FormView form = ViewHelper.getForm(sourceWidget.asWidget());
-    if (form == null || !form.isEnabled() || !VIEW_SERVICE_OBJECTS.equals(form.getViewName())) {
+    if (form == null || !form.isEnabled()
+        || !BeeUtils.inList(form.getViewName(), VIEW_SERVICE_OBJECTS, COL_SERVICE_MAINTENANCE)) {
       return;
     }
 
-    final long objId = form.getActiveRowId();
+    final long objId;
+    long maintenanceId = 0;
+
+    if (BeeUtils.equals(form.getViewName(), VIEW_SERVICE_OBJECTS)) {
+      objId = form.getActiveRowId();
+
+    } else {
+      objId = form.getActiveRow().getLong(
+          Data.getColumnIndex(form.getViewName(), COL_SERVICE_OBJECT));
+      maintenanceId = form.getActiveRowId();
+    }
+
     if (!DataUtils.isId(objId)) {
       return;
     }
 
-    Filter filter = Filter.and(Filter.equals(COL_SERVICE_OBJECT, objId),
-        Filter.isNull(COL_MAINTENANCE_INVOICE));
+    Filter filter;
+
+    if (BeeUtils.equals(form.getViewName(), VIEW_SERVICE_OBJECTS)
+        || !DataUtils.isId(maintenanceId)) {
+      filter = Filter.and(Filter.equals(COL_SERVICE_OBJECT, objId),
+          Filter.isNull(COL_MAINTENANCE_INVOICE));
+
+    } else {
+      filter = Filter.and(Filter.equals(COL_SERVICE_OBJECT, objId),
+          Filter.isNull(COL_MAINTENANCE_INVOICE),
+          Filter.equals(COL_SERVICE_MAINTENANCE, maintenanceId));
+    }
 
     Queries.getRowSet(VIEW_MAINTENANCE, null, filter, new Queries.RowSetCallback() {
       @Override

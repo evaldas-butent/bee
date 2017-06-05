@@ -237,8 +237,7 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
       DateTime time = new DateTime();
       String user =
           BeeUtils.joinWords(BeeKeeper.getUser().getFirstName(), BeeKeeper.getUser().getLastName());
-      editInfoLabel.setHtml(BeeUtils
-          .joinWords(Format.getDefaultDateTimeFormat().format(time), user));
+      editInfoLabel.setHtml(BeeUtils.joinWords(Format.renderDateTime(time), user));
     }
 
     if (fromFlow != null && projectForm != null && projectValidator != null) {
@@ -264,8 +263,10 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
       if (BeeUtils.isEmpty(value)) {
         value = Localized.dictionary().filterNullLabel();
       } else {
-        value = ProjectsHelper.getDisplayValue(projectForm.getViewName(),
-            projectValidator.getColumnId(), value, null, new Callback<String>() {
+        value =
+            ProjectsHelper.getDisplayValue(projectForm.getViewName(),
+                projectValidator.getColumnId(), value, projectForm.getActiveRow(),
+                new Callback<String>() {
 
               @Override
               public void onSuccess(String result) {

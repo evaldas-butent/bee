@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+  <RelColumn name="CostAccount" module="Finance" newRowEnabled="false" visible="false"
+             choiceColumns="AccountCode AccountName" renderColumns="CostAccountCode" />
+
+  <RelColumn name="TradePayables" module="Finance" newRowEnabled="false" visible="false"
+             choiceColumns="AccountCode AccountName" renderColumns="TradePayablesCode" />
+  <RelColumn name="TradeReceivables" module="Finance" newRowEnabled="false" visible="false"
+             choiceColumns="AccountCode AccountName" renderColumns="TradeReceivablesCode" />
+
+  <RelColumn name="VatPayable" module="Finance" newRowEnabled="false" visible="false"
+             choiceColumns="AccountCode AccountName" renderColumns="VatPayableCode" />
+  <RelColumn name="VatReceivable" module="Finance" newRowEnabled="false" visible="false"
+             choiceColumns="AccountCode AccountName" renderColumns="VatReceivableCode" />
+
+  <RelColumn name="SalesRevenue" module="Finance" newRowEnabled="false" visible="false"
+             choiceColumns="AccountCode AccountName" renderColumns="SalesRevenueCode" />
+  <RelColumn name="SalesDiscounts" module="Finance" newRowEnabled="false" visible="false"
+             choiceColumns="AccountCode AccountName" renderColumns="SalesDiscountsCode" />
+
+  <RelColumn name="CostOfGoodsSold" module="Finance" newRowEnabled="false" visible="false"
+             choiceColumns="AccountCode AccountName" renderColumns="CostOfGoodsSoldCode" />
+  <RelColumn name="WriteOffAccount" module="Finance" newRowEnabled="false" visible="false"
+             choiceColumns="AccountCode AccountName" renderColumns="WriteOffAccountCode" />
+</g:columns>

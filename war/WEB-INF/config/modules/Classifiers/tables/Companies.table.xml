@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="Companies"
-  idName="CompanyID"
-  >
+       name="Companies"
+       idName="CompanyID"
+>
   <Fields>
     <Relation name="Owner" relation="Companies" />
+    <!-- Transrifus set CompanyName 150 prec and unique { -->
     <String name="Name" precision="150" notNull="true" unique="true" label="=companyName" />
+    <!-- } -->
     <String name="Code" precision="30" unique="true" label="=companyCode" />
     <String name="VATCode" precision="30" label="=companyVATCode" />
 
@@ -23,23 +25,29 @@
     <Relation name="TurnoverCurrency" relation="Currencies" label="=currency" />
 
     <Relation name="CompanyRelationTypeState" relation="RelationTypeStates"
-      label="=companyRelationState" />
+              label="=companyRelationState" />
 
     <Integer name="CreditLimit" label="=creditLimit" />
     <Relation name="LimitCurrency" relation="Currencies" label="=limitCurrency" />
     <Integer name="CreditTolerance" label="=creditTolerance" />
     <Numeric name="CreditDays" precision="3" label="=creditDays" />
     <Numeric name="SupplierCreditDays" precision="3" label="=supplierCreditDays" />
+    <Integer name="ToleratedDays" label="=companyToleratedDays" />
 
     <Relation name="FinancialState" relation="FinancialStates" label="=financialState" />
     <Relation name="DefaultBankAccount" relation="CompanyBankAccounts" unique="true"
-      cascade="SET_NULL" label="=defaultBankAccount" />
+              cascade="SET_NULL" label="=defaultBankAccount" />
     <Relation name="DefaultCompanyUser" relation="CompanyUsers" unique="true"
-      cascade="SET_NULL" label="=defaultCompanyUser" />
+              cascade="SET_NULL" label="=defaultCompanyUser" />
 
     <Numeric name="DiscountPercent" precision="7" scale="3" label="=discountPercent" />
     <Relation name="DiscountParent" relation="Companies" label="=discountParent" />
     <Enum name="PriceName" key="ItemPrice" label="=priceName" />
+
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
+              label="=dimensions" />
+    <Relation name="TradeAccounts" unique="true" relation="TradeAccounts" editable="true"
+              label="=finTradeAccounts" />
 
     <Text name="Notes" label="=notes" />
 

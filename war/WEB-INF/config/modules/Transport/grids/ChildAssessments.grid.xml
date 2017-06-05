@@ -1,32 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-      xmlns:ui="http://www.butent.com/ui"
+        xmlns:ui="http://www.butent.com/ui"
 
-  name="ChildAssessments" viewName="ChildAssessments"
-  flexGrow="1" disabledActions="delete" newRowColumns="Date Manager Notes"
-  >
+        name="ChildAssessments" viewName="ChildAssessments"
+        flexGrow="1" disabledActions="delete" newRowColumns="Date Manager Notes"
+>
   <g:columns>
     <CalcColumn name="Assessment" caption="ID" type="long" width="40">
-      <style><bodyStyle>
-        <ui:class>bee-ActionCellLink</ui:class>
-      </bodyStyle></style>
-      <render><ui:expression>rowId</ui:expression></render>
+      <style>
+        <bodyStyle>
+          <ui:class>bee-ActionCellLink</ui:class>
+        </bodyStyle>
+      </style>
+      <render>
+        <ui:expression>rowId</ui:expression>
+      </render>
     </CalcColumn>
     <DataColumn name="Date" width="110" readOnly="true" />
     <RelColumn name="Manager" readOnly="true" editSource="CompanyPerson" newRowEnabled="false" />
-    <DataColumn name="Notes" readOnly="true" />
-    <DataColumn name="CurrencyName" readOnly="true" />
-    <PropColumn name="Income" type="decimal" caption="=income" format="0.00" />
-    <PropColumn name="Expense" type="decimal" caption="=trExpenses" format="0.00" />
+    <DataColumn name="Notes" readOnly="true">
+      <footer text="=total" horizontalAlignment="right" />
+    </DataColumn>
+    <PropColumn name="CargoIncomesTotal" type="decimal" caption="=income" format="0.00">
+      <footer aggregate="sum" />
+    </PropColumn>
+    <PropColumn name="CargoExpensesTotal" type="decimal" caption="=trExpenses" format="0.00">
+      <footer aggregate="sum" />
+    </PropColumn>
     <CalcColumn name="Status" caption="=status" type="string" cellType="html">
-      <style><bodyStyle>
-        <ui:inline>cursor:pointer</ui:inline>
-      </bodyStyle></style>
+      <style>
+        <bodyStyle>
+          <ui:inline>cursor:pointer</ui:inline>
+        </bodyStyle>
+      </style>
     </CalcColumn>
   </g:columns>
 
   <g:rowStyle>
-    <ui:inline>="color:gold"</ui:inline>
+    <ui:inline>="color:brown"</ui:inline>
     <ui:expression>row.OrderStatus == 3 &amp;&amp; !row.ExpensesRegistered</ui:expression>
   </g:rowStyle>
   <g:rowStyle>

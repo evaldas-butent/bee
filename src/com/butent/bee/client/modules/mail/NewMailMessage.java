@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
@@ -39,7 +40,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -64,6 +64,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 public final class NewMailMessage extends AbstractFormInterceptor
     implements ClickHandler, SelectionHandler<FileInfo> {
@@ -118,9 +120,9 @@ public final class NewMailMessage extends AbstractFormInterceptor
         callback);
   }
 
-  public static void create(final Set<String> to, final Set<String> cc, final Set<String> bcc,
-      final String subject, final String content, final Collection<FileInfo> attachments,
-      final Long relatedId, final boolean isDraft, BiConsumer<Long, Boolean> callback) {
+  public static void create(Set<String> to, Set<String> cc, Set<String> bcc, String subject,
+      String content, Collection<FileInfo> attachments, Long relatedId, boolean isDraft,
+      BiConsumer<Long, Boolean> callback) {
 
     MailKeeper.getAccounts((availableAccounts, defaultAccount) -> {
       if (BeeUtils.isEmpty(availableAccounts)) {
@@ -136,7 +138,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
       AccountInfo defaultAccount, Set<String> to, Set<String> cc, Set<String> bcc, String subject,
       String content, Collection<FileInfo> attachments, Long relatedId, boolean isDraft) {
 
-    final NewMailMessage newMessage = new NewMailMessage(availableAccounts, defaultAccount,
+    NewMailMessage newMessage = new NewMailMessage(availableAccounts, defaultAccount,
         to, cc, bcc, subject, content, attachments, relatedId, isDraft);
 
     FormFactory.createFormView(FORM_NEW_MAIL_MESSAGE, null, null, false, newMessage,
@@ -152,8 +154,12 @@ public final class NewMailMessage extends AbstractFormInterceptor
               dialog.setPreviewEnabled(false);
             }
             newMessage.initHeader(dialog);
+            dialog.focusOnOpen(newMessage.getFocusWidget());
           }
         });
+    newMessage.isSignatureAbove =
+        BeeUtils.unbox(Global.getParameterBoolean(PRM_SIGNATURE_POSITION));
+
     return newMessage;
   }
 
@@ -163,6 +169,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
   private final Long relatedId;
   private final boolean isDraft;
   private final Div signature = new Div().id(BeeUtils.randomString(5));
+  private boolean isSignatureAbove;
 
   private final Multimap<AddressType, String> recipients = HashMultimap.create();
   private final String subject;
@@ -200,7 +207,8 @@ public final class NewMailMessage extends AbstractFormInterceptor
       Collection<String> emails = recs.get(type);
 
       if (!BeeUtils.isEmpty(emails)) {
-        recipients.putAll(type, emails);
+        recipients.putAll(type,
+            emails.stream().filter(s -> !BeeUtils.isEmpty(s)).collect(Collectors.toSet()));
 
         if (!isDraft) {
           recipients.remove(type, defaultAccount.getAddress());
@@ -283,31 +291,45 @@ public final class NewMailMessage extends AbstractFormInterceptor
   }
 
   private void applySignature(Long signatureId) {
+    String value = null;
+    String currentContent = contentWidget.getValue();
+    String oldSignature = signature.toString();
+    signature.clearChildren();
+
     if (DataUtils.isId(signatureId)) {
-      signaturesWidget.setValue(BeeUtils.toString(signatureId));
-
-      String oldSignature = signature.toString();
-      signature.clearChildren();
-      String newSignature = signature.text(signatures.get(signatureId)).toString();
-
-      String currentContent = contentWidget.getValue();
+      value = BeeUtils.toString(signatureId);
+      signature.text(signatures.get(signatureId));
+    }
+    if (!isDraft || DataUtils.isId(signatureId)) {
+      String newSignature = signature.toString();
 
       if (currentContent.contains(oldSignature)) {
         currentContent = currentContent.replace(oldSignature, newSignature);
       } else {
-        if (BeeUtils.startsWith(subject, Localized.dictionary().mailReplayPrefix())
-            || BeeUtils.startsWith(subject, Localized.dictionary().mailForwardedPrefix())) {
-
+        if (isSignatureAbove) {
           currentContent = SIGNATURE_SEPARATOR + newSignature + currentContent;
         } else {
           currentContent = currentContent + SIGNATURE_SEPARATOR + newSignature;
         }
       }
-      contentWidget.setValue(currentContent);
-
-    } else {
-      signaturesWidget.setValue(null);
     }
+    contentWidget.setValue(currentContent);
+    signaturesWidget.setValue(value);
+  }
+
+  private Widget getFocusWidget() {
+    Editor w = null;
+
+    if (BeeUtils.isEmpty(recipients.get(AddressType.TO))) {
+      w = recipientWidgets.get(AddressType.TO);
+    }
+    if (Objects.isNull(w) && BeeUtils.isEmpty(subject)) {
+      w = subjectWidget;
+    }
+    if (Objects.isNull(w)) {
+      w = contentWidget;
+    }
+    return Objects.isNull(w) ? null : w.asWidget();
   }
 
   private boolean hasChanges() {
@@ -324,15 +346,13 @@ public final class NewMailMessage extends AbstractFormInterceptor
         contentWidget.getValue().replace(SIGNATURE_SEPARATOR + signature.toString(), ""))) {
       return true;
     }
-    if (!BeeUtils.sameElements(defaultAttachments, attachmentsWidget.getFiles())) {
-      return true;
-    }
-    return false;
+    return !BeeUtils.sameElements(defaultAttachments, attachmentsWidget.getFiles());
   }
 
   private void initHeader(DialogBox dialog) {
     FaLabel send = new FaLabel(FontAwesome.PAPER_PLANE);
     send.setTitle(Localized.dictionary().send());
+    send.enableAnimation();
     send.addClickHandler(this);
 
     dialog.insertAction(1, send);
@@ -351,6 +371,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
             signaturesWidget.setEnabled(signaturesWidget.getItemCount() > 0);
             signaturesWidget.addChangeHandler(
                 event -> applySignature(BeeUtils.toLongOrNull(signaturesWidget.getValue())));
+
             applySignature(isDraft ? null : account.getSignatureId());
           }
         });

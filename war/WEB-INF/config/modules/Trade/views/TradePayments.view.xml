@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TradePayments" source="TradePayments"
+  caption="=trdPayments" newRowCaption="=newPayment"
+  >
+  <Columns>
+    <SimpleColumn name="TradeDocument" />
+
+    <SimpleColumn name="PaymentDate" />
+    <SimpleColumn name="PaymentAmount" />
+
+    <SimpleColumn name="PaymentType" />
+    <SimpleJoin joinType="LEFT" name="PaymentType">
+      <SimpleColumn name="PaymentName" />
+      <SimpleColumn name="PaymentTypeAccount" />
+    </SimpleJoin>
+
+    <SimpleColumn name="PaymentAccount" />
+    <SimpleJoin joinType="LEFT" name="PaymentAccount">
+      <SimpleColumn name="AccountCode" />
+      <SimpleColumn name="AccountName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="PaymentSeries" />
+    <SimpleColumn name="PaymentNumber" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="PaymentDate" />
+  </Order>
+</View>

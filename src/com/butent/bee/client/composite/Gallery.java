@@ -24,6 +24,7 @@ import com.butent.bee.client.event.logical.SummaryChangeEvent.Handler;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasFosterParent;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
@@ -33,7 +34,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
@@ -69,6 +69,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class Gallery extends Flow implements HasViewName, HasFosterParent, ParentRowEvent.Handler,
     HasSummaryChangeHandlers, HandlesActions {
@@ -579,6 +580,7 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
   private void initCommand(final Action action, FaLabel widget) {
     widget.addStyleName(action.getStyleName());
     widget.setTitle(action.getCaption());
+    StyleUtils.enableAnimation(action, widget);
 
     widget.addClickHandler(new ClickHandler() {
       @Override

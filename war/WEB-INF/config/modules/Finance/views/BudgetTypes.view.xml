@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="BudgetTypes" source="BudgetTypes"
+      caption="=finBudgetTypes" newRowCaption="=finBudgetTypeNew"
+>
+  <Columns>
+    <SimpleColumn name="Ordinal" />
+
+    <SimpleColumn name="BudgetTypeName" />
+
+    <SimpleColumn name="Description" />
+
+    <SimpleColumn name="Background" />
+    <SimpleColumn name="Foreground" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Ordinal" />
+    <OrderBy column="BudgetTypeName" />
+  </Order>
+</View>

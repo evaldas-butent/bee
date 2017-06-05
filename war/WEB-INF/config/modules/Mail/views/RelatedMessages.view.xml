@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="RelatedMessages" source="Relations" caption="=mails"
+  name="RelatedMessages" source="Relations" caption="=relatedMessages"
   editForm="MailMessage"
   >
   <Columns>

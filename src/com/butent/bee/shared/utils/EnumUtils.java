@@ -1,11 +1,9 @@
 package com.butent.bee.shared.utils;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultimap;
 
@@ -21,6 +19,7 @@ import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.finance.FinanceConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
@@ -39,6 +38,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 public final class EnumUtils {
 
@@ -54,19 +54,11 @@ public final class EnumUtils {
   private static final Splitter splitter =
       Splitter.on(LIST_SEPARATOR).omitEmptyStrings().trimResults();
 
-  private static final Function<Enum<?>, Integer> indexFunction = new Function<Enum<?>, Integer>() {
-    @Override
-    public Integer apply(Enum<?> input) {
-      return (input == null) ? null : input.ordinal();
-    }
-  };
+  private static final Function<Enum<?>, Integer> indexFunction =
+      input -> (input == null) ? null : input.ordinal();
 
-  private static final Function<Enum<?>, String> nameFunction = new Function<Enum<?>, String>() {
-    @Override
-    public String apply(Enum<?> input) {
-      return (input == null) ? null : input.name();
-    }
-  };
+  private static final Function<Enum<?>, String> nameFunction =
+      input -> (input == null) ? null : input.name();
 
   static {
     AdministrationConstants.register();
@@ -83,6 +75,7 @@ public final class EnumUtils {
     TradeConstants.register();
     OrdersConstants.register();
     PayrollConstants.register();
+    FinanceConstants.register();
   }
 
   public static String getCaption(Enum<?> e) {
@@ -328,7 +321,7 @@ public final class EnumUtils {
     if (values == null) {
       return null;
     } else {
-      return joiner.join(Iterables.transform(values, indexFunction));
+      return joiner.join(values.stream().map(indexFunction).iterator());
     }
   }
 
@@ -336,8 +329,12 @@ public final class EnumUtils {
     if (values == null) {
       return null;
     } else {
-      return joiner.join(Iterables.transform(values, nameFunction));
+      return joiner.join(values.stream().map(nameFunction).iterator());
     }
+  }
+
+  public static Integer ordinal(Enum<?> e) {
+    return (e == null) ? null : e.ordinal();
   }
 
   public static <E extends Enum<?>> List<E> parseIndexList(Class<E> clazz, String input) {

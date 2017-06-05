@@ -1,8 +1,11 @@
 package com.butent.bee.client.view.form;
 
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.Maps;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
@@ -19,6 +22,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Notification;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.TabulationHandler;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
@@ -29,6 +33,7 @@ import com.butent.bee.client.event.PreviewHandler;
 import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
+import com.butent.bee.client.event.logical.DataReceivedEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.ReadyEvent;
@@ -43,6 +48,7 @@ import com.butent.bee.client.render.HandlesRendering;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.style.DynamicStyler;
+import com.butent.bee.client.style.HasConditionalStyleTarget;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.EnablableWidget;
@@ -60,6 +66,7 @@ import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
+import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
@@ -84,6 +91,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
+import com.butent.bee.shared.data.RowConsumer;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.DataEvent;
@@ -95,6 +103,7 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.html.builder.Factory;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
@@ -206,12 +215,17 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         }
       }
 
-      if (hasData() && !BeeUtils.isEmpty(result.getDynStyles()) && !BeeUtils.isEmpty(id)) {
-        ConditionalStyle conditionalStyle =
-            ConditionalStyle.create(result.getDynStyles(), source, getDataColumns());
-        if (conditionalStyle != null) {
-          addDynamicStyle(id, cellSource, conditionalStyle);
+      if (hasData() && result.getConditionalStyle() != null) {
+        String targetId = (widget instanceof HasConditionalStyleTarget)
+            ? ((HasConditionalStyleTarget) widget).getConditionalStyleTargetId() : id;
+
+        if (!BeeUtils.isEmpty(targetId)) {
+          addDynamicStyle(targetId, cellSource, result.getConditionalStyle());
         }
+      }
+
+      if (widget instanceof RowConsumer && hasData() && !BeeUtils.isEmpty(id)) {
+        getRowConsumers().add(id);
       }
 
       super.onSuccess(result, widget);
@@ -325,8 +339,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private static final BeeLogger logger = LogUtils.getLogger(FormImpl.class);
 
-  private static final String STYLE_FORM_DISABLED = BeeConst.CSS_CLASS_PREFIX + "Form-"
-      + StyleUtils.SUFFIX_DISABLED;
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Form-";
+
+  private static final String STYLE_FORM_DISABLED = STYLE_PREFIX + StyleUtils.SUFFIX_DISABLED;
+  private static final String STYLE_HAS_ROW_ID = STYLE_PREFIX + "has-row-id";
+  private static final String STYLE_NO_ROW_ID = STYLE_PREFIX + "no-row-id";
 
   private final String formName;
 
@@ -394,6 +411,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private boolean hasReadyDelegates;
 
   private final List<DynamicStyler> dynamicStylers = new ArrayList<>();
+  private final List<String> rowConsumers = new ArrayList<>();
 
   public FormImpl(String formName) {
     super(Position.RELATIVE, Overflow.AUTO);
@@ -429,6 +447,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     } else {
       return editableWidget.addCellValidationHandler(handler);
     }
+  }
+
+  @Override
+  public HandlerRegistration addDataReceivedHandler(DataReceivedEvent.Handler handler) {
+    return addHandler(handler, DataReceivedEvent.getType());
   }
 
   @Override
@@ -520,7 +543,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       if (event != null) {
         event.cancel();
       }
-      return checkForUpdate(false);
+      return checkForUpdate(true);
     }
   }
 
@@ -532,7 +555,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       if (event != null) {
         event.cancel();
       }
-      return checkForUpdate(false);
+      return checkForUpdate(true);
     }
   }
 
@@ -658,6 +681,15 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public void focus() {
+    if (BeeUtils.isEmpty(getTabOrder())) {
+      UiHelper.focus(asWidget());
+    } else {
+      UiHelper.focus(getWidgetById(getTabOrder().get(0).getWidgetId()));
+    }
+  }
+
+  @Override
   public boolean focus(String source) {
     if (BeeUtils.isEmpty(source)) {
       return false;
@@ -768,11 +800,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public List<BeeColumn> getDataColumns() {
     return dataColumns;
-  }
-
-  @Override
-  public int getDataIndex(String source) {
-    return DataUtils.getColumnIndex(source, getDataColumns());
   }
 
   @Override
@@ -1186,7 +1213,9 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     refreshDisplayWidgets(refreshed);
+
     refreshDynamicStyles();
+    refreshRowConsumers();
   }
 
   @Override
@@ -1210,12 +1239,22 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
-      if (editableWidget.getEditor() instanceof HandlesValueChange
-          && ((HandlesValueChange) editableWidget.getEditor()).isValueChanged()) {
+      if (editableWidget.getEditor() instanceof HandlesValueChange) {
+        boolean changed = ((HandlesValueChange) editableWidget.getEditor()).isValueChanged();
 
-        String label = ((HandlesValueChange) editableWidget.getEditor()).getLabel();
-        if (!BeeUtils.isEmpty(label) && !updatedLabels.contains(label)) {
-          updatedLabels.add(label);
+        if (!changed && editableWidget.hasRowProperty()) {
+          String propertyName = editableWidget.getRowPropertyName();
+          Long userId = BeeKeeper.getUser().idOrNull(editableWidget.getUserMode());
+
+          changed = !BeeUtils.equalsTrim(getOldRow().getProperty(propertyName, userId),
+              getActiveRow().getProperty(propertyName, userId));
+        }
+
+        if (changed) {
+          String label = ((HandlesValueChange) editableWidget.getEditor()).getLabel();
+          if (!BeeUtils.isEmpty(label) && !updatedLabels.contains(label)) {
+            updatedLabels.add(label);
+          }
         }
       }
     }
@@ -1224,7 +1263,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       String msg = isNew ? Localized.dictionary().newValues()
           : Localized.dictionary().changedValues();
       messages.add(msg + BeeConst.STRING_SPACE
-          + BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, updatedLabels));
+          + Factory.b().text(BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR,
+          updatedLabels)).build());
     }
 
     if (getFormInterceptor() != null) {
@@ -1296,6 +1336,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         if (!BeeUtils.equalsTrim(oldValue, newValue)) {
           logger.debug(propertyName, userId, "old:", oldValue, "new:", newValue);
           rowValue.setProperty(propertyName, userId, newValue);
+
+          if (getFormInterceptor() != null) {
+            getFormInterceptor().onSourceChange(rowValue, propertyName, newValue);
+          }
         }
       }
 
@@ -1311,6 +1355,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
       if (isFlushable()) {
         rowValue.setValue(index, newValue);
+
+        if (getFormInterceptor() != null) {
+          getFormInterceptor().onSourceChange(rowValue, column.getId(), newValue);
+        }
 
         Collection<String> updatedColumns;
         if (source instanceof EditableWidget) {
@@ -1339,7 +1387,9 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         }
 
         refreshDisplayWidgets(refreshed);
+
         refreshDynamicStyles();
+        refreshRowConsumers();
 
       } else {
         fireUpdate(rowValue, column, oldValue, newValue, event.isRowMode());
@@ -1370,7 +1420,52 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
           }
         }
       }
+
+    } else if (EventUtils.isKeyDown(type)) {
+      Action action = getAction(event.getNativeEvent());
+
+      if (action != null && reactsTo(action) && isActive()) {
+        if (BeeConst.isUndef(getActiveEditableIndex())
+            || getEditableWidgets().get(getActiveEditableIndex()).checkForUpdate(true)) {
+
+          event.getNativeEvent().preventDefault();
+          event.cancel();
+
+          getViewPresenter().handleAction(action);
+        }
+      }
     }
+  }
+
+  private boolean isActive() {
+    if (isInteractive()) {
+      Element activeElement = DomUtils.getActiveElement();
+      if (activeElement != null && getElement().isOrHasChild(activeElement)) {
+        return true;
+      }
+
+      IdentifiableWidget root = Popup.getActivePopup();
+      if (root == null) {
+        root = BeeKeeper.getScreen().getActiveWidget();
+      }
+
+      return root != null && root.getElement().isOrHasChild(getElement());
+
+    } else {
+      return false;
+    }
+  }
+
+  public static Action getAction(NativeEvent event) {
+    if (EventUtils.hasModifierKey(event) && !event.getShiftKey()) {
+      switch (event.getKeyCode()) {
+        case KeyCodes.KEY_S:
+          return Action.SAVE;
+        case KeyCodes.KEY_W:
+          return Action.CLOSE;
+      }
+    }
+    return null;
   }
 
   @Override
@@ -1395,8 +1490,50 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     IsRow newRow = event.getRow();
 
     if (DataUtils.sameId(getActiveRow(), newRow)) {
-      setActiveRow(newRow);
-      refreshData(false, false);
+      if (getOldRow() == null
+          || getActiveRow().sameValues(getOldRow()) && getActiveRow().sameProperties(getOldRow())) {
+
+        setActiveRow(newRow);
+
+      } else {
+        IsRow changedRow = DataUtils.cloneRow(newRow);
+
+        for (int i = 0; i < changedRow.getNumberOfCells(); i++) {
+          String oldValue = getOldRow().getString(i);
+          String activeValue = getActiveRow().getString(i);
+
+          if (!BeeUtils.equalsTrimRight(oldValue, activeValue)) {
+            changedRow.setValue(i, activeValue);
+          }
+        }
+
+        Map<String, String> oldProperties = new HashMap<>();
+        if (!BeeUtils.isEmpty(getOldRow().getProperties())) {
+          oldProperties.putAll(getOldRow().getProperties());
+        }
+
+        Map<String, String> activeProperties = new HashMap<>();
+        if (!BeeUtils.isEmpty(getActiveRow().getProperties())) {
+          activeProperties.putAll(getActiveRow().getProperties());
+        }
+
+        if (!oldProperties.equals(activeProperties)) {
+          MapDifference<String, String> difference =
+              Maps.difference(oldProperties, activeProperties);
+
+          difference.entriesDiffering().forEach((key, valueDifference) ->
+              changedRow.setProperty(key, valueDifference.rightValue()));
+
+          difference.entriesOnlyOnLeft().forEach((key, value) ->
+              changedRow.removeProperty(key));
+          difference.entriesOnlyOnRight().forEach(changedRow::setProperty);
+        }
+
+        setActiveRow(changedRow);
+        setOldRow(DataUtils.cloneRow(newRow));
+      }
+
+      refreshData(event.refreshChildren(), false);
     }
   }
 
@@ -1540,6 +1677,103 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public void saveChanges(final RowCallback callback) {
+    if (DataUtils.hasId(getActiveRow()) && DataUtils.sameId(getActiveRow(), getOldRow())) {
+      if (!validate(this, true)) {
+        if (callback != null) {
+          callback.onCancel();
+        }
+        return;
+      }
+
+      GridView gridView = getBackingGrid();
+      if (gridView != null && !gridView.validateFormData(this, this, true)) {
+        if (callback != null) {
+          callback.onCancel();
+        }
+        return;
+      }
+
+      SaveChangesEvent event = SaveChangesEvent.create(getOldRow(), getActiveRow(),
+          getDataColumns(), getChildrenForUpdate(), callback);
+
+      if (event.isEmpty()) {
+        if (callback != null) {
+          callback.onSuccess(BeeRow.from(getActiveRow()));
+        }
+        return;
+      }
+
+      AutocompleteProvider.retainValues(this);
+
+      if (getFormInterceptor() != null) {
+        getFormInterceptor().onSaveChanges(this, event);
+        if (event.isConsumed()) {
+          if (callback != null) {
+            callback.onCancel();
+          }
+          return;
+        }
+      }
+
+      if (gridView != null && gridView.getGridInterceptor() != null) {
+        gridView.getGridInterceptor().onSaveChanges(gridView, event);
+        if (event.isConsumed()) {
+          if (callback != null) {
+            callback.onCancel();
+          }
+          return;
+        }
+      }
+
+      BeeRowSet updated = DataUtils.getUpdated(getViewName(), event.getOldRow().getId(),
+          event.getOldRow().getVersion(), event.getColumns(), event.getOldValues(),
+          event.getNewValues(), event.getChildren());
+
+      if (DataUtils.isEmpty(updated) && BeeUtils.isEmpty(event.getChildren())) {
+        if (callback != null) {
+          callback.onSuccess(BeeRow.from(getActiveRow()));
+        }
+        return;
+      }
+
+      RowCallback updateCallback = new RowCallback() {
+        @Override
+        public void onFailure(String... reason) {
+          if (callback == null) {
+            notifySevere(reason);
+          } else {
+            callback.onFailure(reason);
+          }
+        }
+
+        @Override
+        public void onSuccess(BeeRow result) {
+          RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
+
+          if (getFormInterceptor() != null) {
+            getFormInterceptor().afterUpdateRow(result);
+          }
+
+          if (callback != null) {
+            callback.onSuccess(result);
+          }
+        }
+      };
+
+      if (DataUtils.isEmpty(updated)) {
+        Queries.updateChildren(getViewName(), event.getOldRow().getId(), event.getChildren(),
+            updateCallback);
+      } else {
+        Queries.updateRow(updated, updateCallback);
+      }
+
+    } else if (callback != null) {
+      callback.onFailure("cannot save changes");
+    }
+  }
+
+  @Override
   public void setAdding(boolean adding) {
     this.adding = adding;
   }
@@ -1635,11 +1869,13 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public void setRowData(List<? extends IsRow> values, boolean refresh) {
-    if (BeeUtils.isEmpty(values)) {
+  public void setRowData(List<? extends IsRow> rows, boolean refresh) {
+    fireEvent(new DataReceivedEvent(rows));
+
+    if (BeeUtils.isEmpty(rows)) {
       setActiveRow(null);
     } else {
-      setActiveRow(values.get(0));
+      setActiveRow(rows.get(0));
     }
 
     if (refresh) {
@@ -1751,36 +1987,48 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public void updateCell(String columnId, String newValue) {
-    Assert.notEmpty(columnId);
+  public boolean updateCell(String columnId, String newValue) {
+    if (BeeUtils.isEmpty(columnId)) {
+      notifySevere("update cell:", newValue, "column not specified");
+      return false;
+    }
 
     IsRow rowValue = getActiveRow();
     if (rowValue == null) {
       notifySevere("update cell:", columnId, newValue, "form has no data");
-      return;
+      return false;
     }
 
     int index = getDataIndex(columnId);
     if (BeeConst.isUndef(index)) {
       notifySevere("update cell:", columnId, newValue, "column not found");
-      return;
+      return false;
     }
 
     String oldValue = rowValue.getString(index);
-
-    if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
-      if (isFlushable()) {
-        rowValue.setValue(index, newValue);
-
-        Set<String> refreshed = refreshEditableWidget(index);
-        refreshDisplayWidgets(refreshed);
-        refreshDynamicStyles();
-
-      } else {
-        BeeColumn column = getDataColumns().get(index);
-        fireUpdate(rowValue, column, oldValue, newValue, column.isForeign());
-      }
+    if (BeeUtils.equalsTrimRight(oldValue, newValue)) {
+      return false;
     }
+
+    if (isFlushable()) {
+      rowValue.setValue(index, newValue);
+
+      if (getFormInterceptor() != null) {
+        getFormInterceptor().onSourceChange(rowValue, columnId, newValue);
+      }
+
+      Set<String> refreshed = refreshEditableWidget(index);
+      refreshDisplayWidgets(refreshed);
+
+      refreshDynamicStyles();
+      refreshRowConsumers();
+
+    } else {
+      BeeColumn column = getDataColumns().get(index);
+      fireUpdate(rowValue, column, oldValue, newValue, column.isForeign());
+    }
+
+    return true;
   }
 
   @Override
@@ -1861,6 +2109,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private void fireUpdate(IsRow rowValue, final IsColumn column, String oldValue,
       final String newValue, boolean rowMode) {
+
     fireEvent(new ReadyForUpdateEvent(rowValue, column, oldValue, newValue, rowMode,
         new RowCallback() {
           @Override
@@ -1974,6 +2223,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private IsRow getRowBuffer() {
     return rowBuffer;
+  }
+
+  private List<String> getRowConsumers() {
+    return rowConsumers;
   }
 
   private Evaluator getRowEditable() {
@@ -2179,6 +2432,20 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     return refreshed;
   }
 
+  private void refreshRowConsumers() {
+    if (!rowConsumers.isEmpty()) {
+      for (String id : rowConsumers) {
+        Widget widget = getWidgetById(id);
+
+        if (widget instanceof RowConsumer) {
+          ((RowConsumer) widget).accept(getActiveRow());
+        } else {
+          logger.warning("row consumer", id, "not found");
+        }
+      }
+    }
+  }
+
   private void render(boolean refreshChildren) {
     if (getFormInterceptor() != null) {
       getFormInterceptor().beforeRefresh(this, getActiveRow());
@@ -2192,6 +2459,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     refreshDynamicStyles();
+    refreshRowConsumers();
 
     fireEvent(new ActiveRowChangeEvent(getActiveRow()));
 
@@ -2199,19 +2467,14 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       getFormInterceptor().afterRefresh(this, getActiveRow());
     }
 
-    String message = BeeConst.STRING_EMPTY;
-    if (showRowId() && getViewPresenter() != null) {
-      long rowId = (getActiveRow() == null) ? BeeConst.UNDEF : getActiveRow().getId();
-      message = DataUtils.isId(rowId) ? BeeUtils.bracket(rowId) : BeeConst.STRING_EMPTY;
-    }
+    if (getViewPresenter() != null && getViewPresenter().getHeader() != null) {
+      if (showRowId()) {
+        getViewPresenter().getHeader().showRowId(getActiveRow());
+      }
 
-    if (getActiveRow() != null && getRowMessage() != null) {
-      getRowMessage().update(getActiveRow());
-      message = BeeUtils.joinWords(message, getRowMessage().evaluate());
-    }
-
-    if (!BeeUtils.isEmpty(message) && getViewPresenter() != null) {
-      getViewPresenter().getHeader().setMessage(message);
+      if (getRowMessage() != null) {
+        getViewPresenter().getHeader().showRowMessage(getRowMessage(), getActiveRow());
+      }
     }
   }
 
@@ -2225,6 +2488,13 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
     setOldRow((activeRow == null) ? null : DataUtils.cloneRow(activeRow));
     this.activeRow = activeRow;
+
+    View view = (getViewPresenter() == null) ? null : getViewPresenter().getMainView();
+    if (view != null) {
+      boolean hasId = DataUtils.hasId(activeRow);
+      view.setStyleName(STYLE_HAS_ROW_ID, hasId);
+      view.setStyleName(STYLE_NO_ROW_ID, !hasId);
+    }
   }
 
   private void setDataColumns(List<BeeColumn> dataColumns) {

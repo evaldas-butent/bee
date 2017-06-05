@@ -1,27 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="Items"
-  idName="ItemID"
-  >
+       name="Items"
+       idName="ItemID"
+>
   <Fields>
-    <String name="Name" precision="100" notNull="true" label="=itemName" />
+    <String name="Name" precision="100" notNull="true" label="=itemName" translatable="true" />
     <String name="Name2" precision="100" label="=itemName2" />
     <String name="Name3" precision="100" label="=itemName3" />
 
     <String name="Article" precision="30" unique="true" label="=article" />
     <String name="Article2" precision="30" label="=article2" />
+    <String name="Article3" precision="30" label="=article3" />
+    <String name="Article4" precision="30" label="=article4" />
     <String name="Barcode" precision="30" unique="true" label="=itemBarcode" />
+    <String name="KPNCode" precision="30" label="=kpnCode" />
 
     <Relation name="Unit" notNull="true" relation="Units" label="=unit" />
+    <Numeric name="PackageUnits" label="=packageUnits" precision="10" scale="2" />
     <Enum name="TimeUnit" key="TradeActTimeUnit" label="=taTimeUnit" />
 
-    <Numeric name="Weight" precision="10" scale="3" label="=weight" />
+    <Numeric name="Weight" precision="10" scale="5" label="=weight" />
     <Numeric name="Area" precision="10" scale="3" label="=area" />
 
-    <Relation name="Maker" label="=maker" relation="Makers" />
-    <Numeric name="PackageUnits" label="=packageUnits" precision="10" scale="2" />
-			
+    <Numeric name="Volume" precision="12" scale="5" label="=volume" />
+    <Numeric name="Brutto" precision="12" scale="5" label="=brutto" />
+    <Numeric name="Netto" precision="12" scale="5" label="=netto" />
+
+    <String name="AdditionalUnit" precision="10" label="=additionalItemUnit" />
+    <String name="CountryOfOrigin" precision="60" label="=countryOfOrigin" />
+    <Numeric name="Factor" precision="8" scale="3" label="=taFactorShort" />
+
     <Numeric name="Price" precision="15" scale="5" label="=salePrice" />
     <Relation name="Currency" relation="Currencies" label="=currency" />
 
@@ -37,21 +46,41 @@
     <Relation name="Currency2" relation="Currencies" label="=currency2" />
     <Numeric name="Price3" precision="15" scale="5" label="=price3" />
     <Relation name="Currency3" relation="Currencies" label="=currency3" />
+    <Numeric name="Price4" precision="15" scale="5" label="=price4" />
+    <Relation name="Currency4" relation="Currencies" label="=currency4" />
+    <Numeric name="Price5" precision="15" scale="5" label="=price5" />
+    <Relation name="Currency5" relation="Currencies" label="=currency5" />
+    <Numeric name="Price6" precision="15" scale="5" label="=price6" />
+    <Relation name="Currency6" relation="Currencies" label="=currency6" />
+    <Numeric name="Price7" precision="15" scale="5" label="=price7" />
+    <Relation name="Currency7" relation="Currencies" label="=currency7" />
+    <Numeric name="Price8" precision="15" scale="5" label="=price8" />
+    <Relation name="Currency8" relation="Currencies" label="=currency8" />
+    <Numeric name="Price9" precision="15" scale="5" label="=price9" />
+    <Relation name="Currency9" relation="Currencies" label="=currency9" />
+    <Numeric name="Price10" precision="15" scale="5" label="=price10" />
+    <Relation name="Currency10" relation="Currencies" label="=currency10" />
 
     <Boolean name="Vat" label="=vat" defValue="true" />
     <Boolean name="ExportWebsite" label="=exportToWebsite" defValue="null" />
     <Numeric name="VatPercent" precision="3" label="=vatPercent" />
 
     <Boolean name="IsService" label="=service" />
+    <String name="Attribute" label="=attribute" precision="30" />
+    <Boolean name="NotManufactured" label="=notManufactured" />
 
     <Relation name="Type" relation="CategoryTree" label="=type" />
     <Relation name="Group" relation="CategoryTree" label="=group" />
 
-    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
-      label="=dimensions" />
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
+              label="=dimensions" />
+    <Relation name="TradeAccounts" unique="true" relation="TradeAccounts" editable="true"
+              label="=finTradeAccounts" />
 
     <Numeric name="DaysPerWeek" precision="1" label="=taDaysPerWeek" />
     <Numeric name="MinTerm" precision="3" label="=taMinTerm" />
+
+    <Integer name="DefaultQuantity" label="=defaultQuantity" />
 
     <Integer name="Ordinal" label="=ordinal" />
     <String name="ExternalCode" precision="10" label="=externalCode" />
@@ -59,8 +88,12 @@
 
     <Text name="Description" label="=description" />
     <Text name="Notes" label="=notes" />
-    
+
     <Text name="Link" label="=link" />
+
+    <!-- Transrifus { -->
+    <Relation name="Maker" label="=maker" relation="Makers" />
+    <!-- } Transrifus -->
   </Fields>
 
   <Indexes>

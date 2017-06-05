@@ -16,7 +16,7 @@
     <RelColumn name="User" renderColumns="FirstName LastName"
       sortBy="LastName FirstName" visible="true" />
 
-    <DataColumn name="Time" />
+    <DataColumn name="Time" format="DATE_TIME_SHORT" />
     <DataColumn name="Text" maxWidth="999" flexGrow="2" flexShrink="1" whiteSpace="normal"
       visible="true" />
 

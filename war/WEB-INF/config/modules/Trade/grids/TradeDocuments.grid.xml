@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-  
-  name="TradeDocuments" viewName="TradeDocuments"
-  caption="=trdDocuments" editShowId="true"
-  >
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="TradeDocuments" viewName="TradeDocuments"
+        caption="=trdDocuments" editShowId="true"
+>
   <g:columns>
     <IdColumn name="Id" />
 
@@ -16,29 +16,37 @@
     <DataColumn name="Number1" />
     <DataColumn name="Number2" />
 
-    <RelColumn name="Operation" renderColumns="OperationName" visible="true" />
+    <RelColumn name="Operation" renderColumns="OperationName" carry="true" visible="true" />
     <DataColumn name="Phase" visible="true" />
     <RelColumn name="Status" renderColumns="StatusName" />
 
     <RelColumn name="Supplier" renderColumns="SupplierName" />
     <RelColumn name="Customer" renderColumns="CustomerName" />
 
-    <RelColumn name="WarehouseFrom" renderColumns="WarehouseFromCode" />
-    <RelColumn name="WarehouseTo" renderColumns="WarehouseToCode" />
+    <RelColumn name="WarehouseFrom" caption="=trdWarehouseFromShort"
+               renderColumns="WarehouseFromCode" carry="true" />
+    <RelColumn name="WarehouseTo" caption="=trdWarehouseToShort" renderColumns="WarehouseToCode"
+               carry="true" />
 
-    <RelColumn name="Currency" renderColumns="CurrencyName" />
+    <RelColumn name="Currency" renderColumns="CurrencyName" carry="true" />
 
     <RelColumn name="Payer" renderColumns="PayerName" />
     <DataColumn name="Term" />
 
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName"
-      sortBy="ManagerLastName ManagerFirstName" />
+               sortBy="ManagerLastName ManagerFirstName" />
 
-    <DataColumn name="Discount" />
-    <DataColumn name="PriceName" />
+    <DataColumn name="DocumentDiscount" />
+    <DataColumn name="PriceName" carry="true" />
+
+    <DataColumn name="DocumentVatMode" carry="true" />
+    <DataColumn name="DocumentDiscountMode" carry="true" />
+
+    <DataColumn name="ReceivedDate" />
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
+  <xi:include href="../../Classifiers/grids/columns/HiddenTradeAccounts.columns.xml" />
 
   <g:columns>
     <DataColumn name="Notes" />

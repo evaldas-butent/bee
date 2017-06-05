@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:ui="http://www.butent.com/ui"
 
-  name="Companies" viewName="Companies" caption="=clients"
-  newRowForm="NewCompany:=inputSimple, Company:=inputFull"
-  editForm="Company:=inputFull, NewCompany:=inputSimple"
-  editShowId="true" favorite="Name" flexGrow="1"
-  >
+        name="Companies" viewName="Companies" caption="=clients"
+        newRowForm="NewCompany:=inputSimple, Company:=inputFull"
+        editForm="Company:=inputFull, NewCompany:=inputSimple"
+        editShowId="true" favorite="Name" flexGrow="1"
+>
   <g:columns>
     <IdColumn name="Id" visible="false" />
     <DataColumn name="Name" visible="true" />
@@ -27,9 +29,9 @@
     <DataColumn name="CityName" caption="=city" />
     <DataColumn name="CountryName" caption="=country" />
     <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
-        caption="-" label="=countryFlag" sortable="false"	horizontalAlignment="center"
-        filterOptions="-" exportWidthFactor="0.5"	visible="false">
-            <renderer type="flag" />
+                caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
+                filterOptions="-" exportWidthFactor="0.5" visible="false">
+      <renderer type="flag" />
     </CalcColumn>
 
     <DataColumn name="BankruptcyRiskName" visible="false"
@@ -55,7 +57,12 @@
     <DataColumn name="DiscountPercent" visible="false" />
     <DataColumn name="DiscountParent" renderColumns="DiscountParentName" visible="false" />
     <DataColumn name="PriceName" visible="false" />
+  </g:columns>
 
+  <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
+  <xi:include href="columns/HiddenTradeAccounts.columns.xml" />
+
+  <g:columns>
     <DataColumn name="Notes" visible="false" />
   </g:columns>
     <g:rowStyle>

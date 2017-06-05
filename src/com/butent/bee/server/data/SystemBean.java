@@ -450,6 +450,10 @@ public class SystemBean {
     RightsUtils.setViewModules(viewModules);
   }
 
+  public boolean isAuditable(String tblName) {
+    return isTable(tblName) && getTable(tblName).isAuditable();
+  }
+
   public boolean isExtField(String tblName, String fldName) {
     return getTable(tblName).getField(fldName).isExtended();
   }
@@ -466,18 +470,6 @@ public class SystemBean {
   public boolean isView(String viewName) {
     return !BeeUtils.isEmpty(viewName)
         && (viewCache.containsKey(BeeUtils.normalize(viewName)) || isTable(viewName));
-  }
-
-  public String joinExtField(HasFrom<?> query, String tblName, String tblAlias, String fldName) {
-    Assert.notNull(query);
-    BeeTable table = getTable(tblName);
-    BeeField field = table.getField(fldName);
-
-    if (!field.isExtended()) {
-      logger.warning("Field is not extended:", tblName, fldName);
-      return null;
-    }
-    return table.joinExtField(query, tblAlias, field);
   }
 
   public IsCondition joinTables(String tblName, String dstTable, String dstField) {
@@ -681,7 +673,7 @@ public class SystemBean {
         }
       }
     }
-    for (RightsState state : table.getStates()) {
+    for (RightsState state : BeeTable.getStates()) {
       tblName = table.getStateTable(state);
       SqlCreate sc = table.createStateTable(newTables.get(tblName), state);
 
@@ -1122,7 +1114,7 @@ public class SystemBean {
 
       Map<String, String[]> tableFields = new HashMap<>();
 
-      for (RightsState state : table.getStates()) {
+      for (RightsState state : BeeTable.getStates()) {
         tblName = table.getStateTable(state);
 
         if (names.contains(BeeUtils.normalize(tblName))) {

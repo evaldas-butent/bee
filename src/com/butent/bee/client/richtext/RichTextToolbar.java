@@ -30,8 +30,9 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.css.CssUnit;
+
+import java.util.function.Consumer;
 
 /**
  * Handles a rich text editor toolbar with all the buttons for formatting the text.

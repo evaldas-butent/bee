@@ -10,10 +10,10 @@ public enum DateTimeFunction implements HasLocalizedCaption {
       return constants.year();
     }
   },
-  QUATER() {
+  QUARTER() {
     @Override
     public String getCaption(Dictionary constants) {
-      return constants.quater();
+      return constants.quarter();
     }
   },
   MONTH() {
@@ -57,5 +57,5 @@ public enum DateTimeFunction implements HasLocalizedCaption {
     public String getCaption(Dictionary constants) {
       return constants.minute();
     }
-  };
+  }
 }

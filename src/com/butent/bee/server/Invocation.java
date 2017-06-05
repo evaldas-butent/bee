@@ -6,6 +6,7 @@ import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.utils.Checksum;
 import com.butent.bee.server.utils.JvmUtils;
 import com.butent.bee.server.utils.MxUtils;
+import com.butent.bee.server.utils.ScriptUtils;
 import com.butent.bee.server.utils.SystemInfo;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
@@ -64,6 +65,10 @@ public class Invocation {
     return ResponseObject.collection(reqInfo.getExtendedInfo(), ExtendedProperty.class);
   }
 
+  public ResponseObject execScript(RequestInfo reqInfo) {
+    return ScriptUtils.eval(reqInfo.getContent());
+  }
+
   public ResponseObject loaderInfo() {
     if (JvmUtils.getCvfFailure() == null) {
       return ResponseObject.collection(JvmUtils.getLoadedClasses(), Property.class);
@@ -98,6 +103,10 @@ public class Invocation {
     } else {
       return ResponseObject.collection(Localizations.getInfo(), Property.class);
     }
+  }
+
+  public ResponseObject scriptEngineInfo() {
+    return ResponseObject.collection(ScriptUtils.getEngineInfo(), Property.class);
   }
 
   public ResponseObject sleep(RequestInfo reqInfo) {

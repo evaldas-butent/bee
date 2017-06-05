@@ -1,7 +1,7 @@
 package com.butent.bee.client.modules.classifiers;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -57,7 +57,6 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputBoolean;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeRow;
@@ -79,8 +78,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 class CompanyForm extends AbstractFormInterceptor {
+
+  private FaLabel switchAction;
 
   CompanyForm() {
   }
@@ -107,19 +109,14 @@ class CompanyForm extends AbstractFormInterceptor {
 
           FaLabel setDefault = new FaLabel(FontAwesome.CHECK);
           setDefault.setTitle(Localized.dictionary().setAsPrimary());
-          setDefault.addClickHandler(new ClickHandler() {
+          setDefault.addClickHandler(event -> {
+            GridView gridView = getGridPresenter().getGridView();
 
-            @Override
-            public void onClick(ClickEvent event) {
-              GridView gridView = getGridPresenter().getGridView();
-
-              IsRow selectedRow = gridView.getActiveRow();
-              if (selectedRow == null) {
-                gridView.notifyWarning(Localized.dictionary().selectAtLeastOneRow());
-                return;
-              } else {
-                setAsPrimary(selectedRow.getId());
-              }
+            IsRow selectedRow = gridView.getActiveRow();
+            if (selectedRow == null) {
+              gridView.notifyWarning(Localized.dictionary().selectAtLeastOneRow());
+            } else {
+              setAsPrimary(selectedRow.getId());
             }
           });
 
@@ -290,19 +287,17 @@ class CompanyForm extends AbstractFormInterceptor {
       createQrButton(form, row);
 
       Presenter presenter = form.getViewPresenter();
-      HeaderView header = presenter.getHeader();
 
-      if (!form.isAdding() && !header.hasCommands()
-          && (presenter instanceof GridFormPresenter || presenter instanceof RowPresenter)) {
-
-        FaLabel command = getFormIcon();
-        command.setTitle(getFormIconTitle());
-
-        command.addClickHandler(event -> switchForm());
-
-        header.addCommandItem(command);
+      if (switchAction == null) {
+        switchAction = getFormIcon();
+        switchAction.setTitle(getFormIconTitle());
+        switchAction.addClickHandler(event -> switchForm());
+        presenter.getHeader().addCommandItem(switchAction);
       }
+      switchAction.setVisible(!form.isAdding()
+          && (presenter instanceof GridFormPresenter || presenter instanceof RowPresenter));
     }
+    super.afterRefresh(form, row);
   }
 
   @Override
@@ -321,7 +316,7 @@ class CompanyForm extends AbstractFormInterceptor {
   }
 
   @Override
-  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+  public boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand) {
 
     if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.TO_ERP)) {
       HeaderView header = form.getViewPresenter().getHeader();
@@ -448,8 +443,8 @@ class CompanyForm extends AbstractFormInterceptor {
     if (!BeeUtils.isEmpty(event.getColumns())) {
       if (BeeUtils.isEmpty(row.getString(form.getDataIndex(COL_COMPANY_TYPE)))) {
         event.consume();
-        BeeKeeper.getScreen().notifySevere(Localized.dictionary().companyStatus(),
-            Localized.dictionary().valueRequired());
+        BeeKeeper.getScreen().notifySevere(Localized.dictionary()
+            .fieldRequired(Localized.dictionary().companyStatus()));
       }
     }
   }
@@ -553,7 +548,8 @@ class CompanyForm extends AbstractFormInterceptor {
           if (response.hasErrors()) {
             return;
           }
-          Map<String, String> result = Codec.deserializeMap(response.getResponseAsString());
+          Map<String, String> result =
+              Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
           if (!BeeUtils.isEmpty(result)) {
             HtmlTable table = new HtmlTable();

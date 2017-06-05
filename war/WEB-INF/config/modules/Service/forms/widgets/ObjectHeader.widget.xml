@@ -1,50 +1,103 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Table [
-  <!ENTITY clbl "text-align: right; padding-left: 1em; padding-right: 1em;">
-  <!ENTITY inp "width: 200px;">
+<!DOCTYPE SplitPanel [
+  <!ENTITY flbl "margin-bottom: 1px;">
+  <!ENTITY mrcl "flexBox-horizontal-top">
+  <!ENTITY mrst "margin-top: 0.5vh;margin-right: 1em;">
+  <!ENTITY mfld "margin-left: 1em; min-width: 5em;">
+  <!ENTITY finp "width: 100&#37;">
 ]>
-<Table xmlns="http://www.butent.com/widget" kind="controls"
-    style="border-collapse: collapse;" cellStyle="padding-top: 8px;">
+<SplitPanel xmlns="http://www.butent.com/widget" splitterSize="4" name="MainInfoSplit" style="position: initial;">
+  <east size="400">
+    <FlowPanel class="bee-svc-contact-panel">
+      <FlowPanel class="&mrcl;" style="&mrst;" for="Customer">
+        <FlowPanel style="&mfld;&finp;width: 41em;" >
+          <Label text="=client" style="&flbl;" />
+          <DataSelector name="Customer" source="Customer" renderColumns="CustomerName"
+                        style="&finp;"/>
+        </FlowPanel>
+      </FlowPanel>
 
-  <col index="0" cellStyle="&clbl;" />
-  <col index="2" cellStyle="&clbl;" />
+      <FlowPanel class="&mrcl;" style="&mrst;" for="ContactPerson">
+        <FlowPanel style="&mfld;width: 20em;">
+          <Label text="=contact" style="&flbl;" />
+          <DataSelector source="ContactPerson" options="Customer"
+                        choiceColumns="FirstName LastName Phone Email Address CompanyName"
+                        renderColumns="ContactFirstName ContactLastName"
+                        style="&finp;"/>
+        </FlowPanel>
 
-  <row>
-    <Label for="Category" />
-    <DataSelector source="Category" renderColumns="CategoryName" choiceColumns="ParentName Name"
-      style="&inp;" />
-    <Label for="Address" />
-    <InputText source="Address" style="&inp;" />
-  </row>
+        <FlowPanel  style="&mfld;width: 20em;" for="ContactPerson">
+          <Label text="=address" style="&flbl;" />
+          <DataSelector source="ContactPerson" options="Customer"
+                        choiceColumns="FirstName LastName Phone Email Address CompanyName"
+                        renderColumns="ContactAddress"
+                        style="&finp;"/>
+        </FlowPanel>
+      </FlowPanel>
 
-  <row>
-    <Label for="Customer" />
-    <DataSelector source="Customer" renderColumns="CustomerName" style="&inp;" />
-    <Label for="Contractor" />
-    <DataSelector source="Contractor" style="&inp;" />
-  </row>
+      <FlowPanel class="&mrcl;" style="&mrst;" for="ContactPerson">
+        <FlowPanel  style="&mfld;width: 20em;">
+          <Label text="=phone" style="&flbl;" />
+          <DataSelector source="ContactPerson" options="Customer"
+                        choiceColumns="FirstName LastName Phone Email Address CompanyName"
+                        renderColumns="ContactPhone"
+                        style="&finp;"/>
+        </FlowPanel>
 
-  <row>
-    <Label text="=svcModel"/>
-    <InputText source="Model" style="&inp;"/>
+        <FlowPanel style="&mfld;width: 20em;" for="ContactPerson">
+          <Label text="=email" style="&flbl;" />
+          <DataSelector source="ContactPerson" options="Customer"
+                        choiceColumns="FirstName LastName Phone Email Address CompanyName"
+                        renderColumns="ContactEmail"
+                        style="&finp;"/>
+        </FlowPanel>
 
-    <Label text="=svcYearOfManufacture"/>
-    <InputText source="YearOfManufacture" style="&inp;"/>
-  </row>
-  
-  <row>
-    <Label text="=svcInventNo"/>
-    <InputText source="InventNo" style="&inp;"/>
+      </FlowPanel>
+    </FlowPanel>
+  </east>
 
-    <Label text="=svcBodyNo"/>
-    <InputText source="BodyNo" style="&inp;"/>
-  </row>
-  
-  <row>
-    <Label text="=svcSeller"/>
-    <InputText source="Seller" style="&inp;"/>
+  <center>
+    <FlowPanel class="bee-svc-contact-panel">
+      <FlowPanel class="&mrcl;" style="&mrst;" for="Category">
 
-    <Label text="=svcItemInButenta"/>
-    <InputText source="ItemInButenta" style="&inp;"/>
-  </row>
-</Table>
+        <FlowPanel style="&mfld; width: 40em;" >
+          <Label for="Category" style="&flbl;" />
+          <DataSelector source="Category" viewName="ServiceTree" renderColumns="CategoryName"
+                        choiceColumns="ParentName Name" style="&finp;"/>
+        </FlowPanel>
+      </FlowPanel>
+
+      <FlowPanel class="&mrcl;" style="&mrst;">
+        <FlowPanel style="&mfld; width: 19em;" for="Model">
+          <Label for="Model" style="&flbl;" />
+          <InputText source="Model" style="&finp;" />
+        </FlowPanel>
+
+        <FlowPanel style="&mfld; width: 20em;" for="Manufacturer">
+          <Label for="Manufacturer" style="&flbl;" />
+          <DataSelector source="Manufacturer" viewName="Companies" renderColumns="ManufacturerName"
+                        style="&finp;"/>
+        </FlowPanel>
+
+        <FlowPanel style="&mfld; width: 20em;" for="SerialNo">
+          <Label for="SerialNo" style="&flbl;" />
+          <InputText source="SerialNo" style="&finp;" />
+        </FlowPanel>
+      </FlowPanel>
+
+      <FlowPanel class="&mrcl;" style="&mrst;">
+        <FlowPanel style="&mfld; width: 19em;" for="Contractor">
+          <Label for="Contractor" style="&flbl;" />
+          <DataSelector source="Contractor" viewName="Companies" renderColumns="ContractorName"
+                        style="&finp;"/>
+        </FlowPanel>
+
+        <FlowPanel style="&mfld; width: 41em;" for="Address">
+          <Label text="=svcDeviceAddress" style="&flbl;" />
+          <InputText source="Address" style="&finp;" />
+        </FlowPanel>
+      </FlowPanel>
+    </FlowPanel>
+  </center>
+</SplitPanel>
+

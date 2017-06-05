@@ -1,13 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form>
-<f:Form xmlns="http://www.butent.com/widget"
-        xmlns:f="http://www.butent.com/form"
-        xmlns:xi="http://www.w3.org/2001/XInclude"
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
 
-        name="CargoPlaceUnbound" caption="=cargoHandlingPlaces"
-        width="600" height="500"
-    >
-  <SimplePanel style="margin:10px;">
-    <xi:include href="widgets/CargoPlacesUnbound.widget.xml" />
-  </SimplePanel>
+        name="CargoPlaceUnbound" width="450" height="560"
+>
+  <Table kind="controls">
+    <col index="0" kind="label" />
+    <col index="2" kind="label" />
+    <row>
+      <Label for="Date" class="bee-required" />
+      <InputDateTime source="Date" required="true" title="=trRequestDateTitle"/>
+    </row>
+    <row>
+      <Label for="Company" />
+      <cell colSpan="3">
+        <InputText source="Company" style="width:100%;" />
+      </cell>
+    </row>
+    <row>
+      <Label for="Address" />
+      <cell colSpan="3">
+        <InputText source="Address" style="width:100%;" />
+      </cell>
+    </row>
+    <row>
+      <Label for="CityUnbound" class="bee-required" />
+      <DataSelector source="CityUnbound" viewName="Cities" valueSource="Name"
+                    choiceColumns="Name CountryName" required="true" options="CountryUnbound" />
+    </row>
+    <row>
+      <Label for="PostIndex" />
+      <InputText source="PostIndex" />
+      <Label for="LoadedKilometers" />
+      <InputInteger source="LoadedKilometers" style="width:70px;" />
+    </row>
+    <row>
+      <Label for="CountryUnbound" class="bee-required" />
+      <DataSelector source="CountryUnbound" viewName="Countries" valueSource="Name"
+                    required="true" />
+    </row>
+    <row>
+      <Label for="Contact" />
+      <cell colSpan="3">
+        <InputText source="Contact" style="width:100%;" />
+      </cell>
+    </row>
+    <row>
+      <Label for="Number" />
+      <InputText source="Number" />
+    </row>
+    <row>
+      <cell style="vertical-align:top;">
+        <Label for="Note" />
+      </cell>
+      <cell colSpan="3">
+        <InputArea source="Note" visibleLines="4" style="width:100%;" />
+      </cell>
+    </row>
+  </Table>
 </f:Form>

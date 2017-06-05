@@ -1,24 +1,24 @@
 package com.butent.bee.server.modules.administration;
 
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.server.data.BeeTable;
-import com.butent.bee.server.data.BeeTable.BeeField;
-import com.butent.bee.server.data.BeeTable.BeeIndex;
-import com.butent.bee.server.data.BeeTable.BeeUniqueKey;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.modules.cars.CarsModuleBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
@@ -42,18 +42,27 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
+import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.imports.ImportProperty;
 import com.butent.bee.shared.imports.ImportType;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.modules.cars.Bundle;
+import com.butent.bee.shared.modules.cars.CarsConstants;
+import com.butent.bee.shared.modules.cars.ConfInfo;
+import com.butent.bee.shared.modules.cars.Configuration;
+import com.butent.bee.shared.modules.cars.Option;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -69,7 +78,9 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellReference;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -79,12 +90,17 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -101,65 +117,30 @@ import lt.locator.TripSumRepData;
 @LocalBean
 public class ImportBean {
 
+  private static final class PropertyData {
+    private final ImportProperty property;
+    private Long id;
+    private String value;
+    private ImportObject relation;
+
+    private PropertyData(ImportProperty property) {
+      this.property = Assert.notNull(property);
+    }
+  }
+
   private static final class ImportObject {
-    private static final int prpValue = 0;
-    private static final int prpRelation = 1;
-    private static final int prpObject = 2;
-    private static final int prpId = 3;
 
     private final long objectId;
     private final String viewName;
-    private final Map<String, Object[]> props = new HashMap<>();
+    private final Map<String, PropertyData> props = new LinkedHashMap<>();
 
-    private ImportObject(SimpleRowSet rs, long optId, SystemBean sys, Map<String, String> dict) {
-      Assert.notNull(rs);
-      Assert.state(!rs.isEmpty());
-
+    private ImportObject(long optId, String viewName) {
       this.objectId = optId;
-      this.viewName = rs.getValue(0, COL_IMPORT_DATA);
-      ImportType type = EnumUtils.getEnumByIndex(ImportType.class, rs.getInt(0, COL_IMPORT_TYPE));
+      this.viewName = viewName;
+    }
 
-      for (ImportProperty prop : type.getProperties()) {
-        Object[] data = new Object[4];
-        SimpleRow row = rs.getRowByKey(COL_IMPORT_PROPERTY, prop.getName());
-
-        if (row != null) {
-          data[prpValue] = row.getValue(COL_IMPORT_VALUE);
-          data[prpId] = row.getLong(sys.getIdName(TBL_IMPORT_PROPERTIES));
-        }
-        data[prpObject] = prop;
-        props.put(prop.getName(), data);
-      }
-      if (!BeeUtils.isEmpty(viewName)) {
-        BeeView view = sys.getView(viewName);
-
-        for (ViewColumn col : view.getViewColumns()) {
-          if (col.isHidden() || col.isReadOnly() || !BeeUtils.unbox(col.getEditable())
-              && BeeUtils.isPositive(col.getLevel())) {
-            continue;
-          }
-          String name = col.getName();
-          Object[] data = new Object[4];
-
-          SimpleRow row = rs.getRowByKey(COL_IMPORT_PROPERTY, name);
-
-          if (row != null) {
-            data[prpValue] = row.getValue(COL_IMPORT_VALUE);
-            data[prpId] = row.getLong(sys.getIdName(TBL_IMPORT_PROPERTIES));
-
-          } else if (view.isColNullable(name)) {
-            continue;
-          }
-          ImportProperty prop = new ImportProperty(name,
-              Localized.maybeTranslate(view.getColumnLabel(name), dict), true);
-
-          if (!BeeUtils.isEmpty(col.getRelation())) {
-            prop.setRelation(col.getRelation());
-          }
-          data[prpObject] = prop;
-          props.put(name, data);
-        }
-      }
+    public void addProperty(ImportProperty property) {
+      props.put(property.getName(), new PropertyData(property));
     }
 
     public SqlCreate createStructure(SystemBean sb, String parentName, SqlCreate query) {
@@ -222,8 +203,8 @@ public class ImportBean {
           continue;
         }
         String propName = prop.getName();
-        String propValue = getPropertyValue(propName);
         ImportObject ro = getPropertyRelation(propName);
+        String propValue = Objects.isNull(ro) ? getPropertyValue(propName) : null;
 
         propName = BeeUtils.join("_", parentName, propName);
         propNames.put(propName, propValue);
@@ -242,38 +223,26 @@ public class ImportBean {
     public Collection<ImportProperty> getProperties() {
       List<ImportProperty> properties = new ArrayList<>();
 
-      for (Object[] data : props.values()) {
-        properties.add((ImportProperty) data[prpObject]);
+      for (PropertyData data : props.values()) {
+        properties.add(data.property);
       }
       return properties;
     }
 
     public ImportProperty getProperty(String prop) {
-      if (props.containsKey(prop)) {
-        return (ImportProperty) props.get(prop)[prpObject];
-      }
-      return null;
+      return props.containsKey(prop) ? props.get(prop).property : null;
     }
 
     public Long getPropertyId(String prop) {
-      if (props.containsKey(prop)) {
-        return (Long) props.get(prop)[prpId];
-      }
-      return null;
+      return props.containsKey(prop) ? props.get(prop).id : null;
     }
 
     public ImportObject getPropertyRelation(String prop) {
-      if (props.containsKey(prop)) {
-        return (ImportObject) props.get(prop)[prpRelation];
-      }
-      return null;
+      return props.containsKey(prop) ? props.get(prop).relation : null;
     }
 
     public String getPropertyValue(String prop) {
-      if (props.containsKey(prop) && getPropertyRelation(prop) == null) {
-        return (String) props.get(prop)[prpValue];
-      }
-      return null;
+      return props.containsKey(prop) ? props.get(prop).value : null;
     }
 
     public String getViewName() {
@@ -281,12 +250,24 @@ public class ImportBean {
     }
 
     public boolean isPropertyLocked(String prop) {
-      return getPropertyRelation(prop) != null && props.get(prop)[prpValue] != null;
+      return BeeUtils.allNotNull(getPropertyRelation(prop), getPropertyValue(prop));
+    }
+
+    public void setPropertyId(String prop, Long id) {
+      if (props.containsKey(prop)) {
+        props.get(prop).id = id;
+      }
     }
 
     public void setPropertyRelation(String prop, ImportObject io) {
       if (props.containsKey(prop)) {
-        props.get(prop)[prpRelation] = io;
+        props.get(prop).relation = io;
+      }
+    }
+
+    public void setPropertyValue(String prop, String value) {
+      if (props.containsKey(prop)) {
+        props.get(prop).value = value;
       }
     }
   }
@@ -294,29 +275,247 @@ public class ImportBean {
   private static final String COL_REC_NO = "_RecNo_";
   private static final String COL_REASON = "_Reason_";
 
-  private static Function<SQLException, ResponseObject> errorHandler = new Function<SQLException,
-      ResponseObject>() {
-    @Override
-    public ResponseObject apply(SQLException ex) {
-      return ResponseObject.error(ex);
-    }
-  };
+  private static Function<SQLException, ResponseObject> errorHandler = ResponseObject::error;
 
-  @EJB
-  SystemBean sys;
-  @EJB
-  QueryServiceBean qs;
-  @EJB
-  FileStorageBean fs;
-  @EJB
-  UserServiceBean usr;
-  @EJB
-  DataEditorBean deb;
-  @Resource
-  EJBContext ctx;
+  @EJB SystemBean sys;
+  @EJB QueryServiceBean qs;
+  @EJB FileStorageBean fs;
+  @EJB UserServiceBean usr;
+  @EJB DataEditorBean deb;
+  @EJB IdGeneratorBean ig;
+  @EJB CarsModuleBean cars;
+  @Resource EJBContext ctx;
+
+  public ResponseObject createDataImportTemplates() {
+    final Map<String, String> glossary = usr.getGlossary();
+    final String[] tblImportPropertiesHeader = new String[] {
+      sys.getIdName(TBL_IMPORT_PROPERTIES), COL_IMPORT_OPTION, COL_IMPORT_PROPERTY,
+      COL_IMPORT_VALUE
+    };
+
+    Stream.of(
+      TBL_BANKS, TBL_CITIES, VIEW_COLORS, TBL_COMPANIES, TBL_COMPANY_PERSONS, TBL_PERSONS
+    ).forEach(viewName -> {
+      final DataInfo viewInfo = sys.getDataInfo(viewName);
+
+      if (!usr.isAnyModuleVisible(viewInfo.getModule())) {
+        return;
+      }
+      SqlInsert optionInsertQuery = createImportOptionsInsertionQuery(viewName);
+      long optionId = qs.insertData(optionInsertQuery.addConstant(COL_IMPORT_DESCRIPTION,
+        Localized.maybeTranslate(viewInfo.getCaption(), glossary)));
+      long subOptionId;
+      long subOptionIdL2;
+
+      switch (viewName) {
+        case TBL_BANKS:
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, VAR_IMPORT_START_ROW, "5")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_BANK_NAME, "=A")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_BANK_CODE, "=B")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_SWIFT_CODE, "=C")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_PHONE, "=D")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_MOBILE, "=E")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_ADDRESS, "=G")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_POST_INDEX, "=H")
+          );
+          insertEmailOptions(optionId, "=F");
+          insertCityAndCountryOptions(optionId, "=I", "=J");
+          insertCountryOptions(optionId, "=J");
+          break;
+        case TBL_CITIES:
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, VAR_IMPORT_START_ROW, "5")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_CITY_NAME, "=A")
+          );
+          // Cities->Countries
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(TBL_COUNTRIES));
+          insertSubOption(optionId, subOptionId, COL_COUNTRY);
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_COUNTRY_NAME, "=B")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_COUNTRY_CODE, "=C")
+          );
+          break;
+        case VIEW_COLORS:
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, VAR_IMPORT_START_ROW, "5")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_COLOR_NAME, "=A")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_BACKGROUND, "=B")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_FOREGROUND, "=C")
+          );
+          break;
+        case TBL_COMPANIES:
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, VAR_IMPORT_START_ROW, "6")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_COMPANY_NAME, "=B")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_COMPANY_CODE, "=C")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_COMPANY_VAT_CODE, "=D")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_PHONE, "=F")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_MOBILE, "=G")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_FAX, "=H")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_WEBSITE, "=J")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_ADDRESS, "=K")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_POST_INDEX, "=N")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_NOTES, "=S")
+          );
+          // Companies->CompanyTypes
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(TBL_COMPANY_TYPES));
+          insertSubOption(optionId, subOptionId, COL_COMPANY_TYPE);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_COMPANY_TYPE_NAME, "=A")
+          );
+          // Companies->CompanyPriorities
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(VIEW_COMPANY_PRIORITIES));
+          insertSubOption(optionId, subOptionId, COL_COMPANY_PRIORITY);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, "Name", "=E")
+          );
+          // Companies->Emails
+          insertEmailOptions(optionId, "=I");
+          // Companies->Cities
+          insertCityAndCountryOptions(optionId, "=L", "=M");
+          insertCountryOptions(optionId, "=M");
+          // Companies->CompanySizes
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(VIEW_COMPANY_SIZES));
+          insertSubOption(optionId, subOptionId, COL_COMPANY_SIZE);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, "SizeName", "=O")
+          );
+          // Companies->InformationSources
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(VIEW_INFORMATION_SOURCES));
+          insertSubOption(optionId, subOptionId, COL_COMPANY_INFORMATION_SOURCE);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, "Name", "=P")
+          );
+          // Companies->Turnovers
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery("Turnovers"));
+          insertSubOption(optionId, subOptionId, "Turnover");
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, "Name", "=Q")
+          );
+          // Companies->FinancialStates
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(VIEW_FINANCIAL_STATES));
+          insertSubOption(optionId, subOptionId, COL_COMPANY_FINANCIAL_STATE);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, "Name", "=R")
+          );
+          break;
+        case TBL_COMPANY_PERSONS:
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, VAR_IMPORT_START_ROW, "8")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_PHONE, "=G")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_MOBILE, "=H")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_FAX, "=I")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_ADDRESS, "=K")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_POST_INDEX, "=L")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_WEBSITE, "=M")
+          );
+          // CompanyPersons->Companies
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(TBL_COMPANIES));
+          insertSubOption(optionId, subOptionId, COL_COMPANY, true);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_COMPANY_NAME, "=A")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_COMPANY_CODE, "=B")
+          );
+          // CompanyPersons->Persons
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(TBL_PERSONS));
+          insertSubOption(optionId, subOptionId, COL_PERSON);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_FIRST_NAME, "=C")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_LAST_NAME, "=D")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_PHONE, "=G")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_MOBILE, "=H")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_FAX, "=I")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_ADDRESS, "=K")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_POST_INDEX, "=L")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_WEBSITE, "=M")
+          );
+          // CompanyPersons->Persons->Emails
+          insertEmailOptions(subOptionId, "=J");
+          // CompanyPersons->Persons->Cities
+          insertCityAndCountryOptions(subOptionId, "=N", "=O");
+          // CompanyPersons->CompanyDepartments
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(VIEW_COMPANY_DEPARTMENTS));
+          insertSubOption(optionId, subOptionId, COL_DEPARTMENT);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, "Name", "=E")
+          );
+          // CompanyPersons->CompanyDepartments->Company
+          subOptionIdL2 = qs.insertData(createImportOptionsInsertionQuery(TBL_COMPANIES));
+          insertSubOption(subOptionId, subOptionIdL2, COL_COMPANY, true);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionIdL2, COL_COMPANY_NAME, "=A")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionIdL2, COL_COMPANY_CODE, "=B")
+          );
+          // CompanyPersons->Positions
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(TBL_POSITIONS));
+          insertSubOption(optionId, subOptionId, COL_POSITION);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_POSITION_NAME, "=F")
+          );
+          // CompanyPersons->Emails
+          insertEmailOptions(optionId, "=J");
+          insertCityAndCountryOptions(optionId, "=N", "=O");
+          insertCountryOptions(optionId, "=O");
+          break;
+        case TBL_PERSONS:
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+              .addFields(tblImportPropertiesHeader)
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, VAR_IMPORT_START_ROW, "6")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_FIRST_NAME, "=A")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_LAST_NAME, "=B")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_PHONE, "=C")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_MOBILE, "=D")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_FAX, "=E")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_ADDRESS, "=G")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_POST_INDEX, "=H")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_WEBSITE, "=I")
+              // .addValues(ig.getId(tblImpPropName), optionId, COL_DATE_OF_BIRTH, "")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_NOTES, "=L")
+          );
+          //Persons->Emails
+          insertEmailOptions(optionId, "=F");
+          //Persons->Cities
+          insertCityAndCountryOptions(optionId, "=K", "=J");
+          insertCountryOptions(optionId, "=J");
+          break;
+        default:
+          break;
+      }
+    });
+    return ResponseObject.emptyResponse();
+  }
 
   public ResponseObject doImport(RequestInfo reqInfo) {
-    ResponseObject response = null;
+    ResponseObject response;
 
     ImportType type = EnumUtils.getEnumByIndex(ImportType.class,
         BeeUtils.toIntOrNull(reqInfo.getParameter(COL_IMPORT_TYPE)));
@@ -336,6 +535,12 @@ public class ImportBean {
               reqInfo.getParameter(Service.VAR_PROGRESS));
           break;
 
+        case CONFIGURATION:
+          response = importConfiguration(reqInfo.getParameterLong(COL_IMPORT_OPTION),
+              reqInfo.getParameterLong(VAR_IMPORT_FILE), reqInfo.getParameter(Service.VAR_PROGRESS),
+              reqInfo.getParameterLong(COL_BRANCH));
+          break;
+
         default:
           response = importData(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_OPTION)),
               BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_IMPORT_FILE)),
@@ -349,6 +554,14 @@ public class ImportBean {
       response = ResponseObject.error("Import type not recognized");
     }
     return response;
+  }
+
+  private static SqlInsert createImportOptionsInsertionQuery(String viewName) {
+    Assert.notEmpty(viewName);
+
+    return new SqlInsert(TBL_IMPORT_OPTIONS)
+      .addConstant(COL_IMPORT_TYPE, ImportType.DATA)
+      .addConstant(COL_IMPORT_DATA, viewName);
   }
 
   private void applyMappings(ImportObject io, String data, String parentName) {
@@ -420,7 +633,7 @@ public class ImportBean {
       applyMappings(io, data, parentName);
     }
     BeeView view = sys.getView(io.getViewName());
-    Map<String, BeeField> cols = new LinkedHashMap<>();
+    Set<String> cols = new LinkedHashSet<>();
     String tmp = SqlUtils.temporaryName();
     String progressCap = BeeUtils.join("->", parentCap,
         Localized.maybeTranslate(view.getCaption(), dict));
@@ -460,7 +673,7 @@ public class ImportBean {
           SqlUtils.isNull(data, realCol)), SqlUtils.and(SqlUtils.notNull(tmp, col),
           SqlUtils.notNull(data, realCol), SqlUtils.join(tmp, col, data, realCol))));
 
-      cols.put(col, sys.getTable(view.getColumnTable(col)).getField(view.getColumnField(col)));
+      cols.add(col);
     }
     if (BeeUtils.isEmpty(cols)) {
       return null;
@@ -472,48 +685,28 @@ public class ImportBean {
       return null;
     }
     // GET UNIQUE KEYS
-    List<Set<String>> uniqueKeys = new ArrayList<>();
+    Set<Set<String>> uniqueKeys = new LinkedHashSet<>();
 
-    for (Entry<String, BeeField> entry : cols.entrySet()) {
-      if (entry.getValue().isUnique()) {
-        uniqueKeys.add(Sets.newHashSet(entry.getKey()));
-      }
-    }
-    BeeTable table = sys.getTable(view.getSourceName());
+    for (Set<String> uniqueness : sys.getTable(view.getSourceName()).getUniqueness()) {
+      boolean ok = true;
 
-    for (int i = 0; i < 2; i++) {
-      List<List<String>> unique = new ArrayList<>();
+      for (String fld : uniqueness) {
+        boolean found = false;
 
-      switch (i) {
-        case 0:
-          for (BeeUniqueKey key : table.getUniqueKeys()) {
-            unique.add(key.getFields());
-          }
-          break;
-        case 1:
-          for (BeeIndex index : table.getIndexes()) {
-            if (index.isUnique() && !BeeUtils.isEmpty(index.getFields())) {
-              unique.add(index.getFields());
-            }
-          }
-          break;
-      }
-      for (List<String> key : unique) {
-        Set<String> keys = new HashSet<>();
-
-        for (String fld : key) {
-          for (Entry<String, BeeField> entry : cols.entrySet()) {
-            BeeField field = entry.getValue();
-
-            if (BeeUtils.same(field.getName(), fld)
-                && BeeUtils.same(field.getStorageTable(), table.getName())) {
-              keys.add(entry.getKey());
-            }
+        for (String col : cols) {
+          if (BeeUtils.isEmpty(view.getColumnLocale(col))
+              && BeeUtils.same(view.getColumnField(col), fld)) {
+            found = true;
+            break;
           }
         }
-        if (keys.size() == key.size() && !uniqueKeys.contains(keys)) {
-          uniqueKeys.add(keys);
+        if (!found) {
+          ok = false;
+          break;
         }
+      }
+      if (ok) {
+        uniqueKeys.add(uniqueness);
       }
     }
     Dictionary consts = usr.getDictionary();
@@ -522,8 +715,8 @@ public class ImportBean {
 
     // CHECK REQUIRED FIELDS
     if (!readOnly) {
-      for (String col : cols.keySet()) {
-        if (cols.get(col).isNotNull()) {
+      for (String col : cols) {
+        if (!view.isColNullable(col)) {
           qs.updateData(new SqlUpdate(tmp)
               .addConstant(COL_REASON,
                   consts.valueEmpty(BeeUtils.join("_", parentName, col)) + "\n")
@@ -534,7 +727,7 @@ public class ImportBean {
     // FIND MATCHING ROWS FROM DATABASE
     String vw = SqlUtils.temporaryName();
     qs.updateData(new SqlCreate(vw)
-        .setDataSource(view.getQuery(usr.getCurrentUserId(), null, null, cols.keySet())));
+        .setDataSource(view.getQuery(usr.getCurrentUserId(), null, null, cols)));
 
     SqlUpdate update = new SqlUpdate(tmp)
         .addExpression(idName, SqlUtils.field(vw, view.getSourceIdName()))
@@ -545,7 +738,7 @@ public class ImportBean {
 
       for (String col : keys) {
         condition.add(SqlUtils.notNull(tmp, col),
-            cols.get(col).isNotNull() ? null : SqlUtils.notNull(vw, col),
+            view.isColNullable(col) ? SqlUtils.notNull(vw, col) : null,
             SqlUtils.joinUsing(tmp, vw, col));
       }
       qs.updateData(update.setWhere(condition));
@@ -553,16 +746,16 @@ public class ImportBean {
     if (qs.sqlExists(tmp, validClause)) {
       clause = SqlUtils.and();
 
-      for (String col : cols.keySet()) {
+      for (String col : cols) {
         IsCondition condition = SqlUtils.and(SqlUtils.notNull(tmp, col),
             SqlUtils.joinUsing(tmp, vw, col));
 
-        if (cols.get(col).isNotNull()) {
-          clause.add(condition);
-        } else {
+        if (view.isColNullable(col)) {
           condition = SqlUtils.and(SqlUtils.notNull(vw, col), condition);
           clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.isNull(tmp, col), SqlUtils.isNull(vw, col)),
               condition));
+        } else {
+          clause.add(condition);
         }
       }
       qs.updateData(update.setWhere(clause));
@@ -578,7 +771,7 @@ public class ImportBean {
           .addFromInner(tmp, SqlUtils.join(vw, view.getSourceIdName(), tmp, idName))
           .setWhere(clause);
 
-      for (String col : cols.keySet()) {
+      for (String col : cols) {
         boolean ok = usr.canEditColumn(view.getName(), col);
 
         if (ok) {
@@ -597,12 +790,12 @@ public class ImportBean {
           IsCondition wh = SqlUtils.compare(SqlUtils.field(tmp, col), Operator.NE,
               SqlUtils.field(vw, col));
 
-          if (cols.get(col).isNotNull()) {
-            clause.add(wh);
-          } else {
+          if (view.isColNullable(col)) {
             clause.add(SqlUtils.and(SqlUtils.notNull(tmp, col), SqlUtils.notNull(vw, col), wh),
                 SqlUtils.and(SqlUtils.isNull(tmp, col), SqlUtils.notNull(vw, col)),
                 SqlUtils.and(SqlUtils.notNull(tmp, col), SqlUtils.isNull(vw, col)));
+          } else {
+            clause.add(wh);
           }
         }
       }
@@ -634,8 +827,22 @@ public class ImportBean {
             if (!Objects.equals(oldValue, newValue)) {
               BeeColumn column = view.getBeeColumn(col);
 
-              if (column.getType() == ValueType.DATE && !BeeUtils.isEmpty(newValue)) {
-                newValue = TimeUtils.toDateTimeOrNull(newValue).getDate().serialize();
+              switch (column.getType()) {
+                case BOOLEAN:
+                  if (!BeeUtils.isEmpty(oldValue)) {
+                    oldValue = BooleanValue.pack(row.getBoolean(col));
+                  }
+                  break;
+                case DATE:
+                  if (!BeeUtils.isEmpty(oldValue)) {
+                    oldValue = row.getDate(col).serialize();
+                  }
+                  if (!BeeUtils.isEmpty(newValue)) {
+                    newValue = row.getDateTime(col).getDate().serialize();
+                  }
+                  break;
+                default:
+                  break;
               }
               columns.add(column);
               oldValues.add(oldValue);
@@ -741,7 +948,7 @@ public class ImportBean {
         List<BeeColumn> columns = new ArrayList<>();
         List<String> values = new ArrayList<>();
 
-        for (String col : cols.keySet()) {
+        for (String col : cols) {
           BeeColumn column = view.getBeeColumn(col);
           String value = row.getValue(col);
 
@@ -833,6 +1040,493 @@ public class ImportBean {
     return null;
   }
 
+  private static ImportObject getSubObject(ImportObject io, String prefix) {
+    ImportObject subObject = new ImportObject(io.getObjectId(), io.getViewName());
+
+    for (ImportProperty property : io.getProperties()) {
+      String name = property.getName();
+
+      if (BeeUtils.isPrefix(name, prefix)) {
+        subObject.addProperty(property);
+        subObject.setPropertyId(name, io.getPropertyId(name));
+        subObject.setPropertyValue(name, io.getPropertyValue(name));
+        subObject.setPropertyRelation(name, io.getPropertyRelation(name));
+      }
+    }
+    return subObject;
+  }
+
+  private ResponseObject importConfiguration(Long optId, Long fileId, String progress,
+      Long branchId) {
+    Dictionary loc = usr.getDictionary();
+    ImportObject io = initImport(optId, usr.getGlossary());
+    File file;
+
+    try {
+      file = fs.getFile(fileId).getFile();
+    } catch (IOException ex) {
+      return ResponseObject.error(ex);
+    }
+    Map<String, Pair<Pair<Integer, Integer>, BeeRowSet>> status = new LinkedHashMap<>();
+
+    // Options
+    ImportObject op = io.getPropertyRelation(TBL_CONF_OPTIONS);
+
+    if (Objects.nonNull(op)) {
+      try {
+        File tmp = File.createTempFile("bee_", null);
+        tmp.deleteOnExit();
+        FileOutputStream os = new FileOutputStream(tmp);
+        Files.copy(file.toPath(), os);
+        os.close();
+        file = tmp;
+      } catch (IOException ex) {
+        file.delete();
+        return ResponseObject.error(ex);
+      }
+      ResponseObject response = importData(op.getObjectId(), fileId, progress);
+
+      if (response.hasErrors()) {
+        file.delete();
+        return response;
+      }
+      status = response.getResponse(status, null);
+    }
+    SqlSelect query = new SqlSelect()
+        .addField(TBL_CONF_OPTIONS, sys.getIdName(TBL_CONF_OPTIONS), COL_OPTION)
+        .addFields(TBL_CONF_OPTIONS, CarsConstants.COL_GROUP, COL_OPTION_NAME, COL_CODE)
+        .addFields(TBL_CONF_GROUPS, CarsConstants.COL_GROUP_NAME)
+        .addFrom(TBL_CONF_OPTIONS)
+        .addFromInner(TBL_CONF_GROUPS,
+            sys.joinTables(TBL_CONF_GROUPS, TBL_CONF_OPTIONS, CarsConstants.COL_GROUP))
+        .setWhere(SqlUtils.notNull(TBL_CONF_OPTIONS, COL_CODE));
+
+    Long type = qs.getLongById(TBL_CONF_PRICELIST, branchId, COL_TYPE);
+
+    if (DataUtils.isId(type)) {
+      query.setWhere(SqlUtils.and(query.getWhere(),
+          SqlUtils.equals(TBL_CONF_GROUPS, COL_TYPE, type)));
+    }
+    Map<String, Option> options = new HashMap<>();
+
+    for (SimpleRowSet.SimpleRow row : qs.getData(query)) {
+      Option opt = new Option(row);
+      String code = opt.getCode();
+
+      if (options.containsKey(code)) {
+        opt = null;
+      }
+      options.put(code, opt);
+    }
+    Map<String, Map<String, Integer>> errors = new LinkedHashMap<>();
+
+    BiConsumer<String, String> errorProcessor = (err, cause) -> {
+      if (!errors.containsKey(err)) {
+        errors.put(err, new TreeMap<>());
+      }
+      errors.get(err).merge(BeeUtils.nvl(cause, ""), 1, Integer::sum);
+    };
+    BiFunction<String, ImportObject, Integer> critDescriptor = (prefix, importObject) -> {
+      String[] critNames = BeeUtils.split(importObject.getPropertyValue(prefix + COL_CRITERIA
+          + "Names"), BeeConst.CHAR_COMMA);
+      String[] critValues = BeeUtils.split(importObject.getPropertyValue(prefix + COL_CRITERIA
+          + "Values"), BeeConst.CHAR_COMMA);
+
+      int critCnt = ArrayUtils.length(critNames);
+
+      if (!Objects.equals(ArrayUtils.length(critValues), critCnt)) {
+        critCnt = 0;
+        errorProcessor.accept(loc.configuration() + ": " + loc.criteria(),
+            loc.length() + BeeUtils.notEmpty(ArrayUtils.toString(critNames), "[]") + "<>"
+                + loc.length() + BeeUtils.notEmpty(ArrayUtils.toString(critValues), "[]"));
+      }
+      for (int i = 0; i < critCnt; i++) {
+        ImportProperty property = new ImportProperty(prefix + COL_CRITERIA + "Name" + i, null,
+            true);
+        importObject.addProperty(property);
+        importObject.setPropertyValue(property.getName(), critNames[i]);
+        property = new ImportProperty(prefix + COL_CRITERIA + "Value" + i, null, true);
+        importObject.addProperty(property);
+        importObject.setPropertyValue(property.getName(), critValues[i]);
+      }
+      return critCnt;
+    };
+    BiFunction<Pair<String, Integer>, SimpleRow, Map<String, String>> critBuilder = (pair, r) -> {
+      Map<String, String> criteria = new LinkedHashMap<>();
+
+      for (int i = 0; i < pair.getB(); i++) {
+        String cap = r.getValue(pair.getA() + COL_CRITERIA + "Name" + i);
+        String val = r.getValue(pair.getA() + COL_CRITERIA + "Value" + i);
+
+        if (BeeUtils.allNotEmpty(cap, val)) {
+          criteria.put(cap, val);
+        }
+      }
+      return criteria;
+    };
+    Configuration configuration = new Configuration();
+
+    // Branch bundles
+    if (!BeeUtils.isEmpty(progress)) {
+      Endpoint.updateProgress(progress, loc.configuration(), 0);
+    }
+    String prfx = TBL_CONF_BRANCH_BUNDLES;
+    ImportObject bb = getSubObject(io, prfx);
+
+    String[] opts = BeeUtils.split(bb.getPropertyValue(prfx + TBL_CONF_OPTIONS),
+        BeeConst.CHAR_COMMA);
+
+    int confOptCnt = ArrayUtils.length(opts);
+
+    for (int i = 0; i < confOptCnt; i++) {
+      ImportProperty property = new ImportProperty(prfx + COL_OPTION + i, null, true);
+      bb.addProperty(property);
+      bb.setPropertyValue(property.getName(), opts[i]);
+    }
+    int critCnt = critDescriptor.apply(prfx, bb);
+
+    SqlCreate create = bb.createStructure(sys, null, null);
+    String tmp = create.getTarget();
+    qs.updateData(create);
+
+    String error = loadXLSData(bb, file, tmp, progress, null,
+        bb.getPropertyValue(prfx + VAR_IMPORT_SHEET),
+        BeeUtils.toInt(bb.getPropertyValue(prfx + VAR_IMPORT_START_ROW)),
+        BeeUtils.toInt(bb.getPropertyValue(prfx + VAR_IMPORT_END_ROW)));
+
+    if (!BeeUtils.isEmpty(error)) {
+      qs.sqlDropTemp(tmp);
+      file.delete();
+      return ResponseObject.error(error);
+    }
+    for (SimpleRow row : qs.getData(new SqlSelect().addAllFields(tmp).addFrom(tmp))) {
+      String price = row.getValue(prfx + COL_PRICE);
+      boolean ok = BeeUtils.isNonNegativeInt(price);
+
+      if (!ok) {
+        errorProcessor.accept(loc.configuration() + ": " + loc.price(), price);
+      }
+      List<Option> bundleOptions = new ArrayList<>();
+
+      for (int i = 0; i < confOptCnt; i++) {
+        String code = row.getValue(prfx + COL_OPTION + i);
+
+        if (!BeeUtils.isEmpty(code)) {
+          Option option = options.get(code);
+
+          if (Objects.isNull(option)) {
+            errorProcessor.accept(loc.configuration() + ": " + loc.code(), code);
+            ok = false;
+          } else {
+            bundleOptions.add(option);
+          }
+        }
+      }
+      if (ok && !BeeUtils.isEmpty(bundleOptions)) {
+        configuration.setBundleInfo(new Bundle(bundleOptions),
+            ConfInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION))
+                .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)), false);
+      }
+    }
+    qs.sqlDropTemp(tmp);
+
+    // Branch options
+    if (!BeeUtils.isEmpty(progress)) {
+      Endpoint.updateProgress(progress, loc.options(), 0);
+    }
+    prfx = TBL_CONF_BRANCH_OPTIONS;
+    ImportObject bo = getSubObject(io, prfx);
+
+    critCnt = critDescriptor.apply(prfx, bo);
+
+    create = bo.createStructure(sys, null, null);
+    tmp = create.getTarget();
+    qs.updateData(create);
+
+    error = loadXLSData(bo, file, tmp, progress, null, bo.getPropertyValue(prfx + VAR_IMPORT_SHEET),
+        BeeUtils.toInt(bo.getPropertyValue(prfx + VAR_IMPORT_START_ROW)),
+        BeeUtils.toInt(bo.getPropertyValue(prfx + VAR_IMPORT_END_ROW)));
+
+    if (!BeeUtils.isEmpty(error)) {
+      qs.sqlDropTemp(tmp);
+      file.delete();
+      return ResponseObject.error(error);
+    }
+    for (SimpleRow row : qs.getData(new SqlSelect().addAllFields(tmp).addFrom(tmp))) {
+      String price = row.getValue(prfx + COL_PRICE);
+      boolean ok = BeeUtils.isEmpty(price) || BeeUtils.isNonNegativeInt(price);
+
+      if (!ok) {
+        errorProcessor.accept(loc.options() + ": " + loc.price(), price);
+      }
+      String code = row.getValue(prfx + COL_CODE);
+      Option option = options.get(code);
+
+      if (Objects.isNull(option)) {
+        errorProcessor.accept(loc.options() + ": " + loc.code(), code);
+      } else if (ok) {
+        configuration.setOptionInfo(option,
+            ConfInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION))
+                .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)));
+      }
+    }
+    qs.sqlDropTemp(tmp);
+
+    // Relations
+    if (!BeeUtils.isEmpty(progress)) {
+      Endpoint.updateProgress(progress, loc.relations(), 0);
+    }
+    prfx = TBL_CONF_RELATIONS;
+    ImportObject rl = getSubObject(io, prfx);
+
+    opts = BeeUtils.split(rl.getPropertyValue(prfx + TBL_CONF_OPTIONS), BeeConst.CHAR_COMMA);
+    confOptCnt = ArrayUtils.length(opts);
+
+    for (int i = 0; i < confOptCnt; i++) {
+      ImportProperty property = new ImportProperty(prfx + COL_OPTION + i, null, true);
+      rl.addProperty(property);
+      rl.setPropertyValue(property.getName(), opts[i]);
+    }
+    critCnt = critDescriptor.apply(prfx, rl);
+
+    create = rl.createStructure(sys, null, null);
+    tmp = create.getTarget();
+    qs.updateData(create);
+
+    error = loadXLSData(rl, file, tmp, progress, null,
+        rl.getPropertyValue(prfx + VAR_IMPORT_SHEET),
+        BeeUtils.toInt(rl.getPropertyValue(prfx + VAR_IMPORT_START_ROW)),
+        BeeUtils.toInt(rl.getPropertyValue(prfx + VAR_IMPORT_END_ROW)));
+
+    if (!BeeUtils.isEmpty(error)) {
+      qs.sqlDropTemp(tmp);
+      file.delete();
+      return ResponseObject.error(error);
+    }
+    String priceDefault = rl.getPropertyValue(prfx + VAR_PRICE_DEFAULT);
+    String priceOptional = rl.getPropertyValue(prfx + VAR_PRICE_OPTIONAL);
+
+    for (SimpleRow row : qs.getData(new SqlSelect().addAllFields(tmp).addFrom(tmp))) {
+      String price = row.getValue(prfx + COL_PRICE);
+      boolean ok = true;
+
+      if (!BeeUtils.isEmpty(priceDefault) && Objects.equals(price, priceDefault)) {
+        price = Configuration.DEFAULT_PRICE;
+      } else if (!BeeUtils.isEmpty(priceOptional) && Objects.equals(price, priceOptional)) {
+        price = null;
+      } else if (!BeeUtils.isNonNegativeInt(price)) {
+        errorProcessor.accept(loc.relations() + ": " + loc.price(), price);
+        ok = false;
+      }
+      List<Option> bundleOptions = new ArrayList<>();
+
+      for (int i = 0; i < confOptCnt; i++) {
+        String code = row.getValue(prfx + COL_OPTION + i);
+
+        if (!BeeUtils.isEmpty(code)) {
+          Option option = options.get(code);
+
+          if (Objects.isNull(option)) {
+            errorProcessor.accept(loc.relations() + ": " + loc.code(), code);
+            ok = false;
+          } else {
+            bundleOptions.add(option);
+          }
+        }
+      }
+      String code = row.getValue(prfx + COL_CODE);
+      Option option = options.get(code);
+
+      if (Objects.isNull(option)) {
+        errorProcessor.accept(loc.relations() + ": " + loc.code(), code);
+
+      } else if (ok && !BeeUtils.isEmpty(bundleOptions)) {
+        Bundle bundle = new Bundle(bundleOptions);
+
+        if (!configuration.getAllBundles().contains(bundle)) {
+          errorProcessor.accept(loc.relations() + ": " + loc.configuration(), bundle.toString());
+          ok = false;
+        }
+        if (!configuration.getOptions().contains(option)) {
+          errorProcessor.accept(loc.relations() + ": " + loc.option(), option.toString());
+          ok = false;
+        }
+        Set<Long> packet = new HashSet<>();
+
+        for (String optCode : Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults()
+            .splitToList(Strings.nullToEmpty(row.getValue(prfx + CarsConstants.COL_PACKET)))) {
+          Option opt = options.get(optCode);
+
+          if (Objects.isNull(opt)) {
+            errorProcessor.accept(loc.relations() + ": " + loc.packet(), optCode);
+            ok = false;
+          } else {
+            packet.add(opt.getId());
+          }
+        }
+        if (ok) {
+          configuration.setRelationInfo(option, bundle,
+              ConfInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION))
+                  .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)),
+              DataUtils.buildIdList(packet));
+        }
+      }
+    }
+    qs.sqlDropTemp(tmp);
+
+    // Restrictions
+    if (!BeeUtils.isEmpty(progress)) {
+      Endpoint.updateProgress(progress, loc.restrictions(), 0);
+    }
+    prfx = TBL_CONF_RESTRICTIONS;
+    ImportObject rs = getSubObject(io, prfx);
+
+    create = rs.createStructure(sys, null, null);
+    tmp = create.getTarget();
+    qs.updateData(create);
+
+    error = loadXLSData(rs, file, tmp, progress, null, rs.getPropertyValue(prfx + VAR_IMPORT_SHEET),
+        BeeUtils.toInt(rs.getPropertyValue(prfx + VAR_IMPORT_START_ROW)),
+        BeeUtils.toInt(rs.getPropertyValue(prfx + VAR_IMPORT_END_ROW)));
+
+    if (!BeeUtils.isEmpty(error)) {
+      qs.sqlDropTemp(tmp);
+      file.delete();
+      return ResponseObject.error(error);
+    }
+    String relRequired = rs.getPropertyValue(prfx + VAR_REL_REQUIRED);
+    String relDenied = rs.getPropertyValue(prfx + VAR_REL_DENIED);
+
+    for (SimpleRow row : qs.getData(new SqlSelect().addAllFields(tmp).addFrom(tmp))) {
+      String code = row.getValue(prfx + COL_CODE + 1);
+      Option option1 = options.get(code);
+      boolean ok = true;
+
+      if (Objects.isNull(option1)) {
+        errorProcessor.accept(loc.restrictions() + ": " + loc.code(), code);
+        ok = false;
+      } else if (!configuration.getOptions().contains(option1)) {
+        errorProcessor.accept(loc.restrictions() + ": " + loc.option(), option1.toString());
+        ok = false;
+      }
+      code = row.getValue(prfx + COL_CODE + 2);
+      Option option2 = options.get(code);
+
+      if (Objects.isNull(option2)) {
+        errorProcessor.accept(loc.restrictions() + ": " + loc.code(), code);
+        ok = false;
+      } else if (!configuration.getOptions().contains(option2)) {
+        errorProcessor.accept(loc.restrictions() + ": " + loc.option(), option2.toString());
+        ok = false;
+      }
+      String relStatus = row.getValue(prfx + COL_DENIED);
+      boolean denied = false;
+
+      if (!BeeUtils.isEmpty(relRequired) && Objects.equals(relStatus, relRequired)) {
+        denied = false;
+      } else if (!BeeUtils.isEmpty(relDenied) && Objects.equals(relStatus, relDenied)) {
+        denied = true;
+      } else {
+        errorProcessor.accept(loc.restrictions() + ": " + loc.status(), relStatus);
+        ok = false;
+      }
+      if (ok) {
+        configuration.setRestriction(option1, option2, denied);
+      }
+    }
+    qs.sqlDropTemp(tmp);
+    file.delete();
+
+    if (!BeeUtils.isEmpty(errors)) {
+      for (String err : errors.keySet()) {
+        BeeRowSet rSet = new BeeRowSet(new BeeColumn(loc.value()), new BeeColumn(loc.quantity()));
+
+        errors.get(err).forEach((value, count) ->
+            rSet.addRow(0, new String[] {value, BeeUtils.toString(count)}));
+
+        status.put(err, Pair.of(null, rSet));
+      }
+      ctx.setRollbackOnly();
+    } else if (configuration.isEmpty()) {
+      return ResponseObject.error(loc.noData());
+    } else {
+      qs.updateData(new SqlDelete(TBL_CONF_BRANCH_BUNDLES)
+          .setWhere(SqlUtils.equals(TBL_CONF_BRANCH_BUNDLES, COL_BRANCH, branchId)));
+      qs.updateData(new SqlDelete(TBL_CONF_BRANCH_OPTIONS)
+          .setWhere(SqlUtils.equals(TBL_CONF_BRANCH_OPTIONS, COL_BRANCH, branchId)));
+
+      if (!BeeUtils.isEmpty(progress)) {
+        Endpoint.updateProgress(progress, loc.configuration(), 0);
+      }
+      double size = configuration.getBundles().size();
+      int c = 0;
+      status.put(loc.configuration(), Pair.of(Pair.of(Double.valueOf(size).intValue(), 0), null));
+
+      for (Bundle bundle : configuration.getBundles()) {
+        if (!BeeUtils.isEmpty(progress) && !Endpoint.updateProgress(progress, c++ / size)) {
+          return ResponseObject.error(loc.canceled());
+        }
+        cars.setBundle(branchId, bundle,
+            ConfInfo.of(configuration.getBundlePrice(bundle),
+                configuration.getBundleDescription(bundle))
+                .setCriteria(configuration.getBundleCriteria(bundle)), false);
+      }
+      if (!BeeUtils.isEmpty(progress)) {
+        Endpoint.updateProgress(progress, loc.options(), 0);
+      }
+      size = configuration.getOptions().size();
+      c = 0;
+      status.put(loc.options(), Pair.of(Pair.of(Double.valueOf(size).intValue(), 0), null));
+
+      for (Option option : configuration.getOptions()) {
+        if (!BeeUtils.isEmpty(progress) && !Endpoint.updateProgress(progress, c++ / size)) {
+          return ResponseObject.error(loc.canceled());
+        }
+        cars.setOption(branchId, option.getId(),
+            ConfInfo.of(configuration.getOptionPrice(option),
+                configuration.getOptionDescription(option))
+                .setCriteria(configuration.getOptionCriteria(option)));
+      }
+      if (!BeeUtils.isEmpty(progress)) {
+        Endpoint.updateProgress(progress, loc.relations(), 0);
+      }
+      size = configuration.getOptions().size() * configuration.getBundles().size();
+      c = 0;
+      int cnt = 0;
+      Map<Long, Map<Long, Boolean>> restrictions = new HashMap<>();
+
+      for (Option option : configuration.getOptions()) {
+        for (Bundle bundle : configuration.getBundles()) {
+          if (!BeeUtils.isEmpty(progress) && !Endpoint.updateProgress(progress, c++ / size)) {
+            return ResponseObject.error(loc.canceled());
+          }
+          if (configuration.hasRelation(option, bundle)) {
+            cars.setRelation(branchId, bundle.getKey(), option.getId(),
+                ConfInfo.of(configuration.getRelationPrice(option, bundle),
+                    configuration.getRelationDescription(option, bundle))
+                    .setCriteria(configuration.getRelationCriteria(option, bundle)),
+                configuration.getRelationPackets(option, bundle));
+            cnt++;
+          }
+        }
+        configuration.getRestrictions(option).forEach((relatedOption, denied) -> {
+          if (!restrictions.containsKey(option.getId())) {
+            restrictions.put(option.getId(), new HashMap<>());
+          }
+          restrictions.get(option.getId()).put(relatedOption.getId(), denied);
+        });
+      }
+      status.put(loc.relations(), Pair.of(Pair.of(cnt, 0), null));
+      cnt = restrictions.values().stream().mapToInt(Map::size).sum();
+
+      if (cnt > 0) {
+        cars.setRestrictions(branchId, restrictions);
+      }
+      status.put(loc.restrictions(), Pair.of(Pair.of(cnt, 0), null));
+    }
+    return ResponseObject.response(status);
+  }
+
   private ResponseObject importCosts(Long optId, Long fileId, String progress) {
     Map<String, String> dict = usr.getGlossary();
     ImportObject io = initImport(optId, dict);
@@ -853,72 +1547,74 @@ public class ImportBean {
     String tmp = create.getTarget();
     qs.updateData(create);
 
-    String error = null;
+    String error;
 
     try (FileInfo fileInfo = fs.getFile(fileId)) {
-      error = loadXLSData(io, fileInfo.getFile(), tmp, progress, (values) -> {
-        double qty = toDouble(values.get(COL_COSTS_QUANTITY));
-        double prc = toDouble(values.get(COL_COSTS_PRICE));
+      error = loadXLSData(io, fileInfo.getFile(), tmp, progress, values -> {
+            double qty = toDouble(values.get(COL_COSTS_QUANTITY));
+            double prc = toDouble(values.get(COL_COSTS_PRICE));
 
-        if (!BeeUtils.isPositive(qty)) {
-          return false;
-        }
-        if (BeeUtils.isZero(prc)) {
-          prc = BeeUtils.round(toDouble(values.get(COL_AMOUNT)) / qty, 5);
-        }
-        if (!BeeUtils.isZero(prc)) {
-          values.put(COL_COSTS_PRICE, BeeUtils.toString(prc));
-        } else {
-          return false;
-        }
-        String value = values.get(COL_COSTS_DATE);
-
-        if (!BeeUtils.isEmpty(value)) {
-          DateTime date;
-
-          if (BeeUtils.isLong(value)) {
-            date = TimeUtils.toDateTimeOrNull(value);
-          } else if (dtf != null) {
-            try {
-              date = new DateTime(dtf.parse(value));
-            } catch (ParseException e) {
-              date = null;
+            if (!BeeUtils.isPositive(qty)) {
+              return false;
             }
-          } else {
-            date = TimeUtils.parseDateTime(value);
-          }
-          if (Objects.nonNull(date)) {
-            JustDate dt = date.getDate();
-            dt.increment();
-            values.put(COL_COSTS_DATE, BeeUtils.toString(dt.getTime() - 1));
-          } else {
-            values.put(COL_COSTS_DATE, null);
-          }
-        }
-        value = values.get(COL_COSTS_EXTERNAL_ID);
+            if (BeeUtils.isZero(prc)) {
+              prc = BeeUtils.round(toDouble(values.get(COL_AMOUNT)) / qty, 5);
+            }
+            if (!BeeUtils.isZero(prc)) {
+              values.put(COL_COSTS_PRICE, BeeUtils.toString(prc));
+            } else {
+              return false;
+            }
+            String value = values.get(COL_COSTS_DATE);
 
-        if (BeeUtils.isEmpty(value)) {
-          StringBuilder sb = new StringBuilder();
+            if (!BeeUtils.isEmpty(value)) {
+              DateTime date;
 
-          for (String rel : new String[] {
-              COL_VEHICLE, COL_COSTS_ITEM, COL_COSTS_SUPPLIER,
-              COL_COSTS_DATE, COL_NUMBER, COL_COSTS_NOTE}) {
-            ImportObject ro = io.getPropertyRelation(rel);
+              if (BeeUtils.isLong(value)) {
+                date = TimeUtils.toDateTimeOrNull(value);
+              } else if (dtf != null) {
+                try {
+                  date = new DateTime(dtf.parse(value));
+                } catch (ParseException e) {
+                  date = null;
+                }
+              } else {
+                date = TimeUtils.parseDateTime(value, DateOrdering.DEFAULT);
+              }
+              if (Objects.nonNull(date)) {
+                JustDate dt = date.getDate();
+                dt.increment();
+                values.put(COL_COSTS_DATE, BeeUtils.toString(dt.getTime() - 1));
+              } else {
+                values.put(COL_COSTS_DATE, null);
+              }
+            }
+            value = values.get(COL_COSTS_EXTERNAL_ID);
 
-            if (ro != null) {
-              for (ImportProperty prop : ro.getProperties()) {
-                if (prop.isDataProperty()) {
-                  sb.append(values.get(rel + "_" + prop.getName()));
+            if (BeeUtils.isEmpty(value)) {
+              StringBuilder sb = new StringBuilder();
+
+              for (String rel : new String[] {
+                  COL_VEHICLE, COL_COSTS_ITEM, COL_COSTS_SUPPLIER,
+                  COL_COSTS_DATE, COL_NUMBER, COL_COSTS_NOTE}) {
+                ImportObject ro = io.getPropertyRelation(rel);
+
+                if (ro != null) {
+                  for (ImportProperty prop : ro.getProperties()) {
+                    if (prop.isDataProperty()) {
+                      sb.append(values.get(rel + "_" + prop.getName()));
+                    }
+                  }
+                } else {
+                  sb.append(values.get(rel));
                 }
               }
-            } else {
-              sb.append(values.get(rel));
+              values.put(COL_COSTS_EXTERNAL_ID, Codec.md5(sb.toString()));
             }
-          }
-          values.put(COL_COSTS_EXTERNAL_ID, Codec.md5(sb.toString()));
-        }
-        return true;
-      });
+            return true;
+          }, io.getPropertyValue(VAR_IMPORT_SHEET),
+          BeeUtils.toInt(io.getPropertyValue(VAR_IMPORT_START_ROW)),
+          BeeUtils.toInt(io.getPropertyValue(VAR_IMPORT_END_ROW)));
     } catch (IOException e) {
       error = e.toString();
     }
@@ -1083,23 +1779,25 @@ public class ImportBean {
     String tmp = create.getTarget();
     qs.updateData(create);
 
-    String error = null;
+    String error;
 
     try (FileInfo fileInfo = fs.getFile(fileId)) {
-      error = loadXLSData(io, fileInfo.getFile(), tmp, progress, (values) -> {
-        BeeView view = sys.getView(io.getViewName());
+      error = loadXLSData(io, fileInfo.getFile(), tmp, progress, values -> {
+            BeeView view = sys.getView(io.getViewName());
 
-        for (Entry<String, String> entry : values.entrySet()) {
-          if (view.hasColumn(entry.getKey())
-              && view.getColumnType(entry.getKey()) == SqlDataType.DATE
-              && !BeeUtils.isEmpty(entry.getValue())) {
+            for (Entry<String, String> entry : values.entrySet()) {
+              if (view.hasColumn(entry.getKey())
+                  && view.getColumnType(entry.getKey()) == SqlDataType.DATE
+                  && !BeeUtils.isEmpty(entry.getValue())) {
 
-            entry.setValue(BeeUtils.toString(TimeUtils.toDateTimeOrNull(entry.getValue())
-                .getDate().getTime()));
-          }
-        }
-        return true;
-      });
+                entry.setValue(BeeUtils.toString(TimeUtils.toDateTimeOrNull(entry.getValue())
+                    .getDate().getTime()));
+              }
+            }
+            return true;
+          }, io.getPropertyValue(VAR_IMPORT_SHEET),
+          BeeUtils.toInt(io.getPropertyValue(VAR_IMPORT_START_ROW)),
+          BeeUtils.toInt(io.getPropertyValue(VAR_IMPORT_END_ROW)));
     } catch (IOException e) {
       error = e.toString();
     }
@@ -1264,23 +1962,63 @@ public class ImportBean {
             sys.joinTables(TBL_IMPORT_OPTIONS, TBL_IMPORT_PROPERTIES, COL_IMPORT_OPTION))
         .setWhere(sys.idEquals(TBL_IMPORT_OPTIONS, optId)));
 
-    ImportObject io = new ImportObject(rs, optId, sys, dict);
+    Assert.state(!rs.isEmpty());
 
+    ImportObject io = new ImportObject(optId, rs.getValue(0, COL_IMPORT_DATA));
+
+    ImportType type = EnumUtils.getEnumByIndex(ImportType.class, rs.getInt(0, COL_IMPORT_TYPE));
+
+    for (ImportProperty prop : type.getProperties()) {
+      String name = prop.getName();
+      io.addProperty(prop);
+      SimpleRow row = rs.getRowByKey(COL_IMPORT_PROPERTY, name);
+
+      if (row != null) {
+        io.setPropertyId(name, row.getLong(sys.getIdName(TBL_IMPORT_PROPERTIES)));
+        io.setPropertyValue(name, row.getValue(COL_IMPORT_VALUE));
+      }
+    }
+    if (!BeeUtils.isEmpty(io.getViewName())) {
+      BeeView view = sys.getView(io.getViewName());
+
+      for (ViewColumn col : view.getViewColumns()) {
+        if (col.isHidden() || col.isReadOnly() || !col.isEditable()
+            && BeeUtils.isPositive(col.getLevel())) {
+          continue;
+        }
+        String name = col.getName();
+        SimpleRow row = rs.getRowByKey(COL_IMPORT_PROPERTY, name);
+
+        if (Objects.isNull(row) && view.isColNullable(name)) {
+          continue;
+        }
+        ImportProperty property = new ImportProperty(name,
+            Localized.maybeTranslate(view.getColumnLabel(name), dict), true);
+        property.setRelation(col.getRelation());
+        io.addProperty(property);
+
+        if (Objects.nonNull(row)) {
+          io.setPropertyId(name, row.getLong(sys.getIdName(TBL_IMPORT_PROPERTIES)));
+          io.setPropertyValue(name, row.getValue(COL_IMPORT_VALUE));
+        }
+      }
+    }
     for (ImportProperty prop : io.getProperties()) {
       if (!BeeUtils.isEmpty(prop.getRelation())) {
-        Long id = BeeUtils.toLongOrNull(rs.getValueByKey(COL_IMPORT_PROPERTY, prop.getName(),
+        String name = prop.getName();
+        Long id = BeeUtils.toLongOrNull(rs.getValueByKey(COL_IMPORT_PROPERTY, name,
             COL_IMPORT_RELATION_OPTION));
 
         if (DataUtils.isId(id)) {
-          io.setPropertyRelation(prop.getName(), initImport(id, dict));
+          io.setPropertyRelation(name, initImport(id, dict));
         }
       }
     }
     return io;
   }
 
-  private String loadXLSData(ImportObject io, File file, String target,
-      String progress, Function<Map<String, String>, Boolean> rowValidator) {
+  private String loadXLSData(ImportObject io, File file, String target, String progress,
+      Function<Map<String, String>, Boolean> rowValidator, String sheet, int start, int end) {
 
     Sheet shit;
 
@@ -1288,8 +2026,7 @@ public class ImportBean {
       Workbook wb = WorkbookFactory.create(file);
       wb.setMissingCellPolicy(Row.RETURN_BLANK_AS_NULL);
 
-      String shitName = io.getPropertyValue(VAR_IMPORT_SHEET);
-      shit = wb.getSheetAt(BeeUtils.isEmpty(shitName) ? 0 : wb.getSheetIndex(shitName));
+      shit = wb.getSheetAt(BeeUtils.isEmpty(sheet) ? 0 : wb.getSheetIndex(sheet));
     } catch (Exception e) {
       return e.getMessage();
     }
@@ -1304,9 +2041,13 @@ public class ImportBean {
       }
     }
     Map<String, String> values = new HashMap<>();
-    int startRow = BeeUtils.max(BeeUtils.toInt(io.getPropertyValue(VAR_IMPORT_START_ROW)) - 1,
-        shit.getFirstRowNum());
+    int startRow = BeeUtils.max(start - 1, shit.getFirstRowNum());
     int endRow = shit.getLastRowNum();
+
+    if (BeeUtils.isPositive(end)) {
+      endRow = BeeUtils.min(end - 1, endRow);
+    }
+    endRow = BeeUtils.min(BeeUtils.isPositive(end) ? end - 1 : endRow, endRow);
 
     for (int i = startRow; i <= endRow; i++) {
       if (!BeeUtils.isEmpty(progress) && !Endpoint.updateProgress(progress,
@@ -1374,6 +2115,56 @@ public class ImportBean {
       }
     }
     return null;
+  }
+
+  private void insertCityAndCountryOptions(Long optionId, String cityName, String countryName) {
+    Long subOptionId = qs.insertData(createImportOptionsInsertionQuery(TBL_CITIES));
+    insertSubOption(optionId, subOptionId, COL_CITY);
+
+    if (!BeeUtils.isEmpty(cityName)) {
+      qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+        .addConstant(COL_IMPORT_OPTION, subOptionId)
+        .addConstant(COL_IMPORT_PROPERTY, COL_CITY_NAME)
+        .addConstant(COL_IMPORT_VALUE, cityName));
+    }
+    insertCountryOptions(subOptionId, countryName);
+  }
+
+  private void insertCountryOptions(Long optionId, String country) {
+    Long subOptionId = qs.insertData(createImportOptionsInsertionQuery(TBL_COUNTRIES));
+    insertSubOption(optionId, subOptionId, COL_COUNTRY);
+
+    if (!BeeUtils.isEmpty(country)) {
+      qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+        .addConstant(COL_IMPORT_OPTION, subOptionId)
+        .addConstant(COL_IMPORT_PROPERTY, COL_COUNTRY_NAME)
+        .addConstant(COL_IMPORT_VALUE, country));
+    }
+  }
+
+  private void insertEmailOptions(Long optionId, String email) {
+    Long subOptionId = qs.insertData(createImportOptionsInsertionQuery(TBL_EMAILS));
+    insertSubOption(optionId, subOptionId, ALS_EMAIL_ID);
+
+    if (!BeeUtils.isEmpty(email)) {
+      qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+        .addConstant(COL_IMPORT_OPTION, subOptionId)
+        .addConstant(COL_IMPORT_PROPERTY, COL_EMAIL)
+        .addConstant(COL_IMPORT_VALUE, email));
+    }
+  }
+
+  private void insertSubOption(long optionId, long subOptionId, String column) {
+    insertSubOption(optionId, subOptionId, column, false);
+  }
+
+  private void insertSubOption(long optionId, long subOptionId, String column, boolean lock) {
+    qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+      .addConstant(COL_IMPORT_OPTION, optionId)
+      .addConstant(COL_IMPORT_PROPERTY, column)
+      .addConstant(COL_IMPORT_RELATION_OPTION, subOptionId)
+      .addConstant(COL_IMPORT_VALUE, lock)
+    );
   }
 
   private static double toDouble(String number) {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+<View xmlns="http://www.butent.com/view"
 
       name="AllCargo" source="TransportationOrders"
       newRowForm="TransportationOrder" editForm="TransportationOrder"
@@ -8,7 +8,6 @@
     <SimpleColumn name="Status" />
     <SimpleColumn name="Date" />
     <SimpleColumn name="OrderNo" />
-    <SimpleColumn name="Notes" />
 
     <SimpleColumn name="Customer" />
     <SimpleJoin joinType="LEFT" name="Customer">
@@ -48,13 +47,22 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <ExternalJoin source="OrderCargo" name="Order" joinType="LEFT">
+    <SimpleColumn name="Expedition" />
+    <SimpleJoin joinType="LEFT" name="Expedition">
+      <SimpleColumn name="Name" alias="ExpeditionType" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ShippingTerm" />
+    <SimpleJoin joinType="LEFT" name="ShippingTerm">
+      <SimpleColumn name="Name" alias="ShippingTermName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Vehicle" />
+    <SimpleColumn name="Driver" />
+    <SimpleColumn name="Notes" />
+
+    <ExternalJoin source="OrderCargo" name="Order" joinType="INNER">
       <IdColumn name="Cargo" />
-
-      <SimpleJoin name="CargoHandling" joinType="LEFT">
-        <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
-      </SimpleJoin>
-
       <SimpleColumn name="Description" />
       <SimpleColumn name="Number" />
 
@@ -62,10 +70,6 @@
       <SimpleJoin name="Cmr" joinType="LEFT">
         <SimpleColumn name="Name" alias="CmrName" />
         <SimpleColumn name="Number" alias="CmrNumber" />
-      </SimpleJoin>
-
-      <SimpleJoin joinType="LEFT" name="ShippingTerm">
-        <SimpleColumn name="Name" alias="ShippingTermName" />
       </SimpleJoin>
 
       <SimpleColumn name="Partial" />
@@ -80,18 +84,13 @@
           <SimpleColumn name="TripNo" />
           <SimpleColumn name="Notes" alias="TripNotes" />
 
-          <SimpleColumn name="Vehicle" />
           <SimpleJoin name="Vehicle" joinType="LEFT">
             <SimpleColumn name="Number" alias="VehicleNumber" />
           </SimpleJoin>
-          <SimpleColumn name="Trailer" />
           <SimpleJoin name="Trailer" joinType="LEFT">
             <SimpleColumn name="Number" alias="TrailerNumber" />
           </SimpleJoin>
 
-          <SimpleJoin joinType="LEFT" name="Expedition">
-            <SimpleColumn name="Name" alias="ExpeditionType" />
-          </SimpleJoin>
           <SimpleJoin joinType="LEFT" name="Forwarder">
             <SimpleColumn name="Name" alias="ForwarderName" />
           </SimpleJoin>
@@ -112,7 +111,4 @@
       </ExternalJoin>
     </ExternalJoin>
   </Columns>
-  <Order>
-    <OrderBy column="LoadingDate" />
-  </Order>
 </View>

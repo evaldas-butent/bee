@@ -17,6 +17,7 @@ import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -29,8 +30,10 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.Totalizer;
+import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -104,6 +107,21 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
         getGridView().notifySevere(Localized.dictionary().actionCanNotBeExecuted());
         return false;
       }
+
+      FormView parentForm = ViewHelper.getForm(presenter.getMainView());
+      FormInterceptor parentInterceptor = parentForm.getFormInterceptor();
+      TradeActForm parentTaForm = null;
+
+      if (parentInterceptor instanceof TradeActForm) {
+        parentTaForm = (TradeActForm) parentInterceptor;
+      }
+
+
+      if (!parentForm.validate(parentForm, true) || (parentTaForm != null
+        && !parentTaForm.validateBeforeSave(parentForm, parentRow, false))) {
+        return false;
+      }
+
       ensurePicker().show(parentRow, presenter.getMainView().getElement());
     }
 
@@ -246,7 +264,8 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
 
         row.setValue(qtyIndex, qty);
 
-        row.setValue(vatIndex, item.getValue(Data.getColumnIndex(VIEW_ITEMS, COL_ITEM_VAT_PERC)));
+        row.setValue(vatIndex, item.getValue(Data.getColumnIndex(VIEW_ITEMS,
+          ClassifierConstants.COL_ITEM_VAT_PERCENT)));
         row.setValue(vatPercIndex, item.getBoolean(Data.getColumnIndex(VIEW_ITEMS, COL_ITEM_VAT)));
         row.setValue(dateFrom, picker.getDatesFrom().get(item.getId()));
         row.setValue(dateTo, picker.getDatesTo().get(item.getId()));
@@ -359,6 +378,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     int timeUnitIdx = getDataIndex(COL_TRADE_TIME_UNIT);
     int tariffIndex = getDataIndex(COL_TA_SERVICE_TARIFF);
     int priceIndex = getDataIndex(COL_TRADE_ITEM_PRICE);
+    int quantity = getDataIndex(COL_TRADE_ITEM_QUANTITY);
 
     int count = 0;
 
@@ -367,7 +387,8 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
 
       if (BeeUtils.isPositive(tariff)) {
         Double price =
-            calculatePrice(row.getDouble(priceIndex), row.getDate(toIndex), total, tariff);
+            calculatePrice(row.getDouble(priceIndex), row.getDate(toIndex), total, tariff)
+              / BeeUtils.nvl(row.getDouble(quantity), 1D);
         updatePrice(row.getId(), row.getVersion(), row.getString(priceIndex), price);
 
         count++;

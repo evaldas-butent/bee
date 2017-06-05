@@ -3,6 +3,7 @@ package com.butent.bee.server.ui;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -10,6 +11,7 @@ import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.Service.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
@@ -28,14 +30,15 @@ import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.modules.ec.TecDocBean;
 import com.butent.bee.server.news.NewsBean;
-import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.utils.InstallCert;
 import com.butent.bee.server.utils.XmlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -47,6 +50,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
@@ -55,11 +59,12 @@ import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.RightsObjectType;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.rights.RightsUtils;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.ui.GridDescription;
@@ -73,6 +78,7 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 import com.butent.bee.shared.utils.Wildcards;
 import com.butent.bee.shared.utils.XmlHelper;
+import com.butent.bee.shared.websocket.messages.LogMessage;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -227,7 +233,10 @@ public class UiServiceBean {
         response = getRelatedValues(reqInfo);
         break;
       case UPDATE_RELATED_VALUES:
-        response = updateRelatedValues(reqInfo);
+        String viewName = reqInfo.getParameter(VAR_VIEW_NAME);
+        Long parentId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_VIEW_ROW_ID));
+        String serialized = reqInfo.getParameter(VAR_CHILDREN);
+        response = updateRelatedValues(viewName, parentId, serialized);
         break;
 
       case GET_DECORATORS:
@@ -273,7 +282,7 @@ public class UiServiceBean {
                 EnumUtils.getEnumByIndex(RightsObjectType.class, reqInfo
                     .getParameter(COL_OBJECT_TYPE)),
                 EnumUtils.getEnumByIndex(RightsState.class, reqInfo.getParameter(COL_STATE)),
-                Codec.deserializeMap(reqInfo.getParameter(COL_OBJECT)));
+                Codec.deserializeLinkedHashMap(reqInfo.getParameter(COL_OBJECT)));
         break;
 
       case SET_ROLE_RIGHTS:
@@ -282,7 +291,7 @@ public class UiServiceBean {
                 EnumUtils.getEnumByIndex(RightsObjectType.class, reqInfo
                     .getParameter(COL_OBJECT_TYPE)),
                 BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ROLE)),
-                Codec.deserializeMap(reqInfo.getParameter(COL_OBJECT)));
+                Codec.deserializeLinkedHashMap(reqInfo.getParameter(COL_OBJECT)));
         break;
 
       case SET_ROW_RIGHTS:
@@ -297,6 +306,10 @@ public class UiServiceBean {
         break;
       case COPY_GRID_SETTINGS:
         response = copyGridSettings(reqInfo);
+        break;
+
+      case GET_LAST_UPDATED:
+        response = getLastUpdated(reqInfo);
         break;
 
       default:
@@ -653,6 +666,45 @@ public class UiServiceBean {
     return ResponseObject.response(res);
   }
 
+  private ResponseObject getLastUpdated(RequestInfo reqInfo) {
+    String tableName = reqInfo.getParameter(VAR_TABLE);
+    if (BeeUtils.isEmpty(tableName)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_TABLE);
+    }
+
+    Long id = reqInfo.getParameterLong(VAR_ID);
+    if (!DataUtils.isId(id)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_ID);
+    }
+
+    String fieldName = reqInfo.getParameter(VAR_COLUMN);
+    if (BeeUtils.isEmpty(fieldName)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_COLUMN);
+    }
+
+    if (!sys.isAuditable(tableName)) {
+      String message = BeeUtils.joinWords("table", tableName, "is not auditable");
+      logger.warning(reqInfo.getService(), message);
+
+      return ResponseObject.warning(message);
+    }
+
+    String source = sys.getAuditSource(tableName);
+
+    SqlSelect query = new SqlSelect()
+        .addMax(source, AUDIT_FLD_TIME)
+        .addFrom(source)
+        .setWhere(SqlUtils.equals(source, AUDIT_FLD_ID, id, AUDIT_FLD_FIELD, fieldName));
+
+    Long time = qs.getLong(query);
+
+    if (time == null) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(BeeUtils.toString(time));
+    }
+  }
+
   private ResponseObject getRelatedValues(RequestInfo reqInfo) {
     String tableName = reqInfo.getParameter(VAR_TABLE);
     if (BeeUtils.isEmpty(tableName)) {
@@ -921,6 +973,9 @@ public class UiServiceBean {
       ResponseObject response = deb.commitRow(rowSet, i, RowInfo.class);
 
       if (response.hasErrors()) {
+        logger.severe("error inserting into", rowSet.getViewName());
+        logger.severe(rowSet.getRow(i));
+
         return response;
 
       } else if (response.hasResponse(RowInfo.class)) {
@@ -979,6 +1034,54 @@ public class UiServiceBean {
     if (BeeUtils.same(cmd, "all")) {
       sys.rebuildActiveTables();
       response.addInfo("Recreate structure OK");
+
+    } else if (BeeUtils.same(cmd, "handling")) {
+      // TODO: remove
+      qs.updateData(new SqlUpdate(TBL_CARGO_HANDLING)
+          .addExpression(COL_CARGO,
+              SqlUtils.field(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO)))
+          .setFrom(TBL_ORDER_CARGO,
+              sys.joinTables(TBL_CARGO_HANDLING, TBL_ORDER_CARGO, "CargoHandling"))
+          .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_CARGO_HANDLING, COL_CARGO),
+              SqlUtils.isNull(TBL_CARGO_HANDLING, COL_CARGO_TRIP))));
+
+      ImmutableMap.of(COL_LOADING_PLACE, TBL_CARGO_LOADING,
+          COL_UNLOADING_PLACE, TBL_CARGO_UNLOADING).forEach((col, tbl) -> {
+
+        SimpleRowSet rs = qs.getData(new SqlSelect()
+            .addAllFields(TBL_CARGO_HANDLING)
+            .addFrom(TBL_CARGO_HANDLING)
+            .setWhere(SqlUtils.notNull(TBL_CARGO_HANDLING, col)));
+
+        for (SimpleRow row : rs) {
+          Long place = row.getLong(col);
+
+          SqlUpdate update = new SqlUpdate(TBL_CARGO_PLACES)
+              .setWhere(sys.idEquals(TBL_CARGO_PLACES, place));
+
+          for (String s : new String[] {COL_EMPTY_KILOMETERS, COL_LOADED_KILOMETERS}) {
+            if (!BeeUtils.isEmpty(row.getValue(s))) {
+              update.addConstant(s, row.getValue(s));
+            }
+          }
+          if (!BeeUtils.isEmpty(row.getValue(COL_CARGO_WEIGHT))) {
+            update.addConstant(COL_ROUTE_WEIGHT, row.getValue(COL_CARGO_WEIGHT));
+          }
+          if (!update.isEmpty()) {
+            qs.updateData(update);
+          }
+          SqlInsert insert = new SqlInsert(tbl)
+              .addConstant(col, place);
+
+          for (String s : new String[] {COL_CARGO, COL_CARGO_TRIP}) {
+            if (DataUtils.isId(row.getLong(s))) {
+              qs.insertData(insert.addConstant(s, row.getLong(s)));
+              break;
+            }
+          }
+        }
+      });
+      response.addInfo("OK");
 
     } else if (BeeUtils.same(cmd, "tables")) {
       sys.initTables();
@@ -1054,6 +1157,7 @@ public class UiServiceBean {
       } else {
         response.addError(err);
       }
+
     } else if (BeeUtils.same(cmd, "tecdoc")) {
       tcd.suckTecdoc();
       response = ResponseObject.info("TecDoc SUCKS NOW...");
@@ -1066,45 +1170,23 @@ public class UiServiceBean {
       tcd.suckButent(true);
       response = ResponseObject.info("Butent...");
 
-    } else if (BeeUtils.same(cmd, "handling")) { // TODO: remove in future
-      int c = qs.updateData(new SqlUpdate(TransportConstants.TBL_CARGO_HANDLING)
-          .addExpression(TransportConstants.COL_CARGO_TRIP,
-              SqlUtils.field(TransportConstants.TBL_ASSESSMENT_FORWARDERS,
-                  TransportConstants.COL_CARGO_TRIP))
-          .addExpression(TransportConstants.COL_CARGO, SqlUtils.constant(null))
-          .setFrom(TransportConstants.TBL_ASSESSMENT_FORWARDERS,
-              sys.joinTables(TransportConstants.TBL_ASSESSMENT_FORWARDERS,
-                  TransportConstants.TBL_CARGO_HANDLING, TransportConstants.COL_FORWARDER)));
+    } else if (BeeUtils.startsSame(cmd, "cert")) {
+      try {
+        String[] args = BeeUtils.split(BeeUtils.removePrefix(cmd, "cert"), ' ');
 
-      String[] fields = new String[] {
-          TransportConstants.COL_LOADING_PLACE, TransportConstants.COL_UNLOADING_PLACE,
-          TransportConstants.COL_EMPTY_KILOMETERS, TransportConstants.COL_LOADED_KILOMETERS,
-          TransportConstants.COL_CARGO_WEIGHT};
-
-      HasConditions clause = SqlUtils.or();
-
-      for (String field : fields) {
-        clause.add(SqlUtils.notNull(TransportConstants.TBL_ORDER_CARGO, field));
-      }
-      SimpleRowSet rs = qs.getData(new SqlSelect()
-          .addField(TransportConstants.TBL_ORDER_CARGO,
-              sys.getIdName(TransportConstants.TBL_ORDER_CARGO), TransportConstants.COL_CARGO)
-          .addFields(TransportConstants.TBL_ORDER_CARGO, fields)
-          .addFrom(TransportConstants.TBL_ORDER_CARGO)
-          .setWhere(clause));
-
-      for (SimpleRow row : rs) {
-        SqlInsert insert = new SqlInsert(TransportConstants.TBL_CARGO_HANDLING);
-
-        for (String field : fields) {
-          insert.addNotNull(field, row.getValue(field));
+        for (String msg : InstallCert.installCert(args)) {
+          response.addInfo(msg);
         }
-        qs.updateData(new SqlUpdate(TransportConstants.TBL_ORDER_CARGO)
-            .addConstant(TransportConstants.COL_CARGO_HANDLING, qs.insertData(insert))
-            .setWhere(sys.idEquals(TransportConstants.TBL_ORDER_CARGO,
-                row.getLong(TransportConstants.COL_CARGO))));
+      } catch (Throwable e) {
+        response.addError(e);
+        logger.error(e);
       }
-      response = ResponseObject.info("Forwarders", c, "Cargo", rs.getNumberOfRows());
+
+    } else if (BeeUtils.same(cmd, "date")) {
+      response = rebuildDate();
+
+    } else if (BeeUtils.same(cmd, "datetime")) {
+      response = rebuildDateTime();
 
     } else if (!BeeUtils.isEmpty(cmd)) {
       String tbl = NameUtils.getWord(cmd, 0);
@@ -1118,6 +1200,131 @@ public class UiServiceBean {
     } else {
       response.addError("Rebuild what?");
     }
+    return response;
+  }
+
+  private ResponseObject rebuildDate() {
+    ResponseObject response = new ResponseObject();
+    List<Property> properties = new ArrayList<>();
+
+    Multimap<String, String> fields = HashMultimap.create();
+
+    sys.getTables().forEach(table -> table.getFields().stream()
+        .filter(field -> field.getType() == SqlConstants.SqlDataType.DATE)
+        .forEach(field -> fields.put(table.getName(), field.getName())));
+
+    Long userId = usr.getCurrentUserId();
+
+    List<String> tables = new ArrayList<>(fields.keySet());
+    tables.sort(null);
+
+    for (String table : tables) {
+      for (String field : fields.get(table)) {
+        Long[] values = qs.getLongColumn(new SqlSelect().setDistinctMode(true)
+            .addFields(table, field)
+            .addFrom(table)
+            .setWhere(SqlUtils.notNull(table, field)));
+
+        if (!ArrayUtils.isEmpty(values)) {
+          int count = 0;
+
+          for (long value : values) {
+            if (value % TimeUtils.MILLIS_PER_DAY == 0
+                && BeeUtils.isInt(value / TimeUtils.MILLIS_PER_DAY)) {
+
+              int days = BeeUtils.toInt(value / TimeUtils.MILLIS_PER_DAY);
+              long time = new JustDate(days).getTime();
+
+              if (!Objects.equals(value, time)) {
+                SqlUpdate update = new SqlUpdate(table)
+                    .addConstant(field, time)
+                    .setWhere(SqlUtils.equals(table, field, value));
+
+                ResponseObject updateResponse = qs.updateDataWithResponse(update);
+
+                if (updateResponse.hasErrors()) {
+                  response.addMessagesFrom(updateResponse);
+                  break;
+                } else {
+                  Integer result = updateResponse.getResponseAsInt();
+                  if (BeeUtils.isPositive(result)) {
+                    count += result;
+                  }
+                }
+              }
+            }
+          }
+
+          if (count > 0) {
+            Endpoint.sendToUser(userId, LogMessage.debug(BeeUtils.joinWords(table, field, count)));
+            properties.add(new Property(table + BeeConst.STRING_POINT + field, count));
+          }
+        }
+
+        if (response.hasErrors()) {
+          break;
+        }
+      }
+      if (response.hasErrors()) {
+        break;
+      }
+    }
+
+    if (!properties.isEmpty()) {
+      response.setCollection(properties, Property.class);
+    } else if (!response.hasErrors()) {
+      response.addInfo("dates ok:", fields.size(), "fields in", tables.size(), "tables");
+    }
+
+    return response;
+  }
+
+  private ResponseObject rebuildDateTime() {
+    ResponseObject response = new ResponseObject();
+    List<Property> properties = new ArrayList<>();
+
+    Multimap<String, String> fields = HashMultimap.create();
+
+    sys.getTables().forEach(table -> table.getFields().stream()
+        .filter(field -> field.getType() == SqlConstants.SqlDataType.DATETIME)
+        .forEach(field -> fields.put(table.getName(), field.getName())));
+
+    Long userId = usr.getCurrentUserId();
+
+    List<String> tables = new ArrayList<>(fields.keySet());
+    tables.sort(null);
+
+    for (String table : tables) {
+      String idName = sys.getIdName(table);
+
+      for (String field : fields.get(table)) {
+        SqlSelect query = new SqlSelect()
+            .addFields(table, idName, field)
+            .addFrom(table)
+            .setWhere(SqlUtils.negative(table, field));
+
+        SimpleRowSet data = qs.getData(query);
+
+        if (!DataUtils.isEmpty(data)) {
+          for (SimpleRow row : data) {
+            Long id = row.getLong(idName);
+            Long time = row.getLong(field);
+
+            Endpoint.sendToUser(userId,
+                LogMessage.warning(BeeUtils.joinWords(table, id, field, time)));
+            properties.add(new Property(BeeUtils.joinWords(table, id, field),
+                BeeUtils.toStringOrNull(time)));
+          }
+        }
+      }
+    }
+
+    if (properties.isEmpty()) {
+      response.addInfo("datetimes ok:", fields.size(), "fields in", tables.size(), "tables");
+    } else {
+      response.setCollection(properties, Property.class);
+    }
+
     return response;
   }
 
@@ -1272,18 +1479,15 @@ public class UiServiceBean {
     return response;
   }
 
-  private ResponseObject updateRelatedValues(RequestInfo reqInfo) {
-    String viewName = reqInfo.getParameter(VAR_VIEW_NAME);
+  public ResponseObject updateRelatedValues(String viewName, Long parentId, String serialized) {
     if (BeeUtils.isEmpty(viewName)) {
       return ResponseObject.parameterNotFound(VAR_VIEW_NAME);
     }
 
-    Long parentId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_VIEW_ROW_ID));
     if (!DataUtils.isId(parentId)) {
       return ResponseObject.parameterNotFound(VAR_VIEW_ROW_ID);
     }
 
-    String serialized = reqInfo.getParameter(VAR_CHILDREN);
     if (BeeUtils.isEmpty(serialized)) {
       return ResponseObject.parameterNotFound(VAR_CHILDREN);
     }

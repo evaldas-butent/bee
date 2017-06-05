@@ -24,6 +24,10 @@
   border-left: 5px solid red;
 }
 
+.bee-discuss-comment-rowLastComment {
+  border-left: 3px  solid #1ca5c7;
+}
+
 .bee-discuss-comment-PublishTime {
   float: left;
   margin-left: 20px;
@@ -56,7 +60,6 @@
 .bee-discuss-comment-Comment {
   display: inline-block;
   width: 100%;
-  max-height: 9em;
   margin-top: 10px;
 }
 
@@ -542,4 +545,10 @@
 
 .bee-discuss-DescriptionEditor-disabled {
    display: none !important;
+}
+
+.bee-form-Discussion-container .bee-Header-row-message {
+  font-size: 23px;
+  color: #484849;
+  font-weight: lighter;
 }

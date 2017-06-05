@@ -46,7 +46,6 @@ import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -382,18 +381,11 @@ public final class TradeActKeeper {
   static void ensureParameters(final ScheduledCommand command) {
     if (parametersLoaded) {
       command.execute();
-
     } else {
-      Global.getParameter(PRM_RETURNED_ACT_STATUS, new Consumer<String>() {
-        @Override
-        public void accept(String input) {
-          parametersLoaded = true;
-          returnedActStatus = DataUtils.isId(input) ? BeeUtils.toLongOrNull(input) : null;
-          logger.debug("trade act parameters loaded");
-
-          command.execute();
-        }
-      });
+      parametersLoaded = true;
+      returnedActStatus = Global.getParameterRelation(PRM_RETURNED_ACT_STATUS);
+      logger.debug("trade act parameters loaded");
+      command.execute();
     }
   }
 

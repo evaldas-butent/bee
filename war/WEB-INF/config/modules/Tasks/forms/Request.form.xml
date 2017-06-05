@@ -11,13 +11,13 @@
 <f:Form xmlns="http://www.butent.com/widget" 
         xmlns:f="http://www.butent.com/form"
 
-  name="Request" viewName="Requests" caption="=crmRequest" width="1024">
+  name="Request" viewName="Requests" caption="=crmRequest" width="1024" showRowId="true" >
   <SplitPanel splitterSize="1" style="margin:5px;" name="Split">
     <west size="640">
       <TabbedPages resizable="false" name="TabbedPages">
         <page>
           <text>=mainInformation</text>
-          <FlowPanel style="padding: 10px 2px 2px 10px;">
+          <FlowPanel style="padding: 10px 2px 2px 10px;" name="RequestContainer" >
             <Table kind="controls" style="&tbl;" cellStyle="&cell;">
               <col index="0" cellStyle="&col1;" />
 
@@ -118,7 +118,7 @@
       </TabbedPages>
     </west>
     <center>
-      <FlowPanel name="RequestComments" />
+      <FlowPanel name="RequestComments" style="height: calc(100% - 5px);" />
     </center>
   </SplitPanel>
 </f:Form>

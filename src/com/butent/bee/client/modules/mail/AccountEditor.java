@@ -25,7 +25,6 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
@@ -49,6 +48,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class AccountEditor extends AbstractFormInterceptor implements SelectorEvent.Handler {
 
@@ -141,7 +141,7 @@ public class AccountEditor extends AbstractFormInterceptor implements SelectorEv
                 BeeUtils.parenthesize(BeeUtils.same(name, COL_TRANSPORT_PROPERTIES)
                     ? Protocol.SMTP.name() : row.getString(getDataIndex(COL_STORE_TYPE)))),
                 Localized.dictionary().property(), Localized.dictionary().value(),
-                Codec.deserializeMap(row.getString(index)),
+                Codec.deserializeLinkedHashMap(row.getString(index)),
                 new Consumer<Map<String, String>>() {
                   @Override
                   public void accept(Map<String, String> input) {

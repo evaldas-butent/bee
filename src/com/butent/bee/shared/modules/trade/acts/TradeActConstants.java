@@ -64,6 +64,8 @@ public final class TradeActConstants {
   public static final String COL_TRADE_ACT = "TradeAct";
   public static final String COL_TRADE_ACT_TEMPLATE = "TradeActTemplate";
 
+  public static final String COL_TA_CONTRACT = "Contract";
+
   public static final String COL_TA_DATE = "Date";
   public static final String COL_TA_UNTIL = "Until";
   public static final String COL_TA_SERIES = "Series";

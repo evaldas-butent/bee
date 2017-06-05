@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
@@ -96,6 +97,9 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
   private static final String STYLE_HEADER = STYLE_PREFIX + "header";
   private static final String STYLE_HEADER_SPLITTER = STYLE_HEADER + "-splitter";
 
+  private static final String STYLE_PROGRESS_CONTAINER = STYLE_PREFIX + "progress-container";
+  private static final String STYLE_PROGRESS_BAR = STYLE_PREFIX + "progress-bar";
+
   private static final String STYLE_SCROLL_AREA = STYLE_PREFIX + "scroll-area";
   private static final String STYLE_CONTENT = STYLE_PREFIX + "content";
   private static final String STYLE_ROW_RESIZER = STYLE_CONTENT + "-row-resizer";
@@ -122,7 +126,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
   private static final String STYLE_ITEM_HAS_HANDLING = STYLE_ITEM_PREFIX + "has-handling";
 
   private static final String STYLE_SHEET_NAME = "timeboard";
-  private static final JustDate STYLE_SHEET_VERSION = new JustDate(2015, 7, 6);
+  private static final JustDate STYLE_SHEET_VERSION = new JustDate(2017, 2, 7);
 
   private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.VIEW);
 
@@ -152,9 +156,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
       if (BeeConst.isUndef(row)) {
         if (rows.size() < maxRows) {
           row = rows.size();
-
-          List<HasDateRange> rowItems = new ArrayList<>();
-          rows.add(rowItems);
+          rows.add(new ArrayList<>());
 
         } else {
           row = BeeUtils.randomInt(0, rows.size());
@@ -169,6 +171,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
 
   private final HeaderView headerView;
   private final Flow canvas;
+  private final Flow progress;
 
   private final List<HandlerRegistration> registry = new ArrayList<>();
 
@@ -248,11 +251,16 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     this.canvas = new Flow(STYLE_CANVAS);
     StyleUtils.setTop(canvas, headerView.getHeight());
     add(canvas);
+
+    this.progress = new Flow(STYLE_PROGRESS_CONTAINER);
+    progress.add(new CustomDiv(STYLE_PROGRESS_BAR));
+    add(progress);
   }
 
   @Override
   public com.google.gwt.event.shared.HandlerRegistration addReadyHandler(
       ReadyEvent.Handler handler) {
+
     return addHandler(handler, ReadyEvent.getType());
   }
 
@@ -339,14 +347,14 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
   @Override
   public void onCellUpdate(CellUpdateEvent event) {
     if (isDataEventRelevant(event)) {
-      refresh();
+      onRelevantDataEvent(event);
     }
   }
 
   @Override
   public void onDataChange(DataChangeEvent event) {
     if (isDataEventRelevant(event)) {
-      refresh();
+      onRelevantDataEvent(event);
     }
   }
 
@@ -513,7 +521,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
   @Override
   public void onMultiDelete(MultiDeleteEvent event) {
     if (isDataEventRelevant(event)) {
-      refresh();
+      onRelevantDataEvent(event);
     }
   }
 
@@ -551,21 +559,21 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
   @Override
   public void onRowDelete(RowDeleteEvent event) {
     if (isDataEventRelevant(event)) {
-      refresh();
+      onRelevantDataEvent(event);
     }
   }
 
   @Override
   public void onRowInsert(RowInsertEvent event) {
     if (isDataEventRelevant(event)) {
-      refresh();
+      onRelevantDataEvent(event);
     }
   }
 
   @Override
   public void onRowUpdate(RowUpdateEvent event) {
     if (isDataEventRelevant(event)) {
-      refresh();
+      onRelevantDataEvent(event);
     }
   }
 
@@ -582,7 +590,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     }
   }
 
-  public void openDataRow(HasNativeEvent event, String viewName, Long rowId) {
+  public static void openDataRow(HasNativeEvent event, String viewName, Long rowId) {
     Opener opener = EventUtils.hasModifierKey(event.getNativeEvent())
         ? Opener.NEW_TAB : Opener.MODAL;
     RowEditor.open(viewName, rowId, opener);
@@ -655,17 +663,17 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     }
   }
 
-  protected void bindOpener(HasClickHandlers widget, final String viewName, final Long id) {
+  protected static void bindOpener(HasClickHandlers widget, final String viewName, final Long id) {
     if (widget != null && id != null) {
       widget.addClickHandler(event -> openDataRow(event, viewName, id));
     }
   }
 
-  protected int clampFooterHeight(int height, int canvasHeight) {
+  protected static int clampFooterHeight(int height, int canvasHeight) {
     return BeeUtils.clamp(height, 3, BeeUtils.clamp(canvasHeight / 2, 3, 1000));
   }
 
-  protected int clampHeaderHeight(int height, int canvasHeight) {
+  protected static int clampHeaderHeight(int height, int canvasHeight) {
     return BeeUtils.clamp(height, 1, BeeUtils.clamp(canvasHeight / 5, 1, 100));
   }
 
@@ -822,7 +830,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     return getChartItems();
   }
 
-  protected int getFooterSplitterSize() {
+  protected static int getFooterSplitterSize() {
     return TimeBoardHelper.DEFAULT_MOVER_HEIGHT;
   }
 
@@ -832,7 +840,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
 
   protected abstract String getHeaderHeightColumnName();
 
-  protected int getHeaderSplitterSize() {
+  protected static int getHeaderSplitterSize() {
     return TimeBoardHelper.DEFAULT_MOVER_HEIGHT;
   }
 
@@ -855,6 +863,10 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
       return 0;
     }
     return content.getClientHeight() - scrollArea.getClientHeight();
+  }
+
+  protected Element getProgressElement() {
+    return progress.getElement();
   }
 
   protected Rectangle getRectangle(Range<JustDate> range, int row) {
@@ -955,10 +967,6 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     }
   }
 
-  /**
-   * @param row
-   * @param date
-   */
   protected void onDoubleClickChart(int row, JustDate date) {
   }
 
@@ -1012,6 +1020,10 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     render(true);
 
     ReadyEvent.fire(this);
+  }
+
+  protected void onRelevantDataEvent(ModificationEvent<?> event) {
+    refresh();
   }
 
   protected void onRowResizerMove(MoveEvent event) {
@@ -1078,10 +1090,17 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
   }
 
   protected void render(boolean updateRange) {
+    render(updateRange, null);
+  }
+
+  protected void render(boolean updateRange, Callback<Integer> callback) {
     long startMillis = System.currentTimeMillis();
 
     canvas.clear();
     if (getMaxRange() == null) {
+      if (callback != null) {
+        callback.onFailure("max range not available");
+      }
       return;
     }
 
@@ -1089,6 +1108,9 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     int height = getCanvasHeight();
     if (width < 30 || height < 30) {
       setRenderPending(true);
+      if (callback != null) {
+        callback.onFailure(BeeUtils.joinWords("canvas not available", width, height));
+      }
       return;
     }
 
@@ -1144,14 +1166,18 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
 
     DateRange vr = DateRange.closed(getVisibleRange().lowerEndpoint(),
         getVisibleRange().upperEndpoint());
+    int descendants = DomUtils.countDescendants(canvas);
 
     logger.debug(vr.toCompactString(true),
-        BeeUtils.parenthesize(BeeUtils.joinWords(content.getWidgetCount(),
-            DomUtils.countDescendants(canvas))),
+        BeeUtils.parenthesize(BeeUtils.joinWords(content.getWidgetCount(), descendants)),
         BeeUtils.bracket(BeeUtils.joinWords(headerMillis - startMillis,
             BeeConst.STRING_PLUS, contentMillis - headerMillis,
             BeeConst.STRING_PLUS, endMillis - contentMillis,
             BeeConst.STRING_EQ, endMillis - startMillis)));
+
+    if (callback != null) {
+      callback.onSuccess(descendants);
+    }
   }
 
   protected abstract void renderContent(ComplexPanel panel);
@@ -1185,7 +1211,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
       mover.addStyleName(STYLE_FOOTER_SPLITTER);
       StyleUtils.setBottom(mover, Math.max(getFooterHeight(), 0));
 
-      mover.addMoveHandler(event -> onFooterSplitterMove(event));
+      mover.addMoveHandler(this::onFooterSplitterMove);
       canvas.add(mover);
     }
   }
@@ -1210,7 +1236,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
       mover.addStyleName(STYLE_HEADER_SPLITTER);
       StyleUtils.setTop(mover, Math.max(getHeaderHeight(), 0));
 
-      mover.addMoveHandler(event -> onHeaderSplitterMove(event));
+      mover.addMoveHandler(this::onHeaderSplitterMove);
       canvas.add(mover);
     }
   }
@@ -1243,7 +1269,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
       StyleUtils.setWidth(mover, getChartLeft() + getCalendarWidth());
       StyleUtils.setTop(mover, getContentHeight());
 
-      mover.addMoveHandler(event -> onRowResizerMove(event));
+      mover.addMoveHandler(this::onRowResizerMove);
       panel.add(mover);
     }
   }
@@ -1268,21 +1294,19 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     double dayWidth = (double) itemAreaWidth / TimeBoardHelper.getSize(getMaxRange());
 
     if (!BeeUtils.isEmpty(chartItems)) {
-      int itemAreaHeight = height;
-
       int maxRows;
-      if (itemAreaHeight <= 10) {
-        maxRows = itemAreaHeight;
-      } else if (itemAreaHeight <= 20) {
-        maxRows = itemAreaHeight / 2;
+      if (height <= 10) {
+        maxRows = height;
+      } else if (height <= 20) {
+        maxRows = height / 2;
       } else {
-        maxRows = itemAreaHeight / 3;
+        maxRows = height / 3;
       }
 
       List<List<HasDateRange>> rows = doStripLayout(chartItems, maxRows);
 
       int rc = rows.size();
-      int itemHeight = itemAreaHeight / rc;
+      int itemHeight = height / rc;
 
       Double stripOpacity = BeeUtils.isEmpty(getStripOpacityColumnName())
           ? null : TimeBoardHelper.getOpacity(getSettings(), getStripOpacityColumnName());
@@ -1385,7 +1409,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     TimeBoardHelper.renderVisibleRange(this, panel, getChartLeft(), getHeaderHeight());
   }
 
-  protected void restoreColors(String serialized) {
+  protected int restoreColors(String serialized) {
     String[] arr = Codec.beeDeserializeCollection(serialized);
     if (arr != null && arr.length > 0) {
       colors.clear();
@@ -1396,6 +1420,11 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
           colors.add(color);
         }
       }
+
+      return colors.size();
+
+    } else {
+      return 0;
     }
   }
 
@@ -1462,15 +1491,15 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     this.visibleRange = visibleRange;
   }
 
-  protected void styleItemEnd(Widget widget) {
+  protected static void styleItemEnd(Widget widget) {
     widget.addStyleName(STYLE_ITEM_END);
   }
 
-  protected void styleItemHasHandling(Widget widget) {
+  protected static void styleItemHasHandling(Widget widget) {
     widget.addStyleName(STYLE_ITEM_HAS_HANDLING);
   }
 
-  protected void styleItemStart(Widget widget) {
+  protected static void styleItemStart(Widget widget) {
     widget.addStyleName(STYLE_ITEM_START);
   }
 
@@ -1506,7 +1535,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
 
   protected boolean updateSettings(List<String> colNames, List<String> values) {
     if (DataUtils.isEmpty(getSettings())) {
-      logger.severe("update settings: rowSet isempty");
+      logger.severe("update settings: rowSet is empty");
       return false;
     }
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-        xmlns:ui="http://www.butent.com/ui"
+        xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="AssessmentOrders" viewName="Assessments" caption="=trAssessmentOrders"
   flexGrow="1" order="AssessmentID desc" disabledActions="add"
@@ -12,27 +12,17 @@
     <RelColumn name="Assessment" width="40" filterSupplier="value" editEnabled="true"
       editViewName="Assessments" editSource="Assessment" module="Transport.Logistics"/>
     <DataColumn name="Date" width="110" readOnly="true" />
-    <RelColumn name="Manager" />
+    <DataColumn name="OrderNo" />
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
+    <RelColumn name="Department" />
     <DataColumn name="OrderStatus" width="70" />
     <DataColumn name="Number" width="70" />
+  </g:columns>
 
-    <DataColumn name="LoadingDate" caption="=trLoadingDate" width="70" format="DATE_SHORT" />
-    <DataColumn name="UnloadingDate" caption="=trUnloadingDate" width="70" format="DATE_SHORT" />
+  <xi:include href="columns/Places.columns.xml" />
 
-    <DataColumn name="CustomerName" />
-
-    <RelColumn name="LoadingCountry" visible="false" readOnly="true"/>
-    <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
-      horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
-      <renderer type="flag" />
-    </CalcColumn>
-
-    <RelColumn name="UnloadingCountry" visible="false"  readOnly="true"/>
-    <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
-      horizontalAlignment="center" searchBy="UnloadingCountryName UnloadingCountryCode">
-      <renderer type="flag" />
-    </CalcColumn>
-
+  <g:columns>
+    <DataColumn name="MinUnloadingDate" width="70" format="DATE_SHORT" />
     <DataColumn name="OrderNotes"  />
     <DataColumn name="Description" />
 
@@ -68,18 +58,39 @@
       </render>
     </CalcColumn>
 
+    <CalcColumn name="Income" type="decimal" caption="=income" format="0.00">
+      <render>
+        <ui:expression>Number(row.CargoIncomesTotal ? row.CargoIncomesTotal : 0)
+          + Number(row.ChildAssessmentsCargoIncomesTotal ? Number(row.ChildAssessmentsCargoIncomesTotal) : 0)</ui:expression>
+      </render>
+    </CalcColumn>
+    <CalcColumn name="Expense" type="decimal" caption="=trExpenses" format="0.00">
+      <render>
+        <ui:expression>Number(row.CargoExpensesTotal ? row.CargoExpensesTotal : 0)
+          + Number(row.ChildAssessmentsCargoExpensesTotal ? row.ChildAssessmentsCargoExpensesTotal : 0)</ui:expression>
+      </render>
+    </CalcColumn>
+    <CalcColumn name="Profit" type="decimal" caption="=profit" format="0.00">
+      <render>
+        <ui:expression>Number(row.CargoIncomesTotal ? row.CargoIncomesTotal : 0)
+          + Number(row.ChildAssessmentsCargoIncomesTotal ? row.ChildAssessmentsCargoIncomesTotal : 0)
+          - Number(row.CargoExpensesTotal ? row.CargoExpensesTotal : 0)
+          - Number(row.ChildAssessmentsCargoExpensesTotal ? row.ChildAssessmentsCargoExpensesTotal : 0)</ui:expression>
+      </render>
+    </CalcColumn>
+
     <DataColumn name="Log" visible="false" />
   </g:columns>
 
   <g:rowStyle>
     <ui:inline>="color:red"</ui:inline>
     <ui:expression>row.OrderStatus == 1 &amp;&amp; !row.IncomesCommited
-      &amp;&amp; new Date(row.UnloadingDate).setHours(0,0,0,0) &lt; new Date().setHours(0,0,0,0)</ui:expression>
+      &amp;&amp; new Date(row.MinUnloadingDate).setHours(0,0,0,0) &lt; new Date().setHours(0,0,0,0)</ui:expression>
   </g:rowStyle>
   <g:rowStyle>
     <ui:inline>="color:blue"</ui:inline>
     <ui:expression>row.OrderStatus == 1
-      &amp;&amp; new Date(row.UnloadingDate).setHours(0,0,0,0) == new Date().setHours(0,0,0,0)</ui:expression>
+      &amp;&amp; new Date(row.MinUnloadingDate).setHours(0,0,0,0) == new Date().setHours(0,0,0,0)</ui:expression>
   </g:rowStyle>
   <g:rowStyle>
     <ui:inline>="color:gold"</ui:inline>
@@ -97,6 +108,6 @@
   <g:predefinedFilter name="delayed" label="Vėluojančios S/F">
     <g:column name="OrderStatus" value="1" />
     <g:column name="IncomesCommited" emptyValues="true" />
-    <g:column name="UnloadingDate" value=",d" />
+    <g:column name="MinUnloadingDate" value=",d" />
   </g:predefinedFilter>
 </g:Grid>

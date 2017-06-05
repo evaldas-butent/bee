@@ -22,6 +22,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -44,6 +45,10 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
 
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
+  }
+
+  @Override
+  public void afterCreatePresenter(Presenter presenter) {
   }
 
   @Override
@@ -122,6 +127,11 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   @Override
   public String getCaption() {
     return null;
+  }
+
+  @Override
+  public List<BeeColumn> getDataColumns() {
+    return (getFormView() == null) ? null : getFormView().getDataColumns();
   }
 
   @Override
@@ -210,6 +220,11 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
+  public Widget getWidgetByName(String name) {
+    return (getFormView() == null) ? null : getFormView().getWidgetByName(name);
+  }
+
+  @Override
   public boolean hasFooter(int rowCount) {
     return true;
   }
@@ -256,7 +271,7 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
-  public void onShow(Presenter presenter) {
+  public void onSourceChange(IsRow row, String source, String value) {
   }
 
   @Override

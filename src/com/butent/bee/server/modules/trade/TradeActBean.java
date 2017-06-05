@@ -15,6 +15,7 @@ import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
+import static com.butent.bee.shared.time.TimeUtils.*;
 
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
@@ -72,7 +73,6 @@ import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -583,11 +583,11 @@ public class TradeActBean implements HasTimerService {
 
     BeeRow row = rowSet.getRow(0);
 
-    row.setValue(rowSet.getColumnIndex(COL_TA_DATE), TimeUtils.nowMinutes());
+    row.setValue(rowSet.getColumnIndex(COL_TA_DATE), nowMinutes());
 
     int index = rowSet.getColumnIndex(COL_TA_UNTIL);
     if (!row.isNull(index) && BeeUtils.isLess(row.getDateTime(index),
-        TimeUtils.startOfNextMonth(TimeUtils.today()).getDateTime())) {
+        startOfNextMonth(today()).getDateTime())) {
       row.clearCell(index);
     }
 
@@ -626,7 +626,7 @@ public class TradeActBean implements HasTimerService {
 
     String number = fifoAct.getString(parentActs.getColumnIndex(COL_TA_NUMBER));
     Long series = fifoAct.getLong(parentActs.getColumnIndex(COL_TA_SERIES));
-    DateTime now = TimeUtils.nowMinutes();
+    DateTime now = nowMinutes();
     Long combStatus = prm.getRelation(PRM_COMBINED_ACT_STATUS);
     Long returnedActStatus = prm.getRelation(PRM_RETURNED_ACT_STATUS);
     Long continuousStatus = prm.getRelation(PRM_CONTINUOUS_ACT_STATUS);
@@ -1356,9 +1356,9 @@ public class TradeActBean implements HasTimerService {
     Long actId = reqInfo.getParameterLong(COL_TA_ACT);
 
     LongValue timeFrom =
-        BeeUtils.isDigit(dFrom) ? new LongValue(TimeUtils.daysToTime(BeeUtils.toInt(dFrom))) : null;
+        BeeUtils.isDigit(dFrom) ? new LongValue(daysToTime(BeeUtils.toInt(dFrom))) : null;
     LongValue timeTo =
-        BeeUtils.isDigit(dTo) ? new LongValue(TimeUtils.daysToTime(BeeUtils.toInt(dTo))) : null;
+        BeeUtils.isDigit(dTo) ? new LongValue(daysToTime(BeeUtils.toInt(dTo))) : null;
 
     CompoundFilter filter = Filter.and();
     filter.add(TradeActKind.getFilterForInvoiceBuilder());
@@ -2227,10 +2227,14 @@ public class TradeActBean implements HasTimerService {
     query.addFromLeft(rangeQuery, rangeAlias,
         SqlUtils.join(TBL_SALE_ITEMS, sys.getIdName(TBL_SALE_ITEMS),
             rangeAlias, COL_TA_INVOICE_ITEM));
+    query.addFromLeft(TBL_SALES_SERIES, sys.joinTables(TBL_SALES_SERIES, TBL_SALES,
+      COL_TRADE_SALE_SERIES));
 
     if (groupBy.isEmpty()) {
       query.addFields(TBL_SALE_ITEMS, COL_SALE);
-      query.addFields(TBL_SALES, COL_TRADE_DATE, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO);
+      query.addFields(TBL_SALES, COL_TRADE_DATE, /*COL_TRADE_INVOICE_PREFIX,*/
+        COL_TRADE_INVOICE_NO);
+      query.addField(TBL_SALES_SERIES, COL_SERIES_NAME, COL_TRADE_INVOICE_PREFIX);
       query.addFields(rangeAlias, COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO);
     }
 
@@ -2668,7 +2672,7 @@ public class TradeActBean implements HasTimerService {
     DateTime end = BeeUtils.max(minMaxRanges.getDateTime(0, "ActHi"), minMaxRanges.getDateTime(0,
         "SvcHi"));
 
-    if (start == null || end == null || TimeUtils.isMeq(start, end)) {
+    if (start == null || end == null || isMeq(start, end)) {
       logger.warning("Invalid  main range for approve act", start, end);
       return null;
     }
@@ -3448,14 +3452,19 @@ public class TradeActBean implements HasTimerService {
       Range<DateTime> actRange = TradeActUtils.createRange(row.getDateTime(COL_TA_DATE),
           row.getDateTime(COL_TA_UNTIL));
 
+      JustDate dateFrom = row.getDate(COL_TA_SERVICE_FROM);
       JustDate dateTo = row.getDate(COL_TA_SERVICE_TO);
       Range<DateTime> serviceRange = TradeActUtils.createServiceRange(
-          row.getDate(COL_TA_SERVICE_FROM), dateTo, tu, reportRange, actRange);
+        dateFrom, dateTo, tu, reportRange, actRange);
 
-      if (serviceRange != null) {
-        SqlUpdate update = new SqlUpdate(tmp)
-            .addConstant(COL_TA_SERVICE_FROM, serviceRange.lowerEndpoint().getTime())
+      if (serviceRange != null || (serviceRange == null && tu == null && dateFrom == null
+        && dateTo == null)) {
+        SqlUpdate update = new SqlUpdate(tmp);
+
+        if (serviceRange != null) {
+          update.addConstant(COL_TA_SERVICE_FROM, serviceRange.lowerEndpoint().getTime())
             .addConstant(COL_TA_SERVICE_TO, serviceRange.upperEndpoint().getTime());
+        }
 
         Double quantity = row.getDouble(COL_TRADE_ITEM_QUANTITY);
         Double tariff = row.getDouble(COL_TA_SERVICE_TARIFF);
@@ -3474,7 +3483,7 @@ public class TradeActBean implements HasTimerService {
 
         Double factor = row.getDouble(COL_TA_SERVICE_FACTOR);
 
-        if (tu != null) {
+        if (tu != null && serviceRange != null) {
           boolean ok = true;
 
           switch (tu) {
@@ -3520,7 +3529,10 @@ public class TradeActBean implements HasTimerService {
         }
 
         update.setWhere(SqlUtils.equals(tmp, idName, row.getLong(idName)));
-        qs.updateData(update);
+
+        if (!update.isEmpty()) {
+          qs.updateData(update);
+        }
       }
     }
   }
@@ -4250,7 +4262,8 @@ public class TradeActBean implements HasTimerService {
         SqlInsert insert = new SqlInsert(TBL_MAINTENANCE)
             .addConstant(COL_SERVICE_OBJECT, objects.get(row.getLong("ob")))
             .addConstant(COL_ITEM_EXTERNAL_CODE, row.getLong("id"))
-            .addConstant(COL_MAINTENANCE_DATE, TimeUtils.parseDateTime(row.getValue("dt")))
+            .addConstant(COL_MAINTENANCE_DATE, parseDateTime(row.getValue("dt"),
+              usr.getDateOrdering()))
             .addConstant(COL_MAINTENANCE_ITEM, items.get(item))
             .addConstant(COL_TRADE_ITEM_QUANTITY, row.getDouble("kk"))
             .addConstant("Description", row.getValue("ar"))
@@ -4326,7 +4339,8 @@ public class TradeActBean implements HasTimerService {
             SqlInsert insert = new SqlInsert(TBL_MAINTENANCE)
                 .addConstant(COL_SERVICE_OBJECT, objects.get(row.getLong("ob")))
                 .addConstant(COL_ITEM_EXTERNAL_CODE, row.getLong("id"))
-                .addConstant(COL_MAINTENANCE_DATE, TimeUtils.parseDateTime(row.getValue("dt")))
+                .addConstant(COL_MAINTENANCE_DATE, parseDateTime(row.getValue("dt"),
+                  usr.getDateOrdering()))
                 .addConstant(COL_MAINTENANCE_ITEM, items.get(row.getValue("pr")))
                 .addConstant(COL_TRADE_ITEM_QUANTITY, row.getDouble("kk"))
                 .addConstant("Description", row.getValue("ar"))
@@ -4442,7 +4456,8 @@ public class TradeActBean implements HasTimerService {
             .getValue("dokumentas"), COL_TRADE_DEBT));
 
         lastestPayments.put(erpInvoice.getValue("gavejas"), BeeUtils.max(lastestPayments.get(
-            erpInvoice.getValue("gavejas")), TimeUtils.parseDate(erpInvoice.getValue("apm_data"))));
+            erpInvoice.getValue("gavejas")), parseDate(erpInvoice.getValue("apm_data"),
+          usr.getDateOrdering())));
 
         if (BeeUtils.unbox(debt) == BeeUtils.unbox(erpInvoice.getDouble("skola_w"))) {
           continue;
@@ -4477,7 +4492,7 @@ public class TradeActBean implements HasTimerService {
         SqlUpdate updateRow =
             new SqlUpdate(TBL_ERP_SALES)
                 .addConstant(COL_TRADE_DATE,
-                    TimeUtils.parseDate(erpInvoice.getValue("data")))
+                    parseDate(erpInvoice.getValue("data"), usr.getDateOrdering()))
                 .addConstant(COL_TRADE_CUSTOMER, companyId)
                 .addConstant(COL_TRADE_AMOUNT, erpInvoice.getValue("viso"))
                 .addConstant(COL_TRADE_SALE_SERIES, seriesId)
@@ -4486,10 +4501,10 @@ public class TradeActBean implements HasTimerService {
                 .addConstant(COL_TRADE_MANAGER, userId)
                 .addConstant(COL_TRADE_PAID, BeeUtils.unbox(erpInvoice.getDouble("apm_suma")))
                 .addConstant(COL_TRADE_DEBT, BeeUtils.unbox(erpInvoice.getDouble("skola_w")))
-                .addConstant(COL_TRADE_PAYMENT_TIME, TimeUtils.parseDate(erpInvoice.getValue(
-                    "apm_data")))
-                .addConstant(COL_TRADE_TERM, TimeUtils.parseDate(erpInvoice.getValue(
-                    "terminas")))
+                .addConstant(COL_TRADE_PAYMENT_TIME, parseDate(erpInvoice.getValue(
+                    "apm_data"), usr.getDateOrdering()))
+                .addConstant(COL_TRADE_TERM, parseDate(erpInvoice.getValue(
+                    "terminas"), usr.getDateOrdering()))
                 .setWhere(
                     SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_ERP_INVOICE, erpInvoice.getValue(
                         "dokumentas")));
@@ -4500,7 +4515,7 @@ public class TradeActBean implements HasTimerService {
           SqlInsert insertRow =
               new SqlInsert(TBL_ERP_SALES)
                   .addConstant(COL_TRADE_DATE,
-                      TimeUtils.parseDate(erpInvoice.getValue("data")))
+                      parseDate(erpInvoice.getValue("data"), usr.getDateOrdering()))
                   .addConstant(COL_TRADE_CUSTOMER, companyId)
                   .addConstant(COL_TRADE_AMOUNT, erpInvoice.getValue("viso"))
                   .addConstant(COL_TRADE_SALE_SERIES, seriesId)
@@ -4510,10 +4525,10 @@ public class TradeActBean implements HasTimerService {
                   .addConstant(COL_TRADE_MANAGER, userId)
                   .addConstant(COL_TRADE_PAID, BeeUtils.unbox(erpInvoice.getDouble("apm_suma")))
                   .addConstant(COL_TRADE_DEBT, BeeUtils.unbox(erpInvoice.getDouble("skola_w")))
-                  .addConstant(COL_TRADE_PAYMENT_TIME, TimeUtils.parseDate(erpInvoice.getValue(
-                      "apm_data")))
-                  .addConstant(COL_TRADE_TERM, TimeUtils.parseDate(erpInvoice.getValue(
-                      "terminas")));
+                  .addConstant(COL_TRADE_PAYMENT_TIME, parseDate(erpInvoice.getValue(
+                      "apm_data"), usr.getDateOrdering()))
+                  .addConstant(COL_TRADE_TERM, parseDate(erpInvoice.getValue(
+                      "terminas"), usr.getDateOrdering()));
           qs.insertData(insertRow);
         }
       }

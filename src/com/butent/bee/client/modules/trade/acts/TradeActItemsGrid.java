@@ -53,7 +53,6 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
@@ -97,6 +96,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import elemental.html.File;
 
@@ -113,37 +113,37 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
   }
 
   private static void maybeMarkAsReturned(BeeRow parentAct, DateTime validTo) {
-    Global.getParameter(PRM_RETURNED_ACT_STATUS, newStatus -> {
-      List<String> cols = new ArrayList<>();
-      List<String> values = new ArrayList<>();
+    Long newStatus = Global.getParameterRelation(PRM_RETURNED_ACT_STATUS);
+    List<String> cols = new ArrayList<>();
+    List<String> values = new ArrayList<>();
 
-      if (DataUtils.isId(newStatus)) {
-        cols.add(COL_TA_STATUS);
-        values.add(newStatus);
-      }
+    if (DataUtils.isId(newStatus)) {
+      cols.add(COL_TA_STATUS);
+      values.add(BeeUtils.toString(newStatus));
+    }
 
-      if (Data.isNull(VIEW_TRADE_ACTS, parentAct, COL_TA_UNTIL)) {
-        cols.add(COL_TA_UNTIL);
-        values.add(BeeUtils.toString(validTo.getTime()));
-      }
+    if (Data.isNull(VIEW_TRADE_ACTS, parentAct, COL_TA_UNTIL)) {
+      cols.add(COL_TA_UNTIL);
+      values.add(BeeUtils.toString(validTo.getTime()));
+    }
 
-      if (BeeUtils.isEmpty(cols)) {
-        return;
-      }
+    if (BeeUtils.isEmpty(cols)) {
+      return;
+    }
 
-      Queries.update(VIEW_TRADE_ACTS, Filter.compareId(parentAct.getId()),
-          cols, values, new IntCallback() {
-            @Override
-            public void onSuccess(Integer updCount) {
-              Queries.getRow(VIEW_TRADE_ACTS, parentAct.getId(), new RowCallback() {
-                @Override
-                public void onSuccess(BeeRow result) {
-                  RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TRADE_ACTS, result);
-                }
-              });
-            }
-          });
-    });
+    Queries.update(VIEW_TRADE_ACTS, Filter.compareId(parentAct.getId()),
+        cols, values, new IntCallback() {
+          @Override
+          public void onSuccess(Integer updCount) {
+            Queries.getRow(VIEW_TRADE_ACTS, parentAct.getId(), new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow result) {
+                RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TRADE_ACTS, result);
+              }
+            });
+          }
+        });
+
   }
 
   private static final String STYLE_COMMAND_IMPORT = TradeActKeeper.STYLE_PREFIX
@@ -249,7 +249,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
       if (kind == TradeActKind.RETURN) {
         IsColumn column = event.getColumn();
 
-        if (column == null || column.getId() != COL_TRADE_ITEM_QUANTITY) {
+        if (column == null || !BeeUtils.same(column.getId(), COL_TRADE_ITEM_QUANTITY)) {
           return;
         }
 
@@ -281,18 +281,17 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     final IsRow parentRow = ViewHelper.getFormRow(presenter.getMainView());
 
     if (parentRow != null) {
-      final TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentRow);
-      final Long parent = Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_PARENT);
+      TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentRow);
+      Long parent = Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_PARENT);
+      FormView parentForm = ViewHelper.getForm(presenter.getMainView());
+      FormInterceptor parentInterceptor = parentForm.getFormInterceptor();
+      TradeActForm parentTaForm = null;
 
+      if (parentInterceptor instanceof TradeActForm) {
+        parentTaForm = (TradeActForm) parentInterceptor;
+      }
       /* If trade act is Return */
       if (kind == TradeActKind.RETURN) {
-        FormView parentForm = ViewHelper.getForm(presenter.getMainView());
-        FormInterceptor parentInterceptor = parentForm.getFormInterceptor();
-        TradeActForm parentTaForm = null;
-
-        if (parentInterceptor instanceof TradeActForm) {
-          parentTaForm = (TradeActForm) parentInterceptor;
-        }
 
         if (!parentForm.validate(parentForm, true) || (parentTaForm != null
             && !parentTaForm.validateBeforeSave(parentForm, parentRow, false))) {
@@ -312,6 +311,10 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
         getGridView().notifySevere(Localized.dictionary().actionCanNotBeExecuted());
         return false;
       } else {
+        if (!parentForm.validate(parentForm, true) || (parentTaForm != null
+          && !parentTaForm.validateBeforeSave(parentForm, parentRow, false))) {
+          return false;
+        }
         ensurePicker().show(parentRow, presenter.getMainView().getElement());
       }
     }
@@ -443,33 +446,35 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     if (parentForm == null && parentRow == null) {
       return;
     }
+    Long approvedActStatus = Global.getParameterRelation(PRM_APPROVED_ACT_STATUS);
 
-    Global.getParameter(PRM_APPROVED_ACT_STATUS, prm -> {
-      if (!DataUtils.isId(prm) && BeeUtils.same(VIEW_TRADE_ACTS, parentForm.getViewName())) {
-        return;
-      }
+    if (!DataUtils.isId(approvedActStatus)
+      && BeeUtils.same(VIEW_TRADE_ACTS, parentForm.getViewName())) {
+      return;
+    }
 
-      Queries.getRowCount(VIEW_TRADE_ACT_ITEMS, Filter.and(Filter.equals(COL_TRADE_ACT,
-          parentRow.getId()), Filter.isNull(COL_SALE)), new IntCallback() {
+    Queries.getRowCount(VIEW_TRADE_ACT_ITEMS, Filter.and(Filter.equals(COL_TRADE_ACT,
+        parentRow.getId()), Filter.isNull(COL_SALE)), new IntCallback() {
 
-        @Override
-        public void onSuccess(Integer salesCount) {
-          if (BeeUtils.isPositive(salesCount)) {
-            return;
-          }
-
-          if (Objects.equals(BeeUtils.toLongOrNull(prm), parentRow.getLong(parentForm.getDataIndex(
-              COL_TA_STATUS)))) {
-            return;
-          }
-
-          Queries.updateAndFire(VIEW_TRADE_ACTS, parentRow.getId(), parentRow.getVersion(),
-              COL_TA_STATUS,
-              parentRow.getString(parentForm.getDataIndex(COL_TA_STATUS)), prm,
-              ModificationEvent.Kind.UPDATE_ROW);
+      @Override
+      public void onSuccess(Integer salesCount) {
+        if (BeeUtils.isPositive(salesCount)) {
+          return;
         }
-      });
+
+        if (Objects.equals(approvedActStatus,
+          parentRow.getLong(parentForm.getDataIndex(COL_TA_STATUS)))) {
+          return;
+        }
+
+        Queries.updateAndFire(VIEW_TRADE_ACTS, parentRow.getId(), parentRow.getVersion(),
+            COL_TA_STATUS,
+            parentRow.getString(parentForm.getDataIndex(COL_TA_STATUS)),
+            BeeUtils.toString(approvedActStatus),
+            ModificationEvent.Kind.UPDATE_ROW);
+      }
     });
+
   }
 
   private static HeaderView getFormHeader(GridView g) {
@@ -612,7 +617,8 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
         row.setValue(qtyIndex, qty);
 
-        row.setValue(vatIndex, item.getValue(Data.getColumnIndex(VIEW_ITEMS, COL_ITEM_VAT_PERC)));
+        row.setValue(vatIndex, item.getValue(Data.getColumnIndex(VIEW_ITEMS,
+          ClassifierConstants.COL_ITEM_VAT_PERCENT)));
         row.setValue(vatPercIndex, item.getBoolean(Data.getColumnIndex(VIEW_ITEMS, COL_ITEM_VAT)));
 
         ItemPrice itemPrice = defPrice;
@@ -767,32 +773,31 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
               getGridView().notifyWarning(importCaption, Localized.dictionary().noData());
 
             } else {
-              Global.getParameter(PRM_IMPORT_TA_ITEM_RX, pattern -> {
-                List<ImportEntry> importEntries = TradeActItemImporter.parse(lines,
-                    BeeUtils.notEmpty(pattern, RX_IMPORT_ACT_ITEM));
+              String pattern =  Global.getParameterText(PRM_IMPORT_TA_ITEM_RX);
+              List<ImportEntry> importEntries = TradeActItemImporter.parse(lines,
+                  BeeUtils.notEmpty(pattern, RX_IMPORT_ACT_ITEM));
 
-                if (importEntries.isEmpty()) {
-                  getGridView().notifyWarning(importCaption,
-                      Localized.dictionary().nothingFound());
+              if (importEntries.isEmpty()) {
+                getGridView().notifyWarning(importCaption,
+                    Localized.dictionary().nothingFound());
 
-                } else {
-                  IsRow parentRow = getParentRow(getGridView());
-                  TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentRow);
-                  Long wFrom = TradeActKeeper.getWarehouseFrom(VIEW_TRADE_ACTS, parentRow);
+              } else {
+                IsRow parentRow = getParentRow(getGridView());
+                TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentRow);
+                Long wFrom = TradeActKeeper.getWarehouseFrom(VIEW_TRADE_ACTS, parentRow);
 
-                  Set<Long> itemIds = new HashSet<>();
+                Set<Long> itemIds = new HashSet<>();
 
-                  if (!getGridView().isEmpty()) {
-                    int itemIndex = getDataIndex(COL_TA_ITEM);
-                    for (IsRow row : getGridView().getRowData()) {
-                      itemIds.add(row.getLong(itemIndex));
-                    }
+                if (!getGridView().isEmpty()) {
+                  int itemIndex = getDataIndex(COL_TA_ITEM);
+                  for (IsRow row : getGridView().getRowData()) {
+                    itemIds.add(row.getLong(itemIndex));
                   }
-
-                  TradeActItemImporter.queryItems(importCaption, importEntries,
-                      kind, wFrom, itemIds, this::addItems);
                 }
-              });
+
+                TradeActItemImporter.queryItems(importCaption, importEntries,
+                    kind, wFrom, itemIds, this::addItems);
+              }
             }
           });
         }
@@ -868,8 +873,8 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
                   if (ro.hasResponse(Long.class) && DataUtils.isId(ro.getResponseAsLong())) {
                     DataInfo info = Data.getDataInfo(VIEW_TRADE_ACTS);
-                    RowEditor.openForm(info.getEditForm(), info, ro.getResponseAsLong(),
-                        Opener.MODAL);
+                    RowEditor.openForm(info.getEditForm(), info, Filter.compareId(ro
+                        .getResponseAsLong()), Opener.MODAL);
                   }
                 }
               });

@@ -2,7 +2,9 @@ package com.butent.bee.server;
 
 import com.butent.bee.server.rest.CrudWorker;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 
 import net.sf.jasperreports.engine.JRField;
@@ -12,14 +14,19 @@ public class RsDataSource implements JRRewindableDataSource {
   private BeeRowSet rs;
   private int index;
 
-  RsDataSource(BeeRowSet rowSet) {
+  public RsDataSource(BeeRowSet rowSet) {
     rs = Assert.notNull(rowSet);
     moveFirst();
   }
 
   @Override
   public Object getFieldValue(JRField field) {
-    return CrudWorker.getValue(rs, index, rs.getColumnIndex(field.getName()));
+    int idx = DataUtils.getColumnIndex(field.getName(), rs.getColumns(), false);
+
+    if (BeeConst.isUndef(idx)) {
+      return rs.getRow(index).getProperty(field.getName());
+    }
+    return CrudWorker.getValue(rs, index, idx);
   }
 
   public BeeRowSet getRowSet() {

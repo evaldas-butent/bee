@@ -1,11 +1,16 @@
 package com.butent.bee.client.communication;
 
+import com.google.gwt.user.client.ui.FlowPanel;
+
 import static com.butent.bee.shared.communication.ChatConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
@@ -20,12 +25,15 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class ChatGrid extends AbstractGridInterceptor {
+
+  FlowPanel chatsFlowWidget;
 
   public ChatGrid() {
   }
@@ -46,6 +54,27 @@ public class ChatGrid extends AbstractGridInterceptor {
     });
 
     presenter.getHeader().addCommandItem(openChat);
+  }
+
+  @Override
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
+    if (widget instanceof FlowPanel & BeeUtils.same(name, "chatFlowWidget")) {
+      chatsFlowWidget = (FlowPanel) widget;
+      chatsFlowWidget.clear();
+    }
+
+  }
+
+  @Override
+  public void onActiveRowChange(ActiveRowChangeEvent event) {
+    if (event.getRowValue() != null) {
+      long chatId = event.getRowValue().getId();
+      if (DataUtils.isId(chatId)) {
+        chatsFlowWidget.clear();
+        Global.getChatManager().enterChat(chatId, chatsFlowWidget);
+      }
+    }
   }
 
   @Override

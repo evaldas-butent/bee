@@ -1,36 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="ShipmentRegisteredRequests" viewName="ShipmentRequests"
         caption="=trRequests"
-        enableCopy="- *Date, *Time, Status, Cargo, Order*"
+        enableCopy="- *Date, Status, Customer*, Notes, Vehicle, Driver, Host, Agent, LossReason, Cargo, Assessment, Order"
         filter="CompanyPerson"
-    >
+>
   <g:columns>
-    <IdColumn name="ID" width="40" />
+    <DataColumn name="OrderNo" />
     <DataColumn name="Date" />
     <DataColumn name="Status" />
 
     <RelColumn name="CompanyPerson" renderColumns="PersonFirstName PersonLastName" />
     <DataColumn name="CompanyName" />
+  </g:columns>
 
-    <DataColumn name="LoadingDate" />
-    <DataColumn name="LoadingCompany" />
-    <DataColumn name="LoadingContact" />
-    <DataColumn name="LoadingCity" />
-    <DataColumn name="LoadingAddress" />
-    <DataColumn name="LoadingNumber" />
+  <xi:include href="columns/Places.columns.xml" />
 
-    <DataColumn name="UnloadingDate" />
-    <DataColumn name="UnloadingCompany" />
-    <DataColumn name="UnloadingContact" />
-    <DataColumn name="UnloadingCity" />
-    <DataColumn name="UnloadingAddress" />
-    <DataColumn name="UnloadingNumber" />
-
+  <g:columns>
     <RelColumn name="Expedition" renderColumns="ExpeditionType" />
     <DataColumn name="Logistics" />
     <RelColumn name="ShippingTerm" />
+
+    <DataColumn name="CargoNotes" />
 
     <DataColumn name="CustomsBrokerage" />
     <DataColumn name="FreightInsurance" />
@@ -48,11 +42,13 @@
     <DataColumn name="Value" />
     <RelColumn name="ValueCurrency" />
 
-    <RelColumn name="Manager" />
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
 
-    <DataColumn name="Notes" />
     <DataColumn name="LossReason" />
     <DataColumn name="Host" />
     <DataColumn name="Agent" />
+
+    <PropColumn name="Vat" type="decimal" label="=vat" format="0.00" />
+    <PropColumn name="Income" type="decimal" label="=customerPrice" format="0.00" />
   </g:columns>
 </g:Grid>

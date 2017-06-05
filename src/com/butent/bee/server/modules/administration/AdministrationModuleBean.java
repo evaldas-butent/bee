@@ -53,13 +53,18 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.ViewColumn;
+import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.menu.Menu;
+import com.butent.bee.shared.menu.MenuItem;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.SysObject;
+import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.time.DateTime;
@@ -72,8 +77,8 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.io.File;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -193,8 +198,12 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       }
 
     } else if (BeeUtils.same(svc, SVC_DICTIONARY_DATABASE_TO_PROPERTIES)) {
-      response = dictionaryDatabaseToProperties();
+      response = dictionaryDatabaseToProperties(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_INIT_DIMENSION_NAMES)) {
+      response = initDimensionNames();
+    } else if (BeeUtils.same(svc, SVC_CREATE_DATA_IMPORT_TEMPLATES)) {
+      response = imp.createDataImportTemplates();
     } else {
       String msg = BeeUtils.joinWords("Administration service not recognized:", svc);
       logger.warning(msg);
@@ -205,7 +214,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
   @Override
   public void ejbTimeout(Timer timer) {
-    if (cb.isParameterTimer(timer, PRM_REFRESH_CURRENCY_HOURS)) {
+    if (ConcurrencyBean.isParameterTimer(timer, PRM_REFRESH_CURRENCY_HOURS)) {
       refreshCurrencyRates();
     }
   }
@@ -224,7 +233,9 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createText(module, PRM_ERP_ADDRESS),
         BeeParameter.createText(module, PRM_ERP_LOGIN),
         BeeParameter.createText(module, PRM_ERP_PASSWORD),
-        BeeParameter.createText(module, PRM_URL));
+        BeeParameter.createText(module, PRM_URL),
+        BeeParameter.createNumber(module, Dimensions.PRM_DIMENSIONS, false,
+            Dimensions.SPACETIME / 2));
 
     params.addAll(getSqlEngineParameters());
     return params;
@@ -367,7 +378,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
             final Collator collator = Collator.getInstance(usr.getLocale());
             collator.setStrength(Collator.IDENTICAL);
 
-            Collections.sort(rowSet.getRows(), (row1, row2) -> {
+            rowSet.getRows().sort((row1, row2) -> {
               String name1 = row1.getProperty(PROP_DEPARTMENT_FULL_NAME);
               if (BeeUtils.isEmpty(name1)) {
                 name1 = row1.getString(nameIndex);
@@ -405,6 +416,48 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
           Endpoint.updateUserData(usr.getAllUserData());
         }
       }
+    });
+
+    MenuService.EXTRA_DIMENSIONS.setTransformer(input -> {
+      List<Menu> result = new ArrayList<>();
+
+      Integer count = prm.getInteger(Dimensions.PRM_DIMENSIONS);
+
+      if (input instanceof MenuItem && BeeUtils.isPositive(count)) {
+        Map<Integer, String> labels = new HashMap<>();
+
+        BeeRowSet data = qs.getViewData(Dimensions.VIEW_NAMES);
+
+        if (!DataUtils.isEmpty(data)) {
+          String language = usr.getLanguage();
+          int ordinalIndex = data.getColumnIndex(Dimensions.COL_ORDINAL);
+
+          for (BeeRow row : data) {
+            labels.put(row.getInteger(ordinalIndex),
+                DataUtils.getTranslation(data, row, Dimensions.COL_PLURAL_NAME, language));
+          }
+        }
+
+        Dictionary dictionary = usr.getDictionary();
+
+        for (int i = 1; i <= Math.min(count, Dimensions.SPACETIME); i++) {
+          String viewName = Dimensions.getViewName(i);
+
+          if (usr.isDataVisible(viewName)) {
+            String label = BeeUtils.notEmpty(labels.get(i), dictionary.dimensionNameDefault(i));
+
+            MenuItem item = (MenuItem) input.copy();
+
+            item.setName(viewName);
+            item.setLabel(BeeUtils.trim(label));
+            item.setParameters(Dimensions.menuParameter(i));
+
+            result.add(item);
+          }
+        }
+      }
+
+      return result;
     });
   }
 
@@ -663,13 +716,27 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.emptyResponse();
   }
 
-  private ResponseObject dictionaryDatabaseToProperties() {
+  private ResponseObject dictionaryDatabaseToProperties(RequestInfo reqInfo) {
+    List<SupportedLocale> locales;
+
+    if (reqInfo.hasParameter(VAR_LOCALE)) {
+      String value = reqInfo.getParameter(VAR_LOCALE);
+      locales = SupportedLocale.parseList(value);
+
+      if (BeeUtils.isEmpty(locales)) {
+        return ResponseObject.error(reqInfo.getSubService(), "cannot parse", VAR_LOCALE, value);
+      }
+
+    } else {
+      locales = Arrays.asList(SupportedLocale.values());
+    }
+
     EnumMap<SupportedLocale, Integer> sizes = new EnumMap<>(SupportedLocale.class);
 
-    for (SupportedLocale supportedLocale : SupportedLocale.values()) {
+    for (SupportedLocale supportedLocale : locales) {
       SimpleRowSet data = getDictionaryData(supportedLocale);
       if (DataUtils.isEmpty(data)) {
-        logger.warning(TBL_DICTIONARY, supportedLocale, "is empty");
+        logger.warning(reqInfo.getSubService(), TBL_DICTIONARY, supportedLocale, "is empty");
 
       } else {
         StringBuilder sb = new StringBuilder();
@@ -693,7 +760,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
           int len = src.length();
           sizes.put(supportedLocale, len);
 
-          logger.info(SVC_DICTIONARY_DATABASE_TO_PROPERTIES, supportedLocale, len, path);
+          logger.info(reqInfo.getSubService(), supportedLocale, len, path);
         }
       }
     }
@@ -784,7 +851,8 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     String type = reqInfo.getParameter(Service.VAR_TYPE);
 
     String currency = reqInfo.getParameter(COL_CURRENCY_NAME);
-    JustDate date = TimeUtils.parseDate(reqInfo.getParameter(COL_CURRENCY_RATE_DATE));
+    JustDate date = TimeUtils.parseDate(reqInfo.getParameter(COL_CURRENCY_RATE_DATE),
+        usr.getDateOrdering());
 
     String address = getExchangeRatesRemoteAddress();
 
@@ -796,8 +864,9 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
     String currency = reqInfo.getParameter(COL_CURRENCY_NAME);
 
-    JustDate dateLow = TimeUtils.parseDate(reqInfo.getParameter(VAR_DATE_LOW));
-    JustDate dateHigh = TimeUtils.parseDate(reqInfo.getParameter(VAR_DATE_HIGH));
+    DateOrdering dateOrdering = usr.getDateOrdering();
+    JustDate dateLow = TimeUtils.parseDate(reqInfo.getParameter(VAR_DATE_LOW), dateOrdering);
+    JustDate dateHigh = TimeUtils.parseDate(reqInfo.getParameter(VAR_DATE_HIGH), dateOrdering);
 
     String address = getExchangeRatesRemoteAddress();
 
@@ -828,7 +897,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
     for (ViewColumn col : view.getViewColumns()) {
       if (!col.isHidden() && !col.isReadOnly()
-          && (col.getLevel() == 0 || BeeUtils.unbox(col.getEditable()))
+          && (col.getLevel() == 0 || col.isEditable())
           && BeeUtils.isEmpty(view.getColumnLocale(col.getName()))) {
 
         String als = view.getColumnSource(col.getName());
@@ -990,6 +1059,36 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     return params;
   }
 
+  private ResponseObject initDimensionNames() {
+    int count = BeeUtils.unbox(prm.getInteger(Dimensions.PRM_DIMENSIONS));
+    if (count <= 0) {
+      return ResponseObject.emptyResponse();
+    }
+    count = Math.min(count, Dimensions.SPACETIME);
+
+    Set<Integer> ordinals = qs.getIntSet(new SqlSelect()
+        .addFields(Dimensions.TBL_NAMES, Dimensions.COL_ORDINAL)
+        .addFrom(Dimensions.TBL_NAMES));
+
+    for (int i = 1; i <= count; i++) {
+      if (!ordinals.contains(i)) {
+        String name = Localized.dictionary().dimensionNameDefault(i);
+
+        SqlInsert insert = new SqlInsert(Dimensions.TBL_NAMES)
+            .addConstant(Dimensions.COL_ORDINAL, i)
+            .addConstant(Dimensions.COL_PLURAL_NAME, name)
+            .addConstant(Dimensions.COL_SINGULAR_NAME, name);
+
+        ResponseObject response = qs.insertDataWithResponse(insert);
+        if (response.hasErrors()) {
+          return response;
+        }
+      }
+    }
+
+    return ResponseObject.response(count);
+  }
+
   private void refreshCurrencyRates() {
     long historyId = sys.eventStart(PRM_REFRESH_CURRENCY_HOURS);
 
@@ -1057,7 +1156,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       }
 
       String value = rates.getValue(0, ExchangeRatesWS.COL_DT);
-      JustDate min = TimeUtils.parseDate(value);
+      JustDate min = TimeUtils.parseDate(value, DateOrdering.YMD);
       if (min == null) {
         response.addWarning(currencyName, usr.getDictionary().invalidDate(), value);
         continue;
@@ -1067,7 +1166,8 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
       if (rates.getNumberOfRows() > 1) {
         for (int i = 1; i < rates.getNumberOfRows(); i++) {
-          JustDate date = TimeUtils.parseDate(rates.getValue(i, ExchangeRatesWS.COL_DT));
+          JustDate date = TimeUtils.parseDate(rates.getValue(i, ExchangeRatesWS.COL_DT),
+              DateOrdering.YMD);
           if (date != null) {
             min = TimeUtils.min(min, date);
             max = TimeUtils.max(max, date);
@@ -1092,7 +1192,8 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       int insertCount = 0;
 
       for (SimpleRow rateRow : rates) {
-        DateTime date = TimeUtils.parseDateTime(rateRow.getValue(ExchangeRatesWS.COL_DT));
+        DateTime date = TimeUtils.parseDateTime(rateRow.getValue(ExchangeRatesWS.COL_DT),
+            DateOrdering.YMD);
 
         Double factor = rateRow.getDouble(ExchangeRatesWS.COL_AMT_2);
 

@@ -12,7 +12,6 @@ import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.CloseCallback;
@@ -23,6 +22,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -32,7 +32,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public final class RowEditor {
@@ -46,6 +48,7 @@ public final class RowEditor {
   private static final String HAS_DELEGATE = "*";
 
   private static final Set<String> hasEditorDelegates = new HashSet<>();
+  private static final Map<String, FormNameProvider> formNameProviders = new HashMap<>();
 
   public static String getFormName(String formName, DataInfo dataInfo) {
     if (!BeeUtils.isEmpty(formName)) {
@@ -59,7 +62,8 @@ public final class RowEditor {
       return dataInfo.getEditForm();
     }
 
-    if (hasEditorDelegates.contains(dataInfo.getViewName())) {
+    if (hasEditorDelegates.contains(dataInfo.getViewName())
+        || formNameProviders.containsKey(dataInfo.getViewName())) {
       return HAS_DELEGATE;
     } else {
       return null;
@@ -107,22 +111,22 @@ public final class RowEditor {
       return false;
     }
 
-    getRow(formName, dataInfo, rowId, opener, rowCallback, null);
+    getRow(formName, dataInfo, Filter.compareId(rowId), opener, rowCallback, null);
     return true;
   }
 
-  public static void openForm(String formName, DataInfo dataInfo, long rowId, Opener opener) {
-    openForm(formName, dataInfo, rowId, opener, null, null);
+  public static void openForm(String formName, DataInfo dataInfo, Filter filter, Opener opener) {
+    openForm(formName, dataInfo, filter, opener, null, null);
   }
 
-  public static void openForm(String formName, DataInfo dataInfo, long rowId,
+  public static void openForm(String formName, DataInfo dataInfo, Filter filter,
       Opener opener, RowCallback rowCallback) {
-    openForm(formName, dataInfo, rowId, opener, rowCallback, null);
+    openForm(formName, dataInfo, filter, opener, rowCallback, null);
   }
 
-  public static void openForm(String formName, DataInfo dataInfo, long rowId,
-      Opener opener, RowCallback rowCallback, FormInterceptor formInteceptor) {
-    getRow(formName, dataInfo, rowId, opener, rowCallback, formInteceptor);
+  public static void openForm(String formName, DataInfo dataInfo, Filter filter,
+      Opener opener, RowCallback rowCallback, FormInterceptor formInterceptor) {
+    getRow(formName, dataInfo, filter, opener, rowCallback, formInterceptor);
   }
 
   public static void openForm(String formName, String viewName, IsRow row, Opener opener,
@@ -139,22 +143,31 @@ public final class RowEditor {
   }
 
   public static void openForm(String formName, DataInfo dataInfo, IsRow row, Opener opener,
-      RowCallback rowCallback, FormInterceptor formInteceptor) {
+      RowCallback rowCallback, FormInterceptor formInterceptor) {
 
     Assert.notNull(dataInfo);
     Assert.notNull(row);
     Assert.notNull(opener);
 
-    if (!RowActionEvent.fireEditRow(dataInfo.getViewName(), row, opener)) {
+    if (!RowActionEvent.fireEditRow(dataInfo.getViewName(), row, opener, formName)) {
       return;
     }
 
-    if (BeeUtils.isEmpty(formName) || HAS_DELEGATE.equals(formName)) {
-      logger.warning(dataInfo.getViewName(), "edit form not specified");
-      return;
+    String fn = formName;
+
+    if (!isValidFormName(formName)) {
+      FormNameProvider provider = formNameProviders.get(dataInfo.getViewName());
+      if (provider != null) {
+        fn = provider.getFormName(dataInfo, row);
+      }
+
+      if (!isValidFormName(fn)) {
+        logger.warning(dataInfo.getViewName(), "edit form not specified");
+        return;
+      }
     }
 
-    createForm(formName, dataInfo, row, opener, rowCallback, formInteceptor);
+    createForm(fn, dataInfo, row, opener, rowCallback, formInterceptor);
   }
 
   public static boolean parse(String input, final Opener opener) {
@@ -182,7 +195,19 @@ public final class RowEditor {
   }
 
   public static void registerHasDelegate(String viewName) {
-    hasEditorDelegates.add(viewName);
+    if (!BeeUtils.isEmpty(viewName)) {
+      hasEditorDelegates.add(viewName);
+    }
+  }
+
+  public static void registerFormNameProvider(String viewName, FormNameProvider provider) {
+    if (!BeeUtils.isEmpty(viewName)) {
+      if (provider == null) {
+        formNameProviders.remove(viewName);
+      } else {
+        formNameProviders.put(viewName, provider);
+      }
+    }
   }
 
   private static void createForm(String formName, final DataInfo dataInfo, final IsRow row,
@@ -201,7 +226,7 @@ public final class RowEditor {
             }
 
             Opener formOpener;
-            if (!opener.isModal() && Popup.getActivePopup() != null) {
+            if (!opener.isModal() && Popup.hasEventPreview()) {
               formOpener = Opener.modal(opener.getOnOpen());
             } else {
               formOpener = opener;
@@ -212,15 +237,19 @@ public final class RowEditor {
         });
   }
 
-  private static void getRow(final String formName, final DataInfo dataInfo, final long rowId,
-      final Opener opener, final RowCallback rowCallback, final FormInterceptor formInteceptor) {
+  private static void getRow(final String formName, final DataInfo dataInfo, Filter filter,
+      final Opener opener, final RowCallback rowCallback, final FormInterceptor formInterceptor) {
 
-    Queries.getRow(dataInfo.getViewName(), rowId, new RowCallback() {
+    Queries.getRow(dataInfo.getViewName(), filter, null, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
-        openForm(formName, dataInfo, result, opener, rowCallback, formInteceptor);
+        openForm(formName, dataInfo, result, opener, rowCallback, formInterceptor);
       }
     });
+  }
+
+  private static boolean isValidFormName(String formName) {
+    return !BeeUtils.isEmpty(formName) && !HAS_DELEGATE.equals(formName);
   }
 
   private static void launch(FormDescription formDescription, final FormView formView,
@@ -252,6 +281,11 @@ public final class RowEditor {
 
     final RowPresenter presenter = new RowPresenter(formView, dataInfo, oldRow.getId(),
         DataUtils.getRowCaption(dataInfo, oldRow), enabledActions, disabledActions);
+
+    if (formView.getFormInterceptor() != null) {
+      formView.getFormInterceptor().afterCreatePresenter(presenter);
+    }
+
     final ModalForm dialog = opener.isModal() ? new ModalForm(presenter, formView, false) : null;
 
     final RowCallback closer = new RowCallback() {
@@ -332,7 +366,7 @@ public final class RowEditor {
     });
 
     final ScheduledCommand focusCommand = () -> {
-      UiHelper.focus(formView.asWidget());
+      formView.focus();
 
       if (opener.getOnOpen() != null) {
         opener.getOnOpen().accept(formView);

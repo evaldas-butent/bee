@@ -62,6 +62,19 @@
         <Label text="=email" />
         <TextLabel source="Email" class="bee-output" style="&w1;" textOnly="true" />
       </row>
+
+      <row>
+        <Label for="PersonCode" />
+        <InputText source="PersonCode" style="&w1;" />
+
+        <Label for="DateOfBirth" />
+        <DateLabel source="DateOfBirth" class="bee-output" />
+      </row>
+
+      <row>
+        <Label for="PassportNo" />
+        <InputText source="PassportNo" style="&w1;" />
+      </row>
     </Table>
     <br/>
 
@@ -84,6 +97,11 @@
       <page module="Payroll">
         <text>=timeSheet</text>
         <SummaryProxy name="TimeSheet" summarize="true" />
+      </page>
+
+      <page module="Payroll">
+        <text>=payrollEarnings</text>
+        <SummaryProxy name="Earnings" summarize="true" />
       </page>
 
       <page>

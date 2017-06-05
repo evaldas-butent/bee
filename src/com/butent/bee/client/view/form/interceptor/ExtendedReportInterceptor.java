@@ -17,10 +17,12 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.Icon;
-import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
+import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.output.ReportItem;
@@ -33,10 +35,13 @@ import com.butent.bee.client.output.ResultHolder;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.InlineLabel;
+import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -46,6 +51,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
@@ -137,8 +143,15 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           filters.add(reportFilter);
         }
       }
-      getReport()
-          .open(new ReportParameters(Collections.singletonMap(COL_RS_REPORT, rep.serialize())));
+      Popup popup = UiHelper.getParentPopup(getFormView().asWidget());
+
+      if (popup != null) {
+        popup.close();
+        getReport().showModal(rep);
+      } else {
+        getReport().open(new ReportParameters(Collections.singletonMap(COL_RS_REPORT,
+            rep.serialize())));
+      }
     }
 
     private List<String> getValues(ReportValue value) {
@@ -162,11 +175,10 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       List<ReportItem> members = item.getMembers();
 
       for (int i = 0; i < values.size(); i++) {
-        String val = values.get(i);
         ReportItem itm = members.get(i);
 
-        if (!BeeUtils.isEmpty(val) && itm.getFilterWidget() != null && !filters.contains(itm)) {
-          filters.add(itm.setFilter(val));
+        if (itm.getFilterWidget() != null && !filters.contains(itm)) {
+          filters.add(itm.setFilter(values.get(i)));
         }
       }
     }
@@ -197,6 +209,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
   private static final String STYLE_REPORT = STYLE_PREFIX + "-report";
   private static final String STYLE_REPORT_NORMAL = STYLE_PREFIX + "-report-normal";
   private static final String STYLE_REPORT_ACTIVE = STYLE_PREFIX + "-report-active";
+  private static final String STYLE_REPORT_GLOBAL = STYLE_PREFIX + "-report-global";
 
   private static final String STYLE_FILTER_CAPTION = STYLE_PREFIX + "-filter-cap";
 
@@ -251,11 +264,30 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     switch (action) {
       case SAVE:
         if (activeReport != null && !activeReport.isEmpty()) {
-          Global.inputString(Localized.dictionary().name(), null, new StringCallback() {
+          InputText cap = new InputText();
+          cap.setText(activeReport.getCaption());
+          InputBoolean global = new InputBoolean(Localized.dictionary().mailPublic());
+          global.setChecked(activeReport.isGlobal());
+
+          Vertical flow = new Vertical();
+          flow.add(cap);
+          flow.add(global);
+
+          Global.inputWidget(Localized.dictionary().name(), flow, new InputCallback() {
             @Override
-            public void onSuccess(String value) {
-              final ReportInfo rep = new ReportInfo(value);
+            public String getErrorMessage() {
+              if (cap.isEmpty()) {
+                cap.setFocus(true);
+                return Localized.dictionary().valueRequired();
+              }
+              return null;
+            }
+
+            @Override
+            public void onSuccess() {
+              ReportInfo rep = new ReportInfo(cap.getValue());
               rep.deserialize(activeReport.serialize());
+              rep.setGlobal(global.isChecked());
 
               for (ReportInfo reportInfo : reports) {
                 if (Objects.equals(rep, reportInfo)) {
@@ -265,13 +297,13 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
               }
               if (reports.contains(rep)) {
                 Global.confirm(Localized.dictionary().reports(), Icon.QUESTION,
-                    Arrays.asList(Localized.dictionary().valueExists(value),
+                    Arrays.asList(Localized.dictionary().valueExists(cap.getValue()),
                         Localized.dictionary().actionChange()), () -> saveReport(rep));
               } else {
                 saveReport(rep);
               }
             }
-          }, null, activeReport.getCaption());
+          });
         }
         return false;
 
@@ -413,11 +445,15 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       HtmlTable ft = new HtmlTable(STYLE_REPORT);
       int r = 0;
 
-      for (final ReportInfo rep : reports) {
+      for (ReportInfo rep : reports) {
         if (Objects.equals(rep, activeReport)) {
+          rep.setGlobal(activeReport.isGlobal());
           ft.getRowFormatter().addStyleName(r, STYLE_REPORT_ACTIVE);
         } else {
           ft.getRowFormatter().addStyleName(r, STYLE_REPORT_NORMAL);
+        }
+        if (rep.isGlobal()) {
+          ft.getRowFormatter().addStyleName(r, STYLE_REPORT_GLOBAL);
         }
         Label name = new Label(rep.getCaption());
         name.addClickHandler(event -> {
@@ -702,18 +738,15 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
         table.getCellFormatter().setColSpan(r, c, colItems.size());
         table.getCellFormatter().addStyleName(r, c, STYLE_COLGROUP);
         String text = colGroup.toString();
-
-        if (!BeeUtils.isEmpty(text)) {
-          if (!BeeUtils.isEmpty(activeReport.getColGrouping().getRelation())) {
-            // DRILL DOWN
-            Label label = new Label(text);
-            label.addClickHandler(new DrillHandler(activeCopy,
-                activeReport.getColGrouping().getRelation(), null, null, colGroup));
-            table.getCellFormatter().addStyleName(r, c, STYLE_DRILLDOWN);
-            table.setWidget(r, c, label);
-          } else {
-            table.setText(r, c, text);
-          }
+        // DRILL DOWN
+        if (!BeeUtils.isEmpty(activeReport.getColGrouping().getRelation())) {
+          Label label = new Label(BeeUtils.notEmpty(text, BeeConst.HTML_NBSP));
+          label.addClickHandler(new DrillHandler(activeCopy,
+              activeReport.getColGrouping().getRelation(), null, null, colGroup));
+          table.getCellFormatter().addStyleName(r, c, STYLE_DRILLDOWN);
+          table.setWidget(r, c, label);
+        } else {
+          table.setText(r, c, text);
         }
         c++;
       }
@@ -755,10 +788,9 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
         table.getCellFormatter().addStyleName(r, c, STYLE_ROWGROUP);
         String text = activeReport.getRowGrouping().getItem().getFormatedCaption() + ": "
             + rowGroup;
-
+        // DRILL DOWN
         if (BeeUtils.allNotEmpty(rowGroup.toString(),
             activeReport.getRowGrouping().getRelation())) {
-          // DRILL DOWN
           Label label = new Label(text);
           label.addClickHandler(new DrillHandler(activeCopy,
               activeReport.getRowGrouping().getRelation(), rowGroup, null, null));
@@ -777,9 +809,8 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
             if (infoItem.isGroupSummary()) {
               Object value = result.getGroupValue(rowGroup, colGroup, infoItem.getItem().getName());
               text = value != null ? value.toString() : null;
-
+              // DRILL DOWN
               if (!BeeUtils.isEmpty(infoItem.getRelation())) {
-                // DRILL DOWN
                 Label label = new Label(BeeUtils.notEmpty(text, BeeConst.HTML_NBSP));
                 label.addClickHandler(new DrillHandler(activeCopy, infoItem.getRelation(),
                     rowGroup, null, colGroup));
@@ -802,9 +833,8 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
               if (infoItem.isGroupSummary()) {
                 Object value = result.getGroupTotal(rowGroup, infoItem.getItem().getName());
                 text = value != null ? value.toString() : null;
-
+                // DRILL DOWN
                 if (!BeeUtils.isEmpty(infoItem.getRelation())) {
-                  // DRILL DOWN
                   Label label = new Label(BeeUtils.notEmpty(text, BeeConst.HTML_NBSP));
                   label.addClickHandler(new DrillHandler(activeCopy, infoItem.getRelation(),
                       rowGroup, null, null));
@@ -830,20 +860,16 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           table.getCellFormatter().addStyleName(r, c, infoItem.getStyle());
           String text = detail.toString();
           // DRILL DOWN
-          if (!BeeUtils.isEmpty(text)) {
-            if (!BeeUtils.isEmpty(infoItem.getRelation())
-                || activeReport.getRowGrouping() != null) {
-
-              ReportValue[] rowValues = new ReportValue[rowItems.size()];
-              rowValues[c] = detail;
-              Label label = new Label(text);
-              label.addClickHandler(new DrillHandler(activeCopy, infoItem.getRelation(),
-                  rowGroup, rowValues, null));
-              table.getCellFormatter().addStyleName(r, c, STYLE_DRILLDOWN);
-              table.setWidget(r, c, label);
-            } else {
-              table.setText(r, c, text);
-            }
+          if (!BeeUtils.isEmpty(infoItem.getRelation()) || activeReport.getRowGrouping() != null) {
+            ReportValue[] rowValues = new ReportValue[rowItems.size()];
+            rowValues[c] = detail;
+            Label label = new Label(BeeUtils.notEmpty(text, BeeConst.HTML_NBSP));
+            label.addClickHandler(new DrillHandler(activeCopy, infoItem.getRelation(),
+                rowGroup, rowValues, null));
+            table.getCellFormatter().addStyleName(r, c, STYLE_DRILLDOWN);
+            table.setWidget(r, c, label);
+          } else {
+            table.setText(r, c, text);
           }
           c++;
         }
@@ -857,9 +883,8 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
             Object value = result.getCellValue(rowGroup, row, colGroup,
                 infoItem.getItem().getName());
             String text = value != null ? value.toString() : null;
-
+            // DRILL DOWN
             if (!BeeUtils.isEmpty(infoItem.getRelation())) {
-              // DRILL DOWN
               Label label = new Label(BeeUtils.notEmpty(text, BeeConst.HTML_NBSP));
               label.addClickHandler(new DrillHandler(activeCopy, infoItem.getRelation(),
                   rowGroup, row, colGroup));
@@ -880,9 +905,8 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
               Object value = result.getRowTotal(rowGroup, row, infoItem.getItem().getName());
               String text = value != null ? value.toString() : null;
-
+              // DRILL DOWN
               if (!BeeUtils.isEmpty(infoItem.getRelation())) {
-                // DRILL DOWN
                 Label label = new Label(BeeUtils.notEmpty(text, BeeConst.HTML_NBSP));
                 label.addClickHandler(new DrillHandler(activeCopy, infoItem.getRelation(),
                     rowGroup, row, null));
@@ -919,9 +943,8 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           if (infoItem.isColSummary()) {
             Object value = result.getColTotal(colGroup, infoItem.getItem().getName());
             String text = value != null ? value.toString() : null;
-
+            // DRILL DOWN
             if (!BeeUtils.isEmpty(infoItem.getRelation())) {
-              // DRILL DOWN
               Label label = new Label(BeeUtils.notEmpty(text, BeeConst.HTML_NBSP));
               label.addClickHandler(new DrillHandler(activeCopy, infoItem.getRelation(),
                   null, null, colGroup));
@@ -1238,16 +1261,19 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     }
   }
 
-  private void saveReport(final ReportInfo rep) {
+  private void saveReport(ReportInfo rep) {
     if (DataUtils.isId(rep.getId())) {
       Queries.update(VIEW_REPORT_SETTINGS, rep.getId(), COL_RS_PARAMETERS,
           TextValue.of(rep.serialize()));
 
+      if (rep.isGlobal()) {
+        Queries.update(VIEW_REPORT_SETTINGS, rep.getId(), COL_RS_USER, LongValue.getNullValue());
+      }
       activateReport(rep);
     } else {
       Queries.insert(VIEW_REPORT_SETTINGS, Data.getColumns(VIEW_REPORT_SETTINGS,
           Arrays.asList(COL_RS_USER, COL_RS_REPORT, COL_RS_PARAMETERS)),
-          Arrays.asList(BeeUtils.toString(BeeKeeper.getUser().getUserId()),
+          Arrays.asList(rep.isGlobal() ? null : BeeUtils.toString(BeeKeeper.getUser().getUserId()),
               getReport().getReportName(), rep.serialize()), null,
           new RowCallback() {
             @Override

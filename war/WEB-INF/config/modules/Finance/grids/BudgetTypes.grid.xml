@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="BudgetTypes" viewName="BudgetTypes"
+        caption="=finBudgetTypes"
+>
+  <xi:include href="columns/Ordinal.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="BudgetTypeName" minWidth="100" flexGrow="1" visible="true"
+                backgroundSource="Background" foregroundSource="Foreground" />
+
+    <DataColumn name="Description" flexGrow="3" />
+
+    <DataColumn name="Background" updateMode="row" minWidth="100"
+                backgroundSource="Background" foregroundSource="Foreground">
+      <editor type="color" />
+    </DataColumn>
+    <DataColumn name="Foreground" updateMode="row" minWidth="100"
+                backgroundSource="Background" foregroundSource="Foreground">
+      <editor type="color" />
+    </DataColumn>
+  </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>row.BudgetTypeName</ui:expression>
+  </g:rowMessage>
+</g:Grid>

@@ -37,6 +37,7 @@ public class ReportInfo implements BeeSerializable {
 
   private String caption;
   private Long id;
+  private boolean global;
 
   private final List<ReportInfoItem> colItems = new ArrayList<>();
   private final List<ReportItem> filterItems = new ArrayList<>();
@@ -71,7 +72,7 @@ public class ReportInfo implements BeeSerializable {
 
   @Override
   public void deserialize(String data) {
-    Map<String, String> map = Codec.deserializeMap(data);
+    Map<String, String> map = Codec.deserializeLinkedHashMap(data);
 
     if (!BeeUtils.isEmpty(map)) {
       for (Serial key : Serial.values()) {
@@ -179,20 +180,26 @@ public class ReportInfo implements BeeSerializable {
       if (BeeUtils.same(filterItem.getExpression(), field)) {
         if (filterItem instanceof ReportTextItem) {
           List<String> options = ((ReportTextItem) filterItem).getFilter();
+          boolean emptyValues = ((ReportTextItem) filterItem).isEmptyFilter();
 
-          if (!BeeUtils.isEmpty(options)) {
-            HasConditions conditions = ((ReportTextItem) filterItem).isNegationFilter()
-                ? SqlUtils.and() : SqlUtils.or();
+          if (!BeeUtils.isEmpty(options) || emptyValues) {
+            boolean isNegation = ((ReportTextItem) filterItem).isNegationFilter();
+            HasConditions conditions = isNegation ? SqlUtils.and() : SqlUtils.or();
 
-            for (String opt : ((ReportTextItem) filterItem).getFilter()) {
-              IsCondition condition = BeeUtils.isPrefix(opt, BeeConst.STRING_EQ)
-                  ? SqlUtils.equals(expr, BeeUtils.removePrefix(opt, BeeConst.STRING_EQ))
-                  : SqlUtils.contains(expr, opt);
+            if (!BeeUtils.isEmpty(options)) {
+              for (String opt : options) {
+                IsCondition condition = BeeUtils.isPrefix(opt, BeeConst.STRING_EQ)
+                    ? SqlUtils.equals(expr, BeeUtils.removePrefix(opt, BeeConst.STRING_EQ))
+                    : SqlUtils.contains(expr, opt);
 
-              if (((ReportTextItem) filterItem).isNegationFilter()) {
-                condition = SqlUtils.not(condition);
+                if (isNegation) {
+                  condition = SqlUtils.not(condition);
+                }
+                conditions.add(condition);
               }
-              conditions.add(condition);
+            }
+            if (emptyValues) {
+              conditions.add(isNegation ? SqlUtils.notNull(expr) : SqlUtils.isNull(expr));
             }
             and.add(conditions);
           }
@@ -208,51 +215,64 @@ public class ReportInfo implements BeeSerializable {
           if (ok != null) {
             and.add(ok ? SqlUtils.notNull(expr) : SqlUtils.isNull(expr));
           }
-        } else if (filterItem instanceof ReportDateItem) {
-          Long value = ((ReportDateItem) filterItem).getFilter();
+        } else if (filterItem instanceof ReportDateItem
+            && Objects.nonNull(((ReportDateItem) filterItem).getFilterOperator())) {
 
-          if (value != null) {
-            Long dt;
-            Operator op = ((ReportDateItem) filterItem).getFilterOperator();
+          Operator op = ((ReportDateItem) filterItem).getFilterOperator();
 
-            switch (((ReportDateItem) filterItem).getFormat()) {
-              case DATE:
-                dt = new JustDate(value.intValue()).getTime();
-                break;
-              case DATETIME:
-                dt = value;
-                break;
-              case YEAR:
-                switch (op) {
-                  case EQ:
-                    and.add(SqlUtils.compare(expr, Operator.GE,
-                        SqlUtils.constant(TimeUtils.startOfYear(value.intValue()).getTime())));
+          switch (op) {
+            case IS_NULL:
+              and.add(SqlUtils.isNull(expr));
+              break;
+            case NOT_NULL:
+              and.add(SqlUtils.notNull(expr));
+              break;
+            default:
+              Long value = ((ReportDateItem) filterItem).getFilter();
 
-                    dt = TimeUtils.startOfYear(value.intValue() + 1).getTime();
-                    op = Operator.LT;
+              if (value != null) {
+                Long dt;
+
+                switch (((ReportDateItem) filterItem).getFormat()) {
+                  case DATE:
+                    dt = new JustDate(value.intValue()).getTime();
                     break;
-                  case GE:
-                    dt = TimeUtils.startOfYear(value.intValue()).getTime();
+                  case DATETIME:
+                    dt = value;
                     break;
-                  case GT:
-                    dt = TimeUtils.startOfYear(value.intValue() + 1).getTime();
-                    op = Operator.GE;
-                    break;
-                  case LE:
-                    dt = TimeUtils.startOfYear(value.intValue() + 1).getTime();
-                    op = Operator.LT;
-                    break;
-                  case LT:
-                    dt = TimeUtils.startOfYear(value.intValue()).getTime();
+                  case YEAR:
+                    switch (op) {
+                      case EQ:
+                        and.add(SqlUtils.compare(expr, Operator.GE,
+                            SqlUtils.constant(TimeUtils.startOfYear(value.intValue()).getTime())));
+
+                        dt = TimeUtils.startOfYear(value.intValue() + 1).getTime();
+                        op = Operator.LT;
+                        break;
+                      case GE:
+                        dt = TimeUtils.startOfYear(value.intValue()).getTime();
+                        break;
+                      case GT:
+                        dt = TimeUtils.startOfYear(value.intValue() + 1).getTime();
+                        op = Operator.GE;
+                        break;
+                      case LE:
+                        dt = TimeUtils.startOfYear(value.intValue() + 1).getTime();
+                        op = Operator.LT;
+                        break;
+                      case LT:
+                        dt = TimeUtils.startOfYear(value.intValue()).getTime();
+                        break;
+                      default:
+                        continue;
+                    }
                     break;
                   default:
                     continue;
                 }
-                break;
-              default:
-                continue;
-            }
-            and.add(SqlUtils.compare(expr, op, SqlUtils.constant(dt)));
+                and.add(SqlUtils.compare(expr, op, SqlUtils.constant(dt)));
+              }
+              break;
           }
         }
       }
@@ -283,6 +303,10 @@ public class ReportInfo implements BeeSerializable {
 
   public boolean isEmpty() {
     return BeeUtils.isEmpty(getColItems());
+  }
+
+  public boolean isGlobal() {
+    return global;
   }
 
   public boolean requiresField(String field) {
@@ -394,6 +418,10 @@ public class ReportInfo implements BeeSerializable {
     if (item != null) {
       item.function = Assert.notNull(function);
     }
+  }
+
+  public void setGlobal(boolean global) {
+    this.global = global;
   }
 
   public void setGroupSummary(int colIndex, boolean summary) {

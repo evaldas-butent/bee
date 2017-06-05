@@ -9,7 +9,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -40,39 +39,35 @@ class RecurringTasksGrid extends AbstractGridInterceptor {
         List<String> messages = Lists.newArrayList(Localized.dictionary().crmRTCopyQuestion());
 
         Global.confirm(caption, Icon.QUESTION, messages, Localized.dictionary().actionCopy(),
-            Localized.dictionary().actionCancel(), new ConfirmationCallback() {
-              @Override
-              public void onConfirm() {
-                if (presenter.getActiveRow() == null) {
-                  return;
-                }
-                long rtId = presenter.getActiveRow().getId();
-
-                ParameterList params = TasksKeeper.createArgs(SVC_RT_COPY);
-                params.addQueryItem(VAR_RT_ID, rtId);
-
-                BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-                  @Override
-                  public void onResponse(ResponseObject response) {
-                    if (Queries.checkRowResponse(SVC_RT_COPY, VIEW_RECURRING_TASKS, response)) {
-                      BeeRow row = BeeRow.restore(response.getResponseAsString());
-                      GridView gridView = presenter.getGridView();
-
-                      if (gridView != null && gridView.asWidget().isAttached()) {
-                        gridView.getGrid().insertRow(row, false);
-
-                        if (DomUtils.isVisible(gridView.getGrid())) {
-                          gridView.onEditStart(new EditStartEvent(row, null, null,
-                              EditStartEvent.CLICK, gridView.isReadOnly()));
-                        }
-                      }
-
-                      RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_RECURRING_TASKS, row,
-                          (gridView == null) ? null : gridView.getId());
-                    }
-                  }
-                });
+            Localized.dictionary().actionCancel(), () -> {
+              if (presenter.getActiveRow() == null) {
+                return;
               }
+              long rtId = presenter.getActiveRow().getId();
+
+              ParameterList params = TasksKeeper.createArgs(SVC_RT_COPY);
+              params.addQueryItem(VAR_RT_ID, rtId);
+
+              BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+                @Override
+                public void onResponse(ResponseObject response) {
+                  if (Queries.checkRowResponse(SVC_RT_COPY, VIEW_RECURRING_TASKS, response)) {
+                    BeeRow row = BeeRow.restore(response.getResponseAsString());
+                    GridView gridView = presenter.getGridView();
+
+                    if (gridView != null && gridView.asWidget().isAttached()) {
+                      gridView.getGrid().insertRow(row, false);
+
+                      if (DomUtils.isVisible(gridView.getGrid())) {
+                        gridView.onEditStart(new EditStartEvent(row, gridView.isReadOnly()));
+                      }
+                    }
+
+                    RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_RECURRING_TASKS, row,
+                        (gridView == null) ? null : gridView.getId());
+                  }
+                }
+              });
             });
       }
 
@@ -97,13 +92,13 @@ class RecurringTasksGrid extends AbstractGridInterceptor {
   }
 
   @Override
-  public boolean onRowInsert(RowInsertEvent event) {
+  public boolean previewRowInsert(RowInsertEvent event) {
     if (BeeKeeper.getUser().is(event.getRow().getLong(getDataIndex(COL_OWNER)))) {
       getGridPresenter().refresh(false, false);
       return false;
 
     } else {
-      return super.onRowInsert(event);
+      return true;
     }
   }
 }

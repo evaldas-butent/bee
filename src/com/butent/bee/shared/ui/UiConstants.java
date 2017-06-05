@@ -48,6 +48,7 @@ public final class UiConstants {
   public static final String ATTR_EDIT_KEY = "editKey";
 
   public static final String ATTR_EDIT_SOURCE = "editSource";
+  public static final String ATTR_EDIT_TARGET = "editTarget";
   public static final String ATTR_EDIT_VIEW_NAME = "editViewName";
 
   public static final String ATTR_PROPERTY = "property";
@@ -65,6 +66,11 @@ public final class UiConstants {
   public static final String ATTR_SPLITTER_SIZE = "splitterSize";
   public static final String ATTR_SIZE = "size";
 
+  public static final String ATTR_BACKGROUND_SOURCE = "backgroundSource";
+  public static final String ATTR_FOREGROUND_SOURCE = "foregroundSource";
+
+  public static final String ATTR_KEY = "key";
+
   public static final String TAG_ROW = "row";
   public static final String TAG_COL = "col";
   public static final String TAG_CELL = "cell";
@@ -76,13 +82,6 @@ public final class UiConstants {
   public static final String TAG_MULTI_SELECTOR = "MultiSelector";
 
   public static final int MAX_PASSWORD_LENGTH = 30;
-
-  public static final String PATTERN_UNSIGNED_INT = "\\d*";
-  public static final String PATTERN_UNSIGNED_NUM = "(\\d*|\\d+\\.\\d+)";
-  public static final String PATTERN_DATE =
-      "([0-9]{2}|[0-9]{4})[- .](0[1-9]|1[012])[- .](0[1-9]|1[0-9]|2[0-9]|3[01])";
-  public static final String PATTERN_DATE_TIME = PATTERN_DATE
-      + "(\\s+(0[0-9]|1[0-9]|2[0-3])([: ][0-5][0-9])?)?";
 
   public static String wtfplLabel() {
     return "UAB \"B-NOVO Technologies\" &copy; 2013 - " + TimeUtils.today().getYear();

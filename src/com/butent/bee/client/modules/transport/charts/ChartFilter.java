@@ -165,7 +165,7 @@ class ChartFilter implements BeeSerializable {
       for (FilterValue fv : values) {
         for (ChartData cd : data) {
           if (cd != null && cd.getType() == fv.type) {
-            result |= cd.setSelected(fv.name, true);
+            result |= cd.setItemSelected(fv.name, true);
             break;
           }
         }

@@ -3,6 +3,8 @@ package com.butent.bee.client.modules.administration;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
@@ -14,6 +16,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -54,6 +57,7 @@ class UserSettingsForm extends AbstractFormInterceptor {
 
         Queries.getRowSet(VIEW_USER_ROLES, Lists.newArrayList(ALS_ROLE_NAME),
             Filter.equals(COL_USER, userId), new Queries.RowSetCallback() {
+
               @Override
               public void onSuccess(BeeRowSet result) {
                 List<String> roles = new ArrayList<>();
@@ -71,6 +75,36 @@ class UserSettingsForm extends AbstractFormInterceptor {
               }
             });
       }
+
+      final Widget showNewMessagesNotifierWidget =
+          form.getWidgetByName(COL_SHOW_NEW_MESSAGES_NOTIFIER);
+
+      if (showNewMessagesNotifierWidget != null
+          && showNewMessagesNotifierWidget instanceof InputBoolean) {
+
+        InputBoolean showNewMessagesNotifierInput = (InputBoolean) showNewMessagesNotifierWidget;
+        showNewMessagesNotifierInput.addValueChangeHandler(new ValueChangeHandler<String>() {
+
+          @Override
+          public void onValueChange(ValueChangeEvent<String> valueChangeEvent) {
+            Boolean showNewMessagesNotifier = BeeUtils.toBoolean(valueChangeEvent.getValue());
+            InputBoolean assistantInput = (InputBoolean) form.getWidgetByName(COL_ASSISTANT);
+
+            if (assistantInput != null) {
+              assistantInput.setEnabled(showNewMessagesNotifier);
+              if (!showNewMessagesNotifier) {
+                assistantInput.setValue(BeeUtils.toString(false));
+                ValueChangeEvent.fire(assistantInput, assistantInput.getValue());
+              }
+            }
+          }
+        });
+
+        if (!showNewMessagesNotifierInput.isChecked()) {
+          ((InputBoolean) form.getWidgetByName(COL_ASSISTANT)).setEnabled(false);
+        }
+      }
+
     }
   }
 

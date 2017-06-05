@@ -94,7 +94,7 @@ public class FileStorageBean {
   private final LoadingCache<Long, FileInfo> cache = CacheBuilder.newBuilder()
       .recordStats()
       .expireAfterAccess(1, TimeUnit.DAYS)
-      .removalListener((removalNotification) -> ((FileInfo) removalNotification.getValue()).close())
+      .removalListener(removalNotification -> ((FileInfo) removalNotification.getValue()).close())
       .build(new CacheLoader<Long, FileInfo>() {
         @Override
         public FileInfo load(Long fileId) throws IOException {
@@ -117,27 +117,24 @@ public class FileStorageBean {
     Holder<Long> id = Holder.absent();
     Holder<Boolean> exists = Holder.of(false);
 
-    cb.synchronizedCall(new Runnable() {
-      @Override
-      public void run() {
-        QueryServiceBean queryBean = Invocation.locateRemoteBean(QueryServiceBean.class);
+    cb.synchronizedCall(TBL_FILES, () -> {
+      QueryServiceBean queryBean = Invocation.locateRemoteBean(QueryServiceBean.class);
 
-        id.set(queryBean.getLong(new SqlSelect()
-            .addFields(TBL_FILES, sys.getIdName(TBL_FILES))
-            .addFrom(TBL_FILES)
-            .setWhere(SqlUtils.equals(TBL_FILES, COL_FILE_HASH, storedFile.getHash()))));
+      id.set(queryBean.getLong(new SqlSelect()
+          .addFields(TBL_FILES, sys.getIdName(TBL_FILES))
+          .addFrom(TBL_FILES)
+          .setWhere(SqlUtils.equals(TBL_FILES, COL_FILE_HASH, storedFile.getHash()))));
 
-        if (id.isNull()) {
-          id.set(queryBean.insertData(new SqlInsert(TBL_FILES)
-              .addConstant(COL_FILE_HASH, storedFile.getHash())
-              .addConstant(COL_FILE_NAME,
-                  sys.clampValue(TBL_FILES, COL_FILE_NAME, storedFile.getName()))
-              .addConstant(COL_FILE_SIZE, storedFile.getSize())
-              .addConstant(COL_FILE_TYPE,
-                  sys.clampValue(TBL_FILES, COL_FILE_TYPE, storedFile.getType()))));
-        } else {
-          exists.set(true);
-        }
+      if (id.isNull()) {
+        id.set(queryBean.insertData(new SqlInsert(TBL_FILES)
+            .addConstant(COL_FILE_HASH, storedFile.getHash())
+            .addConstant(COL_FILE_NAME,
+                sys.clampValue(TBL_FILES, COL_FILE_NAME, storedFile.getName()))
+            .addConstant(COL_FILE_SIZE, storedFile.getSize())
+            .addConstant(COL_FILE_TYPE,
+                sys.clampValue(TBL_FILES, COL_FILE_TYPE, storedFile.getType()))));
+      } else {
+        exists.set(true);
       }
     });
     File repositoryDir = getRepositoryDir();
@@ -183,9 +180,7 @@ public class FileStorageBean {
       out.flush();
       out.close();
 
-      InputStream in = new FileInputStream(tmp);
-
-      try {
+      try (InputStream in = new FileInputStream(tmp)) {
         byte[] buffer = new byte[0x100000];
         int bytesRead = in.read(buffer);
 
@@ -197,10 +192,9 @@ public class FileStorageBean {
       } catch (SQLException e) {
         throw new RuntimeException(e);
       } finally {
-        in.close();
         tmp.delete();
       }
-      cache.invalidate(storedFile.getId());
+      storedFile.close();
     }
     return id.get();
   }
@@ -269,7 +263,7 @@ public class FileStorageBean {
             .append("@page {").append(sb.toString()).append("}")
             .append("</style>");
       }
-      html.append("</head><body>" + parsed + "</body></html>");
+      html.append("</head><body>").append(parsed).append("</body></html>");
 
       ITextRenderer renderer = new ITextRenderer();
       renderer.setDocumentFromString(html.toString());
@@ -331,7 +325,7 @@ public class FileStorageBean {
   }
 
   public Long storeFile(InputStream is, String fileName, String mimeType) throws IOException {
-    MessageDigest md = null;
+    MessageDigest md;
 
     try {
       md = MessageDigest.getInstance("SHA");
@@ -346,7 +340,7 @@ public class FileStorageBean {
     String hash = Codec.toHex(md.digest());
 
     Long id = qs.getLong(new SqlSelect()
-        .addFields(TBL_FILES, sys.getIdName(TBL_FILES))
+        .addField(TBL_FILES, sys.getIdName(TBL_FILES), COL_FILE)
         .addFrom(TBL_FILES)
         .setWhere(SqlUtils.equals(TBL_FILES, COL_FILE_HASH, hash)));
 

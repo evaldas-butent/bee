@@ -128,8 +128,7 @@
   <xs:simpleType name="cellType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="html" />
-      <xs:enumeration value="input" />
-      <xs:enumeration value="div" />
+      <xs:enumeration value="text" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -164,6 +163,7 @@
     <xs:attribute name="minHeight" type="xs:positiveInteger" />
     <xs:attribute name="onEntry" type="editorAction" />
     <xs:attribute name="currencySource" type="tp:fieldNameType" />
+    <xs:attribute name="percentageTag" type="tp:fieldNameType" />
     <xs:attribute name="options" type="xs:normalizedString" />
   </xs:complexType>
 
@@ -364,6 +364,7 @@
       <xs:enumeration value="reset_settings" />
       <xs:enumeration value="rights" />
       <xs:enumeration value="save" />
+      <xs:enumeration value="move" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -416,6 +417,7 @@
       <xs:enumeration value="discount" />
       <xs:enumeration value="branch" />
       <xs:enumeration value="time" />
+      <xs:enumeration value="place" />
     </xs:restriction>
   </xs:simpleType>
 

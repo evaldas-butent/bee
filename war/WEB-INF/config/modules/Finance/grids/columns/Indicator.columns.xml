@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+  <RelColumn name="Indicator" renderColumns="IndicatorName"
+             choiceColumns="IndicatorName IndicatorAbbreviation" newRowEnabled="false"
+             backgroundSource="IndicatorBackground" foregroundSource="IndicatorForeground" />
+</g:columns>

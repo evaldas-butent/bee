@@ -213,6 +213,14 @@ public class Chat implements BeeSerializable, HasInfo, Comparable<Chat> {
     return lastMessage;
   }
 
+  public String getLastMessagePlainText() {
+    if (!BeeUtils.isEmpty(lastMessage.getText())) {
+      return lastMessage.getText().replaceAll("\\<.*?\\>", "");
+    }
+
+    return lastMessage.getText();
+  }
+
   public long getMaxTime() {
     return (getLastMessage() == null) ? BeeConst.LONG_UNDEF : getLastMessage().getTime();
   }
@@ -264,6 +272,11 @@ public class Chat implements BeeSerializable, HasInfo, Comparable<Chat> {
   public boolean isOwner(Long userId) {
     return userId != null
         && (userId.equals(getCreator()) || users.size() <= 2 && users.contains(userId));
+  }
+
+  public boolean isCreator(Long userId) {
+    return userId != null
+        && (userId.equals(getCreator()));
   }
 
   public boolean removeUser(Long userId) {
@@ -401,4 +414,5 @@ public class Chat implements BeeSerializable, HasInfo, Comparable<Chat> {
   private void setId(long id) {
     this.id = id;
   }
+
 }

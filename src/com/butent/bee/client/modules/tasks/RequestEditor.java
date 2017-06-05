@@ -4,11 +4,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.client.modules.mail.Relations.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -23,14 +24,25 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Modality;
+import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dialog.Popup.OutsideClick;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.MutationEvent;
+import com.butent.bee.client.event.logical.MutationEvent.Handler;
 import com.butent.bee.client.eventsboard.EventsBoard.EventFilesFilter;
+import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -88,6 +100,14 @@ public class RequestEditor extends ProductSupportInterceptor {
 
   private RequestEventsHandler eventsHandler;
   private Flow requestComments;
+  private IdentifiableWidget requestWidget;
+  private Split split;
+  private com.google.gwt.xml.client.Element west;
+  private boolean isDefaultLayout;
+
+  public RequestEditor() {
+    this.isDefaultLayout = BeeKeeper.getUser().getCommentsLayout();
+  }
 
   private static final class FinishSaveCallback extends RowUpdateCallback {
 
@@ -110,9 +130,25 @@ public class RequestEditor extends ProductSupportInterceptor {
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
-    if (widget instanceof Flow && BeeUtils.same(name, WIDGET_REQUEST_COMMENTS)) {
+    if (BeeUtils.same(name, "Split") && widget instanceof Split) {
+      split = (Split) widget;
+      split.addMutationHandler(new Handler() {
+
+        @Override
+        public void onMutation(MutationEvent event) {
+          int size = split.getDirectionSize(Direction.WEST);
+
+          String key = getStorageKey(NAME_REQUEST_TREE);
+          if (size > 0 && !BeeUtils.isEmpty(key)) {
+            BeeKeeper.getStorage().set(key, size);
+          }
+        }
+      });
+    } else if (widget instanceof Flow && BeeUtils.same(name, WIDGET_REQUEST_COMMENTS)) {
       requestComments = (Flow) widget;
       requestComments.clear();
+    } else if (BeeUtils.same(name, "TabbedPages") && widget instanceof TabbedPages) {
+      requestWidget = widget;
     }
     super.afterCreateWidget(name, widget, callback);
   }
@@ -130,6 +166,8 @@ public class RequestEditor extends ProductSupportInterceptor {
       }
     }
 
+    setCommentsLayout();
+
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
 
@@ -141,13 +179,7 @@ public class RequestEditor extends ProductSupportInterceptor {
     if (!finished) {
       FaLabel btnFinish = new FaLabel(FontAwesome.CHECK_CIRCLE_O);
       btnFinish.setTitle(Localized.dictionary().requestFinish());
-      btnFinish.addClickHandler(new ClickHandler() {
-
-        @Override
-        public void onClick(ClickEvent event) {
-          finishRequest(form, row);
-        }
-      });
+      btnFinish.addClickHandler(event -> finishRequest(form, row));
 
       header.addCommandItem(btnFinish);
       form.setEnabled(true);
@@ -156,13 +188,7 @@ public class RequestEditor extends ProductSupportInterceptor {
     if (currentUser.canCreateData(TaskConstants.VIEW_TASKS) && !finished) {
       FaLabel btnFinishToTask = new FaLabel(FontAwesome.LIST);
       btnFinishToTask.setTitle(Localized.dictionary().requestFinishToTask());
-      btnFinishToTask.addClickHandler(new ClickHandler() {
-
-        @Override
-        public void onClick(ClickEvent event) {
-          toTaskAndFinish(form, row);
-        }
-      });
+      btnFinishToTask.addClickHandler(event -> toTaskAndFinish(form, row));
 
       header.addCommandItem(btnFinishToTask);
     }
@@ -173,8 +199,27 @@ public class RequestEditor extends ProductSupportInterceptor {
     }
 
     drawComments(row);
+    header.addCommandItem(createMenuLabel());
 
     super.afterRefresh(form, row);
+  }
+
+  @Override
+  public boolean beforeCreateWidget(String name, com.google.gwt.xml.client.Element description) {
+
+    if (BeeUtils.same(name, "Split")) {
+      Integer size = BeeKeeper.getStorage().getInteger(getStorageKey(NAME_REQUEST_TREE));
+
+      if (BeeUtils.isPositive(size)) {
+
+        west = XmlUtils.getFirstChildElement(description, Direction.WEST.name().toLowerCase());
+
+        if (west != null) {
+          west.setAttribute(UiConstants.ATTR_SIZE, size.toString());
+        }
+      }
+    }
+    return super.beforeCreateWidget(name, description);
   }
 
   @Override
@@ -192,6 +237,10 @@ public class RequestEditor extends ProductSupportInterceptor {
 
   @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
+
+    List<String> columns = Arrays.asList(ALS_TASK_TYPE_BACKGROUND, ALS_TASK_TYPE_FOREGROUND,
+        ALS_REQUEST_PRODUCT_FOREGROUND, ALS_REQUEST_PRODUCT_BACKGROUND, "ManagerPerson",
+        COL_PRODUCT_REQUIRED, "TaskType");
 
     IsRow oldData = event.getOldRow();
     IsRow newData = event.getNewRow();
@@ -219,14 +268,15 @@ public class RequestEditor extends ProductSupportInterceptor {
 
       if (data.hasRelation(column.getId())) {
         for (ViewColumn vCol : data.getDescendants(column.getId(), false)) {
-          oldValue =
-              BeeUtils.join(BeeConst.STRING_COMMA, oldValue, oldData.getString(data
-                  .getColumnIndex(vCol.getName())));
-          newValue =
-              BeeUtils.join(BeeConst.STRING_COMMA, newValue, newData.getString(data
-                  .getColumnIndex(vCol.getName())));
+          if (!columns.contains(vCol.getName())) {
+            oldValue =
+                BeeUtils.join(BeeConst.STRING_SPACE, oldValue, oldData.getString(data
+                    .getColumnIndex(vCol.getName())));
+            newValue =
+                BeeUtils.join(BeeConst.STRING_SPACE, newValue, newData.getString(data
+                    .getColumnIndex(vCol.getName())));
+          }
         }
-
       } else {
         oldValue = oldData.getString(data.getColumnIndex(column.getId()));
         newValue = newData.getString(data.getColumnIndex(column.getId()));
@@ -321,13 +371,7 @@ public class RequestEditor extends ProductSupportInterceptor {
   private static void createUpdateButton(final FormView form, final IsRow row, HeaderView header) {
     FaLabel updateRequestBtn = new FaLabel(FontAwesome.RETWEET);
     updateRequestBtn.setTitle(Localized.dictionary().actionUpdate());
-    updateRequestBtn.addClickHandler(new ClickHandler() {
-
-      @Override
-      public void onClick(ClickEvent arg0) {
-        updateRequest(form, row);
-      }
-    });
+    updateRequestBtn.addClickHandler(arg0 -> updateRequest(form, row));
 
     header.addCommandItem(updateRequestBtn);
   }
@@ -373,9 +417,9 @@ public class RequestEditor extends ProductSupportInterceptor {
 
     final String cid = dialog.addComment(true);
 
-    String durId = dialog.addTime(Localized.dictionary().crmSpentTime());
+    String durId = dialog.addTime(Localized.dictionary().crmSpentTime(), true);
     String durTypeId = dialog.addSelector(Localized.dictionary().crmDurationType(),
-        VIEW_REQUEST_DURATION_TYPES, Lists.newArrayList(ALS_DURATION_TYPE_NAME), false, null, null,
+        VIEW_REQUEST_DURATION_TYPES, Lists.newArrayList(ALS_DURATION_TYPE_NAME), true, null, null,
         COL_DURATION_TYPE);
 
     Filter filter = Filter.equals(COL_TASK_TYPE,
@@ -387,68 +431,135 @@ public class RequestEditor extends ProductSupportInterceptor {
     final String did = dialog.addDateTime(Localized.dictionary().crmTaskFinishDate(), false,
         TimeUtils.nowMinutes());
 
-    dialog.addAction(Localized.dictionary().actionSave(), new ScheduledCommand() {
-      @Override
-      public void execute() {
+    dialog.addAction(Localized.dictionary().actionSave(), () -> {
 
-        final String comment = dialog.getComment(cid);
-        final String time = dialog.getTime(durId);
+      final String comment = dialog.getComment(cid);
+      final String time = dialog.getTime(durId);
 
-        if (BeeUtils.isEmpty(comment)) {
-          Global.showError(Localized.dictionary().error(), Collections.singletonList(Localized
-              .dictionary().crmEnterComment()));
-          return;
-        }
-
-        if (BeeUtils.isEmpty(time)) {
-          Global.showError(Localized.dictionary().crmSpentTime() + " "
-              + Localized.dictionary().valueRequired());
-          return;
-        }
-
-        BeeRow reqDurTypes = dialog.getSelector(durTypeId).getRelatedRow();
-        final Long type =
-            reqDurTypes
-                .getLong(Data.getColumnIndex(VIEW_REQUEST_DURATION_TYPES, COL_DURATION_TYPE));
-        if (!DataUtils.isId(type)) {
-          Global.showError(Localized.dictionary().crmEnterDurationType());
-          return;
-        }
-
-        final DateTime date = dialog.getDateTime(did);
-        if (date == null) {
-          Global.showError(Localized.dictionary().crmEnterDueDate());
-          return;
-        }
-
-        List<BeeColumn> columns =
-            Lists.newArrayList(DataUtils.getColumn(TaskConstants.COL_REQUEST_FINISHED, form
-                .getDataColumns()));
-
-        List<String> oldValues = Lists.newArrayList(row
-            .getString(form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED)));
-        List<String> newValues =
-            Lists.newArrayList(BeeUtils.toString(date.getTime()));
-
-        columns.add(DataUtils.getColumn(TaskConstants.COL_REQUEST_RESULT, form.getDataColumns()));
-
-        oldValues.add(row.getString(form.getDataIndex(TaskConstants.COL_REQUEST_RESULT)));
-        newValues.add(comment);
-
-        Queries.update(form.getViewName(), row.getId(), row.getVersion(), columns, oldValues,
-            newValues, form.getChildrenForUpdate(), new RowCallback() {
-
-              @Override
-              public void onSuccess(BeeRow result) {
-                finishRequestWithTask(result, time, type, comment, date);
-                new FinishSaveCallback(form).onSuccess(result);
-              }
-            });
-        dialog.close();
+      if (BeeUtils.isEmpty(comment)) {
+        Global.showError(Localized.dictionary().error(), Collections.singletonList(Localized
+            .dictionary().crmEnterComment()));
+        return;
       }
+
+      if (BeeUtils.isEmpty(time)) {
+        Global.showError(Localized.dictionary().crmEnterDuration());
+        return;
+      }
+
+      BeeRow reqDurTypes = dialog.getSelector(durTypeId).getRelatedRow();
+      if (reqDurTypes == null) {
+        Global.showError(Localized.dictionary().crmEnterDurationType());
+        return;
+      }
+      final Long type = reqDurTypes
+          .getLong(Data.getColumnIndex(VIEW_REQUEST_DURATION_TYPES, COL_DURATION_TYPE));
+
+      final DateTime date = dialog.getDateTime(did);
+      if (date == null) {
+        Global.showError(Localized.dictionary().crmEnterDueDate());
+        return;
+      }
+
+      List<BeeColumn> columns =
+          Lists.newArrayList(DataUtils.getColumn(TaskConstants.COL_REQUEST_FINISHED, form
+              .getDataColumns()));
+
+      List<String> oldValues = Lists.newArrayList(row
+          .getString(form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED)));
+      List<String> newValues =
+          Lists.newArrayList(BeeUtils.toString(date.getTime()));
+
+      columns.add(DataUtils.getColumn(TaskConstants.COL_REQUEST_RESULT, form.getDataColumns()));
+
+      oldValues.add(row.getString(form.getDataIndex(TaskConstants.COL_REQUEST_RESULT)));
+      newValues.add(comment);
+
+      Queries.update(form.getViewName(), row.getId(), row.getVersion(), columns, oldValues,
+          newValues, form.getChildrenForUpdate(), new RowCallback() {
+
+            @Override
+            public void onSuccess(BeeRow result) {
+              finishRequestWithTask(result, time, type, comment, date);
+              new FinishSaveCallback(form).onSuccess(result);
+            }
+          });
+      dialog.close();
     });
 
     dialog.display();
+  }
+
+  private FaLabel getCommentsLabelInfo() {
+    FaLabel label =
+        isDefaultLayout ? new FaLabel(FontAwesome.COLUMNS) : new FaLabel(FontAwesome.LIST_ALT);
+    label.addStyleName(BeeConst.CSS_CLASS_PREFIX + "crm-commentLayout-label");
+    label.setTitle(isDefaultLayout ? Localized.dictionary().crmTaskShowCommentsRight() : Localized
+        .dictionary().crmTaskShowCommentsBelow());
+
+    return label;
+  }
+
+  private static FaLabel getEventsOrderLabelInfo() {
+    boolean value = readStorage(NAME_ORDER);
+    FaLabel label = value ? new FaLabel(FontAwesome.SORT_NUMERIC_ASC) : new FaLabel(
+        FontAwesome.SORT_NUMERIC_DESC);
+    label.setTitle(value ? Localized.dictionary().crmTaskCommentsAsc()
+        : Localized.dictionary().crmTaskCommentsDesc());
+
+    return label;
+  }
+
+  private FaLabel createMenuLabel() {
+    FaLabel menu = new FaLabel(FontAwesome.NAVICON);
+    menu.addClickHandler(arg0 -> {
+      final HtmlTable tb = new HtmlTable(BeeConst.CSS_CLASS_PREFIX + "GridMenu-table");
+      FaLabel orderLbl = getEventsOrderLabelInfo();
+      FaLabel commentLbl = getCommentsLabelInfo();
+
+      tb.setWidget(0, 0, commentLbl);
+      tb.setText(0, 1, commentLbl.getTitle());
+      tb.setWidget(1, 0, orderLbl);
+      tb.setText(1, 1, orderLbl.getTitle());
+
+      tb.addClickHandler(ev -> {
+        Element targetElement = EventUtils.getEventTargetElement(ev);
+        TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
+        int index = rowElement.getRowIndex();
+
+        switch (index) {
+          case 0:
+            BeeKeeper.getUser().setCommentsLayout(!isDefaultLayout);
+            isDefaultLayout = !isDefaultLayout;
+            UiHelper.closeDialog(tb);
+            setCommentsLayout();
+            getFormView().refresh();
+            break;
+
+          case 1:
+            if (readStorage(NAME_ORDER)) {
+              BeeKeeper.getStorage().remove(getStorageKey(NAME_ORDER));
+              eventsHandler.setEventsOrder(true);
+            } else {
+              BeeKeeper.getStorage().set(getStorageKey(NAME_ORDER), true);
+              eventsHandler.setEventsOrder(false);
+            }
+
+            UiHelper.closeDialog(tb);
+            eventsHandler.handleAction(Action.REFRESH);
+            break;
+
+          default:
+        }
+      });
+
+      Popup popup = new Popup(OutsideClick.CLOSE, BeeConst.CSS_CLASS_PREFIX + "GridMenu-popup");
+      popup.setWidget(tb);
+      popup.setHideOnEscape(true);
+      popup.showRelativeTo(menu.getElement());
+    });
+
+    return menu;
   }
 
   private void finishRequestWithTask(IsRow reqRow, String time, Long type, String comment,
@@ -495,8 +606,8 @@ public class RequestEditor extends ProductSupportInterceptor {
           .getString(form.getDataIndex(COL_PRODUCT)));
     }
 
-    taskRow.setProperty(PROP_EXECUTORS, user);
-    taskRow.setProperty(PROP_REQUESTS, reqRow.getId());
+    taskRow.setProperty(PROP_EXECUTORS, DataUtils.buildIdList(user));
+    taskRow.setProperty(PFX_RELATED + VIEW_REQUESTS,  DataUtils.buildIdList(reqRow.getId()));
 
     BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_TASKS, taskDataInfo.getColumns(),
         taskRow, Sets.newHashSet(COL_EXECUTOR, COL_STATUS), true);
@@ -591,21 +702,25 @@ public class RequestEditor extends ProductSupportInterceptor {
         .getString(form.getDataIndex(COL_REQUEST_CONTENT)));
 
     DataSelector managerSel = (DataSelector) form.getWidgetByName(WIDGET_MANGAER_NAME);
-    Map<Long, FileInfo> files = Maps.newHashMap();
     FileGroup filesList = (FileGroup) form.getWidgetByName(WIDGET_FILES_NAME);
 
-    for (FileInfo f : filesList.getFiles()) {
-      files.put(f.getId(), f);
+    if (filesList != null) {
+      taskRow.setProperty(PROP_FILES, Codec.beeSerialize(filesList.getFiles()));
     }
 
-    taskRow.setProperty(PROP_REQUESTS, reqRow.getId());
+    if (managerSel != null && BeeUtils.isLong(managerSel.getValue())) {
+      taskRow.setProperty(PROP_EXECUTORS,
+        DataUtils.buildIdList(BeeUtils.toLong(managerSel.getValue())));
+    }
+    taskRow.setProperty(PFX_RELATED + VIEW_REQUESTS, DataUtils.buildIdList(reqRow.getId()));
     RowFactory.createRow(taskDataInfo.getNewRowForm(), null, taskDataInfo, taskRow,
-        Modality.ENABLED, null,
-        new TaskBuilder(files, BeeUtils.toLongOrNull(managerSel.getValue()), true), null,
-        new RowCallback() {
+        Modality.ENABLED, null, new TaskBuilder(true), null, new RowCallback() {
 
           @Override
           public void onSuccess(BeeRow result) {
+            if (result == null) {
+              return;
+            }
             Map<String, String> data = Maps.newLinkedHashMap();
             data.put(BeeUtils.toString(TaskEvent.CREATE.ordinal()), result.getString(0));
 
@@ -626,28 +741,43 @@ public class RequestEditor extends ProductSupportInterceptor {
   }
 
   private static void updateRequest(final FormView form, final IsRow row) {
-    Global.confirm(Localized.dictionary().requestUpdatingQuestion(), new ConfirmationCallback() {
+    Global.confirm(Localized.dictionary().requestUpdatingQuestion(), () -> {
+      List<BeeColumn> columns = Lists.newArrayList(DataUtils
+          .getColumn(TaskConstants.COL_REQUEST_FINISHED, form.getDataColumns()));
+      List<String> oldValues = Lists.newArrayList(row
+          .getString(form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED)));
 
-      @Override
-      public void onConfirm() {
-        List<BeeColumn> columns = Lists.newArrayList(DataUtils
-            .getColumn(TaskConstants.COL_REQUEST_FINISHED, form.getDataColumns()));
-        List<String> oldValues = Lists.newArrayList(row
-            .getString(form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED)));
+      List<String> newValues = new ArrayList<>();
+      newValues.add(null);
 
-        List<String> newValues = new ArrayList<>();
-        newValues.add(null);
+      Queries.update(form.getViewName(), row.getId(), row.getVersion(), columns, oldValues,
+          newValues, form.getChildrenForUpdate(), new FinishSaveCallback(form));
 
-        Queries.update(form.getViewName(), row.getId(), row.getVersion(), columns, oldValues,
-            newValues, form.getChildrenForUpdate(), new FinishSaveCallback(form));
+      String comment =
+          Localized.dictionary().discussStatus() + ": "
+              + Localized.dictionary().crmTaskEventRenewed();
 
-        String comment =
-            Localized.dictionary().discussStatus() + ": "
-                + Localized.dictionary().crmTaskEventRenewed();
-
-        insertEventNote(row.getId(), comment, null, TaskEvent.RENEW, null);
-      }
+      insertEventNote(row.getId(), comment, null, TaskEvent.RENEW, null);
     });
+  }
 
+  private void setCommentsLayout() {
+
+    if (isDefaultLayout) {
+      int height = getFormView().getWidgetByName("RequestContainer").getElement().getScrollHeight();
+
+      if (height == 0) {
+        height = 600;
+      }
+      split.addNorth(requestWidget, height + 60);
+      StyleUtils.autoWidth(requestWidget.getElement());
+      split.updateCenter(requestComments);
+
+    } else {
+      Integer size = BeeKeeper.getStorage().getInteger(getStorageKey(NAME_REQUEST_TREE));
+      split.addWest(requestWidget, size == null ? 650 : size);
+      StyleUtils.autoHeight(requestWidget.getElement());
+      split.updateCenter(requestComments);
+    }
   }
 }

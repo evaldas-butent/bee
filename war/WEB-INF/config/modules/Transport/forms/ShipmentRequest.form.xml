@@ -6,34 +6,39 @@
     <!ENTITY cols '<col index="0" cellStyle="&colLabel;" /><col index="2" cellStyle="&colLabel;" /><col index="4" cellStyle="&colLabel;" />'>
     <!ENTITY cells "vertical-align: top; padding-bottom: 3px;">
     <!ENTITY separator "<hr/>">
-    <!ENTITY area "width: 200px; height: 40px;">
+    <!ENTITY decimal "width:7em;">
+    <!ENTITY unit "display:inline-block; width:5em; margin-left:5px;">
     ]>
 <f:Form xmlns="http://www.butent.com/widget"
-        xmlns:f="http://www.butent.com/form"
-        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
 
         name="ShipmentRequest" viewName="ShipmentRequests"
         showRowId="true" width="70" widthUnit="%" height="80" heightUnit="%"
-    >
+>
+  <f:properties jasperReports="OrderContract" />
+
   <FlowPanel>
     <Table kind="custom" style="&table; margin-top:10px;" cellStyle="&cells;">
       &cols;
-
       <row>
         <Label for="Date" />
         <DateTimeLabel source="Date" />
-        <Label for="Status" />
-        <TextLabel source="Status" style="font-weight:bold;" />
         <Label for="Locale" />
         <TextLabel source="Locale" style="font-weight:bold;" />
+        <FlowPanel name="OrderID" style="cursor:pointer; font-weight:bold; color:blue;" />
+        <Label />
+        <Label text="=customerPrice" />
+        <MoneyLabel property="Income" style="font-weight: bold;" />
+        <Label text="=vat" style="margin-left: 5px;" />
+        <MoneyLabel property="Vat" style="font-weight: bold;" />
       </row>
+    </Table>
+    <Table kind="custom" name="Status">
+      &cols;
       <row>
-        <cell colSpan="3">
-          <FlowPanel name="OrderID" style="cursor:pointer; font-weight:bold; color:blue;" />
-        </cell>
-        <cell colSpan="3">
-          <TextLabel source="LossReason" style="color:red; white-space:pre-wrap;" />
-        </cell>
+        <Label for="Status" />
+        <TextLabel source="Status" style="font-weight:bold;" />
+        <TextLabel source="LossReason" style="color:red; white-space:pre-wrap;" />
       </row>
     </Table>
     &separator;
@@ -100,7 +105,7 @@
         <row>
           <Label for="CustomerNotes" />
           <cell colSpan="3">
-            <InputArea source="CustomerNotes" style="&area; width:100%;" />
+            <InputArea source="CustomerNotes" visibleLines="2" style="width:100%;" />
           </cell>
         </row>
       </Table>
@@ -128,12 +133,8 @@
 
     <Details open="true">
       <Summary text="=cargoInformation" style="&summary;" />
-
-      <xi:include href="widgets/CargoPlacesUnbound.widget.xml" />
-
-      <ChildGrid name="CargoHandling" gridName="CargoHandlingUnbound" relColumn="Cargo"
-                 source="Cargo" caption="=trAdditionalHandlingPlaces"
-                 style="margin-top:10px; height:200px;" />
+      <ChildGrid name="CargoLoadingUnbound" relColumn="Cargo" source="Cargo" />
+      <ChildGrid name="CargoUnloadingUnbound" relColumn="Cargo" source="Cargo" />
     </Details>
     &separator;
 
@@ -144,29 +145,38 @@
         &cols;
 
         <row>
-          <Label for="Expedition" />
-          <DataSelector source="Expedition" filter="SelfService" renderColumns="ExpeditionType"
-                        order="SelfService, Name" newRowEnabled="false" />
-          <CheckBox source="Logistics" readOnly="true" />
-          <CheckBox source="CustomsBrokerage" />
+          <Label for="Expedition" class="bee-required" />
+          <DataSelector source="Expedition" required="true" filter="SelfService"
+                        renderColumns="ExpeditionType" order="SelfService, Name"
+                        newRowEnabled="false" />
+          <cell rowSpan="2">
+            <Label for="CargoNotes" />
+          </cell>
+          <cell rowSpan="2">
+            <InputArea source="CargoNotes" visibleLines="4" style="width:200px;" />
+          </cell>
         </row>
 
         <row>
           <Label for="ShippingTerm" class="bee-required" />
-          <DataSelector source="ShippingTerm" required="true" filter="SelfService"
-                        order="SelfService, Name" newRowEnabled="false" />
-          <text />
-          <CheckBox source="FreightInsurance" />
+          <FlowPanel>
+            <DataSelector source="ShippingTerm" required="true" filter="SelfService"
+                          order="SelfService, Name" newRowEnabled="false" />
+            <FaLabel name="Incoterms" char="question_circle" disablable="false"
+              style="display: inline-block; margin-left: 5px;"/>
+          </FlowPanel>
         </row>
 
         <row>
-          <Label text="=trRequestNotes" />
-          <InputArea source="Notes" style="&area;" />
-          <Label for="Value" />
+          <CheckBox source="CustomsBrokerage" title="=trRequestCustomsBrokeragePlaceholder" />
+          <cell horizontalAlignment="right">
+            <CheckBox source="FreightInsurance" title="=trRequestFreightInsurancePlaceholder" />
+          </cell>
+          <Label for="Value" name="ValueLabel" />
           <FlowPanel>
-            <InputMoney source="Value" style="margin-right:5px; width:7em;" />
+            <InputMoney source="Value" style="&decimal;" />
             <DataSelector source="ValueCurrency" newRowEnabled="false" editEnabled="false"
-                          placeholder="=currencyShort" style="width:4em; display:inline;" />
+                          placeholder="=currencyShort" style="&unit;" filter="SelfService" />
           </FlowPanel>
         </row>
       </Table>
@@ -180,52 +190,62 @@
         &cols;
 
         <row>
-          <Label for="Description" />
-          <InputArea source="Description" style="width: 100%; height: 40px;" />
-          <Label for="Quantity" />
-          <InputDecimal source="Quantity" />
-        </row>
-
-        <row>
+          <cell rowSpan="2">
+            <Label for="Description" />
+          </cell>
+          <cell rowSpan="2">
+            <InputArea source="Description" visibleLines="4" style="width:200px;" />
+          </cell>
           <Label for="Weight" />
-          <InputDecimal source="Weight" />
-          <Label for="Volume" />
-          <InputDecimal source="Volume" />
+          <FlowPanel>
+            <InputDecimal source="Weight" style="&decimal;" />
+            <DataSelector source="WeightUnit" style="&unit;" />
+          </FlowPanel>
         </row>
 
         <row>
+          <Label for="Volume" />
+          <FlowPanel>
+            <InputDecimal source="Volume" style="&decimal;" />
+            <DataSelector source="VolumeUnit" style="&unit;" />
+          </FlowPanel>
+        </row>
+
+        <row>
+          <Label for="Height" />
+          <InputDecimal source="Height" style="&decimal;" />
+          <Label for="Quantity" />
+          <FlowPanel>
+            <InputDecimal source="Quantity" style="&decimal;" />
+            <DataSelector source="QuantityUnit" style="&unit;" />
+          </FlowPanel>
+        </row>
+
+        <row>
+          <Label for="Width" />
+          <InputDecimal source="Width" style="&decimal;" />
           <text />
           <CheckBox source="Dangerous" />
         </row>
 
         <row>
+          <Label for="Length" />
+          <InputDecimal source="Length" style="&decimal;" />
           <text />
           <CheckBox source="Outsized" />
         </row>
 
         <row>
-          <text />
-          <CheckBox source="Partial" />
-        </row>
-
-        <row>
           <Label for="LDM" />
-          <InputDecimal source="LDM" />
-          <Label for="Length" />
-          <InputDecimal source="Length" />
-        </row>
-
-        <row>
-          <Label for="Width" />
-          <InputDecimal source="Width" />
-          <Label for="Height" />
-          <InputDecimal source="Height" />
+          <InputDecimal source="LDM" style="&decimal;" />
+          <text />
+          <FlowPanel name="PartialToggle" class="flexBox-horizontal" />
         </row>
       </Table>
     </Details>
     &separator;
 
-    <Details open="true">
+    <Details name="AdditionalInfo" open="true">
       <Summary text="=trRequestAdditionalInfo" style="&summary;" />
 
       <Table kind="controls" style="&table;" cellStyle="&cells;">
@@ -233,30 +253,52 @@
 
         <row>
           <Label for="Manager" />
-          <DataSelector source="Manager" newRowEnabled="false" editSource="ManagerPerson"
-                        style="width:15em;" />
-          <Label for="Host" />
-          <TextLabel source="Host" />
+          <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
+                        newRowEnabled="false" editSource="ManagerPerson" style="width:15em;" />
         </row>
 
         <row>
-          <cell colSpan="3">
-            <Label for="Agent" />
+          <Label for="Vehicle" />
+          <InputText source="Vehicle" />
+          <cell rowSpan="2">
+            <Label for="Notes" />
           </cell>
+          <cell rowSpan="2">
+            <InputArea source="Notes" visibleLines="4" style="width:200px;" />
+          </cell>
+        </row>
+
+        <row>
+          <Label for="Driver" />
+          <InputText source="Driver" />
+        </row>
+
+        <row>
+          <Label for="Host" />
+          <TextLabel source="Host" />
+          <Label for="Agent" />
           <TextLabel source="Agent" />
         </row>
       </Table>
+      &separator;
     </Details>
-    &separator;
 
     <TabbedPages style="height:300px;">
+      <dynStyle>
+        <ui:inline>display:none;</ui:inline>
+        <ui:expression>!(rowId>0)</ui:expression>
+      </dynStyle>
       <page>
         <text>=files</text>
-        <ChildGrid name="ShipmentRequestFiles" relColumn="ShipmentRequest" />
+        <ChildGrid name="CargoFiles" relColumn="Cargo" source="Cargo" />
       </page>
       <page>
         <text>=mails</text>
-        <ChildGrid name="RelatedMessages" relColumn="ShipmentRequest" paging="true" />
+        <ChildGrid name="RelatedMessages" relColumn="ShipmentRequest" />
+      </page>
+      <page>
+        <text>=trOrderCargoServices</text>
+        <ChildGrid name="CargoIncomes" relColumn="Cargo" source="Cargo" />
       </page>
     </TabbedPages>
   </FlowPanel>

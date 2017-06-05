@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="ExpenditureTypes"
+       idName="ExpenditureTypesID"
+>
+  <Fields>
+    <String name="ExpenditureTypeName" notNull="true" unique="true" precision="100"
+            label="=trdExpenditureType" />
+
+    <Relation name="Debit" relation="ChartOfAccounts" label="=debit" />
+    <Relation name="Credit" relation="ChartOfAccounts" label="=credit" />
+
+    <Enum name="CostBasis" key="TradeCostBasis" label="=costBasis" />
+
+    <Relation name="Supplier" relation="Companies" label="=trdSupplier" />
+
+    <Relation name="Operation" relation="TradeOperations" label="=trdOperation" />
+    <Relation name="Warehouse" relation="Warehouses" label="=warehouse" />
+
+    <Relation name="Item" relation="Items" label="=item" />
+
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
+              label="=dimensions" />
+
+    <String name="Background" precision="100" label="=backgroundColor" />
+    <String name="Foreground" precision="100" label="=foregroundColor" />
+  </Fields>
+</Table>

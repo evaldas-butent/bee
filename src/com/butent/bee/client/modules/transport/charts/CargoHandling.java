@@ -4,84 +4,66 @@ import com.google.common.collect.Range;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.data.Data;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.utils.BeeUtils;
 
 class CargoHandling implements HasDateRange, HasShipmentInfo {
 
-  private static final String notesLabel =
-      Data.getColumnLabel(VIEW_CARGO_HANDLING, ALS_CARGO_HANDLING_NOTES);
-
-  private final JustDate loadingDate;
-  private final Long loadingCountry;
-  private final String loadingPlace;
-  private final String loadingPostIndex;
-  private final Long loadingCity;
-  private final String loadingNumber;
-
-  private final JustDate unloadingDate;
-  private final Long unloadingCountry;
-  private final String unloadingPlace;
-  private final String unloadingPostIndex;
-  private final Long unloadingCity;
-  private final String unloadingNumber;
-
-  private final String notes;
+  private final boolean unloading;
+  private final JustDate date;
+  private final Long country;
+  private final String place;
+  private final String postIndex;
+  private final Long city;
+  private final String number;
 
   private final Range<JustDate> range;
 
   CargoHandling(SimpleRow row) {
-    this.loadingDate = Places.getLoadingDate(row, loadingColumnAlias(COL_PLACE_DATE));
-    this.loadingCountry = row.getLong(loadingColumnAlias(COL_PLACE_COUNTRY));
-    this.loadingPlace = row.getValue(loadingColumnAlias(COL_PLACE_ADDRESS));
-    this.loadingPostIndex = row.getValue(loadingColumnAlias(COL_PLACE_POST_INDEX));
-    this.loadingCity = row.getLong(loadingColumnAlias(COL_PLACE_CITY));
-    this.loadingNumber = row.getValue(loadingColumnAlias(COL_PLACE_NUMBER));
+    this.unloading = BeeUtils.unbox(row.getBoolean(VAR_UNLOADING));
+    this.date = Places.getDate(row, COL_PLACE_DATE);
+    this.country = row.getLong(COL_PLACE_COUNTRY);
+    this.place = row.getValue(COL_PLACE_ADDRESS);
+    this.postIndex = row.getValue(COL_PLACE_POST_INDEX);
+    this.city = row.getLong(COL_PLACE_CITY);
+    this.number = row.getValue(COL_PLACE_NUMBER);
 
-    this.unloadingDate = Places.getUnloadingDate(row, unloadingColumnAlias(COL_PLACE_DATE));
-    this.unloadingCountry = row.getLong(unloadingColumnAlias(COL_PLACE_COUNTRY));
-    this.unloadingPlace = row.getValue(unloadingColumnAlias(COL_PLACE_ADDRESS));
-    this.unloadingPostIndex = row.getValue(unloadingColumnAlias(COL_PLACE_POST_INDEX));
-    this.unloadingCity = row.getLong(unloadingColumnAlias(COL_PLACE_CITY));
-    this.unloadingNumber = row.getValue(unloadingColumnAlias(COL_PLACE_NUMBER));
-
-    this.notes = row.getValue(COL_CARGO_HANDLING_NOTES);
-
-    this.range = TimeBoardHelper.getActivity(this.loadingDate, this.unloadingDate);
+    this.range = TimeBoardHelper.getActivity(unloading ? null : this.date,
+        unloading ? this.date : null);
   }
 
   @Override
   public Long getLoadingCountry() {
-    return loadingCountry;
+    return unloading ? null : country;
   }
 
   @Override
   public JustDate getLoadingDate() {
-    return loadingDate;
+    return unloading ? null : date;
   }
 
   @Override
   public String getLoadingPlace() {
-    return loadingPlace;
+    return unloading ? null : place;
   }
 
   @Override
   public String getLoadingPostIndex() {
-    return loadingPostIndex;
+    return unloading ? null : postIndex;
   }
 
   @Override
   public Long getLoadingCity() {
-    return loadingCity;
+    return unloading ? null : city;
   }
 
   @Override
   public String getLoadingNumber() {
-    return loadingNumber;
+    return unloading ? null : number;
   }
 
   @Override
@@ -91,37 +73,36 @@ class CargoHandling implements HasDateRange, HasShipmentInfo {
 
   @Override
   public Long getUnloadingCountry() {
-    return unloadingCountry;
+    return unloading ? country : null;
   }
 
   @Override
   public JustDate getUnloadingDate() {
-    return unloadingDate;
+    return unloading ? date : null;
   }
 
   @Override
   public String getUnloadingPlace() {
-    return unloadingPlace;
+    return unloading ? place : null;
   }
 
   @Override
   public String getUnloadingPostIndex() {
-    return unloadingPostIndex;
+    return unloading ? postIndex : null;
   }
 
   @Override
   public Long getUnloadingCity() {
-    return unloadingCity;
+    return unloading ? city : null;
   }
 
   @Override
   public String getUnloadingNumber() {
-    return unloadingNumber;
+    return unloading ? number : null;
   }
 
-  String getTitle(String loadInfo, String unloadInfo) {
+  static String getTitle(String loadInfo, String unloadInfo) {
     return TimeBoardHelper.buildTitle(Localized.dictionary().intermediateLoading(), loadInfo,
-        Localized.dictionary().intermediateUnloading(), unloadInfo,
-        notesLabel, notes);
+        Localized.dictionary().intermediateUnloading(), unloadInfo);
   }
 }

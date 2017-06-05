@@ -1,11 +1,10 @@
 package com.butent.bee.client.modules.trade.acts;
 
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.InputDate;
@@ -138,7 +137,8 @@ class TradeActServicePicker extends TradeActItemPicker {
     Map<Long, JustDate> result = new HashMap<>();
 
     for (Long id : datesFrom.keySet()) {
-      result.put(id, TimeUtils.parseDate(datesFrom.get(id).getValue()));
+      result.put(id, TimeUtils.parseDate(datesFrom.get(id).getValue(),
+        Format.getDefaultDateOrdering()));
     }
 
     return result;
@@ -148,7 +148,8 @@ class TradeActServicePicker extends TradeActItemPicker {
     Map<Long, JustDate> result = new HashMap<>();
 
     for (Long id : datesTo.keySet()) {
-      result.put(id, TimeUtils.parseDate(datesTo.get(id).getValue()));
+      result.put(id, TimeUtils.parseDate(datesTo.get(id).getValue(),
+        Format.getDefaultDateOrdering()));
     }
 
     return result;
@@ -190,13 +191,7 @@ class TradeActServicePicker extends TradeActItemPicker {
       return input;
     }
 
-    input.addChangeHandler(new ChangeHandler() {
-
-      @Override
-      public void onChange(ChangeEvent event) {
-        store.put(id, input.getNumber());
-      }
-    });
+    input.addChangeHandler(event -> store.put(id, input.getNumber()));
 
     return input;
   }

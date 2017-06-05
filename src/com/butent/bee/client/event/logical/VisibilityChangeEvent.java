@@ -14,6 +14,7 @@ import java.util.Map;
 
 public class VisibilityChangeEvent extends Event<VisibilityChangeEvent.Handler> {
 
+  @FunctionalInterface
   public interface Handler extends EventHandler {
     void onVisibilityChange(VisibilityChangeEvent event);
   }

@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -196,7 +197,7 @@ public final class BeeParameter implements BeeSerializable {
           defValue = val;
           break;
         case USER_VALUES:
-          for (Entry<String, String> entry : Codec.deserializeMap(val).entrySet()) {
+          for (Entry<String, String> entry : Codec.deserializeLinkedHashMap(val).entrySet()) {
             userValues.put(BeeUtils.toLongOrNull(entry.getKey()), entry.getValue());
           }
           break;
@@ -406,11 +407,11 @@ public final class BeeParameter implements BeeSerializable {
         break;
 
       case DATE:
-        val = TimeUtils.parseDate(expr);
+        val = TimeUtils.parseDate(expr, DateOrdering.DEFAULT);
         break;
 
       case DATETIME:
-        val = TimeUtils.parseDateTime(expr);
+        val = TimeUtils.parseDateTime(expr, DateOrdering.DEFAULT);
         break;
 
       case COLLECTION:
@@ -424,7 +425,7 @@ public final class BeeParameter implements BeeSerializable {
         break;
 
       case MAP:
-        val = Codec.deserializeMap(expr);
+        val = Codec.deserializeLinkedHashMap(expr);
         break;
 
       case NUMBER:

@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.orders;
 
-import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -11,7 +10,6 @@ import com.butent.bee.client.modules.classifiers.ItemsPicker;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
@@ -21,10 +19,6 @@ public class OrderTmplItemsPicker extends ItemsPicker {
   @Override
   public void getItems(Filter filter, final RowSetCallback callback) {
     ParameterList params = OrdersKeeper.createSvcArgs(SVC_GET_TMPL_ITEMS_FOR_SELECTION);
-
-    if (DataUtils.hasId(getLastRow())) {
-      params.addDataItem(COL_ORDER, getLastRow().getId());
-    }
 
     if (filter != null) {
       params.addDataItem(Service.VAR_VIEW_WHERE, filter.serialize());
@@ -37,6 +31,7 @@ public class OrderTmplItemsPicker extends ItemsPicker {
           callback.onSuccess(BeeRowSet.restore(response.getResponseAsString()));
         } else {
           BeeKeeper.getScreen().notifyWarning(Localized.dictionary().nothingFound());
+          getSpinner().setStyleName(STYLE_SEARCH_SPINNER_LOADING, false);
         }
       }
     });

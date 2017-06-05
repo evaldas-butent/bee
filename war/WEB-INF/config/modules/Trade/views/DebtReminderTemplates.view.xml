@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="DebtReminderTemplates" source="DebtRemindTemplates"
-  caption="=trdReminderTemplates" newRowCaption="=reminderTemplate"
-  >
+      name="DebtReminderTemplates" source="DebtRemindTemplates"
+      caption="=trdReminderTemplates" newRowCaption="=reminderTemplate"
+>
   <Columns>
     <SimpleColumn name="Name" />
     <SimpleColumn name="Subject" label="=mailSubject"/>
@@ -11,9 +11,8 @@
     <SimpleColumn name="FirstParagraph" />
     <SimpleColumn name="LastParagraph" />
   </Columns>
-  
+
   <Order>
     <OrderBy column="Name" />
   </Order>
 </View>
- 

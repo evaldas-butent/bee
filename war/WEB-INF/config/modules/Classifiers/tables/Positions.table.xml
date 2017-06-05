@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="Positions"
-  idName="PositionID"
-  >
+       name="Positions"
+       idName="PositionID"
+>
   <Fields>
-    <String name="Name" precision="100" notNull="true" unique="true" label="=personPosition" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="=personPosition"
+            translatable="true" />
     <Relation name="Role" relation="Roles" label="=role" />
   </Fields>
 </Table>

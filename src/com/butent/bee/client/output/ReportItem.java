@@ -1,6 +1,5 @@
 package com.butent.bee.client.output;
 
-import com.google.common.base.Predicates;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
@@ -16,7 +15,6 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.report.ReportFunction;
@@ -33,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 
 public abstract class ReportItem implements BeeSerializable {
 
@@ -202,6 +201,12 @@ public abstract class ReportItem implements BeeSerializable {
 
   public abstract ReportValue evaluate(SimpleRow row);
 
+  /**
+   * @param rowGroup
+   * @param rowValues
+   * @param colGroup
+   * @param resultHolder
+   */
   public ReportValue evaluate(ReportValue rowGroup, ReportValue[] rowValues, ReportValue colGroup,
       ResultHolder resultHolder) {
     Assert.unsupported();
@@ -303,7 +308,7 @@ public abstract class ReportItem implements BeeSerializable {
 
     DndHelper.makeSource(widget, contentType, idx, null);
     DndHelper.makeTarget(widget, Collections.singletonList(contentType), STYLE_ITEM + "-over",
-        Predicates.not(Predicates.equalTo((Object) idx)), (ev, index) -> {
+        o -> !Objects.equals(o, idx), (ev, index) -> {
           T element = collection.remove((int) index);
 
           if (idx > collection.size()) {
@@ -322,7 +327,7 @@ public abstract class ReportItem implements BeeSerializable {
     if (BeeUtils.isEmpty(data)) {
       return null;
     }
-    Map<String, String> map = Codec.deserializeMap(data);
+    Map<String, String> map = Codec.deserializeLinkedHashMap(data);
     String clazz = map.get(Serial.CLAZZ.name());
     String expression = map.get(Serial.EXPRESSION.name());
     String caption = map.get(Serial.CAPTION.name());
@@ -358,6 +363,9 @@ public abstract class ReportItem implements BeeSerializable {
 
     } else if (NameUtils.getClassName(ReportResultItem.class).equals(clazz)) {
       item = new ReportResultItem(expression, caption);
+
+    } else if (NameUtils.getClassName(ReportTimeDurationItem.class).equals(clazz)) {
+      item = new ReportTimeDurationItem(expression, caption);
 
     } else {
       Assert.unsupported("Unsupported class name: " + clazz);

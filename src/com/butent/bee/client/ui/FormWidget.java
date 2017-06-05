@@ -24,6 +24,7 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.composite.TabBar;
+import com.butent.bee.client.composite.TabGroup;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.composite.VolumeSlider;
 import com.butent.bee.client.data.Data;
@@ -68,19 +69,22 @@ import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.modules.mail.Relations;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.richtext.RichTextEditor;
+import com.butent.bee.client.style.ColorStyleProvider;
+import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.style.HasTextAlign;
 import com.butent.bee.client.style.HasVerticalAlign;
+import com.butent.bee.client.style.StyleProvider;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.TreeContainer;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.Audio;
-import com.butent.bee.client.widget.Video;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Canvas;
 import com.butent.bee.client.widget.CustomDiv;
@@ -124,6 +128,7 @@ import com.butent.bee.client.widget.Summary;
 import com.butent.bee.client.widget.Svg;
 import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.client.widget.Toggle;
+import com.butent.bee.client.widget.Video;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasBounds;
@@ -140,6 +145,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasPercentageTag;
 import com.butent.bee.shared.data.HasRelatedCurrency;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.font.FontAwesome;
@@ -147,6 +153,7 @@ import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
@@ -263,6 +270,7 @@ public enum FormWidget {
   SUMMARY_PROXY("SummaryProxy", null),
   SVG("Svg", EnumSet.of(Type.DISPLAY)),
   TAB_BAR("TabBar", EnumSet.of(Type.DISPLAY)),
+  TAB_GROUP("TabGroup", EnumSet.of(Type.DISPLAY)),
   TABBED_PAGES("TabbedPages", EnumSet.of(Type.PANEL)),
   TABLE("Table", EnumSet.of(Type.IS_TABLE)),
   TEXT_LABEL("TextLabel", EnumSet.of(Type.DISPLAY)),
@@ -392,10 +400,6 @@ public enum FormWidget {
       }
     }
     return null;
-  }
-
-  public static boolean isFormWidget(String tagName) {
-    return getByTagName(tagName) != null;
   }
 
   private static void addHandler(IdentifiableWidget widget, String event, String handler) {
@@ -532,6 +536,11 @@ public enum FormWidget {
       widget.setCurrencySource(currencySource);
     }
 
+    String percentageTag = attributes.get(HasPercentageTag.ATTR_PERCENTAGE_TAG);
+    if (!BeeUtils.isEmpty(percentageTag)) {
+      widget.setPercentageTag(percentageTag);
+    }
+
     return widget;
   }
 
@@ -553,7 +562,7 @@ public enum FormWidget {
       int row, int col, String viewName, List<BeeColumn> columns, WidgetDescriptionCallback wdcb,
       WidgetInterceptor widgetInterceptor) {
 
-    boolean ok = false;
+    boolean ok;
     String tag = XmlUtils.getLocalName(element);
 
     if (BeeUtils.same(tag, TAG_TEXT)) {
@@ -1025,6 +1034,10 @@ public enum FormWidget {
 
   private static final String ATTR_RESIZABLE = "resizable";
 
+  private static final String ATTR_SPELL_CHECK = "spellcheck";
+
+  private static final String ATTR_PREDICATE = "predicate";
+
   private static final String TAG_CSS = "css";
 
   private static final String TAG_HANDLER = "handler";
@@ -1278,7 +1291,7 @@ public enum FormWidget {
 
       case FILE_COLLECTOR:
         IdentifiableWidget face = null;
-        for (Iterator<Element> it = children.iterator(); it.hasNext();) {
+        for (Iterator<Element> it = children.iterator(); it.hasNext(); ) {
           Element child = it.next();
           if (BeeUtils.same(XmlUtils.getLocalName(child), TAG_FACE)) {
             face = createFace(child);
@@ -1389,13 +1402,17 @@ public enum FormWidget {
 
       case INPUT_AREA:
         widget = new InputArea();
+        String spellCheck = attributes.get(ATTR_SPELL_CHECK);
+        if (BeeUtils.isBoolean(spellCheck)) {
+          ((InputArea) widget).setSpellCheck(BeeUtils.toBoolean(spellCheck));
+        }
         break;
 
       case INPUT_DATE:
         widget = new InputDate();
         format = attributes.get(UiConstants.ATTR_FORMAT);
         if (!BeeUtils.isEmpty(format)) {
-          ((InputDate) widget).setDateTimeFormat(Format.getDateTimeFormat(format));
+          ((InputDate) widget).setDateTimeFormat(Format.parseDateTimeFormat(format));
         }
         break;
 
@@ -1403,7 +1420,7 @@ public enum FormWidget {
         widget = new InputDateTime();
         format = attributes.get(UiConstants.ATTR_FORMAT);
         if (!BeeUtils.isEmpty(format)) {
-          ((InputDateTime) widget).setDateTimeFormat(Format.getDateTimeFormat(format));
+          ((InputDateTime) widget).setDateTimeFormat(Format.parseDateTimeFormat(format));
         }
         break;
 
@@ -1737,6 +1754,11 @@ public enum FormWidget {
             ? new TabBar(orientation) : new TabBar(stylePrefix, orientation);
         break;
 
+      case TAB_GROUP:
+        stylePrefix = attributes.get(ATTR_STYLE_PREFIX);
+        widget = new TabGroup(stylePrefix);
+        break;
+
       case TABBED_PAGES:
         stylePrefix = attributes.get(ATTR_STYLE_PREFIX);
         widget = BeeUtils.isEmpty(stylePrefix) ? new TabbedPages() : new TabbedPages(stylePrefix);
@@ -1762,11 +1784,29 @@ public enum FormWidget {
 
       case TOGGLE:
         String upFace = attributes.get(ATTR_UP_FACE);
-        String downFace = attributes.get(ATTR_DOWN_FACE);
-        if (BeeUtils.allEmpty(upFace, downFace)) {
-          widget = new Toggle();
+        String dnFace = attributes.get(ATTR_DOWN_FACE);
+
+        if (BeeUtils.allNotEmpty(upFace, dnFace)) {
+          stylePrefix = attributes.get(ATTR_STYLE_PREFIX);
+          boolean checked = BeeConst.isTrue(attributes.get(ATTR_CHECKED));
+
+          if (Localized.maybeTranslatable(upFace) && Localized.maybeTranslatable(dnFace)) {
+            widget = new Toggle(Localized.maybeTranslate(upFace), Localized.maybeTranslate(dnFace),
+                stylePrefix, checked);
+
+          } else {
+            FontAwesome faUp = FontAwesome.parse(upFace);
+            FontAwesome faDn = FontAwesome.parse(dnFace);
+
+            if (faUp != null && faDn != null) {
+              widget = new Toggle(faUp, faDn, stylePrefix, checked);
+            } else {
+              widget = new Toggle(upFace, dnFace, stylePrefix, checked);
+            }
+          }
+
         } else {
-          widget = new Toggle(upFace, downFace);
+          widget = new Toggle();
         }
         break;
 
@@ -1832,8 +1872,8 @@ public enum FormWidget {
         Element editForm = XmlUtils.getFirstChildElement(element, "form");
 
         widget = new TreeContainer(attributes.get(UiConstants.ATTR_CAPTION),
-            editForm == null || BeeUtils.toBoolean(attributes.get("hideActions")),
-            treeViewName, treeFavoriteName);
+            editForm != null ? Action.parse(attributes.get(FormDescription.ATTR_DISABLED_ACTIONS))
+                : EnumSet.allOf(Action.class), treeViewName, treeFavoriteName);
 
         ((TreeView) widget).setViewPresenter(new TreePresenter((TreeView) widget,
             treeViewName, attributes.get("parentColumn"),
@@ -1987,7 +2027,8 @@ public enum FormWidget {
     }
 
     if (!dynStyles.isEmpty()) {
-      widgetDescription.setDynStyles(dynStyles);
+      widgetDescription.setConditionalStyle(ConditionalStyle.create(dynStyles,
+          widgetDescription.getSource(), columns));
     }
 
     if (!attributes.isEmpty()) {
@@ -2011,6 +2052,18 @@ public enum FormWidget {
           ((ListBox) widget).setVisibleItemCount(cnt);
         } else {
           ((ListBox) widget).updateSize();
+        }
+      }
+
+      if (widgetDescription.getConditionalStyle() == null) {
+        String bgSource = attributes.get(UiConstants.ATTR_BACKGROUND_SOURCE);
+        String fgSource = attributes.get(UiConstants.ATTR_FOREGROUND_SOURCE);
+
+        if (BeeUtils.anyNotEmpty(bgSource, fgSource)) {
+          StyleProvider styleProvider = ColorStyleProvider.create(columns, bgSource, fgSource);
+          if (styleProvider != null) {
+            widgetDescription.setConditionalStyle(ConditionalStyle.create(styleProvider));
+          }
         }
       }
     }
@@ -2345,14 +2398,25 @@ public enum FormWidget {
         Widget content = hc.getContent().asWidget();
         Collection<HasSummaryChangeHandlers> sources = SummaryChangeEvent.findSources(content);
 
+        String predicate = child.getAttribute(ATTR_PREDICATE);
+        Evaluator rowPredicate = BeeUtils.isEmpty(predicate)
+            ? null : Evaluator.create(new Calculation(predicate, null), null, columns);
+
         if (hc.isHeaderText() || hc.isHeaderHtml()) {
-          tab = ((TabbedPages) parent).add(content, hc.getHeaderString(), null, sources);
+          tab = ((TabbedPages) parent).add(content, hc.getHeaderString(), null, sources,
+              rowPredicate);
         } else {
-          tab = ((TabbedPages) parent).add(content, hc.getHeaderWidget().asWidget(), null, sources);
+          tab = ((TabbedPages) parent).add(content, hc.getHeaderWidget().asWidget(), null, sources,
+              rowPredicate);
         }
 
         StyleUtils.updateAppearance(tab.getElement(), child.getAttribute(UiConstants.ATTR_CLASS),
             child.getAttribute(UiConstants.ATTR_STYLE));
+
+        String key = child.getAttribute(UiConstants.ATTR_KEY);
+        if (!BeeUtils.isEmpty(key)) {
+          DomUtils.setDataKey(tab.getElement(), key);
+        }
       }
 
     } else if (this == RADIO && BeeUtils.same(childTag, TAG_OPTION)) {
@@ -2383,12 +2447,14 @@ public enum FormWidget {
     } else if (this == TREE && parent instanceof Tree) {
       processTree((Tree) parent, child);
 
-    } else if (this == TAB_BAR && parent instanceof TabBar && BeeUtils.same(childTag, TAG_TAB)) {
+    } else if ((this == TAB_BAR || this == TAB_GROUP) && parent instanceof TabGroup
+        && BeeUtils.same(childTag, TAG_TAB)) {
+
       for (Element tabContent : XmlUtils.getChildrenElements(child)) {
         if (XmlUtils.tagIs(tabContent, TAG_TEXT)) {
           String text = Localized.maybeTranslate(XmlUtils.getText(tabContent));
           if (!BeeUtils.isEmpty(text)) {
-            ((TabBar) parent).addItem(text);
+            ((TabGroup) parent).addItem(text);
             break;
           }
         }
@@ -2396,7 +2462,7 @@ public enum FormWidget {
         if (XmlUtils.tagIs(tabContent, TAG_HTML)) {
           String html = XmlUtils.getText(tabContent);
           if (!BeeUtils.isEmpty(html)) {
-            ((TabBar) parent).addItem(html);
+            ((TabGroup) parent).addItem(html);
             break;
           }
         }
@@ -2404,14 +2470,14 @@ public enum FormWidget {
         IdentifiableWidget w = createIfWidget(formName, tabContent, viewName, columns, wdcb,
             widgetInterceptor);
         if (w != null) {
-          ((TabBar) parent).addItem(w.asWidget());
+          ((TabGroup) parent).addItem(w.asWidget());
           break;
         }
       }
     }
   }
 
-  private void processTree(HasTreeItems parent, Element child) {
+  private static void processTree(HasTreeItems parent, Element child) {
     if (!XmlUtils.tagIs(child, TAG_TREE_ITEM)) {
       return;
     }

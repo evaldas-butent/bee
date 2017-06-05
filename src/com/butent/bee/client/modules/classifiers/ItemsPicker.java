@@ -6,13 +6,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.HasSelectionHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
@@ -35,7 +30,6 @@ import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
@@ -88,6 +82,8 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   private static final String STYLE_SEARCH_BY = STYLE_SEARCH_PREFIX + "by";
   private static final String STYLE_SEARCH_BOX = STYLE_SEARCH_PREFIX + "box";
   private static final String STYLE_SEARCH_COMMAND = STYLE_SEARCH_PREFIX + "command";
+  private static final String STYLE_SEARCH_SPINNER = STYLE_SEARCH_PREFIX + "spinner";
+  public static final String STYLE_SEARCH_SPINNER_LOADING = STYLE_SEARCH_SPINNER + "-loading";
 
   private static final String STYLE_ITEM_PANEL = STYLE_PREFIX + "item-panel";
 
@@ -131,6 +127,8 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
   private static final String STYLE_QTY_PREFIX = STYLE_PREFIX + "qty-";
   private static final String STYLE_QTY_INPUT = STYLE_QTY_PREFIX + "input";
+
+  private static final String DATA_QTY = "qty";
 
   private static final List<String> SEARCH_COLUMNS = Lists.newArrayList(COL_ITEM_NAME,
       COL_ITEM_ARTICLE, COL_ITEM_TYPE, COL_ITEM_GROUP, COL_CATEGORY);
@@ -230,21 +228,19 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
   private ChangeHandler quantityChangeHandler;
   private boolean isOrder;
+  private FaLabel spinner;
 
   public ItemsPicker() {
     super(STYLE_CONTAINER);
 
     add(createSearch());
-    add(notification);
+    add(new Notification());
     add(itemPanel);
 
-    itemPanel.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Element target = EventUtils.getEventTargetElement(event);
-        if (target != null) {
-          onCellClick(target);
-        }
+    itemPanel.addClickHandler(event -> {
+      Element target = EventUtils.getEventTargetElement(event);
+      if (target != null) {
+        onCellClick(target);
       }
     });
   }
@@ -496,14 +492,11 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     searchBox.setMaxLength(20);
     searchBox.addStyleName(STYLE_SEARCH_BOX);
 
-    searchBox.addKeyDownHandler(new KeyDownHandler() {
-      @Override
-      public void onKeyDown(KeyDownEvent event) {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-          String query = BeeUtils.trim(searchBox.getValue());
-          if (!BeeUtils.isEmpty(query)) {
-            doSearch(Lists.newArrayList(searchBy.getValue()), Lists.newArrayList(query));
-          }
+    searchBox.addKeyDownHandler(event -> {
+      if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+        String query = BeeUtils.trim(searchBox.getValue());
+        if (!BeeUtils.isEmpty(query)) {
+          doSearch(Lists.newArrayList(searchBy.getValue()), Lists.newArrayList(query));
         }
       }
     });
@@ -513,14 +506,11 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     searchBox2.setMaxLength(20);
     searchBox2.addStyleName(STYLE_SEARCH_BOX);
     searchBox2.addStyleName(STYLE_SEARCH_BOX + "-2");
-    searchBox2.addKeyDownHandler(new KeyDownHandler() {
-      @Override
-      public void onKeyDown(KeyDownEvent event) {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-          doSearch(Lists.newArrayList(searchBy.getValue(), searchBy2.getValue()), Lists
-              .newArrayList(BeeUtils.trim(searchBox.getValue()),
-                  BeeUtils.trim(searchBox2.getValue())));
-        }
+    searchBox2.addKeyDownHandler(event -> {
+      if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+        doSearch(Lists.newArrayList(searchBy.getValue(), searchBy2.getValue()), Lists
+            .newArrayList(BeeUtils.trim(searchBox.getValue()),
+                BeeUtils.trim(searchBox2.getValue())));
       }
     });
 
@@ -528,20 +518,21 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
     FaLabel searchCommand = new FaLabel(FontAwesome.SEARCH, STYLE_SEARCH_COMMAND);
 
-    searchCommand.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        doSearch(Lists.newArrayList(searchBy.getValue(), searchBy2.getValue()), Lists
-            .newArrayList(BeeUtils.trim(searchBox.getValue()),
-                BeeUtils.trim(searchBox2.getValue())));
-      }
-    });
-
+    searchCommand.addClickHandler(
+      event -> doSearch(Lists.newArrayList(searchBy.getValue(), searchBy2.getValue()), Lists
+          .newArrayList(BeeUtils.trim(searchBox.getValue()),
+            BeeUtils.trim(searchBox2.getValue()))));
     panel.add(searchCommand);
     panel.add(searchBy2);
     panel.add(searchBox2);
+    spinner = new FaLabel(FontAwesome.SPINNER, STYLE_SEARCH_SPINNER);
+    panel.add(spinner);
 
     return panel;
+  }
+
+  public FaLabel getSpinner() {
+    return spinner;
   }
 
   private void doSearch(List<String> byList, List<String> queryList) {
@@ -575,9 +566,13 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     }
 
     if (ok) {
+      spinner.addStyleName(STYLE_SEARCH_SPINNER_LOADING);
+
       getItems(filter, new RowSetCallback() {
         @Override
         public void onSuccess(BeeRowSet result) {
+          spinner.setStyleName(STYLE_SEARCH_SPINNER_LOADING, false);
+
           Map<Long, Double> quantities = getQuantities();
 
           Collection<Long> whs = TradeActKeeper.extractWarehouses(result);
@@ -607,13 +602,10 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
           Map<Long, String> warehouses = TradeActKeeper.getWarehouses(whs);
           renderItems(quantities, warehouses, itemPanel, items);
 
-          Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-              Popup popup = UiHelper.getParentPopup(ItemsPicker.this);
-              if (popup != null) {
-                popup.onResize();
-              }
+          Scheduler.get().scheduleDeferred(() -> {
+            Popup popup = UiHelper.getParentPopup(ItemsPicker.this);
+            if (popup != null) {
+              popup.onResize();
             }
           });
         }
@@ -635,11 +627,10 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
   private ChangeHandler ensureQuantityChangeHandler() {
     if (quantityChangeHandler == null) {
-      quantityChangeHandler = new ChangeHandler() {
-        @Override
-        public void onChange(ChangeEvent event) {
-          if (event.getSource() instanceof InputNumber) {
-            InputNumber input = (InputNumber) event.getSource();
+      quantityChangeHandler = event -> {
+        if (event.getSource() instanceof InputNumber) {
+          InputNumber input = (InputNumber) event.getSource();
+          if (DomUtils.dataEquals(input.getElement(), DATA_QTY, DATA_QTY)) {
             onQuantityChange(input.getElement(), input.getNumber());
           }
         }
@@ -659,7 +650,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     for (InputNumber input : inputs) {
       Double qty = input.getNumber();
 
-      if (BeeUtils.isPositive(qty)) {
+      if (BeeUtils.isPositive(qty) && DomUtils.dataEquals(input.getElement(), DATA_QTY, DATA_QTY)) {
         long id = DomUtils.getDataIndexLong(DomUtils.getParentRow(input.getElement(), false));
         if (DataUtils.isId(id)) {
           result.put(id, qty);
@@ -768,15 +759,12 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     FaLabel save = new FaLabel(FontAwesome.SAVE);
     save.addStyleName(STYLE_SAVE);
 
-    save.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Map<Long, Double> quantities = getQuantities();
-        if (!quantities.isEmpty()) {
-          selectItems(quantities);
-        }
-        dialog.close();
+    save.addClickHandler(event -> {
+      Map<Long, Double> quantities = getQuantities();
+      if (!quantities.isEmpty()) {
+        selectItems(quantities);
       }
+      dialog.close();
     });
 
     dialog.addAction(Action.SAVE, save);
@@ -784,13 +772,11 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     FaLabel close = new FaLabel(FontAwesome.CLOSE);
     close.addStyleName(STYLE_CLOSE);
 
-    close.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        final Map<Long, Double> quantities = getQuantities();
+    close.addClickHandler(event -> {
+      final Map<Long, Double> quantities = getQuantities();
 
-        if (quantities.isEmpty()) {
-          dialog.close();
+      if (quantities.isEmpty()) {
+        dialog.close();
 
         } else {
           Global.decide(Localized.dictionary().goods(),
@@ -807,25 +793,21 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
                   dialog.close();
                 }
 
-                @Override
-                public void onDeny() {
-                  dialog.close();
-                }
-              }, DialogConstants.DECISION_YES);
-        }
+              @Override
+              public void onDeny() {
+                dialog.close();
+              }
+            }, DialogConstants.DECISION_YES);
       }
     });
 
     dialog.addAction(Action.CLOSE, close);
 
-    dialog.addOpenHandler(new OpenEvent.Handler() {
-      @Override
-      public void onOpen(OpenEvent event) {
-        Widget searchBox = UiHelper.getChildByStyleName(ItemsPicker.this, STYLE_SEARCH_BOX);
-        if (searchBox instanceof Editor) {
-          ((Editor) searchBox).clearValue();
-          ((Editor) searchBox).setFocus(true);
-        }
+    dialog.addOpenHandler(event -> {
+      Widget searchBox = UiHelper.getChildByStyleName(ItemsPicker.this, STYLE_SEARCH_BOX);
+      if (searchBox instanceof Editor) {
+        ((Editor) searchBox).clearValue();
+        ((Editor) searchBox).setFocus(true);
       }
     });
 
@@ -869,6 +851,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       input.setValue(qty);
     }
 
+    DomUtils.setDataProperty(input.getElement(), DATA_QTY, DATA_QTY);
     input.addChangeHandler(ensureQuantityChangeHandler());
 
     return input;

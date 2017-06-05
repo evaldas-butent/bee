@@ -2,8 +2,6 @@ package com.butent.bee.client.modules.discussions;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HasHandlers;
@@ -22,7 +20,6 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.event.logical.SelectorEvent.Handler;
 import com.butent.bee.client.modules.mail.Relations;
 import com.butent.bee.client.presenter.Presenter;
@@ -42,7 +39,6 @@ import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -52,6 +48,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
@@ -72,6 +69,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
@@ -84,7 +82,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
   private enum FileStoreMode {
     NEW,
     RENAME,
-    DELETE;
+    DELETE
   }
 
   private class FileUploadConsumer implements Consumer<FileStoreMode> {
@@ -166,35 +164,29 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
         return;
       }
 
-      fileCollector.addSelectionHandler(new SelectionHandler<FileInfo>() {
+      fileCollector.addSelectionHandler(event -> {
+        FileInfo fileInfo = event.getSelectedItem();
 
-        @Override
-        public void onSelection(SelectionEvent<FileInfo> event) {
-          FileInfo fileInfo = event.getSelectedItem();
+        if (DiscussionsUtils.isFileSizeLimitExceeded(fileInfo.getSize(),
+            BeeUtils.toLongOrNull(discussParams.get(PRM_MAX_UPLOAD_FILE_SIZE)))) {
 
-          if (DiscussionsUtils.isFileSizeLimitExceeded(fileInfo.getSize(),
-              BeeUtils.toLongOrNull(discussParams.get(PRM_MAX_UPLOAD_FILE_SIZE)))) {
+          BeeKeeper.getScreen().notifyWarning(
+              Localized.dictionary().fileSizeExceeded(fileInfo.getSize(),
+                  BeeUtils.toLong(discussParams.get(PRM_MAX_UPLOAD_FILE_SIZE)) * 1024 * 1024),
+              "("
+                  + fileInfo.getName() + ")");
 
-            BeeKeeper.getScreen().notifyWarning(
-                Localized.dictionary().fileSizeExceeded(fileInfo.getSize(),
-                    BeeUtils.toLong(discussParams.get(PRM_MAX_UPLOAD_FILE_SIZE)) * 1024 * 1024),
-                "("
-                    + fileInfo.getName() + ")");
-
-            fileCollector.clear();
-            return;
-          }
-
-          if (DiscussionsUtils.isForbiddenExtention(BeeUtils.getSuffix(fileInfo.getName(),
-              BeeConst.STRING_POINT), discussParams.get(PRM_FORBIDDEN_FILES_EXTENTIONS))) {
-
-            BeeKeeper.getScreen().notifyWarning(Localized.dictionary().discussInvalidFile(),
-                fileInfo.getName());
-            fileCollector.clear();
-            return;
-          }
+          fileCollector.clear();
+          return;
         }
 
+        if (DiscussionsUtils.isForbiddenExtention(BeeUtils.getSuffix(fileInfo.getName(),
+            BeeConst.STRING_POINT), discussParams.get(PRM_FORBIDDEN_FILES_EXTENTIONS))) {
+
+          BeeKeeper.getScreen().notifyWarning(Localized.dictionary().discussInvalidFile(),
+              fileInfo.getName());
+          fileCollector.clear();
+        }
       });
     }
 
@@ -239,14 +231,10 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
     if (BeeUtils.same(name, COL_TOPIC) && widget instanceof DataSelector) {
       final DataSelector tds = (DataSelector) widget;
-      Handler selHandler = new Handler() {
-
-        @Override
-        public void onDataSelector(SelectorEvent event) {
-          Label label = (Label) getFormView().getWidgetByName(WIDGET_LABEL_DISPLAY_IN_BOARD);
-          if (label != null) {
-            label.setStyleName(StyleUtils.NAME_REQUIRED, !BeeUtils.isEmpty(tds.getValue()));
-          }
+      Handler selHandler = event -> {
+        Label label = (Label) getFormView().getWidgetByName(WIDGET_LABEL_DISPLAY_IN_BOARD);
+        if (label != null) {
+          label.setStyleName(StyleUtils.NAME_REQUIRED, !BeeUtils.isEmpty(tds.getValue()));
         }
       };
 
@@ -283,7 +271,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     if (parentGrid != null) {
       String gridKey = parentGrid.getGridKey();
 
-      if (Objects.equals(gridKey, "Discussions_observed")) {
+      if (Objects.equals(gridKey, DiscussionsListType.OBSERVED.getSupplierKey())) {
         isPublic = false;
       }
     }
@@ -360,15 +348,15 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
         if (response.hasErrors()) {
           event.getCallback().onFailure(response.getErrors());
-        } else if (response.hasResponse(Long.class)) {
-          Long discussionId = response.getResponseAsLong();
+        } else if (response.hasResponse(BeeRow.class)) {
+          BeeRow createdDiscussion = BeeRow.restore(response.getResponseAsString());
 
-          if (!DataUtils.isId(discussionId)) {
+          if (createdDiscussion == null) {
             event.getCallback().onFailure(Localized.dictionary().discussNotCreated());
             return;
           }
 
-          createFiles(discussionId, null);
+          createFiles(createdDiscussion.getId(), null);
           final Collection<RowChildren> relData = new ArrayList<>();
 
           if (relations != null) {
@@ -376,14 +364,20 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           }
 
           if (!BeeUtils.isEmpty(relData)) {
-            Queries.updateChildren(VIEW_DISCUSSIONS, discussionId, relData, null);
+            Queries.updateChildren(VIEW_DISCUSSIONS, createdDiscussion.getId(), relData,
+                new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow result) {
+                event.getCallback().onSuccess(result);
+              }
+            });
+          } else {
+            event.getCallback().onSuccess(createdDiscussion);
           }
-
-          event.getCallback().onSuccess(null);
 
           String message;
 
-          if (BeeUtils.isEmpty(activeRow.getString(form.getDataIndex(ALS_TOPIC_NAME)))) {
+          if (BeeUtils.isEmpty(createdDiscussion.getString(form.getDataIndex(ALS_TOPIC_NAME)))) {
             message = Localized.dictionary().discussCreatedNewDiscussion();
           } else {
             message = Localized.dictionary().discussCreatedNewAnnouncement();
@@ -396,7 +390,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           ParameterList mailArgs =
               DiscussionsKeeper.createDiscussionRpcParameters(DiscussionEvent.CREATE_MAIL);
           mailArgs.addDataItem(VAR_DISCUSSION_DATA, Codec.beeSerialize(rowSet));
-          mailArgs.addDataItem(VAR_DISCUSSION_ID, discussionId);
+          mailArgs.addDataItem(VAR_DISCUSSION_ID, createdDiscussion.getId());
           BeeKeeper.getRpc().makePostRequest(mailArgs, new ResponseCallback() {
             @Override
             public void onResponse(ResponseObject emptyResp) {
@@ -428,12 +422,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
             form.getChildrenForUpdate());
 
     if (rowSet == null) {
-      createFiles(newRow.getId(), new Callback<Integer>() {
-        @Override
-        public void onSuccess(Integer result) {
-          event.getCallback().onSuccess(newRow);
-        }
-      });
+      createFiles(newRow.getId(), result -> event.getCallback().onSuccess(newRow));
       return;
     }
 
@@ -441,14 +430,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
       @Override
       public void onSuccess(BeeRow result) {
-        createFiles(result.getId(), new Callback<Integer>() {
-
-          @Override
-          public void onSuccess(Integer fileCount) {
-            event.getCallback().onSuccess(result);
-          }
-
-        });
+        createFiles(result.getId(), fileCount -> event.getCallback().onSuccess(result));
       }
     });
   }
@@ -473,10 +455,8 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
       oldFiles.put(row.getId(), oldFileList);
     }
 
-    if (DiscussionsUtils.isAnnouncement(form, row)) {
-      form.getViewPresenter().getHeader().setCaption(Localized.dictionary().announcement());
-    } else {
-      form.getViewPresenter().getHeader().setCaption(Localized.dictionary().discussion());
+    if (focusCommand != null) {
+      focusCommand.execute();
     }
 
     return false;
@@ -505,43 +485,6 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     return (widget instanceof MultiSelector) ? (MultiSelector) widget : null;
   }
 
-  private static boolean validateDates(Long from, Long to,
-      final RowCallback callback) {
-    long now = System.currentTimeMillis();
-
-    if (from == null && to == null) {
-      callback.onFailure(
-          BeeUtils.joinWords(Localized.dictionary().displayInBoard(), Localized.dictionary()
-              .enterDate()));
-      return false;
-    }
-
-    if (from == null && to != null) {
-      if (to.longValue() >= now) {
-        return true;
-      }
-    }
-
-    if (from != null && to == null) {
-      if (from.longValue() <= now) {
-        return true;
-      }
-    }
-
-    if (from != null && to != null) {
-      if (from <= to) {
-        return true;
-      } else {
-        callback.onFailure(
-            BeeUtils.joinWords(Localized.dictionary().displayInBoard(),
-                Localized.dictionary().crmFinishDateMustBeGreaterThanStart()));
-        return false;
-      }
-    }
-
-    return true;
-  }
-
   private void createFiles(final Long discussionId, Callback<Integer> countCallback) {
     List<FileInfo> newFileList = Lists.newArrayList(fileCollector.getFiles());
     List<FileInfo> oldFileList = new ArrayList<>();
@@ -557,7 +500,6 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
         oldFileList.remove(fileInfo);
       } else if (DataUtils.isId(fileInfo.getId())) {
         updateList.add(fileInfo);
-        continue;
       } else {
         uploadList.add(fileInfo);
       }
@@ -579,23 +521,19 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
     for (FileInfo file : uploadList) {
 
-      FileUtils.uploadFile(file, new Callback<Long>() {
+      FileUtils.uploadFile(file, result -> {
 
-        @Override
-        public void onSuccess(Long result) {
+        List<String> values =
+            Lists.newArrayList(BeeUtils.toString(discussionId), BeeUtils.toString(result),
+                file.getCaption());
+        Queries.insert(VIEW_DISCUSSIONS_FILES, columns, values, null, new RowCallback() {
 
-          List<String> values =
-              Lists.newArrayList(BeeUtils.toString(discussionId), BeeUtils.toString(result),
-                  file.getCaption());
-          Queries.insert(VIEW_DISCUSSIONS_FILES, columns, values, null, new RowCallback() {
-
-            @Override
-            public void onSuccess(BeeRow discussFile) {
-              consumer.accept(FileStoreMode.NEW);
-            }
-          });
-
-        }
+          @Override
+          public void onSuccess(BeeRow discussFile) {
+            consumer.accept(FileStoreMode.NEW);
+            RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS_FILES, discussFile);
+          }
+        });
 
       });
     }
@@ -677,7 +615,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
         validTo = TimeUtils.parseTime(validToVal);
       }
 
-      if (!validateDates(validFrom, validTo, callback)) {
+      if (!DiscussionHelper.validateDates(validFrom, validTo, callback)) {
         return null;
       }
     }
@@ -714,8 +652,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     newRow.setValue(getFormView().getDataIndex(COL_ACCESSIBILITY), discussPublic);
 
     if (discussClosed) {
-      newRow.setValue(getFormView().getDataIndex(COL_STATUS), Integer
-          .valueOf(DiscussionStatus.CLOSED.ordinal()));
+      newRow.setValue(getFormView().getDataIndex(COL_STATUS), DiscussionStatus.CLOSED.ordinal());
     }
 
     if (mailToggle != null && mailToggle.isChecked()) {

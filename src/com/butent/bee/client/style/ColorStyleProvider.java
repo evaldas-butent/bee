@@ -75,10 +75,6 @@ public final class ColorStyleProvider implements StyleProvider {
     return create(viewName, COL_BACKGROUND, COL_FOREGROUND);
   }
 
-  public static ColorStyleProvider forBackground(String viewName, String bgName) {
-    return create(Data.getColumns(viewName), bgName, null);
-  }
-
   private final CellSource bgSource;
   private final CellSource fgSource;
 
@@ -124,11 +120,17 @@ public final class ColorStyleProvider implements StyleProvider {
     String fgValue = getFg(row);
 
     SafeStyles styles;
+
     if (BeeUtils.isEmpty(bgValue)) {
       styles = BeeUtils.isEmpty(fgValue)
           ? null : StyleUtils.buildStyle(CssProperties.COLOR, fgValue);
+
     } else if (BeeUtils.isEmpty(fgValue)) {
       styles = StyleUtils.buildStyle(CssProperties.BACKGROUND_COLOR, bgValue);
+
+    } else if (BeeUtils.same(bgValue, fgValue)) {
+      styles = null;
+
     } else {
       styles = StyleUtils.buildStyle(CssProperties.BACKGROUND_COLOR, bgValue,
           CssProperties.COLOR, fgValue);

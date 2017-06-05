@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view"
-  name="Companies" source="Companies" caption="=clients" module="Classifiers.Contacts"
-  editForm="Company" newRowForm="NewCompany" newRowCaption="=newClient" rowCaption="Name"
-  >
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+      name="Companies" source="Companies" caption="=clients" module="Classifiers.Contacts"
+      editForm="Company" newRowForm="NewCompany" newRowCaption="=newClient" rowCaption="Name"
+>
   <Relation renderColumns="Name TypeName" />
   <Columns>
     <SimpleColumn name="Name" />
@@ -87,6 +88,7 @@
     </SimpleJoin>
     <SimpleColumn name="CreditDays" />
     <SimpleColumn name="SupplierCreditDays" />
+    <SimpleColumn name="ToleratedDays" />
 
     <SimpleColumn name="FinancialState" />
     <SimpleJoin joinType="LEFT" name="FinancialState">
@@ -116,15 +118,15 @@
 
     <SimpleColumn name="DefaultBankAccount" />
     <SimpleColumn name="DefaultCompanyUser" />
-    <SimpleJoin name="DefaultCompanyUser" joinType="LEFT" >
-     <SimpleJoin name="User" joinType="LEFT">
-      <SimpleJoin name="CompanyPerson" joinType="LEFT">
-        <SimpleJoin name="Person" joinType="LEFT">
-          <SimpleColumn name="FirstName" alias="ResponsibleUserFirstName" />
-          <SimpleColumn name="LastName" alias="ResponsibleUserLastName" />
+    <SimpleJoin name="DefaultCompanyUser" joinType="LEFT">
+      <SimpleJoin name="User" joinType="LEFT">
+        <SimpleJoin name="CompanyPerson" joinType="LEFT">
+          <SimpleJoin name="Person" joinType="LEFT">
+            <SimpleColumn name="FirstName" alias="ResponsibleUserFirstName" />
+            <SimpleColumn name="LastName" alias="ResponsibleUserLastName" />
+          </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>
-     </SimpleJoin>
     </SimpleJoin>
     <!-- Transrifus { -->
     <SimpleColumn name="PercentInterest" />
@@ -139,8 +141,15 @@
 
     <SimpleColumn name="PriceName" />
 
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    <SimpleJoin name="TradeAccounts" joinType="LEFT">
+      <xi:include href="viewcolumns/TradeAccounts.viewcolumns.xml" />
+    </SimpleJoin>
+
     <SimpleColumn name="Notes" />
+    <!-- Transrifus { -->
     <SimpleColumn name="Physical" />
+    <!-- } Transrifus -->
    </Columns>
   <Order>
     <OrderBy column="Name" />

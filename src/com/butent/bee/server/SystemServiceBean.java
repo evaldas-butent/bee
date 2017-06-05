@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 
 import static com.butent.bee.shared.Service.*;
 
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.Filter;
@@ -39,6 +40,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
@@ -59,8 +61,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.PropertyResourceBundle;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -80,6 +85,8 @@ public class SystemServiceBean {
   UiHolderBean ui;
   @EJB
   FileStorageBean fs;
+  @EJB
+  UserServiceBean usr;
 
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
     Assert.notEmpty(svc);
@@ -118,7 +125,7 @@ public class SystemServiceBean {
       }
       response = getReport(reqInfo.getParameter(VAR_REPORT),
           reqInfo.getParameter(VAR_REPORT_FORMAT),
-          Codec.deserializeMap(reqInfo.getParameter(VAR_REPORT_PARAMETERS)), dataSets);
+          Codec.deserializeLinkedHashMap(reqInfo.getParameter(VAR_REPORT_PARAMETERS)), dataSets);
 
     } else if (BeeUtils.same(svc, CREATE_PDF)) {
       Long fileId = fs.createPdf(reqInfo.getParameter(VAR_REPORT_DATA));
@@ -231,19 +238,51 @@ public class SystemServiceBean {
   private ResponseObject getReport(String reportName, String format, Map<String, String> parameters,
       BeeRowSet... dataSets) {
 
-    String reportFile = ui.getReport(reportName);
+    long start = System.currentTimeMillis();
+
+    String lng = Localized.extractLanguage(reportName);
+    Locale locale;
+    String repName;
+
+    if (BeeUtils.isEmpty(lng)) {
+      repName = reportName;
+      locale = usr.getLocale();
+    } else {
+      repName = Localized.removeLanguage(reportName);
+      locale = new Locale(lng);
+    }
+    String reportFile = ui.getReport(repName);
 
     if (BeeUtils.isEmpty(reportFile)) {
-      return ResponseObject.error(Localized.dictionary().keyNotFound(reportName));
+      return ResponseObject.error(Localized.dictionary().keyNotFound(repName));
     }
     ResponseObject response;
+    ResourceBundle bundle = null;
 
     try {
       if (FileUtils.isInputFile(reportFile)) {
+        String bundlePath = new File(new File(reportFile).getParent(), repName).getPath();
+
+        if (FileUtils.isInputFile(bundlePath + "_" + locale.getLanguage() + ".properties")) {
+          bundlePath = bundlePath + "_" + locale.getLanguage() + ".properties";
+        } else if (FileUtils.isInputFile(bundlePath + ".properties")) {
+          bundlePath = bundlePath + ".properties";
+        } else {
+          bundlePath = null;
+        }
+        if (!BeeUtils.isEmpty(bundlePath)) {
+          bundle = new PropertyResourceBundle(new InputStreamReader(new FileInputStream(bundlePath),
+              BeeConst.CHARSET_UTF8));
+        }
         reportFile = FileUtils.fileToString(reportFile);
       }
+      start = LogUtils.profile(logger, "Report GET", start);
+
       JasperReport report = JasperCompileManager
           .compileReport(new ByteArrayInputStream(reportFile.getBytes(BeeConst.CHARSET_UTF8)));
+
+      start = LogUtils.profile(logger, "Report COMPILE", start);
+
       Map<String, Object> params = new HashMap<>();
 
       if (!BeeUtils.isEmpty(parameters)) {
@@ -261,12 +300,18 @@ public class SystemServiceBean {
           }
         }
       }
+      params.put(JRParameter.REPORT_LOCALE, locale);
+      params.put(JRParameter.REPORT_RESOURCE_BUNDLE, bundle);
+
       if (BeeUtils.same(format, "html")) {
-        params.put("IS_IGNORE_PAGINATION", true);
+        params.put(JRParameter.IS_IGNORE_PAGINATION, true);
       }
       LocalJasperReportsContext context = new LocalJasperReportsContext(DefaultJasperReportsContext
           .getInstance());
       context.setFileResolver(ref -> {
+        if (BeeUtils.startsWith(ref, Paths.IMAGE_DIR + "/")) {
+          return new File(Config.IMAGE_DIR, BeeUtils.removePrefix(ref, Paths.IMAGE_DIR + "/"));
+        }
         Long fileId = BeeUtils.peek(HtmlUtils.getFileReferences("src=\"" + ref + "\"").keySet());
 
         if (DataUtils.isId(fileId)) {
@@ -282,6 +327,8 @@ public class SystemServiceBean {
       JasperPrint print = fillManager.fill(report, params,
           Objects.isNull(mainDataSet) ? new JREmptyDataSource() : new RsDataSource(mainDataSet));
 
+      start = LogUtils.profile(logger, "Report FILL", start);
+
       File tmp = File.createTempFile("bee_", "." + BeeUtils.notEmpty(format, "pdf"));
       tmp.deleteOnExit();
       String path = tmp.getAbsolutePath();
@@ -291,9 +338,13 @@ public class SystemServiceBean {
       } else {
         JasperExportManager.exportReportToPdfFile(print, path);
       }
+      start = LogUtils.profile(logger, "Report EXPORT", start);
+
       Long fileId = fs.storeFile(new FileInputStream(tmp), tmp.getName(), null);
       tmp.delete();
       response = ResponseObject.response(fs.getFile(fileId));
+
+      LogUtils.profile(logger, "Report STORE", start);
 
     } catch (JRException | IOException e) {
       logger.error(e);

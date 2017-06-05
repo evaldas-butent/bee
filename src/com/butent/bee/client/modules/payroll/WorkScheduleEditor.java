@@ -2,8 +2,6 @@ package com.butent.bee.client.modules.payroll;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.i18n.client.LocaleInfo;
 
@@ -270,19 +268,16 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
       }
     }
 
-    table.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        TableCellElement cell =
-            DomUtils.getParentCell(EventUtils.getEventTargetElement(event), true);
-        int dom = DomUtils.getDataIndexInt(cell);
+    table.addClickHandler(event -> {
+      TableCellElement cell =
+          DomUtils.getParentCell(EventUtils.getEventTargetElement(event), true);
+      int dom = DomUtils.getDataIndexInt(cell);
 
-        if (dom > 0) {
-          if (EventUtils.hasModifierKey(event.getNativeEvent())) {
-            selectRange(dom, !cell.hasClassName(STYLE_DAY_SELECTED));
-          }
-          cell.toggleClassName(STYLE_DAY_SELECTED);
+      if (dom > 0) {
+        if (EventUtils.hasModifierKey(event.getNativeEvent())) {
+          selectRange(dom, !cell.hasClassName(STYLE_DAY_SELECTED));
         }
+        cell.toggleClassName(STYLE_DAY_SELECTED);
       }
     });
 

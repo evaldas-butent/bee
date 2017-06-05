@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="DimensionNames" source="DimensionNames" module="Administration"
+      caption="=dimensionNames"
+>
+  <Columns>
+    <SimpleColumn name="Ordinal" />
+
+    <SimpleColumn name="PluralName" />
+    <SimpleColumn name="SingularName" />
+
+    <SimpleColumn name="Notes" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Ordinal" />
+  </Order>
+</View>
+ 

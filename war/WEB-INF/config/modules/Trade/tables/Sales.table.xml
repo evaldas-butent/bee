@@ -10,8 +10,9 @@
     <Relation name="Operation" relation="TradeOperations" label="=trdOperation" />
 
     <Relation name="SaleSeries" relation="SaleSeries" label="=trdInvoicePrefix"/>
-    <String name="InvoicePrefix" precision="10" label="=trdInvoicePrefix" /> <!--TODO: remove-->
     <String name="InvoiceNo" precision="20" label="=trdInvoiceNo" />
+
+    <String name="CheckNo" precision="20" label="=checkNo" />
 
     <Relation name="Supplier" relation="Companies" label="=trdSupplier" />
     <Relation name="Customer" relation="Companies" label="=trdCustomer" />
@@ -38,6 +39,19 @@
 
     <Integer name="Kind" />
 
+    <Relation name="BoLSeries" relation="OrderSeries" label="=ordBoLSeries" />
+    <String name="BoLNumber" precision="24" label="=ordBoLNumber" />
+    <DateTime name="BoLIssueDate" label="=ordBoLIssueDate" />
+    <DateTime name="BoLDepartureDate" label="=ordBoLDepartureDate" />
+    <DateTime name="BoLUnloadingDate" label="=trUnloadingDate" />
+    <String name="BoLLoading" precision="70" label="=cargoLoadingPlace" />
+    <String name="BoLUnloading" precision="70" label="=cargoUnloadingPlace" />
+    <Relation name="BoLDriverTabNo" relation="Employees" label="=ordBoLDriverTabNo" />
+    <String name="BoLVehicleNumber" precision="60" label="=vehicleNumber" />
+    <String name="BoLDriver" precision="60" label="=trdDriver" />
+    <Relation name="BoLCarrier" relation="Companies" label="=carrier" />
+
+
     <!-- Transrifus TradeAct SelfService { -->
     <DateTime name="Visited" label="Žiūrėta" />
     <!-- } Transrifus TradeAct SelfService -->
@@ -48,6 +62,9 @@
     <!-- } -->
   </Fields>
 
+  <Constraints>
+    <Unique fields="SaleSeries InvoiceNo" />
+  </Constraints>
   <Indexes>
     <Index fields="Proforma" />
   </Indexes>

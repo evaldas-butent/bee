@@ -8,11 +8,13 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.modules.trade.InvoiceBuilder;
+import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -21,8 +23,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.BiConsumer;
 
 public class CargoPurchasesGrid extends InvoiceBuilder {
 
@@ -98,6 +102,20 @@ public class CargoPurchasesGrid extends InvoiceBuilder {
   @Override
   public GridInterceptor getInstance() {
     return new CargoPurchasesGrid();
+  }
+
+  @Override
+  public void onEditStart(EditStartEvent event) {
+    if (Objects.equals(event.getColumnId(), COL_ORDER_NO)) {
+      Long assessment = Data.getLong(getViewName(), event.getRowValue(), COL_ASSESSMENT);
+
+      if (DataUtils.isId(assessment)) {
+        RowEditor.open(VIEW_ASSESSMENTS, assessment, Opener.NEW_TAB);
+        event.consume();
+        return;
+      }
+    }
+    super.onEditStart(event);
   }
 
   @Override

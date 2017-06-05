@@ -14,21 +14,17 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.modules.trade.TradeKeeper.FilterCallback;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
-import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditStartEvent;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
@@ -93,31 +89,28 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
       if (BeeUtils.same(name, NAME_TEMPLATE) && widget instanceof UnboundSelector) {
         template = (UnboundSelector) widget;
 
-        template.addSelectorHandler(new SelectorEvent.Handler() {
-          @Override
-          public void onDataSelector(SelectorEvent event) {
-            BeeRow row = event.getSelector().getRelatedRow();
+        template.addSelectorHandler(event -> {
+          BeeRow row = event.getSelector().getRelatedRow();
 
-            if (row == null) {
-              return;
-            }
+          if (row == null) {
+            return;
+          }
 
-            DataInfo info = Data.getDataInfo(TradeConstants.VIEW_DEBT_REMINDER_TEMPLATE);
+          DataInfo info = Data.getDataInfo(TradeConstants.VIEW_DEBT_REMINDER_TEMPLATE);
 
-            if (getSubject() != null) {
-              getSubject().setText(row.getString(info
-                  .getColumnIndex(TradeConstants.COL_TEMPLATE_SUBJECT)));
-            }
+          if (getSubject() != null) {
+            getSubject().setText(row.getString(info
+                .getColumnIndex(TradeConstants.COL_TEMPLATE_SUBJECT)));
+          }
 
-            if (getFirstParagraph() != null) {
-              getFirstParagraph().setText(row.getString(info
-                  .getColumnIndex(TradeConstants.COL_TEMPLATE_FIRST_PARAGRAPH)));
-            }
+          if (getFirstParagraph() != null) {
+            getFirstParagraph().setText(row.getString(info
+                .getColumnIndex(TradeConstants.COL_TEMPLATE_FIRST_PARAGRAPH)));
+          }
 
-            if (getLastParagraph() != null) {
-              getLastParagraph().setText(row.getString(info
-                  .getColumnIndex(TradeConstants.COL_TEMPLATE_LAST_PARAGRAPH)));
-            }
+          if (getLastParagraph() != null) {
+            getLastParagraph().setText(row.getString(info
+                .getColumnIndex(TradeConstants.COL_TEMPLATE_LAST_PARAGRAPH)));
           }
         });
       }
@@ -137,19 +130,15 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
       if (BeeUtils.same(name, NAME_SEND) && widget instanceof Button) {
         final Button button = (Button) widget;
         button.setEnabled(true);
-        button.addClickHandler(new ClickHandler() {
-
-          @Override
-          public void onClick(ClickEvent arg0) {
-            button.setEnabled(false);
-            String subjectText =
-                getSubject() != null ? getSubject().getText() : BeeConst.STRING_EMPTY;
-            String p1 =
-                getFirstParagraph() != null ? getFirstParagraph().getText() : BeeConst.STRING_EMPTY;
-            String p2 =
-                getLastParagraph() != null ? getLastParagraph().getText() : BeeConst.STRING_EMPTY;
-            sendMail(subjectText, p1, p2, ids);
-          }
+        button.addClickHandler(arg0 -> {
+          button.setEnabled(false);
+          String subjectText =
+              getSubject() != null ? getSubject().getText() : BeeConst.STRING_EMPTY;
+          String p1 =
+              getFirstParagraph() != null ? getFirstParagraph().getText() : BeeConst.STRING_EMPTY;
+          String p2 =
+              getLastParagraph() != null ? getLastParagraph().getText() : BeeConst.STRING_EMPTY;
+          sendMail(subjectText, p1, p2, ids);
         });
       }
     }
@@ -173,20 +162,15 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
 
   }
 
-  private final Button action = new Button(Localized.dictionary().sendReminder(), this);
+  private final Button action = new Button(Localized.dictionary().sendReminderMail(), this);
 
   @Override
   public void afterCreatePresenter(final GridPresenter presenter) {
     presenter.getHeader().clearCommandPanel();
     presenter.getHeader().addCommandItem(action);
     presenter.getHeader().addCommandItem(TradeKeeper.createAmountAction(presenter.getViewName(),
-        new FilterCallback() {
-
-          @Override
-          public Filter getFilter() {
-            return presenter.getDataProvider().getFilter();
-          }
-        }, TradeConstants.COL_SALE, presenter.getGridView()));
+      () ->
+        presenter.getDataProvider().getFilter(), TradeConstants.COL_SALE, presenter.getGridView()));
   }
 
   @Override
@@ -217,7 +201,7 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
             return;
           }
 
-          Map<String, String> val = Codec.deserializeMap(filterValue.getValue());
+          Map<String, String> val = Codec.deserializeHashMap(filterValue.getValue());
 
           if (val == null) {
             return;
@@ -245,7 +229,7 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
             return null;
           }
 
-          Map<String, String> val = Codec.deserializeMap(input.getValue());
+          Map<String, String> val = Codec.deserializeHashMap(input.getValue());
 
           if (val == null) {
             return null;
@@ -347,25 +331,16 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
           // conatainer.add(dateContainer);
 
           Button filter = new Button(Localized.dictionary().doFilter());
-          filter.addClickHandler(new ClickHandler() {
-
-            @Override
-            public void onClick(ClickEvent arg0) {
-              setTermOverdue(ovt.isChecked());
-              setTermNotExpired(net.isChecked());
-              setTermPayFrom(pfd.getDate());
-              setTermPayTo(ptd.getDate());
-              update(true);
-            }
+          filter.addClickHandler(arg0 -> {
+            setTermOverdue(ovt.isChecked());
+            setTermNotExpired(net.isChecked());
+            setTermPayFrom(pfd.getDate());
+            setTermPayTo(ptd.getDate());
+            update(true);
           });
 
           Button cancel = new Button(Localized.dictionary().cancel());
-          cancel.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              closeDialog();
-            }
-          });
+          cancel.addClickHandler(event -> closeDialog());
 
           Flow btnContainer = new Flow("bee-FilterSupplier-commandPanel");
 
@@ -463,14 +438,10 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
 
     FormFactory.createFormView(TradeConstants.FORM_DEBT_REPORT_TEMPLATE, null,
         null, false,
-        new DebtReportTemplateForm(ids), new FormFactory.FormViewCallback() {
-
-          @Override
-          public void onSuccess(FormDescription formDescription, FormView result) {
-            if (result != null) {
-              result.start(null);
-              Global.showModalWidget(result.getCaption(), result.asWidget());
-            }
+        new DebtReportTemplateForm(ids), (formDescription, result) -> {
+          if (result != null) {
+            result.start(null);
+            Global.showModalWidget(result.getCaption(), result.asWidget());
           }
         });
   }

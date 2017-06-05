@@ -14,6 +14,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
@@ -37,6 +38,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
@@ -46,8 +48,6 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.time.DateTime;
@@ -446,7 +446,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
       final long actId = row.getId();
 
-      Global.getMsgBoxen().choice(Localized.dictionary().taAlterKind(),
+      MessageBoxes.choice(Localized.dictionary().taAlterKind(),
           BeeUtils.joinWords(tak.getCaption(), row.getString(getDataIndex(COL_TRADE_ACT_NAME))),
           choices, value -> {
             if (DataUtils.idEquals(getGridView().getActiveRow(), actId)
@@ -548,8 +548,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   private void createReturnActForm(IsRow parent, String number, BeeRowSet parentActs,
                                    BeeRowSet parentItems) {
-    DataInfo dataInfo = Data.getDataInfo(getViewName());
-    BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
+    DataInfo viewTradeActs = Data.getDataInfo(getViewName());
+    BeeRow newRow = RowFactory.createEmptyRow(viewTradeActs, true);
 
     for (int i = 0; i < getDataColumns().size(); i++) {
       String colId = getDataColumns().get(i).getId();
@@ -560,11 +560,13 @@ public class TradeActGrid extends AbstractGridInterceptor {
           break;
 
         case COL_TA_DATE:
-          if (parent == null) {
-            newRow.setValue(i, (DateTime) null);
-            break;
-          }
-          newRow.setValue(i, TimeUtils.nowMinutes());
+          newRow.setValue(i, (DateTime) null);
+          // ID 29613
+//          if (parent == null) {
+//            newRow.setValue(i, (DateTime) null);
+//            break;
+//          }
+//          newRow.setValue(i, TimeUtils.nowMinutes());
           break;
 
         case COL_TA_PARENT:
@@ -583,26 +585,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
           break;
 
         case COL_TA_SERIES:
-          if (parentActs == null) {
-            break;
-          }
-          newRow.setValue(i, parentActs.getString(0, i));
-          break;
-
         case TradeConstants.COL_SERIES_NAME:
-          if (parentActs == null) {
-            break;
-          }
-          newRow.setValue(i, parentActs.getString(0, i));
-          break;
-
-        case COL_TA_COMPANY:
-        case ClassifierConstants.ALS_COMPANY_NAME:
-        case ALS_CONTACT_PHYSICAL:
-        case ClassifierConstants.ALS_COMPANY_TYPE_NAME:
-        case COL_TA_OBJECT:
-        case AdministrationConstants.ALS_OBJECT_NAME:
-        case ClassifierConstants.COL_COMPANY_OBJECT_ADDRESS:
           if (parentActs != null) {
             newRow.setValue(i, parentActs.getString(0, i));
           } else if (parent != null) {
@@ -610,17 +593,46 @@ public class TradeActGrid extends AbstractGridInterceptor {
           }
           break;
 
+        case COL_TA_COMPANY:
+        case COL_TA_CONTRACT:
+        case COL_TA_CONTACT:
+        case COL_TA_OBJECT:
+          if (parentActs != null) {
+            if (viewTradeActs.hasRelation(colId)) {
+              RelationUtils.updateRow(viewTradeActs, colId, newRow, viewTradeActs,
+                parentActs.getRow(0), false);
+            }
+            newRow.setValue(i, parentActs.getString(0, i));
+          } else if (parent != null) {
+            if (viewTradeActs.hasRelation(colId)) {
+              RelationUtils.updateRow(viewTradeActs, colId, newRow, viewTradeActs,
+                parent, false);
+            }
+            newRow.setValue(i, parent.getString(i));
+          }
+          break;
         case COL_TA_UNTIL:
         case COL_TA_NOTES:
         case COL_TA_RETURN:
         case COL_TA_CONTINUOUS:
         case ALS_RETURNED_COUNT:
+        case COL_TA_INPUT_DRIVER:
+        case COL_TA_INPUT_VEHICLE:
+        case COL_TA_MANAGER:
+        case "ManagerPerson":
           break;
 
         default:
           if (parent != null && !parent.isNull(i) && !colId.startsWith(COL_TA_STATUS)
               && !colId.startsWith(COL_TA_OPERATION)) {
-            newRow.setValue(i, parent.getString(i));
+            if (viewTradeActs.hasRelation(colId)) {
+              RelationUtils.updateRow(viewTradeActs, colId, newRow, viewTradeActs,
+                parent, false);
+            }
+
+            if (viewTradeActs.getColumn(colId).getLevel() == 0) {
+              newRow.setValue(i, parent.getString(i));
+            }
           }
       }
     }
@@ -632,7 +644,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
     TradeActKeeper.setDefaultOperation(newRow, TradeActKind.RETURN);
 
-    RowFactory.createRow(dataInfo, newRow, Modality.ENABLED, new RowCallback() {
+    RowFactory.createRow(viewTradeActs, newRow, Modality.ENABLED, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         getGridView().ensureRow(result, true);
@@ -641,7 +653,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
             @Override
             public void onSuccess(BeeRow updatedParent) {
               DataInfo info = Data.getDataInfo(VIEW_TRADE_ACTS);
-              RowEditor.openForm(info.getEditForm(), info, updatedParent.getId(),
+              RowEditor.openForm(info.getEditForm(), info, Filter.compareId(updatedParent.getId()),
                   Opener.modeless());
             }
           });
@@ -821,8 +833,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   private static void maybeOpenAct(GridView gridView, IsRow row) {
     if (DomUtils.isVisible(gridView.getGrid())) {
-      gridView.onEditStart(new EditStartEvent(row, null, null,
-          EditStartEvent.CLICK, gridView.isReadOnly()));
+      gridView.onEditStart(new EditStartEvent(row, gridView.isReadOnly()));
     }
   }
 

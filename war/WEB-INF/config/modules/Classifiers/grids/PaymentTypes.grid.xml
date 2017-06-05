@@ -4,7 +4,9 @@
         name="PaymentTypes" viewName="PaymentTypes" caption="=paymentTypes"
     >
   <g:columns>
-    <DataColumn name="PaymentName" visible="true" />
+    <DataColumn name="PaymentName" minWidth="100" visible="true" />
+
     <DataColumn name="PaymentCash" />
+    <RelColumn name="PaymentTypeAccount" />
   </g:columns>
 </g:Grid>

@@ -2,25 +2,24 @@
 <View xmlns="http://www.butent.com/view"
       xmlns:x="http://www.butent.com/expression"
 
-  name="TransportationOrders" source="TransportationOrders"
-  caption="=trTransportationOrders" newRowCaption="=newTransportationOrder"
-  editForm="TransportationOrder" newRowForm="TransportationOrder"
-  >
+      name="TransportationOrders" source="TransportationOrders"
+      caption="=trTransportationOrders" newRowCaption="=newTransportationOrder"
+      editForm="TransportationOrder" newRowForm="TransportationOrder"
+>
   <Relation renderColumns="OrderNo" choiceColumns="CustomerName Date OrderNo" />
   <Columns>
     <SimpleColumn name="Status" />
     <SimpleColumn name="Date" />
     <SimpleColumn name="OrderNo" />
-    <SimpleColumn name="Notes" />
-    
+
     <SimpleColumn name="Customer" />
     <SimpleJoin joinType="LEFT" name="Customer">
       <SimpleColumn name="Name" alias="CustomerName" />
       <SimpleJoin joinType="LEFT" name="CompanyType">
-        <SimpleColumn name="Name" alias="TypeName" />
+        <SimpleColumn name="Name" alias="CustomerTypeName" />
       </SimpleJoin>
     </SimpleJoin>
-    
+
     <SimpleColumn name="CustomerPerson" />
     <SimpleJoin name="CustomerPerson" joinType="LEFT">
       <SimpleJoin name="Person" joinType="LEFT">
@@ -31,7 +30,7 @@
         <SimpleColumn alias="PersonCompanyName" name="Name" />
       </SimpleJoin>
     </SimpleJoin>
-    
+
     <SimpleColumn name="Payer" />
     <SimpleJoin joinType="LEFT" name="Payer">
       <SimpleColumn name="Name" alias="PayerName" />
@@ -39,32 +38,64 @@
         <SimpleColumn name="Name" alias="PayerTypeName" />
       </SimpleJoin>
     </SimpleJoin>
-    
+
     <SimpleColumn name="Manager" />
     <SimpleJoin name="Manager" joinType="LEFT">
       <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
+
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
         <SimpleJoin name="Person" joinType="LEFT">
-          <SimpleColumn alias="ManagerFirstName" name="FirstName" />
-          <SimpleColumn alias="ManagerLastName" name="LastName" />
+          <SimpleColumn name="FirstName" alias="ManagerFirstName" />
+          <SimpleColumn name="LastName" alias="ManagerLastName" />
+        </SimpleJoin>
+
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ManagerPosition" />
+        </SimpleJoin>
+
+        <SimpleJoin name="Contact" joinType="LEFT">
+          <SimpleColumn name="Phone" alias="ManagerPhone" />
+          <SimpleColumn name="Mobile" alias="ManagerMobile" />
+          <SimpleColumn name="Fax" alias="ManagerFax" />
+
+          <SimpleJoin name="Email" joinType="LEFT">
+            <SimpleColumn name="Email" alias="ManagerEmail" />
+          </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
-    
+
+    <SimpleColumn name="Expedition" />
+    <SimpleJoin joinType="LEFT" name="Expedition">
+      <SimpleColumn name="Name" alias="ExpeditionType" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ShippingTerm" />
+    <SimpleJoin joinType="LEFT" name="ShippingTerm">
+      <SimpleColumn name="Name" alias="ShippingTermName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Vehicle" />
+    <SimpleColumn name="Driver" />
+    <SimpleColumn name="Notes" />
+
     <ExternalJoin source="OrderCargo" name="Order" joinType="LEFT">
       <HiddenColumn name="Description" />
       <AggregateColumn aggregate="MIN" name="Description" alias="MinCargo" />
       <AggregateColumn aggregate="MAX" name="Description" alias="MaxCargo" />
       <AggregateColumn aggregate="COUNT_DISTINCT" name="Description" alias="CntCargo" />
-      
+
       <AggregateColumn aggregate="MAX" name="Partial" />
       <AggregateColumn aggregate="MAX" name="Outsized" />
       <AggregateColumn aggregate="MAX" name="Dangerous" />
-      
-      <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-        <AggregateColumn name="Date" alias="UnloadingDate" aggregate="MIN" />
-      </SimpleJoin>
-      
+
+      <ExternalJoin name="Cargo" source="CargoUnloading" joinType="LEFT">
+        <SimpleJoin name="UnloadingPlace" joinType="LEFT">
+          <AggregateColumn name="Date" alias="UnloadingDate" aggregate="MIN"
+                           label="=taMinTermShort+=trUnloadingDateShort"/>
+        </SimpleJoin>
+      </ExternalJoin>
+
       <ExternalJoin name="Cargo" source="CargoIncomes" joinType="LEFT">
         <HiddenColumn name="Sale" />
         <AggregateColumn name="SaleID" aggregate="MIN">
@@ -86,12 +117,6 @@
             </x:minus>
           </AggregateColumn>
           <AggregateColumn name="Proforma" aggregate="MAX" />
-        </SimpleJoin>
-      </ExternalJoin>
-      
-      <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
-        <SimpleJoin name="Trip" joinType="LEFT">
-          <AggregateColumn name="Expedition" aggregate="MAX" />
         </SimpleJoin>
       </ExternalJoin>
     </ExternalJoin>

@@ -49,7 +49,7 @@
       <SimpleColumn name="Code" alias="CustomerCode" />
       <SimpleColumn name="FinancialState" />
       <SimpleJoin name="FinancialState" joinType="LEFT">
-        <SimpleColumn name="Name" alias="FinancialStateName" /> 
+        <SimpleColumn name="Name" alias="FinancialStateName" />
       </SimpleJoin>
       <SimpleColumn name="BankruptcyRisk" />
       <SimpleJoin name="BankruptcyRisk" joinType="LEFT">

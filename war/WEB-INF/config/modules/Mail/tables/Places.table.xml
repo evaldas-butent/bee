@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="Places"
-  idName="PlaceID"
-  >
+       name="Places"
+       idName="PlaceID"
+       audit="false"
+>
   <Fields>
     <Relation name="Folder" relation="Folders" notNull="true" cascade="DELETE" />
     <Relation name="Message" relation="Messages" notNull="true" editable="true" />
@@ -11,8 +12,11 @@
     <Long name="MessageUID" />
   </Fields>
 
+  <Constraints>
+    <Unique fields="Folder MessageUID" />
+  </Constraints>
+
   <Indexes>
-    <Index fields="MessageUID" />
     <Index>
       <PostgreSql>((COALESCE("Places"."Flags", 0) &amp; 8))</PostgreSql>
       <MsSql />

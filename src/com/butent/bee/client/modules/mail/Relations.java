@@ -27,6 +27,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
@@ -52,7 +53,9 @@ import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.Value;
@@ -64,6 +67,7 @@ import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -76,11 +80,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 public class Relations extends Flow implements Editor, ClickHandler, SelectorEvent.Handler,
     ParentRowEvent.Handler, HasFosterParent, HasRowChildren, HandlesValueChange,
-    SummaryChangeEvent.Handler {
+    SummaryChangeEvent.Handler, RowInsertEvent.Handler {
+
+  public static final String PFX_RELATED = "Rel";
 
   private static final String STORAGE = TBL_RELATIONS;
 
@@ -96,13 +103,16 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
 
   private boolean summarize;
 
-  private com.google.web.bindery.event.shared.HandlerRegistration parentRowReg;
+  private final List<com.google.web.bindery.event.shared.HandlerRegistration> eventRegistry =
+      new ArrayList<>();
   private String parentId;
 
   private final Multimap<String, Long> ids = HashMultimap.create();
   private final Map<String, MultiSelector> widgetMap = new LinkedHashMap<>();
   private final Map<MultiSelector, HandlerRegistration> registry = new HashMap<>();
   private final Set<String> blockedRelations = new HashSet<>();
+
+  private final Map<String, String> rowProperties = new HashMap<>();
 
   private static final String RELATIONS_PLUS_ADD_RELATION = "bee-Relations-newRel";
 
@@ -123,12 +133,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     if (inline) {
       FaLabel add = new FaLabel(FontAwesome.PLUS_CIRCLE, RELATIONS_PLUS_ADD_RELATION);
 
-      add.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent ev) {
-          addRelations();
-        }
-      });
+      add.addClickHandler(ev -> addRelations());
       table.setWidget(0, 0, add);
       table.getCellFormatter().setHorizontalAlignment(0, 0, TextAlign.CENTER);
       add(table);
@@ -277,6 +282,28 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     return relations;
   }
 
+  public Collection<RowChildren> getOldRowChildren(boolean all) {
+    List<RowChildren> relations = new ArrayList<>();
+
+     widgetMap.entrySet().forEach(entry -> {
+      MultiSelector multi = entry.getValue();
+
+      if (multi != null && (all || multi.isValueChanged())) {
+        relations.add(RowChildren.create(STORAGE, column, id, entry.getKey(), multi.getOldValue()));
+      }
+    });
+    return relations;
+  }
+
+  public String getSelectorRowLabel(String viewName, long rowId) {
+    for (MultiSelector multi : widgetMap.values()) {
+      if (multi != null && BeeUtils.same(multi.getOracle().getViewName(), viewName)) {
+        return multi.getRowLabel(rowId);
+      }
+    }
+    return BeeConst.STRING_EMPTY;
+  }
+
   @Override
   public Value getSummary() {
     int count = 0;
@@ -394,7 +421,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
           Queries.updateChildren(view, id, relations, new RowCallback() {
             @Override
             public void onSuccess(BeeRow result) {
-              requery(id);
+              requery(result, id);
             }
           });
         }
@@ -408,7 +435,24 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
 
   @Override
   public void onParentRow(ParentRowEvent event) {
-    requery(event.getRowId());
+    requery(event.getRow(), event.getRowId());
+  }
+
+  @Override
+  public void onRowInsert(RowInsertEvent event) {
+    if (!event.hasView(STORAGE) || !DataUtils.isId(id)) {
+      return;
+    }
+    if (event.getRow() == null) {
+      return;
+    }
+    if (event.hasSourceId(getId())) {
+      return;
+    }
+    if (!Objects.equals(id, Data.getLong(STORAGE, event.getRow(), column))) {
+      return;
+    }
+    requery(null, id);
   }
 
   @Override
@@ -438,55 +482,68 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     setValue(value);
   }
 
-  public void requery(final Long parent) {
+  public void requery(IsRow row, final Long parent) {
     reset();
 
-    if (!DataUtils.isId(parent)) {
-      return;
-    }
-    Queries.getRowSet(STORAGE, null, Filter.equals(column, parent), new RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        for (int i = 0; i < result.getNumberOfColumns(); i++) {
-          String col = result.getColumnId(i);
+    if (DataUtils.isId(parent)) {
+      Queries.getRowSet(STORAGE, null, Filter.equals(column, parent), new RowSetCallback() {
+        @Override
+        public void onSuccess(BeeRowSet result) {
+          for (int i = 0; i < result.getNumberOfColumns(); i++) {
+            String col = result.getColumnId(i);
 
-          if (BeeUtils.same(col, column)) {
-            continue;
-          }
-          for (BeeRow beeRow : result) {
-            Long relId = beeRow.getLong(i);
+            if (BeeUtils.same(col, column)) {
+              continue;
+            }
+            for (BeeRow beeRow : result) {
+              Long relId = beeRow.getLong(i);
 
-            if (DataUtils.isId(relId)) {
-              ids.put(col, relId);
+              if (DataUtils.isId(relId)) {
+                ids.put(col, relId);
+              }
             }
           }
-        }
-        if (ids.containsKey(COL_RELATION)) {
-          Queries.getRowSet(STORAGE, Collections.singletonList(column),
-              Filter.idIn(ids.get(COL_RELATION)), new RowSetCallback() {
-                @Override
-                public void onSuccess(BeeRowSet res) {
-                  for (BeeRow beeRow : res) {
-                    Long relId = beeRow.getLong(0);
+          if (ids.containsKey(COL_RELATION)) {
+            Queries.getRowSet(STORAGE, Collections.singletonList(column),
+                Filter.idIn(ids.get(COL_RELATION)), new RowSetCallback() {
+                  @Override
+                  public void onSuccess(BeeRowSet res) {
+                    for (BeeRow beeRow : res) {
+                      Long relId = beeRow.getLong(0);
 
-                    if (DataUtils.isId(relId)) {
-                      ids.put(column, relId);
+                      if (DataUtils.isId(relId)) {
+                        ids.put(column, relId);
+                      }
                     }
+                    if (inline) {
+                      refresh();
+                    }
+                    id = parent;
                   }
-                  if (inline) {
-                    refresh();
-                  }
-                  id = parent;
-                }
-              });
-        } else {
-          if (inline) {
-            refresh();
+                });
+          } else {
+            if (inline) {
+              refresh();
+            }
+            id = parent;
           }
-          id = parent;
+        }
+      });
+
+    } else if (!rowProperties.isEmpty() && DataUtils.isNewRow(row)) {
+      for (Map.Entry<String, String> entry : rowProperties.entrySet()) {
+        String col = entry.getKey();
+        String value = row.getProperty(entry.getValue());
+
+        if (!BeeUtils.isEmpty(value)) {
+          MultiSelector selector = widgetMap.get(col);
+          if (selector != null) {
+            selector.setIds(value);
+            selector.setOldValue(null);
+          }
         }
       }
-    });
+    }
   }
 
   public void reset() {
@@ -630,15 +687,12 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     } else {
       listBox.setAllVisible();
     }
-    Global.inputWidget(Localized.dictionary().newRelation(), listBox, new InputCallback() {
-      @Override
-      public void onSuccess() {
-        for (int i = 0; i < listBox.getItemCount(); i++) {
-          OptionElement optionElement = listBox.getOptionElement(i);
+    Global.inputWidget(Localized.dictionary().newRelation(), listBox, () -> {
+      for (int i = 0; i < listBox.getItemCount(); i++) {
+        OptionElement optionElement = listBox.getOptionElement(i);
 
-          if (optionElement.isSelected()) {
-            createMultiSelector(optionElement.getValue(), null);
-          }
+        if (optionElement.isSelected()) {
+          createMultiSelector(optionElement.getValue(), null);
         }
       }
     });
@@ -654,6 +708,10 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
       if (relation == null) {
         LogUtils.getRootLogger().severe("Missing relation info:", viewName);
         return null;
+      }
+      if (!relation.getAttributes().containsKey(UiConstants.ATTR_PROPERTY)) {
+        relation.getAttributes().put(UiConstants.ATTR_PROPERTY, PFX_RELATED
+          + relation.getViewName());
       }
     }
     List<String> cols = relation.getOriginalRenderColumns();
@@ -677,19 +735,23 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     table.setWidget(c, 1, multi);
 
     widgetMap.put(col, multi);
+
+    String property = relation.getAttributes().get(UiConstants.ATTR_PROPERTY);
+    if (!BeeUtils.isEmpty(property)) {
+      rowProperties.put(col, property);
+    }
+
     setEnabled(isEnabled());
 
     return multi;
   }
 
-  private com.google.web.bindery.event.shared.HandlerRegistration getParentRowReg() {
-    return parentRowReg;
-  }
-
   private void register() {
     unregister();
+
     if (!BeeUtils.isEmpty(getParentId())) {
-      setParentRowReg(BeeKeeper.getBus().registerParentRowHandler(getParentId(), this, false));
+      eventRegistry.add(BeeKeeper.getBus().registerRowInsertHandler(this, false));
+      eventRegistry.add(BeeKeeper.getBus().registerParentRowHandler(getParentId(), this, false));
     }
   }
 
@@ -704,15 +766,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     }
   }
 
-  private void setParentRowReg(com.google.web.bindery.event.shared.HandlerRegistration
-      handlerRegistration) {
-    this.parentRowReg = handlerRegistration;
-  }
-
   private void unregister() {
-    if (getParentRowReg() != null) {
-      getParentRowReg().removeHandler();
-      setParentRowReg(null);
-    }
+    EventUtils.clearRegistry(eventRegistry);
   }
 }

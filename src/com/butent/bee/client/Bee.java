@@ -2,13 +2,12 @@ package com.butent.bee.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.logical.shared.ResizeEvent;
-import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.ClosingHandler;
 
+import static com.butent.bee.shared.Service.PROPERTY_ACTIVE_LOCALES;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.animation.RafCallback;
@@ -22,7 +21,6 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.ModuleManager;
-import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.client.screen.Workspace;
@@ -32,14 +30,16 @@ import com.butent.bee.client.utils.LayoutEngine;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -50,6 +50,7 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -171,23 +172,39 @@ public class Bee implements EntryPoint, ClosingHandler {
           break;
 
         case Service.PROPERTY_VIEW_MODULES:
-          RightsUtils.setViewModules(Codec.deserializeMap(value));
+          RightsUtils.setViewModules(Codec.deserializeHashMap(value));
           break;
 
-        case COL_CURRENCY:
-          ClientDefaults.setCurrency(BeeUtils.toLongOrNull(value));
+        case PROPERTY_ACTIVE_LOCALES:
+          SupportedLocale.ACTIVE_LOCALES.clear();
+          SupportedLocale.ACTIVE_LOCALES
+              .addAll(Arrays.asList(Codec.beeDeserializeCollection(value)));
           break;
 
-        case ALS_CURRENCY_NAME:
-          ClientDefaults.setCurrencyName(value);
+        case PRM_CURRENCY:
+          ClientDefaults.setCurrency(Pair.restore(value));
           break;
 
-        case PRM_COMPANY:
-          AdministrationKeeper.setCompany(BeeUtils.toLongOrNull(value));
+        case TBL_PARAMETERS:
+          for (String s : Codec.beeDeserializeCollection(value)) {
+            Global.storeParameter(BeeParameter.restore(s));
+          }
+          LogUtils.getRootLogger().info("parameters", value.length());
           break;
 
         case TBL_DICTIONARY:
-          Localized.setGlossary(Codec.deserializeMap(value));
+          Localized.setGlossary(Codec.deserializeHashMap(value));
+          break;
+
+        case VAR_LOCALE:
+          BeeKeeper.getUser().setSupportedLocale(SupportedLocale.getByLanguage(value));
+          break;
+
+        case COL_USER_DATE_FORMAT:
+          SupportedLocale dtfLocale = SupportedLocale.getByLanguage(value);
+          if (dtfLocale != null) {
+            BeeKeeper.getUser().setDateTimeFormatInfo(dtfLocale.getDateTimeFormatInfo());
+          }
           break;
       }
     }
@@ -219,6 +236,10 @@ public class Bee implements EntryPoint, ClosingHandler {
 
           case DECORATORS:
             TuningFactory.parseDecorators(serialized);
+            break;
+
+          case DIMENSIONS:
+            Dimensions.load(serialized);
             break;
 
           case FAVORITES:
@@ -293,12 +314,9 @@ public class Bee implements EntryPoint, ClosingHandler {
 
     Historian.start();
 
-    Endpoint.open(BeeKeeper.getUser().getUserId(), new Consumer<Boolean>() {
-      @Override
-      public void accept(Boolean input) {
-        initWorkspace();
-        Global.getChatManager().start();
-      }
+    Endpoint.open(BeeKeeper.getUser().getUserId(), input -> {
+      initWorkspace();
+      Global.getChatManager().start();
     });
   }
 
@@ -354,7 +372,7 @@ public class Bee implements EntryPoint, ClosingHandler {
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        load(Codec.deserializeMap(response.getResponseAsString()));
+        load(Codec.deserializeLinkedHashMap(response.getResponseAsString()));
         onLogin();
       }
     });
@@ -369,16 +387,13 @@ public class Bee implements EntryPoint, ClosingHandler {
     BeeKeeper.getScreen().init();
     BeeKeeper.getScreen().start(BeeKeeper.getUser().getUserData());
 
-    Window.addResizeHandler(new ResizeHandler() {
-      @Override
-      public void onResize(ResizeEvent event) {
-        BeeKeeper.getScreen().getScreenPanel().onResize();
+    Window.addResizeHandler(event -> {
+      BeeKeeper.getScreen().getScreenPanel().onResize();
 
-        Collection<Popup> popups = Popup.getVisiblePopups();
-        if (!BeeUtils.isEmpty(popups)) {
-          for (Popup popup : popups) {
-            popup.onResize();
-          }
+      Collection<Popup> popups = Popup.getVisiblePopups();
+      if (!BeeUtils.isEmpty(popups)) {
+        for (Popup popup : popups) {
+          popup.onResize();
         }
       }
     });
@@ -389,7 +404,7 @@ public class Bee implements EntryPoint, ClosingHandler {
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        load(Codec.deserializeMap(response.getResponseAsString()));
+        load(Codec.deserializeLinkedHashMap(response.getResponseAsString()));
 
         BeeKeeper.getBus().registerExitHandler(Bee.this);
 

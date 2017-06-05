@@ -1,24 +1,41 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Range;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
+import com.butent.bee.client.event.Modifiers;
+import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.NotificationListener;
+import com.butent.bee.shared.State;
+import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -28,6 +45,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,13 +55,27 @@ import java.util.Map;
 
 public final class CalendarUtils {
 
+  public static Element createSourceElement(ItemWidget itemWidget) {
+    Element element = Document.get().createDivElement();
+    element.addClassName(CalendarStyleManager.SOURCE);
+    element.setInnerHTML(itemWidget.getElement().getInnerHTML());
+    element.addClassName(itemWidget.getStyleName());
+    StyleUtils.makeAbsolute(element);
+    StyleUtils.setLeft(element, itemWidget.getElement().getOffsetLeft());
+    StyleUtils.setTop(element, itemWidget.getElement().getOffsetTop());
+    StyleUtils.setWidth(element, itemWidget.getElement().getOffsetWidth());
+    StyleUtils.setHeight(element, itemWidget.getElement().getOffsetHeight());
+    return element;
+
+  }
+
   public static void dropOnTodo(final Appointment appointment, final CalendarPanel panel) {
     Assert.notNull(appointment);
 
     DataInfo srcInfo = Data.getDataInfo(VIEW_APPOINTMENTS);
     DataInfo dstInfo = Data.getDataInfo(TaskConstants.VIEW_TODO_LIST);
 
-    BeeRow srcRow = appointment.getRow();
+    IsRow srcRow = appointment.getRow();
     BeeRow dstRow = RowFactory.createEmptyRow(dstInfo, true);
 
     Map<String, String> colNames = new HashMap<>();
@@ -131,7 +163,7 @@ public final class CalendarUtils {
           for (Long id : appointment.getAttendees()) {
             if (attIds.contains(id)) {
               if (separate) {
-                Appointment copy = new Appointment(appointment.getRow(), id);
+                Appointment copy = Appointment.create(appointment.getRow(), id);
                 result.add(copy);
               } else {
                 result.add(appointment);
@@ -376,6 +408,17 @@ public final class CalendarUtils {
     return BeeUtils.betweenExclusive(diff, 0, days) ? diff : BeeConst.UNDEF;
   }
 
+  public static boolean isCopying(Modifiers modifiers, ItemWidget itemWidget) {
+    if (Modifiers.isNotEmpty(modifiers)) {
+      if ((modifiers.isCtrlKey() || modifiers.isAltKey())
+          && itemWidget.getItem().getItemType().equals(ItemType.APPOINTMENT)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   public static String renderRange(Range<DateTime> range) {
     return (range == null) ? BeeConst.STRING_EMPTY
         : TimeUtils.renderPeriod(range.lowerEndpoint(), range.upperEndpoint(), true);
@@ -383,6 +426,137 @@ public final class CalendarUtils {
 
   private static boolean intersects(CalendarItem item, long min, long max) {
     return item.getStartMillis() < max && item.getEndMillis() > min;
+  }
+
+  public static boolean saveAppointment(final RowCallback callback, boolean isNew,
+      AppointmentBuilder appointmentBuilder, IsRow originalRow,
+      DateTime statDateTime, DateTime endDateTime, String propList, Long reminderType,
+      NotificationListener notificationListener, FormView appointmentView) {
+
+    BeeRow row = DataUtils.cloneRow(originalRow);
+
+    final String viewName = VIEW_APPOINTMENTS;
+
+    Data.setValue(viewName, row, COL_START_DATE_TIME, statDateTime);
+
+    Data.setValue(viewName, row, COL_END_DATE_TIME, endDateTime);
+
+    if (appointmentBuilder != null) {
+      if (!appointmentBuilder.getColors().isEmpty()) {
+        int index = appointmentBuilder.getColorWidget().getSelectedTab();
+        if (!BeeUtils.isIndex(appointmentBuilder.getColors(), index)
+            && isEmptyAppointmentColumn(row, AdministrationConstants.COL_COLOR)) {
+          index = 0;
+        }
+        if (BeeUtils.isIndex(appointmentBuilder.getColors(), index)) {
+          Data.setValue(viewName, row, AdministrationConstants.COL_COLOR,
+              appointmentBuilder.getColors().get(index));
+        }
+      }
+    }
+
+    if (appointmentView != null) {
+      if (isNew) {
+        row.setChildren(appointmentView.getChildrenForInsert());
+      } else {
+        row.setChildren(appointmentView.getChildrenForUpdate());
+      }
+    }
+
+    BeeRowSet rowSet;
+    List<BeeColumn> columns = CalendarKeeper.getAppointmentViewColumns();
+    if (isNew) {
+      rowSet = DataUtils.createRowSetForInsert(viewName, columns, row, null, true);
+    } else {
+      rowSet = new BeeRowSet(viewName, columns);
+      rowSet.addRow(row);
+    }
+
+    if (!BeeUtils.isEmpty(propList)) {
+      rowSet.setTableProperty(TBL_APPOINTMENT_PROPS, propList);
+    }
+
+    final String attList = row.getProperty(TBL_APPOINTMENT_ATTENDEES);
+    if (!BeeUtils.isEmpty(attList)) {
+      rowSet.setTableProperty(TBL_APPOINTMENT_ATTENDEES, attList);
+    }
+
+    final String remindList = DataUtils.isId(reminderType) ? reminderType.toString() : null;
+    if (!BeeUtils.isEmpty(remindList)) {
+      rowSet.setTableProperty(TBL_APPOINTMENT_REMINDERS, remindList);
+    }
+
+    final String ownerList = row.getProperty(TBL_APPOINTMENT_OWNERS);
+    if (!BeeUtils.isEmpty(ownerList)) {
+      rowSet.setTableProperty(TBL_APPOINTMENT_OWNERS, ownerList);
+    }
+
+    final String svc = isNew ? SVC_CREATE_APPOINTMENT : SVC_UPDATE_APPOINTMENT;
+    ParameterList params = CalendarKeeper.createArgs(svc);
+
+    BeeKeeper.getRpc().sendText(params, Codec.beeSerialize(rowSet), new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasErrors()) {
+          notificationListener.notifySevere(response.getErrors());
+
+        } else if (!response.hasResponse(BeeRow.class)) {
+          notificationListener.notifySevere(svc, ": response not a BeeRow");
+
+        } else {
+          BeeRow result = BeeRow.restore((String) response.getResponse());
+          if (result == null) {
+            notificationListener.notifySevere(svc, ": cannot restore row");
+          } else {
+
+            if (!BeeUtils.isEmpty(attList)) {
+              result.setProperty(TBL_APPOINTMENT_ATTENDEES, attList);
+            }
+            if (!BeeUtils.isEmpty(ownerList)) {
+              result.setProperty(TBL_APPOINTMENT_OWNERS, ownerList);
+            }
+            if (!BeeUtils.isEmpty(propList)) {
+              result.setProperty(TBL_APPOINTMENT_PROPS, propList);
+            }
+            if (!BeeUtils.isEmpty(remindList)) {
+              result.setProperty(TBL_APPOINTMENT_REMINDERS, remindList);
+            }
+
+            if (isNew) {
+              RowInsertEvent.fire(BeeKeeper.getBus(), viewName, result,
+                  appointmentBuilder != null ? appointmentBuilder.getFormView().getId() : null);
+            } else {
+              RowUpdateEvent.fire(BeeKeeper.getBus(), viewName, result);
+            }
+
+            Appointment appointment = Appointment.create(result);
+            State state = isNew ? State.CREATED : State.CHANGED;
+            AppointmentEvent.fire(appointment, state);
+
+            if (callback != null) {
+              callback.onSuccess(result);
+            }
+          }
+        }
+        if (appointmentBuilder != null) {
+          appointmentBuilder.setSaving(false);
+        }
+      }
+    });
+
+    return true;
+  }
+
+  public static boolean isEmptyAppointmentColumn(IsRow row, String columnId) {
+    return BeeUtils.isEmpty(Data.getString(VIEW_APPOINTMENTS, row, columnId));
+  }
+
+  public static void updateWidgetStyleByModifiers(Modifiers modifiers, ItemWidget itemWidget) {
+    if (isCopying(modifiers, itemWidget)) {
+      itemWidget.addStyleName(CalendarStyleManager.COPY);
+    } else {
+      itemWidget.removeStyleName(CalendarStyleManager.COPY);
+    }
   }
 
   private CalendarUtils() {

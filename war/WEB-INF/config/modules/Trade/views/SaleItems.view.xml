@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
-      xmlns:x="http://www.butent.com/expression"
 
       name="SaleItems" source="SaleItems" caption="=trdSaleItems"
     >
@@ -13,6 +12,10 @@
       <SimpleJoin joinType="INNER" name="Unit">
         <SimpleColumn name="Name" alias="UnitName" />
       </SimpleJoin>
+
+      <SimpleColumn name="TimeUnit" />
+      <SimpleColumn name="MinTerm" />
+      <SimpleColumn name="DaysPerWeek" />
     </SimpleJoin>
     <SimpleColumn name="Article" />
     <SimpleColumn name="Quantity" />
@@ -20,7 +23,7 @@
     <SimpleColumn name="VatPlus" />
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />
-    <SimpleColumn name="Discount" label="=discountPercent"/>
+    <SimpleColumn name="Discount" />
     <SimpleColumn name="Note" />
     <SimpleColumn name="Parent" />
     <SimpleColumn name="Ordinal" />

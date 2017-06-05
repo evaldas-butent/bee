@@ -20,6 +20,8 @@ import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.Module;
@@ -47,6 +49,9 @@ public class UserInfo implements HasInfo {
   private BeeRowSet settings;
 
   private boolean openInNewTab;
+  private boolean showNewMessagesNotifier;
+
+  private boolean assistant;
 
   private int clickSensitivityMillis;
   private int clickSensitivityDistance;
@@ -56,11 +61,17 @@ public class UserInfo implements HasInfo {
 
   private String styleId;
 
+  SupportedLocale supportedLocale;
+  DateTimeFormatInfo dateTimeFormatInfo;
+
   private Presence presence = Presence.ONLINE;
   private Timer presenceTimer;
 
   public boolean canCreateData(String object) {
     return isLoggedIn() && userData.canCreateData(object);
+  }
+
+  UserInfo() {
   }
 
   public boolean canDeleteData(String object) {
@@ -107,6 +118,10 @@ public class UserInfo implements HasInfo {
 
   public String getCompanyName() {
     return isLoggedIn() ? userData.getCompanyName() : null;
+  }
+
+  public DateTimeFormatInfo getDateTimeFormatInfo() {
+    return dateTimeFormatInfo;
   }
 
   public Filter getFilter(String column) {
@@ -183,6 +198,10 @@ public class UserInfo implements HasInfo {
     return getSetting(COL_USER_STYLE);
   }
 
+  public SupportedLocale getSupportedLocale() {
+    return supportedLocale;
+  }
+
   public UserData getUserData() {
     return userData;
   }
@@ -207,6 +226,10 @@ public class UserInfo implements HasInfo {
 
   public boolean getCommentsLayout() {
     return getBooleanSetting(COL_COMMENTS_LAYOUT);
+  }
+
+  public boolean hasAuthoritah() {
+    return isLoggedIn() && userData.hasAuthoritah();
   }
 
   public boolean is(Long id) {
@@ -311,6 +334,10 @@ public class UserInfo implements HasInfo {
     }
   }
 
+  public void setDateTimeFormatInfo(DateTimeFormatInfo dateTimeFormatInfo) {
+    this.dateTimeFormatInfo = dateTimeFormatInfo;
+  }
+
   public void setSessionId(String sessionId) {
     this.sessionId = sessionId;
   }
@@ -343,6 +370,10 @@ public class UserInfo implements HasInfo {
 
       presenceTimer.scheduleRepeating(TimeUtils.MILLIS_PER_MINUTE / 3);
     }
+  }
+
+  public void setSupportedLocale(SupportedLocale supportedLocale) {
+    this.supportedLocale = supportedLocale;
   }
 
   public void updateSettings(BeeRow row) {
@@ -398,6 +429,21 @@ public class UserInfo implements HasInfo {
     }
   }
 
+  private <E extends Enum<?>> E getEnumSetting(String colName, Class<E> clazz) {
+    if (DataUtils.isEmpty(settings)) {
+      return null;
+
+    } else {
+      int index = getSettingsIndex(colName);
+
+      if (BeeConst.isUndef(index)) {
+        return null;
+      } else {
+        return settings.getEnum(0, index, clazz);
+      }
+    }
+  }
+
   private int getIntSetting(String colName, int def) {
     if (DataUtils.isEmpty(settings)) {
       return def;
@@ -441,6 +487,14 @@ public class UserInfo implements HasInfo {
     return styleId;
   }
 
+  public boolean assistant() {
+    return assistant;
+  }
+
+  public boolean showNewMessagesNotifier() {
+    return showNewMessagesNotifier;
+  }
+
   private void setClickSensitivityDistance(int clickSensitivityDistance) {
     this.clickSensitivityDistance = clickSensitivityDistance;
   }
@@ -471,15 +525,34 @@ public class UserInfo implements HasInfo {
 
   private void updateFields() {
     setOpenInNewTab(getBooleanSetting(COL_OPEN_IN_NEW_TAB));
+    setShowNewMessagesNotifier(getBooleanSetting(COL_SHOW_NEW_MESSAGES_NOTIFIER));
+    setAssistant(getBooleanSetting(COL_ASSISTANT));
+    Global.getChatManager().updateAssistantChat(assistant);
 
     setClickSensitivityMillis(getIntSetting(COL_CLICK_SENSITIVITY_MILLIS, BeeConst.UNDEF));
     setClickSensitivityDistance(getIntSetting(COL_CLICK_SENSITIVITY_DISTANCE, BeeConst.UNDEF));
 
     setNewsRefreshIntervalSeconds(getIntSetting(COL_NEWS_REFRESH_INTERVAL_SECONDS, BeeConst.UNDEF));
     setLoadingStateDelayMillis(getIntSetting(COL_LOADING_STATE_DELAY_MILLIS, BeeConst.UNDEF));
+
+    SupportedLocale dfSetting = getEnumSetting(COL_USER_DATE_FORMAT, SupportedLocale.class);
+    if (dfSetting == null) {
+      dfSetting = getSupportedLocale();
+    }
+    if (dfSetting != null) {
+      setDateTimeFormatInfo(dfSetting.getDateTimeFormatInfo());
+    }
   }
 
   private void updateStyle(String css) {
     DomUtils.setText(getStyleId(), css);
+  }
+
+  public void setAssistant(boolean assistant) {
+    this.assistant = assistant;
+  }
+
+  public void setShowNewMessagesNotifier(boolean showNewMessagesNotifier) {
+    this.showNewMessagesNotifier = showNewMessagesNotifier;
   }
 }

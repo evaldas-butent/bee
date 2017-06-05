@@ -42,9 +42,9 @@
         <Label text="Vairuotojai" />
         <FlowPanel>
           <TextLabel source="DriverName" inline="true" />
-          <FlowPanel name="TripDrivers1Container" style="display:inline;">
+          <FlowPanel name="TripDriversAllContainer" style="display:inline;">
             <InlineLabel text=", " />
-            <InlineLabel name="TripDrivers1" />
+            <InlineLabel name="TripDriversAll" />
           </FlowPanel>
         </FlowPanel>
       </row>
@@ -171,11 +171,11 @@
 
     <br />
 
-    <Table kind="output" name="TripDrivers2Container" style="white-space:nowrap; width:100%;">
+    <Table kind="output" name="TripDriversAll2Container" style="white-space:nowrap; width:100%;">
       <col index="0" cellStyle="text-align:left;" />
       <row>
         <Label text="Antras vairuotojas" style="margin-right:1em;" />
-        <Label name="TripDrivers2" />
+        <Label name="TripDriversAll2" />
       </row>
       <row>
         <text />

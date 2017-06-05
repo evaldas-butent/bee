@@ -3,31 +3,26 @@
 
 name="Administration" label="=administration" order="1000" module="Administration"
 >
-  <Item name="Users" label="=users" service="grid" parameters="Users" />
 
-  <Item name="UserSettings" label="=userSettings" service="grid" parameters="UserSettings"
-    separator="true" />
   <Item name="UiThemes" label="=uiThemes" service="grid" parameters="UiThemes" />
-
-  <Item name="UserGroupSettings" label="=userGroups" service="grid"
-    parameters="UserGroupSettings" separator="true" />
-
-  <Item name="Departments" label="=departments" service="grid" parameters="Departments"
-    separator="true" />
-  <Item name="CompanyStructure" label="=companyStructure" service="form"
-    parameters="CompanyStructure" data="Departments" />
 
   <Item name="Parameters" label="=systemParameters" service="parameters" parameters="Administration"
     separator="true" />
 
+  <Item name="UserHistory" label="=loginHistory" service="grid" parameters="UserHistory"/>
+
+  <Item name="ReminderTypes" label="=reminderTypes" service="grid" parameters="ReminderTypes"
+        separator="true" />
+
+  <Item name="Imports" label="=dataImport" service="grid" parameters="ImportOptions" separator="true" />
+
+  <Item name="GridSettings" label="=gridSettings" service="grid" parameters="GridSettings"
+        separator="true" />
+
   <Item name="EventHistory" label="=eventHistory" service="grid" parameters="EventHistory"
         separator="true" />
 
-  <Item name="UserHistory" label="=loginHistory" service="grid" parameters="UserHistory"/>
   <Item name="IpFilters" label="=ipFilters" service="grid" parameters="IpFilters"
-    separator="true" />
-
-  <Item name="ReminderTypes" label="=reminderTypes" service="grid" parameters="ReminderTypes"
     separator="true" />
 
   <Item name="Autocomplete" label="=autocompletion" service="grid" parameters="Autocomplete"
@@ -35,11 +30,6 @@ name="Administration" label="=administration" order="1000" module="Administratio
 
   <Item name="CustomConfig" label="=customConfig" service="grid" parameters="CustomConfig"
         separator="true" />
-
-  <Item name="Imports" label="=dataImport" service="form" parameters="Imports" separator="true" />
-
-  <Item name="GridSettings" label="=gridSettings" service="grid" parameters="GridSettings"
-    separator="true" />
 
   <Item name="Dictionary" label="=dictionary" service="grid" parameters="Dictionary"
     separator="true" />

@@ -13,7 +13,6 @@ import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -26,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
 

@@ -19,15 +19,117 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Main Task module constants of DataSource and UI objects.
+ */
 public final class TaskConstants {
 
+  /**
+   * Workflow or process of tasks handling and validation helper class.
+   *
+   * <p>
+   *     There main data types defined the task workflow process:
+   *     <ul>
+   *         <li>Task Executor - defines Executor data field related with Users data structure.</li>
+   *         <li>Task Owner - defines Owner data field related with Users data structure.</li>
+   *         <li>Task Observers - defines set of TaskUsers data structure related with Tasks and
+   *         Users structures.</li>
+   *         <li>Task status - defines numeric Status data field assigned with {@code TaskStatus}
+   *         enumeration.</li>
+   *     </ul>
+   * </p>
+   *
+   * <p>
+   *     All fields related with Users data structure comparing with current loggined system user.
+   *     By these data types combining conditions for user do actions with task. <br/>
+   *     Workflow example: current system user is owner of task. Task has status "finished". User
+   *     can "approve" or "return of execution" task
+   *
+   * </p>
+   *
+   * <p>
+   *     {@code
+   *     Long currentUserId = BeeKeeper.getUser.getUserId(); // Current logged user id
+   *     } <br/>
+   *     {@code
+   *     Long ownerId = getTaskOwnerId(); // Returns owner user id of task
+   *     } <br/>
+   *     {@code
+   *     Long executorId = getTaskExecutorId(); // Returns executor user id of task;
+   *     } <br/>
+   *     {@code
+   *     TaskStatus status = getTaskStatus(); // Returns task status enum value
+   *     } <br/> <br />
+
+   *     {@code
+   *     TaskWorkflowAction canApprove = canTaskWorkflowAction.grouped(WorkflowOperation.AND,
+   *     } <br/> &nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code
+   *        TaskWorkflowAction.canOwner(), TaskWorkflowAction.hasStatus(TaskStatus.COMPLETED));
+   *     } <br /> <br />
+   *
+   *     {@code
+   *     TaskWorkflowAction canReturnExecute = TaskWorkflowAction.grouped(WorkflowOperation.AND,
+   *     } <br/> &nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code
+   *        TaskWorkflowAction.canOwner(),
+   *     } <br/> &nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code
+   *        TaskWorkflowAction.grouped(WorkflowOperation.OR,
+   *     }
+   *
+   *     <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code
+   *        TaskWorkflowAction.hasStatus(TaskStatus.SUSPENDED),
+   *     }
+   *     <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code
+   *        TaskWorkflowAction.hasStatus(TaskStatus.CANCELED),
+   *     }
+   *     <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code
+   *         TaskWorkflowAction.hasStatus(TaskStatus.COMPLETED),
+   *     }
+   *     <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code
+   *       TaskWorkflowAction.hasStatus(TaskStatus.APPROVED))));
+   *     } <br /> <br />
+   *
+   *     {@code
+   *       if (canApprove.canExecute(currentUserId == executorId, currentUserId == ownerId,
+   *     } <br />  &nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code  false, false,  status)
+   *     } { <br /> &nbsp;&nbsp;
+   *     {@code
+   *      // create UI controls of task approving...
+   *     } <br/> }&nbsp;&nbsp;&nbsp;&nbsp; <br/> <br />
+   *
+   *     {@code
+   *       if (canReturnExecute.canExecute(currentUserId == executorId, currentUserId == ownerId,
+   *     } <br />  &nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code  false, false,  status)
+   *     } { <br /> &nbsp;&nbsp;
+   *     {@code
+   *      // create UI controls of task return execution...
+   *     } <br/> }&nbsp;&nbsp;&nbsp;&nbsp;
+   *
+   * </p>
+   */
   protected static final class TaskWorkflowAction {
+
+      /**
+       * List of logical operations for building task workflow conditions.
+       */
     public enum WorkflowOperation {
       OR,
       AND;
     }
 
     private enum WorkflowRole {
+      /**
+       * This role method {@code isValid}  always returns false value. <br />
+       * The action of task never be created in UI by this role.
+       */
       HIDDEN {
         @Override
         boolean isValid(boolean isExecutor, boolean isOwner, boolean isObserver, boolean isUser,
@@ -35,6 +137,11 @@ public final class TaskConstants {
           return false;
         }
       },
+
+      /**
+       * This role method {@code isValid} returns true value then the {@code isOwner} parameter of
+       * this method will be true. <br />
+       */
       OWNER {
         @Override
         boolean isValid(boolean isExecutor, boolean isOwner, boolean isObserver, boolean isUser,
@@ -42,6 +149,11 @@ public final class TaskConstants {
           return isOwner;
         }
       },
+
+      /**
+       * This role method {@code isValid} returns true value then the {@code isExecutor} parameter
+       * of this method will be true. <br />
+       */
       EXECUTOR {
         @Override
         boolean isValid(boolean isExecutor, boolean isOwner, boolean isObserver, boolean isUser,
@@ -49,6 +161,11 @@ public final class TaskConstants {
           return isExecutor;
         }
       },
+
+      /**
+       * This role method {@code isValid} returns true value then the {@code isObserver} parameter
+       * of this method will be true. <br />
+       */
       OBSERVER {
         @Override
         boolean isValid(boolean isExecutor, boolean isOwner, boolean isObserver, boolean isUser,
@@ -56,6 +173,11 @@ public final class TaskConstants {
           return isObserver;
         }
       },
+
+      /**
+       * This role method {@code isValid} returns true value then the {@code isUser} parameter
+       * of this method will be true. <br />
+       */
       USER {
         @Override
         boolean isValid(boolean isExecutor, boolean isOwner, boolean isObserver, boolean isUser,
@@ -63,6 +185,11 @@ public final class TaskConstants {
           return isUser;
         }
       },
+
+      /**
+       * This role method {@code isValid} returns true value then the {@code hasValidStatus}
+       * parameter of this method will be true. <br />
+       */
       TASK_STATUS {
 
         @Override
@@ -247,7 +374,9 @@ public final class TaskConstants {
         Localized.dictionary().crmActionFinish(),
         FontAwesome.CHECK_CIRCLE_O,
         TaskWorkflowAction.grouped(WorkflowOperation.AND,
-            TaskWorkflowAction.canExecutor(),
+            TaskWorkflowAction.grouped(WorkflowOperation.OR,
+                TaskWorkflowAction.canExecutor(),
+                TaskWorkflowAction.canOwner()),
             TaskWorkflowAction.grouped(WorkflowOperation.OR,
                 TaskWorkflowAction.hasStatus(TaskStatus.VISITED),
                 TaskWorkflowAction.hasStatus(TaskStatus.NOT_VISITED),
@@ -281,7 +410,9 @@ public final class TaskConstants {
     CREATE_NOT_SCHEDULED(Localized.dictionary().crmTaskEventCreated(),
         Localized.dictionary().crmTasksNotScheduledTasks(),
         null,
-        TaskWorkflowAction.hidden());
+        TaskWorkflowAction.hidden()),
+    CREATE_SCHEDULED(Localized.dictionary().crmTaskForwardedForExecution(),
+        Localized.dictionary().crmTaskStatusScheduled(), null, TaskWorkflowAction.hidden());
 
     private final String caption;
     private final String commandLabel;
@@ -303,6 +434,15 @@ public final class TaskConstants {
     @Override
     public String getCaption() {
       return caption;
+    }
+
+    public static boolean in(int event, TaskEvent... events) {
+      for (TaskEvent te : events) {
+        if (te.ordinal() == event) {
+          return true;
+        }
+      }
+      return false;
     }
 
     public String getCommandLabel() {
@@ -356,6 +496,15 @@ public final class TaskConstants {
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusNotVisited();
       }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        if (differentBorder) {
+          return TASK_STATUS_STYLE_NOT_VISITED + TASK_STATUS_STYLE_WITH_BORDER;
+        } else {
+          return TASK_STATUS_STYLE_NOT_VISITED;
+        }
+      }
     },
 
     /**
@@ -368,6 +517,15 @@ public final class TaskConstants {
       @Override
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusActive();
+      }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        if (differentBorder) {
+          return TASK_STATUS_STYLE_ACTIVE + TASK_STATUS_STYLE_WITH_BORDER;
+        } else {
+          return TASK_STATUS_STYLE_ACTIVE;
+        }
       }
     },
 
@@ -384,6 +542,11 @@ public final class TaskConstants {
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusScheduled();
       }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        return null;
+      }
     },
 
     /**
@@ -397,6 +560,15 @@ public final class TaskConstants {
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusSuspended();
       }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        if (differentBorder) {
+          return TASK_STATUS_STYLE_SUSPENDED + TASK_STATUS_STYLE_WITH_BORDER;
+        } else {
+          return TASK_STATUS_STYLE_SUSPENDED;
+        }
+      }
     },
 
     /**
@@ -409,6 +581,11 @@ public final class TaskConstants {
       @Override
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusCompleted();
+      }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        return TASK_STATUS_STYLE_COMPLETED;
       }
     },
 
@@ -424,6 +601,11 @@ public final class TaskConstants {
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusApproved();
       }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        return null;
+      }
     },
 
     /**
@@ -437,6 +619,11 @@ public final class TaskConstants {
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusCanceled();
       }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        return TASK_STATUS_STYLE_CACELED;
+      }
     },
 
     /**
@@ -448,6 +635,15 @@ public final class TaskConstants {
       @Override
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusVisited();
+      }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        if (differentBorder) {
+          return TASK_STATUS_STYLE_VISITED + TASK_STATUS_STYLE_WITH_BORDER;
+        } else {
+          return TASK_STATUS_STYLE_VISITED;
+        }
       }
     },
 
@@ -461,6 +657,15 @@ public final class TaskConstants {
       @Override
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusNotScheduled();
+      }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        if (differentBorder) {
+          return TASK_STATUS_STYLE_NOT_SCHEDULED + TASK_STATUS_STYLE_WITH_BORDER;
+        } else {
+          return TASK_STATUS_STYLE_NOT_SCHEDULED;
+        }
       }
     };
 
@@ -476,6 +681,13 @@ public final class TaskConstants {
     public boolean is(Integer status) {
       return status != null && ordinal() == status;
     }
+
+    /**
+     * Method used for rendering css elements according to task status.
+     * @param differentBorder - indicates then different elements style is needed.
+     * @return css class name.
+     */
+    public abstract String getStyleName(boolean differentBorder);
   }
 
   public enum ToDoVisibility implements HasCaption {
@@ -525,8 +737,11 @@ public final class TaskConstants {
   public static final String SVC_RT_SCHEDULE = "rt_schedule";
   public static final String SVC_RT_COPY = "rt_copy";
 
+  public static final String SVC_TASK_REPORT = "TaskReport";
+
   public static final String VAR_TASK_DATA = Service.RPC_VAR_PREFIX + "task_data";
   public static final String VAR_TASK_ID = Service.RPC_VAR_PREFIX + "task_id";
+  public static final String VAR_USER_ID = Service.RPC_VAR_PREFIX + "user_id";
   public static final String VAR_TASK_APPROVED_TIME = Service.RPC_VAR_PREFIX + "task_approved";
 
   public static final String VAR_TASK_COMMENT = Service.RPC_VAR_PREFIX + "task_comment";
@@ -548,6 +763,7 @@ public final class TaskConstants {
       + "task_duration_hide_zeros";
 
   public static final String VAR_TASK_RELATIONS = Service.RPC_VAR_PREFIX + "task_relations";
+  public static final String VAR_COPY_RELATIONS = Service.RPC_VAR_PREFIX + "copy_task_relations";
   public static final String VAR_TASK_USERS = Service.RPC_VAR_PREFIX + "task_users";
   public static final String VAR_TASK_PROPERTIES = Service.RPC_VAR_PREFIX + "task_properties";
   public static final String VAR_TASK_PROJECT = Service.RPC_VAR_PREFIX + "task_project";
@@ -651,6 +867,7 @@ public final class TaskConstants {
   public static final String COL_COMMENT = "Comment";
 
   public static final String COL_PRODUCT = "Product";
+  public static final String COL_PRODUCT_NAME = "Name";
   public static final String COL_PRODUCT_REQUIRED = "ProductRequired";
 
   public static final String COL_TASK_EVENT = "TaskEvent";
@@ -730,6 +947,9 @@ public final class TaskConstants {
   public static final String ALS_CONTACT_FIRST_NAME = "ContactFirstName";
   public static final String ALS_CONTACT_LAST_NAME = "ContactLastName";
 
+  public static final String ALS_REQUEST_PRODUCT_FOREGROUND = "ProductForeground";
+  public static final String ALS_REQUEST_PRODUCT_BACKGROUND = "ProductBackground";
+
   public static final String ALS_DURATION_TYPE_NAME = "DurationTypeName";
 
   public static final String ALS_EXECUTOR_FIRST_NAME = "ExecutorFirstName";
@@ -752,8 +972,11 @@ public final class TaskConstants {
   public static final String ALS_PROJECT_OWNER = "ProjectOwner";
   public static final String ALS_PROJECT_STATUS = "ProjectStatus";
   public static final String ALS_REMINDER_NAME = "ReminderName";
+  public static final String ALS_LAST_BREAK_EVENT = "LastBreakEvent";
 
   public static final String ALS_LAST_SPAWN = "LastSpawn";
+
+  public static final String ALS_TASK_PRODUCT_NAME = "ProductName";
 
   public static final String MENU_TASKS = "Tasks";
 
@@ -761,17 +984,6 @@ public final class TaskConstants {
   public static final String PROP_EXECUTOR_GROUPS = "ExecutorGroups";
   public static final String PROP_OBSERVERS = "Observers";
   public static final String PROP_OBSERVER_GROUPS = "ObserverGroups";
-
-  public static final String PROP_COMPANIES = "Companies";
-  public static final String PROP_PERSONS = "Persons";
-  public static final String PROP_DOCUMENTS = "Documents";
-  public static final String PROP_APPOINTMENTS = "Appointments";
-  public static final String PROP_DISCUSSIONS = "Discussions";
-  public static final String PROP_SERVICE_OBJECTS = "ServiceObjects";
-  public static final String PROP_PROJECTS = "Projects";
-  public static final String PROP_PROJECT_STAGES = "ProjectStages";
-  public static final String PROP_TASKS = "Tasks";
-  public static final String PROP_REQUESTS = "Requests";
 
   public static final String PROP_FILES = "Files";
   public static final String PROP_EVENTS = "Events";
@@ -828,6 +1040,19 @@ public final class TaskConstants {
   public static final String PRM_START_OF_WORK_DAY = "StartOfWorkDay";
   public static final String PRM_DEFAULT_DBA_TEMPLATE = "DefaultDBATemplate";
   public static final String PRM_DEFAULT_DBA_DOCUMENT_TYPE = "DefaultDBADocumentType";
+  public static final String PRM_CREATE_PRIVATE_TASK_FIRST = "CreatePrivateTaskFirst";
+
+  public static final String TASK_STATUS_STYLE = "bee-header-caption_state";
+  public static final String TASK_STATUS_STYLE_NOT_VISITED = TASK_STATUS_STYLE + "_not_visited";
+  public static final String TASK_STATUS_STYLE_ACTIVE = TASK_STATUS_STYLE + "_active";
+  public static final String TASK_STATUS_STYLE_SUSPENDED = TASK_STATUS_STYLE + "_suspended";
+  public static final String TASK_STATUS_STYLE_COMPLETED = TASK_STATUS_STYLE + "_completed";
+  public static final String TASK_STATUS_STYLE_CACELED = TASK_STATUS_STYLE + "_canceled";
+  public static final String TASK_STATUS_STYLE_VISITED = TASK_STATUS_STYLE + "_visited";
+  public static final String TASK_STATUS_STYLE_NOT_SCHEDULED = TASK_STATUS_STYLE + "_not_scheduled";
+  public static final String TASK_STATUS_STYLE_WITH_BORDER = "_with_border";
+  public static final String DEFAULT_TASK_PROPERTIES  =
+        BeeUtils.join(BeeConst.STRING_COMMA, PROP_OBSERVERS, PROP_FILES, PROP_EVENTS);
 
   private TaskConstants() {
   }

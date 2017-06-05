@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -93,13 +94,13 @@ public class TradeActClientArea extends ScreenImpl {
       ((Horizontal) uc).insert(userSign, 0);
     }
 
-    userSign.addClickHandler(e -> onUserSignatureClick());
+    userSign.addClickHandler(this::onUserSignatureClick);
 
     return uc;
   }
 
   @Override
-  protected void onUserSignatureClick() {
+  protected void onUserSignatureClick(ClickEvent event) {
     PasswordService.change();
   }
 }

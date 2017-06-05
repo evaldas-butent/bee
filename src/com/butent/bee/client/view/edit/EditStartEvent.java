@@ -8,8 +8,11 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumable;
-import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
+
+import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Manages edit start event, gets column id, type, row value and other necessary parameters.
@@ -59,6 +62,7 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> implements 
 
   private final IsRow rowValue;
   private final String columnId;
+  private final CellSource cellSource;
 
   private final Element sourceElement;
   private final int charCode;
@@ -70,14 +74,16 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> implements 
   private Consumer<FormView> onFormFocus;
 
   public EditStartEvent(IsRow rowValue, boolean readOnly) {
-    this(rowValue, null, null, CLICK, readOnly);
+    this(rowValue, null, null, null, CLICK, readOnly);
   }
 
-  public EditStartEvent(IsRow rowValue, String columnId, Element sourceElement, int charCode,
-      boolean readOnly) {
+  public EditStartEvent(IsRow rowValue, String columnId, CellSource cellSource,
+      Element sourceElement, int charCode, boolean readOnly) {
 
     this.rowValue = rowValue;
     this.columnId = columnId;
+    this.cellSource = cellSource;
+
     this.sourceElement = sourceElement;
     this.charCode = charCode;
     this.readOnly = readOnly;
@@ -91,6 +97,10 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> implements 
   @Override
   public Type<Handler> getAssociatedType() {
     return TYPE;
+  }
+
+  public CellSource getCellSource() {
+    return cellSource;
   }
 
   public int getCharCode() {
@@ -111,6 +121,26 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> implements 
 
   public Element getSourceElement() {
     return sourceElement;
+  }
+
+  public boolean hasAnySource(String first, String second, String... rest) {
+    if (hasSource(first) || hasSource(second)) {
+      return true;
+    }
+
+    if (rest != null) {
+      for (String name : rest) {
+        if (hasSource(name)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  public boolean hasSource(String name) {
+    return getCellSource() != null && Objects.equals(getCellSource().getName(), name);
   }
 
   @Override

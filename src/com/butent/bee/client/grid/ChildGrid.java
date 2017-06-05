@@ -1,10 +1,8 @@
 package com.butent.bee.client.grid;
 
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.event.logical.ParentRowEvent;
-import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderView;
@@ -67,16 +65,13 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
 
   @Override
   public void launch() {
-    GridFactory.getGridDescription(getGridName(), new Callback<GridDescription>() {
-      @Override
-      public void onSuccess(GridDescription result) {
-        if (getGridInterceptor() != null && !getGridInterceptor().initDescription(result)) {
-          return;
-        }
-
-        setGridDescription(GridSettings.apply(getGridKey(), result));
-        resolveState(false);
+    GridFactory.getGridDescription(getGridName(), result -> {
+      if (getGridInterceptor() != null && !getGridInterceptor().initDescription(result)) {
+        return;
       }
+
+      setGridDescription(GridSettings.apply(getGridKey(relSource), result));
+      resolveState(false);
     });
   }
 
@@ -115,7 +110,7 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
       return;
     }
 
-    GridView gridView = GridFactory.createGridView(getGridDescription(), getGridKey(),
+    GridView gridView = GridFactory.createGridView(getGridDescription(), getGridKey(relSource),
         dataInfo.getColumns(), getRelSource(), uiOptions, getGridInterceptor(), order,
         getGridOptions());
 
@@ -135,12 +130,7 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
 
     gp.getMainView().setEnabled(false);
 
-    gridView.addReadyHandler(new ReadyEvent.Handler() {
-      @Override
-      public void onReady(ReadyEvent event) {
-        resolveState(true);
-      }
-    });
+    gridView.addReadyHandler(event -> resolveState(true));
 
     setWidget(gp.getMainView());
 
@@ -215,7 +205,9 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
     } else if (ready || getPresenter().isReady()) {
       getPresenter().getGridView().getGrid().deactivate();
 
-      updateFilter(getPendingRow());
+      if (updateFilter(getPendingRow())) {
+        getPresenter().getGridView().getGrid().clearSelection();
+      }
 
       if (!getPresenter().getGridView().isAdding()) {
         if (hasParentValue(getPendingRow())) {
@@ -241,7 +233,7 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
     this.pendingRow = pendingRow;
   }
 
-  private void updateFilter(IsRow row) {
+  private boolean updateFilter(IsRow row) {
     if (getPresenter() != null) {
       getPresenter().getGridView().setRelId(getParentValue(row));
 
@@ -261,6 +253,11 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
           header.showAction(Action.REMOVE_FILTER, false);
         }
       }
+
+      return changed;
+
+    } else {
+      return false;
     }
   }
 }

@@ -100,7 +100,7 @@ public final class MailConstants {
       public String getCaption(Dictionary constants) {
         return constants.mailRuleConditionAll();
       }
-    };
+    }
   }
 
   public enum RuleAction implements HasLocalizedCaption {
@@ -145,7 +145,28 @@ public final class MailConstants {
       public String getCaption(Dictionary constants) {
         return constants.mailRuleActionForward();
       }
-    };
+    }
+  }
+
+  public enum SyncMode implements HasLocalizedCaption {
+    SYNC_INBOX {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.mailSynchronizeInbox();
+      }
+    },
+    SYNC_ALL {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.mailSynchronizeAll();
+      }
+    },
+    SYNC_NOTHING {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.mailSynchronizeNothing();
+      }
+    }
   }
 
   public static final String SIGNATURE_SEPARATOR = "<br><br><br>";
@@ -163,6 +184,7 @@ public final class MailConstants {
   public static final String SVC_CHECK_MAIL = "check_mail";
   public static final String SVC_SEND_MAIL = "send_mail";
   public static final String SVC_STRIP_HTML = "strip_html";
+  public static final String SVC_GET_RAW_CONTENT = "get_raw_content";
   public static final String SVC_GET_UNREAD_COUNT = "get_unread_count";
   public static final String SVC_GET_NEWSLETTER_CONTACTS = "get_newsletter_contacts";
 
@@ -220,7 +242,8 @@ public final class MailConstants {
   public static final String COL_ACCOUNT_DESCRIPTION = "Description";
   public static final String COL_ACCOUNT_DEFAULT = "Main";
   public static final String COL_ACCOUNT_PRIVATE = "Private";
-  public static final String COL_ACCOUNT_SYNC_ALL = "SynchronizeAll";
+  public static final String COL_ACCOUNT_SYNC_MODE = "SyncMode";
+  public static final String COL_ACCOUNT_LAST_CONNECT = "LastConnect";
   public static final String COL_STORE_TYPE = "StoreType";
   public static final String COL_STORE_SERVER = "StoreServer";
   public static final String COL_STORE_SPORT = "StorePort";
@@ -240,6 +263,7 @@ public final class MailConstants {
   public static final String COL_FOLDER_PARENT = "Parent";
   public static final String COL_FOLDER_NAME = "Name";
   public static final String COL_FOLDER_UID = "UIDValidity";
+  public static final String COL_FOLDER_MODSEQ = "ModSeq";
 
   public static final String COL_PLACE = "Place";
   public static final String COL_FOLDER = "Folder";
@@ -249,7 +273,6 @@ public final class MailConstants {
 
   public static final String COL_RULE = "Rule";
   public static final String COL_RULE_ACTIVE = "Active";
-  public static final String COL_RULE_ORDINAL = "Ordinal";
   public static final String COL_RULE_CONDITION = "Condition";
   public static final String COL_RULE_CONDITION_OPTIONS = "ConditionOptions";
   public static final String COL_RULE_ACTION = "Action";
@@ -261,6 +284,8 @@ public final class MailConstants {
   public static final String COL_NEWSLETTER = "Newsletter";
   public static final String COL_GROUP_NAME = "GroupName";
   public static final String COL_RECIPIENTS_GROUP = "RecipientsGroup";
+
+  public static final String COL_NEWSLETTER_VISIBLE_COPIES = "VisibleCopies";
 
   public static final String FORM_ACCOUNT = "Account";
   public static final String FORM_NEW_ACCOUNT = "NewAccount";
@@ -274,15 +299,26 @@ public final class MailConstants {
 
   public static final String DATA_TYPE_MESSAGE = "Message";
 
+  public static final String PRM_SIGNATURE_POSITION = "MailSignatureAboveQuotedText";
   public static final String PRM_DEFAULT_ACCOUNT = "DefaultAccount";
   public static final String PRM_MAIL_CHECK_INTERVAL = "MailCheckIntervalInMinutes";
   public static final String PRM_SEND_NEWSLETTERS_COUNT = "SendNewslettersCount";
   public static final String PRM_SEND_NEWSLETTERS_INTERVAL = "SendNewslettersInterval";
+  public static final String PRM_REMINDERS_MAIL_TEMPLATE = "RemindersMailTemplate";
+
+  public static final String REMINDERS_MAIL_TEMPLATE_HEADER_TEXT = "{template_header_text}";
+  public static final String REMINDERS_MAIL_TEMPLATE_HEADER_COLOR = "{template_header_color}";
+  public static final String REMINDERS_MAIL_DEFAULT_COLOR = "#6bae45";
+  public static final String DEFAULT_REMINDERS_MAIL_TEMPLATE_VALUE =
+      "<h3 style=\"background-color: " + REMINDERS_MAIL_TEMPLATE_HEADER_COLOR
+          + "; color: white; text-transform: uppercase;"
+          + " padding: 10px;\">" + REMINDERS_MAIL_TEMPLATE_HEADER_TEXT + "</h3>";
 
   public static void register() {
     EnumUtils.register(RuleCondition.class);
     EnumUtils.register(RuleAction.class);
     EnumUtils.register(RecipientsGroupsVisibility.class);
+    EnumUtils.register(SyncMode.class);
   }
 
   private MailConstants() {

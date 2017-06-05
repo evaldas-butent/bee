@@ -14,7 +14,7 @@ import java.util.List;
 public final class Collator implements Comparator<String> {
 
   public enum Case {
-    INSENSITIVE, SENSITIVE;
+    INSENSITIVE, SENSITIVE
   }
 
   public static class Options extends JavaScriptObject {
@@ -129,11 +129,11 @@ public final class Collator implements Comparator<String> {
   private final String locales;
   private final Options options;
 
-  public Collator(Case caseSensitivity, NullOrdering nullOrdering, String locales) {
+  private Collator(Case caseSensitivity, NullOrdering nullOrdering, String locales) {
     this(caseSensitivity, nullOrdering, locales, null);
   }
 
-  public Collator(Case caseSensitivity, NullOrdering nullOrdering, String locales,
+  private Collator(Case caseSensitivity, NullOrdering nullOrdering, String locales,
       Options options) {
 
     this.caseSensitivity = caseSensitivity;
@@ -176,14 +176,7 @@ public final class Collator implements Comparator<String> {
   }-*/;
 
   private native int compareImpl(String source, String target, String loc) /*-{
-    // chromium issue 314210
-    var z;
-    try {
-      z = source.localeCompare(target, loc);
-    } catch (err) {
-      z = source.localeCompare(target);
-    }
-    return z;
+    return source.localeCompare(target, loc);
   }-*/;
 
   private native int compareImpl(String source, String target, String loc, Options opt) /*-{

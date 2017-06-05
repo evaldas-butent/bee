@@ -22,8 +22,6 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
@@ -42,6 +40,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class GridFilterManager {
 
@@ -49,6 +49,7 @@ public class GridFilterManager {
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "GridFilter-";
   private static final String STYLE_DIALOG = STYLE_PREFIX + "dialog";
+  private static final String STYLE_CHILD = STYLE_PREFIX + "child";
 
   private static final String STYLE_CONTENT = STYLE_PREFIX + "content";
 
@@ -129,8 +130,8 @@ public class GridFilterManager {
   }
 
   private final String gridKey;
-
   private final CellGrid grid;
+  private final boolean isChild;
 
   private final FilterConsumer filterConsumer;
 
@@ -145,6 +146,8 @@ public class GridFilterManager {
 
     this.gridKey = gridView.getGridKey();
     this.grid = gridView.getGrid();
+    this.isChild = gridView.isChild();
+
     this.filterConsumer = filterConsumer;
   }
 
@@ -191,6 +194,9 @@ public class GridFilterManager {
     retainValues();
 
     DialogBox dialog = DialogBox.create(Localized.dictionary().filter(), STYLE_DIALOG);
+    if (isChild) {
+      dialog.addStyleName(STYLE_CHILD);
+    }
 
     buildContentPanel();
     dialog.setWidget(contentPanel);

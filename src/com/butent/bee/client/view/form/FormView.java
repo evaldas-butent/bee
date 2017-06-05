@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.HasDataTable;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.DndWidget;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.output.Printable;
@@ -16,6 +17,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.DataView;
+import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
 import com.butent.bee.client.view.add.HasAddStartHandlers;
 import com.butent.bee.client.view.add.HasReadyForInsertHandlers;
@@ -24,6 +26,8 @@ import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasState;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
@@ -63,15 +67,37 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void editRow(IsRow rowValue, Scheduler.ScheduledCommand focusCommand);
 
+  /**
+   * Focus the first widget on this form view. If there some widgets where handling keyboard events,
+   * the first widget usually is first element of DOM or having lower tab index.
+   * 
+   * 
+   */
+  void focus();
+
+  /**
+   * Focus the widget on this form view.
+   * 
+   * @param source name of source where related focusable widget.
+   */
   boolean focus(String source);
 
   int flush();
+
+  default GridView getBackingGrid() {
+    return (getViewPresenter() instanceof HasGridView)
+        ? ((HasGridView) getViewPresenter()).getGridView() : null;
+  }
 
   Boolean getBooleanValue(String source);
 
   Collection<RowChildren> getChildrenForInsert();
 
   Collection<RowChildren> getChildrenForUpdate();
+
+  default String getContainerStyleName() {
+    return BeeConst.CSS_CLASS_PREFIX + "form-" + BeeUtils.trim(getFormName()) + "-container";
+  }
 
   DateTime getDateTimeValue(String source);
 
@@ -145,6 +171,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void refreshChildWidgets(IsRow row);
 
+  void saveChanges(RowCallback callback);
+
   void setAdding(boolean adding);
 
   void setCaption(String caption);
@@ -153,7 +181,7 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void start(Integer rowCount);
 
-  void updateCell(String columnId, String newValue);
+  boolean updateCell(String columnId, String newValue);
 
   void updateRow(IsRow row, boolean refreshChildren);
 

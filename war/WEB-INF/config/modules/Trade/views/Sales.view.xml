@@ -89,6 +89,11 @@
         <SimpleJoin name="Position" joinType="LEFT">
           <SimpleColumn name="Name" alias="ManagerPositionName" />
         </SimpleJoin>
+
+        <SimpleJoin name="Contact" joinType="LEFT">
+          <SimpleColumn name="Phone" alias="ManagerPhone" />
+          <SimpleColumn name="Mobile" alias="ManagerMobile" />
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
 

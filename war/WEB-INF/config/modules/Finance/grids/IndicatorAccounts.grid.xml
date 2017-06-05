@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+        name="IndicatorAccounts" viewName="IndicatorAccounts"
+>
+  <g:columns>
+    <RelColumn name="Account" renderColumns="AccountCode" choiceColumns="AccountCode AccountName"
+               newRowEnabled="false" backgroundSource="Background" foregroundSource="Foreground"
+               minWidth="100" visible="true" />
+
+    <DataColumn name="AccountName" backgroundSource="Background" foregroundSource="Foreground"
+                flexGrow="1" visible="true" />
+  </g:columns>
+</g:Grid>

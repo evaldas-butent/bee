@@ -3,18 +3,19 @@
   <!ENTITY section "margin-top: 4px;">
   <!ENTITY separator "<hr/>">
   <!ENTITY inline "display:inline-block;">
-  <!ENTITY labelLeft "&inline; width:100px; padding-top:1px;">
-  <!ENTITY labelRight "&inline; width:60px; padding-top:1px; text-align:right; margin-right:10px;">
+  <!ENTITY labelLeft "&inline; width:120px; padding-top:1px;">
+  <!ENTITY labelRight "&labelLeft; width:60px; text-align:right; margin-right:10px;">
   <!ENTITY input "&inline; width:10em;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:f="http://www.butent.com/form"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:ui="http://www.butent.com/ui"
 
   name="Assessment" viewName="Assessments" showRowId="true"
         width="70" widthUnit="%" height="80" heightUnit="%"
-  >
-  <f:properties reports="PrintOrderLT, PrintOrderEN, PrintOrderRU" />
+>
+  <f:properties jasperReports="LogisticsOrderContract" />
 
   <FlowPanel style="padding: 10px 2px 2px 10px; height:calc(100% - 15px);"
              class="flexBox-vertical bee-tr-assessment-form">
@@ -24,7 +25,7 @@
         <FlowPanel name="Status" style="&input; font-weight:bold;" />
         <Label for="Customer" style="&labelRight; width:120px;" />
         <DataSelector source="Customer" renderColumns="CustomerName CustomerTypeName"
-            choiceColumns="Name TypeName" style="&input; width:200px;" />
+                      choiceColumns="Name TypeName" style="&input; width:200px;" />
       </FlowPanel>
       <FlowPanel style="&section;">
         <Label for="Date" style="&labelLeft;" />
@@ -33,6 +34,19 @@
         <DataSelector source="CustomerPerson" style="&input; width:200px;"
           choiceColumns="FirstName LastName CompanyName" renderColumns="PersonFirstName PersonLastName"
           options="Customer" />
+      </FlowPanel>
+      <FlowPanel style="&section;">
+        <Label for="OrderNo" style="&labelLeft;" />
+        <InputText source="OrderNo" style="&input;" readOnly="true" />
+        <Label for="Payer" style="&labelRight; width:120px;" />
+        <DataSelector source="Payer" style="&input; width:200px;" />
+      </FlowPanel>
+
+      <FlowPanel style="&section;">
+        <Label for="ShippingTerm" style="&labelLeft;" />
+        <DataSelector source="ShippingTerm" style="&input;" />
+        <Label for="Expedition" style="&labelRight; width:120px;" />
+        <DataSelector source="Expedition" filter="Logistics" style="&input; width:200px;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
@@ -50,7 +64,8 @@
         <Label for="Manager" class="bee-required" style="&labelLeft;" />
         <DataSelector name="Manager" source="Manager" style="&input; width:200px;" caching="local"
           viewName="AssessmentExecutors" choiceColumns="LastName FirstName DepartmentName"
-          editSource="CompanyPerson" newRowEnabled="false" required="true" />
+          editSource="CompanyPerson" renderColumns="ManagerFirstName ManagerLastName"
+                      newRowEnabled="false" required="true" />
         <Label for="DepartmentName" style="&inline; margin:0 10px 0 10px; padding-top:1px;" />
         <TextLabel source="DepartmentName" style="&inline; padding-top:1px; font-weight:bold;" />
       </FlowPanel>
@@ -61,18 +76,29 @@
 
       &separator;
       <FlowPanel style="&section;">
-        <Label for="Currency" class="bee-required" style="&labelLeft;" />
-        <DataSelector name="Currency" source="Currency" required="true"
-          style="&inline; width:5em; margin-right:20px;" editEnabled="false" />
-
-        <FlowPanel style="&inline; &section;">
-          <InlineLabel text="=customerPrice" style="padding-top:1px; margin-right:10px;" />
-          <InlineLabel name="IncomeTotal" style="font-weight:bold; margin-right:20px;" />
-          <InlineLabel text="=transportCost" style="padding-top:1px; margin-right:10px;" />
-          <InlineLabel name="ExpenseTotal" style="font-weight:bold; margin-right:20px;" />
-          <InlineLabel text="=profit" style="padding-top:1px; margin-right:10px;" />
-          <InlineLabel name="Profit" style="font-weight:bold;" />
-        </FlowPanel>
+        <InlineLabel text="=customerPrice" style="padding-top:1px; margin-right:10px;" />
+        <MoneyLabel inline="true" style="font-weight:bold; margin-right:20px;">
+          <render>
+            <ui:expression>Number(row.CargoIncomesTotal ? row.CargoIncomesTotal : 0)
+              + Number(row.ChildAssessmentsCargoIncomesTotal ? Number(row.ChildAssessmentsCargoIncomesTotal) : 0)</ui:expression>
+          </render>
+        </MoneyLabel>
+        <InlineLabel text="=transportCost" style="padding-top:1px; margin-right:10px;" />
+        <MoneyLabel inline="true" style="font-weight:bold; margin-right:20px;">
+          <render>
+            <ui:expression>Number(row.CargoExpensesTotal ? row.CargoExpensesTotal : 0)
+              + Number(row.ChildAssessmentsCargoExpensesTotal ? row.ChildAssessmentsCargoExpensesTotal : 0)</ui:expression>
+          </render>
+        </MoneyLabel>
+        <InlineLabel text="=profit" style="padding-top:1px; margin-right:10px;" />
+        <MoneyLabel inline="true" style="font-weight:bold;">
+          <render>
+            <ui:expression>Number(row.CargoIncomesTotal ? row.CargoIncomesTotal : 0)
+              + Number(row.ChildAssessmentsCargoIncomesTotal ? row.ChildAssessmentsCargoIncomesTotal : 0)
+              - Number(row.CargoExpensesTotal ? row.CargoExpensesTotal : 0)
+              - Number(row.ChildAssessmentsCargoExpensesTotal ? row.ChildAssessmentsCargoExpensesTotal : 0)</ui:expression>
+          </render>
+        </MoneyLabel>
       </FlowPanel>
 
       &separator;
@@ -102,16 +128,17 @@
       <page data="CargoIncomes">
         <FlowPanel>
           <Label text="=income" style="&inline;" />
-          <FlowPanel name="Income" style="&inline;" />
+          <MoneyLabel property="CargoIncomesTotal" style="&inline; margin-left:5px;" />
         </FlowPanel>
         <ChildGrid name="CargoIncomes" relColumn="Cargo" source="Cargo" summarize="false" />
       </page>
       <page data="CargoExpenses">
         <FlowPanel>
           <CheckBox name="ExpensesRegistered" source="ExpensesRegistered" html="-"
-            title="=trExpensesRegistered" style="&inline; margin:0 5px 0 0; position:relative; top:4px;" />
+                    title="=trExpensesRegistered"
+                    style="&inline; margin:0 5px 0 0; position:relative; top:4px;" />
           <Label text="=trExpenses" style="&inline;" />
-          <FlowPanel name="Expense" style="&inline;" />
+          <MoneyLabel property="CargoExpensesTotal" style="&inline; margin-left:5px;" />
         </FlowPanel>
         <ChildGrid name="CargoExpenses" relColumn="Cargo" source="Cargo" summarize="false" />
       </page>
@@ -120,8 +147,12 @@
         <ChildGrid name="ChildAssessments" relColumn="Assessment" />
       </page>
       <page>
+        <text>=files</text>
+        <ChildGrid name="CargoFiles" relColumn="Cargo" source="Cargo" />
+      </page>
+      <page>
       <text>=relatedInformation</text>
-      <Relations relColumn="Assessment" inline="true"
+      <Relations relColumn="Assessment" inline="true" summarize="true"
                  defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
       </page>
     </TabbedPages>

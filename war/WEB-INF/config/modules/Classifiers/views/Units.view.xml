@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Units" source="Units" module="Classifiers"
-  caption="=units" newRowCaption="=newUnit"
-  newRowForm="Unit"
-  >
+      name="Units" source="Units" module="Classifiers"
+      caption="=units" newRowCaption="=newUnit"
+      newRowForm="Unit"
+>
   <Columns>
     <SimpleColumn name="Name" />
     <SimpleColumn name="Caption" />
@@ -13,9 +13,9 @@
       <SimpleColumn name="Name" alias="BaseUnitName" />
     </SimpleJoin>
     <SimpleColumn name="Factor" />
+    <SimpleColumn name="SelfService" />
   </Columns>
   <Order>
     <OrderBy column="Name" />
   </Order>
 </View>
- 

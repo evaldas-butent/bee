@@ -25,12 +25,18 @@
     </FlowPanel>
     <FlowPanel style="&section;">
       <Label text="=carrier" class="bee-required" style="&labelLeft;" />
-      <DataSelector source="Forwarder" required="true" style="&inline; width:200px;" 
+      <DataSelector source="Forwarder" required="true" style="&inline; width:200px;"
           renderColumns="ForwarderName ForwarderTypeName" choiceColumns="Name TypeName"/>
     </FlowPanel>
     <FlowPanel style="&section;">
       <Label text="=trExpeditionType" class="bee-required" style="&labelLeft;" />
       <DataSelector source="Expedition" required="true" style="&inline; width:150px;"  />
+    </FlowPanel>
+    <FlowPanel style="&section;">
+      <Label text="=manager" style="&labelLeft;" />
+      <DataSelector source="Manager" style="&inline; width:200px;"
+                    editSource="ManagerPerson" newRowEnabled="false"
+          renderColumns="ManagerFirstName ManagerLastName" choiceColumns="FirstName LastName"/>
     </FlowPanel>
     <FlowPanel style="&section;">
       <Label text="=transport" style="&labelLeft;" />

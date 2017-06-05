@@ -50,7 +50,6 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -97,6 +96,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 class RecurringTaskHandler extends AbstractFormInterceptor implements CellValidateEvent.Handler {
 
@@ -503,7 +503,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     panel.add(table);
 
     String caption = BeeUtils.joinWords(Localized.dictionary().crmTasks(),
-        new JustDate(dayNumber).toString());
+        Format.renderDate(new JustDate(dayNumber)));
 
     DialogBox dialog = DialogBox.create(caption, STYLE_OFFSPRING_DIALOG);
     dialog.setWidget(panel);
@@ -1075,7 +1075,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
         List<ScheduleDateRange> scheduleDateRanges = new ArrayList<>();
 
         if (response.hasResponse()) {
-          Map<String, String> data = Codec.deserializeMap(response.getResponseAsString());
+          Map<String, String> data = Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
           if (data.containsKey(AdministrationConstants.VIEW_USERS)) {
             setExecutors(BeeRowSet.restore(data.get(AdministrationConstants.VIEW_USERS)));

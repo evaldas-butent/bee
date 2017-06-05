@@ -20,20 +20,19 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
-import com.butent.bee.client.view.edit.EditorConsumer;
+import com.butent.bee.client.view.edit.EditorBuilder;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.grid.DynamicColumnEnumerator;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.event.RowInsertEvent;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.event.ModificationPreviewer;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
@@ -48,11 +47,11 @@ import java.util.Map;
 
 public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent.Handler,
     ParentRowEvent.Handler, EditStartEvent.Handler, EditEndEvent.Handler,
-    ProvidesGridColumnRenderer, DynamicColumnEnumerator, HasViewName, EditorConsumer,
-    RowUpdateEvent.Handler, HasActiveRow {
+    ProvidesGridColumnRenderer, DynamicColumnEnumerator, HasViewName, EditorBuilder,
+    HasActiveRow, ModificationPreviewer {
 
   enum DeleteMode {
-    CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI;
+    CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI, DENY
   }
 
   void afterCreate(GridView gridView);
@@ -105,8 +104,6 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
    */
   StyleProvider getColumnStyleProvider(String columnName);
 
-  List<BeeColumn> getDataColumns();
-
   DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
       Collection<RowInfo> selectedRows, DeleteMode defMode);
 
@@ -149,6 +146,8 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
 
   boolean onClose(GridPresenter presenter);
 
+  void onDataReceived(List<? extends IsRow> rows);
+
   void onLoad(GridView gridView);
 
   void onReadyForInsert(GridView gridView, ReadyForInsertEvent event);
@@ -157,8 +156,6 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
 
   boolean onRowCountChange(GridView gridView, RowCountChangeEvent event);
 
-  boolean onRowInsert(RowInsertEvent event);
-
   void onSaveChanges(GridView gridView, SaveChangesEvent event);
 
   boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow);
@@ -166,4 +163,6 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
   void onUnload(GridView gridView);
 
   void setGridPresenter(GridPresenter gridPresenter);
+
+  boolean validateRow(IsRow row, NotificationListener notificationListener);
 }

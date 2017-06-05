@@ -1,9 +1,6 @@
 package com.butent.bee.client.grid.cell;
 
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.text.shared.SafeHtmlRenderer;
-import com.google.gwt.text.shared.SimpleSafeHtmlRenderer;
 
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.i18n.HasNumberFormat;
@@ -13,8 +10,6 @@ import com.butent.bee.client.i18n.HasNumberFormat;
  */
 
 public class NumberCell<C extends Number> extends AbstractCell<C> implements HasNumberFormat {
-
-  private static SafeHtmlRenderer<String> renderer = SimpleSafeHtmlRenderer.getInstance();
 
   private NumberFormat format;
 
@@ -28,9 +23,11 @@ public class NumberCell<C extends Number> extends AbstractCell<C> implements Has
   }
 
   @Override
-  public void render(CellContext context, C value, SafeHtmlBuilder sb) {
+  public String render(CellContext context, C value) {
     if (value != null) {
-      sb.append(renderer.render((format == null) ? value.toString() : format.format(value)));
+      return (format == null) ? value.toString() : format.format(value);
+    } else {
+      return null;
     }
   }
 

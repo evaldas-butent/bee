@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="ConfObjectOptions"
+       idName="ObjectOptionID"
+>
+  <Fields>
+    <Relation name="Object" relation="ConfObjects" notNull="true" cascade="DELETE"
+              label="=specification" />
+    <Relation name="Option" relation="ConfOptions" notNull="true" label="=option" />
+    <Integer name="Price" label="=price" />
+  </Fields>
+  <Constraints>
+    <Unique fields="Object Option" />
+  </Constraints>
+</Table>

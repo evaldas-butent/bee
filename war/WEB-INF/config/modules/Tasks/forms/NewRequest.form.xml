@@ -19,7 +19,7 @@
       <row>
         <Label for="Summary" />
         <InputText source="Summary" style="&inp2x;"
-          autocomplete="true" visible="true" maxLength="70" />
+          autocomplete="true" visible="true" maxLength="70" tabIndex="40" />
       </row>
       <row for="Content">
         <Label for="Content" />
@@ -38,55 +38,55 @@
 
       <row>
         <Label for="Manager" />
-        <DataSelector source="Manager" style="&inp2x;" />
+        <DataSelector source="Manager" style="&inp2x;"  tabIndex="50"/>
       </row>
 
       <row>
         <Label for="Contacts" />
-        <InputText source="Contacts" style="&inp2x;" />
+        <InputText source="Contacts" style="&inp2x;" tabIndex="60"/>
       </row>
 
       <row>
         <Label for="RequestForm" />
-        <DataSelector source="RequestForm" style="&inp2x;" />
+        <DataSelector source="RequestForm" style="&inp2x;" tabIndex="70" />
       </row>
     </Table>
 
     <Table kind="controls" style="&tbl;" cellStyle="&cell;">
       <col index="0" cellStyle="&col1;" />
-      
+
       <row>
         <Label for="Priority" />
-        <Radio source="Priority" />
+        <Radio source="Priority" tabIndex="80"/>
       </row>
 
       <row>
         <Label for="RequestType" class="bee-required" />
         <DataSelector source="RequestType" name="RequestType"
-          renderColumns="RequestTypeName" style="&inp2x;" required="true" />
+          renderColumns="RequestTypeName" style="&inp2x;" required="true" tabIndex="10" />
       </row>
 
       <row>
         <Label for="Product" name="Product" />
         <DataSelector source="Product" renderColumns="ProductName"
-          newRowEnabled="true" style="&inp2x;" filter="Visible" />
+          newRowEnabled="true" style="&inp2x;" filter="Visible" tabIndex="90" />
       </row>
 
       <row>
         <Label for="Customer" />
         <DataSelector source="Customer" style="&inp2x;"
-          choiceColumns="Name TypeName" renderColumns="CustomerName TypeName" />
+          choiceColumns="Name TypeName" renderColumns="CustomerName TypeName" tabIndex="20" />
       </row>
 
       <row>
         <Label for="CustomerPerson" />
         <DataSelector source="CustomerPerson" style="&inp2x;"
-          options="Customer" choiceColumns="FirstName LastName CompanyName" />
+          options="Customer" choiceColumns="FirstName LastName CompanyName"  tabIndex="30"/>
       </row>
 
       <row>
         <Label for="Date" />
-        <InputDateTime source="Date" style="&dateStyle;" />
+        <InputDateTime source="Date" style="&dateStyle;" tabIndex="100"/>
       </row>
     </Table>
   </FlowPanel>

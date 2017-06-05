@@ -6,18 +6,22 @@
   >
   <Fields>
     <Relation name="Category" relation="ServiceTree" notNull="true" label="=category" />
-    <String name="Address" precision="100" notNull="true" label="Valst.Nr" />
+    <String name="Address" precision="100" label="=address" />
 
-    <Relation name="Customer" relation="Companies" label="=svcOwner" />
-    <Relation name="Contractor" relation="Companies" label="=svcUser" />
-    
-    <Long name="ExternalCode" unique="true" label="=externalCode" />
-    
-    <String name="Model" precision="100" />
+    <Relation name="Customer" relation="Companies" label="=customer" />
+    <Relation name="Contractor" relation="Companies" label="=svcContractor" />
+
+    <Relation name="ContactPerson" relation="CompanyPersons" label="=contact" />
+    <Relation name="Manufacturer" relation="Companies" label="=tcdBrand" />
+    <String name="Model" precision="200" label="=svcModel" />
+    <String name="SerialNo" precision="200" label="=svcSerialNo" />
+
+    <!-- Transrifus { -->
     <String name="YearOfManufacture" precision="100" />
     <String name="InventNo" precision="100" />
     <String name="BodyNo" precision="100" />
     <String name="Seller" precision="100" />
     <String name="ItemInButenta" precision="100" />
+    <!-- } Transrifus -->
   </Fields>
 </Table>

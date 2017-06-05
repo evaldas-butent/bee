@@ -17,6 +17,23 @@
       <SimpleColumn name="Name" alias="ExpeditionType" />
     </SimpleJoin>
 
+    <SimpleColumn name="Manager" />
+    <SimpleJoin name="Manager" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ManagerFirstName" />
+          <SimpleColumn name="LastName" alias="ManagerLastName" />
+        </SimpleJoin>
+        <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn alias="CompanyName" name="Name" />
+        <SimpleJoin joinType="LEFT" name="CompanyType">
+          <SimpleColumn name="Name" alias="CompanyTypeName" />
+        </SimpleJoin>
+      </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+    
     <SimpleColumn name="Forwarder" />
     <SimpleJoin joinType="LEFT" name="Forwarder">
       <SimpleColumn name="Name" alias="ForwarderName" />

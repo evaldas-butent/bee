@@ -51,6 +51,18 @@
   color: black;
 }
 
+.bee-ta-picker-search-spinner{
+  display: inline-block;
+  margin-left: 10px;
+  font-size: 20px;
+  color: #888;
+  visibility: hidden;
+}
+.bee-ta-picker-search-spinner-loading{
+  visibility: visible;
+  animation: rotate 1s linear infinite;
+}
+
 .bee-ta-picker-item-panel,
 .bee-ta-return-items-wrapper,
 .bee-ta-import-items-wrapper {

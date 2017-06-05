@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="ConfTemplate" viewName="ConfTemplates"
+>
+  <FlowPanel class="flexBox-vertical">
+    <HorizontalPanel>
+      <Label for="TemplateName" />
+      <InputText source="TemplateName" style="width:500px;" />
+    </HorizontalPanel>
+
+    <xi:include href="widgets/Specification.widget.xml" />
+  </FlowPanel>
+</f:Form>

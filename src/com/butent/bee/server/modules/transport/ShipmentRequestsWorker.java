@@ -1,9 +1,8 @@
 package com.butent.bee.server.modules.transport;
 
-import com.google.common.collect.ImmutableMap;
-
 import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.data.BeeView;
@@ -17,6 +16,7 @@ import com.butent.bee.server.rest.annotations.Trusted;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -25,12 +25,14 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.elements.Form;
 import com.butent.bee.shared.html.builder.elements.Input;
+import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.LogUtils;
@@ -50,10 +52,8 @@ import java.util.Objects;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -152,46 +152,29 @@ public class ShipmentRequestsWorker {
 
     try {
       BeeView view = sys.getView(VIEW_SHIPMENT_REQUESTS);
-      BeeRowSet rs = buildRowSet(view, data);
-      List<JsonObject> places = new ArrayList<>();
-      List<JsonObject> files = new ArrayList<>();
+      ResponseObject response = deb.commitRow(buildRowSet(view, data));
 
-      ImmutableMap.of(TBL_CARGO_HANDLING, places, TBL_FILES, files).forEach((tag, list) -> {
+      if (response.hasErrors()) {
+        return RestResponse.error(response.getErrors());
+      }
+      String cargo = DataUtils.getString(view.getRowSetColumns(), (IsRow) response.getResponse(),
+          COL_CARGO);
+
+      for (String tag : Arrays.asList(TBL_CARGO_LOADING, TBL_CARGO_UNLOADING, VIEW_CARGO_FILES)) {
+        List<JsonObject> list = new ArrayList<>();
         JsonArray children = data.getJsonArray(tag);
 
         if (Objects.nonNull(children)) {
           list.addAll(children.getValuesAs(JsonObject.class));
         }
-      });
-      if (!BeeUtils.isEmpty(places)) {
-        BeeRowSet handlingRs = buildRowSet(view, places.get(0));
-        rs.getColumns().addAll(handlingRs.getColumns());
-        rs.getRow(0).getValues().addAll(handlingRs.getRow(0).getValues());
-      }
-      ResponseObject response = deb.commitRow(rs);
+        view = sys.getView(tag);
 
-      if (response.hasErrors()) {
-        return RestResponse.error(response.getErrors());
-      }
-      IsRow row = (IsRow) response.getResponse();
-      String cargo = DataUtils.getString(view.getRowSetColumns(), row, COL_CARGO);
-      view = sys.getView(VIEW_CARGO_HANDLING);
-
-      for (int i = 1; i < places.size(); i++) {
-        BeeRowSet handlingRs = buildRowSet(view, places.get(i));
-        handlingRs.getColumns().add(view.getBeeColumn(COL_CARGO));
-        handlingRs.getRow(0).getValues().add(cargo);
-
-        response = deb.commitRow(handlingRs);
-      }
-      view = sys.getView(VIEW_SHIPMENT_REQUEST_FILES);
-
-      for (JsonObject file : files) {
-        BeeRowSet filesRs = buildRowSet(view, file);
-        filesRs.getColumns().add(view.getBeeColumn(COL_SHIPMENT_REQUEST));
-        filesRs.getRow(0).getValues().add(BeeUtils.toString(row.getId()));
-
-        response = deb.commitRow(filesRs);
+        for (JsonObject json : list) {
+          BeeRowSet rs = buildRowSet(view, json);
+          rs.getColumns().add(view.getBeeColumn(COL_CARGO));
+          rs.getRow(0).getValues().add(cargo);
+          deb.commitRow(rs);
+        }
       }
     } catch (BeeException e) {
       return RestResponse.error(e);
@@ -200,18 +183,40 @@ public class ShipmentRequestsWorker {
         (event, locality) -> Endpoint.sendToAll(new ModificationMessage(event)),
         VIEW_SHIPMENT_REQUESTS);
 
-    return RestResponse.ok(Localized.dictionary().ok());
+    TextConstant constant = TextConstant.SUMBMITTED_REQUEST_CONTENT;
+
+    BeeRowSet rowSet =
+        qs.getViewData(VIEW_TEXT_CONSTANTS, Filter.equals(COL_TEXT_CONSTANT, constant));
+
+    String localizedContent = Localized.column(COL_TEXT_CONTENT,
+        CrudWorker.getValue(data, COL_USER_LOCALE));
+
+    String text;
+
+    if (DataUtils.isEmpty(rowSet)) {
+      text = constant.getDefaultContent();
+    } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent, rowSet.getColumns()))) {
+      text = rowSet.getString(0, COL_TEXT_CONTENT);
+    } else {
+      text = BeeUtils.notEmpty(rowSet.getString(0, localizedContent),
+          rowSet.getString(0, COL_TEXT_CONTENT));
+    }
+
+    return RestResponse.ok(text);
   }
 
   private BeeRowSet buildRowSet(BeeView view, JsonObject json) throws BeeException {
     Map<String, Pair<String, String>> relations = new HashMap<>();
+
+    for (String name : new String[] {COL_CARGO_QUANTITY, COL_CARGO_WEIGHT, COL_CARGO_VOLUME}) {
+      relations.put(name + COL_UNIT, Pair.of(TBL_UNITS, COL_UNIT_NAME));
+    }
     relations.put(COL_EXPEDITION, Pair.of(TBL_EXPEDITION_TYPES, COL_EXPEDITION_TYPE_NAME));
-    relations.put(COL_CARGO_SHIPPING_TERM, Pair.of(TBL_SHIPPING_TERMS, COL_SHIPPING_TERM_NAME));
+    relations.put(COL_SHIPPING_TERM, Pair.of(TBL_SHIPPING_TERMS, COL_SHIPPING_TERM_NAME));
     relations.put(COL_CARGO_VALUE_CURRENCY, Pair.of(TBL_CURRENCIES, COL_CURRENCY_NAME));
 
     List<BeeColumn> columns = new ArrayList<>();
     List<String> values = new ArrayList<>();
-    JsonObjectBuilder handling = null;
 
     for (String col : json.keySet()) {
       if (view.hasColumn(col)) {
@@ -223,13 +228,7 @@ public class ShipmentRequestsWorker {
         }
         Object val = null;
 
-        if (BeeUtils.isSuffix(col, COL_PLACE_COUNTRY) || BeeUtils.isSuffix(col, COL_PLACE_CITY)) {
-          if (Objects.isNull(handling)) {
-            handling = Json.createObjectBuilder();
-          }
-          handling.add(col, value);
-
-        } else if (Objects.equals(col, COL_USER_LOCALE)) {
+        if (Objects.equals(col, COL_USER_LOCALE)) {
           val = SupportedLocale.getByLanguage(SupportedLocale.normalizeLanguage(value)).ordinal();
 
         } else if (relations.containsKey(col)) {
@@ -250,14 +249,14 @@ public class ShipmentRequestsWorker {
               val = BeeUtils.toBoolean(value);
               break;
             case DATE:
-              JustDate date = TimeUtils.parseDate(value);
+              JustDate date = TimeUtils.parseDate(value, DateOrdering.YMD);
 
               if (Objects.nonNull(date)) {
                 val = date.serialize();
               }
               break;
             case DATE_TIME:
-              DateTime datetime = TimeUtils.parseDateTime(value);
+              DateTime datetime = TimeUtils.parseDateTime(value, DateOrdering.YMD);
 
               if (Objects.nonNull(datetime)) {
                 val = datetime.serialize();
@@ -282,10 +281,6 @@ public class ShipmentRequestsWorker {
           values.add(val.toString());
         }
       }
-    }
-    if (Objects.nonNull(handling)) {
-      columns.add(view.getBeeColumn(ALS_CARGO_HANDLING_NOTES));
-      values.add(handling.build().toString());
     }
     return DataUtils.createRowSetForInsert(view.getName(), columns, values);
   }

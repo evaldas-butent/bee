@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="ExpeditionTypes" idName="TypeID"
-  >
+       name="ExpeditionTypes" idName="TypeID"
+>
   <Fields>
-    <String name="Name" precision="30" notNull="true" unique="true" label="=trExpeditionTypeName" />
+    <String name="Name" precision="30" notNull="true" unique="true" label="=trExpeditionTypeName"
+            translatable="true" />
     <Integer name="SelfService" label="=trSelfService" />
     <Boolean name="Logistics" label="=trLogistics" />
   </Fields>

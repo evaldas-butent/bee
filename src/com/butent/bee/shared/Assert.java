@@ -16,6 +16,9 @@ public final class Assert {
   public static final String ASSERTION_FAILED = "[Assertion failed] - ";
   public static final String IS_EMPTY = ASSERTION_FAILED + "argument must not be null or empty";
 
+  private static final String REQUIRED =
+      ASSERTION_FAILED + "argument is required; it must not be null";
+
   public static int betweenExclusive(int x, int min, int max) {
     if (!BeeUtils.betweenExclusive(x, min, max)) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "argument " + x
@@ -49,6 +52,7 @@ public final class Assert {
   public static <T> T contains(Map<T, ?> map, T key) {
     notNull(map);
     notNull(key);
+
     if (!map.containsKey(key)) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "key (" + key + ") not found");
     }
@@ -56,18 +60,16 @@ public final class Assert {
   }
 
   public static int isEven(int x) {
-    return isEven(x, ASSERTION_FAILED + "(" + x + ") argument must even");
-  }
-
-  public static int isEven(int x, String msg) {
     if (x % 2 == 1) {
-      throw new BeeRuntimeException(msg);
+      throw new BeeRuntimeException(ASSERTION_FAILED + "(" + x + ") argument must even");
     }
     return x;
   }
 
   public static void isFalse(boolean expression) {
-    isFalse(expression, ASSERTION_FAILED + "this expression must be false");
+    if (expression) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "expression must be false");
+    }
   }
 
   public static void isFalse(boolean expression, String message) {
@@ -78,7 +80,10 @@ public final class Assert {
 
   public static int isIndex(Collection<?> col, int idx) {
     notNull(col);
-    nonNegative(idx);
+
+    if (idx < 0) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx + " must be non-negative");
+    }
 
     int n = col.size();
 
@@ -92,6 +97,7 @@ public final class Assert {
 
   public static int isIndex(Collection<?> col, int idx, String msg) {
     notNull(col);
+
     if (idx < 0 || idx >= col.size()) {
       throw new BeeRuntimeException(msg);
     }
@@ -99,8 +105,9 @@ public final class Assert {
   }
 
   public static int isIndex(int idx, int size) {
-    nonNegative(idx);
-
+    if (idx < 0) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx + " must be non-negative");
+    }
     if (size <= 0) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx
           + " references empty object");
@@ -118,7 +125,10 @@ public final class Assert {
   }
 
   public static <T> T isNull(T object) {
-    return isNull(object, ASSERTION_FAILED + "the object argument must be null");
+    if (object != null) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "argument must be null");
+    }
+    return object;
   }
 
   public static <T> T isNull(T object, String message) {
@@ -128,30 +138,25 @@ public final class Assert {
     return object;
   }
 
-  public static int isOdd(int x) {
-    return isOdd(x, ASSERTION_FAILED + "(" + x + ") argument must odd");
-  }
-
-  public static int isOdd(int x, String msg) {
-    if (x % 2 == 0) {
-      throw new BeeRuntimeException(msg);
+  public static double isPositive(double x) {
+    if (x <= BeeConst.DOUBLE_ZERO) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "(" + x + ") argument must be positive");
     }
     return x;
   }
 
-  public static double isPositive(double x) {
-    return isPositive(x, ASSERTION_FAILED + "(" + x + ") argument must be positive");
-  }
-
   public static double isPositive(double x, String msg) {
-    if (x <= 0) {
+    if (x <= BeeConst.DOUBLE_ZERO) {
       throw new BeeRuntimeException(msg);
     }
     return x;
   }
 
   public static int isPositive(int x) {
-    return isPositive(x, ASSERTION_FAILED + "(" + x + ") argument must be positive");
+    if (x <= 0) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "(" + x + ") argument must be positive");
+    }
+    return x;
   }
 
   public static int isPositive(int x, String msg) {
@@ -162,19 +167,17 @@ public final class Assert {
   }
 
   public static int isScale(int x) {
-    return nonNegative(x, ASSERTION_FAILED + "(" + x + ") scale must be >= 0 and <= "
-        + BeeConst.MAX_SCALE);
-  }
-
-  public static int isScale(int x, String msg) {
     if (x < 0 || x > BeeConst.MAX_SCALE) {
-      throw new BeeRuntimeException(msg);
+      throw new BeeRuntimeException(ASSERTION_FAILED + "(" + x + ") scale must be >= 0 and <= "
+          + BeeConst.MAX_SCALE);
     }
     return x;
   }
 
   public static void isTrue(boolean expression) {
-    isTrue(expression, ASSERTION_FAILED + "this expression must be true");
+    if (!expression) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "expression must be true");
+    }
   }
 
   public static void isTrue(boolean expression, String message) {
@@ -212,7 +215,10 @@ public final class Assert {
   }
 
   public static int nonNegative(int x) {
-    return nonNegative(x, ASSERTION_FAILED + "(" + x + ") argument must be non-negative");
+    if (x < 0) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "(" + x + ") argument must be non-negative");
+    }
+    return x;
   }
 
   public static int nonNegative(int x, String msg) {
@@ -240,6 +246,7 @@ public final class Assert {
   public static <T> T notContain(Map<T, ?> map, T key) {
     notNull(map);
     notNull(key);
+
     if (map.containsKey(key)) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "key (" + key + ") already exists");
     }
@@ -288,7 +295,7 @@ public final class Assert {
   }
 
   public static <T> T notNull(T object) {
-    return notNull(object, ASSERTION_FAILED + "this argument is required; it must not be null");
+    return notNull(object, REQUIRED);
   }
 
   public static <T> T notNull(T object, String message) {
@@ -310,7 +317,9 @@ public final class Assert {
   }
 
   public static void state(boolean expression) {
-    state(expression, ASSERTION_FAILED + "this state invariant must be true");
+    if (!expression) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "state invariant must be true");
+    }
   }
 
   public static void state(boolean expression, String message) {

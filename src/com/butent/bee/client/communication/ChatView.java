@@ -6,11 +6,13 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
-import static com.butent.bee.shared.communication.ChatConstants.*;
+import static com.butent.bee.shared.communication.ChatConstants.COL_CHAT_MESSAGE;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Search;
 import com.butent.bee.client.composite.FileCollector;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ReadyEvent;
@@ -19,6 +21,7 @@ import com.butent.bee.client.js.Markdown;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.HeaderImpl;
@@ -30,6 +33,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
@@ -40,6 +44,7 @@ import com.butent.bee.shared.communication.Chat;
 import com.butent.bee.shared.communication.ChatItem;
 import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.communication.TextMessage;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -57,6 +62,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public class ChatView extends Flow implements Presenter, View,
     VisibilityChangeEvent.Handler, HasWidgetSupplier {
@@ -79,20 +85,37 @@ public class ChatView extends Flow implements Presenter, View,
       Flow body = new Flow(STYLE_MESSAGE_BODY);
 
       if (addPhoto) {
-        Image photo = Global.getUsers().getPhoto(message.getUserId());
+        Image photo;
+        if (DataUtils.isId(message.getUserId())) {
+          photo = Global.getUsers().getPhoto(message.getUserId());
 
-        if (photo == null) {
-          CustomDiv signature = new CustomDiv(STYLE_MESSAGE_SIGNATURE);
-          signature.setText(Global.getUsers().getSignature(message.getUserId()));
-          add(signature);
+          if (photo == null) {
+            photo = new Image(DEFAULT_PHOTO_IMAGE);
+            CustomDiv signature = new CustomDiv(STYLE_MESSAGE_SIGNATURE);
+            signature.setText(Global.getUsers().getSignature(message.getUserId()));
+            add(signature);
+          }
 
         } else {
-          photo.addStyleName(STYLE_MESSAGE_PHOTO);
-          body.add(photo);
+          photo = new Image(DEFAULT_PHOTO_IMAGE);
         }
+        photo.addStyleName(STYLE_MESSAGE_PHOTO);
+        body.add(photo);
       }
 
-      if (message.hasText()) {
+      if (message.hasText() && !BeeUtils.isEmpty(message.getLinkData())) {
+
+        Flow linkContainer = new Flow(STYLE_MESSAGE_TEXT);
+        for (String view : message.getLinkData().keySet()) {
+          InternalLink link = new InternalLink(message.getText());
+          link.addClickHandler(arg0 -> RowEditor.open(view,
+              BeeUtils.toLong(message.getLinkData().get(view)), Opener.NEW_TAB));
+          linkContainer.add(link);
+        }
+
+        body.add(linkContainer);
+
+      } else if (message.hasText()) {
         Label text = new Label(Markdown.toHtml(message.getText()));
         text.addStyleName(STYLE_MESSAGE_TEXT);
         body.add(text);
@@ -167,12 +190,12 @@ public class ChatView extends Flow implements Presenter, View,
   private static final String STYLE_AUTO_SCROLL_LABEL = STYLE_AUTO_SCROLL_PREFIX + "label";
   private static final String STYLE_AUTO_SCROLL_TOGGLE = STYLE_AUTO_SCROLL_PREFIX + "toggle";
 
-  private static final String STYLE_STYLE_CONTROL = STYLE_PREFIX + "style-control";
-
   private static final String AUTO_SCROLL_LABEL = "Auto Scroll";
 
   private static final int TIMER_PERIOD = 5_000;
   private static final long FAST_INTERVAL = 30_000;
+
+  private static final String DEFAULT_PHOTO_IMAGE = "images/defaultUser.png";
 
   private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.VIEW);
 
@@ -194,7 +217,8 @@ public class ChatView extends Flow implements Presenter, View,
 
   private final List<HandlerRegistration> registry = new ArrayList<>();
 
-  public ChatView(Chat chat) {
+  public ChatView(Chat chat, Set<Action> enabledActions, Set<Action> hiddenActions,
+      boolean showAutoScroll) {
     super(STYLE_VIEW);
     addStyleName(UiOption.getStyleName(uiOptions));
 
@@ -205,8 +229,9 @@ public class ChatView extends Flow implements Presenter, View,
 
     this.headerView = new HeaderImpl();
     headerView.create(caption, false, true, null, uiOptions,
-        EnumSet.of(Action.CONFIGURE, Action.MINIMIZE, Action.MAXIMIZE, Action.CLOSE),
-        Action.NO_ACTIONS, Action.NO_ACTIONS);
+        enabledActions,
+        Action.NO_ACTIONS, hiddenActions);
+
     headerView.setViewPresenter(this);
 
     Flow autoScrollContainer = new Flow(STYLE_AUTO_SCROLL_CONTAINER);
@@ -221,17 +246,9 @@ public class ChatView extends Flow implements Presenter, View,
     autoScrollToggle.addClickHandler(event -> maybeScroll(false));
     autoScrollContainer.add(autoScrollToggle);
 
-    headerView.addCommandItem(autoScrollContainer);
-
-    FaLabel styleControl = new FaLabel(FontAwesome.MOBILE, STYLE_STYLE_CONTROL);
-    styleControl.setTitle(Localized.dictionary().mobile());
-    styleControl.addClickHandler(event -> {
-      ChatPopup popup = getPopup();
-      if (popup != null) {
-        popup.handleStyle(EventUtils.hasModifierKey(event));
-      }
-    });
-    headerView.insertControl(styleControl, headerView.getWidgetCount() - 1);
+    if (showAutoScroll) {
+      headerView.addCommandItem(autoScrollContainer);
+    }
 
     add(headerView);
 
@@ -265,7 +282,7 @@ public class ChatView extends Flow implements Presenter, View,
       }
     });
 
-    this.fileCollector = FileCollector.headless(fileInfos -> addFiles(fileInfos));
+    this.fileCollector = FileCollector.headless(this::addFiles);
     fileCollector.bindDnd(this);
 
     FaLabel attach = new FaLabel(FontAwesome.PAPERCLIP);
@@ -305,12 +322,17 @@ public class ChatView extends Flow implements Presenter, View,
     };
   }
 
-  public void addMessage(ChatItem message, boolean update) {
-    if (message != null && message.isValid()) {
-      boolean incoming = !BeeKeeper.getUser().is(message.getUserId());
-      boolean addPhoto = incoming && otherUsers.size() > 1;
+  public ChatView(Chat chat) {
+    this(chat, EnumSet.of(Action.CONFIGURE, Action.MINIMIZE, Action.MAXIMIZE, Action.CLOSE),
+        Action.NO_ACTIONS, true);
+  }
 
-      MessageWidget messageWidget = new MessageWidget(message, addPhoto);
+  public void addMessage(ChatItem message, boolean update) {
+    if (message != null
+        && (message.isValid() || Global.getChatManager().isAssistant(message.getUserId()))) {
+      boolean incoming = !BeeKeeper.getUser().is(message.getUserId());
+
+      MessageWidget messageWidget = new MessageWidget(message, incoming);
 
       messageWidget.addStyleName(incoming ? STYLE_MESSAGE_INCOMING : STYLE_MESSAGE_OUTGOING);
       if (message.getTime() - getLastMessageTime() < FAST_INTERVAL) {
@@ -486,7 +508,7 @@ public class ChatView extends Flow implements Presenter, View,
 
   public void updateUnreadCount(int unreadCount) {
     String text = (unreadCount > 0) ? BeeUtils.toString(unreadCount) : BeeConst.STRING_EMPTY;
-    headerView.setMessage(text);
+    headerView.setMessage(0, text, null);
 
     setStyleName(STYLE_HAS_UNREAD, unreadCount > 0);
   }
@@ -518,8 +540,8 @@ public class ChatView extends Flow implements Presenter, View,
       Latch latch = new Latch(input.size());
       List<FileInfo> files = new ArrayList<>();
 
-      for (final FileInfo fileInfo : input) {
-        FileUtils.uploadFile(fileInfo, id -> {
+      for (FileInfo fileInfo : input) {
+        FileUtils.commitFile(fileInfo, id -> {
           files.add(new FileInfo(id, fileInfo.getName(), fileInfo.getSize(), fileInfo.getType()));
           latch.decrement();
 
@@ -548,6 +570,11 @@ public class ChatView extends Flow implements Presenter, View,
     ChatMessage chatMessage = new ChatMessage(chatId, item);
 
     Global.getChatManager().addMessage(chatMessage);
+
+    if (Global.getChatManager().isAssistant(chatMessage.getChatId())) {
+      Search.doQuery(chatMessage.getChatItem().getText(), null);
+      return;
+    }
 
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.SEND_CHAT_MESSAGE);
     params.addDataItem(COL_CHAT_MESSAGE, chatMessage.encode());

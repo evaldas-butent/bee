@@ -3,6 +3,7 @@
 
   name="Appointments" viewName="Appointments" caption="=calAppointments"
   newRowForm="Appointment" editForm="Appointment" order="AppointmentID desc"
+        filter="!(ServiceEvent)"
   >
   <g:columns>
     <IdColumn name="Id" visible="false" />
@@ -30,6 +31,8 @@
     <DataColumn name="ColorName" label="=color" visible="false" />
 
     <DataColumn name="StyleName" label="=style" visible="false" />
+
+    <RelColumn name="Project" visible="false" />
 
     <RelColumn name="Creator" />
   </g:columns>

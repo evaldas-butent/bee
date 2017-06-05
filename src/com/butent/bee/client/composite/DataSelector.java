@@ -267,16 +267,23 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     @Override
     public void onMouseWheel(MouseWheelEvent event) {
-      if (!isEnabled() || !isActive() || !getSelector().isShowing()
-          || !getOracle().isCachingEnabled()) {
-        return;
-      }
+      if (isEnabled() && isActive() && getSelector().isShowing()) {
+        int y = event.getDeltaY();
 
-      int y = event.getDeltaY();
-      if (y > 0) {
-        nextOffset();
-      } else if (y < 0) {
-        prevOffset();
+        if (y > 0) {
+          if (EventUtils.hasModifierKey(event)) {
+            nextPage();
+          } else {
+            nextOffset();
+          }
+
+        } else if (y < 0) {
+          if (EventUtils.hasModifierKey(event)) {
+            prevPage();
+          } else {
+            prevOffset();
+          }
+        }
       }
     }
 
@@ -453,9 +460,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     private MenuItem createNavigationItem(boolean next) {
       Scheduler.ScheduledCommand command;
       if (next) {
-        command = () -> nextPage();
+        command = DataSelector.this::nextPage;
       } else {
-        command = () -> prevPage();
+        command = DataSelector.this::prevPage;
       }
 
       MenuItem item = new MenuItem(menu, next ? ITEM_NEXT : ITEM_PREV, ItemType.LABEL, command);
@@ -645,7 +652,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private static final String STYLE_EDITABLE_INPUT = STYLE_SELECTOR + "-editableInput";
 
   private static final String STYLE_DRILL = STYLE_SELECTOR + "-drill";
-  private static final String STYLE_DRILL_DISABBLED = STYLE_DRILL + "-disabled";
+  private static final String STYLE_DRILL_DISABLED = STYLE_DRILL + "-disabled";
 
   private static final int DEFAULT_MAX_INPUT_LENGTH = 30;
   private static final int DEFAULT_VISIBLE_LINES = 10;
@@ -1263,6 +1270,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     reset();
 
     if (fire) {
+      SelectorEvent.fire(this, State.CHANGE_PENDING);
       fireEvent(new EditStopEvent(State.CHANGED, KeyCodes.KEY_TAB, false));
       SelectorEvent.fire(this, State.CHANGED);
     }
@@ -1440,7 +1448,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
       InlineLabel label = new InlineLabel(String.valueOf(BeeConst.DRILL_DOWN));
       label.addStyleName(STYLE_DRILL);
-      label.addStyleName(STYLE_DRILL_DISABBLED);
+      label.addStyleName(STYLE_DRILL_DISABLED);
 
       label.addClickHandler(event -> editRow());
 
@@ -1480,7 +1488,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     if (BeeUtils.isEmpty(value)) {
       return null;
     } else {
-      return Value.parseValue(valueType, value, false);
+      return Value.parseValue(valueType, value, false, null);
     }
   }
 
@@ -1654,8 +1662,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
 
     Opener opener = modal ? Opener.relativeTo(getWidget()) : Opener.NEW_TAB;
-    RowEditor.openForm(getEditForm(), Data.getDataInfo(getEditViewName()), rowId, opener,
-        rowCallback);
+    RowEditor.openForm(getEditForm(), Data.getDataInfo(getEditViewName()), Filter.compareId(rowId),
+        opener, rowCallback);
   }
 
   private void exit(boolean hideSelector, State state) {
@@ -1877,7 +1885,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private void setEditorValue(Value ev) {
     if (getDrill() != null && (this.editorValue == null) != (ev == null)) {
-      getDrill().setStyleName(STYLE_DRILL_DISABBLED, ev == null);
+      getDrill().setStyleName(STYLE_DRILL_DISABLED, ev == null);
     }
     this.editorValue = ev;
   }

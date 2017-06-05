@@ -3,6 +3,10 @@ package com.butent.bee.client.composite;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.Data;
@@ -23,13 +27,13 @@ import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HandlesValueChange;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -56,8 +60,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
-public class MultiSelector extends DataSelector implements HandlesRendering, HandlesValueChange {
+public class MultiSelector extends DataSelector implements HandlesRendering, HandlesValueChange,
+    HasValueChangeHandlers<String> {
 
   public static class Choice {
 
@@ -189,7 +195,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   public static MultiSelector autonomous(Relation relation, AbstractCellRenderer renderer) {
     Assert.notNull(relation);
 
-    final MultiSelector selector = new MultiSelector(relation, true, null);
+    MultiSelector selector = new MultiSelector(relation, true, null);
     selector.setRenderer(renderer);
 
     selector.addFocusHandler(event -> selector.setEditing(true));
@@ -282,6 +288,17 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   }
 
   @Override
+  public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
+    addValueChangeHandler(handler);
+    return super.addEditChangeHandler(handler);
+  }
+
+  @Override
+  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
+    return addHandler(handler, ValueChangeEvent.getType());
+  }
+
+  @Override
   public void clearValue() {
     super.clearValue();
     setOldValue(null);
@@ -351,10 +368,9 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   }
 
   /**
-   * @returns the internal representation.
-   *
-   *          This method is only provided for compatibility with the HasStringValue interface. Use
-   *          getIds(), getValues(), getChoices() instead.
+   * Returns the internal representation.
+   * This method is only provided for compatibility with the HasStringValue interface. Use
+   * getIds(), getValues(), getChoices() instead.
    */
   @Override
   public String getValue() {
@@ -477,6 +493,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
         if (fire) {
           SelectorEvent.fire(this, State.INSERTED);
+          ValueChangeEvent.fire(this, getValue());
           SummaryChangeEvent.maybeFire(this);
         }
       }
@@ -494,7 +511,6 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
   /**
    * Sets the internal representation.
-   *
    * This method is only provided for compatibility with the HasStringValue interface. Use setIds,
    * setValues, setChoices instead.
    */
@@ -631,6 +647,10 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
     initWidget(container);
   }
 
+  public String getOldValue() {
+    return oldValue;
+  }
+
   private boolean addChoice(ChoiceWidget choiceWidget) {
     Flow container = getContainer();
 
@@ -691,7 +711,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       }
 
       Opener opener = modal ? Opener.relativeTo(getWidget()) : Opener.NEW_TAB;
-      RowEditor.openForm(getEditForm(), getOracle().getDataInfo(), rowId, opener, rowCallback);
+      RowEditor.openForm(getEditForm(), getOracle().getDataInfo(), Filter.compareId(rowId), opener,
+          rowCallback);
 
     } else {
       BeeRow row = getOracle().getCachedRow(rowId);
@@ -745,8 +766,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
     }
 
     Opener opener = modal ? Opener.relativeTo(getWidget()) : Opener.NEW_TAB;
-    RowEditor.openForm(getEditForm(), Data.getDataInfo(getEditViewName()), sourceId, opener,
-        rowCallback);
+    RowEditor.openForm(getEditForm(), Data.getDataInfo(getEditViewName()),
+        Filter.compareId(sourceId), opener, rowCallback);
   }
 
   private Flow getContainer() {
@@ -773,10 +794,6 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
     Queries.getRowSet(getOracle().getViewName(), null, Filter.idIn(ids),
         getOracle().getViewOrder(), callback);
-  }
-
-  private String getOldValue() {
-    return oldValue;
   }
 
   private String getSeparators() {
@@ -852,6 +869,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
     if (removed) {
       SelectorEvent.fire(this, State.REMOVED);
+      ValueChangeEvent.fire(this, getValue());
       SummaryChangeEvent.maybeFire(this);
     }
   }
@@ -945,7 +963,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
     }
   }
 
-  private void setOldValue(String oldValue) {
+  public void setOldValue(String oldValue) {
     this.oldValue = oldValue;
   }
 

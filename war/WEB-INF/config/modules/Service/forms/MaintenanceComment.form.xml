@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+    <!ENTITY inp2x "max-width: 480px; min-width: 480px;">
+    ]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+
+        name="MaintenanceComment" viewName="MaintenanceComments" caption="=comment" width="610" height="310">
+
+  <FlowPanel style="margin:5px; overflow:scroll;">
+    <Table kind="controls" cellStyle="vertical-align: top">
+      <col index="0" kind="label" />
+      <row>
+        <Label for="Comment" class="bee-required"/>
+        <InputArea source="Comment" required="true" style="&inp2x; height: 120px; max-height: 150px;" />
+      </row>
+      <row>
+        <text/>
+        <CheckBox source="ShowCustomer" summarize="true" style="width:"/>
+      </row>
+      <row>
+        <text/>
+        <CheckBox source="CustomerSent" summarize="true" />
+      </row>
+      <row>
+        <Label name="TermLabel" for="Term" />
+        <InputDateTime source="Term" />
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

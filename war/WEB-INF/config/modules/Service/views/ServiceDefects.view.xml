@@ -44,6 +44,8 @@
 
     <SimpleColumn name="TypeOfWork" />
     <SimpleColumn name="Notes" />
+
+    <SimpleColumn name="ServiceMaintenance" />
   </Columns>
   <Order>
     <OrderBy column="Date" descending="true" />

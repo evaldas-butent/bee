@@ -34,6 +34,11 @@
       </SimpleJoin>
 
       <SimpleColumn name="ProjectStage" />
+
+      <SimpleColumn name="Product" />
+      <SimpleJoin name="Product" joinType="LEFT">
+        <SimpleColumn name="Name" alias="ProductName"/>
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="Publisher" />

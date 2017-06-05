@@ -8,7 +8,10 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.HandlesActions;
 
 import java.util.Collection;
 import java.util.Set;
@@ -31,6 +34,8 @@ public interface HeaderView extends View, IndexedPanel, Printable, HasClickHandl
 
   int getHeight();
 
+  String getRowMessage();
+
   boolean hasAction(Action action);
 
   boolean hasCommands();
@@ -43,15 +48,21 @@ public interface HeaderView extends View, IndexedPanel, Printable, HasClickHandl
 
   void removeCaptionStyle(String style);
 
+  boolean removeCommandByStyleName(String styleName);
+
+  void setActionHandler(HandlesActions actionHandler);
+
   void setCaption(String caption);
 
   void setCaptionTitle(String title);
 
   void setHeight(int height);
 
-  void setMessage(String message);
-
-  void setMessageTitle(String title);
+  void setMessage(int index, String message, String styleName);
 
   void showAction(Action action, boolean visible);
+
+  void showRowId(IsRow row);
+
+  void showRowMessage(Evaluator evaluator, IsRow row);
 }

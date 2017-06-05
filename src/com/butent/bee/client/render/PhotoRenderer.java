@@ -18,6 +18,8 @@ public class PhotoRenderer extends AbstractCellRenderer {
 
   public static final String STYLE_EMBEDDED = BeeConst.CSS_CLASS_PREFIX + "Photo-embedded";
 
+  public static final String DEFAULT_PHOTO_IMAGE = "images/defaultUser.png";
+
   private static final ImageElement imageElement;
 
   private static final Map<String, String> urlCache;
@@ -65,7 +67,7 @@ public class PhotoRenderer extends AbstractCellRenderer {
     Long fileId = getLong(row);
 
     if (!DataUtils.isId(fileId)) {
-      return null;
+      return DEFAULT_PHOTO_IMAGE;
     } else {
       return getUrl(fileId);
     }

@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  
-  name="DebtReportTemplate" caption="=sendReminder"
-  width="400" height="500" 
-  >
+        xmlns:f="http://www.butent.com/form"
+
+        name="DebtReportTemplate" caption="=sendReminderMail"
+        width="400" height="500"
+>
   <FlowPanel class="flexBox-vertical">
     <br/>
     <Table kind="controls">
       <col index="0" kind="label" />
       <row>
         <Label text="=template"/>
-        <UnboundSelector name="Template" viewName="DebtReminderTemplates" 
-        renderColumns="Name Subject" style="width: 350px;" />
+        <UnboundSelector name="Template" viewName="DebtReminderTemplates"
+                         renderColumns="Name Subject" style="width: 350px;" />
       </row>
       <row>
         <Label for="Subject" text="=mailSubject" class="bee-required" />
         <InputText name="Subject" style="width: 350px;" required="true" />
       </row>
-      
+
       <row>
         <Label for="FirstParagraph" text="=trdRemindTemplateFirstParagraph" />
         <InputArea name="FirstParagraph" visibleLines="3" style="width: 350px;" />
       </row>
-      
+
       <row>
         <Label for="LastParagraph" text="=trdRemindTemplateLastParagraph" />
         <InputArea name="LastParagraph"  visibleLines="3" style="width: 350px;" />
@@ -33,4 +33,4 @@
       </row>
     </Table>
   </FlowPanel>
-</f:Form>  
+</f:Form>

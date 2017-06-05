@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="Messages"
-  idName="MessageID"
-  >
+       name="Messages"
+       idName="MessageID"
+       audit="false"
+>
   <Fields>
     <String name="UniqueId" precision="32" unique="true" notNull="true" />
     <DateTime name="Date" notNull="true" label="=date" />
@@ -15,6 +16,11 @@
   </Fields>
 
   <Indexes>
+    <Index fields="Date">
+      <PostgreSql>("Date" DESC)</PostgreSql>
+      <MsSql />
+      <Oracle />
+    </Index>
     <Index fields="InReplyTo" />
   </Indexes>
 </Table>
