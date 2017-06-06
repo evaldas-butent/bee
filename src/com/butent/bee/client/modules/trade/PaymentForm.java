@@ -35,6 +35,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.Triplet;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -554,8 +555,9 @@ class PaymentForm extends AbstractFormInterceptor {
       return;
     }
 
-    double prepayment = totalPrepayment(prepaymentRows,
-        prepaymentGrid.getDataIndex(COL_FIN_AMOUNT));
+    int amountIndex = prepaymentGrid.getDataIndex(COL_FIN_AMOUNT);
+
+    double prepayment = totalPrepayment(prepaymentRows, amountIndex);
     double debt = totalDebt(debtRows);
 
     Double amount = getAmount();
@@ -589,12 +591,97 @@ class PaymentForm extends AbstractFormInterceptor {
     messages.add(Localized.dictionary().paymentDischargePrepaymentQuestion());
 
     Global.confirm(prepaymentKind.getFullCaption(Localized.dictionary()), Icon.QUESTION, messages,
-        () -> doDischargePrepayments(prepaymentKind, prepaymentRows, debtRows, date, discharge));
+        () -> doDischargePrepayments(prepaymentKind, date, discharge,
+            prepaymentGrid, prepaymentRows, amountIndex, debtGrid, debtRows));
   }
 
-  private void doDischargePrepayments(PrepaymentKind prepaymentKind,
-      List<IsRow> prepayments, List<IsRow> debts, DateTime date, double amount) {
+  private void doDischargePrepayments(PrepaymentKind prepaymentKind, DateTime date, double amount,
+      GridView prepaymentGrid, List<IsRow> prepaymentRows, int amountIndex,
+      GridView debtGrid, List<IsRow> debtRows) {
 
+    List<Triplet<Long, Long, Double>> discharges = new ArrayList<>();
+
+    Map<Long, Double> debts = new HashMap<>();
+    debtRows.forEach(row -> debts.put(row.getId(), getDebt(row)));
+
+    double remaining = amount;
+    int debtIndex = 0;
+
+    for (IsRow prepaymentRow : prepaymentRows) {
+      double prepayment = getPrepaymentBalance(prepaymentRow, amountIndex);
+
+      while (BeeUtils.isPositive(prepayment) && BeeUtils.isPositive(remaining)
+          && BeeUtils.isIndex(debtRows, debtIndex)) {
+
+        long debtId = debtRows.get(debtIndex).getId();
+        double debt = debts.get(debtId);
+
+        if (BeeUtils.isPositive(debt)) {
+          double x = Math.min(remaining, Math.min(prepayment, debt));
+
+          discharges.add(Triplet.of(prepaymentRow.getId(), debtId, x));
+
+          remaining = normalize(remaining - x);
+          prepayment = normalize(prepayment - x);
+
+          debt = normalize(debt - x);
+          debts.put(debtId, debt);
+
+          if (!BeeUtils.isPositive(debt)) {
+            debtIndex++;
+          }
+
+        } else {
+          debtIndex++;
+        }
+      }
+
+      if (!BeeUtils.isPositive(remaining) || !BeeUtils.isIndex(debtRows, debtIndex)) {
+        break;
+      }
+    }
+
+    if (discharges.isEmpty()) {
+      String message = "cannot discharge prepayments";
+      logger.severe(message, amount);
+      logger.severe(prepaymentRows);
+      logger.severe(debtRows);
+
+      warn(message);
+      return;
+    }
+
+    ParameterList parameters = TradeKeeper.createArgs(SVC_DISCHARGE_PREPAYMENT);
+
+    parameters.addDataItem(VAR_KIND, prepaymentKind.ordinal());
+    parameters.addDataItem(VAR_PREPAYMENT, Codec.beeSerialize(discharges));
+    parameters.addDataItem(COL_TRADE_PAYMENT_DATE, date.getTime());
+
+    setUpdating(true);
+
+    BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        setUpdating(false);
+
+        if (!response.hasErrors()) {
+          clearValue(NAME_AMOUNT);
+
+          prepaymentGrid.getGrid().clearSelection();
+          ViewHelper.refresh(prepaymentGrid);
+
+          debtGrid.getGrid().clearSelection();
+          ViewHelper.refresh(debtGrid);
+
+          if (response.hasMessages()) {
+            response.notify(getFormView());
+          }
+
+          Set<Long> docIds = discharges.stream().map(Triplet::getB).collect(Collectors.toSet());
+          FinanceKeeper.postTradeDocuments(docIds, null);
+        }
+      }
+    });
   }
 
   private void refreshChildren() {
