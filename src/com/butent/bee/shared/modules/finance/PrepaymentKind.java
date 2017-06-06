@@ -3,6 +3,7 @@ package com.butent.bee.shared.modules.finance;
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
 import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.modules.trade.DebtKind;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 public enum PrepaymentKind implements HasLocalizedCaption {
@@ -18,18 +19,23 @@ public enum PrepaymentKind implements HasLocalizedCaption {
     }
 
     @Override
+    public DebtKind getDebtKInd() {
+      return DebtKind.RECEIVABLE;
+    }
+
+    @Override
+    public String getFullCaption(Dictionary dictionary) {
+      return dictionary.prepaymentCustomers();
+    }
+
+    @Override
     public NormalBalance normalBalance() {
       return NormalBalance.CREDIT;
     }
 
     @Override
-    public String tradePaymentsMainGrid() {
+    public String tradePaymentsGrid() {
       return GRID_OUTSTANDING_PREPAYMENT_RECEIVED;
-    }
-
-    @Override
-    public String tradePaymentsOtherGrid() {
-      return GRID_OUTSTANDING_PREPAYMENT_GIVEN;
     }
   },
 
@@ -45,22 +51,31 @@ public enum PrepaymentKind implements HasLocalizedCaption {
     }
 
     @Override
+    public DebtKind getDebtKInd() {
+      return DebtKind.PAYABLE;
+    }
+
+    @Override
+    public String getFullCaption(Dictionary dictionary) {
+      return dictionary.prepaymentSuppliers();
+    }
+
+    @Override
     public NormalBalance normalBalance() {
       return NormalBalance.DEBIT;
     }
 
     @Override
-    public String tradePaymentsMainGrid() {
+    public String tradePaymentsGrid() {
       return GRID_OUTSTANDING_PREPAYMENT_GIVEN;
-    }
-
-    @Override
-    public String tradePaymentsOtherGrid() {
-      return GRID_OUTSTANDING_PREPAYMENT_RECEIVED;
     }
   };
 
   public abstract String defaultAccountColumn();
+
+  public abstract DebtKind getDebtKInd();
+
+  public abstract String getFullCaption(Dictionary dictionary);
 
   public abstract NormalBalance normalBalance();
 
@@ -68,7 +83,5 @@ public enum PrepaymentKind implements HasLocalizedCaption {
     return name().toLowerCase();
   }
 
-  public abstract String tradePaymentsMainGrid();
-
-  public abstract String tradePaymentsOtherGrid();
+  public abstract String tradePaymentsGrid();
 }
