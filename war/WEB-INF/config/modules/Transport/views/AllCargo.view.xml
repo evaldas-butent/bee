@@ -117,6 +117,14 @@
       </ExternalJoin>
 
       <ExternalJoin name="Cargo" joinType="LEFT" source="CargoIncomes">
+        <HiddenColumn name="Sale" alias="Incomes" />
+        <AggregateColumn name="Sale" alias="IncomesCommited" aggregate="MIN">
+          <x:nvl type="LONG">
+            <x:number>"Incomes"</x:number>
+            <x:number>0</x:number>
+          </x:nvl>
+        </AggregateColumn>
+
         <SimpleJoin name="Sale" joinType="LEFT">
           <SimpleJoin name="SaleSeries" joinType="LEFT">
             <HiddenColumn name="SeriesName" />

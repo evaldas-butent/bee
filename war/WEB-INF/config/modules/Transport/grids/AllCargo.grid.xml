@@ -78,6 +78,11 @@
     <DataColumn name="CargoGroupName" caption="=group" />
 
     <DataColumn name="CmrDate" format="DATE_TIME_SHORT"/>
+
+    <CalcColumn name="IncomesCommited" type="boolean" sortable="false" visible="false"
+                label="=trdInvoiceId" searchBy="Incomes" filterOptions="empty">
+      <render><ui:expression>row.IncomesCommited ? true : false</ui:expression></render>
+    </CalcColumn>
   </g:columns>
 
   <g:rowEditable>
