@@ -115,10 +115,10 @@
       </row>
 
       <row>
-        <Label for="Vehicle" name="labelVehicle" />
+        <Label for="InputVehicle" name="labelInputVehicle" />
         <DataSelector source="InputVehicle" renderColumns="VehicleName InputVehicleNotes"
           newRowEnabled="true" style="&inpw;" disablable="false"/>
-        <Label for="Driver" name="labelDriver" />
+        <Label for="InputDriver" name="labelInputDriver" />
         <DataSelector source="InputDriver" renderColumns="DriverFirstName1 DriverLastName1 InputDriverNotes"
           newRowEnabled="true" style="&inpw;" disablable="false"/>
       </row>

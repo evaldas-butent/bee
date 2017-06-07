@@ -222,11 +222,11 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
         } else if (colName.contains(COL_TA_CURRENCY)) {
           upd = isTemplatable(actRow, templRow, COL_TA_CURRENCY);
 
-        } else if (colName.contains(COL_TA_VEHICLE)) {
-          upd = isTemplatable(actRow, templRow, COL_TA_VEHICLE);
+        } else if (colName.contains(COL_TA_INPUT_VEHICLE)) {
+          upd = isTemplatable(actRow, templRow, COL_TA_INPUT_VEHICLE);
 
-        } else if (colName.contains(COL_TA_DRIVER)) {
-          upd = isTemplatable(actRow, templRow, COL_TA_DRIVER);
+        } else if (colName.contains(COL_TA_INPUT_DRIVER)) {
+          upd = isTemplatable(actRow, templRow, COL_TA_INPUT_DRIVER);
 
         } else {
           upd = !BeeUtils.isEmpty(newValue) && targetRow.isNull(targetIndex);

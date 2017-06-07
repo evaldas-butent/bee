@@ -14,7 +14,7 @@ import java.util.EnumSet;
 
 public enum TradeActKind implements HasLocalizedCaption {
   /* 0 */
-  SALE(new String[] {COL_TA_DRIVER, COL_TA_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS},
+  SALE(new String[] {COL_TA_INPUT_DRIVER, COL_TA_INPUT_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS},
       Option.ALTER_TO,
       Option.AUTO_NUMBER, Option.BUILD_INVOICES,
       Option.ENABLE_COPY,
@@ -33,7 +33,7 @@ public enum TradeActKind implements HasLocalizedCaption {
   },
 
   /* 1 */
-  SUPPLEMENT(new String[] {COL_TA_DRIVER, COL_TA_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS},
+  SUPPLEMENT(new String[] {COL_TA_INPUT_DRIVER, COL_TA_INPUT_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS},
       Option.BUILD_INVOICES, Option.ENABLE_RETURN, Option.HAS_SERVICES,
       Option.SHOW_STOCK, Option.HAS_PARENT_ACT) {
     @Override
@@ -48,7 +48,8 @@ public enum TradeActKind implements HasLocalizedCaption {
   },
 
   /* 2 */
-  RETURN(new String[] {COL_TA_DRIVER, COL_TA_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS, COL_TA_DATE},
+  RETURN(new String[] {COL_TA_INPUT_DRIVER, COL_TA_INPUT_VEHICLE,
+    COL_TA_OBJECT, COL_TA_STATUS, COL_TA_DATE},
       Option.AUTO_NUMBER, Option.HAS_PARENT_ACT) {
     @Override
     public String getCaption(Dictionary constants) {

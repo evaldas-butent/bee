@@ -454,40 +454,6 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
     if (fields != null) {
       for (String field : fields) {
-
-        if (BeeUtils.inListSame(field, COL_TA_VEHICLE, COL_TA_INPUT_VEHICLE, COL_TA_DRIVER,
-            COL_TA_INPUT_DRIVER)) {
-
-          String v1 = row.getString(Data.getColumnIndex(VIEW_TRADE_ACTS, field));
-          String v2;
-
-          switch (field) {
-            case COL_TA_DRIVER:
-              v2 = row.getString(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_INPUT_DRIVER));
-              break;
-            case COL_TA_INPUT_DRIVER:
-              v2 = row.getString(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_DRIVER));
-              break;
-            case COL_TA_VEHICLE:
-              v2 = row.getString(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_INPUT_VEHICLE));
-              break;
-            case COL_TA_INPUT_VEHICLE:
-              v2 = row.getString(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_VEHICLE));
-              break;
-            default:
-              v2 = row.getString(Data.getColumnIndex(VIEW_TRADE_ACTS, field));
-          }
-
-          valid = (!BeeUtils.isEmpty(v1) || !BeeUtils.isEmpty(v2)) || mayDefaults;
-
-          if (!valid) {
-            form.notifySevere(Data.getColumnLabel(VIEW_TRADE_ACTS, field) + " "
-                + Localized.dictionary().valueRequired());
-
-            return valid;
-          }
-        } else {
-
           String value = row.getString(Data.getColumnIndex(VIEW_TRADE_ACTS, field));
           w = form.getWidgetByName("label" + field);
           valid = !BeeUtils.isEmpty(value) || (mayDefaults && StyleUtils.hasClassName(w
@@ -497,7 +463,6 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
                 + Localized.dictionary().valueRequired());
             return valid;
           }
-        }
       }
     }
     return valid;
