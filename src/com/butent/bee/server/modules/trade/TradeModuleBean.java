@@ -4423,7 +4423,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       return ResponseObject.error(dictionary.dataNotAvailable(dictionary.finDefaultAccounts()));
     }
 
-    TradeAccounts tradeAccounts = TradeAccounts.create(config, config.getRow(0));
+    TradeAccounts tradeAccounts = TradeAccounts.createAvailable(config, config.getRow(0));
     Long debtAccount = prepaymentKind.getDebtKInd().getTradeAccount(tradeAccounts);
     if (!DataUtils.isId(debtAccount)) {
       return ResponseObject.error(prepaymentKind.getDebtKInd().getCaption(dictionary),
@@ -4450,6 +4450,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     int currencyIndex = finData.getColumnIndex(COL_FIN_CURRENCY);
 
     ResponseObject response = ResponseObject.emptyResponse();
+
+    Set<Long> docIds = new HashSet<>();
     int count = 0;
 
     for (Triplet<Long, Long, Double> discharge : discharges) {
@@ -4502,9 +4504,15 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             return finResponse;
           }
 
+          docIds.add(docId);
           count++;
         }
       }
+    }
+
+    if (!docIds.isEmpty()) {
+      Endpoint.refreshRows(qs.getViewData(VIEW_TRADE_DOCUMENTS, Filter.idIn(docIds)));
+      Endpoint.refreshChildren(VIEW_TRADE_PAYMENTS, docIds);
     }
 
     response.setResponse(count);

@@ -508,7 +508,7 @@ class PaymentForm extends AbstractFormInterceptor {
     }
 
     if (prepaymentGrid == null || prepaymentGrid.isEmpty()) {
-      warn(Localized.dictionary().noData());
+      warn(prepaymentKind.getFullCaption(Localized.dictionary()), Localized.dictionary().noData());
       return;
     }
     if (prepaymentKind == null) {
@@ -540,7 +540,7 @@ class PaymentForm extends AbstractFormInterceptor {
     List<IsRow> prepaymentRows = cr.getB();
 
     if (BeeUtils.isEmpty(prepaymentRows)) {
-      warn(Localized.dictionary().noData());
+      warn(prepaymentKind.getFullCaption(Localized.dictionary()), Localized.dictionary().noData());
       return;
     }
 
