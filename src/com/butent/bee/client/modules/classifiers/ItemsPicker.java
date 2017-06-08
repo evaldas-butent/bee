@@ -49,6 +49,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Span;
@@ -290,6 +291,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
     HtmlTable table = new HtmlTable(STYLE_ITEM_TABLE);
     visibleTableCols.clear();
+    DataInfo viewInfo = Data.getDataInfo(itemList.getViewName());
 
     int r = 0;
     int c = 0;
@@ -317,6 +319,10 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
         STYLE_ARTICLE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     for (ItemPrice ip : ItemPrice.values()) {
+      if (viewInfo != null && !BeeKeeper.getUser().isColumnVisible(viewInfo, ip.getPriceColumn())) {
+        continue;
+      }
+
       table.setText(r, c, ip.getCaption(),
           (ip == itemPrice) ? STYLE_SELECTED_PRICE_HEADER_CELL : STYLE_PRICE_HEADER_CELL);
 
@@ -392,6 +398,11 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
           ? selectedPrices.get(item.getId()) : itemPrice;
 
       for (ItemPrice ip : ItemPrice.values()) {
+        if (viewInfo != null
+          && !BeeKeeper.getUser().isColumnVisible(viewInfo, ip.getPriceColumn())) {
+          continue;
+        }
+
         String html = renderPrice(item, priceIndexes.get(ip), currencyIndexes.get(ip));
 
         if (html == null) {
