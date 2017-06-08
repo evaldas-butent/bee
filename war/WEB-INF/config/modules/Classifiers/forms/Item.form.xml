@@ -42,6 +42,12 @@
       <row>
         <Label for="Article2" />
         <InputText source="Article2" summarize="true" />
+
+        <!-- transrifus { -->
+        <cell colSpan="2">
+          <CheckBox style="margin-left: 5px;" text="=exportToWebsite" source="ExportWebsite"/>
+        </cell>
+        <!-- } transrifus -->
       </row>
 
       <row>
