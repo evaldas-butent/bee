@@ -798,6 +798,13 @@ public class TradeActBean implements HasTimerService {
             .addConstant(COL_TA_INVOICE_FROM, new JustDate(BeeUtils.toInt(from)))
             .addConstant(COL_TA_INVOICE_TO, new JustDate(BeeUtils.toInt(to)));
 
+        /* Transrifus TID31400 { */
+        if (saleItem.hasPropertyValue(COL_TA_SERVICE_FACTOR)) {
+          insert.addConstant(COL_TA_SERVICE_FACTOR,
+            saleItem.getPropertyDouble(COL_TA_SERVICE_FACTOR));
+        }
+        /* } Transrifus TID31400 */
+
         qs.insertData(insert);
       }
     }

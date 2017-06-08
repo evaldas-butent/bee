@@ -776,10 +776,6 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     List<String> notes = new ArrayList<>();
 
     int actIndex = selectedServices.getColumnIndex(COL_TRADE_ACT);
-
-    int itemNameIndex = selectedServices.getColumnIndex(ALS_ITEM_NAME);
-    int objectNameIndex = Data.getColumnIndex(VIEW_TRADE_ACTS, COL_COMPANY_OBJECT_NAME);
-    int objectAddressIndex = Data.getColumnIndex(VIEW_TRADE_ACTS, COL_COMPANY_OBJECT_ADDRESS);
     Set<Long> prepareApproveActs = Sets.newLinkedHashSet();
 
     for (Service svc : services) {
@@ -787,23 +783,10 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         BeeRow row = DataUtils.cloneRow(svc.row);
         selectedServices.addRow(row);
 
-        String itemName = svc.row.getString(itemNameIndex);
-
         Long svcActId = svc.row.getLong(actIndex);
-        Act act = findAct(svcActId);
 
         if (DataUtils.isId(svcActId)) {
           prepareApproveActs.add(svcActId);
-        }
-
-        String objectInfo = (act == null) ? null
-            : BeeUtils.joinWords(act.row.getString(objectNameIndex),
-                act.row.getString(objectAddressIndex));
-
-        for (Integer idx : ss.get(svc.id())) {
-          Range<DateTime> r = svc.ranges.get(idx);
-          String period = TimeUtils.renderPeriod(r.lowerEndpoint(), r.upperEndpoint());
-          notes.add(BeeUtils.joinItems(itemName, period, objectInfo));
         }
       }
     }
@@ -939,12 +922,17 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
           JustDate from = svc.dateFrom(idx);
           JustDate to = svc.dateTo(idx);
+          Double factor = svc.factors.get(idx);
 
           if (from != null) {
             inv.setProperty(PRP_TA_SERVICE_FROM, BeeUtils.toString(from.getDays()));
           }
           if (to != null) {
             inv.setProperty(PRP_TA_SERVICE_TO, BeeUtils.toString(to.getDays()));
+          }
+
+          if(factor != null) {
+            inv.setProperty(COL_TA_SERVICE_FACTOR, factor);
           }
 
           invoiceItems.addRow(inv);

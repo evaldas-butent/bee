@@ -7,8 +7,7 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.PRP_TA_SERVICE_FROM;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.PRP_TA_SERVICE_TO;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.COL_CUSTOMER;
 
 import com.butent.bee.client.BeeKeeper;
@@ -16,6 +15,7 @@ import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowInsertCallback;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
@@ -37,10 +37,10 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -50,7 +50,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -212,37 +211,38 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
     super.getReportParameters(defaultParameters ->
         ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
           defaultParameters.putAll(companiesInfo);
+          Long saleId = getActiveRowId();
 
-          Filter filter = Filter.and(Filter.equals(COL_COMPANY, companies.get(COL_TRADE_CUSTOMER)),
-              Filter.equals(ALS_CATEGORY_NAME, "Nuomos Sutartys"));
 
-          Queries.getRowSet(DocumentConstants.VIEW_DOCUMENTS, Arrays.asList(COL_DOCUMENT_NUMBER,
-              ALS_STATUS_NAME, COL_DOCUMENT_DATE), filter, new Order(COL_DOCUMENT_DATE, false),
-              new Queries.RowSetCallback() {
-                @Override
-                public void onSuccess(BeeRowSet result) {
-                  String nr = BeeConst.STRING_EMPTY;
+          DateTime t = new DateTime();
+          t.setMillis(0);
+          t.setSecond(0);
 
-                  if (result.getNumberOfRows() > 0) {
-                    if (result.getNumberOfRows() == 1) {
-                      nr = result.getRow(0).getString(result.getColumnIndex(
-                          COL_DOCUMENT_NUMBER));
-                    } else {
-                      List<BeeRow> rows = DataUtils.filterRows(result, ALS_STATUS_NAME,
-                          "Pagrindinė");
+          defaultParameters.put("PrintingDate", Format.renderDateTime(t));
+          parametersConsumer.accept(defaultParameters);
 
-                      if (rows.size() > 0) {
-                        nr = rows.get(0).getString(result.getColumnIndex(COL_DOCUMENT_NUMBER));
-                      } else {
-                        nr = result.getRow(0).getString(result.getColumnIndex(COL_DOCUMENT_NUMBER));
-                      }
-                    }
+          if (!DataUtils.isId(saleId)) {
+            return;
+          }
+
+          Queries.getRowSet(VIEW_TRADE_ACT_INVOICES, Collections.singletonList("ContractNumber"),
+            Filter.equals(COL_SALE, saleId), new Order(COL_DOCUMENT_DATE, false),
+            new Queries.RowSetCallback() {
+              @Override
+              public void onSuccess(BeeRowSet contracts) {
+                String contractNumber = BeeConst.STRING_EMPTY;
+
+                for (BeeRow contract : contracts) {
+                  contractNumber = contract.getString(contracts.getColumnIndex("ContractNumber"));
+
+                  if (!BeeUtils.isEmpty(contractNumber)) {
+                    break;
                   }
-
-                  defaultParameters.put(TradeActConstants.WIDGET_TA_CONTRACT, nr);
-                  parametersConsumer.accept(defaultParameters);
                 }
-              });
+
+                defaultParameters.put(TradeActConstants.WIDGET_TA_CONTRACT, contractNumber);
+              }
+            });
         }));
   }
 
@@ -284,6 +284,11 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
           saleItems.setTableProperty("HasTimeUnit", "HasTimeUnit");
           saleItem.setProperty(COL_TIME_UNIT, EnumUtils.getCaption(TradeActTimeUnit.class,
               row.getInteger(rowSet.getColumnIndex(COL_TIME_UNIT))));
+        }
+
+        if (row.getDouble(rowSet.getColumnIndex(COL_TA_SERVICE_FACTOR)) != null) {
+          saleItem.setProperty(COL_TA_SERVICE_FACTOR,
+            BeeUtils.toString(row.getDouble(rowSet.getColumnIndex(COL_TA_SERVICE_FACTOR)), 3));
         }
       }
     } else {

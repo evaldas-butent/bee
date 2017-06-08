@@ -23,6 +23,7 @@
         <SimpleJoin name="Contract" joinType="LEFT">
           <SimpleColumn name="Name" alias="ContractName" />
           <SimpleColumn name="Number" alias="ContractNumber" />
+          <SimpleColumn name="DocumentDate" />
         </SimpleJoin>
       </SimpleJoin>
 
@@ -37,6 +38,10 @@
 
     <SimpleColumn name="DateFrom" />
     <SimpleColumn name="DateTo" />
+
+    <!-- Transrifus TID 31400 { -->
+    <SimpleColumn name="Factor" />
+    <!-- } Transrifus TID 31400 -->
 
     <SimpleColumn name="SaleItem" />
     <SimpleJoin joinType="LEFT" name="SaleItem">
