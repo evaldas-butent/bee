@@ -30,6 +30,11 @@ public enum DebtKind implements HasLocalizedCaption {
     }
 
     @Override
+    public DebtKind opposite() {
+      return RECEIVABLE;
+    }
+
+    @Override
     public String tradeDebtsMainGrid() {
       return GRID_TRADE_PAYABLES;
     }
@@ -67,6 +72,11 @@ public enum DebtKind implements HasLocalizedCaption {
     }
 
     @Override
+    public DebtKind opposite() {
+      return PAYABLE;
+    }
+
+    @Override
     public String tradeDebtsMainGrid() {
       return GRID_TRADE_RECEIVABLES;
     }
@@ -91,6 +101,8 @@ public enum DebtKind implements HasLocalizedCaption {
   }
 
   public abstract Long getTradeAccount(TradeAccounts tradeAccounts);
+
+  public abstract DebtKind opposite();
 
   public abstract String tradeDebtsMainGrid();
 

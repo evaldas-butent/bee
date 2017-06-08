@@ -4220,6 +4220,8 @@ public interface Dictionary {
 
   default String paymentDischargeAmount() {return g("paymentDischargeAmount");}
 
+  default String paymentDischargeDebtCaption() {return g("paymentDischargeDebtCaption");}
+
   default String paymentDischargeDebtCommand() {return g("paymentDischargeDebtCommand");}
 
   default String paymentDischargeDebtQuestion() {return g("paymentDischargeDebtQuestion");}

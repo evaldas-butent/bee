@@ -55,6 +55,7 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -408,8 +409,11 @@ class PaymentForm extends AbstractFormInterceptor {
         messages.add(message(Localized.dictionary().prepayment(), amount - debt, currencyName));
       }
 
-      messages.add(BeeConst.STRING_EMPTY);
+    } else {
+      messages.add(message(Localized.dictionary().amount(), amount, currencyName));
     }
+
+    messages.add(BeeConst.STRING_EMPTY);
     messages.add(Localized.dictionary().paymentSubmitQuestion());
 
     Global.confirm(Localized.dictionary().newPayment(), Icon.QUESTION, messages,
@@ -473,21 +477,17 @@ class PaymentForm extends AbstractFormInterceptor {
       public void onResponse(ResponseObject response) {
         setUpdating(false);
 
+        if (response.hasMessages()) {
+          response.notify(getFormView());
+        }
+
         if (!response.hasErrors()) {
           clearValue(NAME_AMOUNT);
 
-          GridView mainDebts = getGrid(debtKind.tradeDebtsMainGrid());
-          if (mainDebts != null) {
-            mainDebts.getGrid().clearSelection();
-            ViewHelper.refresh(mainDebts);
-          }
+          resetGrid(debtKind.tradeDebtsMainGrid());
 
           if (financeEnabled && BeeUtils.isPositive(prepayment)) {
             ViewHelper.refresh(getGrid(debtKind.getPrepaymentKind().tradePaymentsGrid()));
-          }
-
-          if (response.hasMessages()) {
-            response.notify(getFormView());
           }
 
           if (financeEnabled && !payments.isEmpty()) {
@@ -498,8 +498,186 @@ class PaymentForm extends AbstractFormInterceptor {
     });
   }
 
-  private void onDischargeDebts(GridView gridView) {
-    logger.debug("debts", gridView.getGridName());
+  private void onDischargeDebts(GridView otherGrid) {
+    if (isUpdating()) {
+      return;
+    }
+
+    if (otherGrid == null || otherGrid.isEmpty()) {
+      warn(debtKind.opposite().getCaption(), Localized.dictionary().noData());
+      return;
+    }
+
+    GridView mainGrid = getGrid(debtKind.tradeDebtsMainGrid());
+    if (mainGrid == null || mainGrid.isEmpty()) {
+      warn(debtKind.getCaption(), Localized.dictionary().noData());
+      return;
+    }
+
+    if (!DataUtils.isId(checkPayer())) {
+      return;
+    }
+
+    DateTime date = checkDate();
+    if (date == null) {
+      return;
+    }
+
+    Pair<Long, List<IsRow>> cr = getCurrencyAndRows(otherGrid, COL_TRADE_CURRENCY, hasDebt());
+    if (cr == null) {
+      return;
+    }
+
+    Long currency = cr.getA();
+    List<IsRow> otherRows = cr.getB();
+
+    if (BeeUtils.isEmpty(otherRows)) {
+      warn(debtKind.opposite().getCaption(), Localized.dictionary().noData());
+      return;
+    }
+
+    String currencyName = getCurrencyName(otherRows, otherGrid.getDataIndex(ALS_CURRENCY_NAME));
+
+    List<IsRow> mainRows = getRows(mainGrid, RowPredicate.and(hasDebt(),
+        RowPredicate.equals(mainGrid.getDataIndex(COL_TRADE_CURRENCY), currency)));
+    if (BeeUtils.isEmpty(mainRows)) {
+      warn(debtKind.getCaption(), currencyName, Localized.dictionary().noData());
+      return;
+    }
+
+    double mainDebt = totalDebt(mainRows);
+    double otherDebt = totalDebt(otherRows);
+
+    Double amount = getAmount();
+    double discharge;
+
+    if (BeeUtils.isPositive(amount)) {
+      discharge = Math.min(amount, Math.min(mainDebt, otherDebt));
+    } else {
+      discharge = Math.min(mainDebt, otherDebt);
+    }
+
+    String series = getString(NAME_SERIES);
+    String number = getString(NAME_NUMBER);
+
+    String mainMessage = message(debtKind.getCaption(), mainDebt, currencyName);
+    String otherMessage = message(debtKind.opposite().getCaption(), otherDebt, currencyName);
+    String amountMessage = message(Localized.dictionary().paymentDischargeAmount(),
+        discharge, currencyName);
+
+    if (!BeeUtils.isPositive(discharge)) {
+      warn(mainMessage, otherMessage, amountMessage);
+      return;
+    }
+
+    List<String> messages = new ArrayList<>();
+
+    messages.add(mainMessage);
+    messages.add(otherMessage);
+    messages.add(BeeConst.STRING_EMPTY);
+    messages.add(amountMessage);
+
+    messages.add(BeeConst.STRING_EMPTY);
+    messages.add(Localized.dictionary().paymentDischargeDebtQuestion());
+
+    Global.confirm(Localized.dictionary().paymentDischargeDebtCaption(), Icon.QUESTION, messages,
+        () -> doDischargeDebts(date, discharge, series, number, mainRows, otherRows));
+  }
+
+  private void doDischargeDebts(DateTime date, double amount, String series, String number,
+      List<IsRow> mainRows, List<IsRow> otherRows) {
+
+    List<Triplet<Long, Long, Double>> discharges = new ArrayList<>();
+
+    Map<Long, Double> mainDebts = new HashMap<>();
+    mainRows.forEach(row -> mainDebts.put(row.getId(), getDebt(row)));
+
+    double remaining = amount;
+    int mainIndex = 0;
+
+    for (IsRow otherRow : otherRows) {
+      double otherDebt = getDebt(otherRow);
+
+      while (BeeUtils.isPositive(otherDebt) && BeeUtils.isPositive(remaining)
+          && BeeUtils.isIndex(mainRows, mainIndex)) {
+
+        long mainId = mainRows.get(mainIndex).getId();
+        double mainDebt = mainDebts.get(mainId);
+
+        if (BeeUtils.isPositive(mainDebt)) {
+          double x = Math.min(remaining, Math.min(mainDebt, otherDebt));
+
+          discharges.add(Triplet.of(mainId, otherRow.getId(), x));
+
+          remaining = normalize(remaining - x);
+          otherDebt = normalize(otherDebt - x);
+
+          mainDebt = normalize(mainDebt - x);
+          mainDebts.put(mainId, mainDebt);
+
+          if (!BeeUtils.isPositive(mainDebt)) {
+            mainIndex++;
+          }
+
+        } else {
+          mainIndex++;
+        }
+      }
+
+      if (!BeeUtils.isPositive(remaining) || !BeeUtils.isIndex(mainRows, mainIndex)) {
+        break;
+      }
+    }
+
+    if (discharges.isEmpty()) {
+      String message = "cannot discharge debts";
+      logger.severe(message, amount);
+      logger.severe(mainRows);
+      logger.severe(otherRows);
+
+      warn(message);
+      return;
+    }
+
+    ParameterList parameters = TradeKeeper.createArgs(SVC_DISCHARGE_DEBT);
+
+    parameters.addDataItem(VAR_PAYMENTS, Codec.beeSerialize(discharges));
+    parameters.addDataItem(COL_TRADE_PAYMENT_DATE, date.getTime());
+
+    if (!BeeUtils.isEmpty(series)) {
+      parameters.addDataItem(COL_TRADE_PAYMENT_SERIES, series);
+    }
+    if (!BeeUtils.isEmpty(number)) {
+      parameters.addDataItem(COL_TRADE_PAYMENT_NUMBER, number);
+    }
+
+    setUpdating(true);
+
+    BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        setUpdating(false);
+
+        if (response.hasMessages()) {
+          response.notify(getFormView());
+        }
+
+        if (!response.hasErrors()) {
+          clearValue(NAME_AMOUNT);
+
+          resetGrid(debtKind.tradeDebtsMainGrid());
+          resetGrid(debtKind.tradeDebtsOtherGrid());
+
+          Set<Long> docIds = new HashSet<>();
+          discharges.forEach(triplet -> {
+            docIds.add(triplet.getA());
+            docIds.add(triplet.getB());
+          });
+
+          FinanceKeeper.postTradeDocuments(docIds, null);
+        }
+      }
+    });
   }
 
   private void onDischargePrepayments(GridView prepaymentGrid, PrepaymentKind prepaymentKind) {
@@ -664,6 +842,10 @@ class PaymentForm extends AbstractFormInterceptor {
       public void onResponse(ResponseObject response) {
         setUpdating(false);
 
+        if (response.hasMessages()) {
+          response.notify(getFormView());
+        }
+
         if (!response.hasErrors()) {
           clearValue(NAME_AMOUNT);
 
@@ -672,10 +854,6 @@ class PaymentForm extends AbstractFormInterceptor {
 
           debtGrid.getGrid().clearSelection();
           ViewHelper.refresh(debtGrid);
-
-          if (response.hasMessages()) {
-            response.notify(getFormView());
-          }
 
           Set<Long> docIds = discharges.stream().map(Triplet::getB).collect(Collectors.toSet());
           FinanceKeeper.postTradeDocuments(docIds, null);
@@ -860,5 +1038,14 @@ class PaymentForm extends AbstractFormInterceptor {
 
   private static String message(String label, Double amount, String currency) {
     return BeeUtils.joinWords(label + BeeConst.STRING_COLON, format(amount), currency);
+  }
+
+  private void resetGrid(String gridName) {
+    GridView gridView = getGrid(gridName);
+
+    if (gridView != null) {
+      gridView.getGrid().clearSelection();
+      ViewHelper.refresh(gridView);
+    }
   }
 }

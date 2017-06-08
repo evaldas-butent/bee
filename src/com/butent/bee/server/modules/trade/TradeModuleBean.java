@@ -328,6 +328,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         response = submitPayment(reqInfo);
         break;
 
+      case SVC_DISCHARGE_DEBT:
+        response = dischargeDebt(reqInfo);
+        break;
+
       case SVC_DISCHARGE_PREPAYMENT:
         response = dischargePrepayment(reqInfo);
         break;
@@ -4397,6 +4401,65 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
 
     return response;
+  }
+
+  private ResponseObject dischargeDebt(RequestInfo reqInfo) {
+    Long time = reqInfo.getParameterLong(COL_TRADE_PAYMENT_DATE);
+    if (time == null) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), COL_TRADE_PAYMENT_DATE);
+    }
+
+    List<Triplet<Long, Long, Double>> discharges =
+        deserializeDischarges(reqInfo.getParameter(VAR_PAYMENTS));
+    if (discharges.isEmpty()) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), VAR_PAYMENTS);
+    }
+
+    String series = reqInfo.getParameter(COL_TRADE_PAYMENT_SERIES);
+    String number = reqInfo.getParameter(COL_TRADE_PAYMENT_NUMBER);
+
+    Dictionary dictionary = usr.getDictionary();
+
+    Long account = fin.getDefaultAccount(COL_DISCHARGE_ACCOUNT);
+    if (!DataUtils.isId(account)) {
+      return ResponseObject.error(dictionary.finDefaultAccounts(),
+          dictionary.fieldRequired(dictionary.finDischargeAccount()));
+    }
+
+    if (!BeeUtils.isEmpty(series) && BeeUtils.isEmpty(number)) {
+      number = qs.getNextNumber(TBL_TRADE_PAYMENTS, COL_TRADE_PAYMENT_NUMBER,
+          series, COL_TRADE_PAYMENT_SERIES);
+    }
+
+    Set<Long> docIds = new HashSet<>();
+
+    for (Triplet<Long, Long, Double> discharge : discharges) {
+      double amount = discharge.getC();
+
+      for (long docId : new long[] {discharge.getA(), discharge.getB()}) {
+        SqlInsert insert = new SqlInsert(TBL_TRADE_PAYMENTS)
+            .addConstant(COL_TRADE_DOCUMENT, docId)
+            .addConstant(COL_TRADE_PAYMENT_DATE, time)
+            .addConstant(COL_TRADE_PAYMENT_AMOUNT, amount)
+            .addConstant(COL_TRADE_PAYMENT_ACCOUNT, account)
+            .addNotEmpty(COL_TRADE_PAYMENT_SERIES, series)
+            .addNotEmpty(COL_TRADE_PAYMENT_NUMBER, number);
+
+        ResponseObject insertResponse = qs.insertDataWithResponse(insert);
+        if (insertResponse.hasErrors()) {
+          return insertResponse;
+        }
+
+        docIds.add(docId);
+      }
+    }
+
+    if (!docIds.isEmpty()) {
+      Endpoint.refreshRows(qs.getViewData(VIEW_TRADE_DOCUMENTS, Filter.idIn(docIds)));
+      Endpoint.refreshChildren(VIEW_TRADE_PAYMENTS, docIds);
+    }
+
+    return ResponseObject.response(docIds.size());
   }
 
   private ResponseObject dischargePrepayment(RequestInfo reqInfo) {
