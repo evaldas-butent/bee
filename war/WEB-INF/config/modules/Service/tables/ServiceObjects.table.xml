@@ -17,11 +17,12 @@
     <String name="SerialNo" precision="200" label="=svcSerialNo" />
 
     <!-- Transrifus { -->
-    <String name="YearOfManufacture" precision="100" />
-    <String name="InventNo" precision="100" />
-    <String name="BodyNo" precision="100" />
-    <String name="Seller" precision="100" />
-    <String name="ItemInButenta" precision="100" />
+    <Long name="ExternalCode" unique="true" label="=externalCode" />
+    <String name="YearOfManufacture" precision="100" label="=svcYearOfManufacture" />
+    <String name="InventNo" precision="100" label="=svcInventNo"/>
+    <String name="BodyNo" precision="100" label="=svcBodyNo"/>
+    <String name="Seller" precision="100" label="=svcSeller"/>
+    <String name="ItemInButenta" precision="100" label="=svcItemInButenta" />
     <!-- } Transrifus -->
   </Fields>
 </Table>
