@@ -1809,15 +1809,20 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       if (BeeUtils.unbox(row.getBoolean(COL_TRANSPORTATION))) {
         Long cargo = row.getLong(COL_CARGO);
 
-        String value = BeeUtils.join("\n", row.getValue(COL_ORDER_NOTES),
-            BeeUtils.join("-", places.get(cargo, ALS_LOADING_COUNTRY_CODE),
-                places.get(cargo, ALS_LOADING_POST_INDEX)),
-            BeeUtils.join("-", places.get(cargo, ALS_UNLOADING_COUNTRY_CODE),
-                places.get(cargo, ALS_UNLOADING_POST_INDEX)));
+        String loadingData = BeeUtils.join("-", places.get(cargo, ALS_LOADING_COUNTRY_CODE),
+            places.get(cargo, ALS_LOADING_POST_INDEX));
 
-        if (!BeeUtils.isEmpty(value)) {
-          valueMap.put(COL_ORDER_NOTES, value);
+        if (!BeeUtils.isEmpty(loadingData)) {
+          valueMap.put(VAR_LOADING, loadingData);
         }
+
+        String unloadingData = BeeUtils.join("-", places.get(cargo, ALS_UNLOADING_COUNTRY_CODE),
+            places.get(cargo, ALS_UNLOADING_POST_INDEX));
+
+        if (!BeeUtils.isEmpty(unloadingData)) {
+          valueMap.put(VAR_UNLOADING, unloadingData);
+        }
+
         for (String fld : new String[] {ALS_LOADING_DATE, ALS_UNLOADING_DATE}) {
           DateTime time = TimeUtils.toDateTimeOrNull(places.get(cargo, fld));
 

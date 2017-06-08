@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2017-02-01T16:13:54 -->
+<!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
+<!-- 2017-06-08T15:35:24 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="525" leftMargin="50" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" whenResourceMissingType="Key" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -888,13 +888,22 @@
 									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 								</box>
 								<textField isStretchWithOverflow="true">
-									<reportElement style="TableDetail" x="0" y="0" width="50" height="30" uuid="3cb66dd5-8256-45ef-9c82-1567736ed6bd">
-										<printWhenExpression><![CDATA[$V{trMap}.containsKey("Notes")]]></printWhenExpression>
+									<reportElement style="TableDetail" positionType="Float" x="0" y="0" width="50" height="15" uuid="3cb66dd5-8256-45ef-9c82-1567736ed6bd">
+										<printWhenExpression><![CDATA[$V{trMap}.containsKey("Notes") || $V{trMap}.containsKey("Loading")]]></printWhenExpression>
 									</reportElement>
 									<textElement textAlignment="Left" verticalAlignment="Middle">
 										<font size="7"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$V{trMap}.get("Notes")]]></textFieldExpression>
+									<textFieldExpression><![CDATA[BeeUtils.joinWords($V{trMap}.get("Notes"), $V{trMap}.get("Loading"))]]></textFieldExpression>
+								</textField>
+								<textField isStretchWithOverflow="true">
+									<reportElement style="TableDetail" positionType="Float" x="0" y="15" width="50" height="15" uuid="436d8c13-5e8a-4ea7-aa01-ef2d49dff714">
+										<printWhenExpression><![CDATA[$V{trMap}.containsKey("Unloading")]]></printWhenExpression>
+									</reportElement>
+									<textElement textAlignment="Left" verticalAlignment="Middle">
+										<font size="7"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$V{trMap}.get("Unloading")]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
