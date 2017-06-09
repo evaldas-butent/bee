@@ -7,8 +7,6 @@ import com.google.gwt.xml.client.Element;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
-import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
@@ -31,7 +29,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
@@ -60,7 +57,7 @@ import java.util.Objects;
 public class TreePresenter extends AbstractPresenter implements CatchEvent.CatchHandler<IsRow>,
     HasViewName {
 
-  private final class CommitCallback extends RowCallback {
+  private final class CommitCallback implements RowCallback {
     private final boolean createMode;
 
     private CommitCallback(boolean createMode) {
@@ -404,12 +401,9 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
 
       Global.confirmDelete(getCaption(), Icon.WARNING, Lists.newArrayList(message), () ->
           Queries.deleteRow(getViewName(), data.getId(), data.getVersion(),
-              new IntCallback() {
-                @Override
-                public void onSuccess(Integer result) {
-                  getView().removeItem(data);
-                  RowDeleteEvent.fire(BeeKeeper.getBus(), getViewName(), data.getId());
-                }
+              result -> {
+                getView().removeItem(data);
+                RowDeleteEvent.fire(BeeKeeper.getBus(), getViewName(), data.getId());
               }));
     }
   }
@@ -422,49 +416,46 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
           new LongValue(relationId == null ? BeeConst.UNDEF : relationId));
     }
 
-    Queries.getRowSet(getViewName(), null, flt, null, new RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        if (evaluator == null) {
-          dataColumns = result.getColumns();
-          evaluator = Evaluator.create(calculation, null, getDataColumns());
-        }
-        properties = result.getTableProperties();
-        getView().removeItems();
-
-        if (result.isEmpty()) {
-          getView().afterRequery();
-          return;
-        }
-        int parentIndex = result.getColumnIndex(parentColumnName);
-
-        if (Objects.equals(parentIndex, BeeConst.UNDEF)) {
-          BeeKeeper.getScreen().notifySevere("Parent column not found", parentColumnName);
-          getView().afterRequery();
-          return;
-        }
-        Map<Long, List<Long>> hierarchy = new LinkedHashMap<>();
-        Map<Long, IsRow> items = new HashMap<>();
-
-        for (IsRow row : result.getRows()) {
-          Long parent = row.getLong(parentIndex);
-          List<Long> childs = hierarchy.get(parent);
-
-          if (childs == null) {
-            childs = new ArrayList<>();
-            hierarchy.put(parent, childs);
-          }
-          childs.add(row.getId());
-          items.put(row.getId(), row);
-        }
-        for (Long parent : hierarchy.keySet()) {
-          if (!items.containsKey(parent)) {
-            addBranch(parent, hierarchy, items);
-          }
-        }
-
-        getView().afterRequery();
+    Queries.getRowSet(getViewName(), null, flt, null, result -> {
+      if (evaluator == null) {
+        dataColumns = result.getColumns();
+        evaluator = Evaluator.create(calculation, null, getDataColumns());
       }
+      properties = result.getTableProperties();
+      getView().removeItems();
+
+      if (result.isEmpty()) {
+        getView().afterRequery();
+        return;
+      }
+      int parentIndex = result.getColumnIndex(parentColumnName);
+
+      if (Objects.equals(parentIndex, BeeConst.UNDEF)) {
+        BeeKeeper.getScreen().notifySevere("Parent column not found", parentColumnName);
+        getView().afterRequery();
+        return;
+      }
+      Map<Long, List<Long>> hierarchy = new LinkedHashMap<>();
+      Map<Long, IsRow> items = new HashMap<>();
+
+      for (IsRow row : result.getRows()) {
+        Long parent = row.getLong(parentIndex);
+        List<Long> childs = hierarchy.get(parent);
+
+        if (childs == null) {
+          childs = new ArrayList<>();
+          hierarchy.put(parent, childs);
+        }
+        childs.add(row.getId());
+        items.put(row.getId(), row);
+      }
+      for (Long parent : hierarchy.keySet()) {
+        if (!items.containsKey(parent)) {
+          addBranch(parent, hierarchy, items);
+        }
+      }
+
+      getView().afterRequery();
     });
   }
 }

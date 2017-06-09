@@ -502,7 +502,7 @@ public final class TimeBoardHelper {
       @Override
       public void onFailure(String... reason) {
         settings.setValue(0, index, oldValue);
-        super.onFailure(reason);
+        RowCallback.super.onFailure(reason);
       }
 
       @Override
