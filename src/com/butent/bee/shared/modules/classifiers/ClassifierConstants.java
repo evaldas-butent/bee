@@ -164,6 +164,8 @@ public final class ClassifierConstants {
   public static final String COL_CATEGORY = "Category";
   public static final String COL_CATEGORY_NAME = "Name";
   public static final String COL_CATEGORY_PARENT = "Parent";
+  public static final String COL_CATEGORY_GOODS = "Goods";
+  public static final String COL_CATEGORY_SERVICES = "Services";
 
   public static final String COL_ITEM = "Item";
   public static final String COL_ITEM_NAME = "Name";
