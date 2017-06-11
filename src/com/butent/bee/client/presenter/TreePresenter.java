@@ -6,6 +6,7 @@ import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
@@ -16,6 +17,7 @@ import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.logical.CatchEvent;
+import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.HeaderView;
@@ -35,15 +37,18 @@ import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RowFormatter;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -55,8 +60,8 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class TreePresenter extends AbstractPresenter implements CatchEvent.CatchHandler<IsRow>,
-    HasViewName, Launchable {
+public final class TreePresenter extends AbstractPresenter
+    implements CatchEvent.CatchHandler<IsRow>, HasViewName, Launchable {
 
   private final class CommitCallback implements RowCallback {
     private final boolean createMode;
@@ -67,7 +72,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
 
     @Override
     public void onSuccess(BeeRow result) {
-      String text = evaluate(result);
+      String text = format(result);
 
       if (createMode) {
         Long parentId =
@@ -79,6 +84,40 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
       }
     }
+  }
+
+  public static TreePresenter create(String treeName, TreeView treeView, String viewName,
+      Map<String, String> attributes, Calculation calculation, Element editForm) {
+
+    if (treeView == null) {
+      logger.severe(Localized.dictionary().parameterNotFound(NameUtils.getName(TreeView.class)));
+      return null;
+    }
+
+    if (BeeUtils.isEmpty(viewName)) {
+      logger.severe(Localized.dictionary().parameterNotFound(UiConstants.ATTR_VIEW_NAME));
+      return null;
+    }
+    if (BeeUtils.isEmpty(attributes)) {
+      logger.severe(Localized.dictionary().parameterNotFound("attributes"));
+      return null;
+    }
+
+    Filter filter = null;
+    String treeFilter = attributes.get(UiConstants.ATTR_FILTER);
+
+    if (!BeeUtils.isEmpty(treeFilter)) {
+      DataInfo dataInfo = Data.getDataInfo(viewName);
+      if (dataInfo != null) {
+        filter = dataInfo.parseFilter(treeFilter, BeeKeeper.getUser().getUserId());
+      }
+    }
+
+    RowFormatter rowFormatter = RendererFactory.getTreeFormatter(treeName);
+
+    return new TreePresenter(treeView, viewName, filter, attributes.get("parentColumn"),
+        attributes.get("orderColumn"), attributes.get("relationColumn"),
+        rowFormatter, calculation, editForm);
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(TreePresenter.class);
@@ -100,9 +139,11 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   private final HandlerRegistration catchHandler;
 
   private Filter filter;
+  private RowFormatter rowFormatter;
 
-  public TreePresenter(TreeView view, String viewName, Filter filter, String parentColumnName,
-      String orderColumnName, String relationColumnName, Calculation calc, Element editorForm) {
+  private TreePresenter(TreeView view, String viewName, Filter filter,
+      String parentColumnName, String orderColumnName, String relationColumnName,
+      RowFormatter rowFormatter, Calculation calculation, Element editorForm) {
 
     Assert.notNull(view);
     Assert.notEmpty(viewName);
@@ -116,27 +157,37 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     this.orderColumnName = orderColumnName;
     this.relationColumnName = relationColumnName;
 
-    this.editor = editorForm;
+    this.calculation = calculation;
 
-    String expr = "'ID=' + rowId";
-
-    if (calc == null) {
-      this.calculation = new Calculation(expr, null);
+    if (rowFormatter == null && calculation == null) {
+      this.rowFormatter =
+          row -> BeeUtils.joinOptions(Localized.dictionary().captionId(), row.getId());
     } else {
-      this.calculation = new Calculation(calc.hasExpressionOrFunction() ? calc.getExpression()
-          : expr, calc.getFunction());
+      this.rowFormatter = rowFormatter;
     }
+
+    this.editor = editorForm;
 
     this.catchHandler = getView().addCatchHandler(this);
   }
 
-  public String evaluate(IsRow row) {
-    String value = null;
+  public String format(IsRow row) {
+    String value;
 
-    if (BeeUtils.allNotNull(evaluator, row)) {
+    if (row == null) {
+      value = null;
+
+    } else if (rowFormatter != null) {
+      value = rowFormatter.apply(row);
+
+    } else if (evaluator != null) {
       evaluator.update(row);
       value = evaluator.evaluate();
+
+    } else {
+      value = null;
     }
+
     return value;
   }
 
@@ -256,6 +307,10 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     this.filter = filter;
   }
 
+  public void setRowFormatter(RowFormatter rowFormatter) {
+    this.rowFormatter = rowFormatter;
+  }
+
   public void updateRelation(Long parentId) {
     this.relationId = parentId;
     requery();
@@ -267,7 +322,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     if (branch != null) {
       for (Long leaf : branch) {
         IsRow item = items.get(leaf);
-        getView().addItem(parentId, evaluate(item), item, false);
+        getView().addItem(parentId, format(item), item, false);
         addBranch(item.getId(), hierarchy, items);
       }
     }
@@ -317,9 +372,9 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
 
     String caption;
     if (addMode) {
-      caption = evaluate(getView().getSelectedItem());
+      caption = format(getView().getSelectedItem());
     } else {
-      caption = evaluate(getView().getParentItem(item));
+      caption = format(getView().getParentItem(item));
     }
 
     String styleName = (addMode ? RowFactory.DIALOG_STYLE : RowEditor.DIALOG_STYLE) + "-tree";
@@ -413,7 +468,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
 
     if (data != null) {
       String message = BeeUtils.joinWords(Localized.dictionary().delete(),
-          BeeUtils.bracket(evaluate(data)), "?");
+          BeeUtils.bracket(format(data)), "?");
 
       Global.confirmDelete(getCaption(), Icon.WARNING, Lists.newArrayList(message), () ->
           Queries.deleteRow(getViewName(), data.getId(), data.getVersion(),
@@ -434,12 +489,13 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     }
 
     Queries.getRowSet(getViewName(), null, flt, null, result -> {
-      if (evaluator == null) {
-        dataColumns = result.getColumns();
+      dataColumns = result.getColumns();
+      properties = result.getTableProperties();
+
+      if (evaluator == null && calculation != null) {
         evaluator = Evaluator.create(calculation, null, getDataColumns());
       }
 
-      properties = result.getTableProperties();
       getView().removeItems();
 
       if (result.isEmpty()) {

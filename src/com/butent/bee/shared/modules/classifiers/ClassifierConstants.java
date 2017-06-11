@@ -1,6 +1,5 @@
 package com.butent.bee.shared.modules.classifiers;
 
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 public final class ClassifierConstants {
@@ -382,8 +381,7 @@ public final class ClassifierConstants {
   public static final String QR_COMPANY = "qrCompany";
   public static final String QR_PERSON = "qrPerson";
 
-  public static final long DEFAULT_REMIND_ACTIONS_TIMER_TIMEOUT = TimeUtils.MILLIS_PER_HOUR;
-  public static final long DEFAULT_REMIND_TASKS_TIMER_TIMEOUT = TimeUtils.MILLIS_PER_MINUTE;
+  public static final String TREE_ITEM_CATEGORIES = "ItemCategoryTree";
 
   public static void register() {
     EnumUtils.register(ItemPrice.class);
