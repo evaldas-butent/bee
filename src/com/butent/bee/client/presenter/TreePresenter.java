@@ -27,6 +27,8 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Launchable;
+import com.butent.bee.shared.data.AbstractRow;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.CustomProperties;
@@ -37,8 +39,6 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.Operator;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -48,14 +48,15 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class TreePresenter extends AbstractPresenter implements CatchEvent.CatchHandler<IsRow>,
-    HasViewName {
+    HasViewName, Launchable {
 
   private final class CommitCallback implements RowCallback {
     private final boolean createMode;
@@ -98,16 +99,23 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
 
   private final HandlerRegistration catchHandler;
 
-  public TreePresenter(TreeView view, String viewName, String parentColumnName,
+  private Filter filter;
+
+  public TreePresenter(TreeView view, String viewName, Filter filter, String parentColumnName,
       String orderColumnName, String relationColumnName, Calculation calc, Element editorForm) {
+
     Assert.notNull(view);
     Assert.notEmpty(viewName);
 
     this.treeView = view;
+
     this.viewName = viewName;
+    this.filter = filter;
+
     this.parentColumnName = parentColumnName;
     this.orderColumnName = orderColumnName;
     this.relationColumnName = relationColumnName;
+
     this.editor = editorForm;
 
     String expr = "'ID=' + rowId";
@@ -118,11 +126,8 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
       this.calculation = new Calculation(calc.hasExpressionOrFunction() ? calc.getExpression()
           : expr, calc.getFunction());
     }
-    this.catchHandler = getView().addCatchHandler(this);
 
-    if (BeeUtils.isEmpty(relationColumnName)) {
-      requery();
-    }
+    this.catchHandler = getView().addCatchHandler(this);
   }
 
   public String evaluate(IsRow row) {
@@ -214,6 +219,13 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   }
 
   @Override
+  public void launch() {
+    if (BeeUtils.isEmpty(relationColumnName)) {
+      requery();
+    }
+  }
+
+  @Override
   public void onCatch(CatchEvent<IsRow> event) {
     IsRow item = event.getPacket();
     int parentIndex = DataUtils.getColumnIndex(parentColumnName, getDataColumns());
@@ -238,6 +250,10 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
 
   public void setEditorInterceptor(FormInterceptor editorInterceptor) {
     this.editorInterceptor = editorInterceptor;
+  }
+
+  public void setFilter(Filter filter) {
+    this.filter = filter;
   }
 
   public void updateRelation(Long parentId) {
@@ -409,11 +425,12 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   }
 
   private void requery() {
-    Filter flt = null;
+    Filter flt;
 
-    if (!BeeUtils.isEmpty(relationColumnName)) {
-      flt = Filter.compareWithValue(relationColumnName, Operator.EQ,
-          new LongValue(relationId == null ? BeeConst.UNDEF : relationId));
+    if (BeeUtils.isEmpty(relationColumnName)) {
+      flt = filter;
+    } else {
+      flt = Filter.and(filter, Filter.equals(relationColumnName, relationId));
     }
 
     Queries.getRowSet(getViewName(), null, flt, null, result -> {
@@ -421,6 +438,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         dataColumns = result.getColumns();
         evaluator = Evaluator.create(calculation, null, getDataColumns());
       }
+
       properties = result.getTableProperties();
       getView().removeItems();
 
@@ -428,27 +446,52 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         getView().afterRequery();
         return;
       }
+
       int parentIndex = result.getColumnIndex(parentColumnName);
 
-      if (Objects.equals(parentIndex, BeeConst.UNDEF)) {
+      if (BeeConst.isUndef(parentIndex)) {
         BeeKeeper.getScreen().notifySevere("Parent column not found", parentColumnName);
         getView().afterRequery();
         return;
       }
+
+      Map<Long, IsRow> items = result.getRows().stream()
+          .collect(Collectors.toMap(AbstractRow::getId, Function.identity()));
+
       Map<Long, List<Long>> hierarchy = new LinkedHashMap<>();
-      Map<Long, IsRow> items = new HashMap<>();
 
-      for (IsRow row : result.getRows()) {
-        Long parent = row.getLong(parentIndex);
-        List<Long> childs = hierarchy.get(parent);
-
-        if (childs == null) {
-          childs = new ArrayList<>();
-          hierarchy.put(parent, childs);
+      if (filter == null) {
+        for (IsRow row : result) {
+          Long parent = row.getLong(parentIndex);
+          hierarchy.computeIfAbsent(parent, k -> new ArrayList<>()).add(row.getId());
         }
-        childs.add(row.getId());
-        items.put(row.getId(), row);
+
+      } else {
+        Map<Long, Long> parents = result.getRows().stream()
+            .filter(row -> !Objects.equals(row.getId(), row.getLong(parentIndex)))
+            .collect(Collectors.toMap(AbstractRow::getId, row -> row.getLong(parentIndex)));
+
+        for (IsRow row : result) {
+          long id = row.getId();
+          Long parent = row.getLong(parentIndex);
+
+          boolean ok = !Objects.equals(id, parent);
+
+          if (ok && parent != null) {
+            for (Long p = parent; p != null; p = parents.get(p)) {
+              if (!parents.containsKey(p)) {
+                ok = false;
+                break;
+              }
+            }
+          }
+
+          if (ok) {
+            hierarchy.computeIfAbsent(parent, k -> new ArrayList<>()).add(id);
+          }
+        }
       }
+
       for (Long parent : hierarchy.keySet()) {
         if (!items.containsKey(parent)) {
           addBranch(parent, hierarchy, items);

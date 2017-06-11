@@ -10,7 +10,7 @@
 
   <DataTree caption="=itemCategories" viewName="CategoryTree" parentColumn="Parent">
     <calc>
-      <ui:expression>row.Name + ' [' + rowId + ']'</ui:expression>
+      <ui:expression>row.Name + ' [id=' + rowId + (row.Goods ? ', g' : '') + (row.Services ? ', s' : '') + ']'</ui:expression>
     </calc>
 
     <form>

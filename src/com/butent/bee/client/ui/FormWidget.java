@@ -147,6 +147,7 @@ import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasPercentageTag;
 import com.butent.bee.shared.data.HasRelatedCurrency;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Attributes;
@@ -1868,6 +1869,8 @@ public enum FormWidget {
 
       case DATA_TREE:
         String treeViewName = attributes.get(UiConstants.ATTR_VIEW_NAME);
+        String treeFilter = attributes.get(UiConstants.ATTR_FILTER);
+
         String treeFavoriteName = attributes.get(UiConstants.ATTR_FAVORITE);
         Element editForm = XmlUtils.getFirstChildElement(element, "form");
 
@@ -1875,8 +1878,12 @@ public enum FormWidget {
             editForm != null ? Action.parse(attributes.get(FormDescription.ATTR_DISABLED_ACTIONS))
                 : EnumSet.allOf(Action.class), treeViewName, treeFavoriteName);
 
+        Filter filter = BeeUtils.anyEmpty(treeViewName, treeFilter) ? null
+            : Data.getDataInfo(treeViewName).parseFilter(treeFilter,
+            BeeKeeper.getUser().getUserId());
+
         ((TreeView) widget).setViewPresenter(new TreePresenter((TreeView) widget,
-            treeViewName, attributes.get("parentColumn"),
+            treeViewName, filter, attributes.get("parentColumn"),
             attributes.get("orderColumn"), attributes.get("relationColumn"),
             XmlUtils.getCalculation(element, TAG_CALC), editForm));
         break;
