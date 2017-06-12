@@ -44,8 +44,8 @@
 
     <DataColumn name="Term" />
 
-    <DataColumn name="PaymentTime" editInPlace="true" />
-    <DataColumn name="Paid" editInPlace="true" >
+    <DataColumn name="PaymentTime" />
+    <DataColumn name="Paid" >
       <validation>
         <ui:function>
           if (cell.newValue > row.Amount) {
