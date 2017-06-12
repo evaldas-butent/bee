@@ -2640,7 +2640,6 @@ public class TransportModuleBean implements BeeModule {
     settings.setTableProperty(PROP_FREIGHTS, freights.serialize());
 
     SimpleRowSet cargoHandling = getFreightHandlingData(tripWhere, true);
-
     if (!DataUtils.isEmpty(cargoHandling)) {
       settings.setTableProperty(PROP_CARGO_HANDLING, cargoHandling.serialize());
     }
@@ -2716,7 +2715,7 @@ public class TransportModuleBean implements BeeModule {
     String als = "tmpSubQuery";
 
     return qs.getData(new SqlSelect()
-        .addFields(als, COL_CARGO, VAR_UNLOADING)
+        .addFields(als, COL_CARGO, COL_CARGO_TRIP, VAR_UNLOADING)
         .addFields(TBL_CARGO_PLACES, COL_PLACE_DATE, COL_PLACE_COUNTRY, COL_PLACE_CITY,
             COL_PLACE_ADDRESS, COL_PLACE_POST_INDEX, COL_PLACE_NUMBER)
         .addFrom(TBL_CARGO_PLACES)
@@ -2787,17 +2786,16 @@ public class TransportModuleBean implements BeeModule {
         .addOrder(TBL_ORDERS, COL_ORDER_DATE, COL_ORDER_NO);
 
     SimpleRowSet data = qs.getData(query);
-
     if (DataUtils.isEmpty(data)) {
       return ResponseObject.response(settings);
     }
     settings.setTableProperty(PROP_ORDER_CARGO, data.serialize());
 
     SimpleRowSet cargoHandling = getFreightHandlingData(cargoWhere, false);
-
     if (!DataUtils.isEmpty(cargoHandling)) {
       settings.setTableProperty(PROP_CARGO_HANDLING, cargoHandling.serialize());
     }
+
     return ResponseObject.response(settings);
   }
 
@@ -3333,10 +3331,10 @@ public class TransportModuleBean implements BeeModule {
     settings.setTableProperty(PROP_FREIGHTS, freights.serialize());
 
     SimpleRowSet cargoHandling = getFreightHandlingData(tripWhere, true);
-
     if (!DataUtils.isEmpty(cargoHandling)) {
       settings.setTableProperty(PROP_CARGO_HANDLING, cargoHandling.serialize());
     }
+
     return ResponseObject.response(settings);
   }
 

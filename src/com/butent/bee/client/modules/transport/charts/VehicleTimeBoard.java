@@ -258,8 +258,9 @@ abstract class VehicleTimeBoard extends ChartBase {
 
               if (freightMatch && placeMatcher != null) {
                 boolean ok = placeMatcher.matches(freight);
-                if (!ok && hasCargoHandling(freight.getCargoId())) {
-                  ok = placeMatcher.matchesAnyOf(getCargoHandling(freight.getCargoId()));
+                if (!ok) {
+                  ok = placeMatcher.matchesAnyOf(getCargoHandling(freight.getCargoId(),
+                      freight.getCargoTripId()));
                 }
 
                 if (!ok) {
@@ -424,7 +425,9 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     if (!DataUtils.isEmpty(srs)) {
       for (SimpleRow row : srs) {
-        Pair<JustDate, JustDate> handlingSpan = getCargoHandlingSpan(row.getLong(COL_CARGO));
+        Pair<JustDate, JustDate> handlingSpan = getCargoHandlingSpan(row.getLong(COL_CARGO),
+            row.getLong(COL_CARGO_TRIP_ID));
+
         freights.put(row.getLong(COL_TRIP_ID),
             Freight.create(row, handlingSpan.getA(), handlingSpan.getB()));
       }
@@ -656,8 +659,11 @@ abstract class VehicleTimeBoard extends ChartBase {
             placeData.add(unloading);
           }
 
-          if (hasCargoHandling(freight.getCargoId())) {
-            for (CargoHandling ch : getCargoHandling(freight.getCargoId())) {
+          Collection<CargoHandling> cargoHandling =
+              getCargoHandling(freight.getCargoId(), freight.getCargoTripId());
+
+          if (!BeeUtils.isEmpty(cargoHandling)) {
+            for (CargoHandling ch : cargoHandling) {
               loading = Places.getLoadingPlaceInfo(ch);
               if (!BeeUtils.isEmpty(loading)) {
                 loadData.add(loading);
@@ -900,10 +906,6 @@ abstract class VehicleTimeBoard extends ChartBase {
     if (freight.isEditable()) {
       DndHelper.makeSource(panel, DATA_TYPE_FREIGHT, freight, STYLE_FREIGHT_DRAG);
       freight.makeTarget(panel, STYLE_FREIGHT_DRAG_OVER);
-    }
-
-    if (hasCargoHandling(freight.getCargoId())) {
-      styleItemHasHandling(panel);
     }
 
     renderCargoShipment(panel, freight, freight.getTripTitle(), STYLE_TRIP_INFO);
