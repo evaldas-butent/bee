@@ -56,8 +56,8 @@ public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandle
       erpAction.setTitle(Localized.dictionary().trSendToERP());
       presenter.getHeader().addCommandItem(erpAction);
     }
-    payAction.setTitle(Localized.dictionary().pay());
-    presenter.getHeader().addCommandItem(payAction);
+    //payAction.setTitle(Localized.dictionary().pay());
+    //presenter.getHeader().addCommandItem(payAction); //Task 31021
   }
 
   @Override
