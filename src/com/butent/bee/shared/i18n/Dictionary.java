@@ -6570,6 +6570,8 @@ public interface Dictionary {
 
   default String trTripNo() {return g("trTripNo");}
 
+  default String trTripNotes() {return g("trTripNotes");}
+
   default String trTripPurchaseInvoices() {return g("trTripPurchaseInvoices");}
 
   default String trTripRoutes() {return g("trTripRoutes");}

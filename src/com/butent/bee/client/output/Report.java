@@ -401,7 +401,7 @@ public enum Report implements HasWidgetSupplier {
           new ReportNumericItem(COL_SPEEDOMETER_AFTER, loc.trSpeedometerAfter()),
           new ReportNumericItem(COL_FUEL_BEFORE, loc.trFuelBalanceBefore()).setPrecision(3),
           new ReportNumericItem(COL_FUEL_AFTER, loc.trFuelBalanceAfter()).setPrecision(3),
-          new ReportTextItem(COL_NOTES, loc.note()),
+          new ReportTextItem(COL_NOTES, loc.trTripNotes()),
           new ReportTextItem(COL_ITEM, loc.productService()),
           new ReportNumericItem(TradeConstants.COL_TRADE_ITEM_QUANTITY,
               loc.quantity()).setPrecision(2),
