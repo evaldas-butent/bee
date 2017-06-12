@@ -1217,6 +1217,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   public void clearSelection() {
     if (!getSelectedRows().isEmpty()) {
       getSelectedRows().clear();
+      getRenderedRows().clear();
+
       fireSelectionCountChange();
     }
   }
@@ -1346,6 +1348,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       return ps;
     }
     return BeeConst.UNDEF;
+  }
+
+  public String getActiveColumnId() {
+    return isColumnWithinBounds(getActiveColumnIndex())
+        ? getColumnInfo(getActiveColumnIndex()).getColumnId() : null;
   }
 
   @Override

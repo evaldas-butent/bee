@@ -63,9 +63,10 @@ class AnalysisFilter {
 
     map.forEach((k, v) -> {
       if (k.equals(employeeColumnName)) {
-        conditions.add(SqlUtils.equals(source, employeeColumnName, v));
+        conditions.add(SqlUtils.equalsOrIsNull(source, employeeColumnName, v));
+
       } else if (dimensionColumnNames.contains(k)) {
-        conditions.add(SqlUtils.equals(source, k, v));
+        conditions.add(SqlUtils.equalsOrIsNull(source, k, v));
       }
     });
 

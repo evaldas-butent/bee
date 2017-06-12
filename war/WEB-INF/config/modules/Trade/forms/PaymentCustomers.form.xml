@@ -2,9 +2,31 @@
 <!DOCTYPE Form []>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="PaymentCustomers" caption="=paymentCustomers"
 >
   <FlowPanel class="flexBox-vertical">
+    <xi:include href="widgets/PaymentBody.widget.xml" />
+
+    <TabbedPages name="pages" class="flexible">
+      <page key="TradeReceivables">
+        <text>=trdAccountsReceivable</text>
+        <GridPanel name="TradeReceivables" paging="false" />
+      </page>
+      <page key="OutstandingPrepaymentReceived">
+        <text>=prepaymentReceived</text>
+        <GridPanel name="OutstandingPrepaymentReceived" paging="false" />
+      </page>
+
+      <page key="TradePayables">
+        <text>=trdAccountsPayable</text>
+        <GridPanel name="TradePayables" paging="false" />
+      </page>
+      <page key="OutstandingPrepaymentGiven">
+        <text>=prepaymentGiven</text>
+        <GridPanel name="OutstandingPrepaymentGiven" paging="false" />
+      </page>
+    </TabbedPages>
   </FlowPanel>
 </f:Form>

@@ -2028,30 +2028,24 @@ public class ClassifiersModuleBean implements BeeModule {
   private IsCondition getCarDiscountCondition(RequestInfo reqInfo) {
     Long model = reqInfo.getParameterLong(COL_MODEL);
     JustDate prodDate = TimeUtils.toDateOrNull(reqInfo.getParameterInt(COL_PRODUCTION_DATE));
-    Long job = reqInfo.getParameterLong(COL_JOB);
 
-    if (!BeeUtils.anyNotNull(model, prodDate, job)) {
+    if (!BeeUtils.anyNotNull(model, prodDate)) {
       return null;
     }
     if (BeeUtils.isPositive(reqInfo.getParameterInt(Service.VAR_EXPLAIN))) {
       explain(SVC_GET_PRICE_AND_DISCOUNT, TBL_CAR_DISCOUNTS,
-          BeeUtils.joinOptions(COL_MODEL, model, COL_PRODUCTION_DATE, prodDate, COL_JOB, job));
+          BeeUtils.joinOptions(COL_MODEL, model, COL_PRODUCTION_DATE, prodDate));
     }
     HasConditions carDiscountWhere = SqlUtils.and();
 
-    Map<String, Long> crit = new HashMap<>();
-    crit.put(COL_MODEL, model);
-    crit.put(COL_JOB, job);
+    IsCondition clause = SqlUtils.isNull(TBL_CAR_DISCOUNTS, COL_MODEL);
 
-    crit.forEach((fld, id) -> {
-      IsCondition clause = SqlUtils.isNull(TBL_CAR_DISCOUNTS, fld);
+    if (DataUtils.isId(model)) {
+      clause = SqlUtils.or(clause, SqlUtils.equals(TBL_CAR_DISCOUNTS, COL_MODEL, model));
+    }
+    carDiscountWhere.add(clause);
 
-      if (DataUtils.isId(id)) {
-        clause = SqlUtils.or(clause, SqlUtils.equals(TBL_CAR_DISCOUNTS, fld, id));
-      }
-      carDiscountWhere.add(clause);
-    });
-    IsCondition clause = SqlUtils.isNull(TBL_CAR_DISCOUNTS, COL_PRODUCED_FROM);
+    clause = SqlUtils.isNull(TBL_CAR_DISCOUNTS, COL_PRODUCED_FROM);
 
     if (Objects.nonNull(prodDate)) {
       clause = SqlUtils.or(clause,

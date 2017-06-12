@@ -7,7 +7,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.ClosingHandler;
 
-import static com.butent.bee.shared.Service.PROPERTY_ACTIVE_LOCALES;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.animation.RafCallback;
@@ -51,7 +50,6 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -112,7 +110,7 @@ public class Bee implements EntryPoint, ClosingHandler {
     return !(getState() == State.UNLOADING || getState() == State.CLOSED);
   }
 
-  public static  void saveWorkspace() {
+  public static void saveWorkspace() {
     if (BeeKeeper.getUser().workspaceContinue() && getState() == State.INITIALIZED) {
       BeeKeeper.getStorage().set(getLastWorkspaceKey(), BeeKeeper.getScreen().serialize());
     }
@@ -124,8 +122,8 @@ public class Bee implements EntryPoint, ClosingHandler {
 
     if (BeeKeeper.getUser().workspaceContinue()) {
       String workspace = BeeKeeper.getStorage().hasItem(getLastWorkspaceKey())
-        ? BeeKeeper.getStorage().get(getLastWorkspaceKey())
-        : BeeKeeper.getUser().getLastWorkspace();
+          ? BeeKeeper.getStorage().get(getLastWorkspaceKey())
+          : BeeKeeper.getUser().getLastWorkspace();
 
       if (!BeeUtils.isEmpty(workspace) && !BeeConst.EMPTY.equals(workspace)) {
         if (Workspace.isForced(onStartup)) {
@@ -187,10 +185,12 @@ public class Bee implements EntryPoint, ClosingHandler {
           RightsUtils.setViewModules(Codec.deserializeHashMap(value));
           break;
 
-        case PROPERTY_ACTIVE_LOCALES:
-          SupportedLocale.ACTIVE_LOCALES.clear();
-          SupportedLocale.ACTIVE_LOCALES
-              .addAll(Arrays.asList(Codec.beeDeserializeCollection(value)));
+        case Service.PROPERTY_DEFAULT_LOCALE:
+          SupportedLocale.setUserDefault(value);
+          break;
+
+        case Service.PROPERTY_ACTIVE_LOCALES:
+          SupportedLocale.setActiveLocales(Codec.deserializeList(value));
           break;
 
         case PRM_CURRENCY:

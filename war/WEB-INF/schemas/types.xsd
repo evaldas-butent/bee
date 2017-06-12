@@ -188,6 +188,7 @@
       <xs:enumeration value="id" />
       <xs:enumeration value="version" />
       <xs:enumeration value="custom" />
+      <xs:enumeration value="customDateTime" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -271,7 +272,6 @@
       <xs:enumeration value="Calendars" />
       <xs:enumeration value="CalExecutorGroups" />
       <xs:enumeration value="CarBundleItems" />
-      <xs:enumeration value="CarBundleJobs" />
       <xs:enumeration value="CarBundles" />
       <xs:enumeration value="CarEmissionStandards" />
       <xs:enumeration value="CarDiscounts" />
@@ -290,6 +290,7 @@
       <xs:enumeration value="CargoTypes" />
       <xs:enumeration value="CargoUnloading" />
       <xs:enumeration value="CarFiles" />
+      <xs:enumeration value="CarItems" />
       <xs:enumeration value="CarJobGroups" />
       <xs:enumeration value="CarJobModels" />
       <xs:enumeration value="CarJobProgress" />
@@ -302,7 +303,6 @@
       <xs:enumeration value="CarServiceEvents" />
       <xs:enumeration value="CarServiceFiles" />
       <xs:enumeration value="CarServiceItems" />
-      <xs:enumeration value="CarServiceJobs" />
       <xs:enumeration value="CarServiceOrders" />
       <xs:enumeration value="CarServiceSymptoms" />
       <xs:enumeration value="CarStatus" />

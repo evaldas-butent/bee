@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
@@ -23,10 +23,11 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -45,77 +46,87 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
 
   @Override
   public boolean beforeAddRow(final GridPresenter presenter, boolean copy) {
-    DataInfo info = Data.getDataInfo(VIEW_DOCUMENTS);
-    BeeRow docRow = RowFactory.createEmptyRow(info, true);
+    FormView parentForm = null;
+    IsRow parentRow = null;
+    String parentViewName = null;
+    boolean relationEnsured = false;
 
+    DataInfo info = Data.getDataInfo(VIEW_DOCUMENTS);
+    DataInfo relInfo = Data.getDataInfo(VIEW_RELATED_DOCUMENTS);
+    BeeRow docRow = RowFactory.createEmptyRow(info, true);
     GridView gridView = presenter.getGridView();
 
-    FormView parentForm = null;
     if (gridView != null) {
       parentForm = ViewHelper.getForm(gridView.asWidget());
     }
-
-    IsRow parentRow = null;
     if (parentForm != null) {
       parentRow = parentForm.getActiveRow();
     }
+    if (parentForm != null) {
+      parentViewName = parentForm.getViewName();
+    }
+    if (parentRow != null && !BeeUtils.isEmpty(parentViewName)) {
 
-    if (parentRow != null
-        && BeeUtils.inList(parentForm.getFormName(), ProjectConstants.FORM_PROJECT,
-                              TransportConstants.FORM_ORDER, TransportConstants.FORM_CARGO)) {
+      switch (parentViewName) {
+        case ProjectConstants.VIEW_PROJECTS:
+          RelationUtils.updateRow(info, COL_DOCUMENT_COMPANY, docRow,
+            Data.getDataInfo(parentViewName), parentRow, false);
+          Data.setValue(VIEW_DOCUMENTS, docRow, COL_DOCUMENT_COMPANY,
+            Data.getLong(parentViewName, parentRow, ProjectConstants.COL_COMAPNY));
+          break;
+        case ClassifierConstants.VIEW_COMPANIES:
+          RelationUtils.updateRow(info, COL_DOCUMENT_COMPANY, docRow,
+            Data.getDataInfo(parentViewName), parentRow, false);
+          Data.setValue(VIEW_DOCUMENTS, docRow, COL_DOCUMENT_COMPANY, parentRow.getId());
+          relationEnsured = true;
+          break;
+        default:
+          if (relInfo == null) {
+            break;
+          }
 
-      int idxCmp = info.getColumnIndex(COL_DOCUMENT_COMPANY);
-      int idxCmpName = info.getColumnIndex(ALS_DOCUMENT_COMPANY_NAME);
-      int idxParCmp = BeeConst.UNDEF;
-      int idxParCmpName = BeeConst.UNDEF;
-      int idxParCmpTypeName = BeeConst.UNDEF;
+          for (String col : info.getColumnNames(false)) {
+            if (BeeUtils.same(parentViewName, relInfo.getRelation(col))) {
+              relationEnsured = true;
+              break;
+            }
+          }
 
-      if (BeeUtils.same(parentForm.getFormName(), ProjectConstants.FORM_PROJECT)) {
-        idxParCmp = parentForm.getDataIndex(ProjectConstants.COL_COMAPNY);
-        idxParCmpName = parentForm.getDataIndex(ProjectConstants.ALS_PROJECT_COMPANY_NAME);
-        idxParCmpTypeName = parentForm.getDataIndex(ProjectConstants.ALS_COMPANY_TYPE_NAME);
-
-      } else if (BeeUtils.in(parentForm.getFormName(),
-                            TransportConstants.FORM_ORDER, TransportConstants.FORM_CARGO)) {
-        idxParCmp = parentForm.getDataIndex(TransportConstants.COL_CUSTOMER);
-        idxParCmpName = parentForm.getDataIndex(TransportConstants.COL_CUSTOMER_NAME);
-        idxParCmpTypeName = parentForm.getDataIndex(TransportConstants.ALS_CUSTOMER_TYPE_NAME);
-
-      }
-
-      if (!BeeConst.isUndef(idxCmp) && !BeeConst.isUndef(idxCmpName)
-          && !BeeConst.isUndef(idxParCmp) && !BeeConst.isUndef(idxParCmpName)) {
-
-        docRow.setValue(idxCmp, parentRow.getLong(idxParCmp));
-        docRow.setValue(idxCmpName, BeeConst.isUndef(idxParCmpTypeName)
-                                      ? parentRow.getString(idxParCmpName)
-                                      : BeeUtils.joinWords(parentRow.getString(idxParCmpName),
-                                          parentRow.getString(idxParCmpTypeName)));
+          if (relationEnsured) {
+            docRow.setProperty(Relations.PFX_RELATED + parentViewName,
+              DataUtils.buildIdList(parentRow.getId()));
+          }
       }
     }
 
-    RowFactory.createRow(info, docRow, Modality.ENABLED, new RowCallback() {
-      @Override
-      public void onSuccess(final BeeRow result) {
-        final long docId = result.getId();
+    if (!relationEnsured) {
+      RowFactory.createRow(info, docRow, Modality.ENABLED, new RowCallback() {
+        @Override
+        public void onSuccess(final BeeRow result) {
+          final long docId = result.getId();
 
-        presenter.getGridView().ensureRelId(new IdCallback() {
-          @Override
-          public void onSuccess(Long relId) {
-            Queries.insert(AdministrationConstants.VIEW_RELATIONS,
-                Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
-                    Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
-                Queries.asList(docId, relId), null, new RowCallback() {
-                  @Override
-                  public void onSuccess(BeeRow row) {
-                    presenter.handleAction(Action.REFRESH);
-                    ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
-                  }
-                });
-          }
-        });
-      }
-    });
+          presenter.getGridView().ensureRelId(relId
+            -> Queries.insert(AdministrationConstants.VIEW_RELATIONS,
+            Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
+              Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
+            Queries.asList(docId, relId), null, new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow row) {
+                presenter.handleAction(Action.REFRESH);
+                ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
+              }
+            }));
+        }
+      });
+    } else {
+      RowFactory.createRow(info, docRow, Modality.ENABLED, new RowCallback() {
+        @Override
+        public void onSuccess(final BeeRow result) {
+          presenter.handleAction(Action.REFRESH);
+          ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
+        }
+      });
+    }
 
     return false;
   }

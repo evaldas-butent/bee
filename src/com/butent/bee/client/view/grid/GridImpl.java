@@ -1412,6 +1412,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public boolean hasSelection() {
+    return !getGrid().getSelectedRows().isEmpty();
+  }
+
+  @Override
   public boolean hasNotifications() {
     return getNotification() != null && getNotification().isActive();
   }
@@ -1737,6 +1742,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       return false;
     }
 
+    if (getViewPresenter() == null) {
+      return false;
+    }
+
     if (isChild()) {
       if (!DataUtils.isId(getRelId())) {
         return false;
@@ -1751,7 +1760,12 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         return false;
       }
 
-    } else if (getViewPresenter() == null || getViewPresenter().hasFilter()) {
+      if (BeeUtils.anyNotNull(getViewPresenter().getDataProvider().getImmutableFilter(),
+          getViewPresenter().getDataProvider().getUserFilter())) {
+        return false;
+      }
+
+    } else if (getViewPresenter().hasFilter()) {
       return false;
     }
 
