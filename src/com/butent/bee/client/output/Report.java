@@ -805,7 +805,7 @@ public enum Report implements HasWidgetSupplier {
 
           new ReportTextItem(TradeConstants.COL_TRADE_DEBT, dict.trdItemStock()),
 
-          new ReportTextItem(COL_LOCATION_NAME, dict.object()),
+          new ReportTextItem(COL_LOCATION_NAME, dict.objectLocation()),
 
           new ReportEnumItem(COL_LOCATION_STATUS,
               Data.getColumnLabel(VIEW_LOCATIONS, COL_LOCATION_STATUS), ObjectStatus.class),
@@ -837,7 +837,7 @@ public enum Report implements HasWidgetSupplier {
     @Override
     public LinkedHashMap<String, Editor> getReportParams() {
       LinkedHashMap<String, Editor> params = new LinkedHashMap<>();
-      params.put(COL_CURRENCY, Report.getCurrencyEditor());
+      params.put(COL_CURRENCY, getCurrencyEditor());
       return params;
     }
 

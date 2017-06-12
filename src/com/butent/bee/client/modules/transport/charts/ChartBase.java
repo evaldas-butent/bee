@@ -380,19 +380,53 @@ public abstract class ChartBase extends TimeBoard implements HasState {
 
   protected abstract boolean filter(FilterType filterType);
 
-  protected Collection<CargoHandling> getCargoHandling(Long cargoId) {
-    return cargoHandling.get(cargoId);
+  protected Collection<CargoHandling> getCargoHandling(Long cargoId, Long cargoTripId) {
+    if (!hasCargoHandling(cargoId)) {
+      return Collections.emptyList();
+
+    } else if (cargoTripId == null) {
+      return cargoHandling.get(cargoId);
+
+    } else {
+      Collection<CargoHandling> input = cargoHandling.get(cargoId);
+      List<CargoHandling> result = new ArrayList<>();
+
+      boolean hasLoading = false;
+      boolean hasUnloading = false;
+
+      for (CargoHandling ch : input) {
+        if (Objects.equals(cargoTripId, ch.getCargoTripId())) {
+          if (ch.isLoading()) {
+            hasLoading = true;
+          } else {
+            hasUnloading = true;
+          }
+
+          result.add(ch);
+        }
+      }
+
+      if (!hasLoading || !hasUnloading) {
+        for (CargoHandling ch : input) {
+          if (ch.getCargoTripId() == null) {
+            if (!hasLoading && ch.isLoading() || !hasUnloading && ch.isUnloading()) {
+              result.add(ch);
+            }
+          }
+        }
+      }
+
+      return result;
+    }
   }
 
-  protected Pair<JustDate, JustDate> getCargoHandlingSpan(Long cargoId) {
+  protected Pair<JustDate, JustDate> getCargoHandlingSpan(Long cargoId, Long cargoTripId) {
     JustDate minLoad = null;
     JustDate maxUnload = null;
 
-    if (hasCargoHandling(cargoId)) {
-      for (CargoHandling ch : getCargoHandling(cargoId)) {
-        minLoad = BeeUtils.min(minLoad, ch.getLoadingDate());
-        maxUnload = BeeUtils.max(maxUnload, ch.getUnloadingDate());
-      }
+    for (CargoHandling ch : getCargoHandling(cargoId, cargoTripId)) {
+      minLoad = BeeUtils.min(minLoad, ch.getLoadingDate());
+      maxUnload = BeeUtils.max(maxUnload, ch.getUnloadingDate());
     }
 
     return Pair.of(minLoad, maxUnload);
@@ -593,6 +627,7 @@ public abstract class ChartBase extends TimeBoard implements HasState {
 
   protected void renderCargoShipment(HasWidgets panel, OrderCargo cargo, String parentTitle,
       String styleInfo) {
+
     if (panel == null || cargo == null) {
       return;
     }
@@ -836,15 +871,13 @@ public abstract class ChartBase extends TimeBoard implements HasState {
       result.put(cargo.getUnloadingDate(), new CargoEvent(cargo, false));
     }
 
-    if (hasCargoHandling(cargo.getCargoId())) {
-      for (CargoHandling ch : getCargoHandling(cargo.getCargoId())) {
-        if (ch.getLoadingDate() != null && range.contains(ch.getLoadingDate())) {
-          result.put(ch.getLoadingDate(), new CargoEvent(cargo, ch, true));
-        }
+    for (CargoHandling ch : getCargoHandling(cargo.getCargoId(), cargo.getCargoTripId())) {
+      if (ch.getLoadingDate() != null && range.contains(ch.getLoadingDate())) {
+        result.put(ch.getLoadingDate(), new CargoEvent(cargo, ch, true));
+      }
 
-        if (ch.getUnloadingDate() != null && range.contains(ch.getUnloadingDate())) {
-          result.put(ch.getUnloadingDate(), new CargoEvent(cargo, ch, false));
-        }
+      if (ch.getUnloadingDate() != null && range.contains(ch.getUnloadingDate())) {
+        result.put(ch.getUnloadingDate(), new CargoEvent(cargo, ch, false));
       }
     }
 

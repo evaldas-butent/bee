@@ -155,20 +155,20 @@ final class FreightExchange extends ChartBase {
       Global.choiceWithCancel(Localized.dictionary().newTransportationOrder(), null,
           Lists.newArrayList(Localized.dictionary().inputFull(),
               Localized.dictionary().inputSimple()), value -> {
-                switch (value) {
-                  case 0:
-                    RowFactory.createRow(VIEW_ORDERS, Modality.DISABLED);
-                    break;
+            switch (value) {
+              case 0:
+                RowFactory.createRow(VIEW_ORDERS, Modality.DISABLED);
+                break;
 
-                  case 1:
-                    DataInfo dataInfo = Data.getDataInfo(VIEW_ORDER_CARGO);
-                    BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
-                    RowFactory.createRow(FORM_NEW_SIMPLE_ORDER,
-                        Localized.dictionary().newTransportationOrder(), dataInfo, row,
-                        Modality.DISABLED, null);
-                    break;
-                }
-              });
+              case 1:
+                DataInfo dataInfo = Data.getDataInfo(VIEW_ORDER_CARGO);
+                BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
+                RowFactory.createRow(FORM_NEW_SIMPLE_ORDER,
+                    Localized.dictionary().newTransportationOrder(), dataInfo, row,
+                    Modality.DISABLED, null);
+                break;
+            }
+          });
 
     } else {
       super.handleAction(action);
@@ -193,8 +193,9 @@ final class FreightExchange extends ChartBase {
 
       if (match && placeMatcher != null) {
         boolean ok = placeMatcher.matches(item);
-        if (!ok && hasCargoHandling(item.getCargoId())) {
-          ok = placeMatcher.matchesAnyOf(getCargoHandling(item.getCargoId()));
+        if (!ok) {
+          ok = placeMatcher.matchesAnyOf(getCargoHandling(item.getCargoId(),
+              item.getCargoTripId()));
         }
 
         if (!ok) {
@@ -325,7 +326,8 @@ final class FreightExchange extends ChartBase {
 
     if (!DataUtils.isEmpty(srs)) {
       for (SimpleRow row : srs) {
-        Pair<JustDate, JustDate> handlingSpan = getCargoHandlingSpan(row.getLong(COL_CARGO_ID));
+        Pair<JustDate, JustDate> handlingSpan = getCargoHandlingSpan(row.getLong(COL_CARGO_ID),
+            null);
         items.add(OrderCargo.create(row, handlingSpan.getA(), handlingSpan.getB()));
       }
 
@@ -415,19 +417,17 @@ final class FreightExchange extends ChartBase {
         placeData.add(unloading);
       }
 
-      if (hasCargoHandling(item.getCargoId())) {
-        for (CargoHandling ch : getCargoHandling(item.getCargoId())) {
-          loading = Places.getLoadingPlaceInfo(ch);
-          if (!BeeUtils.isEmpty(loading)) {
-            loadData.add(loading);
-            placeData.add(loading);
-          }
+      for (CargoHandling ch : getCargoHandling(item.getCargoId(), item.getCargoTripId())) {
+        loading = Places.getLoadingPlaceInfo(ch);
+        if (!BeeUtils.isEmpty(loading)) {
+          loadData.add(loading);
+          placeData.add(loading);
+        }
 
-          unloading = Places.getUnloadingPlaceInfo(ch);
-          if (!BeeUtils.isEmpty(unloading)) {
-            unloadData.add(unloading);
-            placeData.add(unloading);
-          }
+        unloading = Places.getUnloadingPlaceInfo(ch);
+        if (!BeeUtils.isEmpty(unloading)) {
+          unloadData.add(unloading);
+          placeData.add(unloading);
         }
       }
     }
@@ -741,7 +741,7 @@ final class FreightExchange extends ChartBase {
 
       if (event.isFinished()
           && updateSettings(COL_FX_PIXELS_PER_CUSTOMER, customerPx, COL_FX_PIXELS_PER_ORDER,
-              orderPx)) {
+          orderPx)) {
         setCustomerWidth(customerPx);
         setOrderWidth(orderPx);
       }

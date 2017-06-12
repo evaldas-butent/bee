@@ -7,12 +7,11 @@
   <Fields>
     <Enum name="Kind" notNull="true" key="WorkScheduleKind" label="=kind" />
     <Relation name="Object" notNull="true" relation="Locations" cascade="DELETE"
-              label="=object" />
+              label="=objectLocation" />
     <Relation name="Employee" notNull="true" relation="Employees" cascade="DELETE"
       label="=employee" />
 
     <Date name="Lock" notNull="true" label="=ordApprove" />
-    <Date name="Exported"  label="=Exported" />
   </Fields>
   <Constraints>
     <Unique fields="Object Kind Employee Lock"/>

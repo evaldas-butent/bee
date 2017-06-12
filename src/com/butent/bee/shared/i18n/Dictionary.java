@@ -2944,6 +2944,8 @@ public interface Dictionary {
 
   default String finBudgetNew() {return g("finBudgetNew");}
 
+  default String finBudgetRepeatRight() {return g("finBudgetRepeatRight");}
+
   default String finBudgetShowDimension(Object p0) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{0}", p0);
@@ -2993,6 +2995,8 @@ public interface Dictionary {
   default String finDefaultAccounts() {return g("finDefaultAccounts");}
 
   default String finDefaultJournal() {return g("finDefaultJournal");}
+
+  default String finDischargeAccount() {return g("finDischargeAccount");}
 
   default String finDistribution() {return g("finDistribution");}
 
@@ -3087,6 +3091,8 @@ public interface Dictionary {
   default String finIndicatorPrimary() {return g("finIndicatorPrimary");}
 
   default String finIndicatorPrimaryNew() {return g("finIndicatorPrimaryNew");}
+
+  default String finIndicatorRatio() {return g("finIndicatorRatio");}
 
   default String finIndicatorScale() {return g("finIndicatorScale");}
 
@@ -3892,6 +3898,8 @@ public interface Dictionary {
 
   default String newObject() {return g("newObject");}
 
+  default String newObjectLocation() {return g("newObjectLocation");}
+
   default String newOffer() {return g("newOffer");}
 
   default String newOrder() {return g("newOrder");}
@@ -4019,6 +4027,10 @@ public interface Dictionary {
   default String objectData() {return g("objectData");}
 
   default String objectField() {return g("objectField");}
+
+  default String objectLocation() {return g("objectLocation");}
+
+  default String objectLocations() {return g("objectLocations");}
 
   default String objectMenu() {return g("objectMenu");}
 
@@ -4180,6 +4192,12 @@ public interface Dictionary {
 
   default String parameterName() {return g("parameterName");}
 
+  default String parameterNotFound(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("parameterNotFound"), _m);
+  }
+
   default String parameterType() {return g("parameterType");}
 
   default String parameters() {return g("parameters");}
@@ -4202,7 +4220,23 @@ public interface Dictionary {
 
   default String paymentCustomers() {return g("paymentCustomers");}
 
+  default String paymentDischargeAmount() {return g("paymentDischargeAmount");}
+
+  default String paymentDischargeDebtCaption() {return g("paymentDischargeDebtCaption");}
+
+  default String paymentDischargeDebtCommand() {return g("paymentDischargeDebtCommand");}
+
+  default String paymentDischargeDebtQuestion() {return g("paymentDischargeDebtQuestion");}
+
+  default String paymentDischargePrepaymentCommand() {return g("paymentDischargePrepaymentCommand");}
+
+  default String paymentDischargePrepaymentQuestion() {return g("paymentDischargePrepaymentQuestion");}
+
   default String paymentDueDate() {return g("paymentDueDate");}
+
+  default String paymentEnterAccountOrType() {return g("paymentEnterAccountOrType");}
+
+  default String paymentSubmitQuestion() {return g("paymentSubmitQuestion");}
 
   default String paymentSuppliers() {return g("paymentSuppliers");}
 
@@ -4808,6 +4842,8 @@ public interface Dictionary {
   default String prmProjectCommonRate() {return g("prmProjectCommonRate");}
 
   default String prmProjectHourUnit() {return g("prmProjectHourUnit");}
+
+  default String prmRESTEarningsFundsOnly() {return g("prmRESTEarningsFundsOnly");}
 
   default String prmReturnedActStatus() {return g("prmReturnedActStatus");}
 
@@ -5889,6 +5925,8 @@ public interface Dictionary {
   default String trContractMailContentText() {return g("trContractMailContentText");}
 
   default String trContractPrinting() {return g("trContractPrinting");}
+
+  default String trCopyOrder() {return g("trCopyOrder");}
 
   default String trCountryNorm() {return g("trCountryNorm");}
 

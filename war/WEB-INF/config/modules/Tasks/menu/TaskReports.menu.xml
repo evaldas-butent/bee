@@ -4,5 +4,5 @@
 name="TaskReports" label="=reports" order="10" parent="Tasks" data="Tasks" separator="true"
 >
   <Item name="TaskDurations" label="=crmTaskDurations" service="grid" parameters="TaskDurations" />
-  <Item name="TaskReports" label="=crmTaskReports" service="report"  parameters="TaskReport" module="Administration"/>
+  <Item name="TaskReports" label="=crmTaskReports" service="report"  parameters="TaskReport" />
 </Entry>

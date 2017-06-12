@@ -3,13 +3,16 @@ package com.butent.bee.shared.modules.finance.analysis;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.modules.finance.FinanceConstants;
 import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 
 public final class AnalysisValue implements BeeSerializable {
 
@@ -82,7 +85,7 @@ public final class AnalysisValue implements BeeSerializable {
   }
 
   private static String format(double value) {
-    return BeeUtils.toString(value);
+    return BeeUtils.toString(value, FinanceConstants.ANALYSIS_MAX_SCALE);
   }
 
   private enum Serial {
@@ -136,8 +139,24 @@ public final class AnalysisValue implements BeeSerializable {
     return columnSplit;
   }
 
+  public Set<AnalysisSplitType> getColumnSplitTypes() {
+    Set<AnalysisSplitType> types = EnumSet.noneOf(AnalysisSplitType.class);
+    if (!columnSplit.isEmpty()) {
+      types.addAll(columnSplit.keySet());
+    }
+    return types;
+  }
+
   public Map<AnalysisSplitType, AnalysisSplitValue> getRowSplit() {
     return rowSplit;
+  }
+
+  public Set<AnalysisSplitType> getRowSplitTypes() {
+    Set<AnalysisSplitType> types = EnumSet.noneOf(AnalysisSplitType.class);
+    if (!rowSplit.isEmpty()) {
+      types.addAll(rowSplit.keySet());
+    }
+    return types;
   }
 
   public String getActualValue() {
@@ -267,7 +286,7 @@ public final class AnalysisValue implements BeeSerializable {
   }
 
   public void updateActualValue(Double value) {
-    if (BeeUtils.nonZero(value)) {
+    if (AnalysisUtils.isValue(value)) {
       setActualValue(value);
     } else {
       this.actualValue = null;
@@ -283,7 +302,7 @@ public final class AnalysisValue implements BeeSerializable {
   }
 
   public void updateBudgetValue(Double value) {
-    if (BeeUtils.nonZero(value)) {
+    if (AnalysisUtils.isValue(value)) {
       setBudgetValue(value);
     } else {
       this.budgetValue = null;

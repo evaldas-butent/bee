@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.transport;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.LinkedListMultimap;
@@ -1000,9 +1001,31 @@ public class TransportModuleBean implements BeeModule {
             sys.joinTables(TBL_COUNTRIES, TBL_CARGO_PLACES, COL_PLACE_COUNTRY));
 
       } else if (Objects.equals(col, COL_PLACE_DATE)) {
-        clause = SqlUtils.equals(TBL_CARGO_PLACES, col,
-            TimeUtils.parseDateTime(val, usr.getDateOrdering()));
+        String start = null;
+        String end = null;
+        int i = 0;
 
+        for (String s : Splitter.on(BeeConst.CHAR_COMMA).trimResults().split(val)) {
+          if (i == 0) {
+            start = s;
+          } else if (i == 1) {
+            end = s;
+          }
+
+          i++;
+        }
+
+        if (BeeUtils.isEmpty(end)) {
+          clause = SqlUtils.moreEqual(TBL_CARGO_PLACES, col, start);
+
+        } else if (BeeUtils.isEmpty(start)) {
+          clause = SqlUtils.lessEqual(TBL_CARGO_PLACES, col, end);
+
+        } else {
+          clause = SqlUtils.and(SqlUtils.moreEqual(TBL_CARGO_PLACES, col, start),
+              SqlUtils.lessEqual(TBL_CARGO_PLACES, col, end));
+
+        }
       } else if (table.hasField(col)) {
         clause = SqlUtils.contains(TBL_CARGO_PLACES, col, val);
       } else {
@@ -2749,7 +2772,6 @@ public class TransportModuleBean implements BeeModule {
     settings.setTableProperty(PROP_FREIGHTS, freights.serialize());
 
     SimpleRowSet cargoHandling = getFreightHandlingData(tripWhere, true);
-
     if (!DataUtils.isEmpty(cargoHandling)) {
       settings.setTableProperty(PROP_CARGO_HANDLING, cargoHandling.serialize());
     }
@@ -2825,7 +2847,7 @@ public class TransportModuleBean implements BeeModule {
     String als = "tmpSubQuery";
 
     return qs.getData(new SqlSelect()
-        .addFields(als, COL_CARGO, VAR_UNLOADING)
+        .addFields(als, COL_CARGO, COL_CARGO_TRIP, VAR_UNLOADING)
         .addFields(TBL_CARGO_PLACES, COL_PLACE_DATE, COL_PLACE_COUNTRY, COL_PLACE_CITY,
             COL_PLACE_ADDRESS, COL_PLACE_POST_INDEX, COL_PLACE_NUMBER)
         .addFrom(TBL_CARGO_PLACES)
@@ -2896,17 +2918,16 @@ public class TransportModuleBean implements BeeModule {
         .addOrder(TBL_ORDERS, COL_ORDER_DATE, COL_ORDER_NO);
 
     SimpleRowSet data = qs.getData(query);
-
     if (DataUtils.isEmpty(data)) {
       return ResponseObject.response(settings);
     }
     settings.setTableProperty(PROP_ORDER_CARGO, data.serialize());
 
     SimpleRowSet cargoHandling = getFreightHandlingData(cargoWhere, false);
-
     if (!DataUtils.isEmpty(cargoHandling)) {
       settings.setTableProperty(PROP_CARGO_HANDLING, cargoHandling.serialize());
     }
+
     return ResponseObject.response(settings);
   }
 
@@ -3442,10 +3463,10 @@ public class TransportModuleBean implements BeeModule {
     settings.setTableProperty(PROP_FREIGHTS, freights.serialize());
 
     SimpleRowSet cargoHandling = getFreightHandlingData(tripWhere, true);
-
     if (!DataUtils.isEmpty(cargoHandling)) {
       settings.setTableProperty(PROP_CARGO_HANDLING, cargoHandling.serialize());
     }
+
     return ResponseObject.response(settings);
   }
 

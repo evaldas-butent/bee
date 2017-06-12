@@ -241,24 +241,23 @@ public class DiscussionsModuleBean implements BeeModule {
             } else {
               row.setProperty(PROP_MARK_COUNT, BeeConst.STRING_EMPTY);
             }
+            if (commentData != null
+              && commentData.getRowByKey(COL_DISCUSSION, BeeUtils.toString(row.getId())) != null) {
 
-            if (commentData != null) {
               SimpleRow lastCommentData = commentData.getRowByKey(COL_DISCUSSION,
-                  BeeUtils.toString(row.getId()));
+                BeeUtils.toString(row.getId()));
 
-              long publishTime = BeeUtils.unbox(lastCommentData.getLong(COL_PUBLISH_TIME));
+              long publishTime =
+                BeeUtils.unbox(lastCommentData.getLong(COL_PUBLISH_TIME));
 
-              String lastCommentVal = lastCommentData != null
-                  ? BeeUtils.joinWords(
-                  Formatter.renderDateTime(dtfInfo, TimeUtils.dropMillis(publishTime)) + ",",
-                  lastCommentData.getValue(COL_FIRST_NAME), lastCommentData.getValue(COL_LAST_NAME))
-                  : BeeConst.STRING_EMPTY;
+              String lastCommentVal = BeeUtils.joinWords(
+                Formatter.renderDateTime(dtfInfo, TimeUtils.dropMillis(publishTime))
+                  + ",", lastCommentData.getValue(COL_FIRST_NAME),
+                lastCommentData.getValue(COL_LAST_NAME));
 
               row.setProperty(PROP_LAST_COMMENT_DATA, lastCommentVal);
-              row.setProperty(PROP_COMMENT_COUNT, lastCommentData != null
-                  ? BeeUtils.nvl(lastCommentData.getValue(PROP_COMMENT_COUNT),
-                  BeeConst.STRING_EMPTY)
-                  : BeeConst.STRING_EMPTY);
+              row.setProperty(PROP_COMMENT_COUNT,
+                BeeUtils.nvl(lastCommentData.getValue(PROP_COMMENT_COUNT), BeeConst.STRING_EMPTY));
             } else {
               row.setProperty(PROP_LAST_COMMENT_DATA, BeeConst.STRING_EMPTY);
               row.setProperty(PROP_COMMENT_COUNT, BeeConst.STRING_EMPTY);
@@ -266,11 +265,11 @@ public class DiscussionsModuleBean implements BeeModule {
 
             if (fileData != null) {
               SimpleRow fileDataRow = fileData.getRowByKey(COL_DISCUSSION,
-                  BeeUtils.toString(row.getId()));
+                BeeUtils.toString(row.getId()));
 
               row.setProperty(PROP_FILES_COUNT, fileDataRow != null
-                  ? BeeUtils.nvl(fileDataRow.getValue(PROP_FILES_COUNT), BeeConst.STRING_EMPTY)
-                  : BeeConst.STRING_EMPTY);
+                ? BeeUtils.nvl(fileDataRow.getValue(PROP_FILES_COUNT), BeeConst.STRING_EMPTY)
+                : BeeConst.STRING_EMPTY);
             } else {
               row.setProperty(PROP_FILES_COUNT, BeeConst.STRING_EMPTY);
             }
@@ -962,26 +961,18 @@ public class DiscussionsModuleBean implements BeeModule {
     SimpleRowSet birthdays =
         new SimpleRowSet(new String[] {COL_NAME, COL_PHOTO, COL_DATE_OF_BIRTH, COL_ORDINAL});
 
-    for (String[] upRow : up.getRows()) {
-      if (!BeeUtils.isLong(upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)])) {
-        continue;
-      }
-
-      JustDate date =
-          new JustDate(BeeUtils
-              .toLong(upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)]));
+    for (SimpleRow upRow : up) {
+      JustDate date = upRow.getDate(COL_DATE_OF_BIRTH);
 
       if (availableDays.contains(date.getDoy())) {
         String[] birthdaysRow = new String[] {
-            BeeUtils.joinWords(upRow[up.getColumnIndex(COL_FIRST_NAME)], upRow[up.getColumnIndex(
-                COL_LAST_NAME)]),
-            upRow[up.getColumnIndex(COL_PHOTO)],
-            upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)],
+            BeeUtils.joinWords(upRow.getValue(COL_FIRST_NAME), upRow.getValue(COL_LAST_NAME)),
+            upRow.getValue(COL_PHOTO),
+            upRow.getValue(COL_DATE_OF_BIRTH),
             BeeUtils.toString(date.getDoy())
         };
         birthdays.addRow(birthdaysRow);
       }
-
     }
 
     if (!birthdays.isEmpty()) {
