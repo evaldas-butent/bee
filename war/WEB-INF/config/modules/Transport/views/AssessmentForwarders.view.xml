@@ -9,16 +9,29 @@
     <SimpleJoin name="Assessment" joinType="LEFT">
       <SimpleJoin name="Order" joinType="LEFT">
         <SimpleColumn name="OrderNo" />
+        <SimpleJoin joinType="LEFT" name="ShippingTerm">
+          <SimpleColumn name="Name" alias="ShippingTermName" />
+        </SimpleJoin>
 
         <SimpleJoin name="Manager" joinType="INNER">
           <SimpleJoin name="CompanyPerson" joinType="LEFT">
             <SimpleJoin name="Position" joinType="LEFT">
-              <SimpleColumn name="Name" alias="Position" />
+              <SimpleColumn name="Name" alias="ManagerPosition" />
             </SimpleJoin>
 
             <SimpleJoin name="Person" joinType="LEFT">
-              <SimpleColumn name="FirstName" />
-              <SimpleColumn name="LastName" />
+              <SimpleColumn name="FirstName" alias="ManagerFirstName" />
+              <SimpleColumn name="LastName" alias="ManagerLastName" />
+            </SimpleJoin>
+
+            <SimpleJoin name="Contact" joinType="LEFT">
+              <SimpleColumn name="Phone" alias="ManagerPhone" />
+              <SimpleColumn name="Mobile" alias="ManagerMobile" />
+              <SimpleColumn name="Fax" alias="ManagerFax" />
+
+              <SimpleJoin name="Email" joinType="LEFT">
+                <SimpleColumn name="Email" alias="ManagerEmail" />
+              </SimpleJoin>
             </SimpleJoin>
           </SimpleJoin>
         </SimpleJoin>
@@ -38,7 +51,20 @@
         <SimpleJoin joinType="LEFT" name="QuantityUnit">
           <SimpleColumn name="Name" alias="QuantityUnit" />
         </SimpleJoin>
+
+        <SimpleColumn name="Value" />
+        <SimpleColumn name="ValueCurrency" />
+        <SimpleJoin joinType="LEFT" name="ValueCurrency">
+          <SimpleColumn name="Name" alias="ValueCurrencyName" />
+        </SimpleJoin>
+
+        <SimpleColumn name="CustomsBrokerage" />
+        <SimpleColumn name="FreightInsurance" />
+
+        <SimpleColumn name="Notes" alias="CargoNotes" />
       </SimpleJoin>
+
+      <SimpleColumn name="Notes" alias="AssessmentNotes" />
     </SimpleJoin>
 
     <SimpleColumn name="CargoTrip" />

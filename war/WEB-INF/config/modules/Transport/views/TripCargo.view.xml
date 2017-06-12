@@ -35,6 +35,16 @@
       <SimpleJoin joinType="LEFT" name="QuantityUnit">
         <SimpleColumn name="Name" alias="QuantityUnit" />
       </SimpleJoin>
+
+      <SimpleColumn name="Value" />
+      <SimpleColumn name="ValueCurrency" />
+      <SimpleJoin joinType="LEFT" name="ValueCurrency">
+        <SimpleColumn name="Name" alias="ValueCurrencyName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="CustomsBrokerage" />
+      <SimpleColumn name="FreightInsurance" />
+
       <SimpleColumn name="Number" />
 
       <SimpleColumn name="Cmr" />

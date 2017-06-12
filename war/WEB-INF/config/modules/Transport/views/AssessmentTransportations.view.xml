@@ -34,12 +34,27 @@
           <SimpleColumn name="FirstName" alias="ManagerFirstName" />
           <SimpleColumn name="LastName" alias="ManagerLastName" />
         </SimpleJoin>
+
         <SimpleJoin name="Company" joinType="LEFT">
-        <SimpleColumn alias="CompanyName" name="Name" />
-        <SimpleJoin joinType="LEFT" name="CompanyType">
-          <SimpleColumn name="Name" alias="CompanyTypeName" />
+          <SimpleColumn alias="CompanyName" name="Name" />
+          <SimpleJoin joinType="LEFT" name="CompanyType">
+            <SimpleColumn name="Name" alias="CompanyTypeName" />
+          </SimpleJoin>
         </SimpleJoin>
-      </SimpleJoin>
+
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ManagerPosition" />
+        </SimpleJoin>
+
+        <SimpleJoin name="Contact" joinType="LEFT">
+          <SimpleColumn name="Phone" alias="ManagerPhone" />
+          <SimpleColumn name="Mobile" alias="ManagerMobile" />
+          <SimpleColumn name="Fax" alias="ManagerFax" />
+
+          <SimpleJoin name="Email" joinType="LEFT">
+            <SimpleColumn name="Email" alias="ManagerEmail" />
+          </SimpleJoin>
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
     
