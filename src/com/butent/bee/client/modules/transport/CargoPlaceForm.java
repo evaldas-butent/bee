@@ -19,7 +19,7 @@ public class CargoPlaceForm extends AbstractFormInterceptor {
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
     if (!Objects.equals(BeeKeeper.getScreen().getUserInterface(), UserInterface.SELF_SERVICE)) {
-      Widget dateQst = form.getWidgetByName(COL_DATE_QST);
+      Widget dateQst = form.getWidgetByName(VAR_DATE_QST);
 
       if (dateQst != null) {
         dateQst.setVisible(false);

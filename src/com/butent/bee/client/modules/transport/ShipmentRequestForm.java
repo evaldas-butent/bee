@@ -292,7 +292,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
         row.getString(getDataIndex(COL_QUERY_FREIGHT_INSURANCE)) != null);
 
     if (!isSelfService()) {
-      for (String name : new String[]{COL_CUSTOMS_BROKERAGE_QST, COL_FREIGHT_INSURANCE_QST}) {
+      for (String name : new String[]{VAR_CUSTOMS_BROKERAGE_QST, VAR_FREIGHT_INSURANCE_QST}) {
         Widget widget = form.getWidgetByName(name);
 
         if (widget != null) {
