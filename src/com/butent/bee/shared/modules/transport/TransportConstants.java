@@ -900,6 +900,9 @@ public final class TransportConstants {
   public static final String COL_SHIPPING_TERM_NAME = "Name";
   public static final String COL_SELF_SERVICE = "SelfService";
   public static final String COL_SHIPMENT_REQUEST = "ShipmentRequest";
+  public static final String COL_CUSTOMS_BROKERAGE_QST = "CustomsBrokerageQst";
+  public static final String COL_FREIGHT_INSURANCE_QST = "FreightInsuranceQst";
+  public static final String COL_DATE_QST = "DateQst";
 
   public static final String COL_CARGO_TYPE_NAME = "CargoTypeName";
   public static final String COL_CARGO_TYPE_COLOR = "Color";

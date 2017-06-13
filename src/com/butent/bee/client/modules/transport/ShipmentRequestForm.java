@@ -291,6 +291,16 @@ class ShipmentRequestForm extends PrintFormInterceptor {
     styleRequiredField(NAME_VALUE_LABEL,
         row.getString(getDataIndex(COL_QUERY_FREIGHT_INSURANCE)) != null);
 
+    if (!isSelfService()) {
+      for (String name : new String[]{COL_CUSTOMS_BROKERAGE_QST, COL_FREIGHT_INSURANCE_QST}) {
+        Widget widget = form.getWidgetByName(name);
+
+        if (widget != null) {
+          widget.setVisible(false);
+        }
+      }
+    }
+
     super.beforeRefresh(form, row);
   }
 
