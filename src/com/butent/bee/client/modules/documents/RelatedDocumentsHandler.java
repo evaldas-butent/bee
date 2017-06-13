@@ -7,7 +7,6 @@ import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
@@ -106,31 +105,22 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
     }
 
     if (!relationEnsured) {
-      RowFactory.createRow(info, docRow, Modality.ENABLED, new RowCallback() {
-        @Override
-        public void onSuccess(final BeeRow result) {
-          final long docId = result.getId();
+      RowFactory.createRow(info, docRow, Modality.ENABLED, result -> {
+        final long docId = result.getId();
 
-          presenter.getGridView().ensureRelId(relId
-            -> Queries.insert(AdministrationConstants.VIEW_RELATIONS,
-            Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
-              Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
-            Queries.asList(docId, relId), null, new RowCallback() {
-              @Override
-              public void onSuccess(BeeRow row) {
-                presenter.handleAction(Action.REFRESH);
-                ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
-              }
-            }));
-        }
+        presenter.getGridView().ensureRelId(relId
+          -> Queries.insert(AdministrationConstants.VIEW_RELATIONS,
+          Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
+            Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
+          Queries.asList(docId, relId), null, row -> {
+            presenter.handleAction(Action.REFRESH);
+            ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
+          }));
       });
     } else {
-      RowFactory.createRow(info, docRow, Modality.ENABLED, new RowCallback() {
-        @Override
-        public void onSuccess(final BeeRow result) {
-          presenter.handleAction(Action.REFRESH);
-          ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
-        }
+      RowFactory.createRow(info, docRow, Modality.ENABLED, result -> {
+        presenter.handleAction(Action.REFRESH);
+        ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
       });
     }
 
@@ -150,12 +140,8 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
       Long docId = event.getRowValue().getLong(documentIndex);
 
       if (DataUtils.isId(docId)) {
-        RowEditor.open(VIEW_DOCUMENTS, docId, Opener.MODAL, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            getGridPresenter().handleAction(Action.REFRESH);
-          }
-        });
+        RowEditor.open(VIEW_DOCUMENTS, docId, Opener.MODAL,
+          result -> getGridPresenter().handleAction(Action.REFRESH));
       }
     }
   }

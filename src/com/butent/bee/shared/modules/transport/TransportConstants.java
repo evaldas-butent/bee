@@ -390,6 +390,10 @@ public final class TransportConstants {
   public static final String VAR_UNBOUND = "Unbound";
   public static final String VAR_AUTO_NUMBER_SUFFIX = "_*";
 
+  public static final String VAR_CUSTOMS_BROKERAGE_QST = "CustomsBrokerageQst";
+  public static final String VAR_FREIGHT_INSURANCE_QST = "FreightInsuranceQst";
+  public static final String VAR_DATE_QST = "DateQst";
+
   public static final String TBL_TRANSPORT_GROUPS = "TransportGroups";
 
   public static final String TBL_VEHICLES = "Vehicles";
