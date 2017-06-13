@@ -413,7 +413,8 @@ public enum Report implements HasWidgetSupplier {
           new ReportTextItem(ALS_COUNTRY_NAME, loc.country()),
           new ReportTextItem(COL_NOTE, loc.note()),
           new ReportTextItem(COL_PAYMENT_NAME, loc.paymentType()),
-          new ReportTextItem(COL_DRIVER, loc.trdDriver()));
+          new ReportTextItem(COL_DRIVER, loc.trdDriver()),
+          new ReportTextItem(COL_CURRENCY, loc.currency()));
     }
 
     @Override
@@ -449,7 +450,7 @@ public enum Report implements HasWidgetSupplier {
       }
 
       for (String item : new String[] {
-          TradeConstants.COL_TRADE_ITEM_QUANTITY, VAR_TOTAL
+          TradeConstants.COL_TRADE_ITEM_QUANTITY, VAR_TOTAL, COL_CURRENCY
       }) {
         report.addColItem(items.get(item));
       }
