@@ -29,5 +29,9 @@
 
     <Relation name="ServiceMaintenance" relation="ServiceMaintenance" cascade="SET_NULL"
               label="=svcMaintenance" />
+
+    <!-- Transrifus {-->
+    <Long name="ExternalCode" unique="true" label="=externalCode" />
+    <!-- } Transrifus-->
   </Fields>
 </Table>
