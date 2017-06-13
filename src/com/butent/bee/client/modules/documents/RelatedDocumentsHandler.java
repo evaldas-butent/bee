@@ -28,6 +28,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -50,6 +51,7 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
     IsRow parentRow = null;
     String parentViewName = null;
     boolean relationEnsured = false;
+    String parentColumn = BeeConst.STRING_EMPTY;
 
     DataInfo info = Data.getDataInfo(VIEW_DOCUMENTS);
     DataInfo relInfo = Data.getDataInfo(VIEW_RELATED_DOCUMENTS);
@@ -69,15 +71,15 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
 
       switch (parentViewName) {
         case ProjectConstants.VIEW_PROJECTS:
-          RelationUtils.updateRow(info, COL_DOCUMENT_COMPANY, docRow,
-            Data.getDataInfo(parentViewName), parentRow, false);
-          Data.setValue(VIEW_DOCUMENTS, docRow, COL_DOCUMENT_COMPANY,
-            Data.getLong(parentViewName, parentRow, ProjectConstants.COL_COMAPNY));
+          parentColumn = ProjectConstants.COL_COMAPNY;
+          break;
+        case TransportConstants.VIEW_ORDERS:
+        case TransportConstants.VIEW_ORDER_CARGO:
+          parentColumn =  TransportConstants.COL_CUSTOMER;
           break;
         case ClassifierConstants.VIEW_COMPANIES:
           RelationUtils.updateRow(info, COL_DOCUMENT_COMPANY, docRow,
-            Data.getDataInfo(parentViewName), parentRow, false);
-          Data.setValue(VIEW_DOCUMENTS, docRow, COL_DOCUMENT_COMPANY, parentRow.getId());
+            Data.getDataInfo(parentViewName), parentRow, true);
           relationEnsured = true;
           break;
         default:
@@ -96,6 +98,10 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
             docRow.setProperty(Relations.PFX_RELATED + parentViewName,
               DataUtils.buildIdList(parentRow.getId()));
           }
+      }
+      if (!BeeUtils.isEmpty(parentColumn)) {
+        RelationUtils.copyWithDescendants(Data.getDataInfo(parentViewName), parentColumn,
+          parentRow, info, COL_DOCUMENT_COMPANY, docRow);
       }
     }
 
