@@ -123,7 +123,7 @@ public class SelfServiceScreen extends ScreenImpl {
     if (getCommandPanel() != null) {
       getCommandPanel().clear();
     }
-    Button commandNewRequest = new Button(Localized.dictionary().trSelfServiceCommandNewRequest(),
+    Button commandNewRequest = new Button(Localized.dictionary().createNew(),
         event -> {
           DataInfo info = Data.getDataInfo(VIEW_SHIPMENT_REQUESTS);
           BeeRow row = RowFactory.createEmptyRow(info, true);
