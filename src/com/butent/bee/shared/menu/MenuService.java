@@ -52,6 +52,7 @@ public enum MenuService {
   @XmlEnumValue("task_list")
   TASK_LIST(RightsState.VIEW, TaskConstants.VIEW_TASKS),
   @XmlEnumValue("task_reports")
+    // Verslo aljansas
   TASK_REPORTS(RightsState.VIEW,
       Sets.newHashSet(TaskConstants.VIEW_TASKS, TaskConstants.VIEW_TASK_DURATIONS)),
 

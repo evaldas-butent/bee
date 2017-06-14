@@ -9,11 +9,14 @@
     <row>
       <Label for="Name" text="=category" />
       <InputText source="Name" style="width: 300px;" />
+
+      <CheckBox source="Goods" style="margin-left: 3vw;" />
+      <CheckBox source="Services" style="margin-left: 1vw;" />
     </row>
   </Table>
 
   <TabbedPages class="flexible" resizable="false">
-    <page module="Trade Orders" predicate="rowId > 0">
+    <page module="Trade Orders Service" predicate="rowId > 0">
       <text>=discounts</text>
       <ChildGrid name="CategoryDiscounts" relColumn="Category" />
     </page>

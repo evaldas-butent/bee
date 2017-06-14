@@ -1,6 +1,5 @@
 package com.butent.bee.shared.modules.classifiers;
 
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 public final class ClassifierConstants {
@@ -13,6 +12,7 @@ public final class ClassifierConstants {
   public static final String SVC_GET_COMPANY_TYPE_REPORT = "get_company_type_report";
   public static final String SVC_GET_PRICE_AND_DISCOUNT = "GetPriceAndDiscount";
   public static final String SVC_FILTER_ORDERS = "FilterOrders";
+  public static final String SVC_GET_RESERVATION = "GetReservation";
 
   public static final String TIMER_REMIND_COMPANY_ACTIONS = "timer_remind_company_actions";
   public static final String TIMER_REMIND_TASKS_SUMMARY = "timer_remind_tasks_summary_";
@@ -26,6 +26,7 @@ public final class ClassifierConstants {
 
   public static final String TBL_ITEM_CATEGORY_TREE = "CategoryTree";
   public static final String TBL_ITEM_CATEGORIES = "ItemCategories";
+  public static final String TBL_ITEM_MANUFACTURERS = "ItemManufacturers";
 
   public static final String TBL_CONTACTS = "Contacts";
   public static final String TBL_EMAILS = "Emails";
@@ -41,6 +42,7 @@ public final class ClassifierConstants {
   public static final String TBL_COMPANY_RELATION_TYPE_STORE = "CompRelTypeStore";
 
   public static final String TBL_COMPANY_ACTIVITY_STORE = "CompActStore";
+  public static final String TBL_COMPANY_DEPARTMENTS = "CompanyDepartments";
 
   public static final String TBL_PERSONS = "Persons";
   public static final String TBL_POSITIONS = "Positions";
@@ -64,6 +66,10 @@ public final class ClassifierConstants {
 
   public static final String TBL_LOSS_REASONS = "LossReasons";
 
+  public static final String TBL_VEHICLE_TYPES = "VehicleTypes";
+  public static final String TBL_VEHICLE_BRANDS = "VehicleBrands";
+  public static final String TBL_VEHICLE_MODELS = "VehicleModels";
+
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_COMPANY_ACTION = "CompanyAction";
   public static final String FORM_PERSON = "Person";
@@ -80,6 +86,7 @@ public final class ClassifierConstants {
   public static final String VIEW_ITEM_CATEGORIES = "ItemCategories";
   public static final String VIEW_ITEM_REMAINDERS = "ItemRemainders";
   public static final String VIEW_ITEM_SUPPLIERS = "ItemSuppliers";
+  public static final String VIEW_ITEM_MANUFACTURERS = "ItemManufacturers";
 
   public static final String VIEW_COUNTRIES = "Countries";
   public static final String VIEW_CITIES = "Cities";
@@ -140,6 +147,7 @@ public final class ClassifierConstants {
   public static final String COL_COMPANY_PRICE_NAME = "PriceName";
   public static final String COL_COMPANY_DISCOUNT_PERCENT = "DiscountPercent";
   public static final String COL_COMPANY_TOLERATED_DAYS = "ToleratedDays";
+  public static final String COL_COMPANY_TYPE_PERSON = "TypePerson";
 
   public static final String COL_PERSON = "Person";
   public static final String COL_FIRST_NAME = "FirstName";
@@ -155,10 +163,15 @@ public final class ClassifierConstants {
   public static final String COL_CATEGORY = "Category";
   public static final String COL_CATEGORY_NAME = "Name";
   public static final String COL_CATEGORY_PARENT = "Parent";
+  public static final String COL_CATEGORY_GOODS = "Goods";
+  public static final String COL_CATEGORY_SERVICES = "Services";
 
   public static final String COL_ITEM = "Item";
   public static final String COL_ITEM_NAME = "Name";
+  public static final String COL_ITEM_NAME_2 = "Name2";
+  public static final String COL_ITEM_NAME_3 = "Name3";
   public static final String COL_ITEM_ARTICLE = "Article";
+  public static final String COL_ITEM_ARTICLE_2 = "Article2";
   public static final String COL_ITEM_ATTRIBUTE = "Attribute";
   public static final String COL_ITEM_BARCODE = "Barcode";
   public static final String COL_ITEM_IS_SERVICE = "IsService";
@@ -208,7 +221,9 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_COUNTRY_OF_ORIGIN = "CountryOfOrigin";
   public static final String COL_ITEM_ADDITIONAL_UNIT = "AdditionalUnit";
   public static final String COL_ITEM_KPN_CODE = "KPNCode";
+  public static final String COL_ITEM_DESCRIPTION = "Description";
 
+  public static final String COL_ITEM_MANUFACTURER = "Manufacturer";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";
@@ -306,6 +321,11 @@ public final class ClassifierConstants {
   public static final String COL_LOSS_REASON = "LossReason";
   public static final String COL_LOSS_NOTES = "LossNotes";
 
+  public static final String COL_VEHICLE_BRAND = "Brand";
+  public static final String COL_VEHICLE_BRAND_NAME = "BrandName";
+  public static final String COL_VEHICLE_MODEL_NAME = "Name";
+  public static final String COL_VEHICLE_TYPE_NAME = "Name";
+
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";
   public static final String ALS_COMPANY_TYPE = "CompanyType";
@@ -346,6 +366,9 @@ public final class ClassifierConstants {
   public static final String ALS_ITEM_TYPES = "ItemTypes";
   public static final String ALS_ITEM_GROUPS = "ItemGroups";
 
+  public static final String ALS_ITEM_SUPPLIER_NAME = "SupplierName";
+  public static final String ALS_ITEM_MANUFACTURER_NAME = "ManufacturerName";
+
   public static final String PROP_COMPANY_NAMES = "CompanyNames";
   public static final String PROP_COMPANY_IDS = "CompanyIds";
   public static final String PROP_WAREHOUSE_REMAINDER = "WarehouseRemainder";
@@ -358,8 +381,7 @@ public final class ClassifierConstants {
   public static final String QR_COMPANY = "qrCompany";
   public static final String QR_PERSON = "qrPerson";
 
-  public static final long DEFAULT_REMIND_ACTIONS_TIMER_TIMEOUT = TimeUtils.MILLIS_PER_HOUR;
-  public static final long DEFAULT_REMIND_TASKS_TIMER_TIMEOUT = TimeUtils.MILLIS_PER_MINUTE;
+  public static final String TREE_ITEM_CATEGORIES = "ItemCategoryTree";
 
   public static void register() {
     EnumUtils.register(ItemPrice.class);

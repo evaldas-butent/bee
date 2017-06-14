@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.tasks;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -12,7 +13,7 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
-import com.butent.bee.client.modules.mail.Relations;
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.communication.ChatBean;
 import com.butent.bee.server.data.BeeView;
@@ -25,6 +26,7 @@ import com.butent.bee.server.data.SearchBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.AdministrationModuleBean;
@@ -37,6 +39,7 @@ import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -46,6 +49,7 @@ import com.butent.bee.server.ui.UiServiceBean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.FontWeight;
@@ -74,7 +78,11 @@ import com.butent.bee.shared.html.builder.Element;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.html.builder.elements.Td;
+import com.butent.bee.shared.i18n.DateTimeFormat;
+import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
 import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.i18n.Formatter;
+import com.butent.bee.shared.i18n.PredefinedFormat;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -89,6 +97,7 @@ import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
+import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.CronExpression;
 import com.butent.bee.shared.time.DateRange;
@@ -112,6 +121,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -242,12 +253,15 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_CHANGED_TASKS)) {
       response = getChangedTasks();
 
+      //Verslo aljansas
     } else if (BeeUtils.same(svc, SVC_TASKS_REPORTS_COMPANY_TIMES)) {
       response = getCompanyTimesReport(reqInfo);
 
+      // Verslo aljansas
     } else if (BeeUtils.same(svc, SVC_TASKS_REPORTS_TYPE_HOURS)) {
       response = getTypeHoursReport(reqInfo);
 
+      //Verslo aljansas
     } else if (BeeUtils.same(svc, SVC_TASKS_REPORTS_USERS_HOURS)) {
       response = getUsersHoursReport(reqInfo);
 
@@ -273,7 +287,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       response = confirmTasks(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_TASK_REPORT)) {
-        response = getReportData();
+      response = getReportData(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("CRM service not recognized:", svc);
@@ -320,10 +334,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       @Subscribe
       @AllowConcurrentEvents
       public void setRowProperties(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_RT_FILES)) {
-          ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
-
-        } else if (event.isAfter(VIEW_TASKS, VIEW_RELATED_TASKS) && event.hasData()) {
+        if (event.isAfter(VIEW_TASKS, VIEW_RELATED_TASKS) && event.hasData()) {
           BeeRowSet rowSet = event.getRowset();
           Set<Long> taskIds = new HashSet<>();
           Long id;
@@ -473,7 +484,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
             }
           } else if (event instanceof DataEvent.ViewInsertEvent) {
             createOrUpdateTimers(TIMER_REMIND_TASKS_SUMMARY, TBL_USER_SETTINGS,
-                    ((DataEvent.ViewInsertEvent) event).getRow().getId());
+                ((DataEvent.ViewInsertEvent) event).getRow().getId());
           }
         }
       }
@@ -540,37 +551,32 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       }
     });
 
-    HeadlineProducer headlineProducer = new HeadlineProducer() {
-      @Override
-      public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew,
-          Dictionary constants) {
-
-        String caption = DataUtils.getString(rowSet, row, COL_SUMMARY);
-        if (BeeUtils.isEmpty(caption)) {
-          caption = BeeUtils.bracket(row.getId());
-        }
-
-        List<String> subtitles = new ArrayList<>();
-
-        DateTime finish = DataUtils.getDateTime(rowSet, row, COL_FINISH_TIME);
-        if (finish != null) {
-          subtitles.add(finish.toCompactString());
-        }
-
-        TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class,
-            DataUtils.getInteger(rowSet, row, COL_STATUS));
-        if (status != null) {
-          subtitles.add(status.getCaption(constants));
-        }
-
-        if (feed != Feed.TASKS_ASSIGNED) {
-          subtitles.add(BeeUtils.joinWords(
-              DataUtils.getString(rowSet, row, ALS_EXECUTOR_FIRST_NAME),
-              DataUtils.getString(rowSet, row, ALS_EXECUTOR_LAST_NAME)));
-        }
-
-        return Headline.create(row.getId(), caption, subtitles, isNew);
+    HeadlineProducer headlineProducer = (feed, userId, rowSet, row, isNew, constants, dtfInfo) -> {
+      String caption = DataUtils.getString(rowSet, row, COL_SUMMARY);
+      if (BeeUtils.isEmpty(caption)) {
+        caption = BeeUtils.bracket(row.getId());
       }
+
+      List<String> subtitles = new ArrayList<>();
+
+      DateTime finish = DataUtils.getDateTime(rowSet, row, COL_FINISH_TIME);
+      if (finish != null) {
+        subtitles.add(Formatter.renderDateTime(dtfInfo, finish));
+      }
+
+      TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class,
+          DataUtils.getInteger(rowSet, row, COL_STATUS));
+      if (status != null) {
+        subtitles.add(status.getCaption(constants));
+      }
+
+      if (feed != Feed.TASKS_ASSIGNED) {
+        subtitles.add(BeeUtils.joinWords(
+            DataUtils.getString(rowSet, row, ALS_EXECUTOR_FIRST_NAME),
+            DataUtils.getString(rowSet, row, ALS_EXECUTOR_LAST_NAME)));
+      }
+
+      return Headline.create(row.getId(), caption, subtitles, isNew);
     };
 
     news.registerHeadlineProducer(Feed.TASKS_ALL, headlineProducer);
@@ -834,12 +840,12 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
   private IsCondition getTaskStatusConditionForReminders() {
     return SqlUtils.not(SqlUtils.inList(TBL_TASKS, COL_STATUS,
-            Sets.newHashSet(TaskStatus.NOT_SCHEDULED.ordinal(), TaskStatus.APPROVED.ordinal())));
+        Sets.newHashSet(TaskStatus.NOT_SCHEDULED.ordinal(), TaskStatus.APPROVED.ordinal())));
   }
 
   @Override
   protected Pair<IsCondition, List<String>> getConditionAndTimerIdForUpdate(String timerIdentifier,
-                                                                String viewName, Long relationId) {
+      String viewName, Long relationId) {
     IsCondition wh = null;
 
     if (BeeUtils.same(timerIdentifier, TIMER_REMIND_TASKS_SUMMARY)) {
@@ -1038,7 +1044,6 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       row.setProperty(PROP_OBSERVERS, DataUtils.buildIdList(observers));
     }
 
-
     if (addRelations) {
       Collection<RowChildren> relations = getRelations(COL_TASK, row.getId());
 
@@ -1082,7 +1087,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
   }
 
   private ResponseObject commitTaskData(BeeRowSet data, Collection<Long> oldUsers,
-     String updatedRelations, Long eventId) {
+      String updatedRelations, Long eventId) {
 
     ResponseObject response;
     BeeRow row = data.getRow(0);
@@ -1685,6 +1690,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     return ResponseObject.response(Joiner.on(BeeConst.CHAR_COMMA).join(result));
   }
 
+//  verslo aljansas
   private ResponseObject getCompanyTimesReport(RequestInfo reqInfo) {
     Dictionary constants = usr.getDictionary();
     boolean hideZeroTimes = false;
@@ -1906,15 +1912,13 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
   }
 
   private Collection<RowChildren> getRelations(String relTaskColumn, long taskId) {
-   Collection<RowChildren> relations = new ArrayList<>();
-   DataInfo relationsView = sys.getDataInfo(TBL_RELATIONS);
-
+    Collection<RowChildren> relations = new ArrayList<>();
+    DataInfo relationsView = sys.getDataInfo(TBL_RELATIONS);
 
     for (BeeColumn relation : relationsView.getColumns()) {
       if (relation.isForeign() && !relation.isEditable()) {
         continue;
       }
-
 
       Long[] ids = qs.getRelatedValues(TBL_RELATIONS, relTaskColumn, taskId,
           relation.getId());
@@ -1933,8 +1937,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     SimpleRowSet data =
         qs.getData(new SqlSelect()
             .addFields(TBL_REQUEST_FILES, COL_FILE, COL_CAPTION)
-            .addFields(TBL_FILES, COL_FILE_NAME,
-                COL_FILE_SIZE, COL_FILE_TYPE)
+            .addFields(TBL_FILES, COL_FILE_HASH, COL_FILE_NAME, COL_FILE_SIZE, COL_FILE_TYPE)
             .addFrom(TBL_REQUEST_FILES)
             .addFromInner(TBL_FILES,
                 sys.joinTables(TBL_FILES, TBL_REQUEST_FILES, COL_FILE))
@@ -1944,6 +1947,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     for (SimpleRow file : data) {
       FileInfo sf = new FileInfo(file.getLong(COL_FILE),
+          file.getValue(COL_FILE_HASH),
           file.getValue(COL_FILE_NAME),
           file.getLong(COL_FILE_SIZE),
           file.getValue(COL_FILE_TYPE));
@@ -1955,114 +1959,137 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     return ResponseObject.response(files);
   }
 
-  private ResponseObject getReportData() {
+  private ResponseObject getReportData(RequestInfo reqInfo) {
+    ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
+
+    Function<String, IsExpression> firstLastNameJoiner = alias ->
+        SqlUtils.concat(SqlUtils.field(alias, COL_FIRST_NAME),
+            SqlUtils.sqlIf(SqlUtils.isNull(alias, COL_LAST_NAME), BeeConst.STRING_EMPTY,
+                SqlUtils.concat(SqlUtils.constant(BeeConst.STRING_SPACE),
+                    SqlUtils.field(alias, COL_LAST_NAME))));
 
     String ownerPerson = SqlUtils.uniqueName();
     String executorPerson = SqlUtils.uniqueName();
+    String publisherPerson = SqlUtils.uniqueName();
 
-    SqlSelect select = new SqlSelect();
-    select.addField(TaskConstants.TBL_TASKS, sys.getIdName(TaskConstants.TBL_TASKS),
-        TaskConstants.COL_TASK);
-    select.addFields(TaskConstants.TBL_TASKS, COL_SUMMARY, COL_STATUS,
-        COL_PRIORITY, COL_START_TIME, COL_FINISH_TIME, COL_EXPECTED_DURATION);
-    select.addField(VIEW_TASK_PRODUCTS, COL_PRODUCT_NAME, ALS_TASK_PRODUCT_NAME);
-    select.addField(VIEW_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME);
-    select.addField(VIEW_TASK_TYPES, COL_TASK_TYPE_NAME, ALS_TASK_TYPE_NAME);
-    select.addField(ProjectConstants.VIEW_PROJECTS,
-        ProjectConstants.COL_PROJECT_NAME, ProjectConstants.ALS_PROJECT_NAME);
-    select.addField(ProjectConstants.VIEW_PROJECT_STAGES,
-        ProjectConstants.COL_STAGE_NAME, ProjectConstants.ALS_STAGE_NAME);
+    IsExpression owner = firstLastNameJoiner.apply(ownerPerson);
+    IsExpression executor = firstLastNameJoiner.apply(executorPerson);
+    IsExpression publisher = firstLastNameJoiner.apply(publisherPerson);
 
-    select.addField(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME, ALS_DURATION_TYPE_NAME);
-    select.addFields(TBL_EVENT_DURATIONS, COL_DURATION_DATE, COL_DURATION);
+    HasConditions clause = SqlUtils.and();
+    clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_TASKS,
+        sys.getIdName(TBL_TASKS)), SqlConstants.SqlDataType.STRING, 20, 0), COL_TASK));
+
+    Stream.of(COL_SUMMARY, COL_PRIORITY, COL_START_TIME, COL_FINISH_TIME,
+        COL_EXPECTED_DURATION, COL_EXPECTED_EXPENSES, COL_STATUS)
+        .forEach(col -> clause.add(report.getCondition(TBL_TASKS, col)));
 
     // Verslo Aljansas TID 25505
-    select.addFields(TBL_EVENT_DURATIONS, COL_VA_MILEAGE);
+    clause.add(report.getCondition(TBL_EVENT_DURATIONS, COL_VA_MILEAGE));
 
-    addExprForUserFirstLastNames(select, ownerPerson, TaskConstants.COL_OWNER);
+    clause.add(report.getCondition(owner, COL_OWNER));
+    clause.add(report.getCondition(executor, COL_EXECUTOR));
+    clause.add(report.getCondition(publisher, COL_PUBLISHER));
 
-    addExprForUserFirstLastNames(select, executorPerson, TaskConstants.COL_EXECUTOR);
+    clause.add(report.getCondition(SqlUtils.field(VIEW_TASK_TYPES, COL_TASK_TYPE_NAME),
+        ALS_TASK_TYPE_NAME));
+    clause.add(report.getCondition(SqlUtils.field(VIEW_COMPANIES, COL_COMPANY_NAME),
+        ALS_COMPANY_NAME));
+    clause.add(report.getCondition(SqlUtils.field(VIEW_TASK_PRODUCTS, COL_PRODUCT_NAME),
+        ALS_TASK_PRODUCT_NAME));
+    clause.add(report.getCondition(SqlUtils.field(ProjectConstants.VIEW_PROJECTS,
+        ProjectConstants.COL_PROJECT_NAME), ProjectConstants.ALS_PROJECT_NAME));
+    clause.add(report.getCondition(SqlUtils.field(ProjectConstants.VIEW_PROJECT_STAGES,
+        ProjectConstants.COL_STAGE_NAME), ProjectConstants.ALS_STAGE_NAME));
 
-    addExprForUserFirstLastNames(select, TBL_PERSONS, COL_USER);
+    Stream.of(COL_COMMENT, TaskConstants.COL_EVENT, COL_EVENT_NOTE)
+        .forEach(col -> clause.add(report.getCondition(TBL_TASK_EVENTS, col)));
 
-    select.addFrom(TaskConstants.TBL_TASKS);
+    clause.add(report.getCondition(SqlUtils.field(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME),
+        ALS_DURATION_TYPE_NAME));
+    clause.add(report.getCondition(TBL_EVENT_DURATIONS, COL_DURATION_DATE));
 
-    addJoinsForUserFirstLastNames(select, ownerPerson, TBL_TASKS, COL_OWNER);
+    SqlSelect select = new SqlSelect()
+        .addField(TBL_TASKS, sys.getIdName(TBL_TASKS), COL_TASK)
+        .addFields(TBL_TASKS, COL_SUMMARY, COL_PRIORITY, COL_START_TIME, COL_FINISH_TIME,
+            COL_EXPECTED_DURATION, COL_EXPECTED_EXPENSES, COL_STATUS)
 
-    addJoinsForUserFirstLastNames(select, executorPerson, TBL_TASKS, COL_EXECUTOR);
+        .addExpr(owner, COL_OWNER)
+        .addExpr(executor, COL_EXECUTOR)
+        .addExpr(publisher, COL_PUBLISHER)
 
-    select.addFromLeft(VIEW_TASK_PRODUCTS, sys.joinTables(
-        VIEW_TASK_PRODUCTS, TBL_TASKS,
-        COL_PRODUCT));
+        .addField(VIEW_TASK_TYPES, COL_TASK_TYPE_NAME, ALS_TASK_TYPE_NAME)
+        .addField(VIEW_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
+        .addField(VIEW_TASK_PRODUCTS, COL_PRODUCT_NAME, ALS_TASK_PRODUCT_NAME)
+        .addField(ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_NAME,
+            ProjectConstants.ALS_PROJECT_NAME)
+        .addField(ProjectConstants.VIEW_PROJECT_STAGES, ProjectConstants.COL_STAGE_NAME,
+            ProjectConstants.ALS_STAGE_NAME)
 
-    select.addFromLeft(VIEW_COMPANIES, sys.joinTables(
-        VIEW_COMPANIES, TBL_TASKS,
-        COL_COMPANY));
+        .addFields(TBL_TASK_EVENTS, COL_COMMENT, TaskConstants.COL_EVENT, COL_EVENT_NOTE)
 
-    select.addFromLeft(VIEW_TASK_TYPES, sys.joinTables(
-        VIEW_TASK_TYPES, TBL_TASKS,
-        COL_TASK_TYPE));
+        .addField(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME, ALS_DURATION_TYPE_NAME)
+//      Verslo aljansas
+        .addFields(TBL_EVENT_DURATIONS, COL_DURATION_DATE, COL_DURATION, COL_VA_MILEAGE)
 
-    select.addFromLeft(ProjectConstants.VIEW_PROJECTS, sys.joinTables(
-        ProjectConstants.VIEW_PROJECTS, TBL_TASKS,
-        ProjectConstants.COL_PROJECT));
+        .addFrom(TBL_TASKS)
+        .addFromLeft(VIEW_TASK_TYPES, sys.joinTables(VIEW_TASK_TYPES, TBL_TASKS, COL_TASK_TYPE))
 
-    select.addFromLeft(ProjectConstants.VIEW_PROJECT_STAGES, sys.joinTables(
-        ProjectConstants.VIEW_PROJECT_STAGES, TBL_TASKS,
-        ProjectConstants.COL_PROJECT_STAGE));
+        .addFromLeft(VIEW_COMPANIES, sys.joinTables(VIEW_COMPANIES, TBL_TASKS, COL_COMPANY))
+        .addFromLeft(VIEW_TASK_PRODUCTS, sys.joinTables(VIEW_TASK_PRODUCTS, TBL_TASKS,
+            COL_PRODUCT))
+        .addFromLeft(ProjectConstants.VIEW_PROJECTS, sys.joinTables(ProjectConstants.VIEW_PROJECTS,
+            TBL_TASKS, ProjectConstants.COL_PROJECT))
+        .addFromLeft(ProjectConstants.VIEW_PROJECT_STAGES,
+            sys.joinTables(ProjectConstants.VIEW_PROJECT_STAGES, TBL_TASKS,
+                ProjectConstants.COL_PROJECT_STAGE))
+        .addFromLeft(VIEW_TASK_EVENTS, sys.joinTables(TBL_TASKS, VIEW_TASK_EVENTS, COL_TASK))
+        .addFromLeft(TBL_EVENT_DURATIONS, sys.joinTables(TBL_EVENT_DURATIONS, VIEW_TASK_EVENTS,
+            COL_EVENT_DURATION))
+        .addFromLeft(TBL_DURATION_TYPES, sys.joinTables(TBL_DURATION_TYPES, TBL_EVENT_DURATIONS,
+            COL_DURATION_TYPE));
 
-    select.addFromLeft(VIEW_TASK_EVENTS, sys.joinTables(
-        TBL_TASKS, VIEW_TASK_EVENTS,
-        COL_TASK));
+    String ownerAlias = joinPersons(select, ownerPerson, TBL_TASKS, COL_OWNER);
+    String executorAlias = joinPersons(select, executorPerson, TBL_TASKS, COL_EXECUTOR);
+    String publisherAlias = joinPersons(select, publisherPerson, TBL_TASK_EVENTS, COL_PUBLISHER);
 
-    select.addFromLeft(TBL_EVENT_DURATIONS, sys.joinTables(
-        TBL_EVENT_DURATIONS, VIEW_TASK_EVENTS,
-        COL_EVENT_DURATION));
+    String ownerDepartment = COL_OWNER + COL_DEPARTMENT;
+    String executorDepartment = COL_EXECUTOR + COL_DEPARTMENT;
+    String publisherDepartment = COL_PUBLISHER + COL_DEPARTMENT;
+    String depts;
 
-    select.addFromLeft(TBL_DURATION_TYPES, sys.joinTables(
-        TBL_DURATION_TYPES, TBL_EVENT_DURATIONS,
-        COL_DURATION_TYPE));
+    if (report.requiresField(ownerDepartment) || report.requiresField(executorDepartment)
+        || report.requiresField(publisherDepartment)) {
 
-    select.addFromLeft(VIEW_TASK_USERS, SqlUtils.and(sys.joinTables(
-        TBL_TASKS, VIEW_TASK_USERS,
-        COL_TASK),
-        SqlUtils.notEqual(VIEW_TASK_USERS, COL_USER,  SqlUtils.field(TBL_TASKS, COL_EXECUTOR)),
-        SqlUtils.notEqual(VIEW_TASK_USERS, COL_USER,  SqlUtils.field(TBL_TASKS, COL_OWNER))));
+      depts = qs.sqlCreateTemp(new SqlSelect()
+          .addMax(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME)
+          .addFields(TBL_DEPARTMENT_EMPLOYEES, COL_COMPANY_PERSON)
+          .addFrom(TBL_DEPARTMENT_EMPLOYEES)
+          .addFromInner(TBL_DEPARTMENTS,
+              sys.joinTables(TBL_DEPARTMENTS, TBL_DEPARTMENT_EMPLOYEES, COL_DEPARTMENT))
+          .addGroup(TBL_DEPARTMENT_EMPLOYEES, COL_COMPANY_PERSON));
 
-    addJoinsForUserFirstLastNames(select, TBL_PERSONS, VIEW_TASK_USERS, COL_USER);
+      ImmutableMap.of(ownerDepartment, ownerAlias, executorDepartment, executorAlias,
+          publisherDepartment, publisherAlias).forEach((deptName, usrAlias) -> {
 
+        if (report.requiresField(deptName)) {
+          String als = SqlUtils.uniqueName();
 
-    SimpleRowSet rqs = qs.getData(select);
+          select.addField(als, COL_DEPARTMENT_NAME, deptName)
+              .addFromLeft(depts, als, SqlUtils.joinUsing(usrAlias, als, COL_COMPANY_PERSON));
 
-    if (rqs.isEmpty()) {
-      return ResponseObject.response(rqs);
+          clause.add(report.getCondition(SqlUtils.field(als, COL_DEPARTMENT_NAME), deptName));
+        }
+      });
+    } else {
+      depts = null;
     }
+    String tmp = qs.sqlCreateTemp(select.setWhere(clause));
 
-    return ResponseObject.response(rqs);
-  }
+    qs.sqlDropTemp(depts);
 
-  private void addExprForUserFirstLastNames(SqlSelect select, String table, String col) {
-    select.addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(table, COL_FIRST_NAME),
-        SqlUtils.constant(BeeConst.STRING_EMPTY)),
-        SqlUtils.constant(BeeConst.STRING_SPACE),
-        SqlUtils.nvl(SqlUtils.field(table, COL_LAST_NAME),
-            SqlUtils.constant(BeeConst.STRING_EMPTY))), col);
-  }
-
-  private void addJoinsForUserFirstLastNames(SqlSelect select, String personTblAls,
-      String table, String col) {
-    String userTblAls = SqlUtils.uniqueName();
-    String companyPersonTblAls = SqlUtils.uniqueName();
-
-    select.addFromLeft(AdministrationConstants.TBL_USERS, userTblAls, sys.joinTables(
-        AdministrationConstants.TBL_USERS, userTblAls, table,
-        col));
-
-    select.addFromLeft(TBL_COMPANY_PERSONS, companyPersonTblAls, sys.joinTables(
-        TBL_COMPANY_PERSONS, companyPersonTblAls, userTblAls, COL_COMPANY_PERSON));
-
-    select.addFromLeft(TBL_PERSONS, personTblAls, sys.joinTables(
-        TBL_PERSONS, personTblAls, companyPersonTblAls, COL_PERSON));
+    return report.getResultResponse(qs, tmp,
+        Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)));
   }
 
   private ResponseObject getSchedulingData(RequestInfo reqInfo) {
@@ -2126,7 +2153,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
   }
 
   private ResponseObject getTaskData(long taskId, Long eventId, Collection<String> propNames,
-                                     boolean addRelations) {
+      boolean addRelations) {
 
     BeeRowSet rowSet = qs.getViewData(VIEW_TASKS, Filter.compareId(taskId));
     if (DataUtils.isEmpty(rowSet)) {
@@ -2171,6 +2198,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     for (BeeRow row : rowSet.getRows()) {
       FileInfo sf = new FileInfo(DataUtils.getLong(rowSet, row, COL_FILE),
+          DataUtils.getString(rowSet, row, COL_FILE_HASH),
           DataUtils.getString(rowSet, row, ALS_FILE_NAME),
           DataUtils.getLong(rowSet, row, ALS_FILE_SIZE),
           DataUtils.getString(rowSet, row, ALS_FILE_TYPE));
@@ -2206,13 +2234,27 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     return Lists.newArrayList(qs.getLongColumn(query));
   }
 
+  private String joinPersons(SqlSelect select, String persons, String tbl, String fld) {
+    String users = SqlUtils.uniqueName();
+    String companyPersons = SqlUtils.uniqueName();
+
+    select.addFromLeft(AdministrationConstants.TBL_USERS, users,
+      sys.joinTables(AdministrationConstants.TBL_USERS, users, tbl, fld))
+      .addFromLeft(TBL_COMPANY_PERSONS, companyPersons, sys.joinTables(TBL_COMPANY_PERSONS,
+        companyPersons, users, COL_COMPANY_PERSON))
+      .addFromLeft(TBL_PERSONS, persons, sys.joinTables(TBL_PERSONS, persons, companyPersons,
+        COL_PERSON));
+    return users;
+  }
+
+//   Verslo aljansas
   private ResponseObject getTypeHoursReport(RequestInfo reqInfo) {
     Dictionary constants = usr.getDictionary();
     SqlSelect durationTypes = new SqlSelect()
-        .addFrom(TBL_DURATION_TYPES)
-        .addFields(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME)
-        .setWhere(SqlUtils.sqlTrue())
-        .addOrder(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME);
+      .addFrom(TBL_DURATION_TYPES)
+      .addFields(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME)
+      .setWhere(SqlUtils.sqlTrue())
+      .addOrder(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME);
 
     boolean hideTimeZeros = false;
 
@@ -2340,6 +2382,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     return resp;
   }
 
+  // Verslo aljansas
   private ResponseObject getUsersHoursReport(RequestInfo reqInfo) {
     Dictionary constants = usr.getDictionary();
     SqlSelect userListQuery =
@@ -2559,7 +2602,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
             row.getDateTime(COL_FINISH_TIME), row.getValue(COL_SUMMARY),
             row.getValue(COL_DESCRIPTION), BeeUtils.joinItems(row.getValue(ALS_COMPANY_NAME), row
                 .getValue(ALS_COMPANY_TYPE_NAME)), row.getLong(COL_OWNER),
-            executor, constants);
+            executor, constants, usr.getDateTimeFormatInfo(recipientUser));
     String content = document.buildLines();
 
     logger.info(label, taskId, "mail to", recipientUser, recipientEmail);
@@ -3004,7 +3047,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
               row.getDateTime(COL_FINISH_TIME), row.getValue(COL_SUMMARY),
               row.getValue(COL_DESCRIPTION), BeeUtils.joinItems(row.getValue(ALS_COMPANY_NAME), row
                   .getValue(ALS_COMPANY_TYPE_NAME)), row.getLong(COL_OWNER),
-              executor, constants);
+              executor, constants, usr.getDateTimeFormatInfo(executor));
       String content = document.buildLines();
       String headerCaption = BeeUtils.joinWords(constants.crmTask(), taskId,
           row.getValue(COL_SUMMARY));
@@ -3250,7 +3293,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
   private Document taskToHtml(long taskId, DateTime startTime, DateTime finishTime,
       String summary, String description, String company, Long owner, Long executor,
-      Dictionary constants) {
+      Dictionary constants, DateTimeFormatInfo dateTimeFormatInfo) {
 
     Document doc = new Document();
 
@@ -3261,9 +3304,11 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     Tbody fields = tbody().append(
         tr().append(
-            td().text(constants.crmStartDate()), td().text(TimeUtils.renderCompact(startTime))),
+            td().text(constants.crmStartDate()),
+            td().text(Formatter.renderDateTime(dateTimeFormatInfo, startTime))),
         tr().append(
-            td().text(constants.crmFinishDate()), td().text(TimeUtils.renderCompact(finishTime))),
+            td().text(constants.crmFinishDate()),
+            td().text(Formatter.renderDateTime(dateTimeFormatInfo, finishTime))),
         tr().append(
             td().text(constants.crmTaskSubject()), td().text(BeeUtils.trim(summary))));
 
@@ -3427,7 +3472,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
               row.getDateTime(COL_FINISH_TIME), row.getValue(COL_SUMMARY),
               row.getValue(COL_DESCRIPTION), BeeUtils.joinItems(row.getValue(ALS_COMPANY_NAME), row
                   .getValue(ALS_COMPANY_TYPE_NAME)), row.getLong(COL_OWNER),
-              row.getLong(COL_EXECUTOR), constants);
+              row.getLong(COL_EXECUTOR), constants, usr.getDateTimeFormatInfo(executor));
       String content = document.buildLines();
 
       logger.info(TIMER_REMIND_USER_TASKS, "task reminder id",
@@ -3507,7 +3552,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       return;
     }
 
-    String dateNow = TimeUtils.today().toString();
+    DateTimeFormatInfo dateTimeFormatInfo = usr.getDateTimeFormatInfo();
+    String dateNow = DateTimeFormat.of(PredefinedFormat.DATE_SHORT, dateTimeFormatInfo)
+        .format(TimeUtils.today());
     String subject =
         BeeUtils.joinWords(usr.getDictionary(userId).crmMailTasksSummarySubject(), dateNow);
 

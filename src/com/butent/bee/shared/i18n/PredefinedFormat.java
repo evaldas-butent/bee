@@ -40,6 +40,12 @@ public enum PredefinedFormat {
       return dateTimeFormatInfo.dateFormatShort();
     }
   },
+  DATE_COMPACT {
+    @Override
+    public String getPattern(DateTimeFormatInfo dateTimeFormatInfo) {
+      return dateTimeFormatInfo.dateFormatCompact();
+    }
+  },
 
   TIME_FULL {
     @Override
@@ -141,7 +147,13 @@ public enum PredefinedFormat {
       return dateTimeFormatInfo.formatYear();
     }
   },
-  YEAR_MONTH {
+  YEAR_MONTH_STANDALONE {
+    @Override
+    public String getPattern(DateTimeFormatInfo dateTimeFormatInfo) {
+      return dateTimeFormatInfo.formatYearMonthStandalone();
+    }
+  },
+  YEAR_MONTH_FULL {
     @Override
     public String getPattern(DateTimeFormatInfo dateTimeFormatInfo) {
       return dateTimeFormatInfo.formatYearMonthFull();
@@ -196,7 +208,13 @@ public enum PredefinedFormat {
     }
   },
 
-  MONTH {
+  MONTH_STANDALONE {
+    @Override
+    public String getPattern(DateTimeFormatInfo dateTimeFormatInfo) {
+      return dateTimeFormatInfo.formatMonthStandalone();
+    }
+  },
+  MONTH_FULL {
     @Override
     public String getPattern(DateTimeFormatInfo dateTimeFormatInfo) {
       return dateTimeFormatInfo.formatMonthFull();
@@ -214,6 +232,7 @@ public enum PredefinedFormat {
       return dateTimeFormatInfo.formatMonthAbbrevDay();
     }
   },
+
   MONTH_DAY {
     @Override
     public String getPattern(DateTimeFormatInfo dateTimeFormatInfo) {

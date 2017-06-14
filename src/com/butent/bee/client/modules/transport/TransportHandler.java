@@ -17,6 +17,7 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.trade.InvoiceForm;
 import com.butent.bee.client.modules.trade.InvoicesGrid;
 import com.butent.bee.client.modules.transport.charts.ChartBase;
@@ -47,10 +48,12 @@ import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.report.ReportInfo;
+import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -84,7 +87,8 @@ public final class TransportHandler {
               break;
             }
           }
-          report.showModal(reportInfo);
+          report.showModal(new ReportParameters(Collections.singletonMap(COL_RS_REPORT,
+              reportInfo.serialize())));
         };
 
         if (reports.size() > 1) {
@@ -108,7 +112,7 @@ public final class TransportHandler {
       if (event.hasView(VIEW_ASSESSMENTS)) {
         event.setResult(DataUtils.join(Data.getDataInfo(VIEW_ASSESSMENTS), event.getRow(),
             Lists.newArrayList("ID", COL_STATUS, COL_DATE, "CustomerName", "OrderNotes"),
-            BeeConst.STRING_SPACE));
+            BeeConst.STRING_SPACE, Format.getDateRenderer(), Format.getDateTimeRenderer()));
       }
     }
   }
@@ -121,7 +125,7 @@ public final class TransportHandler {
     }
 
     @Override
-    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
       IsRow type = getSelectedTreeItem();
 
       if (type != null) {
@@ -163,9 +167,9 @@ public final class TransportHandler {
     MenuService.ASSESSMENTS_GRID.setHandler(
         parameters -> openAssessment(parameters, ViewHelper.getPresenterCallback()));
 
-    ViewFactory.registerSupplier(GridFactory.getSupplierKey(GRID_ASSESSMENT_REQUESTS, null),
-        callback -> openAssessment(GRID_ASSESSMENT_REQUESTS,
-            ViewFactory.getPresenterCallback(callback)));
+    ViewFactory.registerSupplier(GridFactory.getSupplierKey(GRID_ASSESSMENT_REQUESTS,
+        new AssessmentRequestsGrid()), callback -> openAssessment(GRID_ASSESSMENT_REQUESTS,
+        ViewFactory.getPresenterCallback(callback)));
     ViewFactory.registerSupplier(GridFactory.getSupplierKey(GRID_ASSESSMENT_ORDERS, null),
         callback -> openAssessment(GRID_ASSESSMENT_ORDERS,
             ViewFactory.getPresenterCallback(callback)));
@@ -254,7 +258,7 @@ public final class TransportHandler {
 
     switch (gridName) {
       case GRID_ASSESSMENT_REQUESTS:
-        interceptor = null;
+        interceptor = new AssessmentRequestsGrid();
         break;
 
       case GRID_ASSESSMENT_ORDERS:

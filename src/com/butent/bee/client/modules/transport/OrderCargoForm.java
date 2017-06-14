@@ -20,20 +20,17 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.view.grid.interceptor.ParentRowRefreshGrid;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
-import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.EnumSet;
 import java.util.Set;
 
 class OrderCargoForm extends AbstractFormInterceptor {
@@ -47,7 +44,7 @@ class OrderCargoForm extends AbstractFormInterceptor {
       Queries.getRow(VIEW_CARGO_TYPES, typeId, new RowCallback() {
         @Override
         public void onFailure(String... reason) {
-          super.onFailure(reason);
+          RowCallback.super.onFailure(reason);
           defaultCargoType = null;
           command.run();
         }
@@ -73,11 +70,11 @@ class OrderCargoForm extends AbstractFormInterceptor {
     if (widget instanceof ChildGrid) {
       switch (name) {
         case TBL_CARGO_INCOMES:
-          ((ChildGrid) widget).setGridInterceptor(new ParentRowRefreshGrid() {
+          ((ChildGrid) widget).setGridInterceptor(new CargoIncomesGrid() {
             @Override
             public boolean previewModify(Set<Long> rowIds) {
               if (super.previewModify(rowIds)) {
-                Data.onTableChange(TBL_CARGO_TRIPS, EnumSet.of(DataChangeEvent.Effect.REFRESH));
+                Data.refreshLocal(TBL_CARGO_TRIPS);
                 return true;
               }
               return false;
@@ -157,9 +154,10 @@ class OrderCargoForm extends AbstractFormInterceptor {
         final Long orderId = getLongValue(COL_ORDER);
 
         if (DataUtils.isId(orderId)) {
-          TransportUtils.copyOrderWithCargos(orderId,
-              Filter.compareId(getActiveRowId()), (newOrderId, newCargos) ->
-                  RowEditor.open(getViewName(), BeeUtils.peek(newCargos).getId(), Opener.MODAL));
+          Global.confirm(Localized.dictionary().trCopyOrder(), () ->
+              TransportUtils.copyOrderWithCargos(orderId, Filter.compareId(getActiveRowId()),
+                  (newOrderId, newCargos) ->
+                  RowEditor.open(getViewName(), BeeUtils.peek(newCargos).getId(), Opener.MODAL)));
         }
       });
     }

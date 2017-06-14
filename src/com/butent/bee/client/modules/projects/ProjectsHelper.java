@@ -23,6 +23,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
@@ -48,10 +49,45 @@ import java.util.Map;
  */
 public final class ProjectsHelper {
 
+  public static void copyProjectTemplateData(DataInfo templateData, IsRow templateRow,
+                                             DataInfo destData, IsRow destRow) {
+    for (BeeColumn tmlColumn : templateData.getColumns()) {
+      if (tmlColumn.getLevel() != 0 || tmlColumn.isReadOnly()) {
+        continue;
+      }
+
+      switch (tmlColumn.getId()) {
+        case ProjectConstants.COL_DEFAULT_PROJECT_TEMPLATE_STAGE:
+          if (BeeUtils.same(destData.getViewName(), VIEW_PROJECTS)) {
+            destRow.setProperty(tmlColumn.getId(),
+              Data.getString(templateData.getViewName(), templateRow, tmlColumn.getId()));
+          }
+          break;
+        default:
+          if (!destData.containsColumn(tmlColumn.getId())) {
+            break;
+          }
+          BeeColumn destColumn = destData.getColumn(tmlColumn.getId());
+
+          if (destColumn.getLevel() != 0 || destColumn.isReadOnly()) {
+            break;
+          }
+          Data.setValue(destData.getViewName(), destRow, tmlColumn.getId(),
+            Data.getString(templateData.getViewName(), templateRow, tmlColumn.getId()));
+
+          if (templateData.hasRelation(tmlColumn.getId())) {
+            RelationUtils.updateRow(destData, tmlColumn.getId(), destRow, templateData,
+              templateRow, false);
+          }
+          break;
+      }
+    }
+  }
+
   /**
    * Checks current online user of system is owner related row of Projects table. Returns true if
    * {@code BeeKeeper.getUser().getUserId} are equals with Projects.Owner field relation.
-   * 
+   *
    * @param form View of Form ({@code FormView}) has indexes (
    *        {@code form.getDataIndex(String source)}}) of data source related with Projects.Owner
    *        field. Name of data source index can be {@code ProjectConstants.COL_PROJECT_OWNER} if
@@ -60,11 +96,9 @@ public final class ProjectsHelper {
    *        tables where has relations to Projects table.
    * @param row Set of data where related with Project.Owner field.
    * @return true if current system user equals with Project.Owner field.
-   * @throws BeeRuntimeException throws if form and row parameters is null or form data index of
-   *         Projects.Owner is undefined {@code BeeConst.isUndef(form.getDataIndex(source) == true}
    */
   public static boolean isProjectOwner(FormView form, IsRow row) {
-    int idxOwner = BeeConst.UNDEF;
+    int idxOwner;
 
     Assert.notNull(form, "FormView containing project data must be not null");
     Assert.notNull(row, "IsRow containing project data must be not null");
@@ -72,7 +106,7 @@ public final class ProjectsHelper {
     if (BeeUtils.same(form.getViewName(), VIEW_PROJECTS)) {
       idxOwner = form.getDataIndex(COL_PROJECT_OWNER);
     } else {
-      idxOwner = form.getDataIndex(ALS_PROJECT_OWNER);
+      idxOwner = form.getDataIndex(COL_PROJECT_OWNER);
     }
 
     Assert.nonNegative(idxOwner);
@@ -87,7 +121,7 @@ public final class ProjectsHelper {
    * Checks current online user of system is one of rows contains with ProjectUsers.User field
    * filtered by ProjectUser.Project field. Returns true if {@code BeeKeeper.getUser().getUserId()}
    * are match with one Projects.Owner field.
-   * 
+   *
    * @param form View of Form ({@code FormView}) has indexes (
    *        {@code form.getDataIndex(String source)}}) of data source related with filtered
    *        ProjectUsers.User field by ProjectUsers.Project filed. Name of data source index can be
@@ -95,7 +129,6 @@ public final class ProjectsHelper {
    * @param row Set of data where related with filtered ProjectUsers.User by ProjectUsers.Project
    *        field.
    * @return true if current system user match Project.Owner field.
-   * @throws BeeRuntimeException throws if form and row parameters is null
    */
   public static boolean isProjectUser(FormView form, IsRow row) {
     Assert.notNull(form, "FormView containing project data must be not null");
@@ -281,16 +314,17 @@ public final class ProjectsHelper {
     IsColumn col = info.getColumn(column);
 
     if (row != null) {
-      result = DataUtils.render(col, row, info.getColumnIndex(column));
+      result = DataUtils.render(col, row, info.getColumnIndex(column),
+          Format.getDateRenderer(), Format.getDateTimeRenderer());
     } else if (ValueType.DATE_TIME.equals(type)) {
       DateTime time = TimeUtils.toDateTimeOrNull(value);
 
-      result = time == null ? result : time.toCompactString();
+      result = time == null ? result : Format.renderDateTime(time);
     } else if (ValueType.DATE.equals(type)) {
       JustDate date = TimeUtils.toDateOrNull(value);
 
       result = date == null ? result : Format.renderDate(date);
-    } else if (col != null ? !BeeUtils.isEmpty(col.getEnumKey()) : false) {
+    } else if (col != null && !BeeUtils.isEmpty(col.getEnumKey())) {
       return EnumUtils.getCaption(col.getEnumKey(), BeeUtils.toInt(value));
     }
 
@@ -317,26 +351,23 @@ public final class ProjectsHelper {
                 COL_CAPTION));
 
     for (final FileInfo fileInfo : files) {
-      FileUtils.uploadFile(fileInfo, new Callback<Long>() {
-        @Override
-        public void onSuccess(Long result) {
-          List<String> values = Lists.newArrayList(BeeUtils.toString(projectId),
-              BeeUtils.toString(eventId), BeeUtils.toString(result), fileInfo.getCaption());
+      FileUtils.uploadFile(fileInfo, result -> {
+        List<String> values = Lists.newArrayList(BeeUtils.toString(projectId),
+            BeeUtils.toString(eventId), BeeUtils.toString(result.getId()), fileInfo.getCaption());
 
-          Queries.insert(eventFilesViewName, columns, values, null, new RowCallback() {
+        Queries.insert(eventFilesViewName, columns, values, null, new RowCallback() {
 
-            @Override
-            public void onSuccess(BeeRow row) {
-              counter.set(counter.get() + 1);
-              if (counter.get() == files.size()) {
-                if (allUploadCallback != null) {
-                  allUploadCallback.onSuccess(Boolean.TRUE);
-                  RowInsertEvent.fire(BeeKeeper.getBus(), eventFilesViewName, row, null);
-                }
+          @Override
+          public void onSuccess(BeeRow row) {
+            counter.set(counter.get() + 1);
+            if (counter.get() == files.size()) {
+              if (allUploadCallback != null) {
+                allUploadCallback.onSuccess(Boolean.TRUE);
+                RowInsertEvent.fire(BeeKeeper.getBus(), eventFilesViewName, row, null);
               }
             }
-          });
-        }
+          }
+        });
       });
     }
   }

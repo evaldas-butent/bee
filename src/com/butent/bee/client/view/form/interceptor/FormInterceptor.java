@@ -36,6 +36,9 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
 
   void afterCreatePresenter(Presenter presenter);
 
+  default void afterDeleteRow(long rowId) {
+  }
+
   void afterInsertRow(IsRow result, boolean forced);
 
   void afterRefresh(FormView form, IsRow row);
@@ -49,6 +52,8 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
   void beforeRefresh(FormView form, IsRow row);
 
   void beforeStateChange(State state, boolean modal);
+
+  boolean focusName(String name);
 
   boolean focusSource(String source);
 
@@ -95,4 +100,6 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
   boolean saveOnPrintNewRow();
 
   void setFormView(FormView form);
+
+  boolean showReadOnly(boolean readOnly);
 }

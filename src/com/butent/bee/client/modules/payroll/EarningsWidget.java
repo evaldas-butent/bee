@@ -57,7 +57,6 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -700,7 +699,7 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
     int from = Math.max(size - 6, 0);
 
     for (YearMonth ym : months.subList(from, size)) {
-      Label widget = new Label(PayrollHelper.format(ym));
+      Label widget = new Label(Format.renderYearMonth(ym));
 
       widget.addStyleName(STYLE_MONTH_LABEL);
       if (ym.equals(activeMonth)) {
@@ -727,13 +726,13 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
   private Widget renderMonthSelector(final List<YearMonth> months) {
     Button selector = new Button();
     if (activeMonth != null) {
-      selector.setText(PayrollHelper.format(activeMonth));
+      selector.setText(Format.renderYearMonth(activeMonth));
     }
 
     selector.addClickHandler(event -> {
       List<String> labels = new ArrayList<>();
       for (YearMonth ym : months) {
-        labels.add(PayrollHelper.format(ym));
+        labels.add(Format.renderYearMonth(ym));
       }
 
       Global.choiceWithCancel(Localized.dictionary().yearMonth(), null, labels, value -> {
@@ -758,14 +757,15 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
 
     String text = (row == null)
         ? DataUtils.buildIdList(getPartitionId(item))
-        : DataUtils.join(getPartitionDataColumns(), row, nameIndexes, BeeConst.STRING_SPACE);
+        : DataUtils.join(getPartitionDataColumns(), row, nameIndexes, BeeConst.STRING_SPACE,
+        Format.getDateRenderer(), Format.getDateTimeRenderer());
 
     Label nameWidget = new Label(text);
     nameWidget.addStyleName(STYLE_PARTITION_NAME);
 
     if (!BeeUtils.isEmpty(contactIndexes) && row != null) {
       String title = DataUtils.join(getPartitionDataColumns(), row, contactIndexes,
-          BeeConst.STRING_EOL);
+          BeeConst.STRING_EOL, Format.getDateRenderer(), Format.getDateTimeRenderer());
       if (!BeeUtils.isEmpty(title)) {
         nameWidget.setTitle(title);
       }
@@ -784,7 +784,7 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
 
     if (!BeeUtils.isEmpty(infoIndexes) && row != null) {
       Label infoWidget = new Label(DataUtils.join(getPartitionDataColumns(), row, infoIndexes,
-          BeeConst.DEFAULT_LIST_SEPARATOR));
+          BeeConst.DEFAULT_LIST_SEPARATOR, Format.getDateRenderer(), Format.getDateTimeRenderer()));
       infoWidget.addStyleName(STYLE_PARTITION_INFO);
 
       panel.add(infoWidget);
@@ -795,9 +795,10 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
 
     if (activeMonth != null
         && (from != null && !Objects.equals(from, activeMonth.getDate())
-            || until != null && !Objects.equals(until, activeMonth.getLast()))) {
+        || until != null && !Objects.equals(until, activeMonth.getLast()))) {
 
-      Label periodWidget = new Label(TimeUtils.renderPeriod(from, until));
+      Label periodWidget = new Label(TimeUtils.renderPeriod(Format.renderDate(from),
+          Format.renderDate(until)));
       periodWidget.addStyleName(STYLE_PARTITION_PERIOD);
 
       panel.add(periodWidget);
@@ -876,7 +877,7 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
       }
     }
 
-    Collections.sort(earnings, (Earnings e1, Earnings e2) -> {
+    earnings.sort((Earnings e1, Earnings e2) -> {
       int result = BeeUtils.compareNullsLast(partitionIndexes.get(getPartitionId(e1)),
           partitionIndexes.get(getPartitionId(e2)));
 

@@ -39,7 +39,9 @@
       <xs:enumeration value="update_exchange_rates" />
       <xs:enumeration value="calendar_reports" />
       <xs:enumeration value="task_list" />
+      <!-- Verslo aljansas {-->
       <xs:enumeration value="task_reports" />
+      <!-- } Verslo aljansas -->
       <xs:enumeration value="discuss_list" />
       <xs:enumeration value="documents" />
       <xs:enumeration value="open_mail" />

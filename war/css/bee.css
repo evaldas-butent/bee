@@ -510,6 +510,9 @@
   -webkit-flex: 1;
   -ms-flex: 1;
 }
+.bee-Header-read-only {
+  color: tomato;
+}
 
 .bee-Header-commandPanel {
   margin-left: auto;
@@ -666,7 +669,6 @@
 
 .bee-CellGridBody {
   overflow: hidden;
-  text-overflow: ellipsis;
   color: #414142;
 }
 
@@ -1790,10 +1792,22 @@
 }
 
 .bee-SimplePager-container {
-  border-spacing: 1px;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
 }
-.bee-SimplePager-disabledButton {
+.bee-SimplePager-command {
+  margin-right: 1px;
+}
+.bee-SimplePager-command-disabled {
   visibility: hidden;
+}
+.bee-SimplePager-info {
+  text-align: center;
+  margin-right: 1px;
 }
 
 .bee-FooterContainer {
@@ -1809,7 +1823,7 @@
   -ms-flex-pack: justify;
 }
 
-.bee-SimplePager {
+.bee-FooterContainer .bee-SimplePager {
   margin-left: 5px;
   margin-right: 1em;
 }
@@ -2031,6 +2045,9 @@
 }
 .bee-Form .bee-CheckBox.bee-disabled {
   background-color: inherit;
+}
+.bee-Form .bee-disabled .bee-GridView {
+  background-color: #f3f3f3;
 }
 
 .bee-FilterSupplier-dialog {
@@ -3210,6 +3227,10 @@
   background-color: red;
 }
 
+.bee-Header-commandPanel .bee-Button.bee-report-generate {
+  margin-right: 1em;
+}
+
 .bee-info-table {
   border-collapse: collapse;
 }
@@ -3776,7 +3797,7 @@ textarea,
 }
 
 .bee-NotificationBar {
-  width: 500px;
+  width: 520px;
   height: 100%;
   outline: 9999px solid rgba(0,0,0,0.7);
   background-color: #f2f2f2;
@@ -4108,4 +4129,8 @@ textarea,
 .bee-ExportController-submitting .bee-ExportController-cancel,
 .bee-ExportController-completed .bee-ExportController-cancel {
   display: none;
+}
+
+.bee-CheckBox {
+  white-space: nowrap;
 }

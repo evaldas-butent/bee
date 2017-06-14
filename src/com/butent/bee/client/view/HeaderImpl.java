@@ -58,6 +58,7 @@ public class HeaderImpl extends Flow implements HeaderView {
   private static final String STYLE_MESSAGE = STYLE_PREFIX + "message";
   private static final String STYLE_ROW_ID = STYLE_PREFIX + "row-id";
   private static final String STYLE_ROW_MESSAGE = STYLE_PREFIX + "row-message";
+  private static final String STYLE_READ_ONLY = STYLE_PREFIX + "read-only";
 
   private static final String STYLE_COMMAND_PANEL = STYLE_PREFIX + "commandPanel";
 
@@ -67,6 +68,10 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   private static final String STYLE_CREATE_NEW = BeeConst.CSS_CLASS_PREFIX + "CreateNew";
   private static final String STYLE_SAVE_LARGE = BeeConst.CSS_CLASS_PREFIX + "SaveLarge";
+
+  private static final int MESSAGE_INDEX_ROW_ID = 0;
+  private static final int MESSAGE_INDEX_READ_ONLY = 1;
+  private static final int MESSAGE_INDEX_ROW_MESSAGE = 2;
 
   private static boolean hasAction(Action action, boolean def,
       Set<Action> enabledActions, Set<Action> disabledActions) {
@@ -252,6 +257,22 @@ public class HeaderImpl extends Flow implements HeaderView {
 
     if (hasAction(Action.CLOSE, UiOption.isClosable(options), enabledActions, disabledActions)) {
       add(createFa(Action.CLOSE, hiddenActions));
+    }
+  }
+
+  @Override
+  public boolean enableCommandByStyleName(String styleName, boolean enable) {
+    if (BeeUtils.isEmpty(styleName)) {
+      return false;
+    }
+
+    Widget command = UiHelper.getChildByStyleName(getCommandPanel(), styleName);
+    if (command instanceof HasEnabled) {
+      ((HasEnabled) command).setEnabled(enable);
+      return true;
+
+    } else {
+      return false;
     }
   }
 
@@ -511,9 +532,15 @@ public class HeaderImpl extends Flow implements HeaderView {
   }
 
   @Override
+  public void showReadOnly(boolean readOnly) {
+    String message = readOnly ? Localized.dictionary().readOnly() : null;
+    setMessage(MESSAGE_INDEX_READ_ONLY, message, STYLE_READ_ONLY);
+  }
+
+  @Override
   public void showRowId(IsRow row) {
     String message = DataUtils.hasId(row) ? BeeUtils.bracket(row.getId()) : null;
-    setMessage(0, message, STYLE_ROW_ID);
+    setMessage(MESSAGE_INDEX_ROW_ID, message, STYLE_ROW_ID);
   }
 
   @Override
@@ -527,7 +554,7 @@ public class HeaderImpl extends Flow implements HeaderView {
       message = null;
     }
 
-    setMessage(1, message, STYLE_ROW_MESSAGE);
+    setMessage(MESSAGE_INDEX_ROW_MESSAGE, message, STYLE_ROW_MESSAGE);
   }
 
   @Override

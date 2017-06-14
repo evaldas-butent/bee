@@ -25,7 +25,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.modules.mail.Relations;
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.modules.projects.ProjectsHelper;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -1041,8 +1041,9 @@ class TaskBuilder extends ProductSupportInterceptor {
       @Override
       public void onSuccess(Integer result) {
         files.forEach(file ->
-          FileUtils.uploadFile(file, fileId ->
+          FileUtils.uploadFile(file, info ->
             tasks.forEach(task -> {
+              Long fileId = info.getId();
               List<String> values = Lists.newArrayList(BeeUtils.toString(task),
                 BeeUtils.toString(fileId), file.getCaption());
 

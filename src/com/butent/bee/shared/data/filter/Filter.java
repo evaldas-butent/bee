@@ -305,29 +305,57 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return new CustomFilter(key, Lists.newArrayList(arg));
   }
 
+  public static Filter custom(String key, Long arg) {
+    if (arg == null) {
+      return custom(key);
+    } else {
+      return custom(key, BeeUtils.toString(arg));
+    }
+  }
+
   public static Filter custom(String key, String arg1, String arg2) {
     Assert.notEmpty(key);
     return new CustomFilter(key, Lists.newArrayList(arg1, arg2));
   }
 
   public static Filter equals(String column, DateTime value) {
-    return compareWithValue(column, Operator.EQ, new DateTimeValue(value));
+    if (value == null) {
+      return isNull(column);
+    } else {
+      return compareWithValue(column, Operator.EQ, new DateTimeValue(value));
+    }
   }
 
   public static Filter equals(String column, Integer value) {
-    return compareWithValue(column, Operator.EQ, new IntegerValue(value));
+    if (value == null) {
+      return isNull(column);
+    } else {
+      return compareWithValue(column, Operator.EQ, new IntegerValue(value));
+    }
   }
 
   public static Filter equals(String column, JustDate value) {
-    return compareWithValue(column, Operator.EQ, new DateValue(value));
+    if (value == null) {
+      return isNull(column);
+    } else {
+      return compareWithValue(column, Operator.EQ, new DateValue(value));
+    }
   }
 
   public static Filter equals(String column, Long value) {
-    return compareWithValue(column, Operator.EQ, new LongValue(value));
+    if (value == null) {
+      return isNull(column);
+    } else {
+      return compareWithValue(column, Operator.EQ, new LongValue(value));
+    }
   }
 
   public static Filter equals(String column, String value) {
-    return compareWithValue(column, Operator.EQ, new TextValue(value));
+    if (value == null) {
+      return isNull(column);
+    } else {
+      return compareWithValue(column, Operator.EQ, new TextValue(value));
+    }
   }
 
   public static Filter equals(String column, Enum<?> value) {
@@ -360,6 +388,14 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return new IdFilter(values);
   }
 
+  public static Filter idIn(String inView, String inColumn, Filter inFilter) {
+    return idIn(inView, inColumn, inFilter, null);
+  }
+
+  public static Filter idIn(String inView, String inColumn, Filter inFilter, String options) {
+    return in(ColumnInFilter.ID_TAG, inView, inColumn, inFilter, options);
+  }
+
   public static Filter idNotIn(Collection<Long> values) {
     Filter flt = idIn(values);
     return (flt == null) ? null : isNot(flt);
@@ -370,11 +406,21 @@ public abstract class Filter implements BeeSerializable, RowFilter {
   }
 
   public static Filter in(String column, String inView, String inColumn, Filter inFilter) {
+    return in(column, inView, inColumn, inFilter, null);
+  }
+
+  public static Filter in(String column, String inView, String inColumn, Filter inFilter,
+      String options) {
+
     Assert.notEmpty(column);
     Assert.notEmpty(inView);
     Assert.notEmpty(inColumn);
 
-    return new ColumnInFilter(column, inView, inColumn, inFilter);
+    return new ColumnInFilter(column, inView, inColumn, inFilter, options);
+  }
+
+  public static Filter inId(String column, String inView, Filter inFilter) {
+    return in(column, inView, ColumnInFilter.ID_TAG, inFilter);
   }
 
   public static Filter isEqual(String column, Value value) {

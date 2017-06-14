@@ -45,6 +45,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
+/* Verslo aljansas */
 public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
   public enum ReportType implements HasWidgetSupplier {
