@@ -15,6 +15,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.Popup;
@@ -805,7 +806,12 @@ public enum Report implements HasWidgetSupplier {
     @Override
     public LinkedHashMap<String, Editor> getReportParams() {
       LinkedHashMap<String, Editor> params = new LinkedHashMap<>();
-      params.put(COL_CURRENCY, getCurrencyEditor());
+      Editor currencyEditor = getCurrencyEditor();
+      if (currencyEditor instanceof UnboundSelector) {
+        ((UnboundSelector) currencyEditor).setValue(Global.getParameterRelation(PRM_CURRENCY),
+          true);
+      }
+      params.put(COL_CURRENCY, currencyEditor);
       return params;
     }
 
