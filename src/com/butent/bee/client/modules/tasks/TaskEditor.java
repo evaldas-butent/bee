@@ -152,6 +152,7 @@ class TaskEditor extends ProductSupportInterceptor {
   private static final String STYLE_PHOTO = "Photo";
   private static final String STYLE_TASK = CRM_STYLE_PREFIX + "task-";
   private static final String STYLE_TASK_LATE_KIND = STYLE_TASK + "lateKind-";
+  private static final String STYLE_TASK_BREAK = STYLE_TASK + "break";
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
   private static final String NAME_OBSERVERS = "Observers";
 
@@ -2096,6 +2097,9 @@ class TaskEditor extends ProductSupportInterceptor {
     if (kind != null) {
       lateIndicator.addStyleName(STYLE_TASK_LATE_KIND + kind.toString().toLowerCase());
     }
+
+    lateIndicator.setStyleName(STYLE_TASK_BREAK, TaskStatus.in(getStatus(), TaskStatus.SUSPENDED,
+      TaskStatus.COMPLETED, TaskStatus.APPROVED, TaskStatus.CANCELED));
   }
 
   private FaLabel createMenuLabel() {
