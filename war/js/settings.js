@@ -22,6 +22,7 @@ var BeeSettings = {
   "onStartup": {"content": "form_AnnouncementsBoard", "force": "*"},
   "clickSensitivityMillis": 100,
   "clickSensitivityDistance": 10,
+  "actionSensitivityMillis": 500,
   "newsRefreshIntervalSeconds": 60,
   "dialogResizerWidth": 10,
   "reducedInteractionStatusMinutes": 15,

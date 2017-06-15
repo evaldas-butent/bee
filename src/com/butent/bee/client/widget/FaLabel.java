@@ -20,6 +20,7 @@ public class FaLabel extends Label implements EnablableWidget, Animatable {
   private boolean enabled = true;
 
   private Timer animationTimer;
+  private int animationDuration;
 
   public FaLabel(FontAwesome fa) {
     super();
@@ -45,7 +46,9 @@ public class FaLabel extends Label implements EnablableWidget, Animatable {
   }
 
   @Override
-  public void enableAnimation() {
+  public void enableAnimation(int duration) {
+    setAnimationDuration(duration);
+
     StyleUtils.animateHover(this);
     StyleUtils.animateActive(this);
   }
@@ -69,7 +72,10 @@ public class FaLabel extends Label implements EnablableWidget, Animatable {
 
       if (getElement().hasClassName(StyleUtils.NAME_ANIMATE_ACTIVE)) {
         StyleUtils.restartAnimation(getElement(), StyleUtils.NAME_ACTIVE);
-        scheduleAnimationEnd(1_000);
+
+        if (getAnimationDuration() > 0) {
+          scheduleAnimationEnd(getAnimationDuration());
+        }
       }
     }
 
@@ -106,6 +112,10 @@ public class FaLabel extends Label implements EnablableWidget, Animatable {
     DomUtils.preventSelection(this);
   }
 
+  private int getAnimationDuration() {
+    return animationDuration;
+  }
+
   private void scheduleAnimationEnd(int millis) {
     if (animationTimer == null) {
       animationTimer = new Timer() {
@@ -117,5 +127,9 @@ public class FaLabel extends Label implements EnablableWidget, Animatable {
     }
 
     animationTimer.schedule(millis);
+  }
+
+  private void setAnimationDuration(int animationDuration) {
+    this.animationDuration = animationDuration;
   }
 }

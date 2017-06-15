@@ -2,6 +2,7 @@ package com.butent.bee.client.widget;
 
 import com.google.gwt.event.dom.client.ClickHandler;
 
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.font.FontAwesome;
@@ -19,6 +20,11 @@ public class CustomAction extends FaLabel {
     super(Assert.notNull(fa));
     idle = fa;
     addClickHandler(action);
+  }
+
+  @Override
+  public void enableAnimation(int duration) {
+    StyleUtils.animateHover(this);
   }
 
   public Consumer<ResponseObject> getCallback() {

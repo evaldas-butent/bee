@@ -33,15 +33,15 @@ public enum Action implements BeeSerializable, HasCaption {
   MENU(FontAwesome.NAVICON, Localized.dictionary().menu(), "menu", false, true),
   MINIMIZE(FontAwesome.MINUS, Localized.dictionary().actionMinimize(), "minimize", false, true),
   MERGE(FontAwesome.OBJECT_GROUP, Localized.dictionary().actionMerge(), "merge", true, true),
+  MOVE(FontAwesome.ARROWS, Localized.dictionary().actionMove(), "move", true, true),
   PRINT(FontAwesome.PRINT, Localized.dictionary().actionPrint(), "print", false, true),
-  REFRESH(FontAwesome.REFRESH, Localized.dictionary().actionRefresh(), "refresh", false, true),
+  REFRESH(FontAwesome.REFRESH, Localized.dictionary().actionRefresh(), "refresh", false, true, 2),
   REMOVE_FILTER(FontAwesome.REMOVE, Localized.dictionary().actionRemoveFilter(), "removeFilter",
       false, false),
   RESET_SETTINGS(FontAwesome.TIMES_CIRCLE_O, Localized.dictionary().actionResetSettings(),
       "resetSettings", false, true),
   RIGHTS(FontAwesome.EYE, Localized.dictionary().rights(), "rights", true, true),
-  SAVE(FontAwesome.SAVE, Localized.dictionary().actionSave(), "save", true, true),
-  MOVE(FontAwesome.ARROWS, Localized.dictionary().actionMove(), "move", true, true);
+  SAVE(FontAwesome.SAVE, Localized.dictionary().actionSave(), "save", true, true, 2);
 
   public static final Set<Action> NO_ACTIONS = new HashSet<>();
 
@@ -76,13 +76,22 @@ public enum Action implements BeeSerializable, HasCaption {
   private final boolean disablable;
   private final boolean animate;
 
+  private final int sensitivityRatio;
+
   Action(FontAwesome icon, String caption, String styleSuffix, boolean disablable,
       boolean animate) {
+    this(icon, caption, styleSuffix, disablable, animate, animate ? 1 : BeeConst.UNDEF);
+  }
+
+  Action(FontAwesome icon, String caption, String styleSuffix, boolean disablable,
+      boolean animate, int sensitivityRatio) {
+
     this.icon = icon;
     this.caption = caption;
     this.styleSuffix = styleSuffix;
     this.disablable = disablable;
     this.animate = animate;
+    this.sensitivityRatio = sensitivityRatio;
   }
 
   public boolean animate() {
@@ -101,6 +110,10 @@ public enum Action implements BeeSerializable, HasCaption {
 
   public FontAwesome getIcon() {
     return icon;
+  }
+
+  public int getSensitivityRatio() {
+    return sensitivityRatio;
   }
 
   public String getStyleName() {

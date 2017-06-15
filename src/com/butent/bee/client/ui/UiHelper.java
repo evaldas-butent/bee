@@ -15,10 +15,12 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Settings;
+import com.butent.bee.client.animation.Animatable;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.HasTextAlign;
@@ -38,6 +40,7 @@ import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -473,6 +476,26 @@ public final class UiHelper {
       }
     }
     return false;
+  }
+
+  public static void initActionWidget(Action action, UIObject obj) {
+    if (action != null && obj != null) {
+      if (BeeUtils.isEmpty(obj.getTitle())) {
+        obj.setTitle(action.getCaption());
+      }
+
+      int sensitivityMillis = Previewer.getActionSensitivityMillis() * action.getSensitivityRatio();
+
+      if (action.animate() && obj instanceof Animatable) {
+        ((Animatable) obj).enableAnimation(sensitivityMillis);
+      } else {
+        StyleUtils.animateHover(obj);
+      }
+
+      if (sensitivityMillis >= 0) {
+        EventUtils.setClickSensitivityMillis(obj, sensitivityMillis);
+      }
+    }
   }
 
   public static Widget initialize(Widget widget, WidgetInitializer initializer, String name) {

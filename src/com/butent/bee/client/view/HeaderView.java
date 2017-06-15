@@ -30,6 +30,8 @@ public interface HeaderView extends View, IndexedPanel, Printable, HasClickHandl
 
   void addCommandItem(IdentifiableWidget widget);
 
+  void addCommandItem(IdentifiableWidget widget, int sensitivityMillis);
+
   void clearCommandPanel();
 
   boolean enableCommandByStyleName(String styleName, boolean enable);

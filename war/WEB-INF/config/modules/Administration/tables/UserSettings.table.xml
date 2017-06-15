@@ -21,6 +21,8 @@
     <Integer name="ClickSensitivityMillis" label="=clickSensitivityMillis" />
     <Integer name="ClickSensitivityDistance" label="=clickSensitivityDistance" />
 
+    <Integer name="ActionSensitivityMillis" label="=actionSensitivityMillis" />
+
     <Integer name="CompanyActionRemindBefore" label="=calMailPlannedActions" />
     <Integer name="NewsRefreshIntervalSeconds" label="=newsRefreshIntervalSeconds" />
     <Integer name="LoadingStateDelayMillis" label="=loadingStateDelayMillis" />

@@ -43,6 +43,8 @@
     <SimpleColumn name="ClickSensitivityMillis" />
     <SimpleColumn name="ClickSensitivityDistance" />
 
+    <SimpleColumn name="ActionSensitivityMillis" />
+
     <SimpleColumn name="CompanyActionRemindBefore" />
     <SimpleColumn name="NewsRefreshIntervalSeconds" />
     <SimpleColumn name="LoadingStateDelayMillis" />

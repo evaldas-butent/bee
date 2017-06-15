@@ -138,6 +138,12 @@
                           style="&tabbedFlowInputStyle;" summarize="true"/>
           </FlowPanel>
 
+          <FlowPanel for="ActionSensitivityMillis" class="flexBox-horizontal">
+            <Label for="ActionSensitivityMillis" style="&uiSettingsLabelStyle;" />
+            <InputSpinner source="ActionSensitivityMillis" minValue="0" maxValue="2000" step="100"
+                          style="&tabbedFlowInputStyle;" summarize="true"/>
+          </FlowPanel>
+
           <FlowPanel for="NewsRefreshIntervalSeconds"  class="flexBox-horizontal">
             <Label for="NewsRefreshIntervalSeconds" style="&uiSettingsLabelStyle;"/>
             <InputSpinner source="NewsRefreshIntervalSeconds" minValue="0" maxValue="1000"

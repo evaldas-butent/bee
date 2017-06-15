@@ -9,6 +9,8 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.animation.Animatable;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
+import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
@@ -114,10 +116,22 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   @Override
   public void addCommandItem(IdentifiableWidget widget) {
-    if (widget instanceof Animatable) {
-      ((Animatable) widget).enableAnimation();
+    addCommandItem(widget, Previewer.getActionSensitivityMillis());
+  }
+
+  @Override
+  public void addCommandItem(IdentifiableWidget widget, int sensitivityMillis) {
+    if (widget != null) {
+      if (widget instanceof Animatable) {
+        ((Animatable) widget).enableAnimation(sensitivityMillis);
+      }
+
+      if (sensitivityMillis >= 0) {
+        EventUtils.setClickSensitivityMillis(widget.getElement(), sensitivityMillis);
+      }
+
+      getCommandPanel().add(widget);
     }
-    getCommandPanel().add(widget);
   }
 
   @Override
@@ -585,11 +599,7 @@ public class HeaderImpl extends Flow implements HeaderView {
     control.addStyleName(STYLE_CONTROL);
     control.addStyleName(action.getStyleName());
 
-    if (control instanceof Animatable) {
-      StyleUtils.enableAnimation(action, control);
-    }
-
-    control.setTitle(action.getCaption());
+    UiHelper.initActionWidget(action, control);
 
     if (hiddenActions != null && hiddenActions.contains(action)) {
       control.getElement().addClassName(STYLE_CONTROL_HIDDEN);

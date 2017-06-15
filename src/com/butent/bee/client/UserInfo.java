@@ -56,6 +56,8 @@ public class UserInfo implements HasInfo {
   private int clickSensitivityMillis;
   private int clickSensitivityDistance;
 
+  private int actionSensitivityMillis;
+
   private int newsRefreshIntervalSeconds;
   private int loadingStateDelayMillis;
 
@@ -102,6 +104,10 @@ public class UserInfo implements HasInfo {
         maybeUpdatePresence(p);
       }
     }
+  }
+
+  public int getActionSensitivityMillis() {
+    return actionSensitivityMillis;
   }
 
   public int getClickSensitivityDistance() {
@@ -495,6 +501,10 @@ public class UserInfo implements HasInfo {
     return showNewMessagesNotifier;
   }
 
+  private void setActionSensitivityMillis(int actionSensitivityMillis) {
+    this.actionSensitivityMillis = actionSensitivityMillis;
+  }
+
   private void setClickSensitivityDistance(int clickSensitivityDistance) {
     this.clickSensitivityDistance = clickSensitivityDistance;
   }
@@ -531,6 +541,8 @@ public class UserInfo implements HasInfo {
 
     setClickSensitivityMillis(getIntSetting(COL_CLICK_SENSITIVITY_MILLIS, BeeConst.UNDEF));
     setClickSensitivityDistance(getIntSetting(COL_CLICK_SENSITIVITY_DISTANCE, BeeConst.UNDEF));
+
+    setActionSensitivityMillis(getIntSetting(COL_ACTION_SENSITIVITY_MILLIS, BeeConst.UNDEF));
 
     setNewsRefreshIntervalSeconds(getIntSetting(COL_NEWS_REFRESH_INTERVAL_SECONDS, BeeConst.UNDEF));
     setLoadingStateDelayMillis(getIntSetting(COL_LOADING_STATE_DELAY_MILLIS, BeeConst.UNDEF));

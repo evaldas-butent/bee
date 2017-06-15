@@ -35,7 +35,6 @@ import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.TextTransform;
 import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
-import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -755,15 +754,6 @@ public final class StyleUtils {
 
   public static void copySize(Style src, Style dst) {
     copyProperties(src, dst, STYLE_WIDTH, STYLE_HEIGHT);
-  }
-
-  public static void enableAnimation(Action action, UIObject obj) {
-    Assert.notNull(action);
-
-    animateHover(obj);
-    if (action.animate()) {
-      animateActive(obj);
-    }
   }
 
   public static void fillHorizontal(Element el) {

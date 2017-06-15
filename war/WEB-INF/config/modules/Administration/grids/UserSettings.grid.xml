@@ -31,6 +31,8 @@
     <DataColumn name="ClickSensitivityMillis" visible="false" />
     <DataColumn name="ClickSensitivityDistance" visible="false" />
 
+    <DataColumn name="ActionSensitivityMillis" visible="false" />
+
     <DataColumn name="NewsRefreshIntervalSeconds" visible="false" />
     <DataColumn name="LoadingStateDelayMillis" visible="false" />
 
