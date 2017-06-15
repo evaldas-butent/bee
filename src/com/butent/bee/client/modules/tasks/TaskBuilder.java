@@ -858,48 +858,43 @@ class TaskBuilder extends ProductSupportInterceptor {
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
         .newArrayList(AdministrationConstants.COL_USER), Filter.isEqual(
-        ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
+        ProjectConstants.COL_PROJECT, Value.getValue(projectId)), result -> {
+          if (DataUtils.isEmpty(result)) {
+            if (executors != null) {
+              executors.getOracle().setAdditionalFilter(Filter.compareId(projectOwner), true);
+              TaskHelper.setWidgetEnabled(executors, notScheduledTask != null
+                  && !notScheduledTask.isChecked());
+              return;
+            }
+          }
 
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        if (DataUtils.isEmpty(result)) {
-          if (executors != null) {
-            executors.getOracle().setAdditionalFilter(Filter.compareId(projectOwner), true);
-            TaskHelper.setWidgetEnabled(executors, notScheduledTask != null
-                && !notScheduledTask.isChecked());
+          List<Long> userIds = Lists.newArrayList(projectOwner);
+          int idxUser = result.getColumnIndex(AdministrationConstants.COL_USER);
+
+          if (BeeConst.isUndef(idxUser)) {
+            Assert.untouchable();
             return;
           }
-        }
 
-        List<Long> userIds = Lists.newArrayList(projectOwner);
-        int idxUser = result.getColumnIndex(AdministrationConstants.COL_USER);
+          for (IsRow userRow : result) {
+            long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
 
-        if (BeeConst.isUndef(idxUser)) {
-          Assert.untouchable();
-          return;
-        }
-
-        for (IsRow userRow : result) {
-          long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
-
-          if (DataUtils.isId(projectUser)) {
-            userIds.add(projectUser);
+            if (DataUtils.isId(projectUser)) {
+              userIds.add(projectUser);
+            }
           }
-        }
 
-        if (executors != null) {
-          executors.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
-          TaskHelper.setWidgetEnabled(executors, notScheduledTask != null
-              && !notScheduledTask.isChecked());
-        }
+          if (executors != null) {
+            TaskHelper.setWidgetEnabled(executors, notScheduledTask != null
+                && !notScheduledTask.isChecked());
+          }
 
-        if (observers != null) {
-          observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
-          TaskHelper.setWidgetEnabled(observers, notScheduledTask != null
-              && !notScheduledTask.isChecked());
-        }
-      }
-    });
+          if (observers != null) {
+            observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
+            TaskHelper.setWidgetEnabled(observers, notScheduledTask != null
+                && !notScheduledTask.isChecked());
+          }
+        });
   }
 
   private void showFiles(IsRow row) {

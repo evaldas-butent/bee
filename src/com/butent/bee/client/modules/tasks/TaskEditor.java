@@ -1665,10 +1665,6 @@ class TaskEditor extends ProductSupportInterceptor {
       exclusions.add(oldUser);
     }
 
-    if (!BeeUtils.isEmpty(getProjectUsers())) {
-      filter.addAll(getProjectUsers());
-    }
-
     final TaskDialog dialog = new TaskDialog(Localized.dictionary().crmTaskForwarding());
 
     final String sid =
@@ -1893,6 +1889,27 @@ class TaskEditor extends ProductSupportInterceptor {
 
   private boolean isOwner() {
     return Objects.equals(userId, getOwner());
+  }
+
+  private void maybeHideProjectInformation(boolean visibility) {
+    FormView form = getFormView();
+
+    if (form == null) {
+      return;
+    }
+
+    for (String name : new String[]{ProjectConstants.COL_PROJECT,
+        ProjectConstants.COL_PROJECT_STAGE, COL_PRODUCT, COL_COMPANY, COL_CONTACT}) {
+      Widget widget = getFormView().getWidgetBySource(name);
+
+      if (widget != null) {
+        Widget drill = ((DataSelector) widget).getDrill();
+
+        if (drill != null) {
+          drill.setVisible(visibility);
+        }
+      }
+    }
   }
 
   private void onResponse(BeeRow data) {
@@ -2286,6 +2303,7 @@ class TaskEditor extends ProductSupportInterceptor {
     if (!DataUtils.isId(projectId)) {
       TaskHelper.setSelectorFilter(ownerSelector, null);
       TaskHelper.setSelectorFilter(observersSelector, null);
+      maybeHideProjectInformation(true);
       return;
     }
     TaskHelper.setWidgetEnabled(observersSelector, isOwner()
@@ -2295,32 +2313,30 @@ class TaskEditor extends ProductSupportInterceptor {
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
         .newArrayList(COL_USER), Filter.isEqual(
-        ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
+        ProjectConstants.COL_PROJECT, Value.getValue(projectId)), result -> {
+          List<Long> userIds = Lists.newArrayList(projectOwner);
+          int idxUser = result.getColumnIndex(COL_USER);
 
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        List<Long> userIds = Lists.newArrayList(projectOwner);
-        int idxUser = result.getColumnIndex(COL_USER);
-
-        if (BeeConst.isUndef(idxUser)) {
-          Assert.untouchable();
-          return;
-        }
-
-        for (IsRow userRow : result) {
-          long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
-
-          if (DataUtils.isId(projectUser)) {
-            userIds.add(projectUser);
+          if (BeeConst.isUndef(idxUser)) {
+            Assert.untouchable();
+            return;
           }
-        }
-        Filter projectTeamFilter = Filter.idIn(userIds);
 
-        TaskHelper.setSelectorFilter(observersSelector, projectTeamFilter);
-        TaskHelper.setSelectorFilter(ownerSelector, projectTeamFilter);
-        setProjectUsers(userIds);
-      }
-    });
+          for (IsRow userRow : result) {
+            long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
+
+            if (DataUtils.isId(projectUser)) {
+              userIds.add(projectUser);
+            }
+          }
+          Filter projectTeamFilter = Filter.idIn(userIds);
+
+          TaskHelper.setSelectorFilter(observersSelector, projectTeamFilter);
+          TaskHelper.setSelectorFilter(ownerSelector, projectTeamFilter);
+          setProjectUsers(userIds);
+
+          maybeHideProjectInformation(getProjectUsers().contains(getExecutor()));
+        });
   }
 
   private void updateProjectInfo(String projectId, String stageId) {
