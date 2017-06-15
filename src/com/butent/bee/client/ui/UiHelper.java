@@ -15,7 +15,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Settings;
-import com.butent.bee.client.animation.Animatable;
+import com.butent.bee.client.animation.HasAnimatableActivity;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
@@ -442,25 +442,22 @@ public final class UiHelper {
   }
 
   public static Consumer<InputText> getTextBoxResizer(final int reserve) {
-    return new Consumer<InputText>() {
-      @Override
-      public void accept(InputText input) {
-        String value = input.getValue();
+    return input -> {
+      String value = input.getValue();
 
-        int oldWidth = input.getOffsetWidth();
-        int newWidth = reserve;
+      int oldWidth = input.getOffsetWidth();
+      int newWidth = reserve;
 
-        if (value != null && value.length() > 0) {
-          if (value.contains(BeeConst.STRING_SPACE)) {
-            value = value.replace(BeeConst.STRING_SPACE, BeeConst.HTML_NBSP);
-          }
-          Font font = Font.getComputed(input.getElement());
-          newWidth += Rulers.getAreaWidth(font, value, true);
+      if (value != null && value.length() > 0) {
+        if (value.contains(BeeConst.STRING_SPACE)) {
+          value = value.replace(BeeConst.STRING_SPACE, BeeConst.HTML_NBSP);
         }
+        Font font = Font.getComputed(input.getElement());
+        newWidth += Rulers.getAreaWidth(font, value, true);
+      }
 
-        if (newWidth != oldWidth) {
-          StyleUtils.setWidth(input, newWidth);
-        }
+      if (newWidth != oldWidth) {
+        StyleUtils.setWidth(input, newWidth);
       }
     };
   }
@@ -484,15 +481,16 @@ public final class UiHelper {
         obj.setTitle(action.getCaption());
       }
 
-      int sensitivityMillis = Previewer.getActionSensitivityMillis() * action.getSensitivityRatio();
+      int sensitivityMillis =
+          BeeUtils.round(Previewer.getActionSensitivityMillis() * action.getSensitivityRatio());
 
-      if (action.animate() && obj instanceof Animatable) {
-        ((Animatable) obj).enableAnimation(sensitivityMillis);
+      if (action.animate() && obj instanceof HasAnimatableActivity && sensitivityMillis > 0) {
+        ((HasAnimatableActivity) obj).enableAnimation(sensitivityMillis);
       } else {
         StyleUtils.animateHover(obj);
       }
 
-      if (sensitivityMillis >= 0) {
+      if (sensitivityMillis > 0) {
         EventUtils.setClickSensitivityMillis(obj, sensitivityMillis);
       }
     }
@@ -661,12 +659,9 @@ public final class UiHelper {
       return;
     }
 
-    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-      @Override
-      public void execute() {
-        if (text.equals(widget.getText())) {
-          widget.selectAll();
-        }
+    Scheduler.get().scheduleDeferred(() -> {
+      if (text.equals(widget.getText())) {
+        widget.selectAll();
       }
     });
   }

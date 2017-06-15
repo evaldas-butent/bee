@@ -6,7 +6,7 @@ import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.animation.Animatable;
+import com.butent.bee.client.animation.HasAnimatableActivity;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.EventUtils;
@@ -21,6 +21,7 @@ import com.butent.bee.client.ui.Theme;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.client.widget.AnimatableLabel;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
@@ -116,17 +117,24 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   @Override
   public void addCommandItem(IdentifiableWidget widget) {
-    addCommandItem(widget, Previewer.getActionSensitivityMillis());
+    int sensitivityMillis = Previewer.getActionSensitivityMillis();
+
+    if (widget instanceof HasAnimatableActivity) {
+      sensitivityMillis = BeeUtils.round(sensitivityMillis
+          * ((HasAnimatableActivity) widget).getSensitivityRatio());
+    }
+
+    addCommandItem(widget, sensitivityMillis);
   }
 
   @Override
   public void addCommandItem(IdentifiableWidget widget, int sensitivityMillis) {
     if (widget != null) {
-      if (widget instanceof Animatable) {
-        ((Animatable) widget).enableAnimation(sensitivityMillis);
-      }
+      if (sensitivityMillis > 0) {
+        if (widget instanceof HasAnimatableActivity) {
+          ((HasAnimatableActivity) widget).enableAnimation(sensitivityMillis);
+        }
 
-      if (sensitivityMillis >= 0) {
         EventUtils.setClickSensitivityMillis(widget.getElement(), sensitivityMillis);
       }
 
@@ -183,7 +191,7 @@ public class HeaderImpl extends Flow implements HeaderView {
       }
 
       if (createNew) {
-        Label control = new Label("+ " + Localized.dictionary().createNew());
+        AnimatableLabel control = new AnimatableLabel("+ " + Localized.dictionary().createNew());
         control.addStyleName(STYLE_CREATE_NEW);
 
         initControl(control, Action.ADD, hiddenActions);
@@ -224,7 +232,7 @@ public class HeaderImpl extends Flow implements HeaderView {
 
     if (hasAction(Action.SAVE, false, enabledActions, disabledActions)) {
       if (Theme.hasActionSaveLarge()) {
-        Label control = new Label(Localized.dictionary().actionSave());
+        AnimatableLabel control = new AnimatableLabel(Localized.dictionary().actionSave());
         control.addStyleName(STYLE_SAVE_LARGE);
 
         initControl(control, Action.SAVE, hiddenActions);

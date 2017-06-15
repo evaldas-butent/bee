@@ -620,11 +620,30 @@
   animation-direction: alternate;
 }
 
-.bee-Label.bee-animate-active.bee-active {
+.bee-AnimatableLabel.bee-animate-active.bee-active {
   transform-origin: 100% 0;
   animation-name: wobble;
   animation-duration: 1s;
   animation-iteration-count: infinite;
+}
+
+@keyframes button-active {
+  from { left: -40%;}
+  to { left: 100%;}
+}
+
+.bee-Button.bee-animate-active.bee-active {
+  position: relative;
+  overflow: hidden;
+  color: transparent;
+}
+.bee-Button.bee-animate-active.bee-active::after {
+  content: "";
+  background-color: #3a81f0;
+  position: absolute;
+  width: 40%;
+  height: 3px;
+  animation: button-active 1s linear infinite;
 }
 
 .bee-CellGrid {

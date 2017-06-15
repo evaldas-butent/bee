@@ -25,7 +25,7 @@ public enum Action implements BeeSerializable, HasCaption {
   CLOSE(FontAwesome.CLOSE, Localized.dictionary().actionClose(), "close", false, false),
   CONFIGURE(FontAwesome.COG, Localized.dictionary().actionConfigure(), "configure", false, true),
   COPY(FontAwesome.COPY, Localized.dictionary().actionCopy(), "copy", true, true),
-  DELETE(FontAwesome.TRASH_O, Localized.dictionary().actionDelete(), "delete", true, true),
+  DELETE(FontAwesome.TRASH_O, Localized.dictionary().actionDelete(), "delete", true, true, 2.0),
   EDIT(FontAwesome.EDIT, Localized.dictionary().actionEdit(), "edit", true, true),
   EXPORT(FontAwesome.FILE_EXCEL_O, Localized.dictionary().actionExport(), "export", false, true),
   FILTER(FontAwesome.FILTER, Localized.dictionary().actionFilter(), "filter", false, true),
@@ -35,13 +35,13 @@ public enum Action implements BeeSerializable, HasCaption {
   MERGE(FontAwesome.OBJECT_GROUP, Localized.dictionary().actionMerge(), "merge", true, true),
   MOVE(FontAwesome.ARROWS, Localized.dictionary().actionMove(), "move", true, true),
   PRINT(FontAwesome.PRINT, Localized.dictionary().actionPrint(), "print", false, true),
-  REFRESH(FontAwesome.REFRESH, Localized.dictionary().actionRefresh(), "refresh", false, true, 2),
+  REFRESH(FontAwesome.REFRESH, Localized.dictionary().actionRefresh(), "refresh", false, true, 2.0),
   REMOVE_FILTER(FontAwesome.REMOVE, Localized.dictionary().actionRemoveFilter(), "removeFilter",
       false, false),
   RESET_SETTINGS(FontAwesome.TIMES_CIRCLE_O, Localized.dictionary().actionResetSettings(),
       "resetSettings", false, true),
   RIGHTS(FontAwesome.EYE, Localized.dictionary().rights(), "rights", true, true),
-  SAVE(FontAwesome.SAVE, Localized.dictionary().actionSave(), "save", true, true, 2);
+  SAVE(FontAwesome.SAVE, Localized.dictionary().actionSave(), "save", true, true, 2.0);
 
   public static final Set<Action> NO_ACTIONS = new HashSet<>();
 
@@ -76,15 +76,16 @@ public enum Action implements BeeSerializable, HasCaption {
   private final boolean disablable;
   private final boolean animate;
 
-  private final int sensitivityRatio;
+  private final double sensitivityRatio;
 
   Action(FontAwesome icon, String caption, String styleSuffix, boolean disablable,
       boolean animate) {
-    this(icon, caption, styleSuffix, disablable, animate, animate ? 1 : BeeConst.UNDEF);
+    this(icon, caption, styleSuffix, disablable, animate,
+        animate ? BeeConst.DOUBLE_ONE : BeeConst.DOUBLE_UNDEF);
   }
 
   Action(FontAwesome icon, String caption, String styleSuffix, boolean disablable,
-      boolean animate, int sensitivityRatio) {
+      boolean animate, double sensitivityRatio) {
 
     this.icon = icon;
     this.caption = caption;
@@ -112,7 +113,7 @@ public enum Action implements BeeSerializable, HasCaption {
     return icon;
   }
 
-  public int getSensitivityRatio() {
+  public double getSensitivityRatio() {
     return sensitivityRatio;
   }
 
