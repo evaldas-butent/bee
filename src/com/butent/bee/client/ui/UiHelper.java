@@ -489,10 +489,6 @@ public final class UiHelper {
       } else {
         StyleUtils.animateHover(obj);
       }
-
-      if (sensitivityMillis > 0) {
-        EventUtils.setClickSensitivityMillis(obj, sensitivityMillis);
-      }
     }
   }
 

@@ -66,7 +66,7 @@ public class AnimatableLabel extends Label implements EnablableWidget, HasAnimat
   @Override
   public void onBrowserEvent(Event event) {
     if (EventUtils.isClick(event)) {
-      if (!isEnabled()) {
+      if (!isEnabled() || isAnimationRunning()) {
         return;
       }
 
@@ -94,5 +94,11 @@ public class AnimatableLabel extends Label implements EnablableWidget, HasAnimat
   @Override
   protected String getDefaultStyleName() {
     return BeeConst.CSS_CLASS_PREFIX + "AnimatableLabel";
+  }
+
+  @Override
+  protected void onUnload() {
+    stop();
+    super.onUnload();
   }
 }

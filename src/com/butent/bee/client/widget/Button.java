@@ -96,7 +96,7 @@ public class Button extends FocusWidget implements IdentifiableWidget, HasComman
   @Override
   public void onBrowserEvent(Event event) {
     if (EventUtils.isClick(event)) {
-      if (!isEnabled()) {
+      if (!isEnabled() || isAnimationRunning()) {
         return;
       }
 
@@ -141,6 +141,12 @@ public class Button extends FocusWidget implements IdentifiableWidget, HasComman
   @Override
   public void setText(String text) {
     getElement().setInnerText(text);
+  }
+
+  @Override
+  protected void onUnload() {
+    stop();
+    super.onUnload();
   }
 
   private void init() {
