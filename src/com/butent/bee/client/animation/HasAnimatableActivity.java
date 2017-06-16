@@ -12,17 +12,20 @@ import java.util.function.Consumer;
 
 public interface HasAnimatableActivity extends IdentifiableWidget {
 
+  String NAME_ANIMATE_ACTIVE = BeeConst.CSS_CLASS_PREFIX + "animate-active";
+  String NAME_ACTIVE = BeeConst.CSS_CLASS_PREFIX + "active";
+
   default void disableAnimation() {
     stop();
 
     setAnimationDuration(BeeConst.UNDEF);
-    removeStyleName(StyleUtils.NAME_ANIMATE_ACTIVE);
+    removeStyleName(NAME_ANIMATE_ACTIVE);
   }
 
   default void enableAnimation(int duration) {
     if (duration > 0) {
       setAnimationDuration(duration);
-      addStyleName(StyleUtils.NAME_ANIMATE_ACTIVE);
+      addStyleName(NAME_ANIMATE_ACTIVE);
     }
   }
 
@@ -64,11 +67,11 @@ public interface HasAnimatableActivity extends IdentifiableWidget {
   double getSensitivityRatio();
 
   default boolean isAnimationEnabled() {
-    return getAnimationDuration() > 0 && getElement().hasClassName(StyleUtils.NAME_ANIMATE_ACTIVE);
+    return getAnimationDuration() > 0 && getElement().hasClassName(NAME_ANIMATE_ACTIVE);
   }
 
   default boolean isAnimationRunning() {
-    return getElement().hasClassName(StyleUtils.NAME_ACTIVE);
+    return getElement().hasClassName(NAME_ACTIVE);
   }
 
   default void maybeAnimate() {
@@ -98,7 +101,7 @@ public interface HasAnimatableActivity extends IdentifiableWidget {
   void setAnimationTimer(Timer animationTimer);
 
   default void startAnimation() {
-    StyleUtils.restartAnimation(getElement(), StyleUtils.NAME_ACTIVE);
+    StyleUtils.restartAnimation(getElement(), NAME_ACTIVE);
   }
 
   default void stop() {
@@ -112,6 +115,6 @@ public interface HasAnimatableActivity extends IdentifiableWidget {
   }
 
   default void cancelAnimation() {
-    removeStyleName(StyleUtils.NAME_ACTIVE);
+    removeStyleName(NAME_ACTIVE);
   }
 }

@@ -16,6 +16,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.animation.HasAnimatableActivity;
+import com.butent.bee.client.animation.HasHoverAnimation;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
@@ -54,12 +55,14 @@ public final class UiHelper {
 
   public static void add(HasWidgets container, Holder<Widget> holder,
       WidgetInitializer initializer, String name) {
+
     Assert.notNull(holder);
     holder.set(add(container, holder.get(), initializer, name));
   }
 
   public static Widget add(HasWidgets container, Widget widget, WidgetInitializer initializer,
       String name) {
+
     if (container == null || widget == null) {
       return null;
     }
@@ -475,20 +478,21 @@ public final class UiHelper {
     return false;
   }
 
-  public static void initActionWidget(Action action, UIObject obj) {
-    if (action != null && obj != null) {
-      if (BeeUtils.isEmpty(obj.getTitle())) {
-        obj.setTitle(action.getCaption());
+  public static void initActionWidget(Action action, Widget widget) {
+    if (action != null && widget != null) {
+      if (BeeUtils.isEmpty(widget.getTitle())) {
+        widget.setTitle(action.getCaption());
       }
 
-      int sensitivityMillis =
-          BeeUtils.round(Previewer.getActionSensitivityMillis() * action.getSensitivityRatio());
-
-      if (action.animate() && obj instanceof HasAnimatableActivity && sensitivityMillis > 0) {
-        ((HasAnimatableActivity) obj).enableAnimation(sensitivityMillis);
-      } else {
-        StyleUtils.animateHover(obj);
+      if (action.animate() && widget instanceof HasAnimatableActivity) {
+        int duration = BeeUtils.round(Previewer.getActionSensitivityMillis()
+            * action.getSensitivityRatio());
+        if (duration > 0) {
+          ((HasAnimatableActivity) widget).enableAnimation(duration);
+        }
       }
+
+      HasHoverAnimation.maybeAnimate(widget);
     }
   }
 

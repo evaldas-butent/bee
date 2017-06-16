@@ -1,12 +1,13 @@
 package com.butent.bee.client.widget;
 
+import com.butent.bee.client.animation.HasHoverAnimation;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class FaLabel extends AnimatableLabel {
+public class FaLabel extends AnimatableLabel implements HasHoverAnimation {
 
   public static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "fa-label";
   private static final String STYLE_DISABLED = STYLE_NAME + "-" + StyleUtils.SUFFIX_DISABLED;
@@ -26,12 +27,6 @@ public class FaLabel extends AnimatableLabel {
     if (!BeeUtils.isEmpty(styleName)) {
       addStyleName(styleName);
     }
-  }
-
-  @Override
-  public void enableAnimation(int duration) {
-    super.enableAnimation(duration);
-    StyleUtils.animateHover(this);
   }
 
   @Override

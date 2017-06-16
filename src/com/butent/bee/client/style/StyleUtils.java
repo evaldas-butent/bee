@@ -175,10 +175,6 @@ public final class StyleUtils {
 
   public static final String NAME_INFO_TABLE = BeeConst.CSS_CLASS_PREFIX + "info-table";
 
-  public static final String NAME_ANIMATE_HOVER = BeeConst.CSS_CLASS_PREFIX + "animate-hover";
-  public static final String NAME_ANIMATE_ACTIVE = BeeConst.CSS_CLASS_PREFIX + "animate-active";
-  public static final String NAME_ACTIVE = BeeConst.CSS_CLASS_PREFIX + "active";
-
   public static final String NAME_LINK = BeeConst.CSS_CLASS_PREFIX + "InternalLink";
 
   public static final String TRANSFORM_ROTATE = "rotate";
@@ -278,26 +274,6 @@ public final class StyleUtils {
   public static void alwaysScroll(UIObject obj, ScrollBars scroll) {
     Assert.notNull(obj);
     alwaysScroll(obj.getElement(), scroll);
-  }
-
-  public static void animateActive(Element el) {
-    Assert.notNull(el);
-    el.addClassName(NAME_ANIMATE_ACTIVE);
-  }
-
-  public static void animateActive(UIObject obj) {
-    Assert.notNull(obj);
-    animateActive(obj.getElement());
-  }
-
-  public static void animateHover(Element el) {
-    Assert.notNull(el);
-    el.addClassName(NAME_ANIMATE_HOVER);
-  }
-
-  public static void animateHover(UIObject obj) {
-    Assert.notNull(obj);
-    animateHover(obj.getElement());
   }
 
   public static void autoHeight(Element el) {

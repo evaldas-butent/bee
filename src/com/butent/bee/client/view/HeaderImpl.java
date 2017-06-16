@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.animation.HasAnimatableActivity;
+import com.butent.bee.client.animation.HasHoverAnimation;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.Previewer;
@@ -122,7 +123,7 @@ public class HeaderImpl extends Flow implements HeaderView {
       addCommandItem((HasAnimatableActivity) widget, duration);
 
     } else if (widget != null) {
-      getCommandPanel().add(widget);
+      addCommand(widget.asWidget());
     }
   }
 
@@ -133,8 +134,13 @@ public class HeaderImpl extends Flow implements HeaderView {
         widget.enableAnimation(duration);
       }
 
-      getCommandPanel().add(widget);
+      addCommand(widget.asWidget());
     }
+  }
+
+  private void addCommand(Widget command) {
+    HasHoverAnimation.maybeAnimate(command);
+    getCommandPanel().add(command);
   }
 
   @Override
