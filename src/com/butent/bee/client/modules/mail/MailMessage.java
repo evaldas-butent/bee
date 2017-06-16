@@ -463,8 +463,8 @@ public class MailMessage extends AbstractFormInterceptor {
 
         @Override
         public void onOpen() {
-          Queries.getRowSet(AdministrationConstants.VIEW_RELATIONS, Collections.singletonList(COL_TASK),
-              Filter.equals(COL_MESSAGE, messageId),
+          Queries.getRowSet(AdministrationConstants.VIEW_RELATIONS,
+              Collections.singletonList(COL_TASK), Filter.equals(COL_MESSAGE, messageId),
               result -> taskIds.addAll(result.getDistinctLongs(result.getColumnIndex(COL_TASK))));
         }
 
