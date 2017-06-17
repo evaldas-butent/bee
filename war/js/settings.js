@@ -1,6 +1,6 @@
 var BeeSettings = {
   "appName": "B-NOVO",
-  "version": "1.50",
+  "version": "1.7",
   "licence": "",
   "build": "",
   "releaseDate": "",
