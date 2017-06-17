@@ -139,7 +139,7 @@ public class HeaderImpl extends Flow implements HeaderView {
   }
 
   private void addCommand(Widget command) {
-    HasHoverAnimation.maybeAnimate(command);
+    HasHoverAnimation.init(command);
     getCommandPanel().add(command);
   }
 

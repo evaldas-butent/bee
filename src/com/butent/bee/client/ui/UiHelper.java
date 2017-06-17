@@ -492,7 +492,7 @@ public final class UiHelper {
         }
       }
 
-      HasHoverAnimation.maybeAnimate(widget);
+      HasHoverAnimation.init(widget);
     }
   }
 
