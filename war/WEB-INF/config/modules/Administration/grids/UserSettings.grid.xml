@@ -36,6 +36,8 @@
     <DataColumn name="NewsRefreshIntervalSeconds" visible="false" />
     <DataColumn name="LoadingStateDelayMillis" visible="false" />
 
+    <DataColumn name="ShowGridFilterCommand" visible="false" />
+
     <DataColumn name="Style" visible="false" />
   </g:columns>
 </g:Grid>

@@ -249,6 +249,10 @@ public final class Settings {
     return BeeUtils.containsSame(getList("showCommands"), command);
   }
 
+  public static boolean showGridFilterCommand() {
+    return getBoolean("showGridFilterCommand");
+  }
+
   public static boolean showLogout() {
     return JsonUtils.getBoolean(getUserPanel(), "showLogout");
   }

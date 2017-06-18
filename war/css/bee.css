@@ -2190,10 +2190,34 @@
 }
 .bee-GridFilter-dialog .bee-Dialog-header {
   background-color: inherit;
-  height: 22px;
   border-style: none;
 }
+.bee-GridFilter-dialog .bee-Dialog-caption {
+  flex: 0;
+  -webkit-flex: 0;
+  -ms-flex: 0;
+  margin-right: 20px;
+}
+.bee-GridFilter-submit-on .bee-Dialog-caption {
+  display: none;
+}
+.bee-GridFilter-submit-on .bee-GridFilter-submit-command {
+  margin-left: 8px;
+  margin-right: 8px;
+  padding: 3px 8px;
+}
+.bee-GridFilter-submit-off .bee-GridFilter-submit-command {
+  display: none;
+}
+.bee-GridFilter-dialog .bee-GridFilter-submit-toggle {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+}
 
+.bee-GridFilter-content {
+  min-width: 200px;
+}
 .bee-GridFilter-content table {
   border-spacing: 1em 0;
 }

@@ -60,6 +60,8 @@
     <SimpleColumn name="MenuHide" />
     <SimpleColumn name="ShowNewMessagesNotifier" />
     <SimpleColumn name="Assistant" />
+
+    <SimpleColumn name="ShowGridFilterCommand" />
   </Columns>
   
   <Order>

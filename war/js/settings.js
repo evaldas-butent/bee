@@ -34,6 +34,7 @@ var BeeSettings = {
   "dataSelectorInputDelayMillis": "500, 500, 400, 300, 200",
   "dataSelectorInstantSearchMaxRows": 1000,
   "dataSelectorCachingMaxRows": 1000,
+  "showGridFilterCommand": false,
   "theme" : {
     "WorkspaceMarginRight": 25,
     "ViewHeaderHeight": "600, 30, 1200, 52",

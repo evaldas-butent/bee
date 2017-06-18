@@ -871,9 +871,9 @@ public interface Dictionary {
 
   default String contactReportCompanyByType() {return g("contactReportCompanyByType");}
 
-  default String contactReportCompanyUsage() {return g("contactReportCompanyUsage");}
-
   default String contactReportCompanySource() {return g("contactReportCompanySource");}
+
+  default String contactReportCompanyUsage() {return g("contactReportCompanyUsage");}
 
   default String contactReports() {return g("contactReports");}
 
@@ -2768,6 +2768,8 @@ public interface Dictionary {
 
   default String filterAll() {return g("filterAll");}
 
+  default String filterAnd() {return g("filterAnd");}
+
   default String filterAnswered() {return g("filterAnswered");}
 
   default String filterLost() {return g("filterLost");}
@@ -2777,6 +2779,8 @@ public interface Dictionary {
   default String filterNotNullLabel() {return g("filterNotNullLabel");}
 
   default String filterNullLabel() {return g("filterNullLabel");}
+
+  default String filterOr() {return g("filterOr");}
 
   default String filterRemove() {return g("filterRemove");}
 
@@ -5289,6 +5293,8 @@ public interface Dictionary {
   default String shippingSchedule() {return g("shippingSchedule");}
 
   default String showAvailableEmployees() {return g("showAvailableEmployees");}
+
+  default String showGridFilterCommand() {return g("showGridFilterCommand");}
 
   default String showNewMessagesNotifier() {return g("showNewMessagesNotifier");}
 
