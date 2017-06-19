@@ -3,14 +3,19 @@ package com.butent.bee.server.modules.transport;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.TBL_USERS;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.report.ReportInfo;
@@ -20,6 +25,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Arrays;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
@@ -72,6 +78,26 @@ public class CustomTransportReportsBean {
                   .addGroup(TBL_TRIP_ROUTES, COL_TRIP), als,
               SqlUtils.joinUsing(tmp, als, COL_TRIP)));
     }
+  }
+
+  public void addTripCostFieldsToQueries(ReportInfo report,
+      Function<String, IsExpression> firstLastNameJoiner, HasConditions costsClause,
+      SqlSelect selectTripCosts, SqlSelect selectFuelCosts) {
+    String creatorCompPersonTblAls = SqlUtils.uniqueName();
+    String creatorPersonTblAls = SqlUtils.uniqueName();
+
+    costsClause.add(report.getCondition(firstLastNameJoiner.apply(creatorPersonTblAls),
+        COL_TRIP_COST_CREATOR));
+
+    selectTripCosts.addExpr(firstLastNameJoiner.apply(creatorPersonTblAls), COL_TRIP_COST_CREATOR)
+        .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_TRIP_COSTS, COL_TRIP_COST_CREATOR))
+        .addFromLeft(TBL_COMPANY_PERSONS, creatorCompPersonTblAls,
+            sys.joinTables(TBL_COMPANY_PERSONS, creatorCompPersonTblAls, TBL_USERS,
+                COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS, creatorPersonTblAls, sys.joinTables(TBL_PERSONS,
+            creatorPersonTblAls, creatorCompPersonTblAls, COL_PERSON));
+
+    selectFuelCosts.addExpr(SqlUtils.constant(BeeConst.STRING_EMPTY), COL_TRIP_COST_CREATOR);
   }
 
   public void calculateLoadingDates(ReportInfo report, boolean cargoRequired, String tmp) {

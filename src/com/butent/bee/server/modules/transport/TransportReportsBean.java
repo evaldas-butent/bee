@@ -905,6 +905,9 @@ public class TransportReportsBean {
         .addFromLeft(TBL_FUEL_TYPES, sys.joinTables(TBL_FUEL_TYPES, TBL_VEHICLES, COL_FUEL))
         .setWhere(fuelClause);
 
+    Invocation.locateRemoteBean(CustomTransportReportsBean.class).addTripCostFieldsToQueries(report,
+        firstLastNameJoiner, costsClause, selectTripCosts, selectFuelCosts);
+
     IsExpression fuelTotalExpr;
     IsExpression costsTotalExpr;
 

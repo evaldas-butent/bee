@@ -437,7 +437,8 @@ public enum Report implements HasWidgetSupplier {
           new ReportTextItem(COL_NOTE, loc.note()),
           new ReportTextItem(COL_PAYMENT_NAME, loc.paymentType()),
           new ReportTextItem(COL_DRIVER, loc.trdDriver()),
-          new ReportTextItem(COL_CURRENCY, loc.currency()));
+          new ReportTextItem(COL_CURRENCY, loc.currency()),
+          new ReportTextItem(COL_TRIP_COST_CREATOR, loc.expensesEnteredPerson()));
     }
 
     @Override
