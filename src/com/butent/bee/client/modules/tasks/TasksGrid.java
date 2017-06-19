@@ -52,7 +52,6 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.CustomAction;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -171,16 +170,7 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
       presenter.getHeader().addCommandItem(createProject);
     }
 
-    CustomAction createOrder = new CustomAction(FontAwesome.INDENT,
-        clickEvent -> {
-          DataInfo dataInfo = Data.getDataInfo(VIEW_TASKS);
-          BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
-          RowFactory.createRow(FORM_NEW_TASK_ORDER, Localized.dictionary().newOrder(),
-              Data.getDataInfo(VIEW_TASKS), row, Modality.ENABLED, null);
-        });
-    createOrder.setTitle(Localized.dictionary().newOrder());
-
-    presenter.getHeader().addCommandItem(createOrder);
+    presenter.getHeader().addCommandItem(CustomTasksGrid.getOrderAction());
   }
 
   @Override
@@ -342,6 +332,10 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
         event.consume();
         getGridView().notifySevere(Localized.dictionary().actionCanNotBeExecuted(), BeeUtils
             .bracket(Localized.dictionary().createNewRow()));
+      } else if (DataUtils.isId(row.getLong(Data.getColumnIndex(VIEW_TASKS, COL_TASK_ORDER)))) {
+        event.consume();
+        RowEditor.openForm(FORM_TASK_ORDER, Data.getDataInfo(VIEW_TASKS),
+            Filter.compareId(row.getId()), Opener.NEW_TAB);
       } else if (BeeKeeper.getUser().openInNewTab()) {
         event.consume();
         FormView form = getGridView().getForm(GridFormKind.EDIT);
@@ -350,10 +344,6 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
 
         RowEditor.openForm(editForm, Data.getDataInfo(getViewName()), row, Opener.NEW_TAB, null,
           null);
-      } else if (DataUtils.isId(row.getLong(Data.getColumnIndex(VIEW_TASKS, "TaskOrder")))) {
-        event.consume();
-        RowEditor.openForm(FORM_TASK_ORDER, Data.getDataInfo(VIEW_TASKS),
-            Filter.compareId(row.getId()), Opener.NEW_TAB);
       }
     }
   }
