@@ -1532,11 +1532,11 @@ public class TransportModuleBean implements BeeModule {
       if (BeeUtils.unbox(row.getBoolean(COL_TRANSPORTATION))) {
         Long cargo = row.getLong(COL_CARGO);
 
-        String value = BeeUtils.join("\n", row.getValue(COL_ORDER_NOTES), BeeUtils.join("-",
+        String value = BeeUtils.join("-",
             BeeUtils.joinWords(places.get(cargo, ALS_LOADING_COUNTRY_CODE),
                 BeeUtils.parenthesize(places.get(cargo, ALS_LOADING_COUNTRY_NAME))),
             BeeUtils.joinWords(places.get(cargo, ALS_UNLOADING_COUNTRY_CODE),
-                BeeUtils.parenthesize(places.get(cargo, ALS_UNLOADING_COUNTRY_NAME)))));
+                BeeUtils.parenthesize(places.get(cargo, ALS_UNLOADING_COUNTRY_NAME))));
 
         if (!BeeUtils.isEmpty(value)) {
           valueMap.put(COL_ORDER_NOTES, value);
