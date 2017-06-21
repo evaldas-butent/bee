@@ -32,6 +32,8 @@
     <Numeric name="TransportationPrice" precision="15" scale="2" label="=trTransportationPrice" />
     <Relation name="TransportationCurrency" relation="Currencies" label="=currencyShort" defExpr="MAIN_CURRENCY" />
     <Numeric name="PaymentDays" precision="4" label="=unitDays" />
-    <String name="TransportationVATType" precision="100" label="=vat" />
+    <Boolean name="TransportationVatPlus" label="=vatPlus" />
+    <Numeric name="TransportationVAT" precision="12" scale="2" label="=vat" />
+    <Boolean name="TransportationVatPercent" label="=vatPercent" />
   </Fields>
 </Table>

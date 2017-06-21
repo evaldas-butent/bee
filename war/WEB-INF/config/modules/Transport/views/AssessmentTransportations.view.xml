@@ -19,7 +19,9 @@
     </SimpleJoin>
     
     <SimpleColumn name="PaymentDays" />
-    <SimpleColumn name="TransportationVATType" />
+    <SimpleColumn name="TransportationVAT" />
+    <SimpleColumn name="TransportationVatPlus" />
+    <SimpleColumn name="TransportationVatPercent" />
     
     <SimpleColumn name="Expedition" />
     <SimpleJoin joinType="LEFT" name="Expedition">

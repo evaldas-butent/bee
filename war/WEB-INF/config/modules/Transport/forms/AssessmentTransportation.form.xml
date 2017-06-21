@@ -51,20 +51,18 @@
       <Label text="=transportConditions" style="&header;" />
     </FlowPanel>
     <FlowPanel style="&section;">
-      <Label text="=price" class="bee-required" style="&labelLeft;" />
+      <Label text="=amount" class="bee-required" style="&labelLeft;" />
       <InputMoney source="TransportationPrice" required="true" style="width: 100px;" />
-      <DataSelector name="TransportationCurrency" required="true" class="bee-disabled" editEnabled="false" source="TransportationCurrency" style="width:50px; margin-left: 8px" />
+      <DataSelector name="TransportationCurrency" required="true" class="bee-disabled"
+                    editEnabled="false" source="TransportationCurrency"
+                    style="width:50px; margin-left: 8px" />
+      <CheckBox source="TransportationVatPlus" text="=vatPlus" style="&inline; margin-left:5px;" />
+      <InputMoney source="TransportationVat" placeholder="=vat" percentageTag="VatPercent"
+                  style="&inline; width:5em; margin-left:5px;" />
+      <CheckBox source="TransportationVatPercent" style="&inline; margin-left:5px;" text="%" />
     </FlowPanel>
     <FlowPanel style="&section;">
-      <Label text="=vat" class="bee-requred" style="&labelLeft;" />
-      <ListBox source="TransportationVATType">
-          <item>PVM (21%)</item>
-          <item>PVM (0%, 45 str.)</item>
-          <item>Menamas</item>
-          <item>be PVM (13/2 str.)</item>
-      </ListBox>
-
-      <Label text="=unitDays" class="bee-required" style="&labelLeft;margin-left:8px;" />
+      <Label text="=unitDays" class="bee-required" style="&labelLeft;" />
       <InputInteger source="PaymentDays"  required="true" minValue="0" style="width: 50px;" />
     </FlowPanel>
     <hr/>
