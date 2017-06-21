@@ -28,6 +28,7 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -245,7 +246,12 @@ public class TripForm extends PrintFormInterceptor {
 
   @Override
   protected void print(String report) {
-    getReportParameters(parameters -> {
+    Map<String, Long> companies = new HashMap<>();
+    companies.put(COL_CUSTOMER, BeeKeeper.getUser().getCompany());
+
+    getReportParameters(parameters ->
+        ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
+          parameters.putAll(companiesInfo);
 
       final FormView form = getFormView();
       ParameterList args = TransportHandler.createArgs(SVC_GET_TRIP_INFO);
@@ -503,7 +509,7 @@ public class TripForm extends PrintFormInterceptor {
           }
         }
       });
-    });
+    }));
   }
 
   void checkDriver(final HasHandlers listener, final GwtEvent<?> event, final Long driverId) {
