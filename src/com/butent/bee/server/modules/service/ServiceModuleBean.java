@@ -207,6 +207,30 @@ public class ServiceModuleBean implements BeeModule {
     return response;
   }
 
+  public String formatInvoiceItemArticleField(SimpleRow itemRow) {
+    String articleSourceColumn = prm.getText(PRM_ITEM_ARTICLE_SOURCE_COLUMN);
+    String value = itemRow.getValue(COL_ITEM_ARTICLE);
+
+    if (!BeeUtils.isEmpty(articleSourceColumn)
+        && !BeeUtils.same(articleSourceColumn, COL_ITEM_ARTICLE)) {
+      switch (articleSourceColumn) {
+        case COL_SERVICE_MAINTENANCE_ID:
+          value = itemRow.getValue(sys.getIdName(TBL_SERVICE_MAINTENANCE));
+          break;
+        case COL_WARRANTY_VALID_TO:
+          DateTimeFormatInfo dtfInfo = usr.getDateTimeFormatInfo();
+          value = Formatter.renderDate(dtfInfo, itemRow.getDate(COL_WARRANTY_VALID_TO));
+          break;
+      }
+    }
+    return value;
+  }
+
+  public void formatInvoiceItemsQuery(SqlSelect query) {
+    query.addFields(TBL_SERVICE_MAINTENANCE, sys.getIdName(TBL_SERVICE_MAINTENANCE),
+        COL_WARRANTY_VALID_TO);
+  }
+
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     String module = getModule().getName();
@@ -227,7 +251,8 @@ public class ServiceModuleBean implements BeeModule {
             COL_WAREHOUSE_CODE),
         BeeParameter.createRelation(module, PRM_ROLE, true, TBL_ROLES, COL_ROLE_NAME),
         BeeParameter.createBoolean(module, PRM_FILTER_ALL_DEVICES),
-        BeeParameter.createNumber(module, PRM_CLIENT_CHANGING_SETTING, false, 4)
+        BeeParameter.createNumber(module, PRM_CLIENT_CHANGING_SETTING, false, 4),
+        BeeParameter.createText(module, PRM_ITEM_ARTICLE_SOURCE_COLUMN, false, COL_ITEM_ARTICLE)
     );
   }
 
@@ -838,7 +863,7 @@ public class ServiceModuleBean implements BeeModule {
                 sys.joinTables(TBL_SERVICE_ITEMS, TBL_ORDER_ITEMS, COL_SERVICE_ITEM)),
             Pair.of(TBL_SERVICE_MAINTENANCE,
                 sys.joinTables(TBL_SERVICE_MAINTENANCE, TBL_SERVICE_ITEMS,
-                    COL_SERVICE_MAINTENANCE))));
+                    COL_SERVICE_MAINTENANCE))), true);
   }
 
   private ResponseObject getCalendarData(RequestInfo reqInfo) {

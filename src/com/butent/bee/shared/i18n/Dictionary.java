@@ -4833,6 +4833,8 @@ public interface Dictionary {
 
   default String prmImportERPStocksTime() {return g("prmImportERPStocksTime");}
 
+  default String prmItemArticleSourceColumn() {return g("prmItemArticleSourceColumn");}
+
   default String prmMainCurrency() {return g("prmMainCurrency");}
 
   default String prmMaintenanceServiceGroup() {return g("prmMaintenanceServiceGroup");}
