@@ -287,6 +287,20 @@ class TaskBuilder extends ProductSupportInterceptor {
     } else if (BeeUtils.same(name,
         AdministrationConstants.TBL_RELATIONS) && widget instanceof Relations) {
       relations = (Relations) widget;
+      relations.setSelectorHandler(new TaskHelper.TaskRelationsHandler() {
+
+        @Override
+        public void onDataSelector(SelectorEvent event) {
+          IsRow row = DataUtils.cloneRow(getActiveRow());
+
+          Data.setValue(getViewName(), row, COL_START_TIME, getStart());
+          Data.setValue(getViewName(), row, COL_FINISH_TIME, getEnd(getStart(),
+            Data.getString(VIEW_TASKS, row, COL_EXPECTED_DURATION)));
+
+          setTaskRow(row);
+          super.onDataSelector(event);
+        }
+      });
     }
 
     super.afterCreateWidget(name, widget, callback);

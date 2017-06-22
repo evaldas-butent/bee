@@ -632,6 +632,14 @@ class TaskEditor extends ProductSupportInterceptor {
     if (BeeUtils.same(name,
         AdministrationConstants.TBL_RELATIONS) && widget instanceof Relations) {
       relations = (Relations) widget;
+      relations.setSelectorHandler(new TaskHelper.TaskRelationsHandler() {
+
+        @Override
+        public void onDataSelector(SelectorEvent event) {
+          setTaskRow(getActiveRow());
+          super.onDataSelector(event);
+        }
+      });
     }
 
     super.afterCreateWidget(name, widget, callback);
