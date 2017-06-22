@@ -4004,6 +4004,8 @@ public interface Dictionary {
 
   default String noData() {return g("noData");}
 
+  default String noDataSelectedInFilter() {return g("noDataSelectedInFilter");}
+
   default String noMatter() {return g("noMatter");}
 
   default String not(Object p0) {
@@ -6513,6 +6515,8 @@ public interface Dictionary {
   default String trTbSettingsCompletedTrips() {return g("trTbSettingsCompletedTrips");}
 
   default String trTbSettingsCountryFlags() {return g("trTbSettingsCountryFlags");}
+
+  default String trTbSettingsFilterDependsOnData() {return g("trTbSettingsFilterDependsOnData");}
 
   default String trTbSettingsOrderCustomer() {return g("trTbSettingsOrderCustomer");}
 

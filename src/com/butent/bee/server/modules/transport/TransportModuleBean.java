@@ -267,20 +267,20 @@ public class TransportModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_SS_DATA)) {
       response = getVehicleTbData(svc, null, true, VehicleType.TRUCK,
           COL_SS_THEME, COL_SS_MIN_DATE, COL_SS_MAX_DATE,
-          COL_SS_TRANSPORT_GROUPS, COL_SS_COMPLETED_TRIPS);
+          COL_SS_TRANSPORT_GROUPS, COL_SS_COMPLETED_TRIPS, reqInfo, false);
 
     } else if (BeeUtils.same(svc, SVC_GET_DTB_DATA)) {
-      response = getDtbData();
+      response = getDtbData(reqInfo, false);
 
     } else if (BeeUtils.same(svc, SVC_GET_TRUCK_TB_DATA)) {
       response = getVehicleTbData(svc, Filter.notNull(COL_IS_TRUCK), false, VehicleType.TRUCK,
           COL_TRUCK_THEME, COL_TRUCK_MIN_DATE, COL_TRUCK_MAX_DATE,
-          COL_TRUCK_TRANSPORT_GROUPS, COL_TRUCK_COMPLETED_TRIPS);
+          COL_TRUCK_TRANSPORT_GROUPS, COL_TRUCK_COMPLETED_TRIPS, reqInfo, false);
 
     } else if (BeeUtils.same(svc, SVC_GET_TRAILER_TB_DATA)) {
       response = getVehicleTbData(svc, Filter.notNull(COL_IS_TRAILER), false, VehicleType.TRAILER,
           COL_TRAILER_THEME, COL_TRAILER_MIN_DATE, COL_TRAILER_MAX_DATE,
-          COL_TRAILER_TRANSPORT_GROUPS, COL_TRAILER_COMPLETED_TRIPS);
+          COL_TRAILER_TRANSPORT_GROUPS, COL_TRAILER_COMPLETED_TRIPS, reqInfo, false);
 
     } else if (BeeUtils.same(svc, SVC_GET_COLORS)) {
       response = getColors(reqInfo);
@@ -373,6 +373,28 @@ public class TransportModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_TRIP_COSTS_REPORT)) {
       response = rep.getTripCostsReport(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_GET_SETTINGS)) {
+      return ResponseObject.response(getSettings());
+
+    } else if (BeeUtils.same(svc, SVC_GET_SS_FILTER_DATA)) {
+      response = getVehicleTbData(svc, null, true, VehicleType.TRUCK,
+          COL_SS_THEME, COL_SS_MIN_DATE, COL_SS_MAX_DATE,
+          COL_SS_TRANSPORT_GROUPS, COL_SS_COMPLETED_TRIPS, reqInfo, true);
+
+    } else if (BeeUtils.same(svc, SVC_GET_DTB_FILTER_DATA)) {
+      response = getDtbData(reqInfo, true);
+
+    } else if (BeeUtils.same(svc, SVC_GET_TRUCK_TB_FILTER_DATA)) {
+      response = getVehicleTbData(svc, Filter.notNull(COL_IS_TRUCK), false, VehicleType.TRUCK,
+          COL_TRUCK_THEME, COL_TRUCK_MIN_DATE, COL_TRUCK_MAX_DATE,
+          COL_TRUCK_TRANSPORT_GROUPS, COL_TRUCK_COMPLETED_TRIPS, reqInfo, true);
+
+    } else if (BeeUtils.same(svc, SVC_GET_TRAILER_TB_FILTER_DATA)) {
+      response = getVehicleTbData(svc, Filter.notNull(COL_IS_TRAILER), false, VehicleType.TRAILER,
+          COL_TRAILER_THEME, COL_TRAILER_MIN_DATE, COL_TRAILER_MAX_DATE,
+          COL_TRAILER_TRANSPORT_GROUPS, COL_TRAILER_COMPLETED_TRIPS, reqInfo, true);
+
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
       logger.warning(msg);
@@ -2368,12 +2390,16 @@ public class TransportModuleBean implements BeeModule {
         ss.getWhere()))));
   }
 
-  private Map<String, String> getCityNames() {
+  private Map<String, String> getCityNames(Collection<Long> citiesIds) {
     Map<String, String> result = new HashMap<>();
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_CITIES, sys.getIdName(TBL_CITIES), COL_CITY_NAME)
         .addFrom(TBL_CITIES);
+
+    if (citiesIds != null) {
+      query.setWhere(sys.idInList(TBL_CITIES, citiesIds));
+    }
 
     SimpleRowSet data = qs.getData(query);
 
@@ -2396,6 +2422,19 @@ public class TransportModuleBean implements BeeModule {
 
     return ResponseObject.response(getThemeColors(theme));
   }
+
+  private SimpleRowSet getCountries(Collection<Long> countriesIds) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_COUNTRIES, sys.getIdName(TBL_COUNTRIES), COL_COUNTRY_NAME, COL_COUNTRY_CODE)
+        .addFrom(TBL_COUNTRIES);
+
+    if (countriesIds != null) {
+      query.setWhere(sys.idInList(TBL_COUNTRIES, countriesIds));
+    }
+
+    return qs.getData(query);
+  }
+
 
   @SuppressWarnings("unchecked")
   private ResponseObject getCreditInfo(RequestInfo reqInfo) {
@@ -2529,7 +2568,7 @@ public class TransportModuleBean implements BeeModule {
     return result;
   }
 
-  private ResponseObject getDtbData() {
+  private ResponseObject getDtbData(RequestInfo reqInfo, Boolean formatFilterData) {
     BeeRowSet settings = getSettings();
     if (DataUtils.isEmpty(settings)) {
       return ResponseObject.error("user settings not available");
@@ -2538,40 +2577,107 @@ public class TransportModuleBean implements BeeModule {
     JustDate minDate = settings.getDate(0, COL_DTB_MIN_DATE);
     JustDate maxDate = settings.getDate(0, COL_DTB_MAX_DATE);
 
+    IsCondition additionalTripFilter = null;
+    IsCondition additionalFreightFilter = null;
+    List<Long> filterDriversIds = new ArrayList<>();
+    List<Long> driverGroupFilterIds = new ArrayList<>();
+    Filter driverFilter = null;
+
+    boolean tripRequired = true;
+    boolean freightsRequired = true;
+    boolean handlingRequired = true;
+
+    if (formatFilterData) {
+      handlingRequired = reqInfo.getParameterBoolean(PROP_CARGO_HANDLING);
+      freightsRequired = reqInfo.getParameterBoolean(PROP_FREIGHTS) || handlingRequired;
+      tripRequired = reqInfo.getParameterBoolean(PROP_TRIPS) || freightsRequired;
+
+    } else {
+      Map<String, String> chartFiltersMap = Codec
+          .deserializeHashMap(reqInfo.getParameter(PRM_CHART_FILTER));
+
+      if (chartFiltersMap != null && !chartFiltersMap.isEmpty()) {
+        additionalTripFilter = SqlUtils.and(
+            SqlUtils.inList(TBL_TRIPS, COL_VEHICLE, Codec.deserializeIdList(
+                chartFiltersMap.get(BeeUtils.toString(ChartDataType.TRUCK.ordinal())))),
+            SqlUtils.inList(TBL_TRIPS, COL_TRAILER, Codec.deserializeIdList(
+                chartFiltersMap.get(BeeUtils.toString(ChartDataType.TRAILER.ordinal())))),
+            sys.idInList(TBL_TRIPS, Codec.deserializeIdList(
+                chartFiltersMap.get(BeeUtils.toString(ChartDataType.TRIP.ordinal())))));
+
+        IsCondition orderFilter = null;
+        List<Long> ids = Codec.deserializeIdList(
+            chartFiltersMap.get(BeeUtils.toString(ChartDataType.ORDER.ordinal())));
+        if (!ids.isEmpty()) {
+          orderFilter = SqlUtils.inList(TBL_ORDER_CARGO, COL_ORDER, ids);
+        }
+
+        IsCondition managerFilter = null;
+        ids = Codec.deserializeIdList(
+            chartFiltersMap.get(BeeUtils.toString(ChartDataType.MANAGER.ordinal())));
+        if (!ids.isEmpty()) {
+          managerFilter = SqlUtils.inList(TBL_ORDERS, COL_ORDER_MANAGER, ids);
+        }
+
+        IsCondition cargoTypeFilter = null;
+        ids = Codec.deserializeIdList(
+            chartFiltersMap.get(BeeUtils.toString(ChartDataType.CARGO_TYPE.ordinal())));
+        if (!ids.isEmpty()) {
+          cargoTypeFilter = SqlUtils.inList(TBL_ORDER_CARGO, COL_CARGO_TYPE, ids);
+        }
+
+        IsCondition customerFilter = null;
+        ids = Codec.deserializeIdList(
+            chartFiltersMap.get(BeeUtils.toString(ChartDataType.CUSTOMER.ordinal())));
+        if (!ids.isEmpty()) {
+          customerFilter = SqlUtils.inList(TBL_ORDERS, COL_CUSTOMER, ids);
+        }
+
+        additionalFreightFilter = SqlUtils.and(managerFilter, orderFilter, cargoTypeFilter,
+            customerFilter);
+
+        filterDriversIds = Codec.deserializeIdList(
+            chartFiltersMap.get(BeeUtils.toString(ChartDataType.DRIVER.ordinal())));
+
+        driverGroupFilterIds = Codec.deserializeIdList(
+            chartFiltersMap.get(BeeUtils.toString(ChartDataType.DRIVER_GROUP.ordinal())));
+        driverFilter = Filter.idIn(filterDriversIds);
+      }
+    }
+
     String filterGroups = settings.getString(0, COL_DTB_TRANSPORT_GROUPS);
     Boolean completedTrips = settings.getBoolean(0, COL_DTB_COMPLETED_TRIPS);
 
     Range<Value> period = TransportUtils.getChartPeriod(minDate, maxDate);
 
-    List<Color> colors = getThemeColors(null);
-    settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
+    if (!formatFilterData) {
+      List<Color> colors = getThemeColors(null);
+      settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
+    }
 
     BeeRowSet transportGroups = qs.getViewData(VIEW_TRANSPORT_GROUPS);
-    if (!DataUtils.isEmpty(transportGroups)) {
+    if (!DataUtils.isEmpty(transportGroups) && !formatFilterData) {
       settings.setTableProperty(PROP_TRANSPORT_GROUPS, transportGroups.serialize());
     }
 
-    BeeRowSet cargoTypes = qs.getViewData(VIEW_CARGO_TYPES);
-    if (!DataUtils.isEmpty(cargoTypes)) {
-      settings.setTableProperty(PROP_CARGO_TYPES, cargoTypes.serialize());
+    if (!formatFilterData) {
+      BeeRowSet cargoTypes = qs.getViewData(VIEW_CARGO_TYPES);
+      if (!DataUtils.isEmpty(cargoTypes)) {
+        settings.setTableProperty(PROP_CARGO_TYPES, cargoTypes.serialize());
+      }
     }
 
-    BeeRowSet countries = qs.getViewData(VIEW_COUNTRIES);
-    settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
-
-    Map<String, String> cityNames = getCityNames();
-    if (!BeeUtils.isEmpty(cityNames)) {
-      settings.setTableProperty(PROP_CITIES, Codec.beeSerialize(cityNames));
-    }
-
-    Filter driverFilter = null;
-    if (!BeeUtils.isEmpty(filterGroups) && !DataUtils.isEmpty(transportGroups)) {
+    if ((!BeeUtils.isEmpty(filterGroups) && !DataUtils.isEmpty(transportGroups))
+        || !driverGroupFilterIds.isEmpty()) {
       Set<Long> groups = DataUtils.parseIdSet(filterGroups);
       groups.retainAll(transportGroups.getRowIds());
+
+      groups.addAll(driverGroupFilterIds);
 
       if (!groups.isEmpty()) {
         Set<Long> ids = qs.getDistinctLongs(TBL_DRIVER_GROUPS, COL_DRIVER,
             SqlUtils.inList(TBL_DRIVER_GROUPS, COL_GROUP, groups));
+        ids.addAll(filterDriversIds);
 
         if (BeeUtils.isEmpty(ids)) {
           driverFilter = Filter.isFalse();
@@ -2602,11 +2708,13 @@ public class TransportModuleBean implements BeeModule {
 
     settings.setTableProperty(PROP_DRIVERS, drivers.serialize());
 
-    BeeRowSet absence = qs.getViewData(VIEW_DRIVER_ABSENCE,
-        Filter.and(Filter.any(COL_DRIVER, driverIds),
-            Filter.anyIntersects(Lists.newArrayList(COL_ABSENCE_FROM, COL_ABSENCE_TO), period)));
-    if (!DataUtils.isEmpty(absence)) {
-      settings.setTableProperty(PROP_ABSENCE, absence.serialize());
+    if (!formatFilterData) {
+      BeeRowSet absence = qs.getViewData(VIEW_DRIVER_ABSENCE,
+          Filter.and(Filter.any(COL_DRIVER, driverIds),
+              Filter.anyIntersects(Lists.newArrayList(COL_ABSENCE_FROM, COL_ABSENCE_TO), period)));
+      if (!DataUtils.isEmpty(absence)) {
+        settings.setTableProperty(PROP_ABSENCE, absence.serialize());
+      }
     }
 
     IsCondition tripDriverWhere = SqlUtils.inList(TBL_TRIP_DRIVERS, COL_DRIVER, driverIds);
@@ -2618,9 +2726,29 @@ public class TransportModuleBean implements BeeModule {
     }
     settings.setTableProperty(PROP_TRIP_DRIVERS, tripDrivers.serialize());
 
+    if (!tripRequired) {
+      return ResponseObject.response(settings);
+    }
+
     IsCondition tripWhere = SqlUtils.and(chartTripCondition,
         SqlUtils.in(TBL_TRIPS, sys.getIdName(TBL_TRIPS),
-            TBL_TRIP_DRIVERS, COL_TRIP, tripDriverWhere));
+            TBL_TRIP_DRIVERS, COL_TRIP, tripDriverWhere), additionalTripFilter);
+
+    if (additionalFreightFilter != null) {
+      Set<Long> tripIds = qs.getLongSet(new SqlSelect()
+          .addFields(TBL_TRIPS, COL_TRIP_ID)
+          .addFrom(TBL_TRIPS)
+          .addFromLeft(TBL_CARGO_TRIPS,
+              SqlUtils.join(TBL_CARGO_TRIPS, COL_TRIP, TBL_TRIPS, COL_TRIP_ID))
+          .addFromLeft(TBL_ORDER_CARGO,
+              sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+          .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+          .setWhere(SqlUtils.and(additionalFreightFilter, tripWhere)));
+
+      if (!tripIds.isEmpty()) {
+        tripWhere = sys.idInList(TBL_TRIPS, tripIds);
+      }
+    }
 
     SqlSelect tripQuery = getTripQuery(tripWhere);
     tripQuery.addOrder(TBL_TRIPS, COL_TRIP_DATE);
@@ -2631,6 +2759,10 @@ public class TransportModuleBean implements BeeModule {
     }
     settings.setTableProperty(PROP_TRIPS, trips.serialize());
 
+    if (!freightsRequired) {
+      return ResponseObject.response(settings);
+    }
+
     SqlSelect freightQuery = getFreightQuery(tripWhere);
 
     SimpleRowSet freights = qs.getData(freightQuery);
@@ -2639,11 +2771,24 @@ public class TransportModuleBean implements BeeModule {
     }
     settings.setTableProperty(PROP_FREIGHTS, freights.serialize());
 
+    if (!handlingRequired) {
+      return ResponseObject.response(settings);
+    }
+
     SimpleRowSet cargoHandling = getFreightHandlingData(tripWhere, true);
     if (!DataUtils.isEmpty(cargoHandling)) {
       settings.setTableProperty(PROP_CARGO_HANDLING, cargoHandling.serialize());
     }
 
+    SimpleRowSet countries = getCountries(Sets
+        .newHashSet(cargoHandling.getLongColumn(COL_COUNTRY)));
+    settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
+
+    Map<String, String> cityNames = getCityNames(Sets
+        .newHashSet(cargoHandling.getLongColumn(COL_CITY)));
+    if (!BeeUtils.isEmpty(cityNames)) {
+      settings.setTableProperty(PROP_CITIES, Codec.beeSerialize(cityNames));
+    }
     return ResponseObject.response(settings);
   }
 
@@ -2761,13 +2906,6 @@ public class TransportModuleBean implements BeeModule {
       settings.setTableProperty(PROP_CARGO_TYPES, cargoTypes.serialize());
     }
 
-    BeeRowSet countries = qs.getViewData(VIEW_COUNTRIES);
-    settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
-
-    Map<String, String> cityNames = getCityNames();
-    if (!BeeUtils.isEmpty(cityNames)) {
-      settings.setTableProperty(PROP_CITIES, Codec.beeSerialize(cityNames));
-    }
     IsCondition cargoWhere = SqlUtils.and(SqlUtils.isNull(TBL_CARGO_TRIPS, COL_CARGO),
         SqlUtils.inList(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST, OrderStatus.ACTIVE));
 
@@ -2795,7 +2933,15 @@ public class TransportModuleBean implements BeeModule {
     if (!DataUtils.isEmpty(cargoHandling)) {
       settings.setTableProperty(PROP_CARGO_HANDLING, cargoHandling.serialize());
     }
+    SimpleRowSet countries = getCountries(Sets
+        .newHashSet(cargoHandling.getLongColumn(COL_COUNTRY)));
+    settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
 
+    Map<String, String> cityNames = getCityNames(Sets
+        .newHashSet(cargoHandling.getLongColumn(COL_CITY)));
+    if (!BeeUtils.isEmpty(cityNames)) {
+      settings.setTableProperty(PROP_CITIES, Codec.beeSerialize(cityNames));
+    }
     return ResponseObject.response(settings);
   }
 
@@ -3197,8 +3343,8 @@ public class TransportModuleBean implements BeeModule {
   private ResponseObject getVehicleTbData(String svc, Filter vehicleFilter,
       boolean filterVehiclesByTrip, VehicleType vehicleType, String themeColumnName,
       String minDateColumnName, String maxDateColumnName,
-      String groupsColumnName, String completedTripsColumnName) {
-
+      String groupsColumnName, String completedTripsColumnName, RequestInfo reqInfo,
+      Boolean formatFilterData) {
     BeeRowSet settings = getSettings();
     if (settings == null) {
       return ResponseObject.error("user settings not available");
@@ -3217,25 +3363,20 @@ public class TransportModuleBean implements BeeModule {
     String tripVehicleIdColumnName = (vehicleType == null)
         ? COL_VEHICLE : vehicleType.getTripVehicleIdColumnName();
 
-    List<Color> colors = getThemeColors(theme);
-    settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
-
+    if (!formatFilterData) {
+      List<Color> colors = getThemeColors(theme);
+      settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
+    }
     BeeRowSet transportGroups = qs.getViewData(VIEW_TRANSPORT_GROUPS);
-    if (!DataUtils.isEmpty(transportGroups)) {
+    if (!DataUtils.isEmpty(transportGroups) && !formatFilterData) {
       settings.setTableProperty(PROP_TRANSPORT_GROUPS, transportGroups.serialize());
     }
 
-    BeeRowSet cargoTypes = qs.getViewData(VIEW_CARGO_TYPES);
-    if (!DataUtils.isEmpty(cargoTypes)) {
-      settings.setTableProperty(PROP_CARGO_TYPES, cargoTypes.serialize());
-    }
-
-    BeeRowSet countries = qs.getViewData(VIEW_COUNTRIES);
-    settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
-
-    Map<String, String> cityNames = getCityNames();
-    if (!BeeUtils.isEmpty(cityNames)) {
-      settings.setTableProperty(PROP_CITIES, Codec.beeSerialize(cityNames));
+    if (!formatFilterData) {
+      BeeRowSet cargoTypes = qs.getViewData(VIEW_CARGO_TYPES);
+      if (!DataUtils.isEmpty(cargoTypes)) {
+        settings.setTableProperty(PROP_CARGO_TYPES, cargoTypes.serialize());
+      }
     }
 
     Filter vehicleTripFilter;
@@ -3263,10 +3404,114 @@ public class TransportModuleBean implements BeeModule {
       }
     }
 
+    IsCondition additionalTripFilter = null;
+    IsCondition additionalDriverFilter = null;
+    IsCondition additionalFreightFilter = null;
+    Filter additionalVehicleFilter = null;
+    Filter mainVehicleFilter = null;
+
+    boolean tripRequired = true;
+    boolean freightsRequired = true;
+    boolean handlingRequired = true;
+
+    if (formatFilterData) {
+      handlingRequired = reqInfo.getParameterBoolean(PROP_CARGO_HANDLING);
+      freightsRequired = reqInfo.getParameterBoolean(PROP_FREIGHTS) || handlingRequired;
+      tripRequired = reqInfo.getParameterBoolean(PROP_TRIPS) || freightsRequired;
+
+    } else {
+      Map<String, String> chartFiltersMap = Codec
+          .deserializeHashMap(reqInfo.getParameter(PRM_CHART_FILTER));
+
+      if (chartFiltersMap != null && !chartFiltersMap.isEmpty()) {
+        ChartDataType filterType = vehicleType.equals(VehicleType.TRAILER)
+            ? ChartDataType.TRAILER : ChartDataType.TRUCK;
+        List<Long> ids = Codec.deserializeIdList(
+            chartFiltersMap.get(BeeUtils.toString(filterType.ordinal())));
+        if (!ids.isEmpty()) {
+          mainVehicleFilter = Filter.idIn(ids);
+        }
+
+        Filter vehicleModelFilter = null;
+        ids = Codec.deserializeIdList(
+            chartFiltersMap.get(BeeUtils.toString(ChartDataType.VEHICLE_MODEL.ordinal())));
+        if (!ids.isEmpty()) {
+          vehicleModelFilter = Filter.any(COL_MODEL, ids);
+        }
+
+        Filter vehicleTypeFilter = null;
+        ids = Codec.deserializeIdList(
+            chartFiltersMap.get(BeeUtils.toString(ChartDataType.VEHICLE_TYPE.ordinal())));
+        if (!ids.isEmpty()) {
+          vehicleTypeFilter = Filter.any(COL_VEHICLE_SERVICE_TYPE, ids);
+        }
+        additionalVehicleFilter = Filter.and(vehicleModelFilter, vehicleTypeFilter,
+            mainVehicleFilter);
+
+        filterType = vehicleType.equals(VehicleType.TRAILER)
+            ? ChartDataType.TRUCK : ChartDataType.TRAILER;
+
+        IsCondition tripVehicleFilter = null;
+        ids = Codec.deserializeIdList(chartFiltersMap.get(BeeUtils.toString(filterType.ordinal())));
+        if (!ids.isEmpty()) {
+          String column = vehicleType.equals(VehicleType.TRAILER) ? COL_VEHICLE : COL_TRAILER;
+          tripVehicleFilter = SqlUtils.inList(TBL_TRIPS, column, ids);
+        }
+
+        IsCondition tripFilter = null;
+        ids = Codec.deserializeIdList(
+            chartFiltersMap.get(BeeUtils.toString(ChartDataType.TRIP.ordinal())));
+        if (!ids.isEmpty()) {
+          tripFilter = sys.idInList(TBL_TRIPS, ids);
+        }
+
+        IsCondition orderFilter = null;
+        ids = Codec.deserializeIdList(
+            chartFiltersMap.get(BeeUtils.toString(ChartDataType.ORDER.ordinal())));
+        if (!ids.isEmpty()) {
+          orderFilter = SqlUtils.inList(TBL_ORDER_CARGO, COL_ORDER, ids);
+        }
+
+        IsCondition managerFilter = null;
+        ids = Codec.deserializeIdList(
+            chartFiltersMap.get(BeeUtils.toString(ChartDataType.MANAGER.ordinal())));
+        if (!ids.isEmpty()) {
+          managerFilter = SqlUtils.inList(TBL_ORDERS, COL_ORDER_MANAGER, ids);
+        }
+
+        IsCondition cargoTypeFilter = null;
+        ids = Codec.deserializeIdList(
+            chartFiltersMap.get(BeeUtils.toString(ChartDataType.CARGO_TYPE.ordinal())));
+        if (!ids.isEmpty()) {
+          cargoTypeFilter = SqlUtils.inList(TBL_ORDER_CARGO, COL_CARGO_TYPE, ids);
+        }
+
+        IsCondition customerFilter = null;
+        ids = Codec.deserializeIdList(
+            chartFiltersMap.get(BeeUtils.toString(ChartDataType.CUSTOMER.ordinal())));
+        if (!ids.isEmpty()) {
+          customerFilter = SqlUtils.inList(TBL_ORDERS, COL_CUSTOMER, ids);
+        }
+        additionalFreightFilter = SqlUtils.and(managerFilter, orderFilter, cargoTypeFilter,
+            customerFilter);
+
+        IsCondition tripDriverFilter = null;
+        ids = Codec.deserializeIdList(
+            chartFiltersMap.get(BeeUtils.toString(ChartDataType.DRIVER.ordinal())));
+        if (!ids.isEmpty()) {
+          additionalDriverFilter = SqlUtils.inList(TBL_TRIP_DRIVERS, COL_DRIVER, ids);
+          tripDriverFilter = SqlUtils.and(additionalTripFilter, SqlUtils
+              .in(TBL_TRIPS, COL_TRIP_ID, TBL_TRIP_DRIVERS, COL_TRIP, additionalDriverFilter));
+        }
+        additionalTripFilter = SqlUtils.and(tripVehicleFilter, tripFilter, tripDriverFilter);
+      }
+    }
+
     Order vehicleOrder = new Order(COL_NUMBER, true);
 
     BeeRowSet vehicles = qs.getViewData(VIEW_VEHICLES,
-        Filter.and(vehicleFilter, vehicleTripFilter, vehicleGroupFilter), vehicleOrder);
+        Filter.and(vehicleFilter, vehicleTripFilter, vehicleGroupFilter, additionalVehicleFilter),
+        vehicleOrder);
     if (DataUtils.isEmpty(vehicles)) {
       logger.warning(svc, vehicleTripFilter, filterGroups, "vehicles not available");
       return ResponseObject.response(settings);
@@ -3297,15 +3542,37 @@ public class TransportModuleBean implements BeeModule {
 
     settings.setTableProperty(PROP_VEHICLES, vehicles.serialize());
 
-    SimpleRowSet vehicleServices = getVehicleServices(SqlUtils.inList(TBL_VEHICLE_SERVICES,
-        COL_VEHICLE, vehicleIds));
-    if (!DataUtils.isEmpty(vehicleServices)) {
-      settings.setTableProperty(PROP_VEHICLE_SERVICES, vehicleServices.serialize());
+    if (!formatFilterData) {
+      SimpleRowSet vehicleServices = getVehicleServices(SqlUtils.inList(TBL_VEHICLE_SERVICES,
+          COL_VEHICLE, vehicleIds));
+      if (!DataUtils.isEmpty(vehicleServices)) {
+        settings.setTableProperty(PROP_VEHICLE_SERVICES, vehicleServices.serialize());
+      }
+    }
+
+    if (!tripRequired) {
+      return ResponseObject.response(settings);
     }
 
     IsCondition tripWhere = SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION),
         SqlUtils.inList(TBL_TRIPS, tripVehicleIdColumnName, vehicleIds),
-        getChartTripCondition(period, completedTrips));
+        getChartTripCondition(period, completedTrips), additionalTripFilter);
+
+    if (additionalFreightFilter != null) {
+      Set<Long> tripIds = qs.getLongSet(new SqlSelect()
+          .addFields(TBL_TRIPS, COL_TRIP_ID)
+          .addFrom(TBL_TRIPS)
+          .addFromLeft(TBL_CARGO_TRIPS,
+              SqlUtils.join(TBL_CARGO_TRIPS, COL_TRIP, TBL_TRIPS, COL_TRIP_ID))
+          .addFromLeft(TBL_ORDER_CARGO,
+              sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+          .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+          .setWhere(SqlUtils.and(additionalFreightFilter, tripWhere)));
+
+      if (!tripIds.isEmpty()) {
+        tripWhere = sys.idInList(TBL_TRIPS, tripIds);
+      }
+    }
 
     SqlSelect tripQuery = getTripQuery(tripWhere);
     tripQuery.addOrder(TBL_TRIPS, tripVehicleIdColumnName, COL_TRIP_DATE);
@@ -3317,12 +3584,16 @@ public class TransportModuleBean implements BeeModule {
     }
     settings.setTableProperty(PROP_TRIPS, trips.serialize());
 
-    SimpleRowSet drivers = getTripDrivers(tripWhere);
+    SimpleRowSet drivers = getTripDrivers(SqlUtils.and(tripWhere, additionalDriverFilter));
     if (!DataUtils.isEmpty(drivers)) {
       settings.setTableProperty(PROP_TRIP_DRIVERS, drivers.serialize());
     }
 
-    SqlSelect freightQuery = getFreightQuery(tripWhere);
+    if (!freightsRequired) {
+      return ResponseObject.response(settings);
+    }
+
+    SqlSelect freightQuery = getFreightQuery(SqlUtils.and(tripWhere));
 
     SimpleRowSet freights = qs.getData(freightQuery);
     if (DataUtils.isEmpty(freights)) {
@@ -3330,9 +3601,23 @@ public class TransportModuleBean implements BeeModule {
     }
     settings.setTableProperty(PROP_FREIGHTS, freights.serialize());
 
+    if (!handlingRequired) {
+      return ResponseObject.response(settings);
+    }
+
     SimpleRowSet cargoHandling = getFreightHandlingData(tripWhere, true);
     if (!DataUtils.isEmpty(cargoHandling)) {
       settings.setTableProperty(PROP_CARGO_HANDLING, cargoHandling.serialize());
+    }
+
+    SimpleRowSet countries = getCountries(Sets
+        .newHashSet(cargoHandling.getLongColumn(COL_COUNTRY)));
+    settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
+
+    Map<String, String> cityNames = getCityNames(Sets
+        .newHashSet(cargoHandling.getLongColumn(COL_CITY)));
+    if (!BeeUtils.isEmpty(cityNames)) {
+      settings.setTableProperty(PROP_CITIES, Codec.beeSerialize(cityNames));
     }
 
     return ResponseObject.response(settings);
