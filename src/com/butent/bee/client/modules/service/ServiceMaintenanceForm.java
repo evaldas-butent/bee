@@ -20,6 +20,7 @@ import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.data.*;
 import com.butent.bee.shared.data.event.DataChangeEvent;
@@ -302,6 +303,15 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
     ServiceUtils.setClientValuesForRevert(getActiveRow());
     ServiceUtils.setObjectValuesForRevert(getActiveRow());
+
+    getHeaderView().clearCommandPanel();
+    String maintenanceUrl = Global.getParameterText(PRM_EXTERNAL_MAINTENANCE_URL);
+
+    if (!BeeUtils.isEmpty(maintenanceUrl)) {
+      String link = BeeUtils.join(BeeConst.STRING_EMPTY,
+          Global.getParameterText(PRM_EXTERNAL_MAINTENANCE_URL), row.getId());
+      getHeaderView().addCommandItem(new Link(link, link));
+    }
   }
 
   @Override
