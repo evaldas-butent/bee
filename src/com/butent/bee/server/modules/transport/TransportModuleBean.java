@@ -153,12 +153,10 @@ public class TransportModuleBean implements BeeModule {
   TradeModuleBean trd;
   @EJB
   NewsBean news;
-  @EJB
-  TransportReportsBean rep;
-  @EJB
-  MailModuleBean mail;
-  @EJB
-  ConcurrencyBean cb;
+  @EJB TransportReportsBean rep;
+  @EJB TransportDataEventHandler transportHandler;
+  @EJB MailModuleBean mail;
+  @EJB ConcurrencyBean cb;
 
   private static IsExpression getAssessmentTurnoverExpression(SqlSelect query, String source,
       String defDateSource, String defDateAlias, Long currency, boolean woVat) {
@@ -437,6 +435,10 @@ public class TransportModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    sys.registerDataEventHandler(transportHandler);
+
+    transportHandler.initConditions();
+
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       @AllowConcurrentEvents
@@ -796,7 +798,7 @@ public class TransportModuleBean implements BeeModule {
         if (event.isAfter(VIEW_ORDERS, VIEW_ASSESSMENTS)) {
           int col = DataUtils.getColumnIndex(event.isAfter(VIEW_ORDERS)
               ? COL_STATUS : COL_ORDER + COL_STATUS, event.getColumns());
-          Long  orderId;
+          Long orderId;
 
           if (event.isAfter(VIEW_ORDERS)) {
             orderId = event.getRow().getId();

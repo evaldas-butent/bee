@@ -146,14 +146,5 @@
         </ExternalJoin>
       </SimpleJoin>
     </ExternalJoin>
-
-    <ExternalJoin name="Assessment" source="AssessmentForwarders" joinType="LEFT">
-      <SimpleJoin name="Trip" joinType="LEFT">
-        <HiddenColumn name="ForwarderVehicle" />
-        <AggregateColumn name="ForwarderVehicle" alias="MinVehicle" aggregate="MIN" />
-        <AggregateColumn name="ForwarderVehicle" alias="MaxVehicle" aggregate="MAX" />
-        <AggregateColumn name="ForwarderVehicle" alias="CntVehicle" aggregate="COUNT_DISTINCT" />
-      </SimpleJoin>
-    </ExternalJoin>
   </Columns>
 </View>
