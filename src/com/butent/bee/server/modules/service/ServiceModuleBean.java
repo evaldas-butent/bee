@@ -1386,7 +1386,8 @@ public class ServiceModuleBean implements BeeModule {
 
         String error = BeeConst.STRING_EMPTY;
 
-        if (!BeeUtils.toBoolean(commentInfoRow.getValue(COL_SEND_SMS))) {
+        if (!BeeUtils.toBoolean(commentInfoRow.getValue(COL_SEND_SMS))
+            && !BeeUtils.isEmpty(commentInfoRow.getValue(COL_PHONE))) {
           String from = BeeConst.STRING_EMPTY;
 
           if (!BeeUtils.isEmpty(prm.getText(PRM_SMS_REQUEST_CONTACT_INFO_FROM))) {

@@ -813,13 +813,6 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   }
 
   private boolean isValidData(FormView form, IsRow row) {
-    String phone = row.getString(getDataIndex(ALS_CONTACT_PHONE));
-
-    if (BeeUtils.isEmpty(phone)) {
-      form.notifySevere(Localized.dictionary().fieldRequired(Localized.dictionary().phone()));
-      return false;
-    }
-
     Boolean addressRequired = row.getBoolean(getDataIndex(COL_ADDRESS_REQUIRED));
 
     if (BeeUtils.isTrue(addressRequired)) {

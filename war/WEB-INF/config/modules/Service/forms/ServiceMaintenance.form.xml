@@ -153,7 +153,7 @@
                 <col index="0" cellClass="bee-svc-maintenance-info-label" />
                 <col index="1" cellClass="bee-svc-maintenance-info-field" />
                 <row>
-                  <Label text="=phone" class="bee-required" />
+                  <Label text="=phone" />
                   <TextLabel name="Phone" source="ContactPhone"/>
                 </row>
                 <row>
