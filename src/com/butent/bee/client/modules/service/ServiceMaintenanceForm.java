@@ -9,10 +9,8 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.MultiSelector;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
@@ -23,7 +21,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Latch;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.*;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
@@ -119,13 +116,9 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
             if (DataUtils.isId(newValue)) {
               Filter filter = Filter.equals(COL_SERVICE_MAINTENANCE, getActiveRowId());
               Queries.update(TBL_SERVICE_ITEMS, filter, OrdersConstants.COL_RESERVED_REMAINDER,
-                  new NumberValue(BeeConst.DOUBLE_ZERO), new Queries.IntCallback() {
-
-                    @Override
-                    public void onSuccess(Integer result) {
-                      getActiveRow().setValue(getDataIndex(COL_WAREHOUSE), newValue);
-                      update();
-                    }
+                  new NumberValue(BeeConst.DOUBLE_ZERO), result -> {
+                    getActiveRow().setValue(getDataIndex(COL_WAREHOUSE), newValue);
+                    update();
                   });
             }
           });
@@ -335,13 +328,10 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     ParameterList params = ServiceKeeper.createArgs(SVC_GET_ITEMS_INFO);
     params.addDataItem(COL_SERVICE_MAINTENANCE, getActiveRowId());
 
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (!response.isEmpty() && !response.hasErrors()) {
-          BeeRowSet items = BeeRowSet.restore((String) response.getResponse());
-          dataConsumer.accept(new BeeRowSet[] {items});
-        }
+    BeeKeeper.getRpc().makePostRequest(params, response -> {
+      if (!response.isEmpty() && !response.hasErrors()) {
+        BeeRowSet items = BeeRowSet.restore((String) response.getResponse());
+        dataConsumer.accept(new BeeRowSet[] {items});
       }
     });
   }
@@ -387,16 +377,13 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       Long departmentId = getActiveRow().getLong(getDataIndex(COL_DEPARTMENT));
 
       if (DataUtils.isId(departmentId)) {
-        Queries.getRow(VIEW_DEPARTMENTS, departmentId, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow departmentRow) {
-            for (String column : Arrays.asList(COL_PHONE, COL_FAX, COL_EMAIL, COL_ADDRESS,
-                COL_POST_INDEX, ALS_CITY_NAME, COL_WEBSITE)) {
-              defaultParameters.put(COL_DEPARTMENT + column,
-                  departmentRow.getString(Data.getColumnIndex(VIEW_DEPARTMENTS, column)));
-            }
-            action.run();
+        Queries.getRow(VIEW_DEPARTMENTS, departmentId, departmentRow -> {
+          for (String column : Arrays.asList(COL_PHONE, COL_FAX, COL_EMAIL, COL_ADDRESS,
+              COL_POST_INDEX, ALS_CITY_NAME, COL_WEBSITE)) {
+            defaultParameters.put(COL_DEPARTMENT + column,
+                departmentRow.getString(Data.getColumnIndex(VIEW_DEPARTMENTS, column)));
           }
+          action.run();
         });
       } else {
         action.run();
@@ -404,13 +391,9 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
       Filter commentsFilter = Filter.and(Filter.equals(COL_SERVICE_MAINTENANCE, getActiveRowId()),
           Filter.notNull(COL_SHOW_CUSTOMER));
-      Queries.getRowSet(TBL_MAINTENANCE_COMMENTS, null, commentsFilter,
-          new Queries.RowSetCallback() {
-            @Override
-            public void onSuccess(BeeRowSet comments) {
-              defaultParameters.put(TBL_MAINTENANCE_COMMENTS, comments.serialize());
-              action.run();
-            }
+      Queries.getRowSet(TBL_MAINTENANCE_COMMENTS, null, commentsFilter, comments -> {
+        defaultParameters.put(TBL_MAINTENANCE_COMMENTS, comments.serialize());
+        action.run();
       });
     });
   }
@@ -432,31 +415,28 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         && BeeUtils.isTrue(getActiveRow().getBoolean(getDataIndex(COL_COMPANY_TYPE_PERSON)))) {
       Long companyId = getActiveRow().getLong(getDataIndex(COL_COMPANY));
       Queries.getRow(VIEW_COMPANY_PERSONS, Filter.equals(COL_COMPANY, companyId), null,
-          new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow companyPersonRow) {
-              if (companyPersonRow != null && DataUtils.isId(companyPersonRow.getId())) {
-                DataInfo targetDataInfo = Data.getDataInfo(getViewName());
-                DataInfo sourceDataInfo = Data.getDataInfo(VIEW_COMPANY_PERSONS);
+          companyPersonRow -> {
+            if (companyPersonRow != null && DataUtils.isId(companyPersonRow.getId())) {
+              DataInfo targetDataInfo = Data.getDataInfo(getViewName());
+              DataInfo sourceDataInfo = Data.getDataInfo(VIEW_COMPANY_PERSONS);
 
-                getActiveRow().setValue(targetDataInfo.getColumnIndex(COL_CONTACT),
-                    companyPersonRow.getId());
-                RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_PHONE, getActiveRow(),
-                    sourceDataInfo, COL_PHONE, companyPersonRow);
-                RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_FIRST_NAME,
-                    getActiveRow(), sourceDataInfo, COL_FIRST_NAME, companyPersonRow);
-                RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_LAST_NAME,
-                    getActiveRow(), sourceDataInfo, COL_LAST_NAME, companyPersonRow);
-                RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_EMAIL, getActiveRow(),
-                    sourceDataInfo, COL_EMAIL, companyPersonRow);
-                RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_ADDRESS, getActiveRow(),
-                    sourceDataInfo, COL_ADDRESS, companyPersonRow);
+              getActiveRow().setValue(targetDataInfo.getColumnIndex(COL_CONTACT),
+                  companyPersonRow.getId());
+              RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_PHONE, getActiveRow(),
+                  sourceDataInfo, COL_PHONE, companyPersonRow);
+              RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_FIRST_NAME,
+                  getActiveRow(), sourceDataInfo, COL_FIRST_NAME, companyPersonRow);
+              RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_LAST_NAME,
+                  getActiveRow(), sourceDataInfo, COL_LAST_NAME, companyPersonRow);
+              RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_EMAIL, getActiveRow(),
+                  sourceDataInfo, COL_EMAIL, companyPersonRow);
+              RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_ADDRESS, getActiveRow(),
+                  sourceDataInfo, COL_ADDRESS, companyPersonRow);
 
-                getFormView().refreshBySource(COL_CONTACT);
-                getFormView().refreshBySource(ALS_CONTACT_PHONE);
-                getFormView().refreshBySource(ALS_CONTACT_EMAIL);
-                getFormView().refreshBySource(ALS_CONTACT_ADDRESS);
-              }
+              getFormView().refreshBySource(COL_CONTACT);
+              getFormView().refreshBySource(ALS_CONTACT_PHONE);
+              getFormView().refreshBySource(ALS_CONTACT_EMAIL);
+              getFormView().refreshBySource(ALS_CONTACT_ADDRESS);
             }
           });
     }
@@ -621,13 +601,9 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
           form.refresh();
 
         } else {
-          Queries.getRow(getViewName(), row.getId(), new RowCallback() {
-
-            @Override
-            public void onSuccess(BeeRow rowResult) {
-              form.refresh();
-              RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), rowResult);
-            }
+          Queries.getRow(getViewName(), row.getId(), rowResult -> {
+            form.refresh();
+            RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), rowResult);
           });
         }
       }
@@ -660,19 +636,16 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     form.addStyleName(STYLE_PROGRESS_BAR);
 
     ParameterList params = ServiceKeeper.createArgs(SVC_GET_MAINTENANCE_NEW_ROW_VALUES);
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (!response.isEmpty() && !response.hasErrors()) {
-          Map<String, String> columnsData = Codec
-              .deserializeLinkedHashMap(response.getResponseAsString());
-          columnsData.forEach((column, value) -> newRow.setValue(getDataIndex(column), value));
-        }
-        form.removeStyleName(STYLE_PROGRESS_CONTAINER);
-        form.removeStyleName(STYLE_PROGRESS_BAR);
-
-        getFormView().refresh(false, false);
+    BeeKeeper.getRpc().makePostRequest(params, response -> {
+      if (!response.isEmpty() && !response.hasErrors()) {
+        Map<String, String> columnsData = Codec
+            .deserializeLinkedHashMap(response.getResponseAsString());
+        columnsData.forEach((column, value) -> newRow.setValue(getDataIndex(column), value));
       }
+      form.removeStyleName(STYLE_PROGRESS_CONTAINER);
+      form.removeStyleName(STYLE_PROGRESS_BAR);
+
+      getFormView().refresh(false, false);
     });
   }
 
@@ -742,12 +715,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       }
     }
 
-    Queries.insert(TBL_MAINTENANCE_COMMENTS, columns, values, null, new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow commentRow) {
-        ServiceUtils.informClient(commentRow);
-      }
-    });
+    Queries.insert(TBL_MAINTENANCE_COMMENTS, columns, values, null, ServiceUtils::informClient);
   }
 
   private void drawComments(IsRow row) {
@@ -787,17 +755,20 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
         if (BeeUtils.toBoolean(stateProcessRow.getString(processRowSet
             .getColumnIndex(COL_FINITE)))) {
-          Consumer<Boolean> changeStateConsumer = canChangeState -> {
-            if (canChangeState) {
+          Consumer<String> changeStateConsumer = canChangeStateErrorMsg -> {
+            if (BeeUtils.isEmpty(canChangeStateErrorMsg)) {
               Queries.updateAndFire(getViewName(), row.getId(), row.getVersion(),
                   COL_ENDING_DATE, oldValue, BeeUtils.toString(System.currentTimeMillis()),
                   ModificationEvent.Kind.UPDATE_ROW);
             } else {
               event.consume();
-              getFormView().notifySevere(Localized.dictionary().ordEmptyInvoice());
+              getFormView().notifySevere(canChangeStateErrorMsg);
             }
           };
-          ServiceUtils.checkCanChangeState(true, changeStateConsumer, getFormView());
+          boolean isItemsRequired = stateProcessRow.getBoolean(processRowSet
+              .getColumnIndex(COL_FINITE));
+          ServiceUtils.checkCanChangeState(true, isItemsRequired, changeStateConsumer,
+              getFormView());
 
         } else if (!BeeUtils.isEmpty(oldValue)) {
           Queries.updateAndFire(getViewName(), row.getId(), row.getVersion(), COL_ENDING_DATE,
@@ -842,13 +813,9 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         DataUtils.getUpdated(form.getViewName(), form.getDataColumns(), form.getOldRow(),
             getActiveRow(), form.getChildrenForUpdate());
 
-    Queries.updateRow(rowSet, new RowCallback() {
-
-      @Override
-      public void onSuccess(BeeRow result) {
-        RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), result);
-        form.refresh();
-      }
+    Queries.updateRow(rowSet, result -> {
+      RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), result);
+      form.refresh();
     });
   }
 
@@ -913,19 +880,13 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     ParameterList params = ServiceKeeper.createArgs(SVC_UPDATE_SERVICE_MAINTENANCE_OBJECT);
     params.addDataItem(COL_SERVICE_MAINTENANCE, maintenanceId);
 
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (!response.isEmpty() && !response.hasErrors()) {
-          Queries.getRow(VIEW_SERVICE_OBJECTS, response.getResponseAsLong(), new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
-              if (result != null) {
-                RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_SERVICE_OBJECTS, result);
-              }
-            }
-          });
-        }
+    BeeKeeper.getRpc().makePostRequest(params, response -> {
+      if (!response.isEmpty() && !response.hasErrors()) {
+        Queries.getRow(VIEW_SERVICE_OBJECTS, response.getResponseAsLong(), result -> {
+          if (result != null) {
+            RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_SERVICE_OBJECTS, result);
+          }
+        });
       }
     });
   }

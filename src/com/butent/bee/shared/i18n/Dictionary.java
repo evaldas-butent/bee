@@ -5294,6 +5294,8 @@ public interface Dictionary {
 
   default String shippingSchedule() {return g("shippingSchedule");}
 
+  default String shoppingCartIsEmpty() {return g("shoppingCartIsEmpty");}
+
   default String showAvailableEmployees() {return g("showAvailableEmployees");}
 
   default String showGridFilterCommand() {return g("showGridFilterCommand");}

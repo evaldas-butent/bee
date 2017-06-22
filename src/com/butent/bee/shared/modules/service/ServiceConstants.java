@@ -103,6 +103,7 @@ public final class ServiceConstants {
   public static final String COL_EQUIPMENT = "Equipment";
   public static final String COL_EQUIPMENT_NAME = "Name";
   public static final String COL_INITIAL = "Initial";
+  public static final String COL_IS_ITEMS_REQUIRED = "IsItemsRequired";
   public static final String COL_FINITE = "Finite";
   public static final String COL_TYPE = "Type";
   public static final String COL_MAINTENANCE_STATE = "MaintenanceState";
