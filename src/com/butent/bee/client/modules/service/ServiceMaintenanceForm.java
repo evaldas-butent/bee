@@ -308,8 +308,9 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     String maintenanceUrl = Global.getParameterText(PRM_EXTERNAL_MAINTENANCE_URL);
 
     if (!BeeUtils.isEmpty(maintenanceUrl) && DataUtils.isId(row.getId())) {
+      String maintenanceNumber = row.getString(getDataIndex(COL_MAINTENANCE_NUMBER));
       String link = BeeUtils.join(BeeConst.STRING_EMPTY,
-          Global.getParameterText(PRM_EXTERNAL_MAINTENANCE_URL), row.getId());
+          Global.getParameterText(PRM_EXTERNAL_MAINTENANCE_URL), maintenanceNumber);
       getHeaderView().addCommandItem(new Link(link, link));
     }
   }
