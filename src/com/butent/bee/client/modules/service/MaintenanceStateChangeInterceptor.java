@@ -49,12 +49,12 @@ abstract class MaintenanceStateChangeInterceptor extends MaintenanceExpanderForm
 
             if (!DataUtils.isEmpty(stateProcessRowSet)) {
               IsRow stateProcessRow = stateProcessRowSet.getRow(0);
-              Boolean comment = stateProcessRow.getBoolean(stateProcessRowSet
+              boolean comment = stateProcessRow.isTrue(stateProcessRowSet
                   .getColumnIndex(COL_COMMENT));
 
-              Boolean isFinalState = stateProcessRow.getBoolean(Data
+              boolean isFinalState = stateProcessRow.isTrue(Data
                   .getColumnIndex(TBL_STATE_PROCESS, COL_FINITE));
-              Boolean isItemsRequired = stateProcessRow.getBoolean(Data
+              boolean isItemsRequired = stateProcessRow.isTrue(Data
                   .getColumnIndex(TBL_STATE_PROCESS, COL_IS_ITEMS_REQUIRED));
 
               Consumer<String> changeStateConsumer = canChangeStateErrorMsg -> {
@@ -62,7 +62,7 @@ abstract class MaintenanceStateChangeInterceptor extends MaintenanceExpanderForm
                   getFormView().notifySevere(canChangeStateErrorMsg);
                   revertState();
 
-                } else if (BeeUtils.isTrue(comment)
+                } else if (comment
                     || !BeeUtils.isEmpty(stateProcessRow.getString(Data
                     .getColumnIndex(TBL_STATE_PROCESS, COL_MAINTENANCE_ITEM)))
                     || !BeeUtils.isEmpty(stateProcessRow.getString(Data
@@ -96,7 +96,7 @@ abstract class MaintenanceStateChangeInterceptor extends MaintenanceExpanderForm
                       columns.add(COL_ENDING_DATE);
                       oldValues.add(oldRow.getString(endingDateIndex));
 
-                      if (BeeUtils.isTrue(isFinalState)) {
+                      if (isFinalState) {
                         newValues.add(BeeUtils.toString(System.currentTimeMillis()));
                       } else {
                         newValues.add(null);

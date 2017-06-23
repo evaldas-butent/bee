@@ -263,7 +263,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     updateWarrantyMaintenanceWidget(DataUtils
         .isId(row.getLong(getDataIndex(COL_WARRANTY_MAINTENANCE))));
 
-    if (BeeUtils.isTrue(row.getBoolean(getDataIndex(COL_ADDRESS_REQUIRED)))) {
+    if (row.isTrue(getDataIndex(COL_ADDRESS_REQUIRED))) {
       updateContactAddressLabel(true);
     }
 
@@ -295,8 +295,8 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         if (!DataUtils.isEmpty(processRowSet)) {
           IsRow stateProcessRow = processRowSet.getRow(0);
           disableEditWidgets.forEach(widget ->
-              widget.setEnabled(!BeeUtils.unbox(stateProcessRow
-                  .getBoolean(processRowSet.getColumnIndex(COL_PROHIBIT_EDIT)))));
+              widget.setEnabled(!stateProcessRow
+                  .isTrue(processRowSet.getColumnIndex(COL_PROHIBIT_EDIT))));
         }
       });
     }
@@ -307,7 +307,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     getHeaderView().clearCommandPanel();
     String maintenanceUrl = Global.getParameterText(PRM_EXTERNAL_MAINTENANCE_URL);
 
-    if (!BeeUtils.isEmpty(maintenanceUrl)) {
+    if (!BeeUtils.isEmpty(maintenanceUrl) && DataUtils.isId(row.getId())) {
       String link = BeeUtils.join(BeeConst.STRING_EMPTY,
           Global.getParameterText(PRM_EXTERNAL_MAINTENANCE_URL), row.getId());
       getHeaderView().addCommandItem(new Link(link, link));
@@ -422,7 +422,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   @Override
   public void onDataChange(DataChangeEvent event) {
     if (event.hasView(VIEW_COMPANY_PERSONS)
-        && BeeUtils.isTrue(getActiveRow().getBoolean(getDataIndex(COL_COMPANY_TYPE_PERSON)))) {
+        && getActiveRow().isTrue(getDataIndex(COL_COMPANY_TYPE_PERSON))) {
       Long companyId = getActiveRow().getLong(getDataIndex(COL_COMPANY));
       Queries.getRow(VIEW_COMPANY_PERSONS, Filter.equals(COL_COMPANY, companyId), null,
           companyPersonRow -> {
@@ -461,7 +461,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
       event.setOnOpenNewRow(formView -> {
         if (event.hasRelatedView(VIEW_COMPANY_PERSONS)
-            && BeeUtils.isTrue(getActiveRow().getBoolean(getDataIndex(COL_ADDRESS_REQUIRED)))) {
+            && getActiveRow().isTrue(getDataIndex(COL_ADDRESS_REQUIRED))) {
           Widget widget = formView.getWidgetBySource(COL_ADDRESS);
 
           if (widget instanceof InputText) {
@@ -496,9 +496,9 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         case VIEW_MAINTENANCE_TYPES:
           updateStateDataSelector(true);
 
-          Boolean addressRequired = event.getRelatedRow()
-              .getBoolean(Data.getColumnIndex(event.getRelatedViewName(), COL_ADDRESS_REQUIRED));
-          updateContactAddressLabel(BeeUtils.isTrue(addressRequired));
+          boolean addressRequired = event.getRelatedRow()
+              .isTrue(Data.getColumnIndex(event.getRelatedViewName(), COL_ADDRESS_REQUIRED));
+          updateContactAddressLabel(addressRequired);
           break;
 
         case VIEW_COMPANY_PERSONS:
@@ -775,7 +775,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
               getFormView().notifySevere(canChangeStateErrorMsg);
             }
           };
-          boolean isItemsRequired = stateProcessRow.getBoolean(processRowSet
+          boolean isItemsRequired = stateProcessRow.isTrue(processRowSet
               .getColumnIndex(COL_FINITE));
           ServiceUtils.checkCanChangeState(true, isItemsRequired, changeStateConsumer,
               getFormView());
@@ -794,9 +794,9 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   }
 
   private boolean isValidData(FormView form, IsRow row) {
-    Boolean addressRequired = row.getBoolean(getDataIndex(COL_ADDRESS_REQUIRED));
+    boolean addressRequired = row.isTrue(getDataIndex(COL_ADDRESS_REQUIRED));
 
-    if (BeeUtils.isTrue(addressRequired)) {
+    if (addressRequired) {
       String address = row.getString(getDataIndex(ALS_CONTACT_ADDRESS));
 
       if (BeeUtils.isEmpty(address)) {
