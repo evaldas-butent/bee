@@ -231,6 +231,46 @@ public class ServiceModuleBean implements BeeModule {
         COL_WARRANTY_VALID_TO);
   }
 
+  public SqlSelect formatExportReservationsQuery() {
+    return new SqlSelect()
+        .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
+        .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+        .addFields(TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER)
+        .addFrom(TBL_ORDER_ITEMS)
+        .addFromLeft(TBL_ITEMS,
+            sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
+        .addFromLeft(TBL_SERVICE_ITEMS,
+            sys.joinTables(TBL_SERVICE_ITEMS, TBL_ORDER_ITEMS, COL_SERVICE_ITEM))
+        .addFromLeft(TBL_SERVICE_MAINTENANCE,
+            sys.joinTables(TBL_SERVICE_MAINTENANCE, TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE))
+        .addFromLeft(TBL_WAREHOUSES,
+            sys.joinTables(TBL_WAREHOUSES, TBL_SERVICE_MAINTENANCE, COL_WAREHOUSE))
+        .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_SERVICE_MAINTENANCE, COL_ENDING_DATE),
+            SqlUtils.notNull(TBL_ORDER_ITEMS, COL_SERVICE_ITEM),
+            SqlUtils.notNull(TBL_SERVICE_MAINTENANCE, COL_WAREHOUSE))).addUnion(
+            new SqlSelect()
+                .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
+                .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+                .addField(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY,
+                    COL_RESERVED_REMAINDER)
+                .addFrom(VIEW_ORDER_CHILD_INVOICES)
+                .addFromLeft(TBL_ORDER_ITEMS, sys.joinTables(TBL_ORDER_ITEMS,
+                    VIEW_ORDER_CHILD_INVOICES, COL_ORDER_ITEM))
+                .addFromLeft(TBL_SERVICE_ITEMS,
+                    sys.joinTables(TBL_SERVICE_ITEMS, TBL_ORDER_ITEMS, COL_SERVICE_ITEM))
+                .addFromLeft(TBL_SERVICE_MAINTENANCE, sys.joinTables(TBL_SERVICE_MAINTENANCE,
+                    TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE))
+                .addFromLeft(TBL_WAREHOUSES,
+                    sys.joinTables(TBL_WAREHOUSES, TBL_SERVICE_MAINTENANCE, COL_WAREHOUSE))
+                .addFromLeft(TBL_SALE_ITEMS, sys.joinTables(TBL_SALE_ITEMS,
+                    VIEW_ORDER_CHILD_INVOICES, COL_SALE_ITEM))
+                .addFromLeft(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+                .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_SALE_ITEMS, COL_ITEM))
+                .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_TRADE_EXPORTED),
+                    SqlUtils.notNull(TBL_ORDER_ITEMS, COL_SERVICE_ITEM),
+                    SqlUtils.notNull(TBL_SERVICE_MAINTENANCE, COL_WAREHOUSE))));
+  }
+
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     String module = getModule().getName();

@@ -607,6 +607,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         new SqlSelect()
             .addFields(ALS_RESERVATIONS, COL_ITEM_EXTERNAL_CODE, COL_WAREHOUSE_CODE)
             .addSum(ALS_RESERVATIONS, COL_RESERVED_REMAINDER, ALS_TOTAL_AMOUNT)
+            .setWhere(SqlUtils.notNull(ALS_RESERVATIONS, COL_RESERVED_REMAINDER))
             .addGroup(ALS_RESERVATIONS, COL_ITEM_EXTERNAL_CODE)
             .addGroup(ALS_RESERVATIONS, COL_WAREHOUSE_CODE)
             .addFrom(new SqlSelect()
@@ -621,8 +622,9 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
                         sys.joinTables(TBL_ORDERS, TBL_ORDER_ITEMS, COL_ORDER))
                     .addFromLeft(TBL_WAREHOUSES,
                         sys.joinTables(TBL_WAREHOUSES, TBL_ORDERS, COL_WAREHOUSE))
-                    .setWhere(SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS,
-                        OrdersStatus.APPROVED.ordinal())).addUnion(
+                    .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS,
+                        OrdersStatus.APPROVED.ordinal()),
+                        SqlUtils.notNull(TBL_ORDER_ITEMS, COL_ORDER))).addUnion(
                     new SqlSelect()
                         .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
                         .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
@@ -639,7 +641,9 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
                             VIEW_ORDER_CHILD_INVOICES, COL_SALE_ITEM))
                         .addFromLeft(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
                         .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_SALE_ITEMS, COL_ITEM))
-                        .setWhere(SqlUtils.isNull(TBL_SALES, COL_TRADE_EXPORTED))),
+                        .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_TRADE_EXPORTED),
+                            SqlUtils.notNull(TBL_ORDER_ITEMS, COL_ORDER))))
+                    .addUnion(srv.formatExportReservationsQuery()),
                 ALS_RESERVATIONS);
 
     SimpleRowSet rs = qs.getData(select);
