@@ -214,8 +214,8 @@ public class ServiceModuleBean implements BeeModule {
     if (!BeeUtils.isEmpty(articleSourceColumn)
         && !BeeUtils.same(articleSourceColumn, COL_ITEM_ARTICLE)) {
       switch (articleSourceColumn) {
-        case COL_SERVICE_MAINTENANCE_ID:
-          value = itemRow.getValue(sys.getIdName(TBL_SERVICE_MAINTENANCE));
+        case COL_MAINTENANCE_NUMBER:
+          value = itemRow.getValue(COL_MAINTENANCE_NUMBER);
           break;
         case COL_WARRANTY_VALID_TO:
           DateTimeFormatInfo dtfInfo = usr.getDateTimeFormatInfo();
@@ -227,7 +227,7 @@ public class ServiceModuleBean implements BeeModule {
   }
 
   public void formatInvoiceItemsQuery(SqlSelect query) {
-    query.addFields(TBL_SERVICE_MAINTENANCE, sys.getIdName(TBL_SERVICE_MAINTENANCE),
+    query.addFields(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_NUMBER,
         COL_WARRANTY_VALID_TO);
   }
 
