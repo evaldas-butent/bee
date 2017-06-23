@@ -8,6 +8,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
@@ -26,25 +27,69 @@ import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.PrepaymentKind;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorKind;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class FinanceKeeper {
 
+  public static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "fin-";
+
+  private static final BeeLogger logger = LogUtils.getLogger(FinanceKeeper.class);
+
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.FINANCE, method);
+  }
+
+  public static void postTradeDocuments(final Collection<Long> docIds,
+      final Consumer<Boolean> callback) {
+
+    if (BeeUtils.isEmpty(docIds)) {
+      if (callback != null) {
+        callback.accept(false);
+      }
+
+    } else {
+      ParameterList parameters = createArgs(SVC_POST_TRADE_DOCUMENTS);
+      parameters.addDataItem(Service.VAR_LIST, DataUtils.buildIdList(docIds));
+
+      BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (response.hasErrors()) {
+            if (callback != null) {
+              callback.accept(false);
+            }
+
+          } else {
+            if (response.hasResponse()) {
+              logger.debug(SVC_POST_TRADE_DOCUMENTS, response.getResponse());
+            }
+            if (callback != null) {
+              callback.accept(true);
+            }
+          }
+        }
+      });
+    }
   }
 
   public static void register() {
@@ -55,7 +100,8 @@ public final class FinanceKeeper {
 
     List<String> gridNames = ImmutableList.of(
         GRID_FINANCIAL_RECORDS, GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS,
-        GRID_PREPAYMENT_SUPPLIERS, GRID_PREPAYMENT_CUSTOMERS);
+        GRID_PREPAYMENT_SUPPLIERS, GRID_PREPAYMENT_CUSTOMERS,
+        GRID_OUTSTANDING_PREPAYMENT_GIVEN, GRID_OUTSTANDING_PREPAYMENT_RECEIVED);
     String viewName = VIEW_FINANCIAL_RECORDS;
 
     ConditionalStyle.registerGridColumnColorProvider(gridNames,
@@ -104,6 +150,11 @@ public final class FinanceKeeper {
         new PrepaymentGrid(PrepaymentKind.SUPPLIERS));
     GridFactory.registerGridInterceptor(GRID_PREPAYMENT_CUSTOMERS,
         new PrepaymentGrid(PrepaymentKind.CUSTOMERS));
+
+    GridFactory.registerGridInterceptor(GRID_OUTSTANDING_PREPAYMENT_GIVEN,
+        new OutstandingPrepaymentGrid(PrepaymentKind.SUPPLIERS));
+    GridFactory.registerGridInterceptor(GRID_OUTSTANDING_PREPAYMENT_RECEIVED,
+        new OutstandingPrepaymentGrid(PrepaymentKind.CUSTOMERS));
 
     GridFactory.registerGridInterceptor(ClassifierConstants.GRID_CHART_OF_ACCOUNTS,
         new ChartOfAccountsGrid());

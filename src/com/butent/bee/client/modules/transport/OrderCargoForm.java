@@ -44,7 +44,7 @@ class OrderCargoForm extends AbstractFormInterceptor {
       Queries.getRow(VIEW_CARGO_TYPES, typeId, new RowCallback() {
         @Override
         public void onFailure(String... reason) {
-          super.onFailure(reason);
+          RowCallback.super.onFailure(reason);
           defaultCargoType = null;
           command.run();
         }
@@ -154,9 +154,10 @@ class OrderCargoForm extends AbstractFormInterceptor {
         final Long orderId = getLongValue(COL_ORDER);
 
         if (DataUtils.isId(orderId)) {
-          TransportUtils.copyOrderWithCargos(orderId,
-              Filter.compareId(getActiveRowId()), (newOrderId, newCargos) ->
-                  RowEditor.open(getViewName(), BeeUtils.peek(newCargos).getId(), Opener.MODAL));
+          Global.confirm(Localized.dictionary().trCopyOrder(), () ->
+              TransportUtils.copyOrderWithCargos(orderId, Filter.compareId(getActiveRowId()),
+                  (newOrderId, newCargos) ->
+                  RowEditor.open(getViewName(), BeeUtils.peek(newCargos).getId(), Opener.MODAL)));
         }
       });
     }

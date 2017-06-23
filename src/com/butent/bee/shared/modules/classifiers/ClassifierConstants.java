@@ -1,6 +1,5 @@
 package com.butent.bee.shared.modules.classifiers;
 
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 public final class ClassifierConstants {
@@ -14,6 +13,7 @@ public final class ClassifierConstants {
   public static final String SVC_GET_PRICE_AND_DISCOUNT = "GetPriceAndDiscount";
   public static final String SVC_FILTER_ORDERS = "FilterOrders";
   public static final String SVC_GET_RESERVATION = "GetReservation";
+  public static final String SVC_COMPANY_SOURCE_REPORT = "CompanySourceReport";
 
   public static final String TIMER_REMIND_COMPANY_ACTIONS = "timer_remind_company_actions";
   public static final String TIMER_REMIND_TASKS_SUMMARY = "timer_remind_tasks_summary_";
@@ -106,6 +106,7 @@ public final class ClassifierConstants {
   public static final String VIEW_COMPANY_ACTIVITIES = "CompanyActivities";
   public static final String VIEW_COMPANY_ACTIVITY_STORE = "CompActStore";
   public static final String VIEW_COMPANY_BANK_ACCOUNTS = "CompanyBankAccounts";
+  public static final String VIEW_COMPANY_TURNOVERS = "Turnovers";
 
   public static final String VIEW_COMPANY_CONTACTS = "CompanyContacts";
   public static final String VIEW_COMPANY_DEPARTMENTS = "CompanyDepartments";
@@ -149,6 +150,7 @@ public final class ClassifierConstants {
   public static final String COL_COMPANY_DISCOUNT_PERCENT = "DiscountPercent";
   public static final String COL_COMPANY_TOLERATED_DAYS = "ToleratedDays";
   public static final String COL_COMPANY_TYPE_PERSON = "TypePerson";
+  public static final String COL_COMPANY_TURNOVER = "Turnover";
 
   public static final String COL_PERSON = "Person";
   public static final String COL_FIRST_NAME = "FirstName";
@@ -164,6 +166,8 @@ public final class ClassifierConstants {
   public static final String COL_CATEGORY = "Category";
   public static final String COL_CATEGORY_NAME = "Name";
   public static final String COL_CATEGORY_PARENT = "Parent";
+  public static final String COL_CATEGORY_GOODS = "Goods";
+  public static final String COL_CATEGORY_SERVICES = "Services";
 
   public static final String COL_ITEM = "Item";
   public static final String COL_ITEM_NAME = "Name";
@@ -380,8 +384,7 @@ public final class ClassifierConstants {
   public static final String QR_COMPANY = "qrCompany";
   public static final String QR_PERSON = "qrPerson";
 
-  public static final long DEFAULT_REMIND_ACTIONS_TIMER_TIMEOUT = TimeUtils.MILLIS_PER_HOUR;
-  public static final long DEFAULT_REMIND_TASKS_TIMER_TIMEOUT = TimeUtils.MILLIS_PER_MINUTE;
+  public static final String TREE_ITEM_CATEGORIES = "ItemCategoryTree";
 
   public static void register() {
     EnumUtils.register(ItemPrice.class);

@@ -107,6 +107,7 @@ import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
+import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
@@ -264,6 +265,9 @@ public class ClassifiersModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_RESERVATION)) {
       response = getReservation(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_COMPANY_SOURCE_REPORT)) {
+      response = getCompanySourceReport(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
@@ -1261,6 +1265,54 @@ public class ClassifiersModuleBean implements BeeModule {
     }
   }
 
+  private ResponseObject getCompanySourceReport(RequestInfo reqInfo) {
+    ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
+
+    HasConditions clause = SqlUtils.and();
+    clause.add(report.getCondition(TBL_COMPANIES, COL_COMPANY_NAME));
+    clause.add(report.getCondition(TBL_COMPANIES, COL_COMPANY_CODE));
+    clause.add(report.getCondition(SqlUtils.field(TBL_COMPANY_TYPES, COL_ITEM_NAME),
+        COL_COMPANY_TYPE));
+    clause.add(report.getCondition(SqlUtils.field(VIEW_INFORMATION_SOURCES, COL_ITEM_NAME),
+        COL_COMPANY_INFORMATION_SOURCE));
+    clause.add(report.getCondition(SqlUtils.field(VIEW_COMPANY_SIZES, "SizeName"),
+        COL_COMPANY_SIZE));
+    clause.add(report.getCondition(SqlUtils.field(VIEW_COMPANY_TURNOVERS, COL_ITEM_NAME),
+        COL_COMPANY_TURNOVER));
+    clause.add(report.getCondition(SqlUtils.field(VIEW_COMPANY_GROUPS, COL_ITEM_NAME),
+        COL_COMPANY_GROUP));
+    clause.add(report.getCondition(SqlUtils.field(VIEW_COMPANY_RELATION_TYPES, COL_ITEM_NAME),
+        COL_COMPANY_RELATION_TYPE_STATE));
+
+    SqlSelect selectCompanies = new SqlSelect()
+        .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE)
+        .addField(TBL_COMPANY_TYPES, COL_ITEM_NAME, COL_COMPANY_TYPE)
+        .addField(VIEW_INFORMATION_SOURCES, COL_ITEM_NAME, COL_COMPANY_INFORMATION_SOURCE)
+        .addField(VIEW_COMPANY_SIZES, "SizeName", COL_COMPANY_SIZE)
+        .addField(VIEW_COMPANY_TURNOVERS, COL_ITEM_NAME, COL_COMPANY_TURNOVER)
+        .addField(VIEW_COMPANY_GROUPS, COL_ITEM_NAME, COL_COMPANY_GROUP)
+        .addField(VIEW_COMPANY_RELATION_TYPES, COL_ITEM_NAME, COL_COMPANY_RELATION_TYPE_STATE)
+        .addFrom(TBL_COMPANIES)
+        .addFromLeft(TBL_COMPANY_TYPES, sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES,
+            COL_COMPANY_TYPE))
+        .addFromLeft(VIEW_INFORMATION_SOURCES, sys.joinTables(VIEW_INFORMATION_SOURCES,
+            TBL_COMPANIES, COL_COMPANY_INFORMATION_SOURCE))
+        .addFromLeft(VIEW_COMPANY_SIZES, sys.joinTables(VIEW_COMPANY_SIZES, TBL_COMPANIES,
+            COL_COMPANY_SIZE))
+        .addFromLeft(VIEW_COMPANY_TURNOVERS, sys.joinTables(VIEW_COMPANY_TURNOVERS, TBL_COMPANIES,
+            COL_COMPANY_TURNOVER))
+        .addFromLeft(VIEW_COMPANY_GROUPS, sys.joinTables(VIEW_COMPANY_GROUPS, TBL_COMPANIES,
+            COL_COMPANY_GROUP))
+        .addFromLeft(VIEW_COMPANY_RELATION_TYPES, sys.joinTables(VIEW_COMPANY_RELATION_TYPES,
+            TBL_COMPANIES, COL_COMPANY_RELATION_TYPE_STATE))
+        .setWhere(clause);
+
+    String tmp = qs.sqlCreateTemp(selectCompanies);
+
+    return report.getResultResponse(qs, tmp,
+        Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)));
+  }
+
   private void explain(Object... messages) {
     Long userId = usr.getCurrentUserId();
     String text = ArrayUtils.joinWords(messages);
@@ -2028,30 +2080,24 @@ public class ClassifiersModuleBean implements BeeModule {
   private IsCondition getCarDiscountCondition(RequestInfo reqInfo) {
     Long model = reqInfo.getParameterLong(COL_MODEL);
     JustDate prodDate = TimeUtils.toDateOrNull(reqInfo.getParameterInt(COL_PRODUCTION_DATE));
-    Long job = reqInfo.getParameterLong(COL_JOB);
 
-    if (!BeeUtils.anyNotNull(model, prodDate, job)) {
+    if (!BeeUtils.anyNotNull(model, prodDate)) {
       return null;
     }
     if (BeeUtils.isPositive(reqInfo.getParameterInt(Service.VAR_EXPLAIN))) {
       explain(SVC_GET_PRICE_AND_DISCOUNT, TBL_CAR_DISCOUNTS,
-          BeeUtils.joinOptions(COL_MODEL, model, COL_PRODUCTION_DATE, prodDate, COL_JOB, job));
+          BeeUtils.joinOptions(COL_MODEL, model, COL_PRODUCTION_DATE, prodDate));
     }
     HasConditions carDiscountWhere = SqlUtils.and();
 
-    Map<String, Long> crit = new HashMap<>();
-    crit.put(COL_MODEL, model);
-    crit.put(COL_JOB, job);
+    IsCondition clause = SqlUtils.isNull(TBL_CAR_DISCOUNTS, COL_MODEL);
 
-    crit.forEach((fld, id) -> {
-      IsCondition clause = SqlUtils.isNull(TBL_CAR_DISCOUNTS, fld);
+    if (DataUtils.isId(model)) {
+      clause = SqlUtils.or(clause, SqlUtils.equals(TBL_CAR_DISCOUNTS, COL_MODEL, model));
+    }
+    carDiscountWhere.add(clause);
 
-      if (DataUtils.isId(id)) {
-        clause = SqlUtils.or(clause, SqlUtils.equals(TBL_CAR_DISCOUNTS, fld, id));
-      }
-      carDiscountWhere.add(clause);
-    });
-    IsCondition clause = SqlUtils.isNull(TBL_CAR_DISCOUNTS, COL_PRODUCED_FROM);
+    clause = SqlUtils.isNull(TBL_CAR_DISCOUNTS, COL_PRODUCED_FROM);
 
     if (Objects.nonNull(prodDate)) {
       clause = SqlUtils.or(clause,

@@ -141,21 +141,7 @@
                   <Label for="FinishTime" />
                   <FlowPanel class="flexBox-horizontal">
                       <InputDateTime source="FinishTime" style="&inp2;" readOnly="true" />
-                      <TextLabel name="LateIndicator" style="&inp2; margin-left: -160px" >
-                        <dynStyle>
-                          <ui:class>bee-crm-task-break</ui:class>
-                          <ui:expression>
-                            row.Status == 3 || row.Status == 4 || row.Status == 5 || row.Status == 6
-                          </ui:expression>
-                        </dynStyle>
-
-                        <dynStyle>
-                          <ui:class>bee-crm-task-progress</ui:class>
-                          <ui:expression>
-                            !(row.Status == 3 || row.Status == 4 || row.Status == 5 || row.Status == 6)
-                          </ui:expression>
-                        </dynStyle>
-                      </TextLabel>
+                      <TextLabel name="LateIndicator" style="&inp2; margin-left: -160px" />
                   </FlowPanel>
                 </row>
 

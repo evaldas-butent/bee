@@ -12,11 +12,10 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.ResponseCallbackWithId;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
@@ -49,7 +48,6 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Filter;
@@ -195,6 +193,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
   private static final String STYLE_REPORT_NORMAL = STYLE_PREFIX + "-report-normal";
   private static final String STYLE_REPORT_ACTIVE = STYLE_PREFIX + "-report-active";
   private static final String STYLE_REPORT_GLOBAL = STYLE_PREFIX + "-report-global";
+  private static final String STYLE_REPORT_PARAM = STYLE_REPORT + "-param";
 
   private static final String STYLE_FILTER_CAPTION = STYLE_PREFIX + "-filter-cap";
 
@@ -368,7 +367,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     ReportInfo reportInfo = ReportInfo.restore(params.getParameter(Service.VAR_DATA));
     Holder<Integer> rpcId = Holder.absent();
 
-    rpcId.set(BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+    rpcId.set(BeeKeeper.getRpc().makeRequest(params, new ResponseCallbackWithId() {
       @Override
       public void onResponse(ResponseObject response) {
         if (!rpcId.contains(getRpcId())) {
@@ -1256,6 +1255,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     }
     container.clear();
     getReport().getReportParams().forEach((name, editor) -> {
+      editor.addStyleName(STYLE_REPORT_PARAM);
       DomUtils.setDataKey(editor.getElement(), name);
       container.add(editor.asWidget());
     });
@@ -1274,16 +1274,13 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           Arrays.asList(COL_RS_USER, COL_RS_REPORT, COL_RS_PARAMETERS)),
           Queries.asList(rep.isGlobal() ? null : BeeKeeper.getUser().getUserId(),
               getReport().getReportName(), rep.serialize()), null,
-          new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
-              if (reports.contains(rep)) {
-                reports.remove(rep);
-              }
-              rep.setId(result.getId());
-              reports.add(rep);
-              activateReport(rep);
+          result -> {
+            if (reports.contains(rep)) {
+              reports.remove(rep);
             }
+            rep.setId(result.getId());
+            reports.add(rep);
+            activateReport(rep);
           });
     }
   }

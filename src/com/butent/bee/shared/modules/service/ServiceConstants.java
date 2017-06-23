@@ -27,6 +27,7 @@ public final class ServiceConstants {
   public static final String PRM_DEFAULT_MAINTENANCE_TYPE = "DefaultMaintenanceType";
   public static final String PRM_DEFAULT_WARRANTY_TYPE = "DefaultWarrantyType";
   public static final String PRM_FILTER_ALL_DEVICES = "FilterAllDevices";
+  public static final String PRM_ITEM_ARTICLE_SOURCE_COLUMN = "ItemArticleSourceColumn";
   public static final String PRM_URGENT_RATE = "UrgentRate";
   public static final String PRM_SERVICE_MANAGER_WAREHOUSE = "ServiceManagerWarehouse";
   public static final String PRM_SMS_REQUEST_SERVICE_ADDRESS = "SmsRequestServiceAddress";
@@ -98,12 +99,12 @@ public final class ServiceConstants {
   public static final String COL_COMMENT = "Comment";
   public static final String COL_CUSTOMER_SENT = "CustomerSent";
   public static final String COL_DAYS_ACTIVE = "DaysActive";
-  public static final String COL_CREATOR_DEPARTMENT_NAME = "Name";
   public static final String COL_ENDING_DATE = "EndingDate";
   public static final String COL_EVENT_NOTE = "EventNote";
   public static final String COL_EQUIPMENT = "Equipment";
   public static final String COL_EQUIPMENT_NAME = "Name";
   public static final String COL_INITIAL = "Initial";
+  public static final String COL_IS_ITEMS_REQUIRED = "IsItemsRequired";
   public static final String COL_FINITE = "Finite";
   public static final String COL_TYPE = "Type";
   public static final String COL_MAINTENANCE_NUMBER = "MaintenanceNumber";
@@ -153,6 +154,7 @@ public final class ServiceConstants {
   public static final String COL_PUBLISH_TIME = "PublishTime";
   public static final String COL_SERIAL_NO = "SerialNo";
   public static final String COL_SERVICE_MAINTENANCE = "ServiceMaintenance";
+  public static final String COL_SERVICE_MAINTENANCE_ID = "ServiceMaintenanceID";
   public static final String COL_SERVICE_ITEM = "ServiceItem";
   public static final String COL_SERVICE_DATE_FROM = "DateFrom";
   public static final String COL_SERVICE_DATE_UNTIL = "DateUntil";
