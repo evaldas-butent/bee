@@ -1020,6 +1020,10 @@ public final class TransportConstants {
   public static final String PROP_VEHICLE_GROUPS = "VehicleGroups";
   public static final String PROP_VEHICLE_MANAGER = "VehicleManager";
 
+  public static final String PROP_MIN_UNLOADING_DATE = "MinUnloadingDate";
+  public static final String PROP_INCOMES_COMMITED = "IncomesCommited";
+  public static final String PROP_EXPENSES_COMMITED = "ExpensesCommited";
+
   public static final String ALS_TRIP_DATE = "TripDate";
   public static final String ALS_ORDER_DATE = "OrderDate";
   public static final String ALS_ORDER_STATUS = "OrderStatus";

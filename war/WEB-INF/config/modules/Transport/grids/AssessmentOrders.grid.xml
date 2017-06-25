@@ -22,7 +22,10 @@
   <xi:include href="columns/Places.columns.xml" />
 
   <g:columns>
-    <DataColumn name="MinUnloadingDate" width="70" format="DATE_SHORT" />
+    <PropColumn name="MinUnloadingDate" type="datetime" width="70" format="DATE_SHORT"
+                label="=taMinTermShort+=trUnloadingDateShort"
+                filterSupplier="customDateTime" filterOptions="Assessments" />
+
     <DataColumn name="OrderNotes" />
     <DataColumn name="Description" />
 
@@ -37,18 +40,11 @@
       </style>
     </DataColumn>
 
-    <CalcColumn name="IncomesCommited" type="boolean" sortable="false" visible="false"
-                label="=trdInvoiceId" searchBy="Incomes" filterOptions="empty">
-      <render>
-        <ui:expression>row.IncomesCommited ? true : false</ui:expression>
-      </render>
-    </CalcColumn>
-    <CalcColumn name="ExpensesCommited" type="boolean" sortable="false" visible="false"
-                label="=trdPurchaseId" searchBy="Expenses" filterOptions="empty">
-      <render>
-        <ui:expression>row.ExpensesCommited ? true : false</ui:expression>
-      </render>
-    </CalcColumn>
+    <PropColumn name="IncomesCommited" type="boolean" visible="false"
+                label="=trdInvoiceId" filterSupplier="custom" filterOptions="Assessments" />
+
+    <PropColumn name="ExpensesCommited" type="boolean" visible="false"
+                label="=trdPurchaseId" filterSupplier="custom" filterOptions="Assessments" />
 
     <PropColumn type="string" name="ForwarderVehicle" label="=trCarrierVehicle"
                 filterSupplier="custom" filterOptions="Assessments" />
@@ -79,31 +75,30 @@
   <g:rowStyle>
     <ui:inline>="color:red"</ui:inline>
     <ui:expression>row.OrderStatus == 1 &amp;&amp; !row.IncomesCommited
-      &amp;&amp; new Date(row.MinUnloadingDate).setHours(0,0,0,0) &lt; new Date().setHours(0,0,0,0)
+      &amp;&amp; new Date(+row.MinUnloadingDate||0).setHours(0,0,0,0)
+      &lt; new Date().setHours(0,0,0,0)
     </ui:expression>
   </g:rowStyle>
   <g:rowStyle>
     <ui:inline>="color:blue"</ui:inline>
     <ui:expression>row.OrderStatus == 1
-      &amp;&amp; new Date(row.MinUnloadingDate).setHours(0,0,0,0) == new Date().setHours(0,0,0,0)
+      &amp;&amp; new Date(+row.MinUnloadingDate||0).setHours(0,0,0,0)==new Date().setHours(0,0,0,0)
     </ui:expression>
   </g:rowStyle>
   <g:rowStyle>
-    <ui:inline>="color:gold"</ui:inline>
-    <ui:expression>row.OrderStatus == 3 &amp;&amp; row.ExpensesCount &amp;&amp;
-      !row.ExpensesCommited
-    </ui:expression>
+    <ui:inline>="color:purple"</ui:inline>
+    <ui:expression>row.OrderStatus==3 &amp;&amp; !row.ExpensesCommited</ui:expression>
   </g:rowStyle>
   <g:rowStyle>
     <ui:inline>="color:green"</ui:inline>
     <ui:expression>row.OrderStatus == 3</ui:expression>
   </g:rowStyle>
 
-  <g:predefinedFilter name="active" label="Vykdomi" initial="true">
+  <g:predefinedFilter name="active" label="=trOrderStatusActive" initial="true">
     <g:column name="OrderStatus" value="1" />
   </g:predefinedFilter>
 
-  <g:predefinedFilter name="delayed" label="Vėluojančios S/F">
+  <g:predefinedFilter name="delayed" label="Delayed invoices">
     <g:column name="OrderStatus" value="1" />
     <g:column name="IncomesCommited" emptyValues="true" />
     <g:column name="MinUnloadingDate" value=",d" />
