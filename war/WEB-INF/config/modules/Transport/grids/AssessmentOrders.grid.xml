@@ -40,11 +40,11 @@
       </style>
     </DataColumn>
 
-    <PropColumn name="IncomesCommited" type="boolean" visible="false"
-                label="=trdInvoiceId" filterSupplier="custom" filterOptions="Assessments" />
+    <PropColumn name="IncomesCommited" type="boolean" visible="false" label="=trdInvoiceId"
+                filterOptions="Assessments" />
 
-    <PropColumn name="ExpensesCommited" type="boolean" visible="false"
-                label="=trdPurchaseId" filterSupplier="custom" filterOptions="Assessments" />
+    <PropColumn name="ExpensesCommited" type="boolean" visible="false" label="=trdPurchaseId"
+                filterOptions="Assessments" />
 
     <PropColumn type="string" name="ForwarderVehicle" label="=trCarrierVehicle"
                 filterSupplier="custom" filterOptions="Assessments" />
