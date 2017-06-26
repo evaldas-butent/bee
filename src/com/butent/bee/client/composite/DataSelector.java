@@ -1035,6 +1035,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return getInput().getText();
   }
 
+  public Widget getDrill() {
+    return drill;
+  }
+
   public String getEditForm() {
     return editForm;
   }
@@ -1691,10 +1695,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private int getColumnCount() {
     return getChoiceColumns().size();
-  }
-
-  private Widget getDrill() {
-    return drill;
   }
 
   private Value getEditorValue() {

@@ -18,8 +18,6 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -45,7 +43,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Triplet;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.FontStyle;
 import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.TextAlign;
@@ -218,166 +215,81 @@ public final class TradeUtils {
     if (rateExists) {
       args.addDataItem(COL_CURRENCY, currencyTo);
     }
-    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(BeeKeeper.getScreen());
+    BeeKeeper.getRpc().makePostRequest(args, response -> {
+      response.notify(BeeKeeper.getScreen());
 
-        if (response.hasErrors()) {
-          return;
-        }
-        if (table.getRowCount() == 0) {
-          return;
-        }
-        int headerRowCount = Math.max(table.getRowCount() - 1, 1);
-        boolean footer = table.getRowCount() > 1;
+      if (response.hasErrors()) {
+        return;
+      }
+      if (table.getRowCount() == 0) {
+        return;
+      }
+      int headerRowCount = Math.max(table.getRowCount() - 1, 1);
+      boolean footer = table.getRowCount() > 1;
 
-        table.addStyleName(STYLE_ITEMS_TABLE);
+      table.addStyleName(STYLE_ITEMS_TABLE);
 
-        NumberFormat formatter = NumberFormat.getFormat("0.00");
-        String currency = null;
-        double qtyTotal = 0;
-        double vatTotal = 0;
-        double sumTotal = 0;
-        String rateCurrency = null;
-        double rate = 0;
-        double currVatTotal = 0;
-        double currSumTotal = 0;
+      NumberFormat formatter = NumberFormat.getFormat("0.00");
+      String currency = null;
+      double qtyTotal = 0;
+      double vatTotal = 0;
+      double sumTotal = 0;
+      String rateCurrency = null;
+      double rate = 0;
+      double currVatTotal = 0;
+      double currSumTotal = 0;
 
         SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
-
-        if (processor != null) {
+  if (processor != null) {
           SimpleRowSet originalRs = rs;
           rs = processor.apply(originalRs);
 
           if (rs == null) {
             rs = originalRs;
           }
+        }      int ordinal = 0;
+
+      for (SimpleRow row : rs) {
+        ordinal++;
+        if (BeeUtils.isEmpty(currency)) {
+          currency = row.getValue(COL_CURRENCY);
         }
-        int ordinal = 0;
+        double qty = BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_QUANTITY));
+        qtyTotal += qty;
+        double sum = qty * BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_PRICE));
+        double currSum = 0;
+        double vat = BeeUtils.unbox(row.getDouble(COL_TRADE_VAT));
+        boolean vatInPercents = BeeUtils.unbox(row.getBoolean(COL_TRADE_VAT_PERC));
 
-        for (SimpleRow row : rs) {
-          ordinal++;
-          if (BeeUtils.isEmpty(currency)) {
-            currency = row.getValue(COL_CURRENCY);
+        if (BeeUtils.unbox(row.getBoolean(COL_TRADE_VAT_PLUS))) {
+          if (vatInPercents) {
+            vat = sum / 100 * vat;
           }
-          double qty = BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_QUANTITY));
-          qtyTotal += qty;
-          double sum = qty * BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_PRICE));
-          double currSum = 0;
-          double vat = BeeUtils.unbox(row.getDouble(COL_TRADE_VAT));
-          boolean vatInPercents = BeeUtils.unbox(row.getBoolean(COL_TRADE_VAT_PERC));
-
-          if (BeeUtils.unbox(row.getBoolean(COL_TRADE_VAT_PLUS))) {
-            if (vatInPercents) {
-              vat = sum / 100 * vat;
-            }
-          } else {
-            if (vatInPercents) {
-              vat = sum - sum / (1 + vat / 100);
-            }
-            sum -= vat;
+        } else {
+          if (vatInPercents) {
+            vat = sum - sum / (1 + vat / 100);
           }
-          sum = BeeUtils.round(sum, 2);
-          sumTotal += sum;
-          vatTotal += vat;
-
-          if (rateExists) {
-            if (BeeUtils.isEmpty(rateCurrency)) {
-              rateCurrency = row.getValue(COL_RATE_CURRENCY);
-              rate = BeeUtils.unbox(row.getDouble(COL_CURRENCY_RATE));
-            }
-            currSum = BeeUtils.round(sum * rate, 2);
-            currSumTotal += currSum;
-            currVatTotal += vat * rate;
-          }
-          Document xml = null;
-
-          for (int i = 0; i < headerRowCount; i++) {
-            int x = table.insertRow(table.getRowCount() - (footer ? 1 : 0));
-            table.getRow(x).setInnerHTML(table.getRow(i).getInnerHTML());
-            table.getRowFormatter().addStyleName(x, STYLE_ITEMS_DATA);
-
-            for (int j = 0; j < table.getCellCount(x); j++) {
-              Multimap<String, Element> elements = getNamedElements(table.getCellFormatter()
-                  .getElement(x, j).getFirstChildElement());
-
-              for (String fld : elements.keySet()) {
-                String value;
-
-                if (BeeUtils.same(fld, COL_TRADE_ITEM_QUANTITY)) {
-                  value = BeeUtils.toString(qty);
-
-                } else if (BeeUtils.same(fld, COL_TRADE_ITEM_PRICE)) {
-                  value = formatter.format(sum / qty);
-
-                } else if (BeeUtils.same(fld, COL_TRADE_VAT)) {
-                  value = row.getValue(fld);
-
-                  if (value != null && vatInPercents) {
-                    value = BeeUtils.removeTrailingZeros(value) + "%";
-                  }
-                } else if (BeeUtils.same(fld, COL_TRADE_AMOUNT)) {
-                  value = formatter.format(sum);
-
-                } else if (BeeUtils.same(fld, COL_RATE_AMOUNT)) {
-                  value = formatter.format(currSum);
-
-                } else if (BeeUtils.same(fld, COL_ORDINAL)) {
-                  value = BeeUtils.toString(ordinal);
-
-                } else if (BeeUtils.same(fld, COL_CURRENCY)) {
-                  value = currency;
-
-                } else if (BeeUtils.same(fld, COL_RATE_CURRENCY)) {
-                  value = rateCurrency;
-
-                } else if (BeeUtils.same(fld, COL_CURRENCY_RATE)) {
-                  value = BeeUtils.toString(rate, 7);
-
-                } else if (!rs.hasColumn(fld)) {
-                  if (xml == null) {
-                    try {
-                      xml = XMLParser.parse(row.getValue(COL_TRADE_ITEM_NOTE));
-                    } catch (DOMParseException ex) {
-                      xml = null;
-                    }
-                  }
-                  if (xml != null) {
-                    value = BeeUtils.joinItems(XmlUtils.getChildrenText(xml.getDocumentElement(),
-                        fld));
-                  } else {
-                    value = null;
-                  }
-                } else {
-                  value = row.getValue(fld);
-                }
-                for (Element element : elements.get(fld)) {
-                  element.addClassName(STYLE_ITEMS + fld);
-                  element.setInnerText(value);
-                }
-              }
-            }
-          }
+          sum -= vat;
         }
+        sum = BeeUtils.round(sum, 2);
+        sumTotal += sum;
+        vatTotal += vat;
+
+        if (rateExists) {
+          if (BeeUtils.isEmpty(rateCurrency)) {
+            rateCurrency = row.getValue(COL_RATE_CURRENCY);
+            rate = BeeUtils.unbox(row.getDouble(COL_CURRENCY_RATE));
+          }
+          currSum = BeeUtils.round(sum * rate, 2);
+          currSumTotal += currSum;
+          currVatTotal += vat * rate;
+        }
+        Document xml = null;
+
         for (int i = 0; i < headerRowCount; i++) {
-          for (int j = 0; j < table.getCellCount(i); j++) {
-            Multimap<String, Element> elements = getNamedElements(table.getCellFormatter()
-                .getElement(i, j).getFirstChildElement());
-
-            for (String fld : elements.keySet()) {
-              for (Element element : elements.get(fld)) {
-                element.addClassName(STYLE_ITEMS + fld);
-              }
-            }
-          }
-          table.getRowFormatter().addStyleName(i, STYLE_ITEMS_HEADER);
-        }
-        if (footer) {
-          vatTotal = BeeUtils.round(vatTotal, 2);
-          currVatTotal = BeeUtils.round(currVatTotal, 2);
-
-          int x = table.getRowCount() - 1;
+          int x = table.insertRow(table.getRowCount() - (footer ? 1 : 0));
+          table.getRow(x).setInnerHTML(table.getRow(i).getInnerHTML());
+          table.getRowFormatter().addStyleName(x, STYLE_ITEMS_DATA);
 
           for (int j = 0; j < table.getCellCount(x); j++) {
             Multimap<String, Element> elements = getNamedElements(table.getCellFormatter()
@@ -386,29 +298,29 @@ public final class TradeUtils {
             for (String fld : elements.keySet()) {
               String value;
 
-              if (BeeUtils.same(fld, COL_TRADE_ITEM_QUANTITY + COL_TOTAL)) {
-                value = BeeUtils.removeTrailingZeros(BeeUtils.toString(qtyTotal));
+              if (BeeUtils.same(fld, COL_TRADE_ITEM_QUANTITY)) {
+                value = BeeUtils.toString(qty);
 
-              } else if (BeeUtils.same(fld, COL_TRADE_AMOUNT + COL_TOTAL)) {
-                value = formatter.format(sumTotal);
+              } else if (BeeUtils.same(fld, COL_TRADE_ITEM_PRICE)) {
+                value = formatter.format(sum / qty);
 
-              } else if (BeeUtils.same(fld, COL_TRADE_VAT + COL_TOTAL)) {
-                value = formatter.format(vatTotal);
+              } else if (BeeUtils.same(fld, COL_TRADE_VAT)) {
+                value = row.getValue(fld);
 
-              } else if (BeeUtils.same(fld, COL_TOTAL)) {
-                value = formatter.format(sumTotal + vatTotal);
+                if (value != null && vatInPercents) {
+                  value = BeeUtils.removeTrailingZeros(value) + "%";
+                }
+              } else if (BeeUtils.same(fld, COL_TRADE_AMOUNT)) {
+                value = formatter.format(sum);
+
+              } else if (BeeUtils.same(fld, COL_RATE_AMOUNT)) {
+                value = formatter.format(currSum);
+
+              } else if (BeeUtils.same(fld, COL_ORDINAL)) {
+                value = BeeUtils.toString(ordinal);
 
               } else if (BeeUtils.same(fld, COL_CURRENCY)) {
                 value = currency;
-
-              } else if (BeeUtils.same(fld, COL_RATE_AMOUNT + COL_TOTAL)) {
-                value = formatter.format(currSumTotal);
-
-              } else if (BeeUtils.same(fld, COL_RATE_VAT + COL_TOTAL)) {
-                value = formatter.format(currVatTotal);
-
-              } else if (BeeUtils.same(fld, COL_RATE_TOTAL)) {
-                value = formatter.format(currSumTotal + currVatTotal);
 
               } else if (BeeUtils.same(fld, COL_RATE_CURRENCY)) {
                 value = rateCurrency;
@@ -416,8 +328,22 @@ public final class TradeUtils {
               } else if (BeeUtils.same(fld, COL_CURRENCY_RATE)) {
                 value = BeeUtils.toString(rate, 7);
 
+              } else if (!rs.hasColumn(fld)) {
+                if (xml == null) {
+                  try {
+                    xml = XMLParser.parse(row.getValue(COL_TRADE_ITEM_NOTE));
+                  } catch (DOMParseException ex) {
+                    xml = null;
+                  }
+                }
+                if (xml != null) {
+                  value = BeeUtils.joinItems(XmlUtils.getChildrenText(xml.getDocumentElement(),
+                      fld));
+                } else {
+                  value = null;
+                }
               } else {
-                value = null;
+                value = row.getValue(fld);
               }
               for (Element element : elements.get(fld)) {
                 element.addClassName(STYLE_ITEMS + fld);
@@ -425,8 +351,74 @@ public final class TradeUtils {
               }
             }
           }
-          table.getRowFormatter().addStyleName(x, STYLE_ITEMS_FOOTER);
         }
+      }
+      for (int i = 0; i < headerRowCount; i++) {
+        for (int j = 0; j < table.getCellCount(i); j++) {
+          Multimap<String, Element> elements = getNamedElements(table.getCellFormatter()
+              .getElement(i, j).getFirstChildElement());
+
+          for (String fld : elements.keySet()) {
+            for (Element element : elements.get(fld)) {
+              element.addClassName(STYLE_ITEMS + fld);
+            }
+          }
+        }
+        table.getRowFormatter().addStyleName(i, STYLE_ITEMS_HEADER);
+      }
+      if (footer) {
+        vatTotal = BeeUtils.round(vatTotal, 2);
+        currVatTotal = BeeUtils.round(currVatTotal, 2);
+
+        int x = table.getRowCount() - 1;
+
+        for (int j = 0; j < table.getCellCount(x); j++) {
+          Multimap<String, Element> elements = getNamedElements(table.getCellFormatter()
+              .getElement(x, j).getFirstChildElement());
+
+          for (String fld : elements.keySet()) {
+            String value;
+
+            if (BeeUtils.same(fld, COL_TRADE_ITEM_QUANTITY + COL_TOTAL)) {
+              value = BeeUtils.removeTrailingZeros(BeeUtils.toString(qtyTotal));
+
+            } else if (BeeUtils.same(fld, COL_TRADE_AMOUNT + COL_TOTAL)) {
+              value = formatter.format(sumTotal);
+
+            } else if (BeeUtils.same(fld, COL_TRADE_VAT + COL_TOTAL)) {
+              value = formatter.format(vatTotal);
+
+            } else if (BeeUtils.same(fld, COL_TOTAL)) {
+              value = formatter.format(sumTotal + vatTotal);
+
+            } else if (BeeUtils.same(fld, COL_CURRENCY)) {
+              value = currency;
+
+            } else if (BeeUtils.same(fld, COL_RATE_AMOUNT + COL_TOTAL)) {
+              value = formatter.format(currSumTotal);
+
+            } else if (BeeUtils.same(fld, COL_RATE_VAT + COL_TOTAL)) {
+              value = formatter.format(currVatTotal);
+
+            } else if (BeeUtils.same(fld, COL_RATE_TOTAL)) {
+              value = formatter.format(currSumTotal + currVatTotal);
+
+            } else if (BeeUtils.same(fld, COL_RATE_CURRENCY)) {
+              value = rateCurrency;
+
+            } else if (BeeUtils.same(fld, COL_CURRENCY_RATE)) {
+              value = BeeUtils.toString(rate, 7);
+
+            } else {
+              value = null;
+            }
+            for (Element element : elements.get(fld)) {
+              element.addClassName(STYLE_ITEMS + fld);
+              element.setInnerText(value);
+            }
+          }
+        }
+        table.getRowFormatter().addStyleName(x, STYLE_ITEMS_FOOTER);
       }
     });
   }
@@ -442,20 +434,17 @@ public final class TradeUtils {
     args.addDataItem(COL_CURRENCY, currency);
 
     String locale = DomUtils.getDataProperty(total.getElement(), VAR_LOCALE);
-
     if (!BeeUtils.isEmpty(locale)) {
       args.addDataItem(VAR_LOCALE, locale);
     }
-    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(BeeKeeper.getScreen());
 
-        if (response.hasErrors()) {
-          return;
-        }
-        total.getElement().setInnerText(response.getResponseAsString());
+    BeeKeeper.getRpc().makePostRequest(args, response -> {
+      response.notify(BeeKeeper.getScreen());
+
+      if (response.hasErrors()) {
+        return;
       }
+      total.getElement().setInnerText(response.getResponseAsString());
     });
   }
 
@@ -637,21 +626,23 @@ public final class TradeUtils {
 
               params.setSummary(COL_TRADE_DOCUMENT, row.getId());
 
-              BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-                @Override
-                public void onResponse(ResponseObject response) {
-                  if (response.hasMessages()) {
-                    response.notify(dataView);
+              header.startCommandByStyleName(STYLE_COST_CALCULATION_COMMAND,
+                  TimeUtils.MILLIS_PER_MINUTE);
 
-                  } else if (response.hasResponse()) {
-                    dataView.notifyInfo(
-                        Localized.dictionary().recalculateTradeItemCostsNotification(
-                            response.getResponseAsString()));
+              BeeKeeper.getRpc().makeRequest(params, response -> {
+                if (response.hasMessages()) {
+                  response.notify(dataView);
 
-                  } else {
-                    dataView.notifyWarning(Localized.dictionary().noData());
-                  }
+                } else if (response.hasResponse()) {
+                  dataView.notifyInfo(
+                      Localized.dictionary().recalculateTradeItemCostsNotification(
+                          response.getResponseAsString()));
+
+                } else {
+                  dataView.notifyWarning(Localized.dictionary().noData());
                 }
+
+                header.stopCommandByStyleName(STYLE_COST_CALCULATION_COMMAND, true);
               });
             }
           }));
@@ -747,20 +738,17 @@ public final class TradeUtils {
 
       } else {
         Queries.getValue(VIEW_TRADE_OPERATIONS, operation, COL_OPERATION_VAT_PERCENT,
-            new RpcCallback<String>() {
-              @Override
-              public void onSuccess(String result) {
-                Double vatPercent = BeeUtils.toDoubleOrNull(result);
+            result -> {
+              Double vatPercent = BeeUtils.toDoubleOrNull(result);
 
-                if (vatPercent == null) {
-                  Number p = Global.getParameterNumber(PRM_VAT_PERCENT);
-                  if (p != null) {
-                    vatPercent = p.doubleValue();
-                  }
+              if (vatPercent == null) {
+                Number p = Global.getParameterNumber(PRM_VAT_PERCENT);
+                if (p != null) {
+                  vatPercent = p.doubleValue();
                 }
-
-                consumer.accept(vatPercent);
               }
+
+              consumer.accept(vatPercent);
             });
       }
     }

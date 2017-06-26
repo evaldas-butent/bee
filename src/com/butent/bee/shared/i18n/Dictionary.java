@@ -88,6 +88,8 @@ public interface Dictionary {
 
   default String actionSelect() {return g("actionSelect");}
 
+  default String actionSensitivityMillis() {return g("actionSensitivityMillis");}
+
   default String actionUpdate() {return g("actionUpdate");}
 
   default String actionWorkspaceBookmarkAll() {return g("actionWorkspaceBookmarkAll");}
@@ -868,6 +870,8 @@ public interface Dictionary {
   default String contactInfo() {return g("contactInfo");}
 
   default String contactReportCompanyByType() {return g("contactReportCompanyByType");}
+
+  default String contactReportCompanySource() {return g("contactReportCompanySource");}
 
   default String contactReportCompanyUsage() {return g("contactReportCompanyUsage");}
 
@@ -2764,6 +2768,8 @@ public interface Dictionary {
 
   default String filterAll() {return g("filterAll");}
 
+  default String filterAnd() {return g("filterAnd");}
+
   default String filterAnswered() {return g("filterAnswered");}
 
   default String filterLost() {return g("filterLost");}
@@ -2773,6 +2779,8 @@ public interface Dictionary {
   default String filterNotNullLabel() {return g("filterNotNullLabel");}
 
   default String filterNullLabel() {return g("filterNullLabel");}
+
+  default String filterOr() {return g("filterOr");}
 
   default String filterRemove() {return g("filterRemove");}
 
@@ -3998,6 +4006,8 @@ public interface Dictionary {
 
   default String noData() {return g("noData");}
 
+  default String noDataSelectedInFilter() {return g("noDataSelectedInFilter");}
+
   default String noMatter() {return g("noMatter");}
 
   default String not(Object p0) {
@@ -4825,6 +4835,8 @@ public interface Dictionary {
 
   default String prmImportERPStocksTime() {return g("prmImportERPStocksTime");}
 
+  default String prmItemArticleSourceColumn() {return g("prmItemArticleSourceColumn");}
+
   default String prmMainCurrency() {return g("prmMainCurrency");}
 
   default String prmMaintenanceServiceGroup() {return g("prmMaintenanceServiceGroup");}
@@ -5286,7 +5298,11 @@ public interface Dictionary {
 
   default String shippingSchedule() {return g("shippingSchedule");}
 
+  default String shoppingCartIsEmpty() {return g("shoppingCartIsEmpty");}
+
   default String showAvailableEmployees() {return g("showAvailableEmployees");}
+
+  default String showGridFilterCommand() {return g("showGridFilterCommand");}
 
   default String showNewMessagesNotifier() {return g("showNewMessagesNotifier");}
 
@@ -6511,6 +6527,8 @@ public interface Dictionary {
   default String trTbSettingsCompletedTrips() {return g("trTbSettingsCompletedTrips");}
 
   default String trTbSettingsCountryFlags() {return g("trTbSettingsCountryFlags");}
+
+  default String trTbSettingsFilterDependsOnData() {return g("trTbSettingsFilterDependsOnData");}
 
   default String trTbSettingsOrderCustomer() {return g("trTbSettingsOrderCustomer");}
 

@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
@@ -13,7 +12,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
@@ -37,8 +35,6 @@ import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowTransformEvent;
@@ -54,6 +50,7 @@ import com.butent.bee.shared.ui.Preloader;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -112,7 +109,7 @@ public final class TransportHandler {
     public void onRowTransform(RowTransformEvent event) {
       if (event.hasView(VIEW_ASSESSMENTS)) {
         event.setResult(DataUtils.join(Data.getDataInfo(VIEW_ASSESSMENTS), event.getRow(),
-            Lists.newArrayList("ID", COL_STATUS, COL_DATE, "CustomerName", "OrderNotes"),
+            Arrays.asList("ID", COL_STATUS, COL_DATE, "CustomerName", "OrderNotes"),
             BeeConst.STRING_SPACE, Format.getDateRenderer(), Format.getDateTimeRenderer()));
       }
     }
@@ -268,8 +265,8 @@ public final class TransportHandler {
     CargoIncomesObserver.register();
   }
 
-  private static void openAssessment(final String gridName, final PresenterCallback callback) {
-    final GridInterceptor interceptor;
+  private static void openAssessment(String gridName, PresenterCallback callback) {
+    GridInterceptor interceptor;
 
     switch (gridName) {
       case GRID_ASSESSMENT_REQUESTS:
@@ -284,29 +281,22 @@ public final class TransportHandler {
         Global.showError(Localized.dictionary().dataNotAvailable(gridName));
         return;
     }
-    final Long userPerson = BeeKeeper.getUser().getUserData().getCompanyPerson();
+    Long userPerson = BeeKeeper.getUser().getUserData().getCompanyPerson();
 
-    Queries.getRowSet(TBL_DEPARTMENT_EMPLOYEES, Lists.newArrayList(COL_DEPARTMENT),
+    Queries.getRowSet(TBL_DEPARTMENT_EMPLOYEES, Collections.singletonList(COL_DEPARTMENT),
         Filter.and(Filter.equals(COL_COMPANY_PERSON, userPerson),
-            Filter.notNull(COL_DEPARTMENT_HEAD)), new RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            Set<Long> departments = new HashSet<>();
-            Long user = BeeKeeper.getUser().getUserId();
+            Filter.notNull(COL_DEPARTMENT_HEAD)), result -> {
 
-            for (BeeRow row : result) {
-              departments.add(row.getLong(0));
-            }
-            GridOptions options = null;
+          Set<Long> departments = new HashSet<>();
+          result.forEach(row -> departments.add(row.getLong(0)));
 
-            if (!BeeKeeper.getUser().isAdministrator()) {
-              options = GridOptions.forFilter(Filter.or(Lists.newArrayList(
-                  Filter.equals(COL_COMPANY_PERSON, userPerson),
-                  Filter.any(COL_DEPARTMENT, departments),
-                  Filter.equals(COL_USER, user), Filter.equals(COL_GROUP, user))));
-            }
-            GridFactory.openGrid(gridName, interceptor, options, callback);
+          GridOptions options = null;
+
+          if (!BeeKeeper.getUser().isAdministrator()) {
+            options = GridOptions.forFilter(Filter.or(Filter.equals(COL_COMPANY_PERSON, userPerson),
+                    Filter.notNull(COL_USER), Filter.any(COL_DEPARTMENT, departments)));
           }
+          GridFactory.openGrid(gridName, interceptor, options, callback);
         });
   }
 }
