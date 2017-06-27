@@ -193,6 +193,25 @@
     </Details>
     &separator;
 
+    <Table kind="custom" style="&table;" cellStyle="&cells;">
+      <col index="0" cellStyle="&colLabel; font-weight:bold;" />
+
+      <row>
+        <Label for="Manager" />
+        <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
+                      newRowEnabled="false" editSource="ManagerPerson" style="width:15em;" />
+      </row>
+      <row>
+        <Label for="ManagerEmail" />
+        <TextLabel source="ManagerEmail" />
+      </row>
+      <row>
+        <Label for="ManagerPhone" />
+        <TextLabel source="ManagerPhone" />
+      </row>
+    </Table>
+    &separator;
+
     <Details open="true">
       <Summary text="=trRequestCargoInfo" style="&summary;" />
 
@@ -260,12 +279,6 @@
 
       <Table kind="controls" style="&table;" cellStyle="&cells;">
         &cols;
-
-        <row>
-          <Label for="Manager" />
-          <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
-                        newRowEnabled="false" editSource="ManagerPerson" style="width:15em;" />
-        </row>
 
         <row>
           <Label for="Vehicle" />

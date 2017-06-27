@@ -432,6 +432,7 @@ public final class TransportConstants {
   public static final String PRM_CARGO_SERVICE = "CargoService";
   public static final String PRM_EXCLUDE_VAT = "ExcludeVAT";
   public static final String PRM_SELF_SERVICE_ROLE = "SelfServiceRole";
+  public static final String PRM_SELF_SERVICE_RESPONSIBILITY = "SelfServiceResponsibility";
 
   public static final String PRM_CHART_FILTER = "ChartFilter";
 

@@ -418,6 +418,8 @@ public class TransportModuleBean implements BeeModule {
         BeeParameter.createText(module, "SmsDisplayText"),
         BeeParameter.createMap(module, "SmsRequestHeaders"),
         BeeParameter.createRelation(module, PRM_SELF_SERVICE_ROLE, TBL_ROLES, COL_ROLE_NAME),
+        BeeParameter.createRelation(module, PRM_SELF_SERVICE_RESPONSIBILITY, TBL_RESPONSIBILITIES,
+            COL_OBJECT_NAME),
         BeeParameter.createRelation(module, PRM_CARGO_TYPE, true, TBL_CARGO_TYPES,
             COL_CARGO_TYPE_NAME),
         BeeParameter.createRelation(module, PRM_CARGO_SERVICE, TBL_SERVICES, COL_SERVICE_NAME));
@@ -2436,7 +2438,6 @@ public class TransportModuleBean implements BeeModule {
 
     return qs.getData(query);
   }
-
 
   @SuppressWarnings("unchecked")
   private ResponseObject getCreditInfo(RequestInfo reqInfo) {
