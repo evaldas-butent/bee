@@ -275,6 +275,22 @@ public class AsyncProvider extends Provider {
   }
 
   @Override
+  public void hasAnyRows(Filter filter, Consumer<Boolean> callback) {
+    Queries.getRowCount(getViewName(), getQueryFilter(filter), new Queries.IntCallback() {
+      @Override
+      public void onFailure(String... reason) {
+        Queries.IntCallback.super.onFailure(reason);
+        callback.accept(false);
+      }
+
+      @Override
+      public void onSuccess(Integer result) {
+        callback.accept(BeeUtils.isPositive(result));
+      }
+    });
+  }
+
+  @Override
   public void onDataRequest(DataRequestEvent event) {
     switch (event.getOrigin()) {
       case SCROLLER:
