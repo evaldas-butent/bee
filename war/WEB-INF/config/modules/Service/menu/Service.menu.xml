@@ -11,8 +11,7 @@ name="Service" label="=svcMenu" order="110" module="Service"
     module="Tasks" separator="true" />
 
   <Item name="MyServiceMaintenance" label="=svcMyMaintenance"  service="service_maintenance_list" parameters="My" />
-  <Item name="AllServiceMaintenance" label="=svcMaintenance"  service="service_maintenance_list" parameters="All"
-        module="Administration"/>
+  <Item name="AllServiceMaintenance" label="=svcMaintenance"  service="service_maintenance_list" parameters="All" />
   <Item name="MaintenancePayroll" label="=payroll" service="grid" parameters="MaintenancePayroll" />
   <Item name="ServicePayrollReport" label="=svcPayrollReport" service="report"  parameters="ServicePayrollReport" />
 </Entry>

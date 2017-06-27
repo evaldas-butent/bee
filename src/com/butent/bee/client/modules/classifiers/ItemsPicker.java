@@ -50,6 +50,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Span;
@@ -57,6 +58,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -103,6 +105,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   private static final String STYLE_GROUP_PREFIX = STYLE_PREFIX + "group-";
   private static final String STYLE_NAME_PREFIX = STYLE_PREFIX + "name-";
   private static final String STYLE_ARTICLE_PREFIX = STYLE_PREFIX + "article-";
+  private static final String STYLE_EXTERNAL_CODE_PREFIX = STYLE_PREFIX + "external-code-";
 
   private static final String STYLE_PRICE_PREFIX = STYLE_PREFIX + "price-";
   private static final String STYLE_REMAINDER_PREFIX = STYLE_PREFIX + "remainder-";
@@ -132,9 +135,9 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   private static final String STYLE_QTY_INPUT = STYLE_QTY_PREFIX + "input";
 
   private static final List<String> SEARCH_COLUMNS = Lists.newArrayList(COL_ITEM_NAME,
-      COL_ITEM_ARTICLE, COL_ITEM_TYPE, COL_ITEM_GROUP, COL_CATEGORY);
+      COL_ITEM_ARTICLE, COL_ITEM_TYPE, COL_ITEM_GROUP, COL_CATEGORY, COL_ITEM_EXTERNAL_CODE);
 
-  private static Filter buildFilter(String by, String query) {
+  private static Filter buildFilter(String by, String query, Module module) {
     Filter filter = null;
 
     if (COL_ITEM.equals(by)) {
@@ -163,13 +166,18 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
           filter = Filter.in(Data.getIdColumn(VIEW_ITEMS), VIEW_ITEM_CATEGORIES, COL_ITEM,
               Filter.in(COL_CATEGORY, VIEW_ITEM_CATEGORY_TREE,
                   Data.getIdColumn(VIEW_ITEM_CATEGORY_TREE), condition(COL_CATEGORY_NAME, query)));
+          break;
+        case COL_ITEM_EXTERNAL_CODE:
+          if (Module.SERVICE.equals(module)) {
+            filter = condition(by, query);
+          }
       }
 
     } else {
       List<Filter> conditions = new ArrayList<>();
 
       for (String column : SEARCH_COLUMNS) {
-        conditions.add(buildFilter(column, query));
+        conditions.add(buildFilter(column, query, module));
       }
       if (DataUtils.isId(query)) {
         conditions.add(Filter.compareId(BeeUtils.toLong(query)));
@@ -229,8 +237,16 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   private FaLabel spinner;
   private CheckBox cb;
 
+  private Module module;
+
   public ItemsPicker() {
+    this(null);
+  }
+
+  public ItemsPicker(Module module) {
     super(STYLE_CONTAINER);
+
+    this.module = module;
 
     add(createSearch());
     add(new Notification());
@@ -297,13 +313,15 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     String label;
 
     for (String column : SEARCH_COLUMNS) {
-      if (COL_CATEGORY.equals(column)) {
-        label = Localized.dictionary().category();
-      } else {
-        label = Data.getColumnLabel(VIEW_ITEMS, column);
-      }
+      if (!BeeUtils.same(column, COL_ITEM_EXTERNAL_CODE) || Module.SERVICE.equals(module)) {
+        if (COL_CATEGORY.equals(column)) {
+          label = Localized.dictionary().category();
+        } else {
+          label = Data.getColumnLabel(VIEW_ITEMS, column);
+        }
 
-      searchBy.addItem(label, column);
+        searchBy.addItem(label, column);
+      }
     }
     searchBy.addItem(Localized.dictionary().captionId(), COL_ITEM);
 
@@ -359,7 +377,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       ok = false;
 
     } else {
-      filter = buildFilter(by, query);
+      filter = buildFilter(by, query, module);
       ok = true;
     }
 
@@ -620,7 +638,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     if (!BeeUtils.isEmpty(warehouses)) {
       warehouseIds.addAll(warehouses.keySet());
     }
-
+    DataInfo viewInfo = Data.getDataInfo(items.getViewName());
     itemPanel.clear();
 
     HtmlTable table = new HtmlTable(STYLE_ITEM_TABLE);
@@ -643,7 +661,17 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     table.setText(r, c++, Localized.dictionary().article(),
         STYLE_ARTICLE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
+    if (Module.SERVICE.equals(module)) {
+      table.setText(r, c++, Localized.dictionary().externalCode(),
+          STYLE_EXTERNAL_CODE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+    }
+
     for (ItemPrice ip : ItemPrice.values()) {
+      if (viewInfo != null
+        && !BeeKeeper.getUser().isColumnVisible(viewInfo, ip.getPriceColumn())) {
+        continue;
+      }
+
       table.setText(r, c, ip.getCaption(),
           (ip == itemPrice) ? STYLE_SELECTED_PRICE_HEADER_CELL : STYLE_PRICE_HEADER_CELL);
 
@@ -678,11 +706,17 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
     int nameIndex = items.getColumnIndex(COL_ITEM_NAME);
     int articleIndex = items.getColumnIndex(COL_ITEM_ARTICLE);
+    int externalCodeIndex = items.getColumnIndex(COL_ITEM_EXTERNAL_CODE);
 
     EnumMap<ItemPrice, Integer> priceIndexes = new EnumMap<>(ItemPrice.class);
     EnumMap<ItemPrice, Integer> currencyIndexes = new EnumMap<>(ItemPrice.class);
 
     for (ItemPrice ip : ItemPrice.values()) {
+      if (viewInfo != null
+        && !BeeKeeper.getUser().isColumnVisible(viewInfo, ip.getPriceColumn())) {
+        continue;
+      }
+
       priceIndexes.put(ip, items.getColumnIndex(ip.getPriceColumn()));
       currencyIndexes.put(ip, items.getColumnIndex(ip.getCurrencyNameAlias()));
     }
@@ -724,10 +758,20 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       table.setText(r, c++, item.getString(articleIndex),
           STYLE_ARTICLE_PREFIX + STYLE_CELL_SUFFIX);
 
+      if (Module.SERVICE.equals(module)) {
+        table.setText(r, c++, item.getString(externalCodeIndex),
+            STYLE_EXTERNAL_CODE_PREFIX + STYLE_CELL_SUFFIX);
+      }
+
       ItemPrice defPrice = selectedPrices.containsKey(item.getId())
           ? selectedPrices.get(item.getId()) : itemPrice;
 
       for (ItemPrice ip : ItemPrice.values()) {
+        if (viewInfo != null
+          && !BeeKeeper.getUser().isColumnVisible(viewInfo, ip.getPriceColumn())) {
+          continue;
+        }
+
         String html = renderPrice(item, priceIndexes.get(ip), currencyIndexes.get(ip));
 
         if (html == null) {

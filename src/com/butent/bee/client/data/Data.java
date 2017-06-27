@@ -107,7 +107,7 @@ public final class Data {
           @Override
           public void onFailure(String... reason) {
             consumeSize(BeeConst.UNDEF);
-            super.onFailure(reason);
+            Queries.IntCallback.super.onFailure(reason);
           }
 
           @Override
@@ -339,6 +339,12 @@ public final class Data {
     DataInfo info = getDataInfo(viewOrTableName, false);
     DATA_INFO_PROVIDER.getViewNames(Objects.isNull(info) ? viewOrTableName : info.getTableName())
         .forEach(view -> DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), view));
+  }
+
+  public static void resetLocal(String viewOrTableName) {
+    DataInfo info = getDataInfo(viewOrTableName, false);
+    DATA_INFO_PROVIDER.getViewNames(Objects.isNull(info) ? viewOrTableName : info.getTableName())
+        .forEach(view -> DataChangeEvent.fireLocalReset(BeeKeeper.getBus(), view, null));
   }
 
   public static Double round(String viewName, String colName, Double value) {

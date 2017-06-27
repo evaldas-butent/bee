@@ -20,6 +20,7 @@ public class WSDocument {
     private String article;
     private String note;
     private String discount;
+    private String discountPercent;
 
     private WSDocumentItem(String itemId, String quantity) {
       this.itemId = itemId;
@@ -30,8 +31,11 @@ public class WSDocument {
       this.article = article;
     }
 
-    public void setDiscount(String discount) {
-      this.discount = discount;
+    public void setDiscount(String discountAmount, Boolean isPercent) {
+      if (!BeeUtils.isEmpty(discountAmount)) {
+        this.discount = discountAmount;
+        this.discountPercent = BeeUtils.unbox(isPercent) ? "%" : null;
+      }
     }
 
     public void setNote(String note) {
@@ -167,7 +171,7 @@ public class WSDocument {
 
         if (!BeeUtils.isEmpty(item.discount)) {
           sb.append(XmlUtils.tag("nuolaida", item.discount));
-          sb.append(XmlUtils.tag("nuol_p_md", "%"));
+          sb.append(XmlUtils.tag("nuol_p_md", item.discountPercent));
 
         }
       }

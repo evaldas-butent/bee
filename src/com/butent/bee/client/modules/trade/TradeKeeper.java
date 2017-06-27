@@ -251,6 +251,11 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     GridFactory.registerGridInterceptor(GRID_TRADE_EXPENDITURES, new TradeExpendituresGrid());
     GridFactory.registerGridInterceptor(GRID_TRADE_PAYMENT_TERMS, new TradePaymentTermsGrid());
 
+    GridFactory.registerGridInterceptor(GRID_TRADE_PAYABLES,
+        new TradeDebtsGrid(DebtKind.PAYABLE));
+    GridFactory.registerGridInterceptor(GRID_TRADE_RECEIVABLES,
+        new TradeDebtsGrid(DebtKind.RECEIVABLE));
+
     FormFactory.registerFormInterceptor(FORM_SALES_INVOICE, new SalesInvoiceForm());
     FormFactory.registerFormInterceptor(FORM_TRADE_DOCUMENT, new TradeDocumentForm());
 
@@ -281,15 +286,17 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     ConditionalStyle.registerGridColumnStyleProvider(GRID_EXPENDITURE_TYPES,
         COL_EXPENDITURE_TYPE_NAME, csp);
 
-    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_DOCUMENTS, COL_TRADE_OPERATION,
-        ColorStyleProvider.create(VIEW_TRADE_DOCUMENTS,
-            ALS_OPERATION_BACKGROUND, ALS_OPERATION_FOREGROUND));
-    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_DOCUMENTS,
-        COL_TRADE_DOCUMENT_STATUS,
-        ColorStyleProvider.create(VIEW_TRADE_DOCUMENTS,
-            ALS_STATUS_BACKGROUND, ALS_STATUS_FOREGROUND));
+    List<String> gridNames = StringList.of(GRID_TRADE_DOCUMENTS,
+        GRID_TRADE_PAYABLES, GRID_TRADE_RECEIVABLES);
 
-    List<String> gridNames = StringList.of(GRID_ITEM_MOVEMENT, GRID_TRADE_RELATED_ITEMS);
+    ConditionalStyle.registerGridColumnColorProvider(gridNames,
+        Collections.singleton(COL_TRADE_OPERATION),
+        VIEW_TRADE_DOCUMENTS, ALS_OPERATION_BACKGROUND, ALS_OPERATION_FOREGROUND);
+    ConditionalStyle.registerGridColumnColorProvider(gridNames,
+        Collections.singleton(COL_TRADE_DOCUMENT_STATUS),
+        VIEW_TRADE_DOCUMENTS, ALS_STATUS_BACKGROUND, ALS_STATUS_FOREGROUND);
+
+    gridNames = StringList.of(GRID_ITEM_MOVEMENT, GRID_TRADE_RELATED_ITEMS);
 
     ConditionalStyle.registerGridColumnColorProvider(gridNames,
         Collections.singleton(COL_TRADE_OPERATION),

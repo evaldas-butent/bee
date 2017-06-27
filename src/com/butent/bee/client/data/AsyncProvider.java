@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Timer;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
+import com.butent.bee.client.communication.RpcCallbackWithId;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.shared.Assert;
@@ -40,7 +41,7 @@ import java.util.function.Consumer;
 
 public class AsyncProvider extends Provider {
 
-  private final class QueryCallback extends Queries.RowSetCallback {
+  private final class QueryCallback extends RpcCallbackWithId<BeeRowSet> {
 
     private final Range<Integer> queryRange;
 
@@ -274,6 +275,22 @@ public class AsyncProvider extends Provider {
   }
 
   @Override
+  public void hasAnyRows(Filter filter, Consumer<Boolean> callback) {
+    Queries.getRowCount(getViewName(), getQueryFilter(filter), new Queries.IntCallback() {
+      @Override
+      public void onFailure(String... reason) {
+        Queries.IntCallback.super.onFailure(reason);
+        callback.accept(false);
+      }
+
+      @Override
+      public void onSuccess(Integer result) {
+        callback.accept(BeeUtils.isPositive(result));
+      }
+    });
+  }
+
+  @Override
   public void onDataRequest(DataRequestEvent event) {
     switch (event.getOrigin()) {
       case SCROLLER:
@@ -378,7 +395,7 @@ public class AsyncProvider extends Provider {
       Queries.getRowCount(getViewName(), getFilter(), new Queries.IntCallback() {
         @Override
         public void onFailure(String... reason) {
-          super.onFailure(reason);
+          Queries.IntCallback.super.onFailure(reason);
           onStateChange(State.ERROR);
         }
 
@@ -405,7 +422,7 @@ public class AsyncProvider extends Provider {
     Queries.getRowCount(getViewName(), flt, new Queries.IntCallback() {
       @Override
       public void onFailure(String... reason) {
-        super.onFailure(reason);
+        Queries.IntCallback.super.onFailure(reason);
         onStateChange(State.ERROR);
 
         if (callback != null) {
@@ -647,12 +664,9 @@ public class AsyncProvider extends Provider {
     final long startTime = System.currentTimeMillis();
 
     Queries.getRowSet(getViewName(), null, flt, ord, queryOffset, queryLimit, CachingPolicy.WRITE,
-        new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            onResponse(startTime);
-            setPrefetchPending(false);
-          }
+        result -> {
+          onResponse(startTime);
+          setPrefetchPending(false);
         });
   }
 

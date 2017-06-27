@@ -252,7 +252,7 @@ class EmployeeSchedule extends WorkScheduleWidget {
         Lists.newArrayList(COL_LOCATION_NAME));
 
     selector.addStyleName(selectorStyleName);
-    DomUtils.setPlaceholder(selector, Localized.dictionary().newObject());
+    DomUtils.setPlaceholder(selector, Localized.dictionary().newObjectLocation());
 
     if (!BeeUtils.isEmpty(partIds)) {
       Set<Long> ids = new HashSet<>();

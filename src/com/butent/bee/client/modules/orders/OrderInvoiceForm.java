@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.COL_CUSTOMER;
+import static com.butent.bee.shared.modules.transport.TransportConstants.COL_PAYER;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -140,6 +141,7 @@ public class OrderInvoiceForm extends InvoiceERPForm {
   protected void getReportParameters(Consumer<Map<String, String>> parametersConsumer) {
     Map<String, Long> companies = new HashMap<>();
     companies.put(COL_CUSTOMER, getLongValue(COL_CUSTOMER));
+    companies.put(COL_PAYER, getLongValue(COL_PAYER));
     companies.put(TradeConstants.COL_TRADE_SUPPLIER, BeeKeeper.getUser().getCompany());
 
     super.getReportParameters(defaultParameters ->

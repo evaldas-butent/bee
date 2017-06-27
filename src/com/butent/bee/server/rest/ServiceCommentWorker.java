@@ -127,7 +127,7 @@ public class ServiceCommentWorker {
 
       if (!commentsRowSet.isEmpty()) {
         DateTimeFormat dateFormatter = DateTimeFormat.of(PredefinedFormat.DATE_SHORT,
-            SupportedLocale.USER_DEFAULT.getDateTimeFormatInfo());
+            SupportedLocale.getUserDefault().getDateTimeFormatInfo());
         JsonArrayBuilder commentsJsonArray = Json.createArrayBuilder();
         commentsRowSet.forEach(commentRow -> {
           JsonObjectBuilder commentJson = Json.createObjectBuilder();

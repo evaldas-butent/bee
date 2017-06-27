@@ -15,6 +15,7 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.concurrency.ConcurrencyBean;
@@ -35,6 +36,7 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.AdministrationModuleBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
+import com.butent.bee.server.modules.finance.FinanceModuleBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
@@ -87,6 +89,7 @@ import com.butent.bee.shared.html.builder.elements.Th;
 import com.butent.bee.shared.html.builder.elements.Tr;
 import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Formatter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
@@ -98,9 +101,11 @@ import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.finance.Dimensions;
+import com.butent.bee.shared.modules.finance.PrepaymentKind;
 import com.butent.bee.shared.modules.finance.TradeAccounts;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
+import com.butent.bee.shared.modules.trade.DebtKind;
 import com.butent.bee.shared.modules.trade.ItemQuantities;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeCostBasis;
@@ -176,6 +181,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   DataEditorBean deb;
   @EJB
   AdministrationModuleBean adm;
+  @EJB
+  FinanceModuleBean fin;
 
   @Resource
   TimerService timerService;
@@ -315,6 +322,18 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       case SVC_TRADE_STOCK_REPORT:
       case SVC_TRADE_MOVEMENT_OF_GOODS_REPORT:
         response = rep.doService(svc, reqInfo);
+        break;
+
+      case SVC_SUBMIT_PAYMENT:
+        response = submitPayment(reqInfo);
+        break;
+
+      case SVC_DISCHARGE_DEBT:
+        response = dischargeDebt(reqInfo);
+        break;
+
+      case SVC_DISCHARGE_PREPAYMENT:
+        response = dischargePrepayment(reqInfo);
         break;
 
       default:
@@ -1185,12 +1204,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         if (event.isAfter(VIEW_TRADE_DOCUMENTS) && !DataUtils.isEmpty(event.getRowset())) {
           BeeRowSet docData = event.getRowset();
 
-          List<String> itemColumns = Arrays.asList(COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
-              COL_TRADE_DOCUMENT_ITEM_DISCOUNT, COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT,
-              COL_TRADE_DOCUMENT_ITEM_VAT, COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT);
-
-          List<String> paymentColumns = Collections.singletonList(COL_TRADE_PAYMENT_AMOUNT);
-
           int operationTypeIndex = docData.getColumnIndex(COL_OPERATION_TYPE);
 
           for (int index = 0; index < docData.getNumberOfRows(); index++) {
@@ -1198,9 +1211,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             long docId = docRow.getId();
 
             BeeRowSet itemData = qs.getViewData(VIEW_TRADE_DOCUMENT_ITEMS,
-                Filter.equals(COL_TRADE_DOCUMENT, docId), null, itemColumns);
+                Filter.equals(COL_TRADE_DOCUMENT, docId), null, TradeDocumentSums.ITEM_COLUMNS);
             BeeRowSet paymentData = qs.getViewData(VIEW_TRADE_PAYMENTS,
-                Filter.equals(COL_TRADE_DOCUMENT, docId), null, paymentColumns);
+                Filter.equals(COL_TRADE_DOCUMENT, docId), null, TradeDocumentSums.PAYMENT_COLUMNS);
 
             TradeDocumentSums tds = TradeDocumentSums.of(docData, index, itemData, paymentData);
 
@@ -1325,6 +1338,96 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       } else {
         return SqlUtils.sqlTrue();
       }
+    });
+
+    BeeView.registerConditionProvider(FILTER_HAS_TRADE_DEBT, (view, args) -> {
+      int index = 0;
+      DebtKind debtKind = Codec.unpack(DebtKind.class, BeeUtils.getQuietly(args, index++));
+
+      if (debtKind != null) {
+        Long company = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, index++));
+        Long currency = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, index++));
+
+        Long dateTo = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, index++));
+        Long termTo = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, index));
+
+        String source = TBL_TRADE_DOCUMENTS;
+        String idName = sys.getIdName(source);
+
+        HasConditions where = SqlUtils.and();
+        where.add(SqlUtils.inList(source, COL_TRADE_OPERATION, getOperationsByDebtKind(debtKind)));
+
+        if (DataUtils.isId(company)) {
+          where.add(
+              SqlUtils.or(
+                  SqlUtils.equals(source, COL_TRADE_PAYER, company),
+                  SqlUtils.and(
+                      SqlUtils.isNull(source, COL_TRADE_PAYER),
+                      SqlUtils.equals(source, debtKind.tradeDocumentCompanyColumn(), company))));
+        }
+
+        if (DataUtils.isId(currency)) {
+          where.add(SqlUtils.equals(source, COL_TRADE_CURRENCY, currency));
+        }
+
+        if (dateTo != null) {
+          where.add(SqlUtils.less(source, COL_TRADE_DATE, dateTo));
+        }
+
+        if (termTo != null) {
+          where.add(
+              SqlUtils.or(
+                  SqlUtils.less(source, COL_TRADE_TERM, termTo),
+                  SqlUtils.in(source, idName, TBL_TRADE_PAYMENT_TERMS, COL_TRADE_DOCUMENT,
+                      SqlUtils.less(TBL_TRADE_PAYMENT_TERMS, COL_TRADE_PAYMENT_TERM_DATE,
+                          termTo))));
+        }
+
+        SqlSelect query = new SqlSelect()
+            .addFields(source, idName)
+            .addFields(source, TradeDocumentSums.DOCUMENT_COLUMNS)
+            .addFrom(source)
+            .setWhere(where);
+
+        SimpleRowSet docData = qs.getData(query);
+
+        if (!DataUtils.isEmpty(docData)) {
+          Set<Long> docIds = new HashSet<>();
+
+          for (SimpleRow docRow : docData) {
+            long docId = docRow.getLong(idName);
+
+            TradeVatMode vatMode = docRow.getEnum(COL_TRADE_DOCUMENT_VAT_MODE, TradeVatMode.class);
+            TradeDiscountMode discountMode = docRow.getEnum(COL_TRADE_DOCUMENT_DISCOUNT_MODE,
+                TradeDiscountMode.class);
+            Double docDiscount = docRow.getDouble(COL_TRADE_DOCUMENT_DISCOUNT);
+
+            BeeRowSet itemData = qs.getViewData(VIEW_TRADE_DOCUMENT_ITEMS,
+                Filter.equals(COL_TRADE_DOCUMENT, docId), null, TradeDocumentSums.ITEM_COLUMNS);
+            BeeRowSet paymentData = qs.getViewData(VIEW_TRADE_PAYMENTS,
+                Filter.equals(COL_TRADE_DOCUMENT, docId), null, TradeDocumentSums.PAYMENT_COLUMNS);
+
+            TradeDocumentSums tds = new TradeDocumentSums(vatMode, discountMode, docDiscount);
+
+            if (!DataUtils.isEmpty(itemData)) {
+              tds.addItems(itemData);
+            }
+            if (!DataUtils.isEmpty(paymentData)) {
+              tds.addPayments(paymentData);
+            }
+
+            if (BeeUtils.nonZero(tds.getDebt())) {
+              docIds.add(docId);
+            }
+          }
+
+          if (!docIds.isEmpty()) {
+            return SqlUtils.inList(source, idName, docIds);
+          }
+        }
+      }
+
+      return SqlUtils.sqlFalse();
     });
 
     registerStockReservationsProvider(ModuleAndSub.of(getModule()),
@@ -2040,7 +2143,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             item.getValue(COL_TRADE_ITEM_QUANTITY));
 
         wsItem.setPrice(item.getValue(COL_TRADE_ITEM_PRICE));
-        wsItem.setDiscount(item.getValue(COL_TRADE_DISCOUNT));
+        wsItem.setDiscount(item.getValue(COL_TRADE_DISCOUNT), true);
         wsItem.setVat(item.getValue(COL_TRADE_VAT), item.getBoolean(COL_TRADE_VAT_PERC),
             item.getBoolean(COL_TRADE_VAT_PLUS));
         wsItem.setArticle(item.getValue(COL_TRADE_ITEM_ARTICLE));
@@ -2714,6 +2817,19 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return qs.getEnum(query, OperationType.class);
   }
 
+  private Collection<Long> getOperationsByDebtKind(DebtKind debtKind) {
+    Collection<OperationType> operationTypes = Arrays.stream(OperationType.values())
+        .filter(type -> type.getDebtKind() == debtKind)
+        .collect(Collectors.toSet());
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_OPERATIONS, sys.getIdName(TBL_TRADE_OPERATIONS))
+        .addFrom(TBL_TRADE_OPERATIONS)
+        .setWhere(SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE, operationTypes));
+
+    return qs.getLongSet(query);
+  }
+
   private String getDocumentFieldByTradeItem(long itemId, String fieldName) {
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_DOCUMENTS, fieldName)
@@ -3367,10 +3483,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     SimpleRowSet docItems = qs.getData(itemQuery);
 
-    TradeDocumentSums tdSums = new TradeDocumentSums(docVatMode, docDiscountMode);
+    TradeDocumentSums tdSums = new TradeDocumentSums(docVatMode, docDiscountMode, docDiscount);
     tdSums.disableRounding();
-
-    tdSums.updateDocumentDiscount(docDiscount);
 
     Map<Long, Double> costs = new HashMap<>();
 
@@ -4181,5 +4295,310 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     } else {
       return ResponseObject.response(result);
     }
+  }
+
+  private ResponseObject submitPayment(RequestInfo reqInfo) {
+    Long time = reqInfo.getParameterLong(COL_TRADE_PAYMENT_DATE);
+    if (time == null) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), COL_TRADE_PAYMENT_DATE);
+    }
+
+    Long account = reqInfo.getParameterLong(COL_TRADE_PAYMENT_ACCOUNT);
+    Long paymentType = reqInfo.getParameterLong(COL_TRADE_PAYMENT_TYPE);
+
+    String series = reqInfo.getParameter(COL_TRADE_PAYMENT_SERIES);
+    String number = reqInfo.getParameter(COL_TRADE_PAYMENT_NUMBER);
+
+    if (!BeeUtils.isEmpty(series) && BeeUtils.isEmpty(number)) {
+      number = qs.getNextNumber(TBL_TRADE_PAYMENTS, COL_TRADE_PAYMENT_NUMBER,
+          series, COL_TRADE_PAYMENT_SERIES);
+    }
+
+    Set<Long> docIds = new HashSet<>();
+
+    ResponseObject response = ResponseObject.emptyResponse();
+
+    boolean finEnabled = Module.FINANCE.isEnabled();
+
+    if (reqInfo.hasParameter(VAR_PAYMENTS)) {
+      Map<String, String> payments = Codec.deserializeHashMap(reqInfo.getParameter(VAR_PAYMENTS));
+
+      if (!payments.isEmpty()) {
+        for (Map.Entry<String, String> entry : payments.entrySet()) {
+          Long docId = BeeUtils.toLongOrNull(entry.getKey());
+          double amount = Localized.normalizeMoney(BeeUtils.toDoubleOrNull(entry.getValue()));
+
+          if (DataUtils.isId(docId) && BeeUtils.isPositive(amount)) {
+            SqlInsert insert = new SqlInsert(TBL_TRADE_PAYMENTS)
+                .addConstant(COL_TRADE_DOCUMENT, docId)
+                .addConstant(COL_TRADE_PAYMENT_DATE, time)
+                .addConstant(COL_TRADE_PAYMENT_AMOUNT, amount)
+                .addNotNull(COL_TRADE_PAYMENT_ACCOUNT, account)
+                .addNotNull(COL_TRADE_PAYMENT_TYPE, paymentType)
+                .addNotEmpty(COL_TRADE_PAYMENT_SERIES, series)
+                .addNotEmpty(COL_TRADE_PAYMENT_NUMBER, number);
+
+            ResponseObject insertResponse = qs.insertDataWithResponse(insert);
+            if (insertResponse.hasErrors()) {
+              return insertResponse;
+            }
+
+            docIds.add(docId);
+          }
+        }
+      }
+    }
+
+    if (finEnabled && reqInfo.hasParameter(VAR_PREPAYMENT)) {
+      double prepayment = Localized.normalizeMoney(reqInfo.getParameterDouble(VAR_PREPAYMENT));
+
+      if (BeeUtils.isPositive(prepayment)) {
+        DebtKind debtKind = reqInfo.getParameterEnum(VAR_KIND, DebtKind.class);
+
+        Long payer = reqInfo.getParameterLong(COL_TRADE_PAYER);
+        Long currency = reqInfo.getParameterLong(COL_TRADE_CURRENCY);
+
+        if (!DataUtils.isId(account) && DataUtils.isId(paymentType)) {
+          account = qs.getLongById(TBL_PAYMENT_TYPES, paymentType, COL_TRADE_PAYMENT_TYPE_ACCOUNT);
+        }
+
+        List<String> messages = new ArrayList<>();
+
+        if (debtKind == null) {
+          messages.add(Localized.dictionary().parameterNotFound(VAR_KIND));
+        }
+
+        if (!DataUtils.isId(payer)) {
+          messages.add(Localized.dictionary().parameterNotFound(COL_TRADE_PAYER));
+        }
+        if (!DataUtils.isId(currency)) {
+          messages.add(Localized.dictionary().parameterNotFound(COL_TRADE_CURRENCY));
+        }
+
+        if (!DataUtils.isId(currency)) {
+          messages.add("payment account not available");
+        }
+
+        if (messages.isEmpty()) {
+          ResponseObject finResponse = fin.addPrepayment(debtKind.getPrepaymentKind(),
+              new DateTime(time), payer, account, series, number, prepayment, currency);
+          if (finResponse.hasErrors()) {
+            return finResponse;
+          }
+
+          response.addMessagesFrom(finResponse);
+
+        } else {
+          response.addWarning(reqInfo.getLabel(), "cannot build prepayment");
+          messages.forEach(response::addWarning);
+        }
+      }
+    }
+
+    if (!docIds.isEmpty()) {
+      Endpoint.refreshRows(qs.getViewData(VIEW_TRADE_DOCUMENTS, Filter.idIn(docIds)));
+      Endpoint.refreshChildren(VIEW_TRADE_PAYMENTS, docIds);
+    }
+
+    return response;
+  }
+
+  private ResponseObject dischargeDebt(RequestInfo reqInfo) {
+    Long time = reqInfo.getParameterLong(COL_TRADE_PAYMENT_DATE);
+    if (time == null) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), COL_TRADE_PAYMENT_DATE);
+    }
+
+    List<Triplet<Long, Long, Double>> discharges =
+        deserializeDischarges(reqInfo.getParameter(VAR_PAYMENTS));
+    if (discharges.isEmpty()) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), VAR_PAYMENTS);
+    }
+
+    String series = reqInfo.getParameter(COL_TRADE_PAYMENT_SERIES);
+    String number = reqInfo.getParameter(COL_TRADE_PAYMENT_NUMBER);
+
+    Dictionary dictionary = usr.getDictionary();
+
+    Long account = fin.getDefaultAccount(COL_DISCHARGE_ACCOUNT);
+    if (!DataUtils.isId(account)) {
+      return ResponseObject.error(dictionary.finDefaultAccounts(),
+          dictionary.fieldRequired(dictionary.finDischargeAccount()));
+    }
+
+    if (!BeeUtils.isEmpty(series) && BeeUtils.isEmpty(number)) {
+      number = qs.getNextNumber(TBL_TRADE_PAYMENTS, COL_TRADE_PAYMENT_NUMBER,
+          series, COL_TRADE_PAYMENT_SERIES);
+    }
+
+    Set<Long> docIds = new HashSet<>();
+
+    for (Triplet<Long, Long, Double> discharge : discharges) {
+      double amount = discharge.getC();
+
+      for (long docId : new long[] {discharge.getA(), discharge.getB()}) {
+        SqlInsert insert = new SqlInsert(TBL_TRADE_PAYMENTS)
+            .addConstant(COL_TRADE_DOCUMENT, docId)
+            .addConstant(COL_TRADE_PAYMENT_DATE, time)
+            .addConstant(COL_TRADE_PAYMENT_AMOUNT, amount)
+            .addConstant(COL_TRADE_PAYMENT_ACCOUNT, account)
+            .addNotEmpty(COL_TRADE_PAYMENT_SERIES, series)
+            .addNotEmpty(COL_TRADE_PAYMENT_NUMBER, number);
+
+        ResponseObject insertResponse = qs.insertDataWithResponse(insert);
+        if (insertResponse.hasErrors()) {
+          return insertResponse;
+        }
+
+        docIds.add(docId);
+      }
+    }
+
+    if (!docIds.isEmpty()) {
+      Endpoint.refreshRows(qs.getViewData(VIEW_TRADE_DOCUMENTS, Filter.idIn(docIds)));
+      Endpoint.refreshChildren(VIEW_TRADE_PAYMENTS, docIds);
+    }
+
+    return ResponseObject.response(docIds.size());
+  }
+
+  private ResponseObject dischargePrepayment(RequestInfo reqInfo) {
+    PrepaymentKind prepaymentKind = reqInfo.getParameterEnum(VAR_KIND, PrepaymentKind.class);
+    if (prepaymentKind == null) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), VAR_KIND);
+    }
+
+    Long time = reqInfo.getParameterLong(COL_TRADE_PAYMENT_DATE);
+    if (time == null) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), COL_TRADE_PAYMENT_DATE);
+    }
+
+    List<Triplet<Long, Long, Double>> discharges =
+        deserializeDischarges(reqInfo.getParameter(VAR_PREPAYMENT));
+    if (discharges.isEmpty()) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), VAR_PREPAYMENT);
+    }
+
+    Dictionary dictionary = usr.getDictionary();
+
+    BeeRowSet config = qs.getViewData(VIEW_FINANCE_CONFIGURATION);
+    if (DataUtils.isEmpty(config)) {
+      return ResponseObject.error(dictionary.dataNotAvailable(dictionary.finDefaultAccounts()));
+    }
+
+    TradeAccounts tradeAccounts = TradeAccounts.createAvailable(config, config.getRow(0));
+    Long debtAccount = prepaymentKind.getDebtKInd().getTradeAccount(tradeAccounts);
+    if (!DataUtils.isId(debtAccount)) {
+      return ResponseObject.error(prepaymentKind.getDebtKInd().getCaption(dictionary),
+          "default account not available");
+    }
+
+    Set<Long> finIds = discharges.stream().map(Triplet::getA).collect(Collectors.toSet());
+    Filter filter = Filter.and(Filter.idIn(finIds),
+        Filter.equals(COL_FIN_PREPAYMENT_KIND, prepaymentKind));
+
+    BeeRowSet finData = qs.getViewData(VIEW_FINANCIAL_RECORDS, filter);
+    if (DataUtils.isEmpty(finData)) {
+      return ResponseObject.error(dictionary.dataNotAvailable(VIEW_FINANCIAL_RECORDS));
+    }
+
+    int prepaymentAccountIndex =
+        finData.getColumnIndex(prepaymentKind.getPrepaymentAccountColumn());
+
+    int seriesIndex = finData.getColumnIndex(prepaymentKind.getSeriesColumn());
+    int numberIndex = finData.getColumnIndex(prepaymentKind.getDocumentColumn());
+
+    int journalIndex = finData.getColumnIndex(COL_FIN_JOURNAL);
+    int companyIndex = finData.getColumnIndex(COL_FIN_COMPANY);
+    int currencyIndex = finData.getColumnIndex(COL_FIN_CURRENCY);
+
+    ResponseObject response = ResponseObject.emptyResponse();
+
+    Set<Long> docIds = new HashSet<>();
+    int count = 0;
+
+    for (Triplet<Long, Long, Double> discharge : discharges) {
+      long finId = discharge.getA();
+      long docId = discharge.getB();
+
+      double amount = discharge.getC();
+
+      BeeRow finRow = finData.getRowById(finId);
+      if (finRow == null) {
+        response.addWarning(VIEW_FINANCIAL_RECORDS, dictionary.keyNotFound(finId));
+
+      } else {
+        Long prepaymentAccount = finRow.getLong(prepaymentAccountIndex);
+        if (Objects.equals(debtAccount, prepaymentAccount)) {
+          response.addWarning(VIEW_FINANCIAL_RECORDS, finId,
+              "debt account equals prepayment account");
+
+        } else {
+          SqlInsert insertPayment = new SqlInsert(TBL_TRADE_PAYMENTS)
+              .addConstant(COL_TRADE_DOCUMENT, docId)
+              .addConstant(COL_TRADE_PAYMENT_DATE, time)
+              .addConstant(COL_TRADE_PAYMENT_AMOUNT, amount)
+              .addConstant(COL_TRADE_PAYMENT_ACCOUNT, prepaymentAccount)
+              .addNotEmpty(COL_TRADE_PAYMENT_SERIES, finRow.getString(seriesIndex))
+              .addNotEmpty(COL_TRADE_PAYMENT_NUMBER, finRow.getString(numberIndex))
+              .addConstant(COL_TRADE_PREPAYMENT_PARENT, finId);
+
+          ResponseObject paymentResponse = qs.insertDataWithResponse(insertPayment);
+          if (paymentResponse.hasErrors()) {
+            return paymentResponse;
+          }
+
+          Long paymentId = paymentResponse.getResponseAsLong();
+
+          SqlInsert insertFin = new SqlInsert(TBL_FINANCIAL_RECORDS)
+              .addNotNull(COL_FIN_JOURNAL, finRow.getLong(journalIndex))
+              .addConstant(COL_FIN_DATE, time)
+              .addNotNull(COL_FIN_COMPANY, finRow.getLong(companyIndex))
+              .addConstant(prepaymentKind.getOppositeAccountColumn(), prepaymentAccount)
+              .addConstant(prepaymentKind.getPrepaymentAccountColumn(), debtAccount)
+              .addConstant(COL_FIN_AMOUNT, amount)
+              .addConstant(COL_FIN_CURRENCY, finRow.getLong(currencyIndex))
+              .addConstant(COL_FIN_TRADE_DOCUMENT, docId)
+              .addConstant(COL_FIN_TRADE_PAYMENT, paymentId)
+              .addConstant(COL_FIN_PREPAYMENT_PARENT, finId);
+
+          ResponseObject finResponse = qs.insertDataWithResponse(insertFin);
+          if (finResponse.hasErrors()) {
+            return finResponse;
+          }
+
+          docIds.add(docId);
+          count++;
+        }
+      }
+    }
+
+    if (!docIds.isEmpty()) {
+      Endpoint.refreshRows(qs.getViewData(VIEW_TRADE_DOCUMENTS, Filter.idIn(docIds)));
+      Endpoint.refreshChildren(VIEW_TRADE_PAYMENTS, docIds);
+    }
+
+    response.setResponse(count);
+    return response;
+  }
+
+  private static List<Triplet<Long, Long, Double>> deserializeDischarges(String input) {
+    List<Triplet<Long, Long, Double>> discharges = new ArrayList<>();
+
+    for (String s : Codec.deserializeList(input)) {
+      Triplet<String, String, String> triplet = Triplet.restore(s);
+
+      if (triplet != null) {
+        Long a = BeeUtils.toLongOrNull(triplet.getA());
+        Long b = BeeUtils.toLongOrNull(triplet.getB());
+        Double c = BeeUtils.toDoubleOrNull(triplet.getC());
+
+        if (DataUtils.isId(a) && DataUtils.isId(b) && BeeUtils.isPositive(c)) {
+          discharges.add(Triplet.of(a, b, c));
+        }
+      }
+    }
+
+    return discharges;
   }
 }

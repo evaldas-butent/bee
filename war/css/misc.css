@@ -391,6 +391,10 @@
 .bee-rep-report {
   border-collapse: collapse;
 }
+.bee-rep-report-param {
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
 .bee-rep-report .bee-rep-report-normal:hover {
   color: dodgerblue;
   cursor: pointer;

@@ -66,6 +66,10 @@ class PrepaymentGrid extends FinanceGrid {
     return super.onStartNewRow(gridView, oldRow, newRow, copy);
   }
 
+  protected PrepaymentKind getKind() {
+    return kind;
+  }
+
   private static boolean isUsed(IsRow row) {
     return row != null && row.hasPropertyValue(PROP_PREPAYMENT_USED);
   }
