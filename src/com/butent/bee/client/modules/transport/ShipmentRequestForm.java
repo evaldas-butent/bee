@@ -28,6 +28,7 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
@@ -61,7 +62,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.CssUnit;
-import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.Overflow;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -779,42 +779,25 @@ class ShipmentRequestForm extends PrintFormInterceptor {
         acceptedTermsConsumer.accept(true);
       } else {
         FlowPanel panel = new FlowPanel();
-        StyleUtils.setHeight(panel, 160);
-        StyleUtils.setWidth(panel, 300);
 
-        HtmlTable table = new HtmlTable();
+        Label label = new Label(terms);
+        StyleUtils.setHeight(label, 450);
+        StyleUtils.setWidth(label, 550);
+        StyleUtils.setOverflow(label, StyleUtils.ScrollBars.BOTH, Overflow.AUTO);
+        panel.add(label);
 
-        FlowPanel fp = new FlowPanel();
-        StyleUtils.setHeight(fp, 100);
-        StyleUtils.setWidth(fp, 300);
+        panel.add(new Label(BeeConst.HTML_NBSP));
 
-        Label commonTerms = new Label(Localized.dictionary().trAgreeWithTermsAndConditions());
-        table.setWidget(0, 0, commonTerms, StyleUtils.className(FontWeight.BOLD));
-        table.getCellFormatter().setColSpan(1, 0, 2);
-        table.setWidget(1, 0, fp);
-
-        FaLabel question = new FaLabel(FontAwesome.QUESTION_CIRCLE);
-        question.addClickHandler(clickEvent -> {
-          fp.clear();
-          fp.add(new Label(terms));
-          StyleUtils.setHeight(fp, 400);
-          StyleUtils.setHeight(panel, 460);
-          StyleUtils.setOverflow(fp, StyleUtils.ScrollBars.VERTICAL, Overflow.AUTO);
-          StyleUtils.setOverflow(fp, StyleUtils.ScrollBars.HORIZONTAL, Overflow.AUTO);
-        });
-        table.setWidget(0, 1, question);
-
-        panel.add(table);
-
-        Global.showModalWidget(Localized.dictionary().trRequestCommonTerms(), panel);
-
-        Button no = new Button(Localized.dictionary().no().toUpperCase());
         Button yes = new Button(Localized.dictionary().trAgreeWithConditions().toUpperCase());
         StyleUtils.setColor(yes, "white");
         StyleUtils.setBackgroundColor(yes, "#6bae45");
+        Button no = new Button(Localized.dictionary().no().toUpperCase());
 
-        table.setWidget(2, 0, yes);
-        table.setWidget(2, 1, no);
+        Flow actionPanel = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL_CENTER);
+        actionPanel.add(yes);
+        actionPanel.add(no);
+        panel.add(actionPanel);
+
         no.addClickHandler(clickEvent -> {
           acceptedTermsConsumer.accept(false);
           UiHelper.closeDialog(panel);
@@ -823,6 +806,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
           acceptedTermsConsumer.accept(true);
           UiHelper.closeDialog(panel);
         });
+        Global.showModalWidget(Localized.dictionary().trRequestCommonTerms(), panel);
       }
     });
   }

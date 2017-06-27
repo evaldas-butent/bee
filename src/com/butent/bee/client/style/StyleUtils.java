@@ -157,6 +157,7 @@ public final class StyleUtils {
 
   public static final String NAME_FLEX_BOX_HORIZONTAL = "flexBox-horizontal";
   public static final String NAME_FLEX_BOX_VERTICAL = "flexBox-vertical";
+  public static final String NAME_FLEX_BOX_HORIZONTAL_CENTER = "flexBox-horizontal-center";
   public static final String NAME_FLEX_BOX_CENTER = "flexBox-center";
   public static final String NAME_FLEXIBLE = "flexible";
 

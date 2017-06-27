@@ -5787,8 +5787,6 @@ public interface Dictionary {
 
   default String trAgreeWithConditions() {return g("trAgreeWithConditions");}
 
-  default String trAgreeWithTermsAndConditions() {return g("trAgreeWithTermsAndConditions");}
-
   default String trArrivalCity() {return g("trArrivalCity");}
 
   default String trArrivalCountry() {return g("trArrivalCountry");}
