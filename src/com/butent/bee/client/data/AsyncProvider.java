@@ -276,18 +276,7 @@ public class AsyncProvider extends Provider {
 
   @Override
   public void hasAnyRows(Filter filter, Consumer<Boolean> callback) {
-    Queries.getRowCount(getViewName(), getQueryFilter(filter), new Queries.IntCallback() {
-      @Override
-      public void onFailure(String... reason) {
-        Queries.IntCallback.super.onFailure(reason);
-        callback.accept(false);
-      }
-
-      @Override
-      public void onSuccess(Integer result) {
-        callback.accept(BeeUtils.isPositive(result));
-      }
-    });
+    Queries.hasAnyRows(getViewName(), getQueryFilter(filter), callback::accept);
   }
 
   @Override
