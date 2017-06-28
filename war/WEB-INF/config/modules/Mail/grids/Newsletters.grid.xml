@@ -9,11 +9,16 @@
   <g:columns>
     <IdColumn name="Id" />
     <DataColumn name="Subject" visible="true" />
-    <CalcColumn name="FinishedDate" type="datetime" label="=date">
+    <CalcColumn name="SentCount" type="string" label="=mailMessageSentCount">
+      <dynStyle>
+        <ui:inline>color:red</ui:inline>
+        <ui:expression>row.CountSent &lt; row.CountContacts</ui:expression>
+      </dynStyle>
       <render>
-        <ui:expression>(row.CountContacts &gt; row.CountSent) ? null : row.MaxDate</ui:expression>
+        <ui:expression>(+row.CountSent||0) + '/' + (+row.CountContacts||0)</ui:expression>
       </render>
     </CalcColumn>
+    <DataColumn name="MaxDate" label="=date" />
     <DataColumn name="Active" editInPlace="true" />
   </g:columns>
 </g:Grid>
