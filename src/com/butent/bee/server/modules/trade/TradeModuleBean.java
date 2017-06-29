@@ -329,6 +329,27 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         .setDistinctMode(true);
 
     SimpleRowSet companiesEmails = qs.getData(select);
+//    transrifus -> {
+    SqlSelect selectMain = new SqlSelect()
+      .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
+      .addField(TBL_EMAILS, sys.getIdName(TBL_EMAILS), COL_EMAIL_ID)
+      .addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS)
+      .addFrom(TBL_COMPANIES)
+      .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+      .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+      .setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
+        companyIds),
+        SqlUtils.notNull(TBL_CONTACTS, COL_REMIND_EMAIL)));
+
+    SimpleRowSet mainEmails = qs.getData(selectMain);
+
+    for (String[] row : mainEmails.getRows()) {
+      Long companyId = BeeUtils.toLong(row[mainEmails.getColumnIndex(COL_COMPANY)]);
+      String email = row[mainEmails.getColumnIndex(COL_EMAIL)];
+
+      emails.put(companyId, email);
+    }
+//    } <- transrifus
 
     for (String[] row : companiesEmails.getRows()) {
       Long companyId = BeeUtils.toLong(row[companiesEmails.getColumnIndex(COL_COMPANY)]);
@@ -564,22 +585,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           List<Long> companiesId = Lists.newArrayList();
 
           for (IsRow gridRow : gridRowSet) {
-            Long companyId = gridRow.getLong(viewData.getColumnIndex(COL_COMPANY));
-            if (DataUtils.isId(companyId)) {
-              companiesId.add(companyId);
-            }
-          }
-
-          if (BeeUtils.isEmpty(companiesId)) {
-            return;
+            companiesId.add(gridRow.getId());
           }
 
           Multimap<Long, String> reminderEmails = getCompaniesRemindEmailAddresses(companiesId);
 
           for (IsRow gridRow : gridRowSet) {
-            Long companyId = gridRow.getLong(viewData.getColumnIndex(COL_COMPANY));
-
-            Collection<String> emailsData = reminderEmails.get(companyId);
+            Collection<String> emailsData = reminderEmails.get(gridRow.getId());
 
             if (BeeUtils.isEmpty(emailsData)) {
               continue;
@@ -591,7 +603,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               gridRow.setProperty(PROP_REMIND_EMAIL, emails);
             }
           }
-
         }
       }
 
@@ -840,46 +851,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
         }
       }
-
-//      @Subscribe
-//      @AllowConcurrentEvents
-//      public void fillDebtReportsProperties(ViewQueryEvent event) {
-//        if (event.isBefore()) {
-//          return;
-//        }
-//
-//        if (BeeUtils.same(event.getTargetName(), VIEW_DEBT_REPORTS)) {
-//          BeeRowSet gridRowset = event.getRowset();
-//
-//          if (gridRowset.isEmpty()) {
-//            return;
-//          }
-//
-//          List<Long> companiesId = Lists.newArrayList();
-//
-//          for (IsRow gridRow : gridRowset) {
-//            companiesId.add(gridRow.getId());
-//          }
-//
-//          Map<Long, Map<Long, String>> reminderEmails =
-//              cls.getCompaniesRemindEmailAddresses(companiesId);
-//
-//          for (IsRow gridRow : gridRowset) {
-//            Map<Long, String> emailsData = reminderEmails.get(gridRow.getId());
-//
-//            if (emailsData.isEmpty()) {
-//              continue;
-//            }
-//
-//            String emails = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, emailsData.values());
-//
-//            if (!BeeUtils.isEmpty(emails)) {
-//              gridRow.setProperty(PROP_REMIND_EMAIL, emails);
-//            }
-//          }
-//
-//        }
-//      }
     });
 
     MenuService.TRADE_DOCUMENTS.setTransformer(input -> {

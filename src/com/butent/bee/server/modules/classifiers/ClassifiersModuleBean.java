@@ -825,60 +825,6 @@ public class ClassifiersModuleBean implements BeeModule {
         userId);
   }
 
-  public Map<Long, Map<Long, String>> getCompaniesRemindEmailAddresses(List<Long> companyIds) {
-
-    Map<Long, Map<Long, String>> emails = Maps.newHashMap();
-
-    for (Long companyId : companyIds) {
-      emails.put(companyId, Maps.newHashMap());
-    }
-
-    SqlSelect select = new SqlSelect();
-    select.addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY);
-    select.addField(TBL_EMAILS, sys.getIdName(TBL_EMAILS), COL_EMAIL_ID);
-    select.addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS);
-    select.addFrom(TBL_COMPANIES);
-    select.addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT));
-    select.addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL));
-    select.setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
-        companyIds),
-        SqlUtils.notNull(TBL_CONTACTS, COL_REMIND_EMAIL)));
-
-    SimpleRowSet companiesEmails = qs.getData(select);
-
-    select = new SqlSelect();
-    select.addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY);
-    select.addField(TBL_EMAILS, sys.getIdName(TBL_EMAILS), COL_EMAIL_ID);
-    select.addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS);
-    select.addFrom(TBL_COMPANIES);
-    select.addFromLeft(TBL_COMPANY_CONTACTS, sys.joinTables(TBL_COMPANIES, TBL_COMPANY_CONTACTS,
-        COL_COMPANY));
-    select.addFromLeft(TBL_CONTACTS, sys
-        .joinTables(TBL_CONTACTS, TBL_COMPANY_CONTACTS, COL_CONTACT));
-    select.addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL));
-    select.setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
-        companyIds),
-        SqlUtils.notNull(TBL_CONTACTS, COL_REMIND_EMAIL)));
-
-    SimpleRowSet companiesOtherEmails = qs.getData(select);
-
-    for (String[] row : companiesEmails.getRows()) {
-      Long companyId = BeeUtils.toLong(row[companiesEmails.getColumnIndex(COL_COMPANY)]);
-      Long emailId = BeeUtils.toLong(row[companiesEmails.getColumnIndex(COL_EMAIL_ID)]);
-
-      emails.get(companyId).put(emailId, row[companiesEmails.getColumnIndex(COL_EMAIL)]);
-    }
-
-    for (String[] row : companiesOtherEmails.getRows()) {
-      Long companyId = BeeUtils.toLong(row[companiesOtherEmails.getColumnIndex(COL_COMPANY)]);
-      Long emailId = BeeUtils.toLong(row[companiesOtherEmails.getColumnIndex(COL_EMAIL_ID)]);
-
-      emails.get(companyId).put(emailId, row[companiesOtherEmails.getColumnIndex(COL_EMAIL)]);
-    }
-
-    return emails;
-  }
-
   public Document createRemindTemplate(SimpleRowSet data, Map<String, String> labels,
       Map<String, ValueType> format, Map<String, String> enumKeys,
       List<String> excludedColumns, String subject,
