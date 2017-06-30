@@ -9,6 +9,9 @@
     <RelColumn name="Assessment" label="ID" editEnabled="true" readOnly="true"
                editViewName="Assessments" editSource="Assessment" module="Transport.Logistics" />
     <DataColumn name="OrderDate" />
+    <DataColumn name="OrderNo" />
+    <DataColumn name="Date" />
+    <DataColumn name="Supplier" />
     <DataColumn name="Status" />
     <RelColumn name="Manager" filterSupplier="list" renderColumns="FirstName LastName" />
   </g:columns>

@@ -5,7 +5,11 @@
 >
   <Columns>
     <SimpleJoin name="Purchase" joinType="INNER">
+      <SimpleColumn name="Date" />
       <SimpleColumn name="Operation" />
+      <SimpleJoin name="Supplier" joinType="LEFT">
+        <SimpleColumn name="Name" alias="Supplier" label="=trdSupplier" />
+      </SimpleJoin>
     </SimpleJoin>
     <SimpleJoin joinType="INNER" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />
@@ -34,6 +38,7 @@
         <SimpleJoin name="Order" joinType="INNER">
           <SimpleColumn name="Status" />
           <SimpleColumn name="Date" alias="OrderDate" label="=orderDate" />
+          <SimpleColumn name="OrderNo" />
 
           <SimpleColumn name="Manager" />
           <SimpleJoin name="Manager" joinType="INNER">
