@@ -4867,6 +4867,8 @@ public interface Dictionary {
 
   default String prmSQLMessagesPOSTGRESQL() {return g("prmSQLMessagesPOSTGRESQL");}
 
+  default String prmSelfServiceResponsibility() {return g("prmSelfServiceResponsibility");}
+
   default String prmSelfServiceRole() {return g("prmSelfServiceRole");}
 
   default String prmSendNewslettersCount() {return g("prmSendNewslettersCount");}
@@ -7380,6 +7382,14 @@ public interface Dictionary {
   default String widgets() {return g("widgets");}
 
   default String width() {return g("width");}
+
+  default String windowDetached() {return g("windowDetached");}
+
+  default String windowModal() {return g("windowModal");}
+
+  default String windowNewTab() {return g("windowNewTab");}
+
+  default String windowOnTop() {return g("windowOnTop");}
 
   default String winter() {return g("winter");}
 
