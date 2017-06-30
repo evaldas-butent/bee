@@ -61,19 +61,20 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.CssUnit;
-import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.Overflow;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Dictionary;
@@ -310,7 +311,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
         row.getString(getDataIndex(COL_QUERY_FREIGHT_INSURANCE)) != null);
 
     if (!isSelfService()) {
-      for (String name : new String[]{VAR_CUSTOMS_BROKERAGE_QST, VAR_FREIGHT_INSURANCE_QST}) {
+      for (String name : new String[] {VAR_CUSTOMS_BROKERAGE_QST, VAR_FREIGHT_INSURANCE_QST}) {
         Widget widget = form.getWidgetByName(name);
 
         if (widget != null) {
@@ -367,6 +368,32 @@ class ShipmentRequestForm extends PrintFormInterceptor {
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
     fillNewRowValues(form, newRow);
 
+    Queries.getRowSet(VIEW_EXPEDITION_TYPES, null, Filter.notNull(COL_SELF_SERVICE),
+        Order.ascending(COL_SELF_SERVICE, COL_EXPEDITION_TYPE_NAME), typ -> {
+
+          if (!typ.isEmpty()) {
+            RelationUtils.updateRow(Data.getDataInfo(getFormView().getViewName()),
+                COL_EXPEDITION, newRow, Data.getDataInfo(typ.getViewName()), typ.getRow(0), true);
+          }
+          Long responsibility = Global.getParameterRelation(PRM_SELF_SERVICE_RESPONSIBILITY);
+
+          if (DataUtils.isId(responsibility)) {
+            Queries.getRowSet(VIEW_COMPANY_USERS, Arrays.asList(COL_USER, COL_COMPANY_PERSON),
+                Filter.and(Filter.equals(COL_COMPANY, Data.getLong(VIEW_SHIPMENT_REQUESTS, newRow,
+                    COL_COMPANY)), Filter.equals(COL_COMPANY_USER_RESPONSIBILITY, responsibility)
+                ), resp -> {
+                  if (!resp.isEmpty()) {
+                    setResponsibleManager(resp.getLong(0, 0), resp.getLong(0, 1));
+                  } else {
+                    setResponsibleManager(typ.getLong(0, typ.getColumnIndex(COL_QUERY_MANAGER)),
+                        typ.getLong(0, typ.getColumnIndex(COL_QUERY_MANAGER + COL_PERSON)));
+                  }
+                });
+          } else if (!typ.isEmpty()) {
+            setResponsibleManager(typ.getLong(0, typ.getColumnIndex(COL_QUERY_MANAGER)),
+                typ.getLong(0, typ.getColumnIndex(COL_QUERY_MANAGER + COL_PERSON)));
+          }
+        });
     super.onStartNewRow(form, oldRow, newRow);
   }
 
@@ -777,43 +804,26 @@ class ShipmentRequestForm extends PrintFormInterceptor {
         acceptedTermsConsumer.accept(true);
       } else {
         FlowPanel panel = new FlowPanel();
-        StyleUtils.setHeight(panel, 160);
-        StyleUtils.setWidth(panel, 300);
 
-        HtmlTable table = new HtmlTable();
+        Label label = new Label(terms);
+        StyleUtils.setHeight(label, 450);
+        StyleUtils.setWidth(label, 550);
+        StyleUtils.setOverflow(label, StyleUtils.ScrollBars.BOTH, Overflow.AUTO);
+        panel.add(label);
 
-        FlowPanel fp = new FlowPanel();
-        StyleUtils.setHeight(fp, 100);
-        StyleUtils.setWidth(fp, 300);
+        panel.add(new Label(BeeConst.HTML_NBSP));
 
-        Label commonTerms = new Label(Localized.dictionary().trAgreeWithTermsAndConditions());
-        table.setWidget(0, 0, commonTerms, StyleUtils.className(FontWeight.BOLD));
-        table.getCellFormatter().setColSpan(1, 0, 2);
-        table.setWidget(1, 0, fp);
-
-        FaLabel question = new FaLabel(FontAwesome.QUESTION_CIRCLE);
-        question.addClickHandler(clickEvent -> {
-          fp.clear();
-          fp.add(new Label(terms));
-          StyleUtils.setHeight(fp, 400);
-          StyleUtils.setHeight(panel, 460);
-          StyleUtils.setOverflow(fp, StyleUtils.ScrollBars.VERTICAL, Overflow.AUTO);
-          StyleUtils.setOverflow(fp, StyleUtils.ScrollBars.HORIZONTAL, Overflow.AUTO);
-        });
-        table.setWidget(0, 1, question);
-
-        panel.add(table);
-
-        Global.showModalWidget(Localized.dictionary().trRequestCommonTerms(), panel);
-
-        Button no = new Button(Localized.dictionary().no().toUpperCase());
         Button yes = new Button(Localized.dictionary().trAgreeWithConditions().toUpperCase());
         StyleUtils.setColor(yes, "white");
         StyleUtils.setBackgroundColor(yes, "#6bae45");
+        Button no = new Button(Localized.dictionary().no().toUpperCase());
 
-        table.setWidget(2, 0, yes);
-        table.setWidget(2, 1, no);
-        no.addClickHandler(clickEvent ->  {
+        Flow actionPanel = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL_CENTER);
+        actionPanel.add(yes);
+        actionPanel.add(no);
+        panel.add(actionPanel);
+
+        no.addClickHandler(clickEvent -> {
           acceptedTermsConsumer.accept(false);
           UiHelper.closeDialog(panel);
         });
@@ -821,6 +831,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
           acceptedTermsConsumer.accept(true);
           UiHelper.closeDialog(panel);
         });
+        Global.showModalWidget(Localized.dictionary().trRequestCommonTerms(), panel);
       }
     });
   }
@@ -1205,5 +1216,22 @@ class ShipmentRequestForm extends PrintFormInterceptor {
               });
           SelfServiceUtils.update(form, rs);
         });
+  }
+
+  private void setResponsibleManager(Long manager, Long managerPerson) {
+    if (DataUtils.isId(manager)) {
+      IsRow activeRow = getActiveRow();
+      String viewName = getViewName();
+
+      Data.setValue(viewName, activeRow, COL_QUERY_MANAGER, manager);
+
+      Queries.getRow(TBL_COMPANY_PERSONS, managerPerson, row -> {
+        RelationUtils.updateRow(Data.getDataInfo(viewName),
+            COL_QUERY_MANAGER + COL_PERSON, activeRow,
+            Data.getDataInfo(TBL_COMPANY_PERSONS), row, true);
+
+        getFormView().refresh(false, false);
+      });
+    }
   }
 }

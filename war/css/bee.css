@@ -2126,6 +2126,9 @@
   -webkit-justify-content: space-between;
   -ms-flex-pack: justify;
 }
+.bee-FilterSupplier-counter:not(:empty) {
+  padding-left: 5px;
+}
 
 .bee-FilterSupplier-dateTime-caption {
   margin-bottom: 5px;

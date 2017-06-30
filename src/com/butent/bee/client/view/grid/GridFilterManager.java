@@ -165,6 +165,7 @@ public class GridFilterManager {
 
   public void clearFilter() {
     List<ColumnInfo> columns = grid.getPredefinedColumns();
+
     for (ColumnInfo columnInfo : columns) {
       AbstractFilterSupplier filterSupplier = columnInfo.getFilterSupplier();
       if (filterSupplier != null && !filterSupplier.isEmpty()) {
@@ -219,6 +220,11 @@ public class GridFilterManager {
     dialog.setWidget(contentPanel);
 
     dialog.setHideOnEscape(true);
+    dialog.setOnSave(event -> {
+      if (hasSubmitCommand) {
+        onSubmit();
+      }
+    });
 
     dialog.setAnimationEnabled(true);
     dialog.showRelativeTo(target);
@@ -255,6 +261,10 @@ public class GridFilterManager {
       if (!BeeUtils.isEmpty(gridKey)) {
         int value = on ? 1 : 0;
         BeeKeeper.getStorage().set(submitCommandStorageKey, value);
+      }
+
+      if (!on && !valuesByColumn.isEmpty()) {
+        onSubmit();
       }
     });
 
@@ -388,20 +398,26 @@ public class GridFilterManager {
 
     ClickHandler clickHandler = event -> {
       filterSupplier.setEffectiveFilter(getFilter(externalFilter, columnInfo.getColumnId()));
+      filterSupplier.setFiltersOnCommit(!hasSubmitCommand);
+
       filterSupplier.onRequest(button.getElement(), () -> {
         if (hasSubmitCommand) {
           if (filterSupplier.isEmpty()) {
-            button.setText(BeeConst.STRING_EMPTY);
-            button.setTitle(BeeConst.STRING_EMPTY);
+            buildContentPanel();
 
-            actionContainer.removeStyleName(STYLE_SUPPLIER_NOT_EMPTY);
-            actionContainer.addStyleName(STYLE_SUPPLIER_EMPTY);
           } else {
-            button.setText(filterSupplier.getLabel());
-            button.setTitle(filterSupplier.getTitle());
+            filterConsumer.hasAnyRows(getFilter(), has -> {
+              if (!has) {
+                BeeKeeper.getScreen().notifyWarning(
+                    filterSupplier.getComponentLabel(columnInfo.getLabel()),
+                    Localized.dictionary().nothingFound());
 
-            actionContainer.removeStyleName(STYLE_SUPPLIER_EMPTY);
-            actionContainer.addStyleName(STYLE_SUPPLIER_NOT_EMPTY);
+                filterSupplier.setFilterValue(null);
+              }
+
+              retainValues();
+              buildContentPanel();
+            });
           }
 
         } else {
@@ -421,9 +437,8 @@ public class GridFilterManager {
       filterSupplier.setFilterValue(null);
 
       if (hasSubmitCommand) {
-        button.setText(BeeConst.STRING_EMPTY);
-        actionContainer.removeStyleName(STYLE_SUPPLIER_NOT_EMPTY);
-        actionContainer.addStyleName(STYLE_SUPPLIER_EMPTY);
+        retainValues();
+        buildContentPanel();
 
       } else {
         onChange(columnInfo, null);
