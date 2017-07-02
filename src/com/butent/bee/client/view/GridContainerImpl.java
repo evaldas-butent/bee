@@ -48,6 +48,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.ui.UiConstants;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -512,7 +513,7 @@ public class GridContainerImpl extends Split implements GridContainerView,
     if (event.isOpening() || event.isClosing()) {
       setEditing(event.isOpening());
 
-      if (!event.isPopup()) {
+      if (event.getWindowType() != WindowType.MODAL) {
         showChildren(event.isClosing());
 
         if (!getGridView().hasChildUi()) {

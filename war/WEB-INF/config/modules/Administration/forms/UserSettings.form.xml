@@ -35,7 +35,7 @@
 
       <FlowPanel for="CompanyPerson" class="flexBox-horizontal">
         <Label text="=personFullName" for="CompanyPerson" style="&labelStyle;" />
-        <DataSelector source="CompanyPerson" editSource="Person" editPopup="true"
+        <DataSelector source="CompanyPerson" editSource="Person" editWindow="modal"
                       renderColumns="FirstName LastName" style="&inputStyle;" />
       </FlowPanel>
     </FlowPanel>
