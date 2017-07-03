@@ -1,22 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-06-08T17:14:37 -->
+<!-- 2017-06-30T14:55:54 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
 	<import value="com.butent.bee.shared.i18n.Localized"/>
-	<import value="com.butent.bee.shared.data.BeeRowSet"/>
+	<import value="com.butent.bee.shared.utils.EnumUtils"/>
 	<import value="com.butent.bee.shared.i18n.DateTimeFormat"/>
+	<import value="com.butent.bee.shared.time.TimeUtils"/>
+	<import value="com.butent.bee.server.RsDataSource"/>
+	<import value="com.butent.bee.shared.time.JustDate"/>
+	<import value="com.butent.bee.shared.data.BeeRowSet"/>
 	<import value="com.butent.bee.shared.time.DateTime"/>
 	<import value="com.butent.bee.shared.i18n.Dictionary"/>
-	<import value="com.butent.bee.shared.time.TimeUtils"/>
 	<import value="java.time.format.DateTimeFormatter"/>
+	<import value="com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit"/>
 	<import value="com.butent.bee.shared.utils.BeeUtils"/>
 	<import value="com.butent.bee.shared.i18n.SupportedLocale"/>
 	<import value="com.butent.bee.shared.i18n.PredefinedFormat"/>
-	<import value="com.butent.bee.server.RsDataSource"/>
-	<import value="com.butent.bee.shared.time.JustDate"/>
 	<style name="Font" isDefault="true" isBlankWhenNull="true" fontName="DejaVu Sans"/>
 	<style name="TableCell">
 		<box>
@@ -43,7 +45,7 @@
 		<field name="VatPlus" class="java.lang.Boolean"/>
 		<field name="VatPercent" class="java.lang.Boolean"/>
 		<field name="Vat" class="java.math.BigDecimal"/>
-		<field name="TimeUnit" class="java.lang.String"/>
+		<field name="TimeUnit" class="java.math.BigDecimal"/>
 		<field name="Note" class="java.lang.String"/>
 		<field name="MinTerm" class="java.math.BigDecimal"/>
 		<field name="DaysPerWeek" class="java.math.BigDecimal"/>
@@ -466,7 +468,10 @@
 	!BeeUtils.isPositive($F{MinTerm})
 	 	?  ""  
 		:  BeeUtils.joinWords("Minimalus nuomos terminas: ", $F{MinTerm}.toPlainString(), 
-			$P{SaleItemsDataSet}.getRowValue().getProperty("TimeUnit").toLowerCase()
+			$F{TimeUnit} == null 
+			 ? ""
+			 :  EnumUtils.getLocalizedCaption(TradeActTimeUnit.class, BeeUtils.toInt(
+			 	$F{TimeUnit}.toPlainString()), $P{loc}).toLowerCase()
 		),
 	$F{Note},
     !BeeUtils.isPositive($F{Discount}) 
