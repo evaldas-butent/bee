@@ -89,6 +89,7 @@ import com.butent.bee.shared.ui.HasStringValue;
 import com.butent.bee.shared.ui.HasVisibleLines;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.SelectorColumn;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -885,7 +886,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
       this.editForm = ef;
 
-      this.editModal = relation.isEditModal();
+      this.editModal = WindowType.MODAL == relation.getEditWindowType();
       this.editEnabled = !BeeUtils.isEmpty(ev) && !BeeUtils.isEmpty(ef)
           && Data.isViewVisible(ev);
 
@@ -1644,31 +1645,28 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     RowCallback rowCallback;
 
     if (modal) {
-      rowCallback = new RowCallback() {
-        @Override
-        public void onSuccess(BeeRow result) {
-          if (BeeUtils.same(getEditViewName(), getOracle().getViewName())) {
-            setRelatedRow(result);
+      rowCallback = result -> {
+        if (BeeUtils.same(getEditViewName(), getOracle().getViewName())) {
+          setRelatedRow(result);
 
-          } else {
-            BeeRow row = getRelatedRow();
-            Long id = getEditorValueAsId();
+        } else {
+          BeeRow row = getRelatedRow();
+          Long id = getEditorValueAsId();
 
-            if (row == null && DataUtils.isId(id)) {
-              row = getOracle().getCachedRow(id);
-            }
-
-            if (row != null && !BeeConst.isUndef(getEditSourceIndex())) {
-              RelationUtils.updateRow(getOracle().getDataInfo(),
-                  getOracle().getDataInfo().getColumnId(getEditSourceIndex()), row,
-                  Data.getDataInfo(getEditViewName()), result, false);
-              setRelatedRow(row);
-            }
+          if (row == null && DataUtils.isId(id)) {
+            row = getOracle().getCachedRow(id);
           }
 
-          if (getRelatedRow() != null) {
-            fireEvent(new EditStopEvent(State.EDITED));
+          if (row != null && !BeeConst.isUndef(getEditSourceIndex())) {
+            RelationUtils.updateRow(getOracle().getDataInfo(),
+                getOracle().getDataInfo().getColumnId(getEditSourceIndex()), row,
+                Data.getDataInfo(getEditViewName()), result, false);
+            setRelatedRow(row);
           }
+        }
+
+        if (getRelatedRow() != null) {
+          fireEvent(new EditStopEvent(State.EDITED));
         }
       };
 
