@@ -287,6 +287,10 @@
   filter: grayscale(50%);
 }
 
+.bee-tr-chart-filter-dialog {
+  min-width: 420px;
+}
+
 .bee-tr-chart-filter-savedContainer {
   margin-top: 2px;
   height: 30px;
@@ -331,6 +335,7 @@
 }
 
 .bee-tr-chart-filter-commandGroup {
+  min-width: 400px;
   margin-top: 2px;
   display: flex;
   display: -webkit-flex;

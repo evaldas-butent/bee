@@ -88,6 +88,8 @@ public interface Dictionary extends CustomDictionary{
 
   default String actionSelect() {return g("actionSelect");}
 
+  default String actionSensitivityMillis() {return g("actionSensitivityMillis");}
+
   default String actionUpdate() {return g("actionUpdate");}
 
   default String actionWorkspaceBookmarkAll() {return g("actionWorkspaceBookmarkAll");}
@@ -870,6 +872,8 @@ public interface Dictionary extends CustomDictionary{
   default String contactInfo() {return g("contactInfo");}
 
   default String contactReportCompanyByType() {return g("contactReportCompanyByType");}
+
+  default String contactReportCompanySource() {return g("contactReportCompanySource");}
 
   default String contactReportCompanyUsage() {return g("contactReportCompanyUsage");}
 
@@ -2770,6 +2774,8 @@ public interface Dictionary extends CustomDictionary{
 
   default String filterAll() {return g("filterAll");}
 
+  default String filterAnd() {return g("filterAnd");}
+
   default String filterAnswered() {return g("filterAnswered");}
 
   default String filterLost() {return g("filterLost");}
@@ -2779,6 +2785,8 @@ public interface Dictionary extends CustomDictionary{
   default String filterNotNullLabel() {return g("filterNotNullLabel");}
 
   default String filterNullLabel() {return g("filterNullLabel");}
+
+  default String filterOr() {return g("filterOr");}
 
   default String filterRemove() {return g("filterRemove");}
 
@@ -4004,6 +4012,8 @@ public interface Dictionary extends CustomDictionary{
 
   default String noData() {return g("noData");}
 
+  default String noDataSelectedInFilter() {return g("noDataSelectedInFilter");}
+
   default String noMatter() {return g("noMatter");}
 
   default String not(Object p0) {
@@ -4831,6 +4841,8 @@ public interface Dictionary extends CustomDictionary{
 
   default String prmImportERPStocksTime() {return g("prmImportERPStocksTime");}
 
+  default String prmItemArticleSourceColumn() {return g("prmItemArticleSourceColumn");}
+
   default String prmMainCurrency() {return g("prmMainCurrency");}
 
   default String prmMaintenanceServiceGroup() {return g("prmMaintenanceServiceGroup");}
@@ -4862,6 +4874,8 @@ public interface Dictionary extends CustomDictionary{
   default String prmSQLMessagesORACLE() {return g("prmSQLMessagesORACLE");}
 
   default String prmSQLMessagesPOSTGRESQL() {return g("prmSQLMessagesPOSTGRESQL");}
+
+  default String prmSelfServiceResponsibility() {return g("prmSelfServiceResponsibility");}
 
   default String prmSelfServiceRole() {return g("prmSelfServiceRole");}
 
@@ -5292,7 +5306,11 @@ public interface Dictionary extends CustomDictionary{
 
   default String shippingSchedule() {return g("shippingSchedule");}
 
+  default String shoppingCartIsEmpty() {return g("shoppingCartIsEmpty");}
+
   default String showAvailableEmployees() {return g("showAvailableEmployees");}
+
+  default String showGridFilterCommand() {return g("showGridFilterCommand");}
 
   default String showNewMessagesNotifier() {return g("showNewMessagesNotifier");}
 
@@ -5780,8 +5798,6 @@ public interface Dictionary extends CustomDictionary{
   default String trAdvances() {return g("trAdvances");}
 
   default String trAgreeWithConditions() {return g("trAgreeWithConditions");}
-
-  default String trAgreeWithTermsAndConditions() {return g("trAgreeWithTermsAndConditions");}
 
   default String trApproveContract() {return g("trApproveContract");}
 
@@ -6555,6 +6571,8 @@ public interface Dictionary extends CustomDictionary{
   default String trTbSettingsCompletedTrips() {return g("trTbSettingsCompletedTrips");}
 
   default String trTbSettingsCountryFlags() {return g("trTbSettingsCountryFlags");}
+
+  default String trTbSettingsFilterDependsOnData() {return g("trTbSettingsFilterDependsOnData");}
 
   default String trTbSettingsOrderCustomer() {return g("trTbSettingsOrderCustomer");}
 
@@ -7430,6 +7448,14 @@ public interface Dictionary extends CustomDictionary{
   default String widgets() {return g("widgets");}
 
   default String width() {return g("width");}
+
+  default String windowDetached() {return g("windowDetached");}
+
+  default String windowModal() {return g("windowModal");}
+
+  default String windowNewTab() {return g("windowNewTab");}
+
+  default String windowOnTop() {return g("windowOnTop");}
 
   default String winter() {return g("winter");}
 

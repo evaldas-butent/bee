@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.butent.bee.shared.modules.transport.TransportConstants.ChartDataType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -11,11 +12,11 @@ final class PlaceMatcher {
       return null;
     }
 
-    ChartData loadCountry = FilterHelper.getDataByType(data, ChartData.Type.LOADING_COUNTRY);
-    ChartData loadData = FilterHelper.getDataByType(data, ChartData.Type.LOADING);
-    ChartData unloadCountry = FilterHelper.getDataByType(data, ChartData.Type.UNLOADING_COUNTRY);
-    ChartData unloadData = FilterHelper.getDataByType(data, ChartData.Type.UNLOADING);
-    ChartData placeData = FilterHelper.getDataByType(data, ChartData.Type.PLACE);
+    ChartData loadCountry = FilterHelper.getDataByType(data, ChartDataType.LOADING_COUNTRY);
+    ChartData loadData = FilterHelper.getDataByType(data, ChartDataType.LOADING);
+    ChartData unloadCountry = FilterHelper.getDataByType(data, ChartDataType.UNLOADING_COUNTRY);
+    ChartData unloadData = FilterHelper.getDataByType(data, ChartDataType.UNLOADING);
+    ChartData placeData = FilterHelper.getDataByType(data, ChartDataType.PLACE);
 
     if (BeeUtils.anyNotNull(loadCountry, loadData, unloadCountry, unloadData, placeData)) {
       return new PlaceMatcher(loadCountry, loadData, unloadCountry, unloadData, placeData);
