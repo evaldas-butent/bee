@@ -192,7 +192,7 @@ public class HeaderImpl extends Flow implements HeaderView {
       }
 
       if (createNew) {
-        AnimatableLabel control = new AnimatableLabel("+ " + Localized.dictionary().createNew());
+        AnimatableLabel control = new AnimatableLabel(Localized.dictionary().createNew());
         control.addStyleName(STYLE_CREATE_NEW);
 
         initControl(control, Action.ADD, hiddenActions);

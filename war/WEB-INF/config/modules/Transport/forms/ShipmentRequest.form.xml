@@ -207,7 +207,11 @@
       </row>
       <row>
         <Label for="ManagerPhone" />
-        <TextLabel source="ManagerPhone" />
+        <TextLabel source="ManagerPhone">
+          <renderToken source="ManagerPhone" suffix=" " />
+          <renderToken source="ManagerMobile" prefix="=mobile+ " suffix=" " />
+          <renderToken source="ManagerFax" prefix="=fax+ " />
+        </TextLabel>
       </row>
     </Table>
     &separator;
