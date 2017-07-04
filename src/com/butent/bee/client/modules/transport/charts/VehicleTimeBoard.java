@@ -13,7 +13,6 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
@@ -112,7 +111,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   private static final List<ChartDataType> TRIP_DATA_FILTERS = Arrays.asList(ChartDataType.TRIP,
       ChartDataType.TRIP_STATUS, ChartDataType.TRIP_DEPARTURE, ChartDataType.TRIP_ARRIVAL,
-      ChartDataType.TRUCK, ChartDataType.TRAILER, ChartDataType.DRIVER);
+      ChartDataType.TRUCK, ChartDataType.TRAILER, ChartDataType.DRIVER, ChartDataType.TRIP_MANAGER);
 
   private static final List<ChartDataType> FREIGHT_DATA_FILTERS = Arrays.asList(
       ChartDataType.CUSTOMER, ChartDataType.MANAGER, ChartDataType.ORDER,
@@ -120,7 +119,8 @@ abstract class VehicleTimeBoard extends ChartBase {
       ChartDataType.LOADING, ChartDataType.UNLOADING, ChartDataType.PLACE);
 
   private static final List<ChartDataType> HANDLING_DATA_FILTERS = Arrays.asList(
-      ChartDataType.LOADING, ChartDataType.UNLOADING, ChartDataType.PLACE);
+      ChartDataType.LOADING, ChartDataType.UNLOADING, ChartDataType.PLACE,
+      ChartDataType.UNLOADING_COUNTRY, ChartDataType.LOADING_COUNTRY);
 
   private static final Set<ChartDataType> AVAILABLE_TYPES = EnumSet.allOf(ChartDataType.class)
       .stream().filter(type -> !type.equals(ChartDataType.DRIVER_GROUP))

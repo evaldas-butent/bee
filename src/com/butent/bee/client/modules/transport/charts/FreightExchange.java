@@ -93,7 +93,8 @@ final class FreightExchange extends ChartBase {
   private static final Set<ChartDataType> AVAILABLE_FILTERS = Sets.newHashSet(
       ChartDataType.CUSTOMER, ChartDataType.MANAGER, ChartDataType.ORDER,
       ChartDataType.ORDER_STATUS, ChartDataType.CARGO, ChartDataType.CARGO_TYPE,
-      ChartDataType.LOADING, ChartDataType.UNLOADING, ChartDataType.PLACE);
+      ChartDataType.LOADING, ChartDataType.UNLOADING, ChartDataType.PLACE,
+      ChartDataType.UNLOADING_COUNTRY, ChartDataType.LOADING_COUNTRY);
 
   static void open(final ViewCallback callback) {
     BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(SVC_GET_SETTINGS),

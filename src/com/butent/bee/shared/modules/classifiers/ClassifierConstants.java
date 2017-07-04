@@ -61,8 +61,6 @@ public final class ClassifierConstants {
 
   public static final String TBL_PAYMENT_TYPES = "PaymentTypes";
 
-  public static final String TBL_RESPONSIBILITIES = "Responsibilities";
-
   public static final String TBL_DISCOUNTS = "Discounts";
 
   public static final String TBL_CHART_OF_ACCOUNTS = "ChartOfAccounts";

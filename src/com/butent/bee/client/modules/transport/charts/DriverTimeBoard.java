@@ -190,11 +190,13 @@ final class DriverTimeBoard extends ChartBase {
       );
 
   private static final List<ChartDataType> HANDLING_DATA_FILTERS = Arrays.asList(
-      ChartDataType.LOADING, ChartDataType.UNLOADING, ChartDataType.PLACE);
+      ChartDataType.LOADING, ChartDataType.UNLOADING, ChartDataType.PLACE,
+      ChartDataType.UNLOADING_COUNTRY, ChartDataType.LOADING_COUNTRY);
 
   private static final Set<ChartDataType> AVAILABLE_TYPES = EnumSet.allOf(ChartDataType.class)
       .stream().filter(type -> !BeeUtils.contains(Arrays.asList(ChartDataType.VEHICLE_GROUP,
-          ChartDataType.VEHICLE_MODEL, ChartDataType.VEHICLE_TYPE), type))
+          ChartDataType.VEHICLE_MODEL, ChartDataType.VEHICLE_TYPE, ChartDataType.TRIP_MANAGER),
+          type))
       .collect(Collectors.toSet());
 
   static void open(final ViewCallback callback) {
@@ -1129,9 +1131,9 @@ final class DriverTimeBoard extends ChartBase {
     ChartData cargoData = new ChartData(ChartDataType.CARGO);
     ChartData cargoTypeData = new ChartData(ChartDataType.CARGO_TYPE);
 
-    ChartData loadCountry = new ChartData(ChartDataType.Type.LOADING_COUNTRY);
+    ChartData loadCountry = new ChartData(ChartDataType.LOADING_COUNTRY);
     ChartData loadData = new ChartData(ChartDataType.LOADING);
-    ChartData unloadCountry = new ChartData(ChartDataType.Type.UNLOADING_COUNTRY);
+    ChartData unloadCountry = new ChartData(ChartDataType.UNLOADING_COUNTRY);
     ChartData unloadData = new ChartData(ChartDataType.UNLOADING);
     ChartData placeData = new ChartData(ChartDataType.PLACE);
 

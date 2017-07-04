@@ -68,6 +68,7 @@ public final class TransportConstants {
     TRIP_STATUS(Localized.dictionary().trTripStatus(), ValueType.TEXT),
     TRIP_ARRIVAL(Localized.dictionary().transportArrival(), ValueType.DATE),
     TRIP_DEPARTURE(Localized.dictionary().transportDeparture(), ValueType.DATE),
+    TRIP_MANAGER(Localized.dictionary().trTripManagers(), ValueType.TEXT),
     TRUCK(Localized.dictionary().trucks(), ValueType.TEXT, true),
     UNLOADING(Localized.dictionary().cargoUnloading(), ValueType.TEXT),
     UNLOADING_COUNTRY(Localized.dictionary().trUnloadingCountry(), ValueType.TEXT),
