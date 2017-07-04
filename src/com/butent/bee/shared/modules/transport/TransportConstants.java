@@ -2,6 +2,7 @@ package com.butent.bee.shared.modules.transport;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
@@ -47,6 +48,61 @@ public final class TransportConstants {
 
     public boolean is(Integer status) {
       return status != null && ordinal() == status;
+    }
+  }
+
+  public enum ChartDataType implements HasCaption {
+    DRIVER(Localized.dictionary().drivers(), ValueType.TEXT, true),
+    DRIVER_GROUP(Localized.dictionary().driverGroupsShort(), ValueType.TEXT, true),
+    CARGO(Localized.dictionary().cargos(), ValueType.TEXT),
+    CARGO_TYPE(Localized.dictionary().trCargoTypes(), ValueType.TEXT, true),
+    CUSTOMER(Localized.dictionary().transportationCustomers(), ValueType.TEXT, true),
+    MANAGER(Localized.dictionary().managers(), ValueType.TEXT, true),
+    LOADING(Localized.dictionary().cargoLoading(), ValueType.TEXT),
+    LOADING_COUNTRY(Localized.dictionary().trLoadingCountry(), ValueType.TEXT),
+    ORDER(Localized.dictionary().trOrders(), ValueType.TEXT, true),
+    ORDER_STATUS(Localized.dictionary().trOrderStatus(), ValueType.TEXT),
+    PLACE(Localized.dictionary().cargoHandlingPlaces(), ValueType.TEXT),
+    TRAILER(Localized.dictionary().trailers(), ValueType.TEXT, true),
+    TRIP(Localized.dictionary().trips(), ValueType.TEXT, true),
+    TRIP_STATUS(Localized.dictionary().trTripStatus(), ValueType.TEXT),
+    TRIP_ARRIVAL(Localized.dictionary().transportArrival(), ValueType.DATE),
+    TRIP_DEPARTURE(Localized.dictionary().transportDeparture(), ValueType.DATE),
+    TRIP_MANAGER(Localized.dictionary().trTripManagers(), ValueType.TEXT),
+    TRUCK(Localized.dictionary().trucks(), ValueType.TEXT, true),
+    UNLOADING(Localized.dictionary().cargoUnloading(), ValueType.TEXT),
+    UNLOADING_COUNTRY(Localized.dictionary().trUnloadingCountry(), ValueType.TEXT),
+    VEHICLE_GROUP(Localized.dictionary().vehicleGroupsShort(), ValueType.TEXT),
+    VEHICLE_MODEL(Localized.dictionary().vehicleModelsShort(), ValueType.TEXT, true),
+    VEHICLE_TYPE(Localized.dictionary().trVehicleTypesShort(), ValueType.TEXT, true);
+
+    private final String caption;
+    private final ValueType valueType;
+    private final Boolean serverFilter;
+
+    ChartDataType(String caption, ValueType valueType) {
+      this.caption = caption;
+      this.valueType = valueType;
+      this.serverFilter = false;
+    }
+
+    ChartDataType(String caption, ValueType valueType, Boolean serverFilter) {
+      this.caption = caption;
+      this.valueType = valueType;
+      this.serverFilter = serverFilter;
+    }
+
+    @Override
+    public String getCaption() {
+      return caption;
+    }
+
+    public Boolean isServerFilter() {
+      return serverFilter;
+    }
+
+    public ValueType getValueType() {
+      return valueType;
     }
   }
 
@@ -344,10 +400,14 @@ public final class TransportConstants {
   public static final String SVC_GENERATE_ROUTE = "GenerateTripRoute";
   public static final String SVC_GENERATE_DAILY_COSTS = "GenerateDailyCosts";
   public static final String SVC_GET_FX_DATA = "GetFxData";
+  public static final String SVC_GET_SS_FILTER_DATA = "GetSsDataFilterData";
   public static final String SVC_GET_SS_DATA = "GetSsData";
   public static final String SVC_GET_DTB_DATA = "GetDtbData";
+  public static final String SVC_GET_DTB_FILTER_DATA = "GetDtbFilterData";
   public static final String SVC_GET_TRUCK_TB_DATA = "GetTruckTbData";
+  public static final String SVC_GET_TRUCK_TB_FILTER_DATA = "GetTruckTbFilterData";
   public static final String SVC_GET_TRAILER_TB_DATA = "GetTrailerTbData";
+  public static final String SVC_GET_TRAILER_TB_FILTER_DATA = "GetTrailerTbFilterData";
   public static final String SVC_GET_COLORS = "GetColors";
   public static final String SVC_GET_CARGO_USAGE = "GetCargoUsage";
   public static final String SVC_GET_CARGO_PLACES = "GetCargoPlaces";
@@ -364,6 +424,7 @@ public final class TransportConstants {
   public static final String SVC_GET_DRIVER_BUSY_DATES = "GetDriverBusyDates";
   public static final String SVC_GET_TEXT_CONSTANT = "GetTextConstant";
   public static final String SVC_GET_MANUAL_DAILY_COST = "GetManualDailyCost";
+  public static final String SVC_GET_SETTINGS = "GetSettings";
 
   public static final String SVC_SEND_MESSAGE = "SendMessage";
 
@@ -381,6 +442,9 @@ public final class TransportConstants {
   public static final String PRM_EXCLUDE_VAT = "ExcludeVAT";
   public static final String PRM_SELF_SERVICE_ROLE = "SelfServiceRole";
   public static final String PRM_SALES_RESPONSIBILITY = "SalesResponsibility";
+  public static final String PRM_SELF_SERVICE_RESPONSIBILITY = "SelfServiceResponsibility";
+
+  public static final String PRM_CHART_FILTER = "ChartFilter";
 
   public static final String VAR_INCOME = "Income";
   public static final String VAR_EXPENSE = "Expense";
@@ -711,6 +775,8 @@ public final class TransportConstants {
   public static final String COL_IS_TRUCK = "IsTruck";
   public static final String COL_IS_TRAILER = "IsTrailer";
 
+  public static final String COL_FILTER_DEPENDS_ON_DATA = "FilterDependsOnData";
+
   public static final String COL_FX_PIXELS_PER_CUSTOMER = "FxPixelsPerCustomer";
   public static final String COL_FX_PIXELS_PER_ORDER = "FxPixelsPerOrder";
 
@@ -1003,6 +1069,10 @@ public final class TransportConstants {
   public static final String PROP_AMOUNT_IN_EUR = "AmountInEUR";
   public static final String PROP_PAID_IN_EUR = "PaidInEUR";
   public static final String PROP_VAT_IN_EUR = "VatInEUR";
+
+  public static final String PROP_MIN_UNLOADING_DATE = "MinUnloadingDate";
+  public static final String PROP_INCOMES_COMMITED = "IncomesCommited";
+  public static final String PROP_EXPENSES_COMMITED = "ExpensesCommited";
 
   public static final String ALS_TRIP_DATE = "TripDate";
   public static final String ALS_ORDER_DATE = "OrderDate";

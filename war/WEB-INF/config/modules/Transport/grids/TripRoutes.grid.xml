@@ -7,7 +7,7 @@
   <g:columns>
     <RelColumn name="TripCargo" viewName="TripCargo" choiceColumns="Cargo Description LoadingDate LoadingCityName LoadingCountryName UnloadingDate UnloadingCityName UnloadingCountryName"
                renderColumns="Cargo" editSource="Cargo" required="true"
-               newRowEnabled="false" editEnabled="true" editPopup="false" >
+               newRowEnabled="false" editEnabled="true" editWindow="new-tab" >
       <selectorColumn source="LoadingDate" >
         <ui:render>
           <ui:function>
