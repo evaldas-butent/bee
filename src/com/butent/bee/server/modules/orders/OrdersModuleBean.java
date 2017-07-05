@@ -512,6 +512,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
           .addConstant(COL_ITEM_ARTICLE, article)
           .addConstant(COL_ITEM, item);
 
+      if (formatItemByServiceLogic) {
+        srv.formatInvoiceItemNoteField(insert, row);
+      }
+
       Boolean vatPerc = row.getBoolean(COL_TRADE_VAT_PERC);
       Double vat;
       if (BeeUtils.isTrue(vatPerc)) {

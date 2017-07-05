@@ -4835,6 +4835,8 @@ public interface Dictionary {
 
   default String prmItemArticleSourceColumn() {return g("prmItemArticleSourceColumn");}
 
+  default String prmItemNoteSourceColumns() {return g("prmItemNoteSourceColumns");}
+
   default String prmMainCurrency() {return g("prmMainCurrency");}
 
   default String prmMaintenanceServiceGroup() {return g("prmMaintenanceServiceGroup");}
