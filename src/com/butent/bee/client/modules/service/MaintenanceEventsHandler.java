@@ -29,12 +29,12 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class MaintenanceEventsHandler extends EventsBoard {
@@ -78,18 +78,26 @@ public class MaintenanceEventsHandler extends EventsBoard {
           String email = maintenanceRow.getString(Data
               .getColumnIndex(TBL_SERVICE_MAINTENANCE, ALS_CONTACT_EMAIL));
 
-          if (!isSendSms && BeeUtils.isEmpty(phone)) {
-            Global.showError(Arrays.asList(LC.phone(), LC.valueRequired()));
-            customerSentCheckBox.setChecked(false);
-
-          } else if (!isSendEmail && BeeUtils.isEmpty(email)) {
-            Global.showError(Arrays.asList(LC.email(), LC.valueRequired()));
-            customerSentCheckBox.setChecked(false);
-
-          } else {
+          if ((!isSendEmail && !BeeUtils.isEmpty(email))
+              || (!isSendSms && !BeeUtils.isEmpty(phone))) {
             row.setValue(Data.getColumnIndex(getEventsDataViewName(), COL_CUSTOMER_SENT),
                 event.getValue());
             ServiceUtils.informClient(row);
+
+          } else {
+            List<String> messages = new ArrayList<>();
+
+            if (BeeUtils.isEmpty(phone)) {
+              messages.add(BeeUtils.joinWords(LC.phone(), LC.valueRequired()));
+            }
+            if (BeeUtils.isEmpty(email)) {
+              messages.add(BeeUtils.joinWords(LC.email(), LC.valueRequired()));
+            }
+
+            if (!messages.isEmpty()) {
+              Global.showError(messages);
+            }
+            customerSentCheckBox.setChecked(false);
           }
         }
       );
@@ -104,7 +112,7 @@ public class MaintenanceEventsHandler extends EventsBoard {
       DateTime publishTime = row.getDateTime(idxColTerm);
       if (publishTime != null) {
         rowCellTerm.add(createCellHtmlItem(COL_TERM, BeeUtils.joinWords(LC.svcTerm(),
-            Format.getDefaultDateFormat().format(publishTime))));
+            Format.renderDate(publishTime))));
       }
     }
 

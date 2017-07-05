@@ -20,7 +20,7 @@ import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -34,10 +34,6 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import com.butent.bee.shared.websocket.messages.PresenceMessage;
 
 import java.util.List;
-
-/**
- * gets user login status, session ID and stores them.
- */
 
 public class UserInfo implements HasInfo {
 
@@ -56,18 +52,26 @@ public class UserInfo implements HasInfo {
   private int clickSensitivityMillis;
   private int clickSensitivityDistance;
 
+  private int actionSensitivityMillis;
+
   private int newsRefreshIntervalSeconds;
   private int loadingStateDelayMillis;
 
+  private Boolean showGridFilterCommand;
+
   private String styleId;
 
-  private SupportedLocale dateFormat;
+  SupportedLocale supportedLocale;
+  DateTimeFormatInfo dateTimeFormatInfo;
 
   private Presence presence = Presence.ONLINE;
   private Timer presenceTimer;
 
   public boolean canCreateData(String object) {
     return isLoggedIn() && userData.canCreateData(object);
+  }
+
+  UserInfo() {
   }
 
   public boolean canDeleteData(String object) {
@@ -100,6 +104,10 @@ public class UserInfo implements HasInfo {
     }
   }
 
+  public int getActionSensitivityMillis() {
+    return actionSensitivityMillis;
+  }
+
   public int getClickSensitivityDistance() {
     return clickSensitivityDistance;
   }
@@ -116,8 +124,8 @@ public class UserInfo implements HasInfo {
     return isLoggedIn() ? userData.getCompanyName() : null;
   }
 
-  public SupportedLocale getDateFormat() {
-    return dateFormat;
+  public DateTimeFormatInfo getDateTimeFormatInfo() {
+    return dateTimeFormatInfo;
   }
 
   public Filter getFilter(String column) {
@@ -190,8 +198,16 @@ public class UserInfo implements HasInfo {
     }
   }
 
+  public Boolean getShowGridFilterCommand() {
+    return showGridFilterCommand;
+  }
+
   public String getStyle() {
     return getSetting(COL_USER_STYLE);
+  }
+
+  public SupportedLocale getSupportedLocale() {
+    return supportedLocale;
   }
 
   public UserData getUserData() {
@@ -203,10 +219,6 @@ public class UserInfo implements HasInfo {
       return null;
     }
     return userData.getUserId();
-  }
-
-  public static SupportedLocale getUserLocale() {
-    return SupportedLocale.getByLanguage(Localized.dictionary().languageTag());
   }
 
   public String getUserSign() {
@@ -330,6 +342,10 @@ public class UserInfo implements HasInfo {
     }
   }
 
+  public void setDateTimeFormatInfo(DateTimeFormatInfo dateTimeFormatInfo) {
+    this.dateTimeFormatInfo = dateTimeFormatInfo;
+  }
+
   public void setSessionId(String sessionId) {
     this.sessionId = sessionId;
   }
@@ -362,6 +378,10 @@ public class UserInfo implements HasInfo {
 
       presenceTimer.scheduleRepeating(TimeUtils.MILLIS_PER_MINUTE / 3);
     }
+  }
+
+  public void setSupportedLocale(SupportedLocale supportedLocale) {
+    this.supportedLocale = supportedLocale;
   }
 
   public void updateSettings(BeeRow row) {
@@ -417,16 +437,19 @@ public class UserInfo implements HasInfo {
     }
   }
 
-  private SupportedLocale getDateFormatSetting() {
-    if (!DataUtils.isEmpty(settings) && settings.containsColumn(COL_USER_DATE_FORMAT)) {
-      SupportedLocale locale = settings.getEnum(0, COL_USER_DATE_FORMAT,
-          SupportedLocale.class);
-      if (locale != null) {
-        return locale;
+  private <E extends Enum<?>> E getEnumSetting(String colName, Class<E> clazz) {
+    if (DataUtils.isEmpty(settings)) {
+      return null;
+
+    } else {
+      int index = getSettingsIndex(colName);
+
+      if (BeeConst.isUndef(index)) {
+        return null;
+      } else {
+        return settings.getEnum(0, index, clazz);
       }
     }
-
-    return getUserLocale();
   }
 
   private int getIntSetting(String colName, int def) {
@@ -480,6 +503,10 @@ public class UserInfo implements HasInfo {
     return showNewMessagesNotifier;
   }
 
+  private void setActionSensitivityMillis(int actionSensitivityMillis) {
+    this.actionSensitivityMillis = actionSensitivityMillis;
+  }
+
   private void setClickSensitivityDistance(int clickSensitivityDistance) {
     this.clickSensitivityDistance = clickSensitivityDistance;
   }
@@ -496,16 +523,20 @@ public class UserInfo implements HasInfo {
     this.newsRefreshIntervalSeconds = newsRefreshIntervalSeconds;
   }
 
-  private void setUserDateFormat(SupportedLocale df) {
-    this.dateFormat = df;
-  }
-
   private void setOpenInNewTab(boolean openInNewTab) {
     this.openInNewTab = openInNewTab;
   }
 
   private void setPresence(Presence presence) {
     this.presence = presence;
+  }
+
+  private void setShowGridFilterCommand(int value) {
+    if (value < 0) {
+      this.showGridFilterCommand = null;
+    } else {
+      this.showGridFilterCommand = value > 0;
+    }
   }
 
   private void setStyleId(String styleId) {
@@ -521,9 +552,20 @@ public class UserInfo implements HasInfo {
     setClickSensitivityMillis(getIntSetting(COL_CLICK_SENSITIVITY_MILLIS, BeeConst.UNDEF));
     setClickSensitivityDistance(getIntSetting(COL_CLICK_SENSITIVITY_DISTANCE, BeeConst.UNDEF));
 
+    setActionSensitivityMillis(getIntSetting(COL_ACTION_SENSITIVITY_MILLIS, BeeConst.UNDEF));
+
     setNewsRefreshIntervalSeconds(getIntSetting(COL_NEWS_REFRESH_INTERVAL_SECONDS, BeeConst.UNDEF));
     setLoadingStateDelayMillis(getIntSetting(COL_LOADING_STATE_DELAY_MILLIS, BeeConst.UNDEF));
-    setUserDateFormat(getDateFormatSetting());
+
+    setShowGridFilterCommand(getIntSetting(COL_SHOW_GRID_FILTER_COMMAND, BeeConst.UNDEF));
+
+    SupportedLocale dfSetting = getEnumSetting(COL_USER_DATE_FORMAT, SupportedLocale.class);
+    if (dfSetting == null) {
+      dfSetting = getSupportedLocale();
+    }
+    if (dfSetting != null) {
+      setDateTimeFormatInfo(dfSetting.getDateTimeFormatInfo());
+    }
   }
 
   private void updateStyle(String css) {

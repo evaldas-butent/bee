@@ -29,6 +29,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
@@ -37,7 +38,7 @@ import com.butent.bee.client.event.logical.SelectorEvent.Handler;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
-import com.butent.bee.client.modules.mail.Relations;
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.style.StyleUtils;
@@ -115,8 +116,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       int row = table.getRowCount();
       int col = 0;
 
-      faSave.setTitle(Action.SAVE.getCaption());
-      StyleUtils.enableAnimation(Action.SAVE, faSave);
+      UiHelper.initActionWidget(Action.SAVE, faSave);
 
       insertAction(BeeConst.INT_TRUE, faSave);
 
@@ -487,11 +487,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     if (discussOwnerPhoto != null) {
-      if (DataUtils.isId(row.getLong(form.getDataIndex(ALS_OWNER_PHOTO)))) {
-        discussOwnerPhoto.setUrl(PhotoRenderer.getUrl(form.getLongValue(ALS_OWNER_PHOTO)));
-      } else {
-        discussOwnerPhoto.setUrl(PhotoRenderer.DEFAULT_PHOTO_IMAGE);
-      }
+      discussOwnerPhoto.setUrl(PhotoRenderer.getPhotoUrl(form.getStringValue(ALS_OWNER_PHOTO)));
     }
   }
 
@@ -1522,10 +1518,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private static void renderPhoto(IsRow commentRow, List<BeeColumn> commentColumns,
       Flow container) {
-    Long photo =
-        commentRow.getLong(DataUtils.getColumnIndex(COL_PHOTO, commentColumns));
-    Image image = new Image(DataUtils.isId(photo) ? PhotoRenderer.getUrl(photo)
-            : PhotoRenderer.DEFAULT_PHOTO_IMAGE);
+    Image image = new Image(PhotoRenderer.getPhotoUrl(DataUtils.getString(commentColumns,
+        commentRow, COL_PHOTO)));
     image.addStyleName(STYLE_COMMENT + STYLE_PHOTO);
     container.add(image);
 
@@ -1589,7 +1583,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     for (final FileInfo fileInfo : files) {
       FileUtils.uploadFile(fileInfo, result -> {
         List<String> values = Lists.newArrayList(BeeUtils.toString(discussionId),
-            BeeUtils.toString(commentId), BeeUtils.toString(result), fileInfo.getCaption());
+            BeeUtils.toString(commentId), BeeUtils.toString(result.getId()), fileInfo.getCaption());
 
         Queries.insert(VIEW_DISCUSSIONS_FILES, columns, values, null, new RowCallback() {
           @Override

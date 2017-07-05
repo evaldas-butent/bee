@@ -10,6 +10,7 @@ import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
@@ -17,6 +18,7 @@ import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.DataEvent;
 import com.butent.bee.server.data.DataEvent.TableModifyEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
@@ -53,7 +55,10 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.ViewColumn;
+import com.butent.bee.shared.i18n.DateOrdering;
+import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
 import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.i18n.Formatter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -201,7 +206,8 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
     } else if (BeeUtils.same(svc, SVC_INIT_DIMENSION_NAMES)) {
       response = initDimensionNames();
-
+    } else if (BeeUtils.same(svc, SVC_CREATE_DATA_IMPORT_TEMPLATES)) {
+      response = imp.createDataImportTemplates();
     } else {
       String msg = BeeUtils.joinWords("Administration service not recognized:", svc);
       logger.warning(msg);
@@ -233,7 +239,10 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createText(module, PRM_ERP_PASSWORD),
         BeeParameter.createText(module, PRM_URL),
         BeeParameter.createNumber(module, Dimensions.PRM_DIMENSIONS, false,
-            Dimensions.SPACETIME / 2));
+            Dimensions.SPACETIME / 2),
+        BeeParameter.createNumber(module, PRM_ERP_REFRESH_INTERVAL),
+        BeeParameter.createBoolean(module, PRM_OVERDUE_INVOICES)
+      );
 
     params.addAll(getSqlEngineParameters());
     return params;
@@ -412,6 +421,14 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
         if (event.isAfter(TBL_USERS, TBL_ROLES, TBL_USER_ROLES)) {
           usr.initUsers();
           Endpoint.updateUserData(usr.getAllUserData());
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void getFileIcons(DataEvent.ViewQueryEvent event) {
+        if (event.isAfter() && BeeUtils.isSuffix(event.getTargetName(), TBL_FILES)) {
+          ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
         }
       }
     });
@@ -849,7 +866,8 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     String type = reqInfo.getParameter(Service.VAR_TYPE);
 
     String currency = reqInfo.getParameter(COL_CURRENCY_NAME);
-    JustDate date = TimeUtils.parseDate(reqInfo.getParameter(COL_CURRENCY_RATE_DATE));
+    JustDate date = TimeUtils.parseDate(reqInfo.getParameter(COL_CURRENCY_RATE_DATE),
+        usr.getDateOrdering());
 
     String address = getExchangeRatesRemoteAddress();
 
@@ -861,8 +879,9 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
     String currency = reqInfo.getParameter(COL_CURRENCY_NAME);
 
-    JustDate dateLow = TimeUtils.parseDate(reqInfo.getParameter(VAR_DATE_LOW));
-    JustDate dateHigh = TimeUtils.parseDate(reqInfo.getParameter(VAR_DATE_HIGH));
+    DateOrdering dateOrdering = usr.getDateOrdering();
+    JustDate dateLow = TimeUtils.parseDate(reqInfo.getParameter(VAR_DATE_LOW), dateOrdering);
+    JustDate dateHigh = TimeUtils.parseDate(reqInfo.getParameter(VAR_DATE_HIGH), dateOrdering);
 
     String address = getExchangeRatesRemoteAddress();
 
@@ -974,7 +993,9 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       int fldIdx = rs.getColumnIndex(AUDIT_FLD_FIELD);
       int valIdx = rs.getColumnIndex(AUDIT_FLD_VALUE);
       int relIdx = rs.getColumnIndex(COL_RELATION);
+
       Map<String, String> dict = usr.getGlossary();
+      DateTimeFormatInfo dtfInfo = usr.getDateTimeFormatInfo();
 
       for (SimpleRow row : qs.getData(query)) {
         String[] values = new String[rs.getNumberOfColumns()];
@@ -999,10 +1020,11 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
                   value = BeeUtils.toBoolean(value) ? loc.yes() : loc.no();
                   break;
                 case DATE:
-                  value = TimeUtils.toDateTimeOrNull(BeeUtils.toLong(value)).toDateString();
+                  value = Formatter.renderDate(dtfInfo, new JustDate(BeeUtils.toLong(value)));
                   break;
                 case DATETIME:
-                  value = TimeUtils.toDateTimeOrNull(BeeUtils.toLong(value)).toCompactString();
+                  value = Formatter.renderDateTime(dtfInfo,
+                      TimeUtils.toDateTimeOrNull(BeeUtils.toLong(value)));
                   break;
                 case DECIMAL:
                   String enumKey = view.getColumnEnumKey(fld);
@@ -1152,7 +1174,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       }
 
       String value = rates.getValue(0, ExchangeRatesWS.COL_DT);
-      JustDate min = TimeUtils.parseDate(value);
+      JustDate min = TimeUtils.parseDate(value, DateOrdering.YMD);
       if (min == null) {
         response.addWarning(currencyName, usr.getDictionary().invalidDate(), value);
         continue;
@@ -1162,7 +1184,8 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
       if (rates.getNumberOfRows() > 1) {
         for (int i = 1; i < rates.getNumberOfRows(); i++) {
-          JustDate date = TimeUtils.parseDate(rates.getValue(i, ExchangeRatesWS.COL_DT));
+          JustDate date = TimeUtils.parseDate(rates.getValue(i, ExchangeRatesWS.COL_DT),
+              DateOrdering.YMD);
           if (date != null) {
             min = TimeUtils.min(min, date);
             max = TimeUtils.max(max, date);
@@ -1187,7 +1210,8 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       int insertCount = 0;
 
       for (SimpleRow rateRow : rates) {
-        DateTime date = TimeUtils.parseDateTime(rateRow.getValue(ExchangeRatesWS.COL_DT));
+        DateTime date = TimeUtils.parseDateTime(rateRow.getValue(ExchangeRatesWS.COL_DT),
+            DateOrdering.YMD);
 
         Double factor = rateRow.getDouble(ExchangeRatesWS.COL_AMT_2);
 

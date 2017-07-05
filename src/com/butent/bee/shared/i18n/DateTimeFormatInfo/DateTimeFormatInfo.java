@@ -1,11 +1,9 @@
 package com.butent.bee.shared.i18n.DateTimeFormatInfo;
 
+import com.butent.bee.shared.i18n.DateOrdering;
+
 /**
  * Information required for formatting and parsing localized date/time values.
- *
- * <p>Implementors should subclass {@link DateTimeFormatInfo} so when
- * methods are added they will get reasonable defaults and not break.  See the
- * same class for example values returned by these methods.
  */
 public interface DateTimeFormatInfo {
 
@@ -42,59 +40,35 @@ public interface DateTimeFormatInfo {
    */
   String dateFormatShort();
 
+  String dateFormatCompact();
+
+  DateOrdering dateOrdering();
+
   /**
    * Returns a date/time format from a date format pattern and a time format
    * pattern, using the locale default joining.
    *
-   * @param timePattern the time pattern String
    * @param datePattern the data pattern String
-   */
-  default String dateTime(String timePattern, String datePattern) {
-    return dateTimeMedium(timePattern, datePattern);
-  }
-
-  /**
-   * Returns a date/time format from a date format pattern and a time format
-   * pattern, using "full" joining.
-   *
    * @param timePattern the time pattern String
-   * @param datePattern the data pattern String
    */
-  default String dateTimeFull(String timePattern, String datePattern) {
+  default String dateTime(String datePattern, String timePattern) {
     return datePattern + " " + timePattern;
   }
 
-  /**
-   * Returns a date/time format from a date format pattern and a time format
-   * pattern, using "full" joining.
-   *
-   * @param timePattern the time pattern String
-   * @param datePattern the data pattern String
-   */
-  default String dateTimeLong(String timePattern, String datePattern) {
-    return datePattern + " " + timePattern;
+  default String dateTimeFull() {
+    return dateTime(dateFormatFull(), timeFormatFull());
   }
 
-  /**
-   * Returns a date/time format from a date format pattern and a time format
-   * pattern, using "full" joining.
-   *
-   * @param timePattern the time pattern String
-   * @param datePattern the data pattern String
-   */
-  default String dateTimeMedium(String timePattern, String datePattern) {
-    return datePattern + " " + timePattern;
+  default String dateTimeLong() {
+    return dateTime(dateFormatLong(), timeFormatLong());
   }
 
-  /**
-   * Returns a date/time format from a date format pattern and a time format
-   * pattern, using "full" joining.
-   *
-   * @param timePattern the time pattern String
-   * @param datePattern the data pattern String
-   */
-  default String dateTimeShort(String timePattern, String datePattern) {
-    return datePattern + " " + timePattern;
+  default String dateTimeMedium() {
+    return dateTime(dateFormatMedium(), timeFormatMedium());
+  }
+
+  default String dateTimeShort() {
+    return dateTime(dateFormatShort(), timeFormatShort());
   }
 
   /**
@@ -150,6 +124,10 @@ public interface DateTimeFormatInfo {
     return "HH:mm:ss";
   }
 
+  default String formatHour24MinuteSecondMillisecond() {
+    return "HH:mm:ss.SSS";
+  }
+
   /**
    * Returns localized format equivalent to the "ms" skeleton pattern.
    */
@@ -173,7 +151,7 @@ public interface DateTimeFormatInfo {
    * Returns localized format equivalent to the "MMMM" skeleton pattern.
    */
   default String formatMonthFull() {
-    return "LLLL";
+    return "MMMM";
   }
 
   /**
@@ -185,6 +163,13 @@ public interface DateTimeFormatInfo {
    * Returns localized format equivalent to the "MMMMEEEEd" skeleton pattern.
    */
   String formatMonthFullWeekdayDay();
+
+  /**
+   * Returns localized format equivalent to the "LLLL" skeleton pattern.
+   */
+  default String formatMonthStandalone() {
+    return "LLLL";
+  }
 
   /**
    * Returns localized format equivalent to the "Md" skeleton pattern.
@@ -227,6 +212,11 @@ public interface DateTimeFormatInfo {
    * Returns localized format equivalent to the "yMd" skeleton pattern.
    */
   String formatYearMonthNumDay();
+
+  /**
+   * Returns localized format equivalent to the "yLLLL" skeleton pattern.
+   */
+  String formatYearMonthStandalone();
 
   /**
    * Returns localized format equivalent to the "yMMMEEEd" skeleton pattern.
@@ -364,24 +354,4 @@ public interface DateTimeFormatInfo {
    * stand-alone context.
    */
   String[] weekdaysShortStandalone();
-
-  /**
-   * Returns the day which ends the weekend, as an index into the return value
-   * of {@link #weekdaysFull()}.
-   *
-   * <p>Note that this value may be numerically less than
-   * {@link #weekendStart()} - for example, {@link #weekendStart()} of 6 and
-   * {@link #weekendEnd()} of 0 means Saturday and Sunday are the weekend.
-   */
-  default int weekendEnd() {
-    return 0;
-  }
-
-  /**
-   * Returns the day which starts the weekend, as an index into the return value
-   * of {@link #weekdaysFull()}.
-   */
-  default int weekendStart() {
-    return 6;
-  }
 }

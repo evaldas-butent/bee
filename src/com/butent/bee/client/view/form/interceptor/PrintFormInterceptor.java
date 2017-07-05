@@ -26,7 +26,9 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -145,12 +147,16 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
         params.put(column.getId(), value);
       }
     }
-    if (Objects.nonNull(getActiveRow()) && !BeeUtils.isEmpty(getActiveRow().getProperties())) {
-      getActiveRow().getProperties().forEach((key, value) -> {
-        if (!BeeUtils.isEmpty(value)) {
-          params.put(key, value);
-        }
-      });
+    if (Objects.nonNull(getActiveRow())) {
+      params.put("ID", BeeUtils.toString(getActiveRowId()));
+
+      if (!BeeUtils.isEmpty(getActiveRow().getProperties())) {
+        getActiveRow().getProperties().forEach((key, value) -> {
+          if (!BeeUtils.isEmpty(value)) {
+            params.put(key, value);
+          }
+        });
+      }
     }
     parametersConsumer.accept(params);
   }
@@ -189,13 +195,18 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
     }
     Consumer<String> consumer = report -> {
       if (BeeUtils.isEmpty(Localized.extractLanguage(report))) {
-        List<String> locales = new ArrayList<>();
+        Map<String, String> locales = new LinkedHashMap<>();
+        Arrays.stream(SupportedLocale.values()).filter(SupportedLocale::isActive)
+            .forEach(locale -> locales.put(locale.getLanguage(),
+                BeeUtils.notEmpty(locale.getCaption(), locale.getLanguage())));
 
-        for (SupportedLocale locale : SupportedLocale.values()) {
-          locales.add(BeeUtils.notEmpty(locale.getCaption(), locale.getLanguage()));
+        if (locales.size() > 1) {
+          Global.choice(Localized.dictionary().chooseLanguage(), null,
+              new ArrayList<>(locales.values()), idx ->
+                  print(Localized.setLanguage(report, new ArrayList<>(locales.keySet()).get(idx))));
+        } else {
+          print(report);
         }
-        Global.choice(Localized.dictionary().chooseLanguage(), null, locales, idx ->
-            print(Localized.setLanguage(report, SupportedLocale.values()[idx].getLanguage())));
       } else {
         print(report);
       }

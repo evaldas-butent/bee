@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
-import static com.butent.bee.client.modules.mail.Relations.*;
+import static com.butent.bee.client.composite.Relations.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -28,6 +28,7 @@ import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.column.AbstractColumn;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.modules.projects.ProjectsKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -353,11 +354,11 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
   }
 
   @Override
-  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
     if (TaskType.NOT_SCHEDULED.equals(type)) {
       newRow.setValue(gridView.getDataIndex(COL_STATUS), TaskStatus.NOT_SCHEDULED.ordinal());
     }
-    return super.onStartNewRow(gridView, oldRow, newRow);
+    return super.onStartNewRow(gridView, oldRow, newRow, copy);
   }
 
   @Override
@@ -669,13 +670,16 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
 
       notes.add(TaskUtils.getUpdateNote(Localized.getLabel(info.getColumn(COL_STATUS)),
           DataUtils.render(info, row, info.getColumn(COL_STATUS),
-              info.getColumnIndex(COL_STATUS)),
+              info.getColumnIndex(COL_STATUS),
+              Format.getDateRenderer(), Format.getDateTimeRenderer()),
           DataUtils.render(info, newRow, info.getColumn(COL_STATUS),
-              info.getColumnIndex(COL_STATUS))));
+              info.getColumnIndex(COL_STATUS),
+              Format.getDateRenderer(), Format.getDateTimeRenderer())));
 
       notes.add(TaskUtils.getInsertNote(Localized.getLabel(info.getColumn(COL_APPROVED)),
           DataUtils.render(info, newRow, info.getColumn(COL_APPROVED),
-              info.getColumnIndex(COL_APPROVED))));
+              info.getColumnIndex(COL_APPROVED),
+              Format.getDateRenderer(), Format.getDateTimeRenderer())));
 
       ParameterList params = TasksKeeper.createArgs(SVC_CONFIRM_TASKS);
       params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(Lists.newArrayList(row.getId())));

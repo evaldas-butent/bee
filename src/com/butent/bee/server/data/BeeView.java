@@ -5,7 +5,6 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import com.butent.bee.server.Config;
 import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeRelation;
@@ -13,6 +12,7 @@ import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.IsFrom;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
@@ -22,7 +22,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeObject;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
@@ -73,6 +72,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -105,6 +105,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class BeeView implements BeeObject, HasExtendedInfo {
 
+  @FunctionalInterface
   public interface ConditionProvider {
     IsCondition getCondition(BeeView view, List<String> args);
   }
@@ -694,6 +695,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return info;
   }
 
+  public List<IsFrom> getFrom() {
+    return query.getFrom();
+  }
+
   @Override
   public String getModule() {
     return module;
@@ -1141,11 +1146,13 @@ public class BeeView implements BeeObject, HasExtendedInfo {
               col.editable);
 
           if (field.isTranslatable() && BeeUtils.allEmpty(parent, col.locale)) {
-            for (String locale : Config.getList(Service.PROPERTY_ACTIVE_LOCALES)) {
-              addColumn(alias, field, Localized.column(colName, locale), locale, aggregate, hidden,
-                  parent, null, Localized.maybeTranslate(BeeUtils.notEmpty(col.label,
-                      field.getLabel()), Localizations.getGlossary(locale)),
-                  col.editable);
+            for (SupportedLocale locale : SupportedLocale.values()) {
+              if (locale.isActive() && !locale.isUserDefault()) {
+                String lang = locale.getLanguage();
+                addColumn(alias, field, Localized.column(colName, lang), lang, aggregate, hidden,
+                    parent, null, Localized.maybeTranslate(BeeUtils.notEmpty(col.label,
+                        field.getLabel()), Localizations.getGlossary(locale)), col.editable);
+              }
             }
           }
         }
@@ -1175,23 +1182,48 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       logger.warning(flt.getClass().getSimpleName(), "view not found:", flt.getInView());
       return null;
     }
+
     String column = flt.getColumn();
     String tbl;
     String fld;
 
-    if (BeeUtils.same(column, getSourceIdName())) {
+    if (BeeUtils.same(column, getSourceIdName()) || BeeUtils.same(column, ColumnInFilter.ID_TAG)) {
       tbl = getSourceAlias();
       fld = getSourceIdName();
     } else {
       tbl = getColumnTable(column);
       fld = getColumnField(column);
     }
-    String inTbl = inView.getColumnTable(flt.getInColumn());
-    String inFld = inView.getColumnField(flt.getInColumn());
+
+    String inColumn = flt.getInColumn();
+    String inTbl;
+    String inFld;
+
+    if (BeeUtils.same(inColumn, ColumnInFilter.ID_TAG)) {
+      inTbl = inView.getSourceAlias();
+      inFld = inView.getSourceIdName();
+    } else {
+      inTbl = inView.getColumnTable(inColumn);
+      inFld = inView.getColumnField(inColumn);
+    }
 
     Filter inFilter = flt.getInFilter();
 
-    return SqlUtils.in(tbl, fld, inTbl, inFld, inView.getCondition(inFilter));
+    SqlSelect inQuery = new SqlSelect()
+        .setDistinctMode(true)
+        .addFields(inTbl, inFld);
+
+    if (flt.needsFrom() || !inView.getSourceAlias().equals(inTbl)) {
+      inQuery.setFrom(inView.getFrom());
+    } else {
+      inQuery.addFrom(inTbl);
+    }
+
+    if (inFilter != null) {
+      inQuery.setWhere(inView.getCondition(inFilter));
+    }
+
+    return SqlUtils.in(tbl, fld, inQuery);
   }
 
   private IsCondition getCondition(ColumnIsNullFilter flt) {

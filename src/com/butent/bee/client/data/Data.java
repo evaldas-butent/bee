@@ -107,7 +107,7 @@ public final class Data {
           @Override
           public void onFailure(String... reason) {
             consumeSize(BeeConst.UNDEF);
-            super.onFailure(reason);
+            Queries.IntCallback.super.onFailure(reason);
           }
 
           @Override
@@ -296,6 +296,10 @@ public final class Data {
     return COLUMN_MAPPER.isNull(viewName, row, colName);
   }
 
+  public static boolean isTrue(String viewName, IsRow row, String colName) {
+    return COLUMN_MAPPER.isTrue(viewName, row, colName);
+  }
+
   public static boolean isViewEditable(String viewName) {
     if (BeeUtils.isEmpty(viewName) || !BeeKeeper.getUser().canEditData(viewName)) {
       return false;
@@ -322,13 +326,25 @@ public final class Data {
 
   public static void onTableChange(String tableName, EnumSet<DataChangeEvent.Effect> effects) {
     Collection<String> viewNames = DATA_INFO_PROVIDER.getViewNames(tableName);
-    for (String viewName : viewNames) {
-      DataChangeEvent.fire(BeeKeeper.getBus(), viewName, effects);
+    if (!viewNames.isEmpty()) {
+      DataChangeEvent.fire(BeeKeeper.getBus(), viewNames, effects);
     }
   }
 
   public static void onViewChange(String viewName, EnumSet<DataChangeEvent.Effect> effects) {
     onTableChange(getDataInfo(viewName).getTableName(), effects);
+  }
+
+  public static void refreshLocal(String viewOrTableName) {
+    DataInfo info = getDataInfo(viewOrTableName, false);
+    DATA_INFO_PROVIDER.getViewNames(Objects.isNull(info) ? viewOrTableName : info.getTableName())
+        .forEach(view -> DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), view));
+  }
+
+  public static void resetLocal(String viewOrTableName) {
+    DataInfo info = getDataInfo(viewOrTableName, false);
+    DATA_INFO_PROVIDER.getViewNames(Objects.isNull(info) ? viewOrTableName : info.getTableName())
+        .forEach(view -> DataChangeEvent.fireLocalReset(BeeKeeper.getBus(), view, null));
   }
 
   public static Double round(String viewName, String colName, Double value) {

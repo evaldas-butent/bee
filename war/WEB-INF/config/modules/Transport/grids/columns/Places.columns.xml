@@ -19,7 +19,7 @@
            xmlns:ui="http://www.butent.com/ui">
 
   <PropColumn type="datetime" name="LoadingDate" label="=trLoadingDate" visible="false"
-              filterSupplier="custom" filterOptions="CargoHandling" />
+              filterSupplier="customDateTime" filterOptions="CargoHandling" />
   <PropColumn type="string" name="LoadingAddress" label="=trLoadingAddress" visible="false"
               filterSupplier="custom" filterOptions="CargoHandling" />
   <PropColumn type="string" name="LoadingCityName" label="=trLoadingCity" visible="false"
@@ -37,7 +37,7 @@
     </render>
   </PropColumn>
   <PropColumn type="string" name="LoadingCountryCode" cellType="html"
-              width="30" caption="-" label="=from" sortable="false"
+              width="30" label="=from" sortable="false"
               horizontalAlignment="center" exportWidthFactor="0.5" visible="false">
     <renderer type="flag" />
   </PropColumn>
@@ -45,7 +45,7 @@
               filterSupplier="custom" filterOptions="CargoHandling" />
 
   <PropColumn type="datetime" name="UnloadingDate" label="=trUnloadingDate" visible="false"
-              filterSupplier="custom" filterOptions="CargoHandling" />
+              filterSupplier="customDateTime" filterOptions="CargoHandling" />
   <PropColumn type="string" name="UnloadingAddress" label="=trUnloadingAddress" visible="false"
               filterSupplier="custom" filterOptions="CargoHandling" />
   <PropColumn type="string" name="UnloadingCityName" label="=trUnloadingCity" visible="false"
@@ -63,7 +63,7 @@
     </render>
   </PropColumn>
   <PropColumn type="string" name="UnloadingCountryCode" cellType="html"
-              width="30" caption="-" label="=to" sortable="false"
+              width="30" label="=to" sortable="false"
               horizontalAlignment="center" exportWidthFactor="0.5" visible="false">
     <renderer type="flag" />
   </PropColumn>
@@ -73,9 +73,9 @@
   <PropColumn type="integer" name="EmptyKilometers" label="=trEmptyKilometers" visible="false" />
   <PropColumn type="integer" name="LoadedKilometers" label="=trLoadedKilometers" visible="false" />
 
-  <PropColumn type="string" cellType="html" name="Loading"
+  <PropColumn type="string" cellType="html" name="Loading" exportable="false" sortable="false"
               renderColumns="Date Note Company Contact Address City Country Number"
-              label="=cargoLoading" minWidth="140" flexBasis="120">
+              label="=cargoLoading" minWidth="140" flexBasis="120" filterOptions="-">
     <style>
       <bodyStyle>
         <ui:inline>overflow-y:auto;</ui:inline>
@@ -84,9 +84,9 @@
     <renderer type="place" options="&renderLoadingOptions;"/>
   </PropColumn>
 
-  <PropColumn type="string" cellType="html" name="Unloading"
+  <PropColumn type="string" cellType="html" name="Unloading" exportable="false" sortable="false"
               renderColumns="Date Note Company Contact Address City Country Number"
-              label="=cargoUnloading" minWidth="140" flexBasis="120">
+              label="=cargoUnloading" minWidth="140" flexBasis="120" filterOptions="-">
     <style>
       <bodyStyle>
         <ui:inline>overflow-y:auto;</ui:inline>

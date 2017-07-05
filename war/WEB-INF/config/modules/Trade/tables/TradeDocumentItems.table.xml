@@ -20,9 +20,11 @@
     <Numeric name="Vat" precision="12" scale="2" label="=vat" />
     <Boolean name="VatIsPercent" label="=vatIsPercent" />
 
-    <Relation name="Warehouse" relation="Warehouses" label="=trdWarehouseTo" />
+    <Relation name="ItemWarehouseFrom" relation="Warehouses" label="=trdItemWarehouseFrom" />
+    <Relation name="ItemWarehouseTo" relation="Warehouses" label="=trdItemWarehouseTo" />
 
     <Relation name="Employee" relation="Employees" label="=employee" />
+    <Relation name="ItemVehicle" relation="Vehicles" label="=trdItemVehicle" />
 
     <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
               label="=dimensions" />

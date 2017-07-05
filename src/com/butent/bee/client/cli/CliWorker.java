@@ -67,7 +67,6 @@ import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Collator;
-import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.i18n.Money;
@@ -153,14 +152,19 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.StringMatrix;
 import com.butent.bee.shared.data.TableColumn;
 import com.butent.bee.shared.data.UserData;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.Keywords;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.elements.Input;
+import com.butent.bee.shared.i18n.DateTimeFormat;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.PredefinedFormat;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
@@ -203,6 +207,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import elemental.js.JsBrowser;
@@ -598,7 +603,10 @@ public final class CliWorker {
     } else if ("video".equals(z)) {
       playVideo(args);
 
-    } else if (z.startsWith("view")) {
+    } else if ("view".equals(z) && !args.isEmpty()) {
+      showView(v, arr);
+
+    } else if (z.startsWith("viewinf")) {
       showViewInfo(v, args);
 
     } else if ("vm".equals(z)) {
@@ -1297,8 +1305,8 @@ public final class CliWorker {
 
   private static void doEval(String args) {
     String result;
-    if (BeeUtils.isDigit(args)) {
-      result = new DateTime(BeeUtils.toLong(args)).toString();
+    if (BeeUtils.isDigit(args) && BeeUtils.toLong(args) >= new DateTime(2000, 1, 1).getTime()) {
+      result = Format.renderDateTime(new DateTime(BeeUtils.toLong(args)));
     } else {
       result = JsUtils.evalToString(args);
     }
@@ -1509,7 +1517,6 @@ public final class CliWorker {
           case SERVICE_MAINTENANCE_LIST:
           case SHIPPING_SCHEDULE:
           case TASK_LIST:
-          case TASK_REPORTS:
           case TRAILER_TIME_BOARD:
           case TRUCK_TIME_BOARD:
           case TRADE_ACT_LIST:
@@ -2187,24 +2194,11 @@ public final class CliWorker {
     });
   }
 
-  //@formatter:off
-  // CHECKSTYLE:OFF
-  private static native void sampleCanvas(Element el) /*-{
-    var ctx = el.getContext("2d");
-
-    for (var i = 0; i < 6; i++) {
-      for (var j = 0; j < 6; j++) {
-        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j) + ', 0)';
-        ctx.fillRect(j * 25, i * 25, 25, 25);
-      }
-    }
-  }-*/;
-  // CHECKSTYLE:ON
-//@formatter:on
-
   private static void scheduleTasks(String[] arr, boolean errorPopup) {
-    JustDate from = (arr.length > 1) ? TimeUtils.parseDate(arr[1]) : TimeUtils.today();
-    JustDate until = (arr.length > 2) ? TimeUtils.parseDate(arr[2]) : null;
+    JustDate from = (arr.length > 1)
+        ? TimeUtils.parseDate(arr[1], Format.getDefaultDateOrdering()) : TimeUtils.today();
+    JustDate until = (arr.length > 2)
+        ? TimeUtils.parseDate(arr[2], Format.getDefaultDateOrdering()) : null;
 
     if (from == null || until != null && TimeUtils.isLess(until, from)) {
       showError(errorPopup, arr);
@@ -2607,10 +2601,10 @@ public final class CliWorker {
 
     char sep = ';';
     if (BeeUtils.contains(args, sep)) {
-      dtf = Format.getDateTimeFormat(BeeUtils.getPrefix(args, sep));
+      dtf = Format.parseDateTimeFormat(BeeUtils.getPrefix(args, sep));
       inp = BeeUtils.getSuffix(args, sep);
     } else if (BeeUtils.contains(cmnd, 'f') && !BeeUtils.isEmpty(args)) {
-      dtf = Format.getDefaultDateTimeFormat();
+      dtf = Format.getPredefinedFormat(PredefinedFormat.DATE_TIME_SHORT);
       inp = args;
     }
 
@@ -2629,11 +2623,11 @@ public final class CliWorker {
       }
 
     } else if (!BeeUtils.isEmpty(args)) {
-      t = TimeUtils.parseDateTime(args);
+      t = TimeUtils.parseDateTime(args, Format.getDefaultDateOrdering());
       if (t == null) {
         logger.severe("cannot parse", args);
       } else {
-        d = TimeUtils.parseDate(args);
+        d = TimeUtils.parseDate(args, Format.getDefaultDateOrdering());
       }
 
     } else {
@@ -2676,7 +2670,6 @@ public final class CliWorker {
         "Minute", t.getMinute(),
         "Second", t.getSecond(),
         "Millis", t.getMillis(),
-        "Date String", t.toDateString(),
         "Time String", t.toTimeString(),
         "String", t.toString(),
         "Timezone Offset", t.getTimezoneOffset(),
@@ -2692,7 +2685,7 @@ public final class CliWorker {
         "Utc Date String", t.toUtcDateString(),
         "Utc Time String", t.toUtcTimeString(),
         "Utc String", t.toUtcString(),
-        "JustDate", TimeUtils.toDate(t).toString(),
+        "JustDate", Format.renderDate(TimeUtils.toDate(t)),
         "Java Date", TimeUtils.toJava(t).toString());
 
     showPropData(BeeUtils.joinWords(cmnd, args), lst);
@@ -2700,21 +2693,38 @@ public final class CliWorker {
 
   private static void showDateFormat(String args) {
     if (BeeUtils.isEmpty(args)) {
-      int r = DateTimeFormat.PredefinedFormat.values().length;
-      String[][] data = new String[r][3];
+      int r = PredefinedFormat.values().length;
+      int c = SupportedLocale.values().length * 2 + 1;
+
+      String[][] data = new String[r][c];
 
       DateTime d = new DateTime();
       int i = 0;
-      for (DateTimeFormat.PredefinedFormat dtf : DateTimeFormat.PredefinedFormat.values()) {
-        data[i][0] = dtf.toString();
+      int j;
 
-        DateTimeFormat format = DateTimeFormat.getFormat(dtf);
-        data[i][1] = format.getPattern();
-        data[i][2] = format.format(d);
+      for (PredefinedFormat pf : PredefinedFormat.values()) {
+        j = 0;
+        data[i][j++] = pf.name();
+
+        for (SupportedLocale locale : SupportedLocale.values()) {
+          DateTimeFormat dtf = DateTimeFormat.of(pf, locale.getDateTimeFormatInfo());
+          data[i][j++] = dtf.getPattern();
+          data[i][j++] = dtf.format(d);
+        }
+
         i++;
       }
 
-      showMatrix("DateTime", data, "Format", "Pattern", "Value");
+      String[] labels = new String[c];
+      j = 0;
+      labels[j++] = "Format";
+
+      for (SupportedLocale locale : SupportedLocale.values()) {
+        labels[j++] = "Pattern " + locale.getLanguage();
+        labels[j++] = "Value " + locale.getLanguage();
+      }
+
+      showMatrix("DateTimeFormats", data, labels);
 
     } else {
       DateTimeFormat dtf;
@@ -2722,10 +2732,10 @@ public final class CliWorker {
 
       char sep = ';';
       if (BeeUtils.contains(args, sep)) {
-        dtf = Format.getDateTimeFormat(BeeUtils.getPrefix(args, sep));
-        t = TimeUtils.parseDateTime(BeeUtils.getSuffix(args, sep));
+        dtf = Format.parseDateTimeFormat(BeeUtils.getPrefix(args, sep));
+        t = TimeUtils.parseDateTime(BeeUtils.getSuffix(args, sep), Format.getDefaultDateOrdering());
       } else {
-        dtf = Format.getDateTimeFormat(args);
+        dtf = Format.parseDateTimeFormat(args);
         t = new DateTime();
       }
 
@@ -3622,7 +3632,7 @@ public final class CliWorker {
   }
 
   private static void showRates(String args, final boolean errorPopup) {
-    final DateTime dt = TimeUtils.parseDateTime(args);
+    final DateTime dt = TimeUtils.parseDateTime(args, Format.getDefaultDateOrdering());
     final Table<Long, Long, Double> rates = Money.getRates(dt);
 
     if (rates.isEmpty()) {
@@ -4242,6 +4252,85 @@ public final class CliWorker {
     BeeKeeper.getScreen().show(container);
   }
 
+  private static void showView(String input, String[] arr) {
+    String viewName = arr[1];
+    DataInfo dataInfo = Data.getDataInfo(viewName);
+    if (dataInfo == null) {
+      return;
+    }
+
+    final List<String> columns = new ArrayList<>();
+    final Holder<Filter> filter = Holder.absent();
+    final Holder<Order> order = Holder.absent();
+    final Holder<Integer> offset = Holder.of(BeeConst.UNDEF);
+    final Holder<Integer> limit = Holder.of(BeeConst.UNDEF);
+
+    if (arr.length > 2) {
+      String md = null;
+      List<String> value = new ArrayList<>();
+
+      BiConsumer<String, String> parser = (x, y) -> {
+        switch (x) {
+          case "c":
+            columns.addAll(dataInfo.parseColumns(y));
+            break;
+
+          case "f":
+            filter.set(dataInfo.parseFilter(y, BeeKeeper.getUser().getUserId()));
+            break;
+
+          case "s":
+            order.set(dataInfo.parseOrder(y));
+            break;
+
+          case "o":
+            if (BeeUtils.isPositiveInt(y)) {
+              offset.set(BeeUtils.toInt(y));
+            }
+            break;
+
+          case "l":
+            if (BeeUtils.isPositiveInt(y)) {
+              limit.set(BeeUtils.toInt(y));
+            }
+            break;
+        }
+      };
+
+      for (int i = 2; i < arr.length; i++) {
+        switch (arr[i]) {
+          case "c":
+          case "f":
+          case "s":
+          case "o":
+          case "l":
+            if (md != null && !value.isEmpty()) {
+              parser.accept(md, BeeUtils.joinWords(value));
+            }
+
+            md = arr[i];
+            value.clear();
+            break;
+
+          default:
+            value.add(arr[i]);
+        }
+      }
+
+      if (md != null && !value.isEmpty()) {
+        parser.accept(md, BeeUtils.joinWords(value));
+      }
+    }
+
+    Queries.getRowSet(viewName, columns, filter.get(), order.get(), offset.get(), limit.get(),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            showTable(input, result);
+          }
+        });
+  }
+
   private static void showViewInfo(String input, String args) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_VIEW_INFO);
     if (!BeeUtils.isEmpty(args)) {
@@ -4642,8 +4731,7 @@ public final class CliWorker {
 
       for (final NewFileInfo fi : files) {
         logger.debug("uploading", fi.getName(), fi.getType(), fi.getSize());
-        FileUtils.uploadFile(fi,
-            result -> logger.debug("uploaded", fi.getName(), ", result:", result));
+        FileUtils.uploadFile(fi, result -> logger.debug("uploaded", fi.getName()));
       }
     });
 

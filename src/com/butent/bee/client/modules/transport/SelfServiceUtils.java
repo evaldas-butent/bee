@@ -21,7 +21,7 @@ import java.util.Collection;
 
 final class SelfServiceUtils {
 
-  private static final class RelatedValuesCallback extends Queries.RowSetCallback {
+  private static final class RelatedValuesCallback implements Queries.RowSetCallback {
     private final FormView formView;
     private final IsRow newRow;
     private final String targetColumn;
@@ -50,18 +50,6 @@ final class SelfServiceUtils {
 
     private void setRefresh(boolean refresh) {
       this.refresh = refresh;
-    }
-  }
-
-  static void setDefaultExpeditionType(FormView form, IsRow newRow, String targetColumn) {
-    RelatedValuesCallback callback = new RelatedValuesCallback(form, newRow, targetColumn);
-
-    int rpcId = Queries.getRowSet(VIEW_EXPEDITION_TYPES, null, Filter.notNull(COL_SELF_SERVICE),
-        Order.ascending(COL_SELF_SERVICE, COL_EXPEDITION_TYPE_NAME), 0, 1, CachingPolicy.FULL,
-        callback);
-
-    if (!Queries.isResponseFromCache(rpcId)) {
-      callback.setRefresh(true);
     }
   }
 

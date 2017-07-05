@@ -34,7 +34,7 @@
     <south size="300">
       <FlowPanel class="flexBox-vertical">
         <Toggle name="SouthExpander" upFace="chevron_up" downFace="chevron_down"
-                stylePrefix="&tgcl;" options="116" />
+                stylePrefix="&tgcl;" disablable="false" options="116" />
 
         <TabbedPages class="flexible" resizable="false">
           <page>
@@ -44,24 +44,31 @@
 
           <page>
             <text>=trdPayment</text>
-            <FlowPanel class="flexBox-vertical">
-              <Table kind="controls" style="margin-bottom: 1vh;">
-                <col index="0" kind="label" />
-                <col index="2" kind="label" />
-
-                <row>
-                  <Label for="Term" />
+            <FlowPanel class="flexBox-horizontal">
+              <FlowPanel class="flexBox-vertical" style="width: 256px; margin-right: 3vw;">
+                <HorizontalPanel style="margin-bottom: 1vh;">
+                  <cell kind="label">
+                    <Label for="Term" />
+                  </cell>
                   <InputDateTime source="Term" style="&dtw;" summarize="true" />
+                </HorizontalPanel>
 
-                  <Label for="Payer" />
+                <ChildGrid name="TradePaymentTerms" relColumn="TradeDocument" class="flexible" />
+              </FlowPanel>
+
+              <FlowPanel class="flexBox-vertical flexible">
+                <HorizontalPanel style="margin-bottom: 1vh;">
+                  <cell kind="label">
+                    <Label for="Payer" />
+                  </cell>
                   <DataSelector source="Payer" style="width: 30em;"
                                 choiceColumns="Name TypeName"
                                 renderColumns="PayerName PayerTypeName"
                                 summarize="true" />
-                </row>
-              </Table>
+                </HorizontalPanel>
 
-              <ChildGrid name="TradePayments" relColumn="TradeDocument" class="flexible" />
+                <ChildGrid name="TradePayments" relColumn="TradeDocument" class="flexible" />
+              </FlowPanel>
             </FlowPanel>
           </page>
 
@@ -74,9 +81,6 @@
               <row>
                 <Label for="PriceName" />
                 <ListBox source="PriceName" summarize="true" />
-
-                <Label for="DocumentDiscount" />
-                <InputDecimal source="DocumentDiscount" summarize="true" />
               </row>
 
               <row>
@@ -179,7 +183,7 @@
             </FlowPanel>
 
             <Toggle name="SumExpander" upFace="chevron_down" downFace="chevron_up"
-                    stylePrefix="&tgcl;" />
+                    stylePrefix="&tgcl;" disablable="false" />
           </FlowPanel>
 
           <TabGroup name="Phase" source="Phase" stylePrefix="bee-trade-document-phase-"
@@ -191,6 +195,9 @@
           </FlowPanel>
           <DataSelector name="Status" source="Status" renderColumns="StatusName"
                         newRowEnabled="false" style="width: 100%;" />
+
+          <TextLabel source="Owner" renderColumns="OwnerFirstName OwnerLastName"
+                     style="margin-top: 1vh; text-align: right;" />
         </FlowPanel>
       </FlowPanel>
     </east>
@@ -207,7 +214,7 @@
 
             <FlowPanel style="&mfld; &dtw;">
               <Label for="Date" style="&flbl;" />
-              <InputDateTime source="Date" style="&finp;" visible="true" />
+              <InputDateTime name="Date" source="Date" style="&finp;" visible="true" />
             </FlowPanel>
 
             <FlowPanel style="&mfld; width: 5em;">
@@ -220,7 +227,9 @@
           <FlowPanel class="&mrcl;" style="&mrst;">
             <FlowPanel style="&mfld; width: 5em;">
               <Label for="Series" style="&flbl;" />
-              <InputText source="Series" upperCase="true" style="&finp;" />
+              <DataSelector name="Series" source="Series" viewName="TradeSeries"
+                            valueSource="SeriesName" caching="none" strict="false" upperCase="true"
+                            style="&finp;" />
             </FlowPanel>
 
             <FlowPanel class="flexible flexBox-horizontal-top">
@@ -242,7 +251,7 @@
 
             <FlowPanel style="&mfld; &mwn;">
               <Label for="ReceivedDate" style="&flbl;" />
-              <InputDateTime source="ReceivedDate" style="&dtw;" />
+              <InputDateTime name="ReceivedDate" source="ReceivedDate" style="&dtw;" />
             </FlowPanel>
           </FlowPanel>
 
@@ -294,6 +303,19 @@
                              targetRelColumn="TradeDocument" sourceRelColumn="TradeTag"
                              renderColumns="TagName"
                              newRowEnabled="false" style="&finp;" />
+            </FlowPanel>
+          </FlowPanel>
+
+          <FlowPanel class="&mrcl;" style="&mrst;">
+            <FlowPanel class="flexible" style="&mfld;">
+              <Label for="Vehicle" style="&flbl;" />
+              <DataSelector source="Vehicle" style="&finp; &fmax;"
+                            newRowEnabled="false" editViewName="Cars"
+                            choiceColumns="BrandName ModelName Number BodyNumber"
+                            renderColumns="VehicleBrandName VehicleModelName VehicleNumber VehicleBodyNumber" />
+            </FlowPanel>
+
+            <FlowPanel style="&mfld; &mwn;">
             </FlowPanel>
           </FlowPanel>
         </FlowPanel>

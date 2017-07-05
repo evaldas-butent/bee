@@ -6,6 +6,7 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
@@ -29,6 +30,7 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.Relation.Caching;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -204,7 +206,9 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   private PendingRequest pendingRequest;
 
   private final List<HandlerRegistration> handlerRegistry = new ArrayList<>();
+
   private final Set<Consumer<Integer>> rowCountChangeHandlers = new HashSet<>();
+  private final Set<Consumer<Long>> rowDeleteHandlers = new HashSet<>();
   private final Set<Consumer<BeeRowSet>> dataReceivedHandlers = new HashSet<>();
 
   private boolean dataInitialized;
@@ -255,6 +259,12 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   public void addRowCountChangeHandler(Consumer<Integer> handler) {
     if (handler != null) {
       rowCountChangeHandlers.add(handler);
+    }
+  }
+
+  public void addRowDeleteHandler(Consumer<Long> handler) {
+    if (handler != null) {
+      rowDeleteHandlers.add(handler);
     }
   }
 
@@ -347,6 +357,13 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
         onRowCountChange(getViewData().getNumberOfRows());
       }
     }
+
+    if (event != null && event.hasView(getViewName()) && !rowDeleteHandlers.isEmpty()) {
+      event.getRows().forEach(rowInfo -> {
+        long id = rowInfo.getId();
+        rowDeleteHandlers.forEach(handler -> handler.accept(id));
+      });
+    }
   }
 
   @Override
@@ -354,6 +371,11 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     if (isEventRelevant(event) && getViewData().removeRowById(event.getRowId())) {
       resetState();
       onRowCountChange(getViewData().getNumberOfRows());
+    }
+
+    if (event != null && event.hasView(getViewName())) {
+      long id = event.getRowId();
+      rowDeleteHandlers.forEach(handler -> handler.accept(id));
     }
   }
 
@@ -380,6 +402,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     EventUtils.clearRegistry(handlerRegistry);
 
     rowCountChangeHandlers.clear();
+    rowDeleteHandlers.clear();
     dataReceivedHandlers.clear();
   }
 
@@ -484,11 +507,12 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   private Filter getQueryFilter(List<String> parts) {
     Filter filter = null;
+    DateOrdering dateOrdering = Format.getDefaultDateOrdering();
 
     for (String part : parts) {
       Filter sub = null;
       for (IsColumn column : searchColumns) {
-        sub = Filter.or(sub, Filter.compareWithValue(column, searchType, part));
+        sub = Filter.or(sub, Filter.compareWithValue(column, searchType, part, dateOrdering));
       }
 
       filter = Filter.and(filter, sub);

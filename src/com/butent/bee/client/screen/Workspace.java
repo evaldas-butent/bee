@@ -11,6 +11,7 @@ import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.Bee;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Historian;
@@ -654,6 +655,8 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
   private State state;
 
+  private String lastTabId;
+
   Workspace() {
     super(STYLE_PREFIX);
 
@@ -854,12 +857,14 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     if (widget instanceof TilePanel) {
       ((TilePanel) widget).onRemove();
     }
+    maybeActivateLastTab(index);
 
     super.removePage(index);
   }
 
   @Override
   public boolean selectPage(int index, SelectionOrigin origin) {
+    int selectedIndex = getSelectedIndex();
     boolean result = super.selectPage(index, origin);
 
     if (EnumUtils.in(origin, SelectionOrigin.CLICK, SelectionOrigin.INSERT,
@@ -869,6 +874,11 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
       Historian.goTo(tile.getId());
       tile.activateContent();
+    }
+
+    if (selectedIndex != index) {
+      setLastTabId(null);
+      Bee.saveWorkspace();
     }
     return result;
   }
@@ -1037,6 +1047,14 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     if (tile != null) {
       tile.updateContent(widget, true);
     }
+
+    Bee.saveWorkspace();
+  }
+
+  @Override
+  protected void saveLayout() {
+    super.saveLayout();
+    Bee.saveWorkspace();
   }
 
   private void checkEmptiness() {
@@ -1060,6 +1078,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       ((TilePanel) widget).clear(this);
       clearCaption(index);
     }
+    Bee.saveWorkspace();
   }
 
   private void close(Tile tile) {
@@ -1106,6 +1125,10 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
   }
 
+  private String getLastTabId() {
+    return lastTabId;
+  }
+
   private State getState() {
     return state;
   }
@@ -1121,13 +1144,20 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
   private TilePanel insertEmptyPanel(int before) {
     TilePanel panel = new TilePanel(this);
-
+    int idxActive = getSelectedIndex();
     TabWidget tab = new TabWidget(Localized.dictionary().newTab());
+
     maybeSetHeight(tab);
-
     insert(panel, tab, null, null, null, before);
-
     selectPage(before, SelectionOrigin.INSERT);
+
+    if (!BeeConst.isUndef(idxActive)) {
+      Widget activeWidget = getTabWidget(idxActive);
+
+      if (activeWidget != null) {
+        setLastTabId(activeWidget.getElement().getId());
+      }
+    }
     return panel;
   }
 
@@ -1145,6 +1175,21 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
   private boolean isLoading() {
     return getState() == State.LOADING;
+  }
+
+  private void maybeActivateLastTab(int idxRemove) {
+    if (BeeUtils.isEmpty(getLastTabId()) || getSelectedIndex() != idxRemove) {
+      return;
+    }
+
+    for (int i = 0; i < getPageCount(); i++) {
+      Widget w = getTabWidget(i);
+
+      if (w != null && BeeUtils.same(getLastTabId(), w.getElement().getId())) {
+        selectPage(i, SelectionOrigin.REMOVE);
+        break;
+      }
+    }
   }
 
   private void restore(JSONObject json, final BiConsumer<Boolean, Integer> callback) {
@@ -1215,6 +1260,10 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
   }
 
+  private void setLastTabId(String lastTabId) {
+    this.lastTabId = lastTabId;
+  }
+
   private void setState(State state) {
     this.state = state;
 
@@ -1278,6 +1327,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     if (panel != null) {
       panel.addTile(this, direction);
     }
+    Bee.saveWorkspace();
   }
 
   private JSONObject toJson() {

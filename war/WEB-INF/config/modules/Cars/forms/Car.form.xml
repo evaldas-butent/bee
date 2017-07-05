@@ -10,7 +10,7 @@
         name="Car" viewName="Cars" caption="=car" width="1000" height="700"
 >
   <FlowPanel class="flexBox-vertical">
-    <Table kind="controls" cellStyle="vertical-align: middle;" >
+    <Table kind="controls" cellStyle="vertical-align: middle;">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
       <col index="4" kind="label" />
@@ -18,18 +18,19 @@
       <row>
         <Label for="BodyNumber" />
         <InputText source="BodyNumber" style="&inp1;" />
-        <Label text="=vehicleModel" class="bee-required" />
-        <DataSelector source="Model" class="flexible" newRowForm="NewVehicleModel"
-                      renderColumns="ParentModelName ModelName" filter="parent" />
+        <Label for="Model" />
+        <DataSelector source="Model" />
         <Label for="ManufacturerNumber" />
         <InputText source="ManufacturerNumber" style="&inp1;" />
       </row>
 
       <row>
         <Label text="=vehicleNumber" />
-        <InputText source="Number"  upperCase="true" style="&inp1;" />
-        <Label text="=vehicleType" class="bee-required" />
-        <DataSelector source="Type" renderColumns="TypeName" />
+        <InputText source="Number" upperCase="true" style="&inp1;" />
+        <Label for="Type" />
+        <DataSelector source="Type" />
+        <Label for="Item" />
+        <DataSelector source="Item" style="&inp1;" />
       </row>
 
       <row>
@@ -40,7 +41,7 @@
         <Label for="Notes" />
         <SimplePanel style="position: relative; min-width: 5em;" class="flexible">
           <InputArea source="Notes" class="occupy-1"
-                     style="width: 170px; height: 95px; max-height: 145px;"/>
+                     style="width: 170px; height: 95px; max-height: 145px;" />
         </SimplePanel>
       </row>
 
@@ -67,7 +68,7 @@
     </Table>
 
     <TabbedPages class="flexible" style="margin-top: 1ex;">
-      <page module="Transport">
+      <page>
         <text>=additionalInfo</text>
         <FlowPanel>
           <Table kind="controls" cellStyle="vertical-align: middle;">
@@ -138,8 +139,24 @@
                    style="margin: 0px 15px 0px 15px; min-width:300px;" />
       </page>
       <page>
+        <text>=recalls</text>
+        <ChildGrid name="CarRecalls" relColumn="Vehicle" />
+      </page>
+      <page>
+        <text>=serviceOrders</text>
+        <ChildGrid name="CarServiceOrders" relColumn="Car" />
+      </page>
+      <page>
+        <text>=trdInvoices</text>
+        <GridPanel name="TradeDocuments" child="true" parent="{form}" />
+      </page>
+      <page>
         <text>=specification</text>
         <xi:include href="widgets/Specification.widget.xml" />
+      </page>
+      <page>
+        <text>=files</text>
+        <ChildGrid name="CarFiles" relColumn="Car" />
       </page>
     </TabbedPages>
   </FlowPanel>

@@ -49,7 +49,7 @@ public final class BeeParameter implements BeeSerializable {
   public static BeeParameter createDate(String module, String name, boolean userMode,
       JustDate defValue) {
     return new BeeParameter(module, name, ParameterType.DATE, userMode,
-        defValue != null ? defValue.toString() : null);
+        defValue != null ? defValue.serialize() : null);
   }
 
   public static BeeParameter createDateTime(String module, String name) {
@@ -59,7 +59,7 @@ public final class BeeParameter implements BeeSerializable {
   public static BeeParameter createDateTime(String module, String name, boolean userMode,
       DateTime defValue) {
     return new BeeParameter(module, name, ParameterType.DATETIME, userMode,
-        defValue != null ? defValue.toCompactString() : null);
+        defValue != null ? defValue.serialize() : null);
   }
 
   public static BeeParameter createMap(String module, String name) {
@@ -406,11 +406,11 @@ public final class BeeParameter implements BeeSerializable {
         break;
 
       case DATE:
-        val = TimeUtils.parseDate(expr);
+        val = TimeUtils.toDateOrNull(expr);
         break;
 
       case DATETIME:
-        val = TimeUtils.parseDateTime(expr);
+        val = TimeUtils.toDateTimeOrNull(expr);
         break;
 
       case COLLECTION:

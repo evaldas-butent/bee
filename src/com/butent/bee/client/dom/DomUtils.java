@@ -119,6 +119,16 @@ public final class DomUtils {
     }
   }
 
+  public static void clearHtml(Element elem) {
+    Assert.notNull(elem);
+    elem.setInnerHTML(null);
+  }
+
+  public static void clearText(Element elem) {
+    Assert.notNull(elem);
+    elem.setInnerText(null);
+  }
+
   public static int countDescendants(Element parent) {
     return getChildren(parent).getLength();
   }
@@ -166,22 +176,22 @@ public final class DomUtils {
     return (DtElement) createElement(DtElement.TAG);
   }
 
-//@formatter:off
+  //@formatter:off
   public static native Element createElement(Document doc, String tag) /*-{
     return doc.createElement(tag);
   }-*/;
-//@formatter:on
+  //@formatter:on
 
   public static Element createElement(String tag) {
     Assert.notEmpty(tag);
     return createElement(Document.get(), tag);
   }
 
-//@formatter:off
+  //@formatter:off
   public static native Element createElementNs(Document doc, String ns, String tag) /*-{
     return doc.createElementNS(ns, tag);
   }-*/;
-//@formatter:on
+  //@formatter:on
 
   public static Element createElementNs(String ns, String tag) {
     Assert.notEmpty(ns);
@@ -312,11 +322,11 @@ public final class DomUtils {
     return ensureId(obj.getElement(), prefix);
   }
 
-//@formatter:off
+  //@formatter:off
   public static native Element getActiveElement() /*-{
     return $doc.activeElement;
   }-*/;
-//@formatter:on
+  //@formatter:on
 
   public static String getAutocomplete(Element elem) {
     Assert.notNull(elem);
@@ -523,7 +533,7 @@ public final class DomUtils {
     return lst;
   }
 
-//@formatter:off
+  //@formatter:off
   public static native String getClassName(Element elem) /*-{
     var cl = elem.className;
 
@@ -535,7 +545,7 @@ public final class DomUtils {
       return '';
     }
   }-*/;
-//@formatter:on
+  //@formatter:on
 
   public static int getClientHeight() {
     return Document.get().getClientHeight();
@@ -579,6 +589,10 @@ public final class DomUtils {
   public static String getDataProperty(Element elem, String key) {
     return (elem == null || BeeUtils.isEmpty(key)) ? null
         : elem.getAttribute(Attributes.DATA_PREFIX + key.trim());
+  }
+
+  public static Double getDataPropertyDouble(Element elem, String key) {
+    return BeeUtils.toDoubleOrNull(getDataProperty(elem, key));
   }
 
   public static Integer getDataPropertyInt(Element elem, String key) {
@@ -703,11 +717,11 @@ public final class DomUtils {
     return result;
   }
 
-//@formatter:off
+  //@formatter:off
   public static native NodeList<Element> getElementsByName(String name) /*-{
     return $doc.getElementsByName(name);
   }-*/;
-//@formatter:on
+  //@formatter:on
 
   public static Element getFirstVisibleChild(Element parent) {
     if (parent == null || !isVisible(parent)) {
@@ -838,11 +852,11 @@ public final class DomUtils {
     return ret;
   }
 
-//@formatter:off
+  //@formatter:off
   public static native String getNamespaceUri(Node nd) /*-{
     return nd.namespaceURI;
   }-*/;
-//@formatter:on
+  //@formatter:on
 
   public static List<Property> getNodeInfo(Node nd) {
     Assert.notNull(nd);
@@ -871,7 +885,7 @@ public final class DomUtils {
         + ComputedStyles.getPixels(elem, StyleUtils.STYLE_MARGIN_BOTTOM);
   }
 
-//@formatter:off
+  //@formatter:off
   public static native String getOuterHtml(Element elem) /*-{
     if (elem == null) {
       return "";
@@ -891,7 +905,7 @@ public final class DomUtils {
 
     return new XMLSerializer().serializeToString(elem);
   }-*/;
-//@formatter:on
+  //@formatter:on
 
   public static int getOuterWidth(Element elem) {
     Assert.notNull(elem);
@@ -1564,6 +1578,17 @@ public final class DomUtils {
     preventSelection(obj.getElement());
   }
 
+  /**
+   * Requesting the offsetHeight of an element forces reflow.
+   */
+  public static boolean reflow(Element el) {
+    return el != null && el.getOffsetHeight() >= 0;
+  }
+
+  public static boolean reflow(UIObject obj) {
+    return obj != null && reflow(obj.getElement());
+  }
+
   public static void removeAttribute(UIObject obj, String name) {
     Assert.notNull(obj);
     Assert.notEmpty(name);
@@ -2107,11 +2132,11 @@ public final class DomUtils {
     return true;
   }
 
-//@formatter:off
+  //@formatter:off
   private static native void setType(InputElement el, String tp) /*-{
     el.type = tp;
   }-*/;
-//@formatter:on
+  //@formatter:on
 
   private static String transformNode(Node nd) {
     if (nd == null) {

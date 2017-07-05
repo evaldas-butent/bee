@@ -74,7 +74,10 @@ import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Tr;
+import com.butent.bee.shared.i18n.DateOrdering;
+import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
 import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.i18n.Formatter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -1842,8 +1845,8 @@ public class EcModuleBean implements BeeModule {
                   "data", "dokumentas", "dok_serija", "kitas_dok", "viso", "skola_w", "terminas");
 
           for (SimpleRow row : data) {
-            DateTime date = TimeUtils.parseDateTime(row.getValue("data"));
-            DateTime term = TimeUtils.parseDateTime(row.getValue("terminas"));
+            DateTime date = TimeUtils.parseDateTime(row.getValue("data"), DateOrdering.YMD);
+            DateTime term = TimeUtils.parseDateTime(row.getValue("terminas"), DateOrdering.YMD);
 
             if (term == null) {
               term = TimeUtils.nextDay(date, BeeUtils.unbox(finInfo.getDaysForPayment()))
@@ -2756,7 +2759,8 @@ public class EcModuleBean implements BeeModule {
     Dictionary constants = usr.getDictionary(clientUser);
     Assert.notNull(constants);
 
-    Document document = orderToHtml(orderData.getColumns(), orderRow, constants);
+    Document document = orderToHtml(orderData.getColumns(), orderRow, constants,
+        usr.getDateTimeFormatInfo(clientUser));
     String content = document.buildLines();
 
     ResponseObject mailResponse = mail.sendMail(account, recipients.toArray(new String[0]), null,
@@ -2790,7 +2794,7 @@ public class EcModuleBean implements BeeModule {
   private ResponseObject mailRegistration(Long account, String recipient, String login,
       String password, SupportedLocale locale) {
 
-    String companyName = BeeUtils.trim(prm.getText(PRM_COMPANY));
+    String companyName = BeeUtils.trim(prm.getRelationInfo(PRM_COMPANY).getB());
     String url = BeeUtils.trim(prm.getText(PRM_URL));
 
     Dictionary messages = Localizations.getDictionary(locale);
@@ -2838,7 +2842,7 @@ public class EcModuleBean implements BeeModule {
   }
 
   private Document orderToHtml(List<BeeColumn> orderColumns, BeeRow orderRow,
-      Dictionary constants) {
+      Dictionary constants, DateTimeFormatInfo dateTimeFormatInfo) {
 
     String clientFirstName = orderRow.getString(DataUtils.getColumnIndex(
         ALS_ORDER_CLIENT_FIRST_NAME, orderColumns));
@@ -2918,7 +2922,7 @@ public class EcModuleBean implements BeeModule {
     Tbody fields = tbody().append(
         tr().append(
             td().text(constants.ecOrderSubmissionDate()),
-            td().text(TimeUtils.renderCompact(date)),
+            td().text(Formatter.renderDateTime(dateTimeFormatInfo, date)),
             td().text(constants.ecOrderNumber()),
             td().text(BeeUtils.toString(orderRow.getId()))));
 
@@ -2940,7 +2944,7 @@ public class EcModuleBean implements BeeModule {
         if (eventStatus != null && eventDate != null) {
           fields.append(tr().append(
               td().text(eventStatus.getCaption(constants)),
-              td().text(TimeUtils.renderCompact(eventDate))));
+              td().text(Formatter.renderDateTime(dateTimeFormatInfo, eventDate))));
         }
       }
     }

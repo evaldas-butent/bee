@@ -24,7 +24,6 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -87,8 +86,8 @@ final class DocumentBuilder extends AbstractFormInterceptor {
 
     DateTime t1 = row.getDateTime(form.getDataIndex(COL_DOCUMENT_DATE));
     /* resetting document date without current time */
-    if (t1 != null && DataUtils.isNewRow(row)) {
-      t1.setLocalTime(new JustDate(t1).getTime());
+    if (t1 != null && DataUtils.isNewRow(row) && t1.hasTimePart()) {
+      t1.clearTimePart();
       row.setValue(form.getDataIndex(COL_DOCUMENT_DATE), t1);
       form.refreshBySource(COL_DOCUMENT_DATE);
     }
@@ -112,7 +111,7 @@ final class DocumentBuilder extends AbstractFormInterceptor {
         BeeRow row = DataUtils.createEmptyRow(columns.size());
 
         Data.setValue(viewName, row, COL_DOCUMENT, docId);
-        Data.setValue(viewName, row, AdministrationConstants.COL_FILE, result);
+        Data.setValue(viewName, row, AdministrationConstants.COL_FILE, result.getId());
 
         Data.setValue(viewName, row, COL_FILE_DATE,
             fileInfo.getFileDate() == null ? new DateTime() : fileInfo.getFileDate());

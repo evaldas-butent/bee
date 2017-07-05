@@ -6,17 +6,30 @@ import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.i18n.client.constants.NumberConstants;
 
-import com.butent.bee.client.i18n.DateTimeFormat.PredefinedFormat;
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.DateOrdering;
+import com.butent.bee.shared.i18n.DateTimeFormat;
+import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
+import com.butent.bee.shared.i18n.Formatter;
+import com.butent.bee.shared.i18n.HasDateTimeFormat;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.PredefinedFormat;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.HasYearMonth;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Manages localized number and date formats.
@@ -164,30 +177,18 @@ public final class Format {
 
   private static final NumberFormat defaultPercentFormat = getNumberFormat("0.0%");
 
-  private static final DateTimeFormat defaultDateFormat =
-      DateTimeFormat.getFormat(PredefinedFormat.DATE_SHORT);
+  private static final Map<PredefinedFormat, DateTimeFormat> pfCache = new HashMap<>();
 
-  private static final DateTimeFormat defaultDateTimeFormat =
-      DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_SHORT);
-
-  private static final DateTimeFormat defaultTimeFormat =
-      DateTimeFormat.getFormat(PredefinedFormat.TIME_SHORT);
-
-  public static DateTimeFormat getDateTimeFormat(String pattern) {
-    Assert.notEmpty(pattern);
-    DateTimeFormat format = getPredefinedFormat(pattern);
-    if (format == null) {
-      format = DateTimeFormat.getFormat(pattern);
-    }
-    return format;
+  public static Function<HasDateValue, String> getDateRenderer() {
+    return Format::renderDate;
   }
 
-  public static DateTimeFormat getDateTimeFormat(String pattern, DateTimeFormat defaultFormat) {
-    if (BeeUtils.isEmpty(pattern)) {
-      return defaultFormat;
-    } else {
-      return getDateTimeFormat(pattern);
-    }
+  public static Function<HasDateValue, String> getDateTimeRenderer() {
+    return Format::renderDateTime;
+  }
+
+  public static BiFunction<HasDateValue, HasDateValue, String> getPeriodRenderer() {
+    return Format::renderPeriod;
   }
 
   public static NumberFormat getDecimalFormat(int scale) {
@@ -236,12 +237,8 @@ public final class Format {
     return Localized.MONEY_SCALE;
   }
 
-  public static DateTimeFormat getDefaultDateFormat() {
-    return defaultDateFormat;
-  }
-
-  public static DateTimeFormat getDefaultDateTimeFormat() {
-    return defaultDateTimeFormat;
+  public static DateOrdering getDefaultDateOrdering() {
+    return getDefaultDateTimeFormatInfo().dateOrdering();
   }
 
   public static NumberFormat getDefaultDoubleFormat() {
@@ -283,10 +280,6 @@ public final class Format {
     return defaultPercentFormat;
   }
 
-  public static DateTimeFormat getDefaultTimeFormat() {
-    return defaultTimeFormat;
-  }
-
   public static NumberFormat getNumberFormat(String pattern) {
     Assert.notEmpty(pattern);
     return new NumberFormatter(pattern);
@@ -300,21 +293,44 @@ public final class Format {
     }
   }
 
-  public static DateTimeFormat getPredefinedFormat(String name) {
-    Assert.notNull(name);
-    for (DateTimeFormat.PredefinedFormat predef : DateTimeFormat.PredefinedFormat.values()) {
-      if (BeeUtils.same(name, predef.name())) {
-        return DateTimeFormat.getFormat(predef);
-      }
+  public static DateTimeFormat getPredefinedFormat(PredefinedFormat predefinedFormat) {
+    DateTimeFormat dateTimeFormat = pfCache.get(predefinedFormat);
+    if (dateTimeFormat == null) {
+      dateTimeFormat = DateTimeFormat.of(predefinedFormat, getDefaultDateTimeFormatInfo());
+      pfCache.put(predefinedFormat, dateTimeFormat);
     }
-    return null;
+    return dateTimeFormat;
+  }
+
+  public static List<String> getWeekdaysNarrowStandalone() {
+    List<String> names = new ArrayList<>(TimeUtils.DAYS_PER_WEEK);
+
+    String[] arr = getDefaultDateTimeFormatInfo().weekdaysNarrowStandalone();
+    for (int i = 1; i < arr.length; i++) {
+      names.add(arr[i]);
+    }
+    names.add(arr[0]);
+
+    return names;
+  }
+
+  public static DateTimeFormat parseDateTimeFormat(String pattern) {
+    DateTimeFormat format = parsePredefinedFormat(pattern);
+    if (format == null) {
+      format = parseDateTimePattern(pattern);
+    }
+    return format;
+  }
+
+  public static DateTimeFormat parseDateTimePattern(String pattern) {
+    return DateTimeFormat.of(pattern, getDefaultDateTimeFormatInfo());
   }
 
   public static JustDate parseDateQuietly(DateTimeFormat format, String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
     } else if (format == null) {
-      return TimeUtils.parseDate(s);
+      return TimeUtils.parseDate(s, getDefaultDateOrdering());
     } else {
       return JustDate.get(parseDateTimeQuietly(format, s));
     }
@@ -332,7 +348,7 @@ public final class Format {
       }
     }
 
-    return TimeUtils.parseDateTime(s);
+    return TimeUtils.parseDateTime(s, getDefaultDateOrdering());
   }
 
   public static Double parseQuietly(NumberFormat format, String s) {
@@ -359,7 +375,7 @@ public final class Format {
 
   public static String quarterFull(int quarter) {
     if (TimeUtils.isQuarter(quarter)) {
-      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().quartersFull()[quarter - 1];
+      return getDefaultDateTimeFormatInfo().quartersFull()[quarter - 1];
     } else {
       return null;
     }
@@ -367,7 +383,7 @@ public final class Format {
 
   public static String quarterShort(int quarter) {
     if (TimeUtils.isQuarter(quarter)) {
-      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().quartersShort()[quarter - 1];
+      return getDefaultDateTimeFormatInfo().quartersShort()[quarter - 1];
     } else {
       return null;
     }
@@ -417,10 +433,8 @@ public final class Format {
           result = null;
         } else if (dateTimeFormat != null) {
           result = dateTimeFormat.format(jd);
-        } else if (getDefaultDateFormat() != null) {
-          result = getDefaultDateFormat().format(jd);
         } else {
-          result = jd.toString();
+          result = renderDate(jd);
         }
         break;
 
@@ -430,10 +444,8 @@ public final class Format {
           result = null;
         } else if (dateTimeFormat != null) {
           result = dateTimeFormat.format(dt);
-        } else if (getDefaultDateTimeFormat() != null) {
-          result = getDefaultDateTimeFormat().format(dt);
         } else {
-          result = dt.toString();
+          result = renderDateTime(dt);
         }
         break;
 
@@ -465,12 +477,24 @@ public final class Format {
     return result;
   }
 
-  public static String renderDateFull(HasDateValue date) {
-    if (date == null) {
+  public static String render(PredefinedFormat predefinedFormat, HasDateValue value) {
+    if (predefinedFormat == null || value == null) {
       return null;
     } else {
-      return DateTimeFormat.getFormat(PredefinedFormat.DATE_FULL).format(date);
+      return getPredefinedFormat(predefinedFormat).format(value);
     }
+  }
+
+  public static String renderDate(HasDateValue date) {
+    return render(PredefinedFormat.DATE_SHORT, date);
+  }
+
+  public static String renderDateCompact(HasDateValue date) {
+    return render(PredefinedFormat.DATE_COMPACT, date);
+  }
+
+  public static String renderDateFull(HasDateValue date) {
+    return render(PredefinedFormat.DATE_FULL, date);
   }
 
   public static String renderDateLong(HasDateValue date) {
@@ -478,27 +502,23 @@ public final class Format {
       return null;
 
     } else {
-      PredefinedFormat predefinedFormat = TimeUtils.hasTimePart(date)
+      PredefinedFormat predefinedFormat = date.hasTimePart()
           ? PredefinedFormat.DATE_TIME_LONG : PredefinedFormat.DATE_LONG;
 
-      return DateTimeFormat.getFormat(predefinedFormat).format(date);
+      return render(predefinedFormat, date);
     }
   }
 
-  public static String renderDateTime(DateTime dateTime) {
-    if (dateTime == null) {
-      return null;
-    } else {
-      return getDefaultDateTimeFormat().format(dateTime);
-    }
+  public static String renderDateTime(long time) {
+    return renderDateTime(new DateTime(time));
+  }
+
+  public static String renderDateTime(HasDateValue dateTime) {
+    return Formatter.renderDateTime(getDefaultDateTimeFormatInfo(), dateTime);
   }
 
   public static String renderDateTimeFull(DateTime dateTime) {
-    if (dateTime == null) {
-      return null;
-    } else {
-      return DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_FULL).format(dateTime);
-    }
+    return render(PredefinedFormat.DATE_TIME_FULL, dateTime);
   }
 
   public static String renderDayOfWeek(HasDateValue date) {
@@ -508,7 +528,7 @@ public final class Format {
   public static String renderDayOfWeek(int dow) {
     if (TimeUtils.isDow(dow)) {
       int index = (dow == 7) ? 0 : dow;
-      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().weekdaysFull()[index];
+      return getDefaultDateTimeFormatInfo().weekdaysFull()[index];
     } else {
       return null;
     }
@@ -517,15 +537,10 @@ public final class Format {
   public static String renderDayOfWeekShort(int dow) {
     if (TimeUtils.isDow(dow)) {
       int index = (dow == 7) ? 0 : dow;
-      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().weekdaysShort()[index];
+      return getDefaultDateTimeFormatInfo().weekdaysShort()[index];
     } else {
       return null;
     }
-  }
-
-  public static String renderMonthFull(HasYearMonth date) {
-    return (date == null)
-        ? null : LocaleUtils.monthsFull(LocaleInfo.getCurrentLocale())[date.getMonth() - 1];
   }
 
   public static String renderMonthFullStandalone(HasYearMonth date) {
@@ -534,8 +549,7 @@ public final class Format {
 
   public static String renderMonthFullStandalone(int month) {
     if (TimeUtils.isMonth(month)) {
-      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo()
-          .monthsFullStandalone()[month - 1];
+      return getDefaultDateTimeFormatInfo().monthsFullStandalone()[month - 1];
     } else {
       return null;
     }
@@ -543,41 +557,59 @@ public final class Format {
 
   public static String renderMonthShortStandalone(int month) {
     if (TimeUtils.isMonth(month)) {
-      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo()
-          .monthsShortStandalone()[month - 1];
+      return getDefaultDateTimeFormatInfo().monthsShortStandalone()[month - 1];
     } else {
       return null;
     }
   }
 
-  public static String renderPeriod(DateTime start, DateTime end) {
-    if (start == null || end == null || start.hasTimePart() || end.hasTimePart()) {
-      return TimeUtils.renderPeriod(start, end);
+  public static String renderPeriod(HasDateValue start, HasDateValue end) {
+    if (start == null) {
+      if (end == null) {
+        return null;
+      } else {
+        return TimeUtils.PERIOD_SEPARATOR + renderDateTime(end);
+      }
+
+    } else if (end == null) {
+      return renderDateTime(start) + TimeUtils.PERIOD_SEPARATOR;
+
+    } else if (start.equals(end)) {
+      return renderDateTime(start);
+
+    } else if (start.hasTimePart() || end.hasTimePart()) {
+      return renderDateTime(start) + TimeUtils.PERIOD_SEPARATOR
+          + (end.hasTimePart() && TimeUtils.sameDate(start, end)
+          ? renderTime(end) : renderDateTime(end));
 
     } else if (TimeUtils.dayDiff(start, end) == 1) {
-      return DateTimeFormat.getFormat(PredefinedFormat.DATE_LONG).format(start);
+      return renderDate(start);
 
     } else if (start.getDom() == 1 && end.getDom() == 1 && TimeUtils.monthDiff(start, end) == 1) {
-      return BeeUtils.joinWords(start.getYear(), renderMonthFullStandalone(start.getMonth()));
+      return render(PredefinedFormat.YEAR_MONTH_STANDALONE, start);
 
     } else if (start.getMonth() % 3 == 1 && start.getDom() == 1 && end.getDom() == 1
         && TimeUtils.monthDiff(start, end) == 3) {
-      return DateTimeFormat.getFormat(PredefinedFormat.YEAR_QUARTER).format(start);
+      return render(PredefinedFormat.YEAR_QUARTER, start);
 
     } else if (start.getMonth() == 1 && start.getDom() == 1
         && end.getYear() == start.getYear() + 1 && end.getMonth() == 1 && end.getDom() == 1) {
-      return BeeUtils.toString(start.getYear());
+      return render(PredefinedFormat.YEAR, start);
 
     } else {
-      return TimeUtils.renderPeriod(start, end);
+      return renderDate(start) + TimeUtils.PERIOD_SEPARATOR + renderDate(end);
     }
+  }
+
+  public static String renderTime(HasDateValue dateTime) {
+    return Formatter.renderTime(getDefaultDateTimeFormatInfo(), dateTime);
   }
 
   public static String renderYearMonth(HasYearMonth ym) {
     if (ym == null) {
       return null;
     } else {
-      return BeeUtils.joinWords(ym.getYear(), renderMonthFullStandalone(ym).toLowerCase());
+      return render(PredefinedFormat.YEAR_MONTH_STANDALONE, ym.getDate());
     }
   }
 
@@ -586,7 +618,7 @@ public final class Format {
     Assert.notEmpty(pattern);
 
     if (target instanceof HasDateTimeFormat) {
-      DateTimeFormat predefinedFormat = getPredefinedFormat(pattern);
+      DateTimeFormat predefinedFormat = parsePredefinedFormat(pattern);
       if (predefinedFormat != null) {
         ((HasDateTimeFormat) target).setDateTimeFormat(predefinedFormat);
         return;
@@ -605,10 +637,24 @@ public final class Format {
     }
 
     if (isDt) {
-      ((HasDateTimeFormat) target).setDateTimeFormat(DateTimeFormat.getFormat(pattern));
+      ((HasDateTimeFormat) target).setDateTimeFormat(DateTimeFormat.of(pattern,
+          getDefaultDateTimeFormatInfo()));
     } else if (isNum) {
       ((HasNumberFormat) target).setNumberFormat(new NumberFormatter(pattern));
     }
+  }
+
+  private static DateTimeFormatInfo getDefaultDateTimeFormatInfo() {
+    return BeeKeeper.getUser().getDateTimeFormatInfo();
+  }
+
+  private static DateTimeFormat parsePredefinedFormat(String name) {
+    for (PredefinedFormat pf : PredefinedFormat.values()) {
+      if (BeeUtils.same(name, pf.name())) {
+        return DateTimeFormat.of(pf, getDefaultDateTimeFormatInfo());
+      }
+    }
+    return null;
   }
 
   private Format() {

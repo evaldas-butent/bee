@@ -10,10 +10,12 @@ import com.butent.bee.client.modules.administration.StageUtils;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.classifiers.VehiclesGrid;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 
 public final class CarsKeeper {
@@ -33,15 +35,23 @@ public final class CarsKeeper {
         }));
 
     FormFactory.registerFormInterceptor(TBL_CONF_PRICELIST, new ConfPricelistForm());
-    FormFactory.registerFormInterceptor(FORM_CONF_OPTION, new PhotoHandler());
+    FormFactory.registerFormInterceptor(FORM_CONF_OPTION, new ConfOptionForm());
     FormFactory.registerFormInterceptor(FORM_CAR_ORDER, new CarOrderForm());
-    FormFactory.registerFormInterceptor(FORM_CAR, new SpecificationForm());
+    FormFactory.registerFormInterceptor(FORM_CAR, new CarForm());
     FormFactory.registerFormInterceptor(FORM_TEMPLATE, new SpecificationForm());
 
     FormFactory.registerFormInterceptor(FORM_CAR_SERVICE_ORDER, new CarServiceOrderForm());
     FormFactory.registerFormInterceptor(FORM_CAR_SERVICE_EVENT, new CarServiceEventForm());
 
     GridFactory.registerGridInterceptor(VIEW_CARS, new VehiclesGrid());
+    GridFactory.registerGridInterceptor(GRID_CAR_BUNDLE_JOBS, new CarBundleJobsGrid());
+
+    GridFactory.registerGridInterceptor(VIEW_CAR_FILES, new FileGridInterceptor(COL_CAR,
+        AdministrationConstants.COL_FILE, AdministrationConstants.COL_FILE_CAPTION,
+        AdministrationConstants.ALS_FILE_NAME));
+    GridFactory.registerGridInterceptor(VIEW_CAR_SERVICE_FILES,
+        new FileGridInterceptor(COL_SERVICE_ORDER, AdministrationConstants.COL_FILE,
+            AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
     Dictionary loc = Localized.dictionary();
     StageUtils.registerStageAction(TBL_CAR_ORDERS, STAGE_ACTION_READONLY, loc.rowIsReadOnly());

@@ -14,10 +14,10 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.RpcCallbackWithId;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
@@ -209,8 +209,6 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   private static final String DATA_TYPE_BOSS = "OrgChartBoss";
   private static final String DATA_TYPE_EMPLOYEE = "OrgChartEmployee";
 
-  private static final String DEFAULT_PHOTO_IMAGE = "images/defaultUser.png";
-
   private static final Set<String> DND_TYPES = ImmutableSet.of(DATA_TYPE_DEPARTMENT,
       DATA_TYPE_BOSS, DATA_TYPE_EMPLOYEE);
 
@@ -295,12 +293,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   public boolean beforeAction(Action action, Presenter presenter) {
     switch (action) {
       case ADD:
-        RowFactory.createRow(VIEW_DEPARTMENTS, Modality.ENABLED, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            refresh();
-          }
-        });
+        RowFactory.createRow(VIEW_DEPARTMENTS, Modality.ENABLED, result -> refresh());
         return false;
 
       case CONFIGURE:
@@ -773,7 +766,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   }
 
   private void refresh() {
-    lastRpcId = Queries.getData(viewNames, new Queries.DataCallback() {
+    lastRpcId = Queries.getData(viewNames, new RpcCallbackWithId<Collection<BeeRowSet>>() {
       @Override
       public void onSuccess(Collection<BeeRowSet> result) {
         if (getRpcId() >= lastRpcId) {
@@ -1264,12 +1257,9 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
           }
         }
 
-        final IntCallback callback = new IntCallback() {
-          @Override
-          public void onSuccess(Integer result) {
-            if (BeeUtils.isPositive(result)) {
-              fireRefresh(VIEW_DEPARTMENTS);
-            }
+        final IntCallback callback = result -> {
+          if (BeeUtils.isPositive(result)) {
+            fireRefresh(VIEW_DEPARTMENTS);
           }
         };
 
@@ -1277,12 +1267,9 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
           updateDepartmentParent(source, target, callback);
 
         } else {
-          updateDepartmentParent(unbind, getDepartmentParent(source), new IntCallback() {
-            @Override
-            public void onSuccess(Integer result) {
-              if (BeeUtils.isPositive(result)) {
-                updateDepartmentParent(source, target, callback);
-              }
+          updateDepartmentParent(unbind, getDepartmentParent(source), result -> {
+            if (BeeUtils.isPositive(result)) {
+              updateDepartmentParent(source, target, callback);
             }
           });
         }
@@ -1292,13 +1279,10 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
       case DATA_TYPE_BOSS:
         Long oldDep = getEmployeeRelation(source, COL_DEPARTMENT);
         Queries.update(VIEW_DEPARTMENTS, oldDep, COL_DEPARTMENT_HEAD, LongValue.getNullValue(),
-            new IntCallback() {
-              @Override
-              public void onSuccess(Integer result) {
-                if (BeeUtils.isPositive(result)) {
-                  fireRefresh(VIEW_DEPARTMENTS);
-                  updateEmployeeDepartment(source, target);
-                }
+            result -> {
+              if (BeeUtils.isPositive(result)) {
+                fireRefresh(VIEW_DEPARTMENTS);
+                updateEmployeeDepartment(source, target);
               }
             });
 
@@ -1316,12 +1300,9 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
   private static void updateEmployeeDepartment(long emplId, long depId) {
     Queries.update(VIEW_DEPARTMENT_EMPLOYEES, emplId, COL_DEPARTMENT, new LongValue(depId),
-        new IntCallback() {
-          @Override
-          public void onSuccess(Integer result) {
-            if (BeeUtils.isPositive(result)) {
-              fireRefresh(VIEW_DEPARTMENT_EMPLOYEES);
-            }
+        result -> {
+          if (BeeUtils.isPositive(result)) {
+            fireRefresh(VIEW_DEPARTMENT_EMPLOYEES);
           }
         });
   }
@@ -1430,33 +1411,20 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
     String companyName = DataUtils.getString(employees, employee, ALS_COMPANY_NAME);
 
-    Long photo = DataUtils.getLong(employees, employee, COL_PHOTO);
+    String photo = DataUtils.getString(employees, employee, COL_PHOTO);
     Flow photoContainer = new Flow();
-    String photoUrl;
-
-    if (!DataUtils.isId(photo)) {
-      photoUrl = DEFAULT_PHOTO_IMAGE;
-    } else {
-      photoUrl = PhotoRenderer.getUrl(photo);
-    }
-
-    String styleName;
+    String photoUrl = PhotoRenderer.getPhotoUrl(photo);
 
     Image image = new Image(photoUrl);
     image.setTitle(BeeUtils.buildLines(fullName, positionName, companyName));
 
     image.addClickHandler(event -> {
       Long person = getEmployeeRelation(emplId, COL_PERSON);
-      RowEditor.open(VIEW_PERSONS, person, Opener.MODAL, new RowCallback() {
-        @Override
-        public void onSuccess(BeeRow result) {
-          refresh();
-        }
-      });
+      RowEditor.open(VIEW_PERSONS, person, Opener.MODAL, result -> refresh());
     });
 
     photoContainer.add(image);
-    styleName = STYLE_PHOTO_CONTAINER;
+    String styleName = STYLE_PHOTO_CONTAINER;
 
     table.setWidgetAndStyle(row, 0, photoContainer, styleName);
 
@@ -1465,12 +1433,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
     label.addClickHandler(event -> {
       Long cp = getEmployeeRelation(emplId, COL_COMPANY_PERSON);
-      RowEditor.open(VIEW_COMPANY_PERSONS, cp, Opener.MODAL, new RowCallback() {
-        @Override
-        public void onSuccess(BeeRow result) {
-          refresh();
-        }
-      });
+      RowEditor.open(VIEW_COMPANY_PERSONS, cp, Opener.MODAL, result -> refresh());
     });
 
     styleName = boss ? STYLE_BOSS_LABEL : STYLE_EMPLOYEE_LABEL;
@@ -1481,13 +1444,13 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     }
 
     if (boss) {
-      if (DataUtils.isId(photo)) {
+      if (!BeeUtils.isEmpty(photo)) {
         DndHelper.makeSource(photoContainer, DATA_TYPE_BOSS, emplId, null);
       }
       DndHelper.makeSource(label, DATA_TYPE_BOSS, emplId, STYLE_BOSS_DRAG);
 
     } else {
-      if (DataUtils.isId(photo)) {
+      if (!BeeUtils.isEmpty(photo)) {
         DndHelper.makeSource(photoContainer, DATA_TYPE_EMPLOYEE, emplId, null);
       }
       DndHelper.makeSource(label, DATA_TYPE_EMPLOYEE, emplId, STYLE_EMPLOYEE_DRAG);

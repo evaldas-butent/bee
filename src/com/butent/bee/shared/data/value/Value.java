@@ -3,7 +3,9 @@ package com.butent.bee.shared.data.value;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -11,6 +13,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.math.BigDecimal;
+import java.util.function.Function;
 
 /**
  * Class {@code Value} is the root of the class hierarchy. {@code BooleanValue},
@@ -85,7 +88,9 @@ public abstract class Value implements Comparable<Value>, BeeSerializable {
     return val;
   }
 
-  public static Value parseValue(ValueType type, String value, boolean parseDates) {
+  public static Value parseValue(ValueType type, String value,
+      boolean parseDates, DateOrdering dateOrdering) {
+
     Assert.notNull(type, "value type not specified");
     if (value == null) {
       return getNullValueFromValueType(type);
@@ -103,13 +108,13 @@ public abstract class Value implements Comparable<Value>, BeeSerializable {
         return new TimeOfDayValue(value);
       case DATE:
         if (parseDates) {
-          return new DateValue(TimeUtils.parseDate(value));
+          return new DateValue(TimeUtils.parseDate(value, dateOrdering));
         } else {
           return new DateValue(TimeUtils.toDateOrNull(value));
         }
       case DATE_TIME:
         if (parseDates) {
-          return new DateTimeValue(TimeUtils.parseDateTime(value));
+          return new DateTimeValue(TimeUtils.parseDateTime(value, dateOrdering));
         } else {
           return new DateTimeValue(TimeUtils.toDateTimeOrNull(value));
         }
@@ -132,7 +137,7 @@ public abstract class Value implements Comparable<Value>, BeeSerializable {
     ValueType type = ValueType.getByTypeCode(clazz);
     Assert.notNull(type, "Unsupported value type: " + clazz);
 
-    return parseValue(type, data, false);
+    return parseValue(type, data, false, null);
   }
 
   @Override
@@ -169,6 +174,12 @@ public abstract class Value implements Comparable<Value>, BeeSerializable {
   public abstract boolean isEmpty();
 
   public abstract boolean isNull();
+
+  public String render(Function<HasDateValue, String> dateRenderer,
+      Function<HasDateValue, String> dateTimeRenderer) {
+
+    return isNull() ? BeeConst.STRING_EMPTY : toString();
+  }
 
   @Override
   public String serialize() {

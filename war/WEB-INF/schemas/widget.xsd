@@ -328,7 +328,15 @@
       <xs:complexContent>
         <xs:extension base="editableWidget">
           <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="item" type="xs:normalizedString" />
+            <xs:element name="item">
+              <xs:complexType>
+                <xs:simpleContent>
+                  <xs:extension base="xs:normalizedString">
+                    <xs:attribute name="value" type="xs:normalizedString" />
+                  </xs:extension>
+                </xs:simpleContent>
+              </xs:complexType>
+            </xs:element>
           </xs:choice>
           <xs:attribute name="multiSelect" type="xs:boolean" />
           <xs:attribute name="allItemsVisible" type="xs:boolean" />
@@ -821,6 +829,7 @@
         </xs:sequence>
         <xs:attribute name="caption" type="xs:string" use="required" />
         <xs:attribute name="viewName" type="tp:dataView" use="required" />
+        <xs:attribute name="filter" type="xs:normalizedString" />
         <xs:attribute name="parentColumn" type="tp:fieldNameType" use="required" />
         <xs:attribute name="orderColumn" type="tp:fieldNameType" />
         <xs:attribute name="disabledActions" type="ui:viewActions" />

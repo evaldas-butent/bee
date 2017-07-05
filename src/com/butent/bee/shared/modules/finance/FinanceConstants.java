@@ -11,6 +11,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class FinanceConstants {
 
   public static final String SVC_POST_TRADE_DOCUMENT = "postTradeDocument";
+  public static final String SVC_POST_TRADE_DOCUMENTS = "postTradeDocuments";
 
   public static final String SVC_VERIFY_ANALYSIS_FORM = "verifyAnalysisForm";
   public static final String SVC_CALCULATE_ANALYSIS_FORM = "calculateAnalysisForm";
@@ -38,6 +39,7 @@ public final class FinanceConstants {
   public static final String TBL_ANALYSIS_RESULTS = "AnalysisResults";
 
   public static final String VIEW_FINANCIAL_RECORDS = "FinancialRecords";
+  public static final String VIEW_FINANCE_PREPAYMENTS = "FinancePrepayments";
 
   public static final String VIEW_FINANCE_CONFIGURATION = "FinanceConfiguration";
   public static final String VIEW_FINANCE_CONTENTS = "FinanceContents";
@@ -76,6 +78,8 @@ public final class FinanceConstants {
   public static final String COL_FIN_QUANTITY = "Quantity";
   public static final String COL_FIN_TRADE_DOCUMENT = "TradeDocument";
   public static final String COL_FIN_TRADE_PAYMENT = "TradePayment";
+  public static final String COL_FIN_PREPAYMENT_KIND = "PrepaymentKind";
+  public static final String COL_FIN_PREPAYMENT_PARENT = "PrepaymentParent";
   public static final String COL_FIN_EMPLOYEE = "Employee";
 
   public static final String COL_DEFAULT_JOURNAL = "DefaultJournal";
@@ -90,6 +94,7 @@ public final class FinanceConstants {
   public static final String COL_ADVANCE_PAYMENTS_GIVEN = "AdvancePaymentsGiven";
   public static final String COL_ADVANCE_PAYMENTS_RECEIVED = "AdvancePaymentsReceived";
   public static final String COL_COST_OF_MERCHANDISE = "CostOfMerchandise";
+  public static final String COL_DISCHARGE_ACCOUNT = "DischargeAccount";
 
   public static final String COL_TRADE_ACCOUNTS_PRECEDENCE = "TradeAccountsPrecedence";
   public static final String COL_TRADE_DIMENSIONS_PRECEDENCE = "TradeDimensionsPrecedence";
@@ -113,6 +118,7 @@ public final class FinanceConstants {
   public static final String COL_FIN_INDICATOR_TURNOVER_OR_BALANCE = "IndicatorTurnoverOrBalance";
   public static final String COL_FIN_INDICATOR_NORMAL_BALANCE = "IndicatorNormalBalance";
   public static final String COL_FIN_INDICATOR_CLOSING_ENTRIES = "IndicatorClosingEntries";
+  public static final String COL_FIN_INDICATOR_RATIO = "IndicatorRatio";
   public static final String COL_FIN_INDICATOR_SCALE = "IndicatorScale";
 
   public static final String COL_FIN_INDICATOR = "Indicator";
@@ -275,6 +281,8 @@ public final class FinanceConstants {
   public static final String ALS_EMPLOYEE_FIRST_NAME = "EmployeeFirstName";
   public static final String ALS_EMPLOYEE_LAST_NAME = "EmployeeLastName";
 
+  public static final String PROP_PREPAYMENT_USED = "PrepaymentUsed";
+
   public static final String GRID_FINANCIAL_RECORDS = "FinancialRecords";
   public static final String GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS =
       "TradeDocumentFinancialRecords";
@@ -301,9 +309,16 @@ public final class FinanceConstants {
   public static final String GRID_BUDGET_HEADERS = "BudgetHeaders";
   public static final String GRID_BUDGET_ENTRIES = "BudgetEntries";
 
+  public static final String GRID_ANALYSIS_HEADERS = "AnalysisHeaders";
   public static final String GRID_ANALYSIS_COLUMNS = "AnalysisColumns";
   public static final String GRID_ANALYSIS_ROWS = "AnalysisRows";
   public static final String GRID_ANALYSIS_RESULTS = "AnalysisResults";
+
+  public static final String GRID_PREPAYMENT_SUPPLIERS = "PrepaymentSuppliers";
+  public static final String GRID_PREPAYMENT_CUSTOMERS = "PrepaymentCustomers";
+  public static final String GRID_PREPAYMENT_USE = "PrepaymentUse";
+  public static final String GRID_OUTSTANDING_PREPAYMENT_GIVEN = "OutstandingPrepaymentGiven";
+  public static final String GRID_OUTSTANDING_PREPAYMENT_RECEIVED = "OutstandingPrepaymentReceived";
 
   public static final String FORM_FINANCE_DEFAULT_ACCOUNTS = "FinanceDefaultAccounts";
   public static final String FORM_FINANCE_POSTING_PRECEDENCE = "FinancePostingPrecedence";
@@ -313,6 +328,8 @@ public final class FinanceConstants {
 
   public static final String FORM_SIMPLE_BUDGET = "SimpleBudget";
   public static final String FORM_SIMPLE_ANALYSIS = "SimpleAnalysis";
+
+  public static final String FILTER_OUTSTANDING_PREPAYMENT = "outstanding_prepayment";
 
   public static String colBudgetEntryValue(int month) {
     return COL_BUDGET_ENTRY_VALUES[month - 1];
@@ -369,6 +386,8 @@ public final class FinanceConstants {
     EnumUtils.register(IndicatorKind.class);
     EnumUtils.register(IndicatorSource.class);
     EnumUtils.register(TurnoverOrBalance.class);
+
+    EnumUtils.register(PrepaymentKind.class);
   }
 
   private FinanceConstants() {

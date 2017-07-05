@@ -215,8 +215,7 @@ public class GridContainerImpl extends Split implements GridContainerView,
         FaLabel autoFit = new FaLabel(Action.AUTO_FIT.getIcon(), BeeConst.CSS_CLASS_PREFIX
             + Action.AUTO_FIT.getStyleSuffix());
 
-        StyleUtils.enableAnimation(Action.AUTO_FIT, autoFit);
-        autoFit.setTitle(Action.AUTO_FIT.getCaption());
+        UiHelper.initActionWidget(Action.AUTO_FIT, autoFit);
 
         autoFit.addClickHandler(event -> getGridView().getGrid().autoFit(
             !EventUtils.hasModifierKey(event.getNativeEvent())));
@@ -516,7 +515,7 @@ public class GridContainerImpl extends Split implements GridContainerView,
       if (!event.isPopup()) {
         showChildren(event.isClosing());
 
-        if (!getGridView().isChild()) {
+        if (!getGridView().hasChildUi()) {
           BeeKeeper.getScreen().onWidgetChange(this);
         }
       }
@@ -607,11 +606,12 @@ public class GridContainerImpl extends Split implements GridContainerView,
 
   @Override
   public void setEnabled(boolean enabled) {
-    if (enabled == isEnabled()) {
-      return;
+    if (enabled != isEnabled()) {
+      this.enabled = enabled;
+
+      UiHelper.enableChildren(this, enabled);
+      setStyleName(StyleUtils.NAME_DISABLED, !enabled);
     }
-    this.enabled = enabled;
-    UiHelper.enableChildren(this, enabled);
   }
 
   @Override

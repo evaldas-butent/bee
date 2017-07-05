@@ -13,6 +13,8 @@ import java.util.Date;
 
 public abstract class AbstractDate implements HasDateValue {
 
+  private static final char DATE_FIELD_SEPARATOR = '-';
+
   public static AbstractDate fromJava(Date date, ValueType type) {
     if (date == null) {
       return null;
@@ -24,23 +26,6 @@ public abstract class AbstractDate implements HasDateValue {
         return new JustDate(date);
       case DATE_TIME:
         return new DateTime(date);
-      default:
-        Assert.untouchable();
-        return null;
-    }
-  }
-
-  public static AbstractDate parse(String s, ValueType type) {
-    if (BeeUtils.isEmpty(s)) {
-      return null;
-    }
-    assertType(type);
-
-    switch (type) {
-      case DATE:
-        return TimeUtils.parseDate(s);
-      case DATE_TIME:
-        return TimeUtils.parseDateTime(s);
       default:
         Assert.untouchable();
         return null;
@@ -62,6 +47,12 @@ public abstract class AbstractDate implements HasDateValue {
         Assert.untouchable();
         return null;
     }
+  }
+
+  protected static String dateToString(int year, int month, int dom) {
+    return TimeUtils.yearToString(year) + DATE_FIELD_SEPARATOR
+        + TimeUtils.monthToString(month) + DATE_FIELD_SEPARATOR
+        + TimeUtils.dayOfMonthToString(dom);
   }
 
   private static void assertType(ValueType type) {

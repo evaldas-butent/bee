@@ -394,6 +394,15 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     return cells;
   }
 
+  public int getColumnCount() {
+    int cc = 0;
+
+    for (int row = 0; row < getRowCount(); row++) {
+      cc = Math.max(cc, getCellCount(row));
+    }
+    return cc;
+  }
+
   public ColumnFormatter getColumnFormatter() {
     return columnFormatter;
   }
@@ -658,6 +667,10 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
 
   public void setValue(int row, int column, int value, String... cellStyles) {
     setText(row, column, Integer.toString(value), cellStyles);
+  }
+
+  public void setValue(int row, int column, long value, String... cellStyles) {
+    setText(row, column, Long.toString(value), cellStyles);
   }
 
   public void setWidget(int row, int column, Widget widget) {

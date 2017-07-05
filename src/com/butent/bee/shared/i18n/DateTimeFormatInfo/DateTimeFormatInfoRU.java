@@ -1,5 +1,7 @@
 package com.butent.bee.shared.i18n.DateTimeFormatInfo;
 
+import com.butent.bee.shared.i18n.DateOrdering;
+
 /**
  * Implementation of DateTimeFormatInfo for the "ru" locale.
  */
@@ -16,7 +18,10 @@ public final class DateTimeFormatInfoRU implements DateTimeFormatInfo {
 
   @Override
   public String[] ampms() {
-    return new String[0];
+    return new String[] {
+        "AM",
+        "PM"
+    };
   }
 
   @Override
@@ -36,26 +41,21 @@ public final class DateTimeFormatInfoRU implements DateTimeFormatInfo {
 
   @Override
   public String dateFormatShort() {
+    return "dd.MM.y";
+  }
+
+  @Override
+  public String dateFormatCompact() {
     return "dd.MM.yy";
   }
 
   @Override
-  public String dateTimeFull(String timePattern, String datePattern) {
-    return datePattern + ", " + timePattern;
+  public DateOrdering dateOrdering() {
+    return DateOrdering.DMY;
   }
 
   @Override
-  public String dateTimeLong(String timePattern, String datePattern) {
-    return datePattern + ", " + timePattern;
-  }
-
-  @Override
-  public String dateTimeMedium(String timePattern, String datePattern) {
-    return datePattern + ", " + timePattern;
-  }
-
-  @Override
-  public String dateTimeShort(String timePattern, String datePattern) {
+  public String dateTime(String datePattern, String timePattern) {
     return datePattern + ", " + timePattern;
   }
 
@@ -83,6 +83,11 @@ public final class DateTimeFormatInfoRU implements DateTimeFormatInfo {
   @Override
   public String formatHour24MinuteSecond() {
     return "H:mm:ss";
+  }
+
+  @Override
+  public String formatHour24MinuteSecondMillisecond() {
+    return "H:mm:ss.SSS";
   }
 
   @Override
@@ -117,6 +122,11 @@ public final class DateTimeFormatInfoRU implements DateTimeFormatInfo {
 
   @Override
   public String formatYearMonthFull() {
+    return "MMMM y";
+  }
+
+  @Override
+  public String formatYearMonthStandalone() {
     return "LLLL y";
   }
 

@@ -17,10 +17,10 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.ModuleManager;
-import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.client.screen.Workspace;
@@ -36,7 +36,9 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsUtils;
@@ -62,6 +64,9 @@ public class Bee implements EntryPoint, ClosingHandler {
   public static void exit() {
     setState(State.UNLOADING);
 
+    if (Endpoint.isOpen()) {
+      BeeKeeper.getStorage().remove(getLastWorkspaceKey());
+    }
     final String workspace = BeeKeeper.getScreen().serialize();
 
     ClientLogManager.close();
@@ -105,12 +110,20 @@ public class Bee implements EntryPoint, ClosingHandler {
     return !(getState() == State.UNLOADING || getState() == State.CLOSED);
   }
 
+  public static void saveWorkspace() {
+    if (BeeKeeper.getUser().workspaceContinue() && getState() == State.INITIALIZED) {
+      BeeKeeper.getStorage().set(getLastWorkspaceKey(), BeeKeeper.getScreen().serialize());
+    }
+  }
+
   private static void initWorkspace() {
     List<String> spaces = new ArrayList<>();
     JSONObject onStartup = Settings.getOnStartup();
 
     if (BeeKeeper.getUser().workspaceContinue()) {
-      String workspace = BeeKeeper.getUser().getLastWorkspace();
+      String workspace = BeeKeeper.getStorage().hasItem(getLastWorkspaceKey())
+          ? BeeKeeper.getStorage().get(getLastWorkspaceKey())
+          : BeeKeeper.getUser().getLastWorkspace();
 
       if (!BeeUtils.isEmpty(workspace) && !BeeConst.EMPTY.equals(workspace)) {
         if (Workspace.isForced(onStartup)) {
@@ -172,20 +185,38 @@ public class Bee implements EntryPoint, ClosingHandler {
           RightsUtils.setViewModules(Codec.deserializeHashMap(value));
           break;
 
-        case COL_CURRENCY:
-          ClientDefaults.setCurrency(BeeUtils.toLongOrNull(value));
+        case Service.PROPERTY_DEFAULT_LOCALE:
+          SupportedLocale.setUserDefault(value);
           break;
 
-        case ALS_CURRENCY_NAME:
-          ClientDefaults.setCurrencyName(value);
+        case Service.PROPERTY_ACTIVE_LOCALES:
+          SupportedLocale.setActiveLocales(Codec.deserializeList(value));
           break;
 
-        case PRM_COMPANY:
-          AdministrationKeeper.setCompany(BeeUtils.toLongOrNull(value));
+        case PRM_CURRENCY:
+          ClientDefaults.setCurrency(Pair.restore(value));
+          break;
+
+        case TBL_PARAMETERS:
+          for (String s : Codec.beeDeserializeCollection(value)) {
+            Global.storeParameter(BeeParameter.restore(s));
+          }
+          LogUtils.getRootLogger().info("parameters", value.length());
           break;
 
         case TBL_DICTIONARY:
           Localized.setGlossary(Codec.deserializeHashMap(value));
+          break;
+
+        case VAR_LOCALE:
+          BeeKeeper.getUser().setSupportedLocale(SupportedLocale.getByLanguage(value));
+          break;
+
+        case COL_USER_DATE_FORMAT:
+          SupportedLocale dtfLocale = SupportedLocale.getByLanguage(value);
+          if (dtfLocale != null) {
+            BeeKeeper.getUser().setDateTimeFormatInfo(dtfLocale.getDateTimeFormatInfo());
+          }
           break;
       }
     }
@@ -310,11 +341,11 @@ public class Bee implements EntryPoint, ClosingHandler {
     List<Property> info = PropertyUtils.createProperties("State", getState());
 
     if (getEntryTime() > 0) {
-      info.add(new Property("Entry Time", TimeUtils.renderDateTime(getEntryTime(), true)));
+      info.add(new Property("Entry Time", Format.renderDateTime(getEntryTime())));
     }
 
     if (getReadyTime() > 0) {
-      info.add(new Property("Ready Time", TimeUtils.renderDateTime(getReadyTime(), true)));
+      info.add(new Property("Ready Time", Format.renderDateTime(getReadyTime())));
       info.add(new Property("Ready Seconds", TimeUtils.toSeconds(getReadyTime() - getEntryTime())));
     }
 
@@ -362,6 +393,10 @@ public class Bee implements EntryPoint, ClosingHandler {
   @Override
   public void onWindowClosing(ClosingEvent event) {
     event.setMessage("Don't leave me this way");
+  }
+
+  private static String getLastWorkspaceKey() {
+    return Storage.getUserKey(COL_LAST_WORKSPACE, null);
   }
 
   private void onLogin() {

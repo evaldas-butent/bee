@@ -23,7 +23,6 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
@@ -68,6 +67,7 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.PredefinedFormat;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.*;
@@ -117,9 +117,6 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
   private static final String STYLE_TODO_PREFIX = STYLE_PREFIX + "todo-";
   private static final String STYLE_TODO_CONTAINER = STYLE_TODO_PREFIX + "container";
   private static final String STYLE_TODO_HIDDEN = STYLE_TODO_PREFIX + "hidden";
-
-  private static final DateTimeFormat DATE_FORMAT =
-      DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_FULL);
 
   private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.VIEW);
 
@@ -766,25 +763,26 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
       html = BeeConst.STRING_EMPTY;
 
     } else if (Type.MONTH.equals(type)) {
-      html = BeeUtils.joinWords(date.getYear(), Format.renderMonthFullStandalone(date));
+      html = Format.render(PredefinedFormat.YEAR_MONTH_STANDALONE, date);
 
     } else if (type == null || Type.RESOURCE.equals(type) || days <= 1) {
-      html = DATE_FORMAT.format(date);
+      html = Format.renderDateFull(date);
 
     } else {
-      String from = BeeUtils.joinWords(date.getYear(), Format.renderMonthFull(date), date.getDom());
+      String from = Format.render(PredefinedFormat.YEAR_MONTH_DAY, date);
 
       JustDate end = TimeUtils.nextDay(date, days - 1);
-      String to;
+      PredefinedFormat pf;
+
       if (TimeUtils.sameMonth(date, end)) {
-        to = BeeUtils.toString(end.getDom());
+        pf = PredefinedFormat.DAY;
       } else if (date.getYear() == end.getYear()) {
-        to = BeeUtils.joinWords(Format.renderMonthFull(end), end.getDom());
+        pf = PredefinedFormat.MONTH_DAY;
       } else {
-        to = BeeUtils.joinWords(end.getYear(), Format.renderMonthFull(end), end.getDom());
+        pf = PredefinedFormat.YEAR_MONTH_DAY;
       }
 
-      html = from + " - " + to;
+      html = from + " - " + Format.render(pf, end);
     }
 
     dateBox.setHtml(html);

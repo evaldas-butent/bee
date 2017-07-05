@@ -11,26 +11,36 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_CONTACT_FIRST_NAME;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_CONTACT_LAST_NAME;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
+import static com.butent.bee.shared.modules.ec.EcConstants.COL_TCD_MANUFACTURER_NAME;
+import static com.butent.bee.shared.modules.ec.EcConstants.TBL_TCD_MANUFACTURERS;
+import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.projects.ProjectConstants.COL_INCOME_ITEM;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_COMMENT;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_EVENT_NOTE;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_PUBLISH_TIME;
+import static com.butent.bee.shared.modules.service.ServiceConstants.SVC_CREATE_INVOICE_ITEMS;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.data.BeeView;
+import com.butent.bee.server.data.DataEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.SearchBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
-import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.mail.MailModuleBean;
+import com.butent.bee.server.modules.orders.OrdersModuleBean;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
@@ -40,30 +50,41 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.FontWeight;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.SqlConstants;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.Element;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Tbody;
+import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
 import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.i18n.Formatter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.modules.service.ServiceUtils;
+import com.butent.bee.shared.modules.trade.Totalizer;
+import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -72,15 +93,19 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
+import com.butent.bee.shared.websocket.messages.ModificationMessage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
+import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -91,6 +116,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 @Stateless
+@LocalBean
 public class ServiceModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(ServiceModuleBean.class);
@@ -105,18 +131,27 @@ public class ServiceModuleBean implements BeeModule {
   MailModuleBean mail;
   @EJB
   ParamHolderBean prm;
+  @EJB
+  OrdersModuleBean ord;
+  @EJB
+  SearchBean src;
 
   @Override
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = new ArrayList<>();
     Set<String> columns = Sets.newHashSet(ALS_SERVICE_CATEGORY_NAME, COL_SERVICE_ADDRESS,
-        ALS_SERVICE_CUSTOMER_NAME, ALS_SERVICE_CONTRACTOR_NAME);
+        ALS_SERVICE_CUSTOMER_NAME, ALS_SERVICE_CONTRACTOR_NAME, COL_MODEL, COL_ARTICLE_NO,
+        COL_SERIAL_NO);
 
     result.addAll(qs.getSearchResults(VIEW_SERVICE_OBJECTS, Filter.anyContains(columns, query)));
 
     result.addAll(qs.getSearchResults(VIEW_SERVICE_FILES,
         Filter.anyContains(Sets.newHashSet(AdministrationConstants.COL_FILE_CAPTION,
             AdministrationConstants.ALS_FILE_NAME), query)));
+
+    result.addAll(qs.getSearchResults(TBL_SERVICE_MAINTENANCE,
+        src.buildSearchFilter(TBL_SERVICE_MAINTENANCE, Sets.newHashSet(DataUtils.ID_TAG,
+            ALS_COMPANY_NAME, ALS_CONTACT_FIRST_NAME, ALS_CONTACT_LAST_NAME), query)));
 
     return result;
   }
@@ -145,6 +180,24 @@ public class ServiceModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_MAINTENANCE_NEW_ROW_VALUES)) {
       response = getMaintenanceNewRowValues();
 
+    } else if (BeeUtils.same(svc, SVC_CREATE_RESERVATION_INVOICE_ITEMS)) {
+      response = createReservationInvoiceItems(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_GET_ITEMS_INFO)) {
+      response = getItemsInfo(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_GET_REPAIRER_TARIFF)) {
+      Long repairerId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_REPAIRER));
+      if (!DataUtils.isId(repairerId)) {
+        response = ResponseObject.parameterNotFound(reqInfo.getService(), COL_REPAIRER);
+      } else {
+        Map<Long, Double> tariffs = getRepairerTariff(Collections.singleton(repairerId));
+        response = ResponseObject.response(tariffs.get(repairerId));
+      }
+
+    } else if (BeeUtils.same(svc, SVC_SERVICE_PAYROLL_REPORT)) {
+      response = getReportData(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("service not recognized:", svc);
       logger.warning(msg);
@@ -154,27 +207,93 @@ public class ServiceModuleBean implements BeeModule {
     return response;
   }
 
+  public String formatInvoiceItemArticleField(SimpleRow itemRow) {
+    String articleSourceColumn = prm.getText(PRM_ITEM_ARTICLE_SOURCE_COLUMN);
+    String value = itemRow.getValue(COL_ITEM_ARTICLE);
+
+    if (!BeeUtils.isEmpty(articleSourceColumn)
+        && !BeeUtils.same(articleSourceColumn, COL_ITEM_ARTICLE)) {
+      switch (articleSourceColumn) {
+        case COL_SERVICE_MAINTENANCE_ID:
+          value = itemRow.getValue(sys.getIdName(TBL_SERVICE_MAINTENANCE));
+          break;
+        case COL_WARRANTY_VALID_TO:
+          DateTimeFormatInfo dtfInfo = usr.getDateTimeFormatInfo();
+          value = Formatter.renderDate(dtfInfo, itemRow.getDate(COL_WARRANTY_VALID_TO));
+          break;
+      }
+    }
+    return value;
+  }
+
+  public void formatInvoiceItemsQuery(SqlSelect query) {
+    query.addFields(TBL_SERVICE_MAINTENANCE, sys.getIdName(TBL_SERVICE_MAINTENANCE),
+        COL_WARRANTY_VALID_TO);
+  }
+
+  public SqlSelect formatExportReservationsQuery() {
+    return new SqlSelect()
+        .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
+        .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+        .addFields(TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER)
+        .addFrom(TBL_ORDER_ITEMS)
+        .addFromLeft(TBL_ITEMS,
+            sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
+        .addFromLeft(TBL_SERVICE_ITEMS,
+            sys.joinTables(TBL_SERVICE_ITEMS, TBL_ORDER_ITEMS, COL_SERVICE_ITEM))
+        .addFromLeft(TBL_SERVICE_MAINTENANCE,
+            sys.joinTables(TBL_SERVICE_MAINTENANCE, TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE))
+        .addFromLeft(TBL_WAREHOUSES,
+            sys.joinTables(TBL_WAREHOUSES, TBL_SERVICE_MAINTENANCE, COL_WAREHOUSE))
+        .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_SERVICE_MAINTENANCE, COL_ENDING_DATE),
+            SqlUtils.notNull(TBL_ORDER_ITEMS, COL_SERVICE_ITEM),
+            SqlUtils.notNull(TBL_SERVICE_MAINTENANCE, COL_WAREHOUSE))).addUnion(
+            new SqlSelect()
+                .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
+                .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+                .addField(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY,
+                    COL_RESERVED_REMAINDER)
+                .addFrom(VIEW_ORDER_CHILD_INVOICES)
+                .addFromLeft(TBL_ORDER_ITEMS, sys.joinTables(TBL_ORDER_ITEMS,
+                    VIEW_ORDER_CHILD_INVOICES, COL_ORDER_ITEM))
+                .addFromLeft(TBL_SERVICE_ITEMS,
+                    sys.joinTables(TBL_SERVICE_ITEMS, TBL_ORDER_ITEMS, COL_SERVICE_ITEM))
+                .addFromLeft(TBL_SERVICE_MAINTENANCE, sys.joinTables(TBL_SERVICE_MAINTENANCE,
+                    TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE))
+                .addFromLeft(TBL_WAREHOUSES,
+                    sys.joinTables(TBL_WAREHOUSES, TBL_SERVICE_MAINTENANCE, COL_WAREHOUSE))
+                .addFromLeft(TBL_SALE_ITEMS, sys.joinTables(TBL_SALE_ITEMS,
+                    VIEW_ORDER_CHILD_INVOICES, COL_SALE_ITEM))
+                .addFromLeft(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+                .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_SALE_ITEMS, COL_ITEM))
+                .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_TRADE_EXPORTED),
+                    SqlUtils.notNull(TBL_ORDER_ITEMS, COL_SERVICE_ITEM),
+                    SqlUtils.notNull(TBL_SERVICE_MAINTENANCE, COL_WAREHOUSE))));
+  }
+
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     String module = getModule().getName();
 
-    List<BeeParameter> params = Lists.newArrayList(
+    return Lists.newArrayList(
         BeeParameter.createRelation(module, PRM_DEFAULT_MAINTENANCE_TYPE, TBL_MAINTENANCE_TYPES,
             COL_TYPE_NAME),
         BeeParameter.createRelation(module, PRM_DEFAULT_WARRANTY_TYPE, TBL_WARRANTY_TYPES,
             COL_TYPE_NAME),
-        BeeParameter.createRelation(module, PRM_MAINTENANCE_SERVICE_GROUP, TBL_ITEM_CATEGORY_TREE,
-            COL_SERVICE_CATEGORY_NAME),
         BeeParameter.createNumber(module, PRM_URGENT_RATE),
         BeeParameter.createText(module, PRM_SMS_REQUEST_SERVICE_ADDRESS),
         BeeParameter.createText(module, PRM_SMS_REQUEST_SERVICE_USER_NAME),
         BeeParameter.createText(module, PRM_SMS_REQUEST_SERVICE_PASSWORD),
         BeeParameter.createText(module, PRM_SMS_REQUEST_SERVICE_FROM),
         BeeParameter.createText(module, PRM_EXTERNAL_MAINTENANCE_URL),
-        BeeParameter.createText(module, PRM_SMS_REQUEST_CONTACT_INFO_FROM, false, VIEW_DEPARTMENTS)
+        BeeParameter.createText(module, PRM_SMS_REQUEST_CONTACT_INFO_FROM, false, VIEW_DEPARTMENTS),
+        BeeParameter.createRelation(module, PRM_SERVICE_MANAGER_WAREHOUSE, true, VIEW_WAREHOUSES,
+            COL_WAREHOUSE_CODE),
+        BeeParameter.createRelation(module, PRM_ROLE, true, TBL_ROLES, COL_ROLE_NAME),
+        BeeParameter.createBoolean(module, PRM_FILTER_ALL_DEVICES),
+        BeeParameter.createNumber(module, PRM_CLIENT_CHANGING_SETTING, false, 4),
+        BeeParameter.createText(module, PRM_ITEM_ARTICLE_SOURCE_COLUMN, false, COL_ITEM_ARTICLE)
     );
-
-    return params;
   }
 
   @Override
@@ -193,10 +312,7 @@ public class ServiceModuleBean implements BeeModule {
       @Subscribe
       @AllowConcurrentEvents
       public void setRowProperties(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_SERVICE_FILES)) {
-          ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
-
-        } else if (event.isAfter(VIEW_SERVICE_OBJECTS) && event.hasData()) {
+        if (event.isAfter(VIEW_SERVICE_OBJECTS) && event.hasData()) {
           BeeRowSet rowSet = event.getRowset();
           List<Long> rowIds = rowSet.getRowIds();
 
@@ -260,7 +376,7 @@ public class ServiceModuleBean implements BeeModule {
           commentsRowSet.forEach(commentRow ->
               commentsMap.put(Pair.of(commentRow.getLong(COL_SERVICE_MAINTENANCE),
                   BeeUtils.join(BeeConst.STRING_SLASH, commentRow.getValue(COL_TYPE),
-                  commentRow.getValue(COL_MAINTENANCE_STATE), commentRow.getValue(COL_ROLE))),
+                      commentRow.getValue(COL_MAINTENANCE_STATE), commentRow.getValue(COL_ROLE))),
                   commentRow.getValue(ALS_STATE_TIME)));
 
           SqlSelect processQueryAll = new SqlSelect()
@@ -282,7 +398,7 @@ public class ServiceModuleBean implements BeeModule {
                   processRow.getValue(COL_MAINTENANCE_STATE),
                   processRow.getValue(COL_ROLE)), processRow.getValue(COL_DAYS_ACTIVE)));
 
-          for (Pair<Long, String> keyPair: commentsMap.keySet()) {
+          for (Pair<Long, String> keyPair : commentsMap.keySet()) {
 
             if (stateProcessMap.containsKey(keyPair.getB())) {
               Long rowIdValue = keyPair.getA();
@@ -304,7 +420,130 @@ public class ServiceModuleBean implements BeeModule {
           }
         }
       }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void createMaintenancePayroll(DataEvent.ViewUpdateEvent event) {
+        if (event.isAfter(TBL_SERVICE_MAINTENANCE) && event instanceof DataEvent.ViewUpdateEvent) {
+          List<BeeColumn> columns = event.getColumns();
+
+          if (DataUtils.contains(columns, COL_ENDING_DATE) && !BeeUtils.isEmpty(event.getRow()
+              .getString(DataUtils.getColumnIndex(COL_ENDING_DATE, columns)))) {
+            Long maintenanceId = event.getRow().getId();
+
+            Set<Long> calculatedItems = qs.getLongSet(new SqlSelect()
+                .addFields(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS))
+                .addFrom(TBL_ORDER_ITEMS)
+                .setWhere(SqlUtils.in(TBL_ORDER_ITEMS, COL_SERVICE_ITEM, TBL_MAINTENANCE_PAYROLL,
+                    COL_SERVICE_ITEM, SqlUtils.equals(TBL_MAINTENANCE_PAYROLL,
+                        COL_SERVICE_MAINTENANCE, maintenanceId))));
+
+            BeeRowSet itemsRowSet = qs.getViewData(TBL_SERVICE_ITEMS, Filter.and(
+                Filter.equals(COL_SERVICE_MAINTENANCE, maintenanceId),
+                Filter.idNotIn(calculatedItems)));
+
+            if (!itemsRowSet.isEmpty()) {
+              Map<Long, Double> tariffs = getRepairerTariff(itemsRowSet
+                  .getDistinctLongs(itemsRowSet.getColumnIndex(COL_REPAIRER)));
+
+              itemsRowSet.forEach(itemRow -> {
+                Long repairerId = itemRow.getLong(itemsRowSet.getColumnIndex(COL_REPAIRER));
+                int quantity = BeeUtils.unbox(itemRow.getInteger(itemsRowSet
+                    .getColumnIndex(COL_TRADE_ITEM_QUANTITY)));
+                double cost = BeeUtils.unbox(itemRow.getDouble(itemsRowSet
+                    .getColumnIndex(COL_ITEM + COL_ITEM_COST)));
+
+                Totalizer totalizer = new Totalizer(itemsRowSet.getColumns());
+                double total = BeeUtils.round(BeeUtils.unbox(totalizer.getTotal(itemRow)), 2);
+                double vat = BeeUtils.round(BeeUtils.unbox(totalizer.getVat(itemRow)), 2);
+
+                double basicAmount = ServiceUtils.calculateBasicAmount(total - vat, cost, quantity);
+
+                SqlInsert payrollInsertQuery = new SqlInsert(TBL_MAINTENANCE_PAYROLL)
+                    .addConstant(COL_SERVICE_MAINTENANCE,
+                        itemRow.getValue(itemsRowSet.getColumnIndex(COL_SERVICE_MAINTENANCE)))
+                    .addConstant(COL_REPAIRER, repairerId)
+                    .addConstant(COL_CURRENCY, prm.getRelation(PRM_CURRENCY))
+                    .addConstant(COL_MAINTENANCE_DATE, TimeUtils.today())
+                    .addConstant(COL_PAYROLL_TARIFF, tariffs.get(repairerId))
+                    .addConstant(COL_PAYROLL_BASIC_AMOUNT, basicAmount)
+                    .addConstant(COL_PAYROLL_SALARY, ServiceUtils
+                        .calculateSalary(BeeUtils.unbox(tariffs.get(repairerId)), basicAmount))
+                    .addConstant(COL_SERVICE_ITEM,
+                        itemRow.getLong(itemsRowSet.getColumnIndex(COL_SERVICE_ITEM)));
+                qs.insertData(payrollInsertQuery);
+              });
+              DataChangeEvent.fireRefresh((fireEvent, locality) ->
+                  Endpoint.sendToUser(usr.getCurrentUserId(),
+                      new ModificationMessage(fireEvent)), TBL_MAINTENANCE_PAYROLL);
+            }
+          }
+        }
+      }
     });
+  }
+
+  public Map<Long, Double> getCompletedInvoices(BeeRowSet rowSet) {
+    Map<Long, Double> complInvoices = new HashMap<>();
+
+    int serviceMaintenanceIndex = rowSet.getColumnIndex(COL_SERVICE_MAINTENANCE);
+    Long serviceMaintenance = rowSet.getRow(0).getLong(serviceMaintenanceIndex);
+
+    SqlSelect select = new SqlSelect()
+        .addSum(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .addFields(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS))
+        .addFrom(VIEW_ORDER_CHILD_INVOICES)
+        .addFromInner(TBL_ORDER_ITEMS,
+            sys.joinTables(TBL_ORDER_ITEMS, VIEW_ORDER_CHILD_INVOICES, COL_ORDER_ITEM))
+        .addFromInner(TBL_SALE_ITEMS,
+            sys.joinTables(TBL_SALE_ITEMS, VIEW_ORDER_CHILD_INVOICES, COL_SALE_ITEM))
+        .addFromLeft(TBL_SERVICE_ITEMS,
+            sys.joinTables(TBL_SERVICE_ITEMS, TBL_ORDER_ITEMS, COL_SERVICE_ITEM))
+        .addFromLeft(TBL_SERVICE_MAINTENANCE,
+            sys.joinTables(TBL_SERVICE_MAINTENANCE, TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE))
+        .setWhere(SqlUtils.and(sys.idEquals(TBL_SERVICE_MAINTENANCE, serviceMaintenance),
+            SqlUtils.joinUsing(TBL_ORDER_ITEMS, TBL_SALE_ITEMS, COL_ITEM)))
+        .addGroup(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS));
+
+    SimpleRowSet rs = qs.getData(select);
+
+    if (rs.getNumberOfRows() > 0) {
+      for (SimpleRow row : rs) {
+        complInvoices.put(row.getLong(sys.getIdName(TBL_ORDER_ITEMS)), row
+            .getDouble(COL_TRADE_ITEM_QUANTITY));
+      }
+    }
+    return complInvoices;
+  }
+
+  public double getReservedRemaindersQuery(Long itemId, Long warehouseId) {
+    SqlSelect qry = new SqlSelect()
+        .addSum(TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER)
+        .addFrom(TBL_ORDER_ITEMS)
+        .addFromLeft(TBL_SERVICE_ITEMS, sys.joinTables(TBL_SERVICE_ITEMS,
+            TBL_ORDER_ITEMS, COL_SERVICE_ITEM))
+        .addFromLeft(TBL_SERVICE_MAINTENANCE,
+            sys.joinTables(TBL_SERVICE_MAINTENANCE, TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE))
+        .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
+
+        .setWhere(SqlUtils.and(
+            SqlUtils.equals(TBL_SERVICE_MAINTENANCE, COL_WAREHOUSE, warehouseId),
+            SqlUtils.equals(TBL_ORDER_ITEMS, COL_ITEM, itemId),
+            SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE),
+            SqlUtils.isNull(TBL_SERVICE_MAINTENANCE, COL_ENDING_DATE)))
+        .addGroup(TBL_ORDER_ITEMS, COL_ITEM);
+    return BeeUtils.unbox(qs.getDouble(qry));
+  }
+
+  public Long getWarehouseId(BeeRowSet rowSet) {
+    int serviceMaintenanceIndex = rowSet.getColumnIndex(COL_SERVICE_MAINTENANCE);
+    Long serviceMaintenance = rowSet.getRow(0).getLong(serviceMaintenanceIndex);
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_SERVICE_MAINTENANCE, COL_WAREHOUSE)
+        .addFrom(TBL_SERVICE_MAINTENANCE)
+        .setWhere(sys.idEquals(TBL_SERVICE_MAINTENANCE, serviceMaintenance));
+
+    return qs.getLong(query);
   }
 
   private ResponseObject copyDocumentCriteria(RequestInfo reqInfo) {
@@ -657,6 +896,16 @@ public class ServiceModuleBean implements BeeModule {
     return response;
   }
 
+  private ResponseObject createReservationInvoiceItems(RequestInfo reqInfo) {
+    return ord.createInvoiceItems(reqInfo, TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE,
+        Arrays.asList(
+            Pair.of(TBL_SERVICE_ITEMS,
+                sys.joinTables(TBL_SERVICE_ITEMS, TBL_ORDER_ITEMS, COL_SERVICE_ITEM)),
+            Pair.of(TBL_SERVICE_MAINTENANCE,
+                sys.joinTables(TBL_SERVICE_MAINTENANCE, TBL_SERVICE_ITEMS,
+                    COL_SERVICE_MAINTENANCE))), true);
+  }
+
   private ResponseObject getCalendarData(RequestInfo reqInfo) {
     BeeRowSet settings = getSettings();
     if (DataUtils.isEmpty(settings)) {
@@ -944,6 +1193,44 @@ public class ServiceModuleBean implements BeeModule {
     return rs;
   }
 
+  private ResponseObject getItemsInfo(RequestInfo reqInfo) {
+    Long serviceId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SERVICE_MAINTENANCE));
+    if (!DataUtils.isId(serviceId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_SERVICE_MAINTENANCE);
+    }
+
+    Long currency = prm.getRelation(PRM_CURRENCY);
+    if (!DataUtils.isId(currency)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_CURRENCY);
+    }
+
+    SqlSelect query = new SqlSelect();
+    query.addFields(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS), COL_TRADE_VAT_PLUS,
+        COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_INCOME_ITEM, COL_RESERVED_REMAINDER,
+        COL_TRADE_DISCOUNT, COL_TRADE_ITEM_QUANTITY)
+        .addFields(TBL_ITEMS, COL_ITEM_ARTICLE)
+        .addField(TBL_ITEMS, COL_ITEM_NAME, ALS_ITEM_NAME)
+        .addField(TBL_UNITS, COL_UNIT_NAME, ALS_UNIT_NAME)
+        .addFrom(TBL_ORDER_ITEMS)
+        .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
+        .addFromLeft(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
+        .addFromLeft(TBL_SERVICE_ITEMS,
+            sys.joinTables(TBL_SERVICE_ITEMS, TBL_ORDER_ITEMS, COL_SERVICE_ITEM))
+        .addFromLeft(TBL_SERVICE_MAINTENANCE,
+            sys.joinTables(TBL_SERVICE_MAINTENANCE, TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE))
+        .setWhere(sys.idEquals(TBL_SERVICE_MAINTENANCE, serviceId));
+    IsExpression priceExch =
+        ExchangeUtils.exchangeFieldTo(query, SqlUtils.field(TBL_ORDER_ITEMS, COL_TRADE_ITEM_PRICE),
+            SqlUtils.field(TBL_ORDER_ITEMS, COL_TRADE_CURRENCY),
+            SqlUtils.field(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE),
+            SqlUtils.constant(currency));
+
+    query.addExpr(priceExch, COL_ITEM_PRICE)
+        .addOrder(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS));
+
+    return ResponseObject.response(qs.getViewData(query, sys.getView(TBL_ORDER_ITEMS), false));
+  }
+
   private ResponseObject getMaintenanceNewRowValues() {
     Map<String, String> columnValues = new HashMap<>();
 
@@ -959,7 +1246,7 @@ public class ServiceModuleBean implements BeeModule {
 
     IsQuery stateSelect = new SqlSelect()
         .addFields(TBL_STATE_PROCESS, COL_MAINTENANCE_STATE)
-        .addField(VIEW_MAINTENANCE_STATES, COL_STATE_NAME,  ALS_STATE_NAME)
+        .addField(VIEW_MAINTENANCE_STATES, COL_STATE_NAME, ALS_STATE_NAME)
         .addFrom(TBL_STATE_PROCESS)
         .addFromLeft(VIEW_MAINTENANCE_STATES,
             sys.joinTables(VIEW_MAINTENANCE_STATES, TBL_STATE_PROCESS, COL_MAINTENANCE_STATE))
@@ -969,21 +1256,13 @@ public class ServiceModuleBean implements BeeModule {
                 AdministrationConstants.VIEW_USER_ROLES, AdministrationConstants.COL_ROLE,
                 SqlUtils.equals(AdministrationConstants.VIEW_USER_ROLES,
                     AdministrationConstants.COL_USER, usr.getCurrentUserId()))
-            ))
+        ))
         .setLimit(1);
     SimpleRow stateRow = qs.getRow(stateSelect);
 
     if (stateRow != null) {
       columnValues.put(AdministrationConstants.COL_STATE, stateRow.getValue(COL_MAINTENANCE_STATE));
       columnValues.put(ALS_STATE_NAME, stateRow.getValue(ALS_STATE_NAME));
-    }
-
-    Pair<Long, String> warrantyInfo = prm.getRelationInfo(PRM_DEFAULT_WARRANTY_TYPE);
-    Long warrantyId = warrantyInfo.getA();
-
-    if (DataUtils.isId(warrantyId)) {
-      columnValues.put(COL_WARRANTY_TYPE, BeeUtils.toString(warrantyId));
-      columnValues.put(ALS_WARRANTY_TYPE_NAME, warrantyInfo.getB());
     }
 
     IsQuery departmentSelect = new SqlSelect()
@@ -1002,7 +1281,104 @@ public class ServiceModuleBean implements BeeModule {
           departmentRowSet.getRow(0).getValue(ALS_DEPARTMENT_NAME));
     }
 
+    Pair<Long, String> warehouseInfo = prm.getRelationInfo(PRM_SERVICE_MANAGER_WAREHOUSE);
+    Long warehouseId = warehouseInfo.getA();
+
+    if (DataUtils.isId(warehouseId)) {
+      columnValues.put(COL_WAREHOUSE, BeeUtils.toString(warehouseId));
+      columnValues.put(ALS_WAREHOUSE_CODE, warehouseInfo.getB());
+    }
+
     return ResponseObject.response(columnValues);
+  }
+
+  private Map<Long, Double> getRepairerTariff(Set<Long> repairerId) {
+    DateValue today = new DateValue(TimeUtils.today());
+    Map<Long, Double> repairerTariffs = new HashMap<>();
+
+    SimpleRowSet tariffRowSet = qs.getData(new SqlSelect()
+        .addFields(TBL_MAINTENANCE_TARIFFS, COL_PAYROLL_TARIFF, COL_REPAIRER)
+        .addFrom(TBL_MAINTENANCE_TARIFFS)
+        .setWhere(SqlUtils.and(SqlUtils.inList(TBL_MAINTENANCE_TARIFFS, COL_REPAIRER, repairerId),
+            SqlUtils.or(SqlUtils.isNull(TBL_MAINTENANCE_TARIFFS, COL_DATE_FROM),
+                SqlUtils.lessEqual(TBL_MAINTENANCE_TARIFFS, COL_DATE_FROM, today)),
+            SqlUtils.or(SqlUtils.isNull(TBL_MAINTENANCE_TARIFFS, COL_DATE_TO),
+                SqlUtils.moreEqual(TBL_MAINTENANCE_TARIFFS, COL_DATE_TO, today))))
+        .addOrderDesc(TBL_MAINTENANCE_TARIFFS, sys.getIdName(TBL_MAINTENANCE_TARIFFS)));
+
+    if (!tariffRowSet.isEmpty()) {
+      tariffRowSet.forEach(row ->
+          repairerTariffs.put(row.getLong(COL_REPAIRER), row.getDouble(COL_PAYROLL_TARIFF)));
+    }
+    return repairerTariffs;
+  }
+
+  private ResponseObject getReportData(RequestInfo reqInfo) {
+    String repairerCompanyPerson = SqlUtils.uniqueName();
+    String repairerPerson = SqlUtils.uniqueName();
+    String confirmedCompanyPerson = SqlUtils.uniqueName();
+    String confirmedPerson = SqlUtils.uniqueName();
+
+    SqlSelect select = new SqlSelect()
+        .addFields(TBL_MAINTENANCE_PAYROLL, COL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE,
+            COL_PAYROLL_DATE, COL_PAYROLL_BASIC_AMOUNT, COL_PAYROLL_TARIFF, COL_PAYROLL_SALARY,
+            COL_PAYROLL_CONFIRMED, COL_PAYROLL_CONFIRMATION_DATE, COL_NOTES)
+        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, ALS_CURRENCY_NAME)
+        .addFrom(TBL_MAINTENANCE_PAYROLL)
+        .addFromLeft(TBL_CURRENCIES,
+            sys.joinTables(TBL_CURRENCIES, TBL_MAINTENANCE_PAYROLL, COL_CURRENCY))
+        .addFromLeft(TBL_COMPANY_PERSONS, repairerCompanyPerson,
+            sys.joinTables(TBL_COMPANY_PERSONS, repairerCompanyPerson,
+                TBL_MAINTENANCE_PAYROLL, COL_REPAIRER))
+        .addFromLeft(TBL_PERSONS, repairerPerson,
+            sys.joinTables(TBL_PERSONS, repairerPerson, repairerCompanyPerson, COL_PERSON))
+        .addFromLeft(TBL_USERS,
+            sys.joinTables(TBL_USERS, TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_CONFIRMED + COL_USER))
+        .addFromLeft(TBL_COMPANY_PERSONS, confirmedCompanyPerson, sys.joinTables(
+            TBL_COMPANY_PERSONS, confirmedCompanyPerson, TBL_USERS, COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS, confirmedPerson,
+            sys.joinTables(TBL_PERSONS, confirmedPerson, confirmedCompanyPerson, COL_PERSON));
+
+    select.addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(repairerPerson, COL_FIRST_NAME),
+        SqlUtils.constant(BeeConst.STRING_EMPTY)), SqlUtils.constant(BeeConst.STRING_SPACE),
+        SqlUtils.nvl(SqlUtils.field(repairerPerson, COL_LAST_NAME),
+            SqlUtils.constant(BeeConst.STRING_EMPTY))), COL_REPAIRER);
+    select.addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(confirmedPerson, COL_FIRST_NAME),
+        SqlUtils.constant(BeeConst.STRING_EMPTY)), SqlUtils.constant(BeeConst.STRING_SPACE),
+        SqlUtils.nvl(SqlUtils.field(confirmedPerson, COL_LAST_NAME),
+            SqlUtils.constant(BeeConst.STRING_EMPTY))), COL_PAYROLL_CONFIRMED + COL_USER);
+
+    ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
+    HasConditions clause = SqlUtils.and();
+    clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_MAINTENANCE_PAYROLL,
+        COL_SERVICE_MAINTENANCE), SqlConstants.SqlDataType.STRING, 20, 0),
+        COL_SERVICE_MAINTENANCE));
+    clause.add(report.getCondition(TBL_MAINTENANCE_PAYROLL, COL_MAINTENANCE_DATE));
+    clause.add(report.getCondition(TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_DATE));
+    clause.add(report.getCondition(TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_CONFIRMED));
+    clause.add(report.getCondition(TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_CONFIRMATION_DATE));
+    clause.add(report.getCondition(TBL_MAINTENANCE_PAYROLL, COL_NOTES));
+    clause.add(report.getCondition(SqlUtils.field(TBL_CURRENCIES, COL_CURRENCY_NAME),
+        ALS_CURRENCY_NAME));
+    clause.add(report.getCondition(
+        SqlUtils.concat(SqlUtils.field(repairerPerson, COL_FIRST_NAME), "' '",
+            SqlUtils.nvl(SqlUtils.field(repairerPerson, COL_LAST_NAME), "''")),
+        COL_REPAIRER));
+    clause.add(report.getCondition(
+        SqlUtils.concat(SqlUtils.field(confirmedPerson, COL_FIRST_NAME), "' '",
+            SqlUtils.nvl(SqlUtils.field(confirmedPerson, COL_LAST_NAME), "''")),
+        COL_PAYROLL_CONFIRMED + COL_USER));
+
+    if (!usr.isAdministrator()) {
+      clause.add(SqlUtils.equals(TBL_MAINTENANCE_PAYROLL, COL_REPAIRER,
+          usr.getCompanyPerson(usr.getCurrentUserId())));
+    }
+
+    if (!clause.isEmpty()) {
+      select.setWhere(clause);
+    }
+    return ResponseObject.response(report.getResult(qs.getData(select),
+        Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE))));
   }
 
   private BeeRowSet getSettings() {
@@ -1035,16 +1411,18 @@ public class ServiceModuleBean implements BeeModule {
           .addFields(TBL_EMAILS, COL_EMAIL)
           .addFields(TBL_CONTACTS, COL_PHONE)
           .addFields(TBL_PERSONS, COL_FIRST_NAME)
-          .addFields(TBL_SERVICE_OBJECTS, COL_MODEL)
-          .addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_MANUFACTURER_NAME)
-          .addFields(TBL_SERVICE_MAINTENANCE, COL_DEPARTMENT)
+          .addFields(TBL_SERVICE_OBJECTS, COL_MODEL, COL_SERIAL_NO, COL_ARTICLE_NO)
+          .addField(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME, ALS_MANUFACTURER_NAME)
+          .addFields(TBL_SERVICE_MAINTENANCE, COL_DEPARTMENT, COL_EQUIPMENT,
+              COL_MAINTENANCE_DESCRIPTION)
+          .addField(TBL_SERVICE_TREE, COL_SERVICE_CATEGORY_NAME, ALS_CATEGORY_NAME)
           .addFrom(TBL_MAINTENANCE_COMMENTS)
           .addFromInner(TBL_SERVICE_MAINTENANCE, sys.joinTables(TBL_SERVICE_MAINTENANCE,
               TBL_MAINTENANCE_COMMENTS, COL_SERVICE_MAINTENANCE))
           .addFromInner(TBL_SERVICE_OBJECTS, sys.joinTables(TBL_SERVICE_OBJECTS,
               TBL_SERVICE_MAINTENANCE, COL_SERVICE_OBJECT))
-          .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES,
-              TBL_SERVICE_OBJECTS, COL_MANUFACTURER))
+          .addFromLeft(TBL_TCD_MANUFACTURERS,
+              sys.joinTables(TBL_TCD_MANUFACTURERS, TBL_SERVICE_OBJECTS, COL_MANUFACTURER))
           .addFromLeft(TBL_COMPANY_PERSONS,
               sys.joinTables(TBL_COMPANY_PERSONS, TBL_SERVICE_MAINTENANCE, COL_CONTACT))
           .addFromLeft(TBL_CONTACTS,
@@ -1055,6 +1433,8 @@ public class ServiceModuleBean implements BeeModule {
               sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
           .addFromLeft(VIEW_MAINTENANCE_STATES,
               sys.joinTables(VIEW_MAINTENANCE_STATES, TBL_SERVICE_MAINTENANCE, COL_STATE))
+          .addFromLeft(TBL_SERVICE_TREE,
+              sys.joinTables(TBL_SERVICE_TREE, TBL_SERVICE_OBJECTS, COL_SERVICE_CATEGORY))
           .setWhere(sys.idEquals(TBL_MAINTENANCE_COMMENTS, commentId)));
 
       if (commentInfoRow != null) {
@@ -1062,15 +1442,17 @@ public class ServiceModuleBean implements BeeModule {
         boolean isSendSms = false;
 
         Dictionary dic = usr.getDictionary();
+        DateTimeFormatInfo dtfInfo = usr.getDateTimeFormatInfo();
 
         if (!BeeUtils.toBoolean(commentInfoRow.getValue(COL_SEND_EMAIL))) {
-          ResponseObject mailResponse = informCustomerWithEmail(dic, commentInfoRow);
+          ResponseObject mailResponse = informCustomerWithEmail(dic, dtfInfo, commentInfoRow);
           isSendEmail = !mailResponse.hasErrors();
         }
 
         String error = BeeConst.STRING_EMPTY;
 
-        if (!BeeUtils.toBoolean(commentInfoRow.getValue(COL_SEND_SMS))) {
+        if (!BeeUtils.toBoolean(commentInfoRow.getValue(COL_SEND_SMS))
+            && !BeeUtils.isEmpty(commentInfoRow.getValue(COL_PHONE))) {
           String from = BeeConst.STRING_EMPTY;
 
           if (!BeeUtils.isEmpty(prm.getText(PRM_SMS_REQUEST_CONTACT_INFO_FROM))) {
@@ -1121,7 +1503,7 @@ public class ServiceModuleBean implements BeeModule {
             error = dic.svcEmptySmsFromError();
 
           } else {
-            ResponseObject smsResponse = informCustomerWithSms(dic, commentInfoRow, from);
+            ResponseObject smsResponse = informCustomerWithSms(dic, dtfInfo, commentInfoRow, from);
             isSendSms = !smsResponse.hasErrors();
           }
         }
@@ -1155,7 +1537,9 @@ public class ServiceModuleBean implements BeeModule {
     return ResponseObject.emptyResponse();
   }
 
-  private ResponseObject informCustomerWithEmail(Dictionary dic, SimpleRow commentInfoRow) {
+  private ResponseObject informCustomerWithEmail(Dictionary dic, DateTimeFormatInfo dtfInfo,
+      SimpleRow commentInfoRow) {
+
     Long accountId = mail.getSenderAccountId(SVC_INFORM_CUSTOMER);
 
     if (!DataUtils.isId(accountId)) {
@@ -1183,14 +1567,19 @@ public class ServiceModuleBean implements BeeModule {
         tr().append(
             td().text(dic.svcRepair()), td().text(maintenanceId)));
 
+    deviceDescription = BeeUtils.joinWords(commentInfoRow.getValue(ALS_CATEGORY_NAME),
+        deviceDescription, commentInfoRow.getValue(COL_SERIAL_NO),
+        commentInfoRow.getValue(COL_ARTICLE_NO));
+
     if (!BeeUtils.isEmpty(deviceDescription)) {
       fields.append(tr().append(
           td().text(dic.svcDevice()), td().text(deviceDescription)));
     }
 
     fields.append(tr().append(
-            td().text(dic.date()),
-            td().text(TimeUtils.renderCompact(commentInfoRow.getDateTime(COL_PUBLISH_TIME)))),
+        td().text(dic.date()),
+        td().text(Formatter.renderDateTime(dtfInfo,
+            commentInfoRow.getDateTime(COL_PUBLISH_TIME)))),
         tr().append(
             td().text(dic.svcMaintenanceState()),
             td().text(commentInfoRow.getValue(COL_EVENT_NOTE))));
@@ -1198,9 +1587,28 @@ public class ServiceModuleBean implements BeeModule {
 
     if (termValue != null) {
       fields.append(tr().append(
-          td().text(dic.svcTerm()), td().text(TimeUtils.renderCompact(termValue))));
+          td().text(dic.svcTerm()), td().text(Formatter.renderDateTime(dtfInfo, termValue))));
     }
 
+    String maintenanceDescription = commentInfoRow.getValue(COL_MAINTENANCE_DESCRIPTION);
+
+    if (!BeeUtils.isEmpty(maintenanceDescription)) {
+      fields.append(tr().append(td().text(dic.svcFaultInfo()), td().text(maintenanceDescription)));
+    }
+
+    List<Long> equipmentIds = DataUtils.parseIdList(commentInfoRow.getValue(COL_EQUIPMENT));
+
+    if (!BeeUtils.isEmpty(equipmentIds)) {
+      Set<String> equipmentValues = qs.getValueSet(new SqlSelect()
+          .addFields(TBL_EQUIPMENT, COL_EQUIPMENT_NAME)
+          .addFrom(TBL_EQUIPMENT)
+          .setWhere(sys.idInList(TBL_EQUIPMENT, equipmentIds)));
+
+      if (!equipmentValues.isEmpty()) {
+        fields.append(tr().append(td().text(dic.svcEquipment()),
+            td().text(BeeUtils.joinItems(equipmentValues))));
+      }
+    }
     List<Element> cells = fields.queryTag(Tags.TD);
     for (Element cell : cells) {
       if (cell.index() == 0) {
@@ -1240,8 +1648,9 @@ public class ServiceModuleBean implements BeeModule {
     return mail.sendStyledMail(accountId, recipientEmail, subject, doc.buildLines(), emailHeader);
   }
 
-  private ResponseObject informCustomerWithSms(Dictionary dic, SimpleRow commentInfoRow,
-      String from) {
+  private ResponseObject informCustomerWithSms(Dictionary dic, DateTimeFormatInfo dtfInfo,
+      SimpleRow commentInfoRow, String from) {
+
     String phone = commentInfoRow.getValue(COL_PHONE);
     phone = phone.replaceAll("\\D+", "");
 
@@ -1258,7 +1667,7 @@ public class ServiceModuleBean implements BeeModule {
         maintenanceId + BeeConst.STRING_COLON,
         BeeUtils.notEmpty(commentInfoRow.getValue(COL_COMMENT), ""),
         termValue != null ? BeeUtils.joinWords(dic.svcTerm() + BeeConst.STRING_COLON,
-            TimeUtils.renderCompact(termValue)) : "", externalServiceUrl);
+            Formatter.renderDateTime(dtfInfo, termValue)) : "", externalServiceUrl);
 
     if (BeeUtils.isEmpty(message) || BeeUtils.isEmpty(phone)) {
       return ResponseObject.error("message or phone is empty");
@@ -1267,7 +1676,6 @@ public class ServiceModuleBean implements BeeModule {
     String address = prm.getText(PRM_SMS_REQUEST_SERVICE_ADDRESS);
     String userName = prm.getText(PRM_SMS_REQUEST_SERVICE_USER_NAME);
     String password = prm.getText(PRM_SMS_REQUEST_SERVICE_PASSWORD);
-
 
     if (BeeUtils.isEmpty(address)) {
       logger.warning(BeeUtils.joinWords(PRM_SMS_REQUEST_SERVICE_ADDRESS, " is empty"));
@@ -1315,6 +1723,7 @@ public class ServiceModuleBean implements BeeModule {
       return ResponseObject.error(reqInfo.getService(), "parameters not found");
     }
 
+    boolean createUpdateComment = !DataUtils.isId(maintenanceId);
     IsCondition latestMaintenanceCondition = null;
 
     if (DataUtils.isId(objectId)) {
@@ -1340,12 +1749,12 @@ public class ServiceModuleBean implements BeeModule {
     SqlSelect serviceMaintenanceQuery = new SqlSelect()
         .addFields(TBL_SERVICE_MAINTENANCE, sys.getIdName(TBL_SERVICE_MAINTENANCE), COL_ENDING_DATE,
             COL_COMPANY, COL_CONTACT, COL_SERVICE_OBJECT)
-            .addFields(TBL_SERVICE_OBJECTS,
-                    COL_SERVICE_CUSTOMER, ALS_CONTACT_PERSON)
-            .addFrom(TBL_SERVICE_MAINTENANCE)
-            .addFromLeft(TBL_SERVICE_OBJECTS, sys.joinTables(VIEW_SERVICE_OBJECTS,
-                    TBL_SERVICE_MAINTENANCE, COL_SERVICE_OBJECT))
-            .setWhere(SqlUtils.and(latestMaintenanceCondition, maintenanceFilter));
+        .addFields(TBL_SERVICE_OBJECTS,
+            COL_SERVICE_CUSTOMER, ALS_CONTACT_PERSON)
+        .addFrom(TBL_SERVICE_MAINTENANCE)
+        .addFromLeft(TBL_SERVICE_OBJECTS, sys.joinTables(VIEW_SERVICE_OBJECTS,
+            TBL_SERVICE_MAINTENANCE, COL_SERVICE_OBJECT))
+        .setWhere(SqlUtils.and(latestMaintenanceCondition, maintenanceFilter));
 
     SimpleRowSet serviceMaintenanceRs = qs.getData(serviceMaintenanceQuery);
 
@@ -1357,19 +1766,19 @@ public class ServiceModuleBean implements BeeModule {
       String objectCompany = maintenanceRow.getValue(COL_SERVICE_CUSTOMER);
       String objectContact = maintenanceRow.getValue(ALS_CONTACT_PERSON);
 
-      if (!BeeUtils.same(maintenanceCompany, objectCompany)
-              || !BeeUtils.same(maintenanceContact, objectContact)) {
+      if ((!BeeUtils.same(maintenanceCompany, objectCompany)
+          || !BeeUtils.same(maintenanceContact, objectContact))
+          && (!DataUtils.isId(objectId) || !BeeUtils.isEmpty(objectCompany)
+          || !BeeUtils.isEmpty(objectContact))) {
         SqlUpdate update = null;
         Long responseResult = null;
 
         if (DataUtils.isId(maintenanceId)) {
           update = new SqlUpdate(TBL_SERVICE_OBJECTS)
-                  .addConstant(COL_SERVICE_CUSTOMER,
-                          maintenanceRow.getValue(COL_COMPANY))
-                  .addConstant(ALS_CONTACT_PERSON,
-                          maintenanceRow.getValue(COL_CONTACT))
-                  .setWhere(sys.idEquals(TBL_SERVICE_OBJECTS,
-                          maintenanceRow.getLong(COL_SERVICE_OBJECT)));
+              .addConstant(COL_SERVICE_CUSTOMER, maintenanceCompany)
+              .addConstant(ALS_CONTACT_PERSON, maintenanceContact)
+              .setWhere(sys.idEquals(TBL_SERVICE_OBJECTS,
+                  maintenanceRow.getLong(COL_SERVICE_OBJECT)));
           responseResult = maintenanceRow.getLong(COL_SERVICE_OBJECT);
 
         } else {
@@ -1377,20 +1786,31 @@ public class ServiceModuleBean implements BeeModule {
 
           if (maintenanceRow.getValue(COL_ENDING_DATE) == null && DataUtils.isId(maintenanceId)) {
             update = new SqlUpdate(TBL_SERVICE_MAINTENANCE)
-                    .addConstant(COL_COMPANY,
-                            maintenanceRow.getValue(COL_SERVICE_CUSTOMER))
-                    .addConstant(COL_CONTACT,
-                            maintenanceRow.getValue(ALS_CONTACT_PERSON))
-                    .setWhere(sys.idEquals(TBL_SERVICE_MAINTENANCE, maintenanceId));
+                .setWhere(sys.idEquals(TBL_SERVICE_MAINTENANCE, maintenanceId));
+
+            if (DataUtils.isId(objectCompany)) {
+              update.addConstant(COL_COMPANY, objectCompany);
+            }
+            if (DataUtils.isId(objectContact)) {
+              update.addConstant(COL_CONTACT, objectContact);
+            }
             responseResult = maintenanceId;
           }
         }
 
-        if (update != null) {
+        if (update != null && !update.isEmpty()) {
           ResponseObject response = qs.updateDataWithResponse(update);
 
           if (response.hasErrors()) {
             return response;
+          } else if (!BeeUtils.same(maintenanceCompany, objectCompany)
+              && createUpdateComment && DataUtils.isId(maintenanceId)) {
+            qs.insertData(new SqlInsert(TBL_MAINTENANCE_COMMENTS)
+                .addConstant(COL_SERVICE_MAINTENANCE, maintenanceId)
+                .addConstant(COL_PUBLISHER, usr.getCurrentUserId())
+                .addConstant(COL_PUBLISH_TIME, TimeUtils.nowMinutes())
+                .addConstant(COL_EVENT_NOTE,
+                    usr.getDictionary(usr.getCurrentUserId()).svcChangedClient()));
           }
 
           return ResponseObject.response(responseResult);

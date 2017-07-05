@@ -1,5 +1,7 @@
 package com.butent.bee.shared.i18n.DateTimeFormatInfo;
 
+import com.butent.bee.shared.i18n.DateOrdering;
+
 /**
  * Implementation of DateTimeFormatInfo for the "et" locale.
  */
@@ -39,7 +41,17 @@ public final class DateTimeFormatInfoET implements DateTimeFormatInfo {
 
   @Override
   public String dateFormatShort() {
+    return "dd.MM.y";
+  }
+
+  @Override
+  public String dateFormatCompact() {
     return "dd.MM.yy";
+  }
+
+  @Override
+  public DateOrdering dateOrdering() {
+    return DateOrdering.DMY;
   }
 
   @Override
@@ -74,6 +86,11 @@ public final class DateTimeFormatInfoET implements DateTimeFormatInfo {
   }
 
   @Override
+  public String formatHour24MinuteSecondMillisecond() {
+    return "H:mm:ss.SSS";
+  }
+
+  @Override
   public String formatMinuteSecond() {
     return "mm.ss";
   }
@@ -86,11 +103,6 @@ public final class DateTimeFormatInfoET implements DateTimeFormatInfo {
   @Override
   public String formatMonthAbbrevDay() {
     return "d. MMM";
-  }
-
-  @Override
-  public String formatMonthFull() {
-    return "MMMM";
   }
 
   @Override
@@ -121,6 +133,11 @@ public final class DateTimeFormatInfoET implements DateTimeFormatInfo {
   @Override
   public String formatYearMonthFull() {
     return "MMMM y";
+  }
+
+  @Override
+  public String formatYearMonthStandalone() {
+    return "LLLL y";
   }
 
   @Override

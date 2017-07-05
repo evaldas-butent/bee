@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="CarBundleItems" viewName="CarBundleItems" autoFlex="true"
+        filter="!(Job)" newRowCaption="=newItem"
+>
+  <g:columns>
+    <RelColumn name="Item" viewName="CarItems" choiceColumns="Name Article" renderColumns="ItemName"
+               flexGrow="2" visible="true" newRowEnabled="false" caching="none">
+      <dynStyle>
+        <ui:inline>color:blue;</ui:inline>
+        <ui:expression>row.IsService</ui:expression>
+      </dynStyle>
+    </RelColumn>
+
+    <DataColumn name="Article" flexGrow="1" />
+
+    <DataColumn name="Quantity" scale="0" visible="true" />
+    <DataColumn name="UnitName" label="=unitShort" />
+
+    <DataColumn name="Price" scale="2">
+      <editor type="number" currencySource="Currency" />
+    </DataColumn>
+    <RelColumn name="Currency" newRowEnabled="false" editEnabled="false" />
+  </g:columns>
+</g:Grid>

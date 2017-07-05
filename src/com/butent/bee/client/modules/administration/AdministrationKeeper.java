@@ -13,6 +13,7 @@ import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.i18n.DictionaryGrid;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.imports.ImportOptionForm;
 import com.butent.bee.client.imports.ImportOptionsGrid;
 import com.butent.bee.client.modules.finance.DimensionNamesGrid;
@@ -54,19 +55,13 @@ public final class AdministrationKeeper {
       if (event.hasView(VIEW_USERS)) {
         event.setResult(DataUtils.join(Data.getDataInfo(VIEW_USERS), event.getRow(),
             Lists.newArrayList(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME, ALS_COMPANY_NAME),
-            BeeConst.STRING_SPACE));
+            BeeConst.STRING_SPACE, Format.getDateRenderer(), Format.getDateTimeRenderer()));
       }
     }
   }
 
-  private static Long company;
-
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.ADMINISTRATION, method);
-  }
-
-  public static Long getCompany() {
-    return company;
   }
 
   public static void register() {
@@ -79,6 +74,7 @@ public final class AdministrationKeeper {
     FormFactory.registerFormInterceptor(FORM_NEW_ROLE, new NewRoleForm());
     FormFactory.registerFormInterceptor(FORM_IMPORT_OPTION, new ImportOptionForm());
     FormFactory.registerFormInterceptor(TBL_CUSTOM_CONFIG, new CustomConfigForm());
+    FormFactory.registerFormInterceptor(FORM_DEPENDENCY_RIGHTS, new DependencyRightsForm());
 
     GridFactory.registerGridInterceptor(TBL_IMPORT_OPTIONS, new ImportOptionsGrid());
     GridFactory.registerGridInterceptor(TBL_CUSTOM_CONFIG, new CustomConfigGrid());
@@ -148,10 +144,6 @@ public final class AdministrationKeeper {
     SelectorEvent.register(AdministrationKeeper::onDataSelector);
 
     registerDimensions();
-  }
-
-  public static void setCompany(Long company) {
-    AdministrationKeeper.company = company;
   }
 
   private static void onDataSelector(SelectorEvent event) {
