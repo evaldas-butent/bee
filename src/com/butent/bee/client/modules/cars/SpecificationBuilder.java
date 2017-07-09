@@ -859,7 +859,11 @@ public class SpecificationBuilder implements InputCallback {
               && (!dimension.isRequired() || !Objects.equals(dimension, opt.getDimension()))
               && !Objects.equals(specification.getOptions().contains(opt), action)) {
 
-            msgs.add(BeeUtils.joinWords(action ? "+" : "-", opt));
+            msgs.add(BeeUtils.joinWords(action
+                ? "<span style=\"font-family:" + FontAwesome.class.getSimpleName()
+                + "; color:green;\">" + FontAwesome.PLUS_CIRCLE.getCode() + "</span>"
+                : "<span style=\"font-family:" + FontAwesome.class.getSimpleName()
+                + "; color:red;\">" + FontAwesome.BAN.getCode() + "</span>", opt));
           }
         }
       }
