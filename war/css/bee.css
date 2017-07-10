@@ -2136,21 +2136,18 @@
 .bee-FilterSupplier-dateTime-label {
   width: 40px;
 }
-.bee-FilterSupplier-dateTime-date {
+input[type="text"].bee-FilterSupplier-dateTime-date {
   width: 100px;
 }
-.bee-FilterSupplier-dateTime-time {
-  width: 60px;
-}
 
-.bee-FilterSupplier-id-editor {
+input[type="text"].bee-FilterSupplier-id-editor {
   width: 80px;
 }
 
 .bee-FilterSupplier-value-caption {
   margin-bottom: 5px;
 }
-.bee-FilterSupplier-value-editor {
+input[type="text"].bee-FilterSupplier-value-editor {
   width: 150px;
 }
 .bee-FilterSupplier-value-error {
@@ -2179,8 +2176,8 @@
   width: 40px;
   display: inline-block;
 }
-.bee-FilterSupplier-range-from-input,
-.bee-FilterSupplier-range-to-input {
+input[type="text"].bee-FilterSupplier-range-from-input,
+input[type="text"].bee-FilterSupplier-range-to-input {
   width: 120px;
 }
 .bee-FilterSupplier-range-emptiness {
@@ -3450,6 +3447,11 @@ input[type="text"],
 textarea,
 .bee-DataSelector-editableContainer {
   width: 150px;
+}
+
+input[type="text"].bee-InputTime,
+input[type="text"].bee-InputTimeOfDay {
+  width: 60px;
 }
 
 .bee-ChangePassword-table {
