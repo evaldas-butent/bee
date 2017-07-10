@@ -69,6 +69,7 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.BorderStyle;
 import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -836,6 +837,8 @@ public class ClassifiersModuleBean implements BeeModule {
     Table table = table();
     Tr trHead = tr();
 
+    table.setColor("#414142");
+
     for (int i = 0; i < data.getNumberOfColumns(); i++) {
       if (BeeUtils.contains(excludedColumns, data.getColumnName(i))) {
         continue;
@@ -846,8 +849,8 @@ public class ClassifiersModuleBean implements BeeModule {
 
       Th th = th().text(label);
       th.setBorderWidth("1px");
-      th.setBorderStyle(BorderStyle.SOLID);
-      th.setBorderColor("black");
+      th.setBorderBottomStyle(BorderStyle.SOLID);
+      th.setBorderColor("#ededed");
       trHead.append(th);
     }
 
@@ -871,8 +874,9 @@ public class ClassifiersModuleBean implements BeeModule {
           Td td = td();
           tr.append(td);
           td.setBorderWidth("1px");
-          td.setBorderStyle(BorderStyle.SOLID);
-          td.setBorderColor("black");
+          td.setBorderBottomStyle(BorderStyle.SOLID);
+          td.setBorderColor("#ededed");
+          td.setPadding("3px");
           continue;
         }
 
@@ -905,8 +909,9 @@ public class ClassifiersModuleBean implements BeeModule {
         tr.append(td);
         td.text(value);
         td.setBorderWidth("1px");
-        td.setBorderStyle(BorderStyle.SOLID);
-        td.setBorderColor("black");
+        td.setBorderBottomStyle(BorderStyle.SOLID);
+        td.setBorderColor("#ededed");
+        td.setPadding("3px");
 
         if (ValueType.isNumeric(type) || ValueType.TEXT == type
             && CharMatcher.digit().matchesAnyOf(value) && BeeUtils.isDouble(value)) {
@@ -916,9 +921,9 @@ public class ClassifiersModuleBean implements BeeModule {
       table.append(tr);
     }
 
-    table.setBorderWidth("1px;");
-    table.setBorderStyle(BorderStyle.SOLID);
     table.setBorderSpacing("0px;");
+    table.setVerticalAlign(VerticalAlign.MIDDLE);
+    table.setWidth("100%");
 
     doc.getBody().append(p().text(reminderText));
     doc.getBody().append(table);

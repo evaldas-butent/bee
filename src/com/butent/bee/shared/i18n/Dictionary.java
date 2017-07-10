@@ -1283,6 +1283,8 @@ public interface Dictionary {
 
   default String crmTaskForwardingForExecution() {return g("crmTaskForwardingForExecution");}
 
+  default String crmTaskLabelDelayedDays() {return g("crmTaskLabelDelayedDays");}
+
   default String crmTaskLabelDelayedHours() {return g("crmTaskLabelDelayedHours");}
 
   default String crmTaskLabelLate() {return g("crmTaskLabelLate");}
@@ -1373,6 +1375,16 @@ public interface Dictionary {
 
   default String crmTaskSubject() {return g("crmTaskSubject");}
 
+  default String crmTaskSummaryActiveLateTasks() {return g("crmTaskSummaryActiveLateTasks");}
+
+  default String crmTaskSummaryActiveTasks() {return g("crmTaskSummaryActiveTasks");}
+
+  default String crmTaskSummaryDelegatedLateTasks() {return g("crmTaskSummaryDelegatedLateTasks");}
+
+  default String crmTaskSummaryDelegatedTasks() {return g("crmTaskSummaryDelegatedTasks");}
+
+  default String crmTaskSummarySoonLateTasks() {return g("crmTaskSummarySoonLateTasks");}
+
   default String crmTaskSuspension() {return g("crmTaskSuspension");}
 
   default String crmTaskTemplate() {return g("crmTaskTemplate");}
@@ -1382,6 +1394,8 @@ public interface Dictionary {
   default String crmTaskTemplates() {return g("crmTaskTemplates");}
 
   default String crmTaskTermChange() {return g("crmTaskTermChange");}
+
+  default String crmTaskTermDaysExpired() {return g("crmTaskTermDaysExpired");}
 
   default String crmTaskType() {return g("crmTaskType");}
 
@@ -4908,6 +4922,8 @@ public interface Dictionary {
   default String prmSmsUserName() {return g("prmSmsUserName");}
 
   default String prmStartOfWorkDay() {return g("prmStartOfWorkDay");}
+
+  default String prmSummaryExpiredTaskPercent() {return g("prmSummaryExpiredTaskPercent");}
 
   default String prmUrgentRate() {return g("prmUrgentRate");}
 
