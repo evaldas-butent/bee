@@ -656,7 +656,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
             if (BeeUtils.isPositive(svc.tariff)) {
               Double p = TradeActUtils.calculateServicePrice(svc.price, dateTo, act.itemTotal(),
-                  svc.tariff, priceScale);
+                  svc.tariff, svc.quantity, priceScale);
               if (BeeUtils.isPositive(p)) {
                 svc.price = p;
               }
@@ -931,7 +931,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             inv.setProperty(PRP_TA_SERVICE_TO, BeeUtils.toString(to.getDays()));
           }
 
-          if(factor != null) {
+          if (factor != null) {
             inv.setProperty(COL_TA_SERVICE_FACTOR, factor);
           }
 

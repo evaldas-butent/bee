@@ -486,6 +486,21 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     return null;
   }
 
+//  private static void updateTradeActServices(GridView gridView) {
+//    GridView services = ViewHelper.getSiblingGrid(gridView.asWidget(),
+//      GRID_TRADE_ACT_SERVICES);
+//
+//    if (services == null) {
+//      return;
+//    }
+//
+//    GridInterceptor servicesInterceptor = services.getGridInterceptor();
+//
+//    if (servicesInterceptor instanceof TradeActServicesGrid && !gridView.isReadOnly()) {
+//      ((TradeActServicesGrid) servicesInterceptor).maybeRecalculatePrices(false);
+//    }
+//  }
+
   private static IsRow getParentRow(GridView gridView) {
     return ViewHelper.getFormRow(gridView);
   }

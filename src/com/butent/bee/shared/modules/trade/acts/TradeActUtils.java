@@ -107,16 +107,18 @@ public final class TradeActUtils {
   }
 
   public static Double calculateServicePrice(Double defPrice, JustDate dateTo, Double itemTotal,
-      Double tariff, Integer scale) {
+      Double tariff, Double quantity, Integer scale) {
 
     if (BeeUtils.isPositive(defPrice) && dateTo != null) {
       return defPrice;
     }
 
+    double qty = BeeUtils.nvl(quantity, 1D);
+
     Double price = BeeUtils.percent(itemTotal, tariff);
 
     if (BeeUtils.nonZero(price) && BeeUtils.isNonNegative(scale)) {
-      return BeeUtils.round(price, scale);
+      return BeeUtils.round(price / qty, scale);
     } else {
       return price;
     }

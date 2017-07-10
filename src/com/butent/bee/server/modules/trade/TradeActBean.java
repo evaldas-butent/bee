@@ -3480,7 +3480,7 @@ public class TradeActBean implements HasTimerService {
 
         if (BeeUtils.isPositive(tariff)) {
           Double p = TradeActUtils.calculateServicePrice(price, dateTo,
-              row.getDouble(ALS_ITEM_TOTAL), tariff, priceScale);
+              row.getDouble(ALS_ITEM_TOTAL), tariff, quantity, priceScale);
 
           if (BeeUtils.isPositive(p) && !p.equals(price)) {
             price = p;
@@ -4009,9 +4009,11 @@ public class TradeActBean implements HasTimerService {
             .addConstant(COL_TA_SERVICE_FROM, date);
 
         Double tariff = row.getDouble(COL_TA_SERVICE_TARIFF);
+        Double quantity = row.getDouble(COL_TRADE_ITEM_QUANTITY);
         Double price;
         if (BeeUtils.isPositive(itemTotal) && BeeUtils.isPositive(tariff)) {
-          price = TradeActUtils.calculateServicePrice(null, null, itemTotal, tariff, priceScale);
+          price = TradeActUtils.calculateServicePrice(null, null, itemTotal, tariff, quantity,
+            priceScale);
         } else {
           price = null;
         }
