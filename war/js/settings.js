@@ -35,6 +35,10 @@ var BeeSettings = {
   "dataSelectorInstantSearchMaxRows": 1000,
   "dataSelectorCachingMaxRows": 1000,
   "showGridFilterCommand": false,
+  "gridEditWindow": "on-top",
+  "gridNewRowWindow": "on-top",
+  "childEditWindow": "modal",
+  "childNewRowWindow": "modal",
   "theme" : {
     "WorkspaceMarginRight": 25,
     "ViewHeaderHeight": "600, 30, 1200, 52",

@@ -711,6 +711,10 @@ public interface Dictionary {
 
   default String chief() {return g("chief");}
 
+  default String childEditWindow() {return g("childEditWindow");}
+
+  default String childNewRowWindow() {return g("childNewRowWindow");}
+
   default String chooseContactSource() {return g("chooseContactSource");}
 
   default String chooseFiles() {return g("chooseFiles");}
@@ -3213,6 +3217,10 @@ public interface Dictionary {
   default String greatest() {return g("greatest");}
 
   default String gridColumnSettings() {return g("gridColumnSettings");}
+
+  default String gridEditWindow() {return g("gridEditWindow");}
+
+  default String gridNewRowWindow() {return g("gridNewRowWindow");}
 
   default String gridSettings() {return g("gridSettings");}
 
@@ -7408,6 +7416,8 @@ public interface Dictionary {
   default String windowNewTab() {return g("windowNewTab");}
 
   default String windowOnTop() {return g("windowOnTop");}
+
+  default String windows() {return g("windows");}
 
   default String winter() {return g("winter");}
 

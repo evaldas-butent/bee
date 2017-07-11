@@ -62,6 +62,12 @@
     <SimpleColumn name="Assistant" />
 
     <SimpleColumn name="ShowGridFilterCommand" />
+
+    <SimpleColumn name="GridEditWindow" />
+    <SimpleColumn name="GridNewRowWindow" />
+
+    <SimpleColumn name="ChildEditWindow" />
+    <SimpleColumn name="ChildNewRowWindow" />
   </Columns>
   
   <Order>

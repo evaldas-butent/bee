@@ -41,5 +41,11 @@
     <Boolean name="Assistant" label="=assistant" />
 
     <Integer name="ShowGridFilterCommand" label="=showGridFilterCommand" />
+
+    <String name="GridEditWindow" precision="20" label="=gridEditWindow" />
+    <String name="GridNewRowWindow" precision="20" label="=gridNewRowWindow" />
+
+    <String name="ChildEditWindow" precision="20" label="=childEditWindow" />
+    <String name="ChildNewRowWindow" precision="20" label="=childNewRowWindow" />
   </Fields>
 </Table>
