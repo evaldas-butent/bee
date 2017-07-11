@@ -713,6 +713,10 @@ public interface Dictionary extends CustomDictionary{
 
   default String chief() {return g("chief");}
 
+  default String childEditWindow() {return g("childEditWindow");}
+
+  default String childNewRowWindow() {return g("childNewRowWindow");}
+
   default String chooseContactSource() {return g("chooseContactSource");}
 
   default String chooseFiles() {return g("chooseFiles");}
@@ -1285,6 +1289,8 @@ public interface Dictionary extends CustomDictionary{
 
   default String crmTaskForwardingForExecution() {return g("crmTaskForwardingForExecution");}
 
+  default String crmTaskLabelDelayedDays() {return g("crmTaskLabelDelayedDays");}
+
   default String crmTaskLabelDelayedHours() {return g("crmTaskLabelDelayedHours");}
 
   default String crmTaskLabelLate() {return g("crmTaskLabelLate");}
@@ -1375,6 +1381,16 @@ public interface Dictionary extends CustomDictionary{
 
   default String crmTaskSubject() {return g("crmTaskSubject");}
 
+  default String crmTaskSummaryActiveLateTasks() {return g("crmTaskSummaryActiveLateTasks");}
+
+  default String crmTaskSummaryActiveTasks() {return g("crmTaskSummaryActiveTasks");}
+
+  default String crmTaskSummaryDelegatedLateTasks() {return g("crmTaskSummaryDelegatedLateTasks");}
+
+  default String crmTaskSummaryDelegatedTasks() {return g("crmTaskSummaryDelegatedTasks");}
+
+  default String crmTaskSummarySoonLateTasks() {return g("crmTaskSummarySoonLateTasks");}
+
   default String crmTaskSuspension() {return g("crmTaskSuspension");}
 
   default String crmTaskTemplate() {return g("crmTaskTemplate");}
@@ -1384,6 +1400,8 @@ public interface Dictionary extends CustomDictionary{
   default String crmTaskTemplates() {return g("crmTaskTemplates");}
 
   default String crmTaskTermChange() {return g("crmTaskTermChange");}
+
+  default String crmTaskTermDaysExpired() {return g("crmTaskTermDaysExpired");}
 
   default String crmTaskType() {return g("crmTaskType");}
 
@@ -2528,6 +2546,8 @@ public interface Dictionary extends CustomDictionary{
 
   default String editMode() {return g("editMode");}
 
+  default String editWindow() {return g("editWindow");}
+
   default String editing() {return g("editing");}
 
   default String editorTemplates() {return g("editorTemplates");}
@@ -3205,6 +3225,10 @@ public interface Dictionary extends CustomDictionary{
   default String greatest() {return g("greatest");}
 
   default String gridColumnSettings() {return g("gridColumnSettings");}
+
+  default String gridEditWindow() {return g("gridEditWindow");}
+
+  default String gridNewRowWindow() {return g("gridNewRowWindow");}
 
   default String gridSettings() {return g("gridSettings");}
 
@@ -3959,6 +3983,8 @@ public interface Dictionary extends CustomDictionary{
   default String newRole() {return g("newRole");}
 
   default String newRow() {return g("newRow");}
+
+  default String newRowWindow() {return g("newRowWindow");}
 
   default String newSalaryFund() {return g("newSalaryFund");}
 
@@ -4843,6 +4869,8 @@ public interface Dictionary extends CustomDictionary{
 
   default String prmItemArticleSourceColumn() {return g("prmItemArticleSourceColumn");}
 
+  default String prmItemNoteSourceColumns() {return g("prmItemNoteSourceColumns");}
+
   default String prmMainCurrency() {return g("prmMainCurrency");}
 
   default String prmMaintenanceServiceGroup() {return g("prmMaintenanceServiceGroup");}
@@ -4914,6 +4942,8 @@ public interface Dictionary extends CustomDictionary{
   default String prmSmsUserName() {return g("prmSmsUserName");}
 
   default String prmStartOfWorkDay() {return g("prmStartOfWorkDay");}
+
+  default String prmSummaryExpiredTaskPercent() {return g("prmSummaryExpiredTaskPercent");}
 
   default String prmUrgentRate() {return g("prmUrgentRate");}
 
@@ -7456,6 +7486,8 @@ public interface Dictionary extends CustomDictionary{
   default String windowNewTab() {return g("windowNewTab");}
 
   default String windowOnTop() {return g("windowOnTop");}
+
+  default String windows() {return g("windows");}
 
   default String winter() {return g("winter");}
 

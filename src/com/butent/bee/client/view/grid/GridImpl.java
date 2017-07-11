@@ -904,18 +904,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     initForms();
 
-    WindowType windowType = gridDescription.getEditWindow();
-    if (windowType == null) {
-      windowType = hasChildUi() ? WindowType.DEFAULT_CHILD_EDIT : WindowType.DEFAULT_GRID_EDIT;
-    }
-    setEditWindowType(windowType);
-
-    windowType = gridDescription.getNewRowWindow();
-    if (windowType == null) {
-      windowType = hasChildUi()
-          ? WindowType.DEFAULT_CHILD_NEW_ROW : WindowType.DEFAULT_GRID_NEW_ROW;
-    }
-    setNewRowWindowType(windowType);
+    setEditWindowType(GridUtils.getEditWindowType(gridDescription, hasChildUi()));
+    setNewRowWindowType(GridUtils.getNewRowWindowType(gridDescription, hasChildUi()));
 
     if (!editForms.isEmpty()) {
       if (gridDescription.getEditMessage() != null) {

@@ -38,6 +38,12 @@
 
     <DataColumn name="ShowGridFilterCommand" visible="false" />
 
+    <DataColumn name="GridEditWindow" visible="false" />
+    <DataColumn name="GridNewRowWindow" visible="false" />
+
+    <DataColumn name="ChildEditWindow" visible="false" />
+    <DataColumn name="ChildNewRowWindow" visible="false" />
+
     <DataColumn name="Style" visible="false" />
   </g:columns>
 </g:Grid>

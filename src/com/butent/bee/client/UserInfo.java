@@ -108,6 +108,14 @@ public class UserInfo implements HasInfo {
     return actionSensitivityMillis;
   }
 
+  public String getChildEditWindow() {
+    return getSetting(COL_CHILD_EDIT_WINDOW);
+  }
+
+  public String getChildNewRowWindow() {
+    return getSetting(COL_CHILD_NEW_ROW_WINDOW);
+  }
+
   public int getClickSensitivityDistance() {
     return clickSensitivityDistance;
   }
@@ -138,6 +146,14 @@ public class UserInfo implements HasInfo {
 
   public String getFirstName() {
     return isLoggedIn() ? userData.getFirstName() : null;
+  }
+
+  public String getGridEditWindow() {
+    return getSetting(COL_GRID_EDIT_WINDOW);
+  }
+
+  public String getGridNewRowWindow() {
+    return getSetting(COL_GRID_NEW_ROW_WINDOW);
   }
 
   @Override
