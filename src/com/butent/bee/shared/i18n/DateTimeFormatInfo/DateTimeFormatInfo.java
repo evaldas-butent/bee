@@ -316,6 +316,14 @@ public interface DateTimeFormatInfo {
     return "HH:mm";
   }
 
+  default String timePlaceholder() {
+    return "h:mm";
+  }
+
+  default String timeOfDayPlaceholder() {
+    return timePlaceholder();
+  }
+
   /**
    * Returns an array of the full names of weekdays.
    */

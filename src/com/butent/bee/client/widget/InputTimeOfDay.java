@@ -2,7 +2,9 @@ package com.butent.bee.client.widget;
 
 import com.google.common.base.CharMatcher;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
 import com.butent.bee.shared.time.TimeUtils;
 
 public class InputTimeOfDay extends InputTime {
@@ -35,5 +37,11 @@ public class InputTimeOfDay extends InputTime {
   @Override
   protected String getDefaultStyleName() {
     return BeeConst.CSS_CLASS_PREFIX + "InputTimeOfDay";
+  }
+
+  @Override
+  protected String getPlaceholder() {
+    DateTimeFormatInfo dtfInfo = BeeKeeper.getUser().getDateTimeFormatInfo();
+    return (dtfInfo == null) ? BeeConst.STRING_EMPTY : dtfInfo.timeOfDayPlaceholder();
   }
 }

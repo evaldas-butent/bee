@@ -332,7 +332,7 @@ class TaskDialog extends DialogBox {
   String getTime(String id) {
     Widget child = getChild(id);
     if (child instanceof InputTime) {
-      return ((InputTime) child).getValue();
+      return ((InputTime) child).getNormalizedValue();
     } else {
       return null;
     }

@@ -1,6 +1,7 @@
 package com.butent.bee.client.view.grid;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -13,6 +14,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -108,12 +110,54 @@ public final class GridUtils {
     return BeeConst.UNDEF;
   }
 
+  static WindowType getEditWindowType(GridDescription gridDescription, boolean isChild) {
+    WindowType windowType = gridDescription.getEditWindow();
+
+    if (windowType == null) {
+      String wtp = isChild
+          ? BeeKeeper.getUser().getChildEditWindow() : BeeKeeper.getUser().getGridEditWindow();
+
+      if (BeeUtils.isEmpty(wtp)) {
+        wtp = isChild ? Settings.getChildEditWindow() : Settings.getGridEditWindow();
+      }
+
+      windowType = WindowType.parse(wtp);
+
+      if (windowType == null) {
+        windowType = isChild ? WindowType.DEFAULT_CHILD_EDIT : WindowType.DEFAULT_GRID_EDIT;
+      }
+    }
+
+    return windowType;
+  }
+
   static int getIndex(List<String> names, String name) {
     int index = names.indexOf(name);
     if (index < 0) {
       logger.severe("name not found:", name);
     }
     return index;
+  }
+
+  static WindowType getNewRowWindowType(GridDescription gridDescription, boolean isChild) {
+    WindowType windowType = gridDescription.getNewRowWindow();
+
+    if (windowType == null) {
+      String wtp = isChild
+          ? BeeKeeper.getUser().getChildNewRowWindow() : BeeKeeper.getUser().getGridNewRowWindow();
+
+      if (BeeUtils.isEmpty(wtp)) {
+        wtp = isChild ? Settings.getChildNewRowWindow() : Settings.getGridNewRowWindow();
+      }
+
+      windowType = WindowType.parse(wtp);
+
+      if (windowType == null) {
+        windowType = isChild ? WindowType.DEFAULT_CHILD_NEW_ROW : WindowType.DEFAULT_GRID_NEW_ROW;
+      }
+    }
+
+    return windowType;
   }
 
   static String normalizeValue(String value) {

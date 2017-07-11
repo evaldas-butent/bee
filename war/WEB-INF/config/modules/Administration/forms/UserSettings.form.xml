@@ -18,6 +18,12 @@
     <!ENTITY wStyleRight "text-align: right; &wStylePadding;">
 
     <!ENTITY inputSpinner "width: 100px;">
+
+    <!ENTITY windowTypes '
+      <item value="new-tab">=windowNewTab</item>
+      <item value="on-top">=windowOnTop</item>
+      <item value="detached">=windowDetached</item>
+      <item value="modal">=windowModal</item>'>
     ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
         xmlns:ui="http://www.butent.com/ui"
@@ -107,7 +113,7 @@
       <page>
         <text>=userInterface</text>
         <FlowPanel>
-          <FlowPanel class="flexBox-horizontal">
+          <FlowPanel class="flexBox-horizontal" style="margin-top: 1vh;">
             <Label for="UiTheme" style="&labelStyle;" />
             <DataSelector source="UiTheme" style="&inputStyle;" summarize="true" />
 
@@ -158,7 +164,6 @@
               <Label for="LoadingStateDelayMillis" />
               <InputSpinner source="LoadingStateDelayMillis" minValue="0" maxValue="3000" step="50"
                             style="&inputSpinner;" summarize="true" />
-
             </row>
 
             <row>
@@ -168,6 +173,41 @@
               <ListBox source="ShowGridFilterCommand" summarize="true">
                 <item>=no</item>
                 <item>=yes</item>
+              </ListBox>
+            </row>
+          </Table>
+        </FlowPanel>
+      </page>
+
+      <page>
+        <text>=windows</text>
+        <FlowPanel>
+          <Table kind="controls" style="margin-top: 1vh;">
+            <col index="0" kind="label" />
+
+            <row>
+              <Label for="GridEditWindow" />
+              <ListBox source="GridEditWindow" summarize="true">
+                &windowTypes;
+              </ListBox>
+            </row>
+            <row>
+              <Label for="GridNewRowWindow" />
+              <ListBox source="GridNewRowWindow" summarize="true">
+                &windowTypes;
+              </ListBox>
+            </row>
+
+            <row>
+              <Label for="ChildEditWindow" />
+              <ListBox source="ChildEditWindow" summarize="true">
+                &windowTypes;
+              </ListBox>
+            </row>
+            <row>
+              <Label for="ChildNewRowWindow" />
+              <ListBox source="ChildNewRowWindow" summarize="true">
+                &windowTypes;
               </ListBox>
             </row>
           </Table>
