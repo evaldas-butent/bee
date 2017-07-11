@@ -3449,7 +3449,9 @@ textarea,
   width: 150px;
 }
 
-input[type="text"].bee-InputTime,
+input[type="text"].bee-InputTime {
+  width: 68px;
+}
 input[type="text"].bee-InputTimeOfDay {
   width: 60px;
 }
