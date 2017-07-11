@@ -185,6 +185,33 @@ public class GridMenu {
       }
     },
 
+    NEW_ROW_WINDOW(GridFormKind.NEW_ROW) {
+      @Override
+      String getLabel() {
+        return Localized.dictionary().newRowWindow();
+      }
+
+      @Override
+      boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
+        return false;
+      }
+
+      @Override
+      boolean isVisible(GridPresenter presenter) {
+        return false;
+      }
+
+      @Override
+      Widget renderIcon(GridPresenter presenter) {
+        return new FaLabel(FontAwesome.FILE_O);
+      }
+
+      @Override
+      boolean separatorBefore() {
+        return true;
+      }
+    },
+
     EDIT_FORM(GridFormKind.EDIT) {
       @Override
       String getLabel() {
@@ -205,6 +232,33 @@ public class GridMenu {
       @Override
       Widget renderIcon(GridPresenter presenter) {
         return new FaLabel(FontAwesome.EDIT);
+      }
+
+      @Override
+      boolean separatorBefore() {
+        return true;
+      }
+    },
+
+    EDIT_WINDOW(GridFormKind.EDIT) {
+      @Override
+      String getLabel() {
+        return Localized.dictionary().editWindow();
+      }
+
+      @Override
+      boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
+        return false;
+      }
+
+      @Override
+      boolean isVisible(GridPresenter presenter) {
+        return false;
+      }
+
+      @Override
+      Widget renderIcon(GridPresenter presenter) {
+        return new FaLabel(FontAwesome.FILE_TEXT_O);
       }
 
       @Override
@@ -324,7 +378,8 @@ public class GridMenu {
         });
       }
     },
-    ADDICTED(Action.RIGHTS) {
+
+    DEPENDENT(Action.RIGHTS) {
       private String label = Localized.dictionary().recordDependent();
 
       @Override
@@ -537,7 +592,7 @@ public class GridMenu {
         }
 
         table.getRowFormatter().addStyleName(r, STYLE_PREFIX + item.getStyleSuffix());
-        if (item.formKind != null || item == Item.ADDICTED) {
+        if (item.formKind != null || item == Item.DEPENDENT) {
           table.getRowFormatter().addStyleName(r, STYLE_SECTION_HEADER);
         }
 
@@ -583,7 +638,7 @@ public class GridMenu {
           Item item = EnumUtils.getEnumByIndex(Item.class, index);
           Integer subIndex = DomUtils.getDataPropertyInt(rowElement, KEY_SUB_INDEX);
 
-          if (item != null && item != Item.ADDICTED
+          if (item != null && item != Item.DEPENDENT
               && (item.formKind == null || subIndex != null)) {
             UiHelper.closeDialog(table);
             item.select(presenter, subIndex);

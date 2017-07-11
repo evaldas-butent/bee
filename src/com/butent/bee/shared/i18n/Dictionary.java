@@ -2544,6 +2544,8 @@ public interface Dictionary {
 
   default String editMode() {return g("editMode");}
 
+  default String editWindow() {return g("editWindow");}
+
   default String editing() {return g("editing");}
 
   default String editorTemplates() {return g("editorTemplates");}
@@ -3973,6 +3975,8 @@ public interface Dictionary {
   default String newRole() {return g("newRole");}
 
   default String newRow() {return g("newRow");}
+
+  default String newRowWindow() {return g("newRowWindow");}
 
   default String newSalaryFund() {return g("newSalaryFund");}
 
