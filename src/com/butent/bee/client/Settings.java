@@ -52,6 +52,14 @@ public final class Settings {
     return getString("build");
   }
 
+  public static String getChildEditWindow() {
+    return getString("childEditWindow");
+  }
+
+  public static String getChildNewRowWindow() {
+    return getString("childNewRowWindow");
+  }
+
   public static int getClickSensitivityDistance() {
     return getInt("clickSensitivityDistance");
   }
@@ -117,6 +125,14 @@ public final class Settings {
 
   public static int getExporterSplitRowsThreshold() {
     return getInt("exporterSplitRowsThreshold");
+  }
+
+  public static String getGridEditWindow() {
+    return getString("gridEditWindow");
+  }
+
+  public static String getGridNewRowWindow() {
+    return getString("gridNewRowWindow");
   }
 
   public static String getIncomingChatMessageSound() {
