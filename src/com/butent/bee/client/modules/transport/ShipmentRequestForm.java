@@ -19,6 +19,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -129,14 +130,29 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
   private FaLabel copyAction;
   private Flow container;
+  private boolean hasResponsibleManager;
 
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
-    if (BeeUtils.same(editableWidget.getColumnId(), COL_QUERY_FREIGHT_INSURANCE)) {
-      editableWidget.addCellValidationHandler(event -> {
-        styleRequiredField(NAME_VALUE_LABEL, event.getNewValue() != null);
-        return true;
-      });
+    switch (editableWidget.getColumnId()) {
+      case COL_QUERY_FREIGHT_INSURANCE:
+        editableWidget.addCellValidationHandler(event -> {
+          styleRequiredField(NAME_VALUE_LABEL, event.getNewValue() != null);
+          return true;
+        });
+        break;
+
+      case COL_EXPEDITION:
+        if (widget instanceof DataSelector) {
+          ((DataSelector) widget).addSelectorHandler(event -> {
+            if (!hasResponsibleManager && event.isChanged()) {
+              setResponsibleManager(Data.getLong(event.getRelatedViewName(), event.getRelatedRow(),
+                  COL_QUERY_MANAGER), Data.getLong(event.getRelatedViewName(),
+                  event.getRelatedRow(), COL_QUERY_MANAGER + COL_PERSON));
+            }
+          });
+        }
+        break;
     }
     super.afterCreateEditableWidget(editableWidget, widget);
   }
@@ -374,17 +390,20 @@ class ShipmentRequestForm extends PrintFormInterceptor {
           if (!typ.isEmpty()) {
             RelationUtils.updateRow(Data.getDataInfo(getFormView().getViewName()),
                 COL_EXPEDITION, newRow, Data.getDataInfo(typ.getViewName()), typ.getRow(0), true);
+            getFormView().refreshBySource(COL_EXPEDITION);
           }
           Long responsibility = Global.getParameterRelation(PRM_SELF_SERVICE_RESPONSIBILITY);
 
           if (DataUtils.isId(responsibility)) {
             Queries.getRowSet(VIEW_COMPANY_USERS, Arrays.asList(COL_USER, COL_COMPANY_PERSON),
-                Filter.and(Filter.equals(COL_COMPANY, Data.getLong(VIEW_SHIPMENT_REQUESTS, newRow,
-                    COL_COMPANY)), Filter.equals(COL_COMPANY_USER_RESPONSIBILITY, responsibility)
-                ), resp -> {
+                Filter.and(Filter.equals(COL_COMPANY, BeeKeeper.getUser().getCompany()),
+                    Filter.equals(COL_COMPANY_USER_RESPONSIBILITY, responsibility)), resp -> {
+
                   if (!resp.isEmpty()) {
                     setResponsibleManager(resp.getLong(0, 0), resp.getLong(0, 1));
-                  } else {
+                    hasResponsibleManager = true;
+
+                  } else if (!typ.isEmpty()) {
                     setResponsibleManager(typ.getLong(0, typ.getColumnIndex(COL_QUERY_MANAGER)),
                         typ.getLong(0, typ.getColumnIndex(COL_QUERY_MANAGER + COL_PERSON)));
                   }
@@ -1217,10 +1236,10 @@ class ShipmentRequestForm extends PrintFormInterceptor {
   }
 
   private void setResponsibleManager(Long manager, Long managerPerson) {
-    if (DataUtils.isId(manager)) {
-      IsRow activeRow = getActiveRow();
-      String viewName = getViewName();
+    IsRow activeRow = getActiveRow();
+    String viewName = getViewName();
 
+    if (DataUtils.isId(manager)) {
       Data.setValue(viewName, activeRow, COL_QUERY_MANAGER, manager);
 
       Queries.getRow(TBL_COMPANY_PERSONS, managerPerson, row -> {
@@ -1230,6 +1249,9 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
         getFormView().refresh(false, false);
       });
+    } else {
+      RelationUtils.clearRelatedValues(Data.getDataInfo(viewName), COL_QUERY_MANAGER, activeRow);
+      getFormView().refresh(false, false);
     }
   }
 }
