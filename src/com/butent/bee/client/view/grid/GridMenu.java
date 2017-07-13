@@ -23,6 +23,7 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -34,6 +35,7 @@ import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.UserInterface.Component;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -190,7 +192,7 @@ public class GridMenu {
       }
 
       @Override
-      void select(GridPresenter presenter, Integer subIndex) {
+      void select(GridPresenter presenter, Integer subIndex, Element target) {
         if (subIndex != null) {
           presenter.getGridView().selectForm(GridFormKind.NEW_ROW, subIndex);
         }
@@ -203,6 +205,11 @@ public class GridMenu {
     },
 
     NEW_ROW_WINDOW(GridFormKind.NEW_ROW) {
+      @Override
+      boolean closeOnSelection() {
+        return false;
+      }
+
       @Override
       String getLabel() {
         return Localized.dictionary().newRowWindow();
@@ -227,6 +234,11 @@ public class GridMenu {
       @Override
       Widget renderIcon(GridPresenter presenter) {
         return new FaLabel(FontAwesome.FILE_O);
+      }
+
+      @Override
+      void select(GridPresenter presenter, Integer subIndex, Element target) {
+        renderWindowTypeSelection(this, presenter, target);
       }
 
       @Override
@@ -268,7 +280,7 @@ public class GridMenu {
       }
 
       @Override
-      void select(GridPresenter presenter, Integer subIndex) {
+      void select(GridPresenter presenter, Integer subIndex, Element target) {
         if (subIndex != null) {
           presenter.getGridView().selectForm(GridFormKind.EDIT, subIndex);
         }
@@ -281,6 +293,11 @@ public class GridMenu {
     },
 
     EDIT_WINDOW(GridFormKind.EDIT) {
+      @Override
+      boolean closeOnSelection() {
+        return false;
+      }
+
       @Override
       String getLabel() {
         return Localized.dictionary().editWindow();
@@ -305,6 +322,11 @@ public class GridMenu {
       @Override
       Widget renderIcon(GridPresenter presenter) {
         return new FaLabel(FontAwesome.FILE_TEXT_O);
+      }
+
+      @Override
+      void select(GridPresenter presenter, Integer subIndex, Element target) {
+        renderWindowTypeSelection(this, presenter, target);
       }
 
       @Override
@@ -411,7 +433,7 @@ public class GridMenu {
       }
 
       @Override
-      void select(final GridPresenter presenter, Integer subIndex) {
+      void select(final GridPresenter presenter, Integer subIndex, Element target) {
         Roles.getData(input -> {
           if (!BeeUtils.isEmpty(input)) {
             presenter.setRoles(input);
@@ -549,7 +571,7 @@ public class GridMenu {
       }
     }
 
-    void select(GridPresenter presenter, Integer subIndex) {
+    void select(GridPresenter presenter, Integer subIndex, Element target) {
       if (rightsState != null) {
         handleRights(presenter, rightsState);
       } else if (action != null) {
@@ -591,6 +613,15 @@ public class GridMenu {
 
   private static final String STYLE_NOT_SELECTABLE = STYLE_PREFIX + "not-selectable";
   private static final String STYLE_SEPARATOR = STYLE_PREFIX + "separator";
+
+  private static final String STYLE_WINDOW_TYPE_PREFIX = STYLE_PREFIX + "wtp-";
+
+  private static final String STYLE_WINDOW_TYPE_POPUP = STYLE_WINDOW_TYPE_PREFIX + "popup";
+  private static final String STYLE_WINDOW_TYPE_TABLE = STYLE_WINDOW_TYPE_PREFIX + "table";
+  private static final String STYLE_WINDOW_TYPE_ICON = STYLE_WINDOW_TYPE_PREFIX + "icon";
+  private static final String STYLE_WINDOW_TYPE_LABEL = STYLE_WINDOW_TYPE_PREFIX + "label";
+  private static final String STYLE_WINDOW_TYPE_ITEM = STYLE_WINDOW_TYPE_PREFIX + "item";
+  private static final String STYLE_WINDOW_TYPE_SELECTED = STYLE_WINDOW_TYPE_PREFIX + "selected";
 
   private static final String KEY_SUB_INDEX = "sub";
 
@@ -692,7 +723,7 @@ public class GridMenu {
               UiHelper.closeDialog(table);
             }
 
-            item.select(presenter, subIndex);
+            item.select(presenter, subIndex, rowElement);
           }
         }
       });
@@ -730,7 +761,7 @@ public class GridMenu {
       addEmptyCell(table, r, 2);
 
       Element rowElement = table.getRow(r);
-      rowElement.addClassName(selected ? STYLE_FORM_ITEM : STYLE_FORM_SELECTED);
+      rowElement.addClassName(selected ? STYLE_FORM_SELECTED : STYLE_FORM_ITEM);
 
       DomUtils.setDataIndex(rowElement, item.ordinal());
       DomUtils.setDataProperty(rowElement, KEY_SUB_INDEX, formIndex);
@@ -739,5 +770,83 @@ public class GridMenu {
     }
 
     return r - startRow;
+  }
+
+  private static void renderWindowTypeSelection(final Item item, final GridPresenter presenter,
+      Element target) {
+
+    final HtmlTable table = new HtmlTable(STYLE_WINDOW_TYPE_TABLE);
+    int r = 0;
+
+    final WindowType activeType;
+
+    switch (item.formKind) {
+      case NEW_ROW:
+        activeType = presenter.getGridView().getNewRowWindowType();
+        break;
+
+      case EDIT:
+        activeType = presenter.getGridView().getEditWindowType();
+        break;
+
+      default:
+        Assert.untouchable();
+        activeType = null;
+    }
+
+    for (WindowType windowType : WindowType.values()) {
+      if (windowType == activeType) {
+        table.setWidgetAndStyle(r, 0, new FaLabel(FontAwesome.CHECK), STYLE_WINDOW_TYPE_ICON);
+      }
+
+      String text = windowType.getCaption();
+      Label label = new Label(text);
+      UiHelper.makePotentiallyBold(label.getElement(), text);
+
+      table.setWidgetAndStyle(r, 1, label, STYLE_WINDOW_TYPE_LABEL);
+
+      Element rowElement = table.getRow(r);
+      rowElement.addClassName((windowType == activeType)
+          ? STYLE_WINDOW_TYPE_SELECTED : STYLE_WINDOW_TYPE_ITEM);
+
+      DomUtils.setDataIndex(rowElement, windowType.ordinal());
+
+      r++;
+    }
+
+    table.addClickHandler(event -> {
+      Element targetElement = EventUtils.getEventTargetElement(event);
+      TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
+
+      int index = DomUtils.getDataIndexInt(rowElement);
+
+      if (!BeeConst.isUndef(index)) {
+        WindowType windowType = EnumUtils.getEnumByIndex(WindowType.class, index);
+        UiHelper.closeDialog(table);
+
+        if (windowType != activeType) {
+          switch (item.formKind) {
+            case NEW_ROW:
+              presenter.getGridView().setNewRowWindowType(windowType);
+              break;
+
+            case EDIT:
+              presenter.getGridView().setEditWindowType(windowType);
+              break;
+          }
+
+          Popup activePopup = Popup.getActivePopup();
+          if (activePopup != null && activePopup.getElement().hasClassName(STYLE_POPUP)) {
+            activePopup.close();
+          }
+        }
+      }
+    });
+
+    Popup popup = new Popup(OutsideClick.CLOSE, STYLE_WINDOW_TYPE_POPUP);
+    popup.setWidget(table);
+
+    popup.setHideOnEscape(true);
+    popup.showRelativeTo(target);
   }
 }

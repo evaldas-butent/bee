@@ -1230,6 +1230,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public WindowType getEditWindowType() {
+    return editWindowType;
+  }
+
+  @Override
   public FormView getForm(GridFormKind kind) {
     if (kind != null) {
       GridForm gridForm = null;
@@ -1318,6 +1323,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   @Override
   public String getGridName() {
     return gridDescription.getName();
+  }
+
+  @Override
+  public WindowType getNewRowWindowType() {
+    return newRowWindowType;
   }
 
   @Override
@@ -1875,8 +1885,18 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public void setEditWindowType(WindowType editWindowType) {
+    this.editWindowType = editWindowType;
+  }
+
+  @Override
   public void setEnabled(boolean enabled) {
     getGrid().setEnabled(enabled);
+  }
+
+  @Override
+  public void setNewRowWindowType(WindowType newRowWindowType) {
+    this.newRowWindowType = newRowWindowType;
   }
 
   @Override
@@ -2299,10 +2319,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     return editShowId;
   }
 
-  private WindowType getEditWindowType() {
-    return editWindowType;
-  }
-
   private String getFormStorageKey(GridFormKind kind) {
     String prefix = BeeUtils.notEmpty(getGridKey(), getGridName());
     String suffix = kind.name().toLowerCase().replace(BeeConst.CHAR_UNDER, BeeConst.CHAR_MINUS);
@@ -2366,10 +2382,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private int getNewRowFormIndex() {
     return newRowFormIndex;
-  }
-
-  private WindowType getNewRowWindowType() {
-    return newRowWindowType;
   }
 
   private Notification getNotification() {
@@ -3193,10 +3205,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     this.editShowId = editShowId;
   }
 
-  private void setEditWindowType(WindowType editWindowType) {
-    this.editWindowType = editWindowType;
-  }
-
   private void setNewRowCaption(String newRowCaption) {
     this.newRowCaption = newRowCaption;
   }
@@ -3207,10 +3215,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private void setNewRowFormIndex(int newRowFormIndex) {
     this.newRowFormIndex = newRowFormIndex;
-  }
-
-  private void setNewRowWindowType(WindowType newRowWindowType) {
-    this.newRowWindowType = newRowWindowType;
   }
 
   private Runnable getOnFormOpen() {
