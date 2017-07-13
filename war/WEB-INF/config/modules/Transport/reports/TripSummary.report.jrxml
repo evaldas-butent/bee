@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-06-19T09:52:07 -->
+<!-- 2017-07-13T15:56:54 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TripSummary" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="3ad2372d-bb52-4e1f-9dfe-aaf5bdceb74c">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.Invocation"/>
@@ -173,6 +173,7 @@
 	<parameter name="CustomerVATCode" class="java.lang.String"/>
 	<parameter name="CustomerAddress" class="java.lang.String"/>
 	<parameter name="CustomerPostIndex" class="java.lang.String"/>
+	<parameter name="CustomerWebsite" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -1458,7 +1459,7 @@
 				<frame>
 					<reportElement positionType="Float" mode="Transparent" x="150" y="0" width="140" height="40" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" uuid="eca1f831-b5e4-4cf5-a7f9-e50750a62cd2"/>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement mode="Transparent" x="0" y="0" width="140" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" backcolor="#FFFFFF" uuid="f69e4ba5-e8e3-4194-bb92-cc44f84673f8">
+						<reportElement positionType="Float" mode="Transparent" x="0" y="0" width="140" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" backcolor="#FFFFFF" uuid="f69e4ba5-e8e3-4194-bb92-cc44f84673f8">
 							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						</reportElement>
 						<box>
@@ -1467,62 +1468,62 @@
 						<textElement verticalAlignment="Middle">
 							<font fontName="DejaVu Sans" size="6" isBold="true"/>
 						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.joinWords($P{CustomerName}, $P{CustomerTypeName})]]></textFieldExpression>
+						<textFieldExpression><![CDATA[BeeUtils.joinWords($P{CustomerTypeName}, $P{CustomerName})]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement mode="Transparent" x="0" y="8" width="140" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" backcolor="#FFFFFF" uuid="13f5d544-4b4e-4ac5-8c14-5b94026d07a4">
+						<reportElement positionType="Float" mode="Transparent" x="0" y="8" width="140" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" backcolor="#FFFFFF" uuid="13f5d544-4b4e-4ac5-8c14-5b94026d07a4">
 							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 							<printWhenExpression><![CDATA[$P{CustomerAddress} != null || $P{CustomerPostIndex} != null  || $P{CustomerCityName} != null ||$P{CustomerCountryName} != null]]></printWhenExpression>
 						</reportElement>
 						<textElement verticalAlignment="Middle">
 							<font fontName="DejaVu Sans" size="6"/>
 						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.join(": ", $V{d}.address(), BeeUtils.joinItems($P{CustomerAddress}, $P{CustomerPostIndex},  BeeUtils.nvl($V{qs}.getLocalizedValue("Cities", "Name", $P{CustomerCityName}, $P{REPORT_LOCALE}), $P{CustomerCityName}), BeeUtils.nvl($V{qs}.getLocalizedValue("Cities", "Name", $P{CustomerCountryName}, $P{REPORT_LOCALE}), $P{CustomerCountryName})))]]></textFieldExpression>
+						<textFieldExpression><![CDATA[BeeUtils.join(": ", $V{d}.address(), BeeUtils.joinItems($P{CustomerAddress}, $P{CustomerPostIndex},  BeeUtils.join("/", $P{CustomerCityName}, $V{qs}.getLocalizedValue("Cities", "Name", $P{CustomerCityName}, $P{REPORT_LOCALE})), BeeUtils.join("/", $P{CustomerCountryName}, $V{qs}.getLocalizedValue("Cities", "Name", $P{CustomerCountryName}, $P{REPORT_LOCALE}))))]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement mode="Transparent" x="0" y="16" width="140" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" backcolor="#FFFFFF" uuid="c7e100fe-db65-42c6-940f-fbe4c9157139">
+						<reportElement positionType="Float" mode="Transparent" x="0" y="16" width="140" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" backcolor="#FFFFFF" uuid="c7e100fe-db65-42c6-940f-fbe4c9157139">
 							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 							<printWhenExpression><![CDATA[$P{CustomerMobile} !=null || $P{CustomerPhone} !=null]]></printWhenExpression>
 						</reportElement>
-						<textElement verticalAlignment="Middle">
+						<textElement verticalAlignment="Middle" markup="html">
 							<font fontName="DejaVu Sans" size="6"/>
 						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.join(": ", $V{d}.phone(), BeeUtils.joinItems($P{CustomerPhone}, $P{CustomerMobile}))]]></textFieldExpression>
+						<textFieldExpression><![CDATA[BeeUtils.join(": ", "<b>" + $V{d}.phone().charAt(0) + "</b>", BeeUtils.joinItems($P{CustomerPhone}, $P{CustomerMobile}))]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement mode="Transparent" x="0" y="24" width="140" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" backcolor="#FFFFFF" uuid="2dbeb039-146e-4f13-940c-75792d8a92af">
+						<reportElement positionType="Float" mode="Transparent" x="0" y="24" width="140" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" backcolor="#FFFFFF" uuid="2dbeb039-146e-4f13-940c-75792d8a92af">
 							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 							<printWhenExpression><![CDATA[$P{CustomerFax} !=null]]></printWhenExpression>
 						</reportElement>
-						<textElement verticalAlignment="Middle">
+						<textElement verticalAlignment="Middle" markup="html">
 							<font fontName="DejaVu Sans" size="6"/>
 						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.join(": ", $V{d}.fax(), $P{CustomerFax})]]></textFieldExpression>
+						<textFieldExpression><![CDATA[BeeUtils.join(": ",  "<b>" + $V{d}.fax().charAt(0) + "</b>" , $P{CustomerFax})]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement mode="Transparent" x="0" y="32" width="140" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" backcolor="#FFFFFF" uuid="d8084b96-eaad-4f2e-94e7-60b34f90c07f">
+						<reportElement positionType="Float" mode="Transparent" x="0" y="32" width="140" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" backcolor="#FFFFFF" uuid="d8084b96-eaad-4f2e-94e7-60b34f90c07f">
 							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-							<printWhenExpression><![CDATA[$P{CustomerEmail} != null]]></printWhenExpression>
+							<printWhenExpression><![CDATA[$P{CustomerEmail} != null || $P{CustomerWebsite} != null]]></printWhenExpression>
 						</reportElement>
-						<textElement verticalAlignment="Middle">
+						<textElement verticalAlignment="Middle" markup="html">
 							<font fontName="DejaVu Sans" size="6"/>
 						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.join(": ", $V{d}.email(), $P{CustomerEmail})]]></textFieldExpression>
+						<textFieldExpression><![CDATA[BeeUtils.join(": ",  "<b>" + $V{d}.email().charAt(0) + "</b>", ($P{CustomerEmail} == null ? "" : "<u>" + $P{CustomerEmail} + "</u>") + " " + ($P{CustomerWebsite} == null ? "" : "<u>" + $P{CustomerWebsite} + "</u>"))]]></textFieldExpression>
 					</textField>
 				</frame>
 				<frame>
 					<reportElement positionType="Float" mode="Opaque" x="292" y="0" width="120" height="40" isRemoveLineWhenBlank="true" uuid="138f26b0-be69-4750-bbc6-eb28e27f1a04"/>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement mode="Transparent" x="0" y="8" width="120" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" uuid="0f58ecbd-a5ee-4fef-953c-d6ed623555c0">
+						<reportElement positionType="Float" mode="Transparent" x="0" y="8" width="120" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" uuid="0f58ecbd-a5ee-4fef-953c-d6ed623555c0">
 							<printWhenExpression><![CDATA[$P{CustomerVATCode} != null]]></printWhenExpression>
 						</reportElement>
 						<textElement verticalAlignment="Middle">
 							<font fontName="DejaVu Sans" size="6" isBold="true"/>
 						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.joinWords("Įmonės kodas | ", $V{d}.companyCode())]]></textFieldExpression>
+						<textFieldExpression><![CDATA[!Objects.equals($P{REPORT_LOCALE}.getLanguage(), "lt") ? BeeUtils.joinWords("Įmonės kodas | ", $V{d}.companyCode()) : "Įmonės kodas"]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement mode="Transparent" x="0" y="16" width="120" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" uuid="af6694f6-f262-41db-bdfa-db199c2e7d30">
+						<reportElement positionType="Float" mode="Transparent" x="0" y="16" width="120" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" uuid="af6694f6-f262-41db-bdfa-db199c2e7d30">
 							<printWhenExpression><![CDATA[$P{CustomerVATCode} != null]]></printWhenExpression>
 						</reportElement>
 						<textElement verticalAlignment="Middle">
@@ -1531,16 +1532,16 @@
 						<textFieldExpression><![CDATA[$P{CustomerCode}]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement mode="Transparent" x="0" y="24" width="120" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" uuid="c1100594-4b63-4f17-9bb1-96553c2f1481">
+						<reportElement positionType="Float" mode="Transparent" x="0" y="24" width="120" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" uuid="c1100594-4b63-4f17-9bb1-96553c2f1481">
 							<printWhenExpression><![CDATA[$P{CustomerVATCode} != null]]></printWhenExpression>
 						</reportElement>
 						<textElement verticalAlignment="Middle">
 							<font fontName="DejaVu Sans" size="6" isBold="true"/>
 						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.joinWords("PVM kodas | ", $V{d}.companyVATCode())]]></textFieldExpression>
+						<textFieldExpression><![CDATA[!Objects.equals($P{REPORT_LOCALE}.getLanguage(), "lt") ? BeeUtils.joinWords("PVM kodas | ", $V{d}.companyVATCode()) : "PVM kodas"]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement mode="Transparent" x="0" y="32" width="120" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" uuid="e76214b2-6df7-4e46-a002-2d4013cbca3e">
+						<reportElement positionType="Float" mode="Transparent" x="0" y="32" width="120" height="8" isRemoveLineWhenBlank="true" forecolor="#9C9C9C" uuid="e76214b2-6df7-4e46-a002-2d4013cbca3e">
 							<printWhenExpression><![CDATA[$P{CustomerVATCode} != null]]></printWhenExpression>
 						</reportElement>
 						<textElement verticalAlignment="Middle">
