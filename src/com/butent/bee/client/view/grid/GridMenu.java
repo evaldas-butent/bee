@@ -170,13 +170,30 @@ public class GridMenu {
       }
 
       @Override
+      boolean isSelectable(Integer subIndex) {
+        return subIndex != null;
+      }
+
+      @Override
       boolean isVisible(GridPresenter presenter) {
         return presenter.getGridView().getFormCount(GridFormKind.NEW_ROW) > 1;
       }
 
       @Override
+      int renderChildren(GridPresenter presenter, HtmlTable table, int startRow) {
+        return renderFormSelection(this, presenter, table, startRow);
+      }
+
+      @Override
       Widget renderIcon(GridPresenter presenter) {
         return new FaLabel(FontAwesome.PLUS);
+      }
+
+      @Override
+      void select(GridPresenter presenter, Integer subIndex) {
+        if (subIndex != null) {
+          presenter.getGridView().selectForm(GridFormKind.NEW_ROW, subIndex);
+        }
       }
 
       @Override
@@ -192,13 +209,19 @@ public class GridMenu {
       }
 
       @Override
+      boolean hasSubMenu() {
+        return true;
+      }
+
+      @Override
       boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
-        return false;
+        return isEditable(gridDescription)
+            && BeeKeeper.getUser().canCreateData(gridDescription.getViewName());
       }
 
       @Override
       boolean isVisible(GridPresenter presenter) {
-        return false;
+        return presenter.getGridView().getFormCount(GridFormKind.NEW_ROW) > 0;
       }
 
       @Override
@@ -225,13 +248,30 @@ public class GridMenu {
       }
 
       @Override
+      boolean isSelectable(Integer subIndex) {
+        return subIndex != null;
+      }
+
+      @Override
       boolean isVisible(GridPresenter presenter) {
         return presenter.getGridView().getFormCount(GridFormKind.EDIT) > 1;
       }
 
       @Override
+      int renderChildren(GridPresenter presenter, HtmlTable table, int startRow) {
+        return renderFormSelection(this, presenter, table, startRow);
+      }
+
+      @Override
       Widget renderIcon(GridPresenter presenter) {
         return new FaLabel(FontAwesome.EDIT);
+      }
+
+      @Override
+      void select(GridPresenter presenter, Integer subIndex) {
+        if (subIndex != null) {
+          presenter.getGridView().selectForm(GridFormKind.EDIT, subIndex);
+        }
       }
 
       @Override
@@ -247,13 +287,19 @@ public class GridMenu {
       }
 
       @Override
+      boolean hasSubMenu() {
+        return true;
+      }
+
+      @Override
       boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
-        return false;
+        return !BeeUtils.isEmpty(gridDescription.getEditForm())
+            || Data.hasEditForm(gridDescription.getViewName());
       }
 
       @Override
       boolean isVisible(GridPresenter presenter) {
-        return false;
+        return presenter.getGridView().getFormCount(GridFormKind.EDIT) > 0;
       }
 
       @Override
@@ -276,8 +322,7 @@ public class GridMenu {
       @Override
       boolean isVisible(GridPresenter presenter) {
         return !presenter.getGridView().isEmpty()
-            && !Global.getParameterMap(AdministrationConstants.PRM_RECORD_DEPENDENCY)
-            .containsKey(presenter.getViewName());
+            && !getDependency().containsKey(presenter.getViewName());
       }
 
       @Override
@@ -304,8 +349,7 @@ public class GridMenu {
       @Override
       boolean isVisible(GridPresenter presenter) {
         return !presenter.getGridView().isEmpty()
-            && !Global.getParameterMap(AdministrationConstants.PRM_RECORD_DEPENDENCY)
-            .containsKey(presenter.getViewName());
+            && !getDependency().containsKey(presenter.getViewName());
       }
 
       @Override
@@ -327,8 +371,7 @@ public class GridMenu {
       @Override
       boolean isVisible(GridPresenter presenter) {
         return !presenter.getGridView().isEmpty()
-            && !Global.getParameterMap(AdministrationConstants.PRM_RECORD_DEPENDENCY)
-            .containsKey(presenter.getViewName());
+            && !getDependency().containsKey(presenter.getViewName());
       }
 
       @Override
@@ -355,8 +398,7 @@ public class GridMenu {
       @Override
       boolean isVisible(GridPresenter presenter) {
         return !presenter.getGridView().isEmpty()
-            && !Global.getParameterMap(AdministrationConstants.PRM_RECORD_DEPENDENCY)
-            .containsKey(presenter.getViewName());
+            && !getDependency().containsKey(presenter.getViewName());
       }
 
       @Override
@@ -390,20 +432,24 @@ public class GridMenu {
       @Override
       boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
         ensureLabel(gridDescription.getViewName());
-        return Data.getDataInfo(gridDescription.getViewName(), false) != null;
+        return Data.hasDataInfo(gridDescription.getViewName());
+      }
+
+      @Override
+      boolean isSelectable(Integer subIndex) {
+        return false;
       }
 
       @Override
       boolean isVisible(GridPresenter presenter) {
         ensureLabel(presenter.getViewName());
-        return Data.getDataInfo(presenter.getViewName(), false) != null
-            && Global.getParameterMap(AdministrationConstants.PRM_RECORD_DEPENDENCY)
-            .containsKey(presenter.getViewName());
+        return Data.hasDataInfo(presenter.getViewName())
+            && getDependency().containsKey(presenter.getViewName());
       }
 
       @Override
       Widget renderIcon(GridPresenter presenter) {
-        return null;
+        return new FaLabel(FontAwesome.LINK);
       }
 
       @Override
@@ -412,11 +458,10 @@ public class GridMenu {
       }
 
       void ensureLabel(String viewName) {
-        Map<String, String> dependency = Global.getParameterMap(AdministrationConstants
-            .PRM_RECORD_DEPENDENCY);
+        Map<String, String> dependency = getDependency();
 
         if (dependency.containsKey(viewName)) {
-          setLabel(BeeUtils.joinWords(Localized.dictionary().recordDependent(),
+          setLabel(BeeUtils.buildLines(Localized.dictionary().recordDependent(),
               RightsHelper.buildDependencyName(dependency, viewName)));
         }
       }
@@ -425,6 +470,10 @@ public class GridMenu {
         this.label = label;
       }
     };
+
+    private static Map<String, String> getDependency() {
+      return Global.getParameterMap(AdministrationConstants.PRM_RECORD_DEPENDENCY);
+    }
 
     private static void handleRights(final GridPresenter presenter, final RightsState rightsState) {
       Roles.getData(input -> {
@@ -462,6 +511,10 @@ public class GridMenu {
       this.formKind = formKind;
     }
 
+    boolean closeOnSelection() {
+      return true;
+    }
+
     String getLabel() {
       if (rightsState != null) {
         return Localized.dictionary().rights() + " - " + rightsState.getCaption();
@@ -472,9 +525,21 @@ public class GridMenu {
       }
     }
 
+    boolean hasSubMenu() {
+      return false;
+    }
+
     abstract boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions);
 
+    boolean isSelectable(Integer subIndex) {
+      return subIndex == null;
+    }
+
     abstract boolean isVisible(GridPresenter presenter);
+
+    int renderChildren(GridPresenter presenter, HtmlTable table, int startRow) {
+      return 0;
+    }
 
     Widget renderIcon(GridPresenter presenter) {
       if (action == null) {
@@ -489,8 +554,6 @@ public class GridMenu {
         handleRights(presenter, rightsState);
       } else if (action != null) {
         presenter.handleAction(action);
-      } else if (formKind != null && subIndex != null) {
-        presenter.getGridView().selectForm(formKind, subIndex);
       }
     }
 
@@ -520,11 +583,13 @@ public class GridMenu {
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";
   private static final String STYLE_ICON = STYLE_PREFIX + "icon";
   private static final String STYLE_LABEL = STYLE_PREFIX + "label";
+  private static final String STYLE_SUB_MENU_ICON = STYLE_PREFIX + "sub-menu-icon";
+  private static final String STYLE_EMPTY_CELL = STYLE_PREFIX + "empty-cell";
 
   private static final String STYLE_FORM_ITEM = STYLE_PREFIX + "form-item";
   private static final String STYLE_FORM_SELECTED = STYLE_PREFIX + "form-selected";
 
-  private static final String STYLE_SECTION_HEADER = STYLE_PREFIX + "section-header";
+  private static final String STYLE_NOT_SELECTABLE = STYLE_PREFIX + "not-selectable";
   private static final String STYLE_SEPARATOR = STYLE_PREFIX + "separator";
 
   private static final String KEY_SUB_INDEX = "sub";
@@ -574,7 +639,7 @@ public class GridMenu {
           CustomDiv separator = new CustomDiv();
           table.setWidgetAndStyle(r, 0, separator, STYLE_SEPARATOR);
 
-          table.getCellFormatter().setColSpan(r, 0, 2);
+          table.getCellFormatter().setColSpan(r, 0, 3);
           r++;
         }
 
@@ -591,39 +656,23 @@ public class GridMenu {
           table.setWidgetAndStyle(r, 1, label, STYLE_LABEL);
         }
 
+        if (item.hasSubMenu()) {
+          FaLabel subMenuIcon = new FaLabel(FontAwesome.CARET_RIGHT);
+          table.setWidgetAndStyle(r, 2, subMenuIcon, STYLE_SUB_MENU_ICON);
+        } else {
+          addEmptyCell(table, r, 2);
+        }
+
         table.getRowFormatter().addStyleName(r, STYLE_PREFIX + item.getStyleSuffix());
-        if (item.formKind != null || item == Item.DEPENDENT) {
-          table.getRowFormatter().addStyleName(r, STYLE_SECTION_HEADER);
+        if (!item.isSelectable(null)) {
+          table.getRowFormatter().addStyleName(r, STYLE_NOT_SELECTABLE);
         }
 
         DomUtils.setDataIndex(table.getRow(r), item.ordinal());
 
         r++;
 
-        if (item.formKind != null) {
-          List<String> formLabels = presenter.getGridView().getFormLabels(item.formKind);
-
-          for (int formIndex = 0; formIndex < formLabels.size(); formIndex++) {
-            boolean selected = formIndex == presenter.getGridView().getFormIndex(item.formKind);
-            if (selected) {
-              table.setWidgetAndStyle(r, 0, new FaLabel(FontAwesome.CHECK), STYLE_ICON);
-            }
-
-            String formText = formLabels.get(formIndex);
-            Label label = new Label(formText);
-            UiHelper.makePotentiallyBold(label.getElement(), formText);
-
-            table.setWidgetAndStyle(r, 1, label, STYLE_LABEL);
-
-            Element rowElement = table.getRow(r);
-            rowElement.addClassName(selected ? STYLE_FORM_ITEM : STYLE_FORM_SELECTED);
-
-            DomUtils.setDataIndex(rowElement, item.ordinal());
-            DomUtils.setDataProperty(rowElement, KEY_SUB_INDEX, formIndex);
-
-            r++;
-          }
-        }
+        r += item.renderChildren(presenter, table, r);
       }
     }
 
@@ -638,9 +687,11 @@ public class GridMenu {
           Item item = EnumUtils.getEnumByIndex(Item.class, index);
           Integer subIndex = DomUtils.getDataPropertyInt(rowElement, KEY_SUB_INDEX);
 
-          if (item != null && item != Item.DEPENDENT
-              && (item.formKind == null || subIndex != null)) {
-            UiHelper.closeDialog(table);
+          if (item.isSelectable(subIndex)) {
+            if (item.closeOnSelection()) {
+              UiHelper.closeDialog(table);
+            }
+
             item.select(presenter, subIndex);
           }
         }
@@ -652,5 +703,41 @@ public class GridMenu {
       popup.setHideOnEscape(true);
       popup.showRelativeTo(presenter.getHeader().getElement());
     }
+  }
+
+  private static void addEmptyCell(HtmlTable table, int r, int c) {
+    table.setText(r, c, null, STYLE_EMPTY_CELL);
+  }
+
+  private static int renderFormSelection(Item item, GridPresenter presenter,
+      HtmlTable table, int startRow) {
+
+    int r = startRow;
+
+    List<String> formLabels = presenter.getGridView().getFormLabels(item.formKind);
+
+    for (int formIndex = 0; formIndex < formLabels.size(); formIndex++) {
+      boolean selected = formIndex == presenter.getGridView().getFormIndex(item.formKind);
+      if (selected) {
+        table.setWidgetAndStyle(r, 0, new FaLabel(FontAwesome.CHECK), STYLE_ICON);
+      }
+
+      String formText = formLabels.get(formIndex);
+      Label label = new Label(formText);
+      UiHelper.makePotentiallyBold(label.getElement(), formText);
+
+      table.setWidgetAndStyle(r, 1, label, STYLE_LABEL);
+      addEmptyCell(table, r, 2);
+
+      Element rowElement = table.getRow(r);
+      rowElement.addClassName(selected ? STYLE_FORM_ITEM : STYLE_FORM_SELECTED);
+
+      DomUtils.setDataIndex(rowElement, item.ordinal());
+      DomUtils.setDataProperty(rowElement, KEY_SUB_INDEX, formIndex);
+
+      r++;
+    }
+
+    return r - startRow;
   }
 }

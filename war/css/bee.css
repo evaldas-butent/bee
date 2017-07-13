@@ -3338,7 +3338,8 @@ input[type="text"].bee-FilterSupplier-range-to-input {
   background-color: #f2f2f2;
   cursor: pointer;
 }
-.bee-GridMenu-table .bee-GridMenu-section-header:hover {
+.bee-GridMenu-table .bee-GridMenu-not-selectable:hover,
+.bee-GridMenu-not-selectable .bee-GridMenu-icon {
   cursor: auto;
 }
 .bee-GridMenu-table .bee-GridMenu-separator-cell:hover {
@@ -3347,6 +3348,9 @@ input[type="text"].bee-FilterSupplier-range-to-input {
 }
 .bee-GridMenu-table td {
   padding: 4px 10px;
+}
+.bee-GridMenu-table .bee-GridMenu-sub-menu-icon-cell {
+  padding-right: 4px;
 }
 .bee-GridMenu-table .bee-GridMenu-separator-cell {
   padding-left: 0;
@@ -3362,12 +3366,17 @@ input[type="text"].bee-FilterSupplier-range-to-input {
 .bee-GridMenu-label-cell:hover {
   font-weight: bold;
 }
-.bee-GridMenu-section-header .bee-GridMenu-label-cell:hover {
+.bee-GridMenu-not-selectable .bee-GridMenu-label-cell:hover {
   font-weight: normal;
 }
 .bee-GridMenu-separator {
   height: 1px;
   background-color: #ccc;
+}
+
+.bee-GridMenu-dependent .bee-GridMenu-label {
+  max-width: 250px;
+  white-space: pre-line;
 }
 
 .bee-CellGridColumn-rights {
