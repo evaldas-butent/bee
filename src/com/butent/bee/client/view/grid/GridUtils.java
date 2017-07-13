@@ -110,8 +110,22 @@ public final class GridUtils {
     return BeeConst.UNDEF;
   }
 
-  static WindowType getEditWindowType(GridDescription gridDescription, boolean isChild) {
-    WindowType windowType = gridDescription.getEditWindow();
+  static WindowType getEditWindowType(String storageKey, GridDescription gridDescription,
+      boolean isChild) {
+
+    WindowType windowType = null;
+
+    if (!BeeUtils.isEmpty(storageKey)) {
+      String wtp = BeeKeeper.getStorage().get(storageKey);
+
+      if (!BeeUtils.isEmpty(wtp)) {
+        windowType = WindowType.parse(wtp);
+      }
+    }
+
+    if (windowType == null) {
+      windowType = gridDescription.getEditWindow();
+    }
 
     if (windowType == null) {
       String wtp = isChild
@@ -139,8 +153,22 @@ public final class GridUtils {
     return index;
   }
 
-  static WindowType getNewRowWindowType(GridDescription gridDescription, boolean isChild) {
-    WindowType windowType = gridDescription.getNewRowWindow();
+  static WindowType getNewRowWindowType(String storageKey, GridDescription gridDescription,
+      boolean isChild) {
+
+    WindowType windowType = null;
+
+    if (!BeeUtils.isEmpty(storageKey)) {
+      String wtp = BeeKeeper.getStorage().get(storageKey);
+
+      if (!BeeUtils.isEmpty(wtp)) {
+        windowType = WindowType.parse(wtp);
+      }
+    }
+
+    if (windowType == null) {
+      windowType = gridDescription.getNewRowWindow();
+    }
 
     if (windowType == null) {
       String wtp = isChild

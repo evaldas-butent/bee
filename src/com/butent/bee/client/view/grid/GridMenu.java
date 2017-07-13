@@ -827,11 +827,11 @@ public class GridMenu {
         if (windowType != activeType) {
           switch (item.formKind) {
             case NEW_ROW:
-              presenter.getGridView().setNewRowWindowType(windowType);
+              presenter.getGridView().setNewRowWindowType(windowType, true);
               break;
 
             case EDIT:
-              presenter.getGridView().setEditWindowType(windowType);
+              presenter.getGridView().setEditWindowType(windowType, true);
               break;
           }
 

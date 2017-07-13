@@ -904,8 +904,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     initForms();
 
-    setEditWindowType(GridUtils.getEditWindowType(gridDescription, hasChildUi()));
-    setNewRowWindowType(GridUtils.getNewRowWindowType(gridDescription, hasChildUi()));
+    setEditWindowType(GridUtils.getEditWindowType(getWindowTypeStorageKey(GridFormKind.EDIT),
+        gridDescription, hasChildUi()), false);
+
+    setNewRowWindowType(GridUtils.getNewRowWindowType(getWindowTypeStorageKey(GridFormKind.NEW_ROW),
+        gridDescription, hasChildUi()), false);
 
     if (!editForms.isEmpty()) {
       if (gridDescription.getEditMessage() != null) {
@@ -1885,8 +1888,15 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
-  public void setEditWindowType(WindowType editWindowType) {
-    this.editWindowType = editWindowType;
+  public void setEditWindowType(WindowType windowType, boolean store) {
+    this.editWindowType = windowType;
+
+    if (store) {
+      String key = getWindowTypeStorageKey(GridFormKind.EDIT);
+      String value = (windowType == null) ? null : windowType.getCode();
+
+      BeeKeeper.getStorage().set(key, value);
+    }
   }
 
   @Override
@@ -1895,8 +1905,15 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
-  public void setNewRowWindowType(WindowType newRowWindowType) {
-    this.newRowWindowType = newRowWindowType;
+  public void setNewRowWindowType(WindowType windowType, boolean store) {
+    this.newRowWindowType = windowType;
+
+    if (store) {
+      String key = getWindowTypeStorageKey(GridFormKind.NEW_ROW);
+      String value = (windowType == null) ? null : windowType.getCode();
+
+      BeeKeeper.getStorage().set(key, value);
+    }
   }
 
   @Override
@@ -2405,6 +2422,13 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private Evaluator getRowValidation() {
     return rowValidation;
+  }
+
+  private String getWindowTypeStorageKey(GridFormKind kind) {
+    String prefix = BeeUtils.notEmpty(getGridKey(), getGridName());
+    String suffix = kind.name().toLowerCase().replace(BeeConst.CHAR_UNDER, BeeConst.CHAR_MINUS);
+
+    return Storage.getUserKey(prefix, suffix + "-window");
   }
 
   private boolean hasEditMode() {

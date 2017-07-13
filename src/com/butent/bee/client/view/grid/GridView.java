@@ -121,9 +121,9 @@ public interface GridView extends DataView,
 
   void selectForm(GridFormKind kind, int index);
 
-  void setEditWindowType(WindowType editWindowType);
+  void setEditWindowType(WindowType windowType, boolean store);
 
-  void setNewRowWindowType(WindowType newRowWindowType);
+  void setNewRowWindowType(WindowType windowType, boolean store);
 
   void setRelId(Long relId);
 
