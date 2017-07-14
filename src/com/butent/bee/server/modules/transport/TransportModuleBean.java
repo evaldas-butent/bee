@@ -440,7 +440,9 @@ public class TransportModuleBean implements BeeModule {
             COL_CARGO_TYPE_NAME),
         BeeParameter.createRelation(module, PRM_CARGO_SERVICE, TBL_SERVICES, COL_SERVICE_NAME),
         BeeParameter.createRelation(module, PRM_SALES_RESPONSIBILITY, TBL_RESPONSIBILITIES,
-            "Name"));
+            "Name"),
+        BeeParameter.createRelation(module, PRM_FORWARDER_EXPEDITION_TYPE, TBL_EXPEDITION_TYPES,
+            COL_EXPEDITION_TYPE_NAME));
   }
 
   @Override

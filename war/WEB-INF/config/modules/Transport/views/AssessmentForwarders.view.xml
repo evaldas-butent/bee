@@ -118,5 +118,7 @@
       <SimpleColumn name="Note" label="=transportConditions" />
       <SimpleColumn name="Income" />
     </SimpleJoin>
+
+    <SimpleColumn name="Consolidated" />
   </Columns>
 </View>

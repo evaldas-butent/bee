@@ -1,26 +1,29 @@
 package com.butent.bee.client.modules.transport;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class AssessmentForwarderForm extends PrintFormInterceptor {
+public class AssessmentForwarderForm extends CustomAssessmentForwarderForm {
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -60,16 +63,26 @@ public class AssessmentForwarderForm extends PrintFormInterceptor {
           defaultParameters.putAll(companiesInfo);
           defaultParameters.put(COL_ORDER_ID, BeeUtils.toString(row.getId()));
 
-          TransportUtils.getCargoPlaces(Filter.equals(COL_CARGO_TRIP,
-              getActiveRow().getLong(form.getDataIndex(COL_CARGO_TRIP))), (loading, unloading) -> {
-            for (BeeRowSet places : new BeeRowSet[] {loading, unloading}) {
+          Queries.getRowSet(VIEW_COMPANY_CONTACTS, Arrays.asList(COL_ADDRESS, COL_POST_INDEX,
+              ALS_CITY_NAME, ALS_COUNTRY_NAME),
+              Filter.equals(COL_COMPANY, getLongValue(COL_FORWARDER)),
+              result -> {
+                if (!DataUtils.isEmpty(result)) {
+                  defaultParameters.put(COL_FORWARDER + VIEW_COMPANY_CONTACTS, result.serialize());
+                }
 
-              BeeRowSet current = TransportUtils.copyCargoPlaces(places);
+                TransportUtils.getCargoPlaces(Filter.equals(COL_CARGO_TRIP,
+                    getActiveRow().getLong(form.getDataIndex(COL_CARGO_TRIP))),
+                    (loading, unloading) -> {
+                  for (BeeRowSet places : new BeeRowSet[] {loading, unloading}) {
 
-              defaultParameters.put(places.getViewName(), current.serialize());
-            }
-            parametersConsumer.accept(defaultParameters);
-          });
+                    BeeRowSet current = TransportUtils.copyCargoPlaces(places);
+                    defaultParameters.put(places.getViewName(), current.serialize());
+                  }
+
+                  parametersConsumer.accept(defaultParameters);
+                });
+              });
         }));
   }
 }

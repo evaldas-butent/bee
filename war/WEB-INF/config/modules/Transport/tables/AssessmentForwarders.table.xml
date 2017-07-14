@@ -12,5 +12,6 @@
               cascade="DELETE" editable="true" />
     <Relation name="Trip" unique="true" relation="Trips" editable="true" />
     <Text name="CargoDescription" label="Krovinys" />
+    <Boolean name="Consolidated" label="=trConsolidatedTransportation" />
   </Fields>
 </Table>

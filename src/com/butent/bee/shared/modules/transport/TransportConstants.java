@@ -440,6 +440,7 @@ public final class TransportConstants {
   public static final String PRM_SELF_SERVICE_ROLE = "SelfServiceRole";
   public static final String PRM_SALES_RESPONSIBILITY = "SalesResponsibility";
   public static final String PRM_SELF_SERVICE_RESPONSIBILITY = "SelfServiceResponsibility";
+  public static final String PRM_FORWARDER_EXPEDITION_TYPE = "ForwarderExpeditionType";
 
   public static final String PRM_CHART_FILTER = "ChartFilter";
 
@@ -600,6 +601,7 @@ public final class TransportConstants {
   public static final String COL_FORWARDER = "Forwarder";
   public static final String COL_FORWARDER_VEHICLE = "ForwarderVehicle";
   public static final String COL_FORWARDER_DRIVER = "ForwarderDriver";
+  public static final String COL_CONSOLIDATED_TRANSPORTATION = "Consolidated";
 
   public static final String COL_CARGO = "Cargo";
   public static final String COL_CARGO_DESCRIPTION = "Description";

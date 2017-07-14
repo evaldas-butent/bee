@@ -5962,6 +5962,8 @@ public interface Dictionary {
 
   default String trConfirmProforma() {return g("trConfirmProforma");}
 
+  default String trConsolidatedTransportation() {return g("trConsolidatedTransportation");}
+
   default String trConstantCosts() {return g("trConstantCosts");}
 
   default String trContract() {return g("trContract");}

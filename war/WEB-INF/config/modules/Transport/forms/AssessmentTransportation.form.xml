@@ -48,9 +48,6 @@
       <InputText source="ForwarderDriver" style="&inline; width:200px;"  />
     </FlowPanel>
     <FlowPanel style="&section;">
-      <Label text="=transportConditions" style="&header;" />
-    </FlowPanel>
-    <FlowPanel style="&section;">
       <Label text="=amount" class="bee-required" style="&labelLeft;" />
       <InputMoney source="TransportationPrice" required="true" style="width: 100px;" />
       <DataSelector name="TransportationCurrency" required="true" class="bee-disabled"
@@ -62,8 +59,8 @@
       <CheckBox source="TransportationVatPercent" style="&inline; margin-left:5px;" text="%" />
     </FlowPanel>
     <FlowPanel style="&section;">
-      <Label text="=unitDays" class="bee-required" style="&labelLeft;" />
-      <InputInteger source="PaymentDays"  required="true" minValue="0" style="width: 50px;" />
+      <Label text="=transportConditions" class="bee-required" style="&labelLeft;" />
+      <InputText source="PaymentDays" required="true" style="width: 200px;" />
     </FlowPanel>
     <hr/>
 
