@@ -7,6 +7,7 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_FOREGROUND;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -46,6 +47,14 @@ public class MaintenanceEventsHandler extends EventsBoard {
   private static final Set<Action> enabledActions = Sets.newHashSet(Action.ADD, Action.REFRESH);
 
   private IsRow maintenanceRow;
+  private boolean readOnly;
+  private boolean canCreate;
+
+  public MaintenanceEventsHandler() {
+    super();
+    readOnly = !Data.isViewEditable(getEventsDataViewName());
+    canCreate = !readOnly && BeeKeeper.getUser().canCreateData(getEventsDataViewName());
+  }
 
   @Override
   protected void afterCreateCellContent(BeeRowSet rs, BeeRow row, Flow widget) {
@@ -58,12 +67,8 @@ public class MaintenanceEventsHandler extends EventsBoard {
     if (customerShowCheckBox != null) {
       customerShowCheckBox.addValueChangeHandler(event ->
           Queries.update(getEventsDataViewName(), row.getId(),
-          COL_SHOW_CUSTOMER, Value.getValue(event.getValue()), new Queries.IntCallback() {
-            @Override
-            public void onSuccess(Integer result) {
-              customerShowCheckBox.setChecked(event.getValue());
-            }
-          }));
+          COL_SHOW_CUSTOMER, Value.getValue(event.getValue()),
+              result -> customerShowCheckBox.setChecked(event.getValue())));
     }
 
     boolean isSendEmail = BeeUtils.toBoolean(row.getString(rs.getColumnIndex(COL_SEND_EMAIL)));
@@ -116,27 +121,26 @@ public class MaintenanceEventsHandler extends EventsBoard {
       }
     }
 
-    Flow rowCellEdit = createEventRowCell(infoPanel, "Edit", null, false);
-    FaLabel editLabel = new FaLabel(FontAwesome.EDIT, STYLE_LABEL);
-    editLabel.setTitle(LC.rightStateEdit());
-    rowCellEdit.add(editLabel);
-    editLabel.addClickHandler(
-        event -> RowEditor.openForm(FORM_MAINTENANCE_COMMENT,
-            Data.getDataInfo(getEventsDataViewName()),
-            row, Opener.MODAL, null, new MaintenanceCommentForm(maintenanceRow)));
+    if (!readOnly) {
+      Flow rowCellEdit = createEventRowCell(infoPanel, "Edit", null, false);
+      FaLabel editLabel = new FaLabel(FontAwesome.EDIT, STYLE_LABEL);
+      editLabel.setTitle(LC.rightStateEdit());
+      rowCellEdit.add(editLabel);
+      editLabel.addClickHandler(
+          event -> RowEditor.openForm(FORM_MAINTENANCE_COMMENT,
+              Data.getDataInfo(getEventsDataViewName()),
+              row, Opener.MODAL, null, new MaintenanceCommentForm(maintenanceRow)));
 
-    Flow rowCellDelete = createEventRowCell(infoPanel, "Delete", null, false);
-    FaLabel clearLabel = new FaLabel(FontAwesome.TRASH, STYLE_LABEL);
-    clearLabel.setTitle(LC.rightStateDelete());
-    rowCellDelete.add(clearLabel);
-    clearLabel.addClickHandler(event -> Queries.deleteRow(getEventsDataViewName(), row.getId(),
-        new Queries.IntCallback() {
-          @Override
-          public void onSuccess(Integer result) {
-            refresh(true);
-          }
-        }));
+      if (BeeKeeper.getUser().canDeleteData(getEventsDataViewName())) {
+        Flow rowCellDelete = createEventRowCell(infoPanel, "Delete", null, false);
+        FaLabel clearLabel = new FaLabel(FontAwesome.TRASH, STYLE_LABEL);
+        clearLabel.setTitle(LC.rightStateDelete());
+        rowCellDelete.add(clearLabel);
+        clearLabel.addClickHandler(event -> Queries.deleteRow(getEventsDataViewName(), row.getId(),
+            result -> refresh(true)));
 
+      }
+    }
     widget.add(infoPanel);
   }
 
@@ -144,10 +148,13 @@ public class MaintenanceEventsHandler extends EventsBoard {
       boolean enabled, String text) {
     Flow rowCell = createEventRowCell(parentFlow, column, null, false);
     int idxCol = rs.getColumnIndex(column);
-    if (!BeeUtils.isNegative(idxCol)) {
+
+    if (!BeeUtils.isNegative(idxCol) && BeeKeeper.getUser()
+        .isColumnVisible(Data.getDataInfo(getEventsDataViewName()), column)) {
       CheckBox checkBox = new CheckBox();
       checkBox.setChecked(BeeUtils.toBoolean(row.getString(idxCol)));
-      checkBox.setEnabled(enabled);
+      checkBox.setEnabled(enabled && BeeKeeper.getUser()
+          .canEditColumn(getEventsDataViewName(), column));
       checkBox.setText(text);
       rowCell.add(createCellWidgetItem(column, checkBox));
       return checkBox;
@@ -168,8 +175,20 @@ public class MaintenanceEventsHandler extends EventsBoard {
   }
 
   @Override
+  public Set<Action> getDisabledActions() {
+    if (!canCreate) {
+      return  Sets.newHashSet(Action.ADD);
+    }
+    return super.getDisabledActions();
+  }
+
+  @Override
   protected Set<Action> getEnabledActions() {
-    return enabledActions;
+    if (canCreate) {
+      return enabledActions;
+    } else {
+      return Sets.newHashSet(Action.REFRESH);
+    }
   }
 
   @Override

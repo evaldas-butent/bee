@@ -26,6 +26,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.WindowType;
 
 import java.util.Collection;
 import java.util.List;
@@ -68,6 +69,8 @@ public interface GridView extends DataView,
 
   Set<String> getEditInPlace();
 
+  WindowType getEditWindowType();
+
   FormView getForm(GridFormKind kind);
 
   int getFormCount(GridFormKind kind);
@@ -85,6 +88,8 @@ public interface GridView extends DataView,
   String getGridKey();
 
   String getGridName();
+
+  WindowType getNewRowWindowType();
 
   String getRelColumn();
 
@@ -115,6 +120,10 @@ public interface GridView extends DataView,
   void reset(GridDescription gridDescription);
 
   void selectForm(GridFormKind kind, int index);
+
+  void setEditWindowType(WindowType windowType, boolean store);
+
+  void setNewRowWindowType(WindowType windowType, boolean store);
 
   void setRelId(Long relId);
 

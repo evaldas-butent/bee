@@ -1,7 +1,6 @@
 package com.butent.bee.client.view;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Search;
 import com.butent.bee.client.composite.ResourceEditor;
@@ -11,9 +10,7 @@ import com.butent.bee.client.maps.MapUtils;
 import com.butent.bee.client.modules.administration.ParametersGrid;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.output.Report;
-import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
-import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.Assert;
@@ -40,13 +37,8 @@ public final class ViewFactory {
     FORM("form_") {
       @Override
       void create(final String item, final ViewCallback callback) {
-        FormFactory.getFormDescription(item, new Callback<FormDescription>() {
-          @Override
-          public void onSuccess(FormDescription result) {
-            FormFactory.openForm(result, FormFactory.getFormInterceptor(item),
-                getPresenterCallback(callback));
-          }
-        });
+        FormFactory.getFormDescription(item, result -> FormFactory.openForm(result,
+            FormFactory.getFormInterceptor(item), getPresenterCallback(callback)));
       }
     },
 
@@ -173,13 +165,7 @@ public final class ViewFactory {
 
   public static void createAndShow(String key) {
     Assert.notEmpty(key);
-
-    create(key, new ViewCallback() {
-      @Override
-      public void onSuccess(View result) {
-        BeeKeeper.getScreen().show(result);
-      }
-    });
+    create(key, result -> BeeKeeper.getScreen().show(result));
   }
 
   public static Collection<String> getKeys() {
@@ -187,12 +173,7 @@ public final class ViewFactory {
   }
 
   public static PresenterCallback getPresenterCallback(final ViewCallback callback) {
-    return new PresenterCallback() {
-      @Override
-      public void onCreate(Presenter presenter) {
-        callback.onSuccess(presenter.getMainView());
-      }
-    };
+    return presenter -> callback.onSuccess(presenter.getMainView());
   }
 
   public static ViewSupplier getSupplier(String key) {

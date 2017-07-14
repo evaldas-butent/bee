@@ -1250,6 +1250,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
         getFormView().refresh(false, false);
       });
     } else {
+      Data.clearCell(viewName, activeRow, COL_QUERY_MANAGER);
       RelationUtils.clearRelatedValues(Data.getDataInfo(viewName), COL_QUERY_MANAGER, activeRow);
       getFormView().refresh(false, false);
     }

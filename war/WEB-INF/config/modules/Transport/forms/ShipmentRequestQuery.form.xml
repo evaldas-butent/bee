@@ -338,6 +338,14 @@
                       <input name="LoadingNumber" type="text" maxlength="50" />
                     </td>
                   </tr>
+                  <tr>
+                    <td>
+                      <label>=trLoadedKilometers</label>
+                    </td>
+                    <td>
+                      <input name="LoadingLoadedKilometers" type="number" maxlength="5" />
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -429,6 +437,14 @@
                     </td>
                     <td>
                       <input name="UnloadingNumber" type="text" maxlength="50" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=trLoadedKilometers</label>
+                    </td>
+                    <td>
+                      <input name="UnloadingLoadedKilometers" type="number" maxlength="5" />
                     </td>
                   </tr>
                 </tbody>
@@ -566,14 +582,6 @@
                     </td>
                     <td>
                       <select id="ShippingTerms-Name" name="ShippingTerm" required="required" />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <label for="LoadedKilometers">=trLoadedKilometers</label>
-                    </td>
-                    <td>
-                      <input id="LoadedKilometers" name="LoadedKilometers" type="number" maxlength="5" />
                     </td>
                   </tr>
                   <tr>

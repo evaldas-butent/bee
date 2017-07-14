@@ -513,7 +513,7 @@ public class GridContainerImpl extends Split implements GridContainerView,
     if (event.isOpening() || event.isClosing()) {
       setEditing(event.isOpening());
 
-      if (event.getWindowType() != WindowType.MODAL) {
+      if (event.getWindowType() == WindowType.ON_TOP) {
         showChildren(event.isClosing());
 
         if (!getGridView().hasChildUi()) {
