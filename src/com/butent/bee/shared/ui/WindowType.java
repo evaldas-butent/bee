@@ -59,4 +59,8 @@ public enum WindowType implements HasLocalizedCaption {
       return EnumUtils.getEnumByName(WindowType.class, input);
     }
   }
+
+  public String getCode() {
+    return code;
+  }
 }

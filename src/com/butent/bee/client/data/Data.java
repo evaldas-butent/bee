@@ -287,6 +287,23 @@ public final class Data {
     return (dataInfo == null) ? null : dataInfo.getTableName();
   }
 
+  public static boolean hasDataInfo(String viewName) {
+    if (BeeUtils.isEmpty(viewName)) {
+      return false;
+    } else {
+      return getDataInfo(viewName, false) != null;
+    }
+  }
+
+  public static boolean hasEditForm(String viewName) {
+    if (BeeUtils.isEmpty(viewName)) {
+      return false;
+    } else {
+      DataInfo dataInfo = getDataInfo(viewName, false);
+      return dataInfo != null && !BeeUtils.isEmpty(dataInfo.getEditForm());
+    }
+  }
+
   public static boolean isColumnReadOnly(String viewName, BeeColumn column) {
     return column.isReadOnly() || readOnlyColumns.containsEntry(viewName, column.getId())
         || !BeeKeeper.getUser().canEditColumn(viewName, column.getId());

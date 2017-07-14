@@ -6,6 +6,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.ModalForm;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.i18n.Format;
@@ -191,12 +192,7 @@ public final class RowEditor {
       return false;
     }
 
-    Queries.getRow(viewName, id, new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow result) {
-        open(viewName, result, opener);
-      }
-    });
+    Queries.getRow(viewName, id, result -> open(viewName, result, opener));
 
     return true;
   }
@@ -233,7 +229,7 @@ public final class RowEditor {
             }
 
             Opener formOpener;
-            if (!opener.isModal() && Popup.hasEventPreview()) {
+            if (opener.getModality() != Modality.ENABLED && Popup.hasEventPreview()) {
               formOpener = Opener.modal(opener.getOnOpen());
             } else {
               formOpener = opener;
@@ -247,12 +243,8 @@ public final class RowEditor {
   private static void getRow(final String formName, final DataInfo dataInfo, Filter filter,
       final Opener opener, final RowCallback rowCallback, final FormInterceptor formInterceptor) {
 
-    Queries.getRow(dataInfo.getViewName(), filter, null, new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow result) {
-        openForm(formName, dataInfo, result, opener, rowCallback, formInterceptor);
-      }
-    });
+    Queries.getRow(dataInfo.getViewName(), filter, null,
+        result -> openForm(formName, dataInfo, result, opener, rowCallback, formInterceptor));
   }
 
   private static boolean isValidFormName(String formName) {
@@ -302,7 +294,8 @@ public final class RowEditor {
       formView.getFormInterceptor().afterCreatePresenter(presenter);
     }
 
-    final ModalForm dialog = opener.isModal() ? new ModalForm(presenter, formView, false) : null;
+    final ModalForm dialog = (opener.getModality() == null)
+        ? null : new ModalForm(presenter, formView, false);
 
     final RowCallback closer = new RowCallback() {
       @Override
@@ -322,7 +315,7 @@ public final class RowEditor {
       }
 
       private void closeForm() {
-        if (opener.isModal()) {
+        if (opener.getModality() != null) {
           dialog.close();
         } else {
           BeeKeeper.getScreen().closeWidget(presenter.getMainView());
@@ -393,7 +386,7 @@ public final class RowEditor {
       }
     };
 
-    if (opener.isModal()) {
+    if (opener.getModality() != null) {
       if (enabledActions.contains(Action.SAVE)) {
         dialog.setOnSave(input -> {
           if (formView.checkOnSave(input)) {
@@ -411,6 +404,8 @@ public final class RowEditor {
       }
 
       dialog.addOpenHandler(event -> formView.editRow(oldRow, focusCommand));
+
+      dialog.setPreviewEnabled(opener.getModality() == Modality.ENABLED);
 
       if (opener.getTarget() == null) {
         dialog.center();
