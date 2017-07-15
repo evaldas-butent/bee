@@ -6,5 +6,6 @@
   >
   <Fields>
     <String name="Name" precision="100" notNull="true" unique="true" label="=documentStatus" />
+    <Boolean name="Main" label="=documentStatusMain" />
   </Fields>
 </Table>

@@ -33,5 +33,7 @@
     <DataColumn name="StyleName" label="=style" visible="false" />
 
     <RelColumn name="Project" visible="false" />
+
+    <RelColumn name="Creator" />
   </g:columns>
 </g:Grid>

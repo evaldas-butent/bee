@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY section "margin-top: 5px;">
+  <!ENTITY bold "font-weight:bold;">
+  <!ENTITY footer "position: absolute; bottom: 5px; display: inline-block;">
+  <!ENTITY form "PrintTradeActExtra">
+  <!ENTITY border "border:1px solid black;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
+  name="&form;" caption="Priedas sutarties" disabledActions="save" width="70" widthUnit="%" height="90"
+  heightUnit="%">
+  <FlowPanel style="padding: 10px; background-color: white;" contentEditable="true">
+    <FlowPanel>
+      <Image url="images/logo.png" style="position: relative;" />
+    </FlowPanel>
+    
+    <FlowPanel>
+      <TextLabel style="text-align:center; &bold;">
+        <render>
+          <ui:expression>'Priedas Nr. ' + row.Number + ' prie nuomos sutarties: ' + row.ContractName + '-' + (row.ContractNumber ? row.ContractNumber :
+            rowId)</ui:expression>
+        </render>
+      </TextLabel>
+      <DateTimeLabel source="Date" format="DATE_LONG" />
+    </FlowPanel>
+      
+    <HtmlPanel style="margin-top: 20px;">
+      <span style="display:block; white-space:pre-wrap;">Pagal nuomos sutarties 3 straipsnį NUOMOTOJAS ir NUOMININKAS susitaria dėl šių toliau išdėstytų nuomos
+sąlygų bei įkainių.
+      </span>
+    </HtmlPanel>
+
+    <Table name="InvoiceDetails1" style="&section; width:100%; padding-top: 0;" kind="output">
+      <properties content="TradeActItems" />
+      <row>
+        <Label text="Artikulas">
+          <properties name="Article" />
+        </Label>
+        <Label text="Pavadinimas">
+          <properties name="Name" />
+        </Label>
+        <Label text="Mato VNT.">
+          <properties name="Unit" />
+        </Label>
+        <Label text="Kiekis">
+          <properties name="Quantity" />
+        </Label>
+        <Label text="Svoris Kg" style="text-align: right;">
+          <properties name="Weight" />
+        </Label>
+        <Label text="Viso Kg" style="text-align: right;">
+          <properties name="sv" />
+        </Label>
+        <Label text="Kaina Eur">
+          <properties name="Price" />
+        </Label>
+        <Label text="Viso Eur be PVM">
+          <properties name="Amount" />
+        </Label>
+      </row>
+      <row>
+        <cell colSpan="5" style="text-align: right; vertical-align:top">
+          <Label text="Bendras svoris:" />
+        </cell>
+        <cell style="text-align: right; vertical-align:top;">
+          <FlowPanel style="display: inline-flex;">
+            <Label name="TotalWeight" style="&bold;" />
+          </FlowPanel>
+        </cell>
+        <FlowPanel style="text-align: right;">
+          <Label text="Bendra suma:" />
+        </FlowPanel>
+        <FlowPanel style="text-align:right;">
+          <Label style="&bold;">
+            <properties name="AmountTotal" />
+          </Label>
+        </FlowPanel>
+      </row>
+    </Table>
+
+    <Label text="Teikiamos Paslaugos" style="text-align: center; font-weight: bold;" />
+
+    <Table name="InvoiceDetails2" style="&section; width:100%" kind="output">
+      <properties content="TradeActServices" />
+      <row>
+        <Label text="Artikulas">
+          <properties name="Article" />
+        </Label>
+        <Label text="Pavadinimas">
+          <properties name="Name" />
+        </Label>
+        <Label text="Mato VNT.">
+          <properties name="Unit" />
+        </Label>
+        <Label text="Laiko VNT.">
+          <properties name="tu" />
+        </Label>
+        <Label text="Kiekis">
+          <properties name="Quantity" />
+        </Label>
+        <Label text="Kaina Eur">
+          <properties name="Price" />
+        </Label>
+        <Label text="Suma Eur be PVM">
+          <properties name="Amount" />
+        </Label>
+      </row>
+    </Table>
+    <HtmlPanel style="&section;">
+      <span style="font-weight: bold; display:block; text-align: center;">
+        Visos kainos nurodytos be 21% PVM
+      </span>
+
+      <span style="font-size:small; display:block; white-space:pre-wrap; border:1px solid silver; margin-top: 20px;">Minimalus nuomos terminas 2 sav. (14 kalendorinių dienų).
+Grąžinama įranga turi būti nuvalyta ir išardyta taip, kaip buvo išduota. Įranga transporto priemonėje turi būti
+sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovimą rankomis apmokama papildomai.
+</span>
+      <span style="display:block; white-space:pre-wrap; margin-top: 20px;">
+      Asmuo (asmenys), įgaliotas(­i) priimti įrangą ir pasirašyti įrangos priėmimo-perdavimo dokumentuose:
+     </span>
+    </HtmlPanel>
+    
+      <Table style="width:100%; border-collapse: collapse;" kind="output">
+        <row style="&border;">
+          <Label text=" " />
+          <Label text="Vardas" />
+          <Label text="Pavardė" />
+          <Label text="Pareigos" />
+          <Label text="Telefonas" />
+        </row>
+        <row style="&border;">
+          <Label text="1" />
+          <Label text="." />
+          <Label text="." />
+          <Label text="." />
+          <Label text="." />
+        </row>
+        <row style="&border;">
+          <Label text="2" />
+          <Label text="." />
+          <Label text="." />
+          <Label text="." />
+          <Label text="." />
+        </row>
+        <row style="&border;">
+          <Label text="3" />
+          <Label text="." />
+          <Label text="." />
+          <Label text="." />
+          <Label text="." />
+        </row>
+        <row style="&border;">
+          <Label text="4" />
+          <Label text="." />
+          <Label text="." />
+          <Label text="." />
+          <Label text="." />
+        </row>
+      </Table>
+     
+      <Table style="width:100%;" kind="output">
+        <row>
+          <cell style="vertical-align:top;">
+            <Label html="Nuomotojas" style="font-weight: bold;" />
+          </cell>
+          <cell style="vertical-align:top;">
+            <Label html="Nuomininkas" style="font-weight: bold;" />
+          </cell>
+        </row>
+        <row>
+          <cell style="vertical-align:top;">
+            <FlowPanel name="Supplier" />
+          </cell>
+          <cell style="vertical-align:top;">
+            <FlowPanel name="Company" />
+          </cell>
+        </row>
+        <row>
+          <Label text="Atstovauja vadybininkas" />
+          <Label text="Atstovauja:" />
+        </row>
+        <row>
+         <TextLabel source="Manager">
+          <renderToken source="ManagerFirstName" />
+          <renderToken source="ManagerLastName" />
+         </TextLabel>
+         <TextLabel source="Contact">
+          <renderToken source="ContactFirstName" />
+          <renderToken source="ContactLastName" />
+         </TextLabel>
+        </row>
+        </Table>
+  </FlowPanel>
+</f:Form>

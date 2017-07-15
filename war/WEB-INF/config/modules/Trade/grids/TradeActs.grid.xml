@@ -1,35 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  
+        xmlns:ui="http://www.butent.com/ui"
+
   name="TradeActs" viewName="TradeActs" caption="=tradeActs"
   >
   <g:columns>
+    <SelectionColumn name="Select" />
     <IdColumn name="Id" />
-    <DataColumn name="Parent" />
-
-    <RelColumn name="Name" visible="true" />
-    <DataColumn name="Kind" visible="true" />
-
-    <DataColumn name="Date" visible="true" />
-    <DataColumn name="Until" />
-
-    <RelColumn name="Series" visible="true" />
-    <DataColumn name="Number" visible="true" />
-
     <RelColumn name="Operation" renderColumns="OperationName" />
-    <RelColumn name="Status" renderColumns="StatusName" visible="true" />
-
-    <RelColumn name="Company" visible="true" />
+    <RelColumn name="Company" visible="true" renderColumns="CompanyName TypeName" />
+    <RelColumn name="Series" visible="true" filterSupplier="list" />
+    <DataColumn name="Number" visible="true" />
+    <!-- DataColumn name="ReturnedCount" / -->
+    <CalcColumn name="ReturnedCount" type="integer" caption="=tradeActReturnedCountShort"
+                source="ReturnedCount">
+      <render>
+        <ui:expression>row.ReturnedCount - (row.ContinuousCount ? row.ContinuousCount
+        : 0)</ui:expression>
+      </render>
+    </CalcColumn>
+    <RelColumn name="Name" visible="true" />
+    <DataColumn name="Date" visible="true" />
+    <RelColumn name="Object" renderColumns="ObjectName" />
+    <RelColumn name="Status" renderColumns="StatusName" visible="true" filterSupplier="list" />
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
     <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
       choiceColumns="FirstName LastName CompanyName" />
-    <RelColumn name="Object" renderColumns="ObjectName" />
 
-    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
+    <DataColumn name="Parent" />
+    <DataColumn name="Kind" visible="true" />
+    <DataColumn name="Until" />
+
     <RelColumn name="Currency" renderColumns="CurrencyName" />
 
-    <RelColumn name="Vehicle" renderColumns="VehicleParentModel VehicleModel VehicleNumber" />
-    <RelColumn name="Driver" renderColumns="DriverFirstName DriverLastName" />
+    <RelColumn name="InputVehicle" />
+    <RelColumn name="InputDriver"  />
 
     <DataColumn name="Notes" />
+
+    <DataColumn name="RegistrationNo" />
   </g:columns>
+  <g:rowEditable>
+    <ui:expression>
+      (!row.ContinuousAct &amp;&amp; !row.ReturnAct &amp;&amp; !row.ReturnedCount)
+      || (row.Kind == 7 &amp;&amp; !row.ContinuousAct)
+    </ui:expression>
+  </g:rowEditable>
 </g:Grid>

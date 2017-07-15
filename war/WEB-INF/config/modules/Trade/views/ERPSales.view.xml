@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+      xmlns:x="http://www.butent.com/expression"
+
+  name="ERPSales" source="ERPSales" caption="=trdERPSales"
+  >
+  <Columns>
+    <SimpleColumn name="Date" />
+
+    <SimpleColumn name="Number" />
+    <SimpleColumn name="SaleSeries" label="=trdInvoicePrefix" />
+    <SimpleJoin name="SaleSeries" joinType="LEFT">
+      <SimpleColumn name="SeriesName" />
+    </SimpleJoin>
+    <SimpleColumn name="InvoiceNo" />
+    <SimpleColumn name="ERPInvoice" />
+
+    <SimpleColumn name="Term" />
+    <SimpleColumn name="Proforma" />
+
+    <SimpleColumn name="Notes" />
+    <SimpleColumn name="Amount" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+      <SimpleColumn name="MinorName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="PaymentTime" />
+    <SimpleColumn name="Paid" />
+
+    <SimpleColumn name="Debt" label="=trdDebt" />
+
+    <SimpleColumn name="Supplier" />
+    <SimpleJoin joinType="LEFT" name="Supplier">
+      <SimpleColumn name="Name" alias="SupplierName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Customer" />
+    <SimpleJoin joinType="LEFT" name="Customer">
+      <SimpleColumn name="Name" alias="CustomerName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Payer" />
+    <SimpleJoin joinType="LEFT" name="Payer">
+      <SimpleColumn name="Name" alias="PayerName" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="Manager" />
+    <SimpleJoin name="Manager" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ManagerFirstName" />
+          <SimpleColumn name="LastName" alias="ManagerLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+
+  <Order>
+    <OrderBy column="Date" descending="true" />
+  </Order>
+</View>

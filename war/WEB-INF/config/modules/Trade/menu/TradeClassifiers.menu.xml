@@ -15,5 +15,12 @@
   <Item name="ExpenditureTypes" label="=trdExpenditureTypes" service="grid"
         parameters="ExpenditureTypes" separator="true" />
   <Item name="TradeDocumentTypes" label="=trdDocumentTypes" service="grid"
-        parameters="TradeDocumentTypes" separator="true" />
+    parameters="TradeDocumentTypes" />
+
+  <!-- Transrifus {-->
+  <Item name="TradeActDrivers" label="=drivers" service="grid" parameters="TradeActDrivers"
+    separator="true" />
+  <Item name="TradeActVehicles" label="=vehicles" service="grid" parameters="TradeActVehicles" />
+  <!-- } Transrifus -->
+
 </Entry>

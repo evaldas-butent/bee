@@ -14,7 +14,7 @@
   <row>
     <Label for="Company" visible="true" style="&lbl;" />
     <cell colSpan="3">
-      <DataSelector source="Company" style="width: 100%;" choiceColumns="Name TypeName" 
+      <DataSelector source="Company" style="width: 100%;" choiceColumns="Name TypeName"
             renderColumns="CompanyName CompanyTypeName" />
     </cell>
   </row>
@@ -44,7 +44,7 @@
     <Label for="Place" style="&lbl;" />
     <DataSelector source="Place" />
     <Label for="Status" style="&lbl;" />
-    <DataSelector source="Status" />
+    <DataSelector source="Status" renderColumns="StatusName" choiceColumns="Name" />
   </row>
 
   <row>
@@ -82,4 +82,3 @@
     </cell>
   </row>
 </Table>
-  

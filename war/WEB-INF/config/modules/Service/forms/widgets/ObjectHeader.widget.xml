@@ -97,6 +97,36 @@
           <InputText source="Address" style="&finp;" />
         </FlowPanel>
       </FlowPanel>
+<!-- Transrifus { -->
+      <FlowPanel class="&mrcl;" style="&mrst;">
+        <FlowPanel style="&mfld; width: 19em;" for="YearOfManufacture">
+          <Label for="YearOfManufacture" style="&flbl;" />
+          <InputText source="YearOfManufacture" style="&finp;" />
+        </FlowPanel>
+
+        <FlowPanel style="&mfld; width: 20em;" for="InventNo">
+          <Label for="InventNo" style="&flbl;" />
+          <InputText source="InventNo" style="&finp;"/>
+        </FlowPanel>
+
+        <FlowPanel style="&mfld; width: 20em;" for="BodyNo">
+          <Label for="BodyNo" style="&flbl;" />
+          <InputText source="BodyNo" style="&finp;" />
+        </FlowPanel>
+      </FlowPanel>
+
+      <FlowPanel class="&mrcl;" style="&mrst;">
+        <FlowPanel style="&mfld; width: 19em;" for="Seller">
+          <Label for="Seller" style="&flbl;" />
+          <InputText source="Seller" style="&finp;"/>
+        </FlowPanel>
+
+        <FlowPanel style="&mfld; width: 41em;" for="ItemInButenta">
+          <Label for="ItemInButenta" style="&flbl;" />
+          <InputText source="ItemInButenta" style="&finp;" />
+        </FlowPanel>
+      </FlowPanel>
+<!-- } Transrifus -->
     </FlowPanel>
   </center>
 </SplitPanel>

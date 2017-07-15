@@ -11,5 +11,9 @@
 
     <Date name="DateFrom" label="=dateFrom" />
     <Date name="DateTo" label="=dateTo" />
+
+    <!-- Transrifus TID 31400 { -->
+    <Numeric name="Factor" precision="7" scale="3" label="=taFactor" />
+    <!-- } Transrifus TID 31400  -->
   </Fields>
 </Table>

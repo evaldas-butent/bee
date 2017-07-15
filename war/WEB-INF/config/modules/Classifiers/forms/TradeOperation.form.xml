@@ -79,6 +79,14 @@
       </row>
 
       <row>
+        <Label for="TradeStatus" />
+        <DataSelector source="TradeStatus" style="&lstw;"/>
+
+        &empty;
+        &empty;
+      </row>
+
+      <row>
         <Label for="Background" />
         <ColorEditor source="Background" style="&colorw;" />
 

@@ -21,6 +21,9 @@
         <SimpleColumn name="Email" />
       </SimpleJoin>
 
+      <SimpleColumn name="RemindEmail" />
+      <SimpleColumn name="EmailInvoices" />
+
       <SimpleColumn name="Address" />
       <SimpleColumn name="PostIndex" />
       <SimpleColumn name="Website" />
@@ -44,6 +47,12 @@
     <!-- @DEPRECATED -->
     <SimpleColumn name="Photo" />
     <!-- } -->
+ 
+    <SimpleColumn name="Activity" />
+    <SimpleJoin name="Activity" joinType="LEFT">
+      <SimpleColumn alias="ActivityName" name="Name" />
+    </SimpleJoin>
+
   </Columns>
   <Order>
     <OrderBy column="LastName" />

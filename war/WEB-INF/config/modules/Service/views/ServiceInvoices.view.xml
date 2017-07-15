@@ -11,7 +11,8 @@
     <SimpleColumn name="Number" />
     <SimpleColumn name="SaleSeries" />
     <SimpleJoin name="SaleSeries" joinType="LEFT">
-      <SimpleColumn name="SeriesName" alias="InvoicePrefix" />
+      <SimpleColumn name="SeriesName" />
+      <SimpleColumn name="SentERP"/>
     </SimpleJoin>
     <SimpleColumn name="InvoiceNo" />
 

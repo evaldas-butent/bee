@@ -7,5 +7,7 @@
   <Fields>
     <String name="Name" precision="100" notNull="true" unique="true" label="=financialStateName" />
     <Text name="Description" label="=description" />
+    
+    <Relation name="Color" relation="Colors" label="=colors"/>
   </Fields>
 </Table>

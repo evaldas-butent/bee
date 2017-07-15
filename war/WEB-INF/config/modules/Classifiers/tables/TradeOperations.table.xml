@@ -36,5 +36,7 @@
     <String name="Foreground" precision="100" label="=foregroundColor" />
 
     <Text name="Description" label="=description" />
+
+    <Relation name="TradeStatus" relation="TradeStatuses" label="=status" />
   </Fields>
 </Table>

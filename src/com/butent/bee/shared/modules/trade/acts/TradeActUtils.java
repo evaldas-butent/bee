@@ -7,9 +7,11 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
@@ -17,23 +19,106 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class TradeActUtils {
 
+  public static List<Range<DateTime>> buildRanges(Range<DateTime> serviceRange,
+      Collection<Range<DateTime>> invoiceRanges, TradeActTimeUnit timeUnit) {
+
+    List<Range<DateTime>> result = new ArrayList<>();
+    if (serviceRange == null) {
+      return result;
+    }
+
+    if (BeeUtils.isEmpty(invoiceRanges)) {
+      result.add(serviceRange);
+      return result;
+    } else if (timeUnit == null) {
+      return result;
+    }
+
+    List<Range<Integer>> invoiceDays = new ArrayList<>();
+
+    for (Range<DateTime> range : invoiceRanges) {
+      int lower = range.lowerEndpoint().getDate().getDays();
+
+      int upper = range.upperEndpoint().getDate().getDays();
+      if (upper <= lower) {
+        upper = lower + 1;
+      }
+
+      invoiceDays.add(Range.closedOpen(lower, upper));
+    }
+
+    List<Integer> serviceDays = new ArrayList<>();
+
+    int from = serviceRange.lowerEndpoint().getDate().getDays();
+    int to = serviceRange.upperEndpoint().getDate().getDays();
+    if (to <= from) {
+      to = from + 1;
+    }
+
+    for (int d = from; d < to; d++) {
+      boolean ok = true;
+
+      for (Range<Integer> range : invoiceDays) {
+        if (range.contains(d)) {
+          ok = false;
+          break;
+        }
+      }
+
+      if (ok) {
+        serviceDays.add(d);
+      }
+    }
+
+    if (serviceDays.isEmpty()) {
+      return result;
+    }
+
+    from = serviceDays.get(0);
+    to = serviceDays.get(serviceDays.size() - 1) + 1;
+
+    if (from + serviceDays.size() == to) {
+      result.add(TradeActUtils.createRange(new JustDate(from), new JustDate(to)));
+      return result;
+    }
+
+    int p = 0;
+
+    for (int i = 1; i < serviceDays.size(); i++) {
+      int d = serviceDays.get(i);
+      if (from + i - p < d) {
+        result.add(TradeActUtils.createRange(new JustDate(from), new JustDate(from + i - p)));
+        from = d;
+        p = i;
+      }
+    }
+
+    result.add(TradeActUtils.createRange(new JustDate(from), new JustDate(to)));
+
+    return result;
+  }
+
   public static Double calculateServicePrice(Double defPrice, JustDate dateTo, Double itemTotal,
-      Double tariff, Integer scale) {
+      Double tariff, Double quantity, Integer scale) {
 
     if (BeeUtils.isPositive(defPrice) && dateTo != null) {
       return defPrice;
     }
 
+    double qty = BeeUtils.nvl(quantity, 1D);
+
     Double price = BeeUtils.percent(itemTotal, tariff);
 
     if (BeeUtils.nonZero(price) && BeeUtils.isNonNegative(scale)) {
-      return BeeUtils.round(price, scale);
+      return BeeUtils.round(price / qty, scale);
     } else {
       return price;
     }
@@ -133,7 +218,7 @@ public final class TradeActUtils {
       } else if (serviceTo != null) {
         date = serviceTo.getDateTime();
       } else {
-        date = actRange.lowerEndpoint();
+        return null;
       }
 
       if (builderRange.contains(date)) {
@@ -271,6 +356,21 @@ public final class TradeActUtils {
 
   public static boolean validDpw(Integer dpw) {
     return dpw != null && dpw >= DPW_MIN && dpw <= DPW_MAX;
+  }
+
+  public static Pair<BeeRowSet, BeeRowSet> getMultiReturnData(IsRow row) {
+    if (!row.hasPropertyValue(PRP_MULTI_RETURN_DATA)) {
+      return Pair.empty();
+    }
+    Pair<String, String> raw = Pair.restore(row.getProperty(PRP_MULTI_RETURN_DATA));
+    BeeRowSet a = BeeRowSet.maybeRestore(raw.getA());
+    BeeRowSet b = BeeRowSet.maybeRestore(raw.getB());
+
+    if (DataUtils.isEmpty(a) && DataUtils.isEmpty(b)) {
+      return Pair.empty();
+    }
+
+    return Pair.of(a, b);
   }
 
   private TradeActUtils() {

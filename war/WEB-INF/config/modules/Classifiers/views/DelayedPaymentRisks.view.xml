@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="DelayedPaymentRisks" source="DelayedPaymentRisks" module="Classifiers.Contacts"
+  caption="=clientsDelayedPaymentRisks" newRowCaption="=newDelayedPaymentRisk"
+  newRowForm="DelayedPaymentRisk"
+  >
+  <Columns>
+    <SimpleColumn name="Name" />
+  </Columns>
+  <Order>
+    <OrderBy column="Name" />
+  </Order>
+</View>

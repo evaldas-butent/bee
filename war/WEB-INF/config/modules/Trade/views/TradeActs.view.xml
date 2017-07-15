@@ -6,9 +6,21 @@
   editForm="TradeAct" newRowForm="TradeAct"
   >
   <Columns>
+    <IdColumn name="Id" />
     <SimpleColumn name="Name" />
     <SimpleJoin joinType="LEFT" name="Name">
       <SimpleColumn name="ActName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Contract" />
+    <SimpleJoin name="Contract" joinType="LEFT">
+      <SimpleColumn name="Name" alias="ContractName" />
+      <SimpleColumn name="Number" alias="ContractNumber" />
+      <SimpleColumn name="Expires" alias="ContractExpires" />
+      <SimpleJoin name="Status" joinType="LEFT">
+        <SimpleColumn name="Name" alias="ContractStatusName" />
+        <SimpleColumn name="Main" alias="ContractStatusMain" />
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="Date" />
@@ -41,6 +53,7 @@
     <SimpleColumn name="Company" />
     <SimpleJoin joinType="LEFT" name="Company">
       <SimpleColumn name="Name" alias="CompanyName" />
+      <SimpleColumn alias="ContactPhysical" name="Physical" />
       <SimpleJoin joinType="LEFT" name="CompanyType">
         <SimpleColumn name="Name" alias="TypeName" />
       </SimpleJoin>
@@ -53,9 +66,15 @@
         <SimpleColumn alias="ContactFirstName" name="FirstName" />
         <SimpleColumn alias="ContactLastName" name="LastName" />
       </SimpleJoin>
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleColumn alias="ContactMobile" name="Mobile" />
+      </SimpleJoin>
       <SimpleJoin name="Company" joinType="LEFT">
         <SimpleColumn alias="ContactCompanyName" name="Name" />
       </SimpleJoin>
+       <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ContactPositionName" />
+       </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="Object" />
@@ -71,6 +90,13 @@
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn name="FirstName" alias="ManagerFirstName" />
           <SimpleColumn name="LastName" alias="ManagerLastName" />
+        </SimpleJoin>
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ManagerPositionName" />
+        </SimpleJoin>
+        <SimpleJoin name="Contact" joinType="LEFT">
+          <SimpleColumn alias="ManagerPhone" name="Phone" />
+          <SimpleColumn alias="ManagerMobile" name="Mobile" />
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
@@ -94,6 +120,11 @@
         <SimpleColumn name="Name" alias="VehicleModel" />
       </SimpleJoin>
     </SimpleJoin>
+    <SimpleColumn name="InputVehicle" />
+    <SimpleJoin name="InputVehicle" joinType="LEFT">
+      <SimpleColumn name="Name" alias="VehicleName" />
+      <SimpleColumn name="Notes" alias="InputVehicleNotes"/>
+    </SimpleJoin>
 
     <SimpleColumn name="Driver" />
     <SimpleJoin name="Driver" joinType="LEFT">
@@ -105,16 +136,35 @@
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
+    <SimpleColumn name="InputDriver" />
+    <SimpleJoin name="InputDriver" joinType="LEFT">
+      <SimpleColumn name="FirstName" alias="DriverFirstName1" />
+      <SimpleColumn name="LastName" alias="DriverLastName1" />
+       <SimpleColumn name="Notes" alias="InputDriverNotes" />
+    </SimpleJoin>
 
     <SimpleColumn name="Notes" />
 
     <SimpleColumn name="Parent" />
+    <SimpleJoin name="Parent" joinType="LEFT">
+      <SimpleColumn name="Kind" alias="ParentKind" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ContinuousAct" />
+    <SimpleColumn name="ReturnAct" />
+
+    <ExternalJoin name="Parent" joinType="LEFT" source="TradeActItems">
+      <AggregateColumn name="TradeAct" alias="ReturnedCount" aggregate="COUNT_DISTINCT"
+        label="=tradeActReturnedCountShort" />
+    </ExternalJoin>
+
+    <SimpleColumn name="RegistrationNo" />
   </Columns>
-  
+
   <Order>
     <OrderBy column="SeriesName" />
     <OrderBy column="Number" />
     <OrderBy column="Date" />
   </Order>
 </View>
- 
+

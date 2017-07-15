@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="ERPSales"
+  idName="SaleID"
+  >
+  <Fields>
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=trdDate" />
+    <String name="Number" precision="50" label="=trdNumber" />
+    <Relation name="SaleSeries" relation="SaleSeries" label="=trdInvoicePrefix"/>
+    <String name="InvoiceNo" precision="30" label="=trdInvoiceNo" defExpr="NEXT_NUMBER" defValue="InvoicePrefix" />
+    <String name="ERPInvoice" precision="30" unique="true" />
+
+    <Relation name="Supplier" relation="Companies" label="=trdSupplier" />
+    <Relation name="Customer" relation="Companies" label="=trdCustomer" />
+    <Relation name="Payer" relation="Companies" label="=trdPayer" />
+
+    <Numeric name="Amount" precision="12" scale="2" label="=trdTotal" />
+    <Relation name="Currency" relation="Currencies" notNull="true" defExpr="MAIN_CURRENCY"
+      label="=currency" />
+
+    <Date name="Term" label="=trdTerm" />
+    <DateTime name="PaymentTime" label="=trdPaymentTime" />
+    <Numeric name="Paid" precision="12" scale="2" label="=trdPaid" />
+    <Numeric name="Debt" precision="12" scale="2" label="=trdDebt" />
+
+    <Relation name="Manager" relation="Users" label="=trdManager" />
+
+    <Text name="Notes" label="=trdNotes" />
+
+    <Boolean name="Proforma" label="=trdProformaInvoice" />
+
+  </Fields>
+
+  <Indexes>
+    <Index fields="Proforma" />
+    <Index fields="PaymentTime" />
+    <Index fields="Customer"/>
+    <Index fields="SaleSeries InvoiceNo" />
+    <Index fields="ERPInvoice" />
+  </Indexes>
+</Table>

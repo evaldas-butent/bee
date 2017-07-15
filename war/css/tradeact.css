@@ -15,6 +15,13 @@
 .bee-ta-form-no-services .bee-grid-TradeActServices {
   display: none;
 }
+
+.bee-ta-form-no-cta .bee-ta-cta-tab,
+.bee-ta-form-no-cta .bee-grid-TradeActs {
+  display: none;
+}
+
+
 .bee-GridFormContainer-newRow .bee-ta-invoices-tab,
 .bee-NewRowContainer .bee-ta-invoices-tab,
 .bee-ta-form-no-invoices .bee-ta-invoices-tab {
@@ -59,7 +66,7 @@
 .bee-ta-picker-item-panel,
 .bee-ta-return-items-wrapper,
 .bee-ta-import-items-wrapper {
-  max-height: 70vh;
+  max-height: 65vh;
   overflow: auto;
 }
 .bee-ta-picker-item-table,
@@ -89,6 +96,17 @@
 .bee-ta-picker-sel-price-label {
   max-width: 80px;
 }
+
+.bee-ta-picker-number-input.bee-ta-picker-number-input {
+ width: 60px;
+ font-weight: bold;
+}
+
+.bee-ta-picker-date-input.bee-ta-picker-date-input {
+ width: 120px;
+ font-weight: bold;
+}
+
 .bee-ta-return-items-header,
 .bee-ta-import-items-header {
   white-space: nowrap;
@@ -142,6 +160,16 @@
 .bee-ta-invoice-service-row td,
 .bee-ta-invoice-service-footer td {
   padding: 2px 5px;
+}
+
+.bee-ta-return-items-qty-lastInput {
+  font-size: smaller;
+  display: none;
+}
+
+
+.bee-ta-invoice-service-row.bee-ta-invoice-service-row-missed {
+  background-color: #F5DA81;
 }
 
 .bee-ta-picker-id-cell,
@@ -211,6 +239,8 @@
 .bee-ta-picker-qty-input.bee-ta-picker-qty-input {
   width: 60px;
   font-weight: bold;
+  line-height: 25px;
+  box-sizing: border-box;
 }
 
 .bee-ta-import-items-toggle-cell,
@@ -271,6 +301,13 @@
 .bee-ta-invoice-service-total-cell {
   text-align: right;
   font-weight: bold;
+}
+
+.bee-ta-picker-search-by-2 {
+
+}
+
+.bee-ta-picker-search-box-2 {
 }
 
 .bee-ta-report-ibc-table td,
@@ -336,4 +373,14 @@
 .bee-ta-shell {
   width: calc(100% - 2px);
   height: calc(100% - 3px);
+}
+
+.bee-ta-picker-dialog {
+  max-height: 90%;
+  max-width: 90%;
+}
+
+.bee-ta-client-area .bee-UserSignature {
+  color: #e3e3e3;
+  cursor: pointer;
 }

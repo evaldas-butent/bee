@@ -1,37 +1,36 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
         xmlns:xi="http://www.w3.org/2001/XInclude"
         xmlns:ui="http://www.butent.com/ui"
         name="DebtReports" viewName="DebtReports"
-        disabledActions="add delete audit"
+        disabledActions="add delete"
         readOnly="true"
         caption="=trdDebtReports"
         cacheData="false"
->
+    >
 
-  <!-- cacheData="false" due grid dublicate fields by company id in currency position -->
+<!-- cacheData="false" due grid dublicate fields by company id in currency position -->
 
   <g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
     <SelectionColumn name="Select" width="20" label="=trdTerm"/>
-    <DataColumn name="Company" caption="=company" label="=company" searchBy="CompanyName">
-      <renderToken source="CompanyName"/>
-      <renderToken source="CompanyTypeName"/>
-    </DataColumn>
+    <DataColumn name="Name" caption="=company" label="=company"/>
     <PropColumn name="RemindEmail" type="string" caption="=email" label="=email"/>
-    <CalcColumn name="DebtCount" type="integer" label="=trInvoices" >
+    <DataColumn name="DebtCount">
       <style>
         <bodyStyle>
           <ui:class>bee-ActionCellLink</ui:class>
         </bodyStyle>
       </style>
-      <render>
-        <ui:function>
-          return row.DebtCount;
-        </ui:function>
-      </render>
-    </CalcColumn>
-    <DataColumn name="DebtSum" format="0.00"/>
-
-    <RelColumn name="Currency"/>
+    </DataColumn>
+    <DataColumn name="DebtSum" format="0.00" label="=trdDebt" caption="=trdDebt" />
+    <DataColumn name="CurrencyName"/>
+    <DataColumn name="ExternalAdvance" caption="=trdAdvance" scale="2" label="=trdAdvance"
+                visible="true"/>
+    <RelColumn name="BankruptcyRisk" renderColumns="BankruptcyRiskName"
+               caption="=clientBankruptcyRisk" label="=clientBankruptcyRisk" readOnly="true"/>
+    <RelColumn name="DelayedPaymentRisk" renderColumns="DelayedPaymentRiskName"
+               caption="=clientDelayedPaymentRisk" label="=clientDelayedPaymentRisk"
+               readOnly="true"/>
+    <RelColumn name="FinancialState" renderColumns="FinancialStateName" caption="=financialState"
+               label="=financialState" readOnly="true"/>
   </g:columns>
 </g:Grid>

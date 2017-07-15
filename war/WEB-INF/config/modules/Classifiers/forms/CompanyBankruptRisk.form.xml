@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY lbl1 "width: 145px; text-align: right; padding-right: 9px;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="CompanyBankruptRisk" viewName="CompanyBankruptRisks" caption="=clientBankruptcyRisk"
+  height="100" width="375">
+
+  <FlowPanel style="padding: 15px 1em;">
+    <Table style="border-spacing: 5px;" kind="controls">
+      <row>
+        <Label text="=name" class="bee-required" horizontalAlignment="right"
+          style="&lbl1;" />
+        <InputText source="Name" />
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

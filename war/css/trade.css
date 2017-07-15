@@ -1,5 +1,6 @@
 .bee-trade-itemsInfo-table {
   border-collapse: collapse;
+  width: 100%;
 }
 
 .bee-trade-itemsInfo-table td {
@@ -10,15 +11,27 @@
   font-weight: bold;
   border-top: 1px solid black;
   border-bottom: 1px solid black;
+  background-color: #dedada;
+}
+.bee-trade-itemsInfo-footer {
+  background-color: #dedada;
 }
 
 .bee-trade-itemsInfo-data td {
   border-bottom: 1px solid silver;
+  white-space: nowrap;
+}
+
+.bee-trade-itemsInfo-data .bee-trade-itemsInfo-Name {
+  white-space: pre-wrap;
 }
 
 .bee-trade-itemsInfo-Quantity,
+.bee-trade-itemsInfo-ReturnedQty,
+.bee-trade-itemsInfo-RemainingQty,
 .bee-trade-itemsInfo-Price,
 .bee-trade-itemsInfo-Vat,
+.bee-trade-itemsInfo-Discount,
 .bee-trade-itemsInfo-Amount,
 .bee-trade-itemsInfo-Rate,
 .bee-trade-itemsInfo-RateAmount,
@@ -49,13 +62,13 @@
 }
 
 .bee-trade-print-document-title {
-  font-family: Tahoma;
+  /*font-family: Tahoma; Transrifus NOT SUPPORTED PDF*/
   font-size: 16pt;
   font-style: italic;
   text-align: center;
 }
 .bee-trade-print-document-number {
-  font-family: Tahoma;
+ /* font-family: Tahoma; Transrifus NOT SUPORTED PDF*/
   font-size: 12pt;
   font-weight: bold;
   text-align: center;
@@ -106,6 +119,7 @@
 .bee-trade-print-item-quantity,
 .bee-trade-print-item-unit,
 .bee-trade-print-item-price,
+.bee-trade-print-item-discount,
 .bee-trade-print-item-amount,
 .bee-trade-print-items-total-label,
 .bee-trade-print-items-total-value {
@@ -119,6 +133,7 @@
 }
 .bee-trade-print-item-quantity,
 .bee-trade-print-item-price,
+.bee-trade-print-item-discount,
 .bee-trade-print-item-amount,
 .bee-trade-print-items-total-label,
 .bee-trade-print-items-total-value {
@@ -249,4 +264,20 @@
 .bee-trade-document-new-item-selector td:nth-child(3),
 .bee-trade-document-new-item-selector td:nth-child(5) {
   text-align: right;
+}
+.bee-form-TradeActPrint {
+  padding:0 !important;
+}
+.bee-form-TradeActPrint td {
+  padding-top:0 !important;
+}
+
+.bee-trade-print-item-price {
+    max-width: 5ex;
+    width: 5ex;
+}
+
+.bee-trade-print-item-ordinal {
+    max-width: 2em;
+    width: 2em;
 }

@@ -8,17 +8,20 @@
     <Relation name="TradeAct" notNull="true" relation="TradeActs" cascade="DELETE" 
       label="=tradeAct" />
 
+    <Relation name="Parent" relation="TradeActs" label="=taParent" />
+
     <Relation name="Item" notNull="true" relation="Items" label="=item" />
 
     <Numeric name="Quantity" precision="12" scale="3" notNull="true" label="=quantity" />
     <Numeric name="Price" precision="12" scale="2" label="=price" />
 
-    <Boolean name="VatPlus" label="=vatPlus" />
+    <Boolean name="VatPlus" label="=vatPlus" defValue="true" />
     <Numeric name="Vat" precision="12" scale="2" label="=vat" />
     <Boolean name="VatPercent" label="=vatPercent" />
 
     <Numeric name="Discount" precision="7" scale="3" label="=discountPercent" />
 
     <Text name="Note" label="=note" />
+    <Relation name="Sale" relation="Sales" cascade="SET_NULL" label="=trdInvoiceId" />
   </Fields>
 </Table>

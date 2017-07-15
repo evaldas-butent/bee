@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<g:Grid flexGrow="1" caption="=makers" viewName="Makers" name="Makers"
+	xmlns:g="http://www.butent.com/grid" xmlns="http://www.butent.com/column">
+
+	<g:columns>
+		<DataColumn name="Name" visible="true" />
+	</g:columns>
+</g:Grid>

@@ -43,6 +43,11 @@
     <SimpleColumn name="Foreground" />
 
     <SimpleColumn name="Description" />
+    
+    <SimpleColumn name="TradeStatus" />
+    <SimpleJoin joinType="LEFT" name="TradeStatus">
+      <SimpleColumn alias="TradeStatusName" name="StatusName" />
+    </SimpleJoin>
   </Columns>
 
   <Order>

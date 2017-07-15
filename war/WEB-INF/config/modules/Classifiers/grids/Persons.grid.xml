@@ -32,5 +32,7 @@
 
     <DataColumn name="DateOfBirth" visible="false" />
     <PropColumn type="string" name="CompanyNames" label="=company" visible="false" />
+
+    <RelColumn name="Activity" editEnabled="false" />
   </g:columns>
 </g:Grid>

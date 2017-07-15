@@ -8,13 +8,13 @@
   caption="=trdInvoices"
   >
   <g:columns>
-    <SelectionColumn name="Select" width="20" />
+    <SelectionColumn name="Select" width="20"  />
 
     <IdColumn name="ID" label="=trdInvoiceId" />
     <DataColumn name="Date" visible="true" />
 
     <DataColumn name="Number" visible="false" />
-    <RelColumn name="SaleSeries" />
+    <RelColumn name="SaleSeries" renderColumns="SeriesName"/>
     <DataColumn name="InvoiceNo" />
 
     <RelColumn name="Supplier" visible="false" />
@@ -34,6 +34,15 @@
 
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
 
+    <!-- Transrifus TradeAct SelfService { -->
+    <DataColumn name="Visited" format="date_time_short"/>
+    <!-- } Transrifus TradeAct SelfService -->
+
+    <!-- Transrifus Send invoices to mail { -->
+    <DataColumn name="IsSentToEmail" readOnly="true"/>
+    <RelColumn name="InvoiceTransferType" visible="false"/>
+    <!-- } -->
+
     <DataColumn name="Proforma" visible="false" />
     <RelColumn name="WarehouseFrom" visible="false" />
 
@@ -41,6 +50,8 @@
     <DataColumn name="Driver" visible="false" />
 
     <DataColumn name="Notes" visible="false" />
+
+
   </g:columns>
 
   <g:rowStyle>

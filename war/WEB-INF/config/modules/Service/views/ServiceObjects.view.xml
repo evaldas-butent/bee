@@ -57,5 +57,13 @@
 
     <SimpleColumn name="Model" />
     <SimpleColumn name="SerialNo" />
+
+    <!-- Transrifus {-->
+    <SimpleColumn name="YearOfManufacture" />
+    <SimpleColumn name="InventNo" />
+    <SimpleColumn name="BodyNo" />
+    <SimpleColumn name="Seller" />
+    <SimpleColumn name="ItemInButenta" />
+    <!-- } Transrifus -->
   </Columns>
 </View>

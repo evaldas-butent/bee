@@ -42,6 +42,12 @@
       <row>
         <Label for="Article2" />
         <InputText source="Article2" summarize="true" />
+
+        <!-- transrifus { -->
+        <cell colSpan="2">
+          <CheckBox style="margin-left: 5px;" text="=exportToWebsite" source="ExportWebsite"/>
+        </cell>
+        <!-- } transrifus -->
       </row>
 
       <row>
@@ -93,6 +99,16 @@
               <DataSelector source="CostCurrency" for="Cost" newRowEnabled="false"
                             editEnabled="false" style="&currencystyle;" />
 
+            <!-- Transrifus rental price { -->
+              <Label for="RentalPrice" />
+              <InputDecimal source="RentalPrice" summarize="true"
+                scale="2" currencySource="RentalPriceCurrency" />
+              <DataSelector style="width: 50px;" for="RentalPrice"
+                source="RentalPriceCurrency" editEnabled="false" newRowEnabled="false" />
+            </row>
+            <!-- } Transrifus rental price -->
+
+            <row>
               <Label for="Price1" />
               <InputDecimal source="Price1" currencySource="Currency1" scale="&pricescale;"
                             style="&pricestyle;" summarize="true" />
@@ -247,6 +263,11 @@
             <InputDecimal source="Netto" summarize="true">
               &foritem;
             </InputDecimal>
+
+            <!-- Transrifus { -->
+            <Label for="Maker" data="Makers" />
+            <DataSelector source="Maker" data="Makers" />
+            <!-- } Transrifus -->
           </row>
 
           <row module="Trade.Acts">
@@ -393,4 +414,4 @@
       </page>
     </TabbedPages>
   </FlowPanel>
-</f:Form>  
+</f:Form>

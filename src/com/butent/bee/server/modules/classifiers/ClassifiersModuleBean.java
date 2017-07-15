@@ -108,7 +108,8 @@ import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.websocket.messages.LogMessage;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -1094,29 +1095,34 @@ public class ClassifiersModuleBean implements BeeModule {
     if (!DataUtils.isId(companyId)) {
       return ResponseObject.error("Wrong company ID");
     }
-    SimpleRow row = qs.getRow(new SqlSelect()
-        .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
-        .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX, COL_PHONE, COL_MOBILE, COL_FAX)
-        .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
-        .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
-        .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
-        .addFields(TBL_COMPANY_BANK_ACCOUNTS, COL_BANK_ACCOUNT)
-        .addField(TBL_BANKS, COL_BANK_NAME, COL_BANK)
-        .addFields(TBL_BANKS, COL_BANK_CODE, COL_SWIFT_CODE)
-        .addFrom(TBL_COMPANIES)
-        .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
-        .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
-        .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
-        .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
-        .addFromLeft(TBL_COMPANY_BANK_ACCOUNTS,
-            sys.joinTables(TBL_COMPANY_BANK_ACCOUNTS, TBL_COMPANIES, COL_DEFAULT_BANK_ACCOUNT))
-        .addFromLeft(TBL_BANKS, sys.joinTables(TBL_BANKS, TBL_COMPANY_BANK_ACCOUNTS, COL_BANK))
-        .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
+    SimpleRow row =
+        qs.getRow(new SqlSelect()
+            .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
+            .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, ALS_COMPANY_TYPE)
+            .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX, COL_PHONE, COL_MOBILE, COL_FAX)
+            .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+            .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
+            .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
+            .addFields(TBL_COMPANY_BANK_ACCOUNTS, COL_BANK_ACCOUNT)
+            .addField(TBL_BANKS, COL_BANK_NAME, COL_BANK)
+            .addFields(TBL_BANKS, COL_BANK_CODE, COL_SWIFT_CODE)
+            .addFrom(TBL_COMPANIES)
+            .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+            .addFromLeft(TBL_COMPANY_TYPES,
+                sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
+            .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+            .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
+            .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
+            .addFromLeft(TBL_COMPANY_BANK_ACCOUNTS,
+                sys.joinTables(TBL_COMPANY_BANK_ACCOUNTS, TBL_COMPANIES, COL_DEFAULT_BANK_ACCOUNT))
+            .addFromLeft(TBL_BANKS, sys.joinTables(TBL_BANKS, TBL_COMPANY_BANK_ACCOUNTS, COL_BANK))
+            .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
 
     Dictionary constants = Localizations.getDictionary(SupportedLocale.parse(locale));
 
     Map<String, String> translations = new HashMap<>();
     translations.put(COL_COMPANY_NAME, constants.company());
+    translations.put(ALS_COMPANY_TYPE, constants.companyStatus());
     translations.put(COL_COMPANY_CODE, constants.companyCode());
     translations.put(COL_COMPANY_VAT_CODE, constants.companyVATCode());
     translations.put(COL_ADDRESS, constants.address());

@@ -9,6 +9,23 @@
     <SimpleColumn name="TradeActService" />
     <SimpleJoin joinType="LEFT" name="TradeActService">
       <SimpleColumn name="TradeAct" />
+      <SimpleJoin name="TradeAct" joinType="LEFT">
+        <SimpleJoin joinType="LEFT" name="Series">
+          <SimpleColumn name="SeriesName" alias="TradeSeriesName" />
+        </SimpleJoin>
+        <SimpleColumn name="Number" alias="TradeNumber" />
+
+        <SimpleJoin joinType="LEFT" name="Object">
+          <SimpleColumn name="ObjectName" />
+          <SimpleColumn name="ObjectAddress" />
+        </SimpleJoin>
+
+        <SimpleJoin name="Contract" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ContractName" />
+          <SimpleColumn name="Number" alias="ContractNumber" />
+          <SimpleColumn name="DocumentDate" />
+        </SimpleJoin>
+      </SimpleJoin>
 
       <SimpleColumn name="Item" />
       <SimpleJoin joinType="LEFT" name="Item">
@@ -21,6 +38,10 @@
 
     <SimpleColumn name="DateFrom" />
     <SimpleColumn name="DateTo" />
+
+    <!-- Transrifus TID 31400 { -->
+    <SimpleColumn name="Factor" />
+    <!-- } Transrifus TID 31400 -->
 
     <SimpleColumn name="SaleItem" />
     <SimpleJoin joinType="LEFT" name="SaleItem">

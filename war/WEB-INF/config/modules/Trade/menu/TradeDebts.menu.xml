@@ -6,6 +6,11 @@
   <Item name="Debts" label="=trdDebts" service="grid" parameters="Debts" module="Trade" separator="true"/>
   <Item name="DebtReports" label="=trdDebtReports" service="grid" parameters="DebtReports" module="Trade" />
   <Item name="ReminderTemplates" label="=trdReminderTemplates" service="grid" parameters="DebtReminderTemplates" module="Trade" />
+
+  <!--Transrifus { -->
+  <Item name="ERPSales" label="=trdERPSales" service="grid" parameters="ERPSales" />
+  <!-- } Transrifus -->
+
   <Item name="Parameters" label="=parameters" service="parameters" parameters="Classifiers"
         separator="true" module="Orders" />
 </Entry>

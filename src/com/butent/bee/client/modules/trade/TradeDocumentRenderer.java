@@ -71,7 +71,8 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
       @Override
       String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
-        return rowSet.getString(rowIndex, ALS_ITEM_NAME);
+        return BeeUtils.join(BeeConst.STRING_SLASH, rowSet.getString(rowIndex, ALS_ITEM_NAME),
+            rowSet.getString(rowIndex, COL_TRADE_ITEM_NOTE));
       }
     },
 
@@ -121,6 +122,33 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
         Double price = rowSet.getDouble(rowIndex, COL_TRADE_ITEM_PRICE);
         return PRICE_FORMAT.format(BeeUtils.unbox(price));
+      }
+    },
+
+    PRICE_VAT_REV("price", true) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.price();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        double price = BeeUtils.unbox(rowSet.getDouble(rowIndex, COL_TRADE_ITEM_PRICE));
+
+        double itemVat = BeeUtils.unbox(rowSet.getDouble(rowIndex, COL_TRADE_VAT));
+        boolean vatInPercents = BeeUtils.unbox(rowSet.getBoolean(rowIndex, COL_TRADE_VAT_PERC));
+        boolean vatPlus = BeeUtils.unbox(rowSet.getBoolean(rowIndex, COL_TRADE_VAT_PLUS));
+
+        if (!vatPlus) {
+          if (vatInPercents) {
+            itemVat = price - price / (1d + itemVat / 100d);
+          }
+        } else {
+          itemVat = 0;
+        }
+          price -= itemVat;
+
+        return PRICE_FORMAT.format(price);
       }
     },
 
@@ -195,6 +223,50 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       @Override
       String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
         return AMOUNT_FORMAT.format(total);
+      }
+    },
+
+    DISCOUNT("discount", false) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.discountPercent();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        Double discount = rowSet.getDouble(rowIndex, COL_TRADE_DISCOUNT);
+        return discount == null ? "" : PRICE_FORMAT.format(discount);
+      }
+    },
+
+    PRICE_DISCOUNT("price", true) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.priceDiscount();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        double price = BeeUtils.unbox(rowSet.getDouble(rowIndex, COL_TRADE_ITEM_PRICE));
+
+        double disc = BeeUtils.unbox(rowSet.getDouble(rowIndex, COL_TRADE_DISCOUNT));
+        double itemVat = BeeUtils.unbox(rowSet.getDouble(rowIndex, COL_TRADE_VAT));
+        boolean vatInPercents = BeeUtils.unbox(rowSet.getBoolean(rowIndex, COL_TRADE_VAT_PERC));
+        boolean vatPlus = BeeUtils.unbox(rowSet.getBoolean(rowIndex, COL_TRADE_VAT_PLUS));
+
+        double dscSum = price / 100d * disc;
+        price -= dscSum;
+
+        if (!vatPlus) {
+          if (vatInPercents) {
+            itemVat = price - price / (1d + itemVat / 100d);
+          }
+        } else  {
+          itemVat = 0;
+        }
+        price -= itemVat;
+
+        return PRICE_FORMAT.format(price);
       }
     };
 
@@ -300,7 +372,8 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     Widget widget = widgets.get(prefix + SUFFIX_NAME);
     if (widget != null) {
-      setHtml(widget, tdd.getCompanyValue(id, COL_COMPANY_NAME));
+      setHtml(widget, BeeUtils.joinWords(tdd.getCompanyValue(id, COL_COMPANY_NAME),
+          tdd.getCompanyValue(id, ALS_COMPANY_TYPE_NAME)));
     }
 
     widget = widgets.get(prefix + SUFFIX_CODE);
@@ -525,7 +598,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
   }
 
   private String renderDocTitle(IsRow row, TradeDocumentData tdd) {
-    if (BeeUtils.anyEmpty(getString(row, COL_TRADE_INVOICE_PREFIX),
+    if (BeeUtils.anyEmpty(getString(row, COL_SERIES_NAME),
         getString(row, COL_TRADE_INVOICE_NO))) {
       return BeeConst.STRING_EMPTY;
 

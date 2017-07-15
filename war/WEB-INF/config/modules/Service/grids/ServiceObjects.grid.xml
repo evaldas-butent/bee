@@ -4,9 +4,9 @@
   xmlns:w="http://www.butent.com/widget"
   
   name="ServiceObjects" viewName="ServiceObjects"
-  caption="=svcDevices" editShowId="true"
-  autoFit="true"
-  >
+  caption="=svcObjects" editShowId="true"
+  autoFit="true" enabledActions="copy"
+>
   
   <g:west size="200" splitterSize="2">
     <w:DataTree name="ServiceTree" caption="=categories" viewName="ServiceTree"
@@ -27,6 +27,13 @@
     <IdColumn name="Id" />
     <DataColumn name="CategoryName" visible="false" />
     <DataColumn name="Address" visible="true" />
+
+    <DataColumn name="Model" caption="=svcModel" />
+    <DataColumn name="YearOfManufacture" caption="=svcYearOfManufacture" />
+    <DataColumn name="InventNo" caption="=svcInventNo" />
+    <DataColumn name="BodyNo" caption="=svcBodyNo" />
+    <DataColumn name="Seller" caption="=svcSeller" />
+    <DataColumn name="ItemInButenta" caption="=svcItemInButenta" />
 
     <RelColumn name="Customer" renderColumns="CustomerName" visible="true" />
     <RelColumn name="Contractor" />

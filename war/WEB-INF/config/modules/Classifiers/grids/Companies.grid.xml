@@ -2,6 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column"
         xmlns:g="http://www.butent.com/grid"
         xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:ui="http://www.butent.com/ui"
 
         name="Companies" viewName="Companies" caption="=clients"
         newRowForm="NewCompany:=inputSimple, Company:=inputFull"
@@ -25,14 +26,24 @@
     <DataColumn name="Address" />
     <DataColumn name="PostIndex" />
 
-    <DataColumn name="CityName" />
-    <DataColumn name="CountryName" />
+    <DataColumn name="CityName" caption="=city" />
+    <DataColumn name="CountryName" caption="=country" />
     <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
                 caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
                 filterOptions="-" exportWidthFactor="0.5" visible="false">
       <renderer type="flag" />
     </CalcColumn>
-    <RelColumn name="DefaultCompanyUser" visible="false" filterSupplier="value" />
+
+    <DataColumn name="BankruptcyRiskName" visible="false"
+      caption="=clientBankruptcyRisk" label="=clientBankruptcyRisk" />
+    <DataColumn name="DelayedPaymentRiskName" visible="false"
+      caption="=clientDelayedPaymentRisk" label="=clientDelayedPaymentRisk" />
+    <DataColumn name="InvoiceTransferTypeName" visible="false"
+      caption="=invoiceTransferType" label="=invoiceTransferType" />
+
+    <DataColumn name="FinancialStateName" visible="false"
+        label="=financialState" caption="=financialState" />
+    <RelColumn name="DefaultCompanyUser" visible="false" label="=companyResponsibleUser" filterSupplier="value"/>
 
     <DataColumn name="CreditLimit" visible="false" />
     <DataColumn name="CreditTolerance" visible="false" />
@@ -54,4 +65,10 @@
   <g:columns>
     <DataColumn name="Notes" visible="false" />
   </g:columns>
+    <g:rowStyle>
+      <ui:inline>="background-color: " + row.Background + "; color: "
+         +row.Foreground  + "; "
+      </ui:inline>
+      <ui:expression>row.Color != null</ui:expression>
+  </g:rowStyle>
 </g:Grid>

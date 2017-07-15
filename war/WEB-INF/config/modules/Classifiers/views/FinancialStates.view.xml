@@ -6,6 +6,12 @@
   >
   <Columns>
     <SimpleColumn name="Name" />
+    <SimpleColumn name="Color" />
+    <SimpleJoin name="Color" joinType="LEFT">
+      <SimpleColumn alias="ColorName" name="Name" />
+      <SimpleColumn name="Background" />
+      <SimpleColumn name="Foreground" />
+    </SimpleJoin>
   </Columns>
   <Order>
     <OrderBy column="Name" />

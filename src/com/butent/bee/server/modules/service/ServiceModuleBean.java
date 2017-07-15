@@ -20,6 +20,7 @@ import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.data.BeeView;
+import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -100,6 +101,8 @@ public class ServiceModuleBean implements BeeModule {
   @EJB
   QueryServiceBean qs;
   @EJB
+  DataEditorBean deb;
+  @EJB
   UserServiceBean usr;
   @EJB
   MailModuleBean mail;
@@ -144,6 +147,9 @@ public class ServiceModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_MAINTENANCE_NEW_ROW_VALUES)) {
       response = getMaintenanceNewRowValues();
+
+    } else if (BeeUtils.same(svc, SVC_GET_SERVICE_OBJECT_DATA)) {
+      response = getServiceObjectData(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("service not recognized:", svc);
@@ -1398,5 +1404,63 @@ public class ServiceModuleBean implements BeeModule {
       }
     }
     return ResponseObject.emptyResponse();
+  }
+
+  private ResponseObject getServiceObjectData(RequestInfo reqInfo) {
+    Long serviceObjectId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SERVICE_OBJECT));
+    if (!DataUtils.isId(serviceObjectId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_SERVICE_OBJECT);
+    }
+
+    Long dataId = qs.insertData(new SqlInsert(TBL_SERVICE_OBJECTS)
+        .addConstant(COL_SERVICE_ADDRESS, qs.getValue(new SqlSelect()
+            .addFields(TBL_SERVICE_OBJECTS, COL_SERVICE_ADDRESS)
+            .addFrom(TBL_SERVICE_OBJECTS)
+            .setWhere(sys.idEquals(TBL_SERVICE_OBJECTS, serviceObjectId))))
+        .addConstant(COL_SERVICE_CATEGORY, qs.getValue(new SqlSelect()
+            .addFields(TBL_SERVICE_OBJECTS, COL_SERVICE_CATEGORY)
+            .addFrom(TBL_SERVICE_OBJECTS)
+            .setWhere(sys.idEquals(TBL_SERVICE_OBJECTS, serviceObjectId)))));
+
+    SimpleRowSet rs =
+        qs.getData(new SqlSelect()
+            .addField(TBL_SERVICE_CRITERIA_GROUPS, sys.getIdName(TBL_SERVICE_CRITERIA_GROUPS),
+                COL_SERVICE_CRITERIA_GROUP)
+            .addField(TBL_SERVICE_CRITERIA_GROUPS, COL_SERVICE_CRITERIA_ORDINAL,
+                COL_SERVICE_CRITERIA_GROUP + COL_SERVICE_CRITERIA_ORDINAL)
+            .addFields(TBL_SERVICE_CRITERIA_GROUPS, COL_SERVICE_CRITERIA_GROUP_NAME)
+            .addFields(TBL_SERVICE_CRITERIA, COL_SERVICE_CRITERIA_ORDINAL,
+                COL_SERVICE_CRITERION_NAME, COL_SERVICE_CRITERION_VALUE)
+            .addFrom(TBL_SERVICE_CRITERIA_GROUPS)
+            .addFromLeft(
+                TBL_SERVICE_CRITERIA,
+                sys.joinTables(TBL_SERVICE_CRITERIA_GROUPS, TBL_SERVICE_CRITERIA,
+                    COL_SERVICE_CRITERIA_GROUP))
+            .setWhere(
+                SqlUtils.equals(TBL_SERVICE_CRITERIA_GROUPS, COL_SERVICE_OBJECT, serviceObjectId)));
+
+    Map<Long, Long> groups = new HashMap<>();
+
+    for (SimpleRow row : rs) {
+      long groupId = row.getLong(COL_SERVICE_CRITERIA_GROUP);
+      String criterion = row.getValue(COL_SERVICE_CRITERION_NAME);
+
+      if (!groups.containsKey(groupId)) {
+        groups.put(groupId, qs.insertData(new SqlInsert(TBL_SERVICE_CRITERIA_GROUPS)
+            .addConstant(COL_SERVICE_OBJECT, dataId)
+            .addConstant(COL_SERVICE_CRITERIA_ORDINAL,
+                row.getValue(COL_SERVICE_CRITERIA_GROUP + COL_SERVICE_CRITERIA_ORDINAL))
+            .addConstant(COL_SERVICE_CRITERIA_GROUP_NAME,
+                row.getValue(COL_SERVICE_CRITERIA_GROUP_NAME))));
+      }
+      if (!BeeUtils.isEmpty(criterion)) {
+        qs.insertData(new SqlInsert(TBL_SERVICE_CRITERIA)
+            .addConstant(COL_SERVICE_CRITERIA_GROUP, groups.get(groupId))
+            .addConstant(COL_SERVICE_CRITERIA_ORDINAL, row.getValue(COL_SERVICE_CRITERIA_ORDINAL))
+            .addConstant(COL_SERVICE_CRITERION_NAME, criterion)
+            .addConstant(COL_SERVICE_CRITERION_VALUE, row.getValue(COL_SERVICE_CRITERION_VALUE)));
+      }
+    }
+    return ResponseObject.response(dataId);
   }
 }

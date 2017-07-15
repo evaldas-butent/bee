@@ -37,5 +37,24 @@
           </ui:function>
       </validation>
     </DataColumn>
+    <!-- Transrifus { -->
+    <DataColumn name="EmailInvoices" maxWidth="30">
+      <validation>
+        <ui:function>
+          var emailId = row.EmailId;
+
+          if (cell.oldValue != null &#38;&#38; cell.newValue == null) {
+          return null;
+          }
+
+          if (emailId == null  &#38;&#38; cell.newValue != null) {
+          return $wnd.Bee_maybeTranslate("=email") + ". " + $wnd.Bee_maybeTranslate("=valueRequired");
+          } else {
+          return null;
+          }
+        </ui:function>
+      </validation>
+    </DataColumn>
+    <!-- } Transrifus -->
   </g:columns>
 </g:Grid>

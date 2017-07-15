@@ -9,7 +9,9 @@
   <g:columns>
     <DataColumn name="OperationType" readOnly="true" carry="true" visible="true" />
     <DataColumn name="OperationName" minWidth="100" visible="true" />
-
+    
+    <RelColumn name="TradeStatus" visible="true"/>
+    
     <DataColumn name="Kind" module="Trade.Acts" minWidth="100" />
     <DataColumn name="Price" minWidth="100" carry="true" />
 

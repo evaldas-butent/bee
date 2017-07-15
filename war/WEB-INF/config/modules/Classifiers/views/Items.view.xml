@@ -21,6 +21,8 @@
       <SimpleColumn name="Name" alias="UnitName" />
     </SimpleJoin>
 
+    <SimpleColumn name="ExportWebsite" />
+
     <SimpleColumn name="TimeUnit" />
     <SimpleColumn name="PackageUnits" />
 
@@ -45,6 +47,12 @@
     <SimpleColumn name="CostCurrency" />
     <SimpleJoin joinType="LEFT" name="CostCurrency">
       <SimpleColumn name="Name" alias="CostCurrencyName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="RentalPrice" />
+    <SimpleColumn name="RentalPriceCurrency" />
+    <SimpleJoin name="RentalPriceCurrency" joinType="LEFT">
+      <SimpleColumn name="Name" alias="RentalPriceCurrencyName" />
     </SimpleJoin>
 
     <SimpleColumn name="Price1" />
@@ -135,10 +143,18 @@
 
     <SimpleColumn name="Ordinal" />
     <SimpleColumn name="ExternalCode" />
+    <SimpleColumn name="ExternalStock" />
 
     <SimpleColumn name="Description" />
     <SimpleColumn name="Notes" />
     <SimpleColumn name="Link" />
+
+    <!-- Transrifus { -->
+    <SimpleColumn name="Maker" />
+    <SimpleJoin name="Maker" joinType="LEFT">
+      <SimpleColumn alias="MakerName" name="Name" />
+    </SimpleJoin>
+    <!-- } Transrifus -->
   </Columns>
 
   <Order>

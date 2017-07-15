@@ -21,6 +21,7 @@ import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -286,6 +287,12 @@ public class ClassifierSelector implements SelectorEvent.Handler {
             if (dataView != null && VIEW_DEPARTMENT_EMPLOYEES.equals(dataView.getViewName())) {
               filterDepartmentPositions(event, dataView);
             }
+          }
+          break;
+
+        case TradeConstants.VIEW_TRADE_ACT_DRIVERS:
+          if (event.isNewRow()) {
+            onNewPerson(event);
           }
           break;
       }

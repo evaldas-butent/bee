@@ -236,6 +236,7 @@ public enum UserInterface implements HasCaption {
     @Override
     public List<String> getStyleSheets() {
       List<String> sheets = getMainStyleSheets();
+      sheets.add(Module.TRADE.getStyleSheet(null));
       sheets.add(Module.TRADE.getStyleSheet(SubModule.ACTS));
       return sheets;
     }

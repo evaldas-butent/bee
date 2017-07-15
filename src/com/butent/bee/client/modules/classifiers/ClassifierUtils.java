@@ -199,6 +199,21 @@ public final class ClassifierUtils {
               }
               break;
 
+            case COL_COMPANY_NAME:
+              value = BeeUtils.joinItems(info.get(COL_COMPANY_NAME).getB(),
+                  info.get(ALS_COMPANY_TYPE).getB());
+
+              if (!BeeUtils.isEmpty(value)) {
+                Widget widget = new Label(info.get(col).getA());
+                widget.setStyleName(STYLE_COMPANY_LABEL);
+                record.add(widget);
+
+                widget = new Label(value);
+                widget.setStyleName(STYLE_COMPANY_ITEM);
+                record.add(widget);
+              }
+              break;
+
             default:
               Pair<String, String> pair = info.get(col);
 

@@ -53,11 +53,11 @@ import java.util.List;
 
 public final class TradeUtils {
 
-  private static final String STYLE_ITEMS = TradeKeeper.STYLE_PREFIX + "itemsInfo-";
-  private static final String STYLE_ITEMS_TABLE = STYLE_ITEMS + "table";
-  private static final String STYLE_ITEMS_HEADER = STYLE_ITEMS + "header";
-  private static final String STYLE_ITEMS_DATA = STYLE_ITEMS + "data";
-  private static final String STYLE_ITEMS_FOOTER = STYLE_ITEMS + "footer";
+  public static final String STYLE_ITEMS = TradeKeeper.STYLE_PREFIX + "itemsInfo-";
+  public static final String STYLE_ITEMS_TABLE = STYLE_ITEMS + "table";
+  public static final String STYLE_ITEMS_HEADER = STYLE_ITEMS + "header";
+  public static final String STYLE_ITEMS_DATA = STYLE_ITEMS + "data";
+  public static final String STYLE_ITEMS_FOOTER = STYLE_ITEMS + "footer";
 
   private static final String STYLE_COST_CALCULATION_COMMAND =
       TradeKeeper.STYLE_PREFIX + "cost-calculation";

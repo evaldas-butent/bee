@@ -2081,7 +2081,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     return messageId;
   }
 
-  private Long storeMessage(MailAccount account, MimeMessage message, MailFolder folder)
+  public Long storeMessage(MailAccount account, MimeMessage message, MailFolder folder)
       throws MessagingException {
     message.setFlag(Flag.SEEN, true);
     return storeMail(account, message, folder);

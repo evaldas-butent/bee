@@ -1,7 +1,10 @@
 package com.butent.bee.client.modules.trade;
 
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -13,6 +16,8 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.FormFactory;
@@ -25,24 +30,35 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
@@ -152,6 +168,224 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
   public void afterCreatePresenter(final GridPresenter presenter) {
     presenter.getHeader().clearCommandPanel();
     presenter.getHeader().addCommandItem(action);
+    presenter.getHeader().addCommandItem(TradeKeeper.createAmountAction(presenter.getViewName(),
+      () ->
+        presenter.getDataProvider().getFilter(), TradeConstants.COL_SALE, presenter.getGridView()));
+  }
+
+  @Override
+  public AbstractFilterSupplier getFilterSupplier(String columnName,
+      ColumnDescription columnDescription) {
+
+    if (BeeUtils.same(columnName, "Select")) {
+      return new AbstractFilterSupplier(TradeConstants.VIEW_DEBT_REPORTS, null, null,
+          columnDescription.getFilterOptions()) {
+
+        private static final String F_OVERDUE = "termOverdue";
+        private static final String F_NOT_EXPIRED = "termNotExpired";
+        private static final String F_PAY_FROM = "termPayFrom";
+        private static final String F_PAY_TO = "termPayTo";
+
+        private boolean termOverdue;
+        private boolean termNotExpired;
+        private JustDate termPayFrom;
+        private JustDate termPayTo;
+
+        @Override
+        public void setFilterValue(FilterValue filterValue) {
+          if (filterValue == null) {
+            setTermOverdue(false);
+            setTermNotExpired(false);
+            setTermPayFrom(null);
+            setTermPayTo(null);
+            return;
+          }
+
+          Map<String, String> val = Codec.deserializeHashMap(filterValue.getValue());
+
+          if (val == null) {
+            return;
+          }
+
+          setTermOverdue(BeeUtils.toBoolean(val.get(F_OVERDUE)));
+          setTermNotExpired(BeeUtils.toBoolean(val.get(F_NOT_EXPIRED)));
+
+          if (!BeeUtils.isEmpty(val.get(F_PAY_FROM))) {
+            JustDate d = new JustDate();
+            d.deserialize(val.get(F_PAY_FROM));
+            setTermPayFrom(d);
+          }
+
+          if (!BeeUtils.isEmpty(val.get(F_PAY_TO))) {
+            JustDate d = new JustDate();
+            d.deserialize(val.get(F_PAY_TO));
+            setTermPayTo(d);
+          }
+        }
+
+        @Override
+        public Filter parse(FilterValue input) {
+          if (input == null) {
+            return null;
+          }
+
+          Map<String, String> val = Codec.deserializeHashMap(input.getValue());
+
+          if (val == null) {
+            return null;
+          }
+
+          Filter f = Filter.isTrue();
+          if (BeeUtils.toBoolean(val.get(F_OVERDUE))) {
+            f = Filter.and(f, Filter.isLess(
+                TradeConstants.COL_TRADE_TERM, Value.getValue(new JustDate())));
+          }
+
+          if (BeeUtils.toBoolean(val.get(F_NOT_EXPIRED))) {
+            f = Filter.and(f, Filter.isMoreEqual(
+                TradeConstants.COL_TRADE_TERM, Value.getValue(new JustDate())));
+          }
+
+          if (!BeeUtils.isEmpty(val.get(F_PAY_FROM))) {
+            JustDate d = new JustDate();
+            d.deserialize(val.get(F_PAY_FROM));
+            f = Filter.and(f, Filter.isMoreEqual(TradeConstants.COL_TRADE_TERM, Value.getValue(
+                d)));
+          }
+
+          if (!BeeUtils.isEmpty(val.get(F_PAY_TO))) {
+            JustDate d = new JustDate();
+            d.deserialize(val.get(F_PAY_TO));
+            f = Filter.and(f, Filter.isLessEqual(TradeConstants.COL_TRADE_TERM, Value.getValue(
+                d)));
+          }
+
+          return f;
+        }
+
+        @Override
+        public void onRequest(Element target, ScheduledCommand onChange) {
+          openDialog(target, getWidget(), null, onChange);
+
+        }
+
+        @Override
+        public String getComponentLabel(String ownerLabel) {
+          return BeeUtils.isEmpty(getLabel()) ? null : getLabel();
+        }
+
+        @Override
+        public String getLabel() {
+          return BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, isTermOverdue() ? Localized
+              .dictionary().trdTermInOverdue()
+              : null, isTermNotExpired() ? Localized.dictionary().trdTermNotExpired() : null,
+              getTermPayFrom() != null ? BeeUtils.joinWords(Localized.dictionary().trdTerm(),
+                  Localized.dictionary().dateFromShort(), getTermPayFrom().toString()) : null,
+              getTermPayTo() != null ? BeeUtils.joinWords(Localized.dictionary().trdTerm(),
+                  Localized.dictionary().dateToShort(), getTermPayTo().toString()) : null);
+        }
+
+        @Override
+        public FilterValue getFilterValue() {
+          Map<String, String> val = new HashMap<>();
+
+          if (isTermOverdue()) {
+            val.put(F_OVERDUE, BeeUtils.toString(isTermOverdue()));
+          }
+          if (isTermNotExpired()) {
+            val.put(F_NOT_EXPIRED, BeeUtils.toString(isTermNotExpired()));
+          }
+          val.put(F_PAY_FROM, getTermPayFrom() != null ? BeeUtils.toString(getTermPayFrom()
+              .getDays()) : null);
+          val.put(F_PAY_TO, getTermPayTo() != null ? BeeUtils.toString(getTermPayTo().getDays())
+              : null);
+
+          return val.isEmpty() ? null : FilterValue.of(Codec.beeSerialize(val));
+        }
+
+        private Widget getWidget() {
+          Flow conatainer = new Flow();
+          HtmlTable tbl = new HtmlTable();
+          final CheckBox ovt = new CheckBox(Localized.dictionary().trdTermInOverdue());
+          final CheckBox net = new CheckBox(Localized.dictionary().trdTermNotExpired());
+          final InputDate pfd = new InputDate();
+          final InputDate ptd = new InputDate();
+
+          ovt.setChecked(isTermOverdue());
+
+          net.setChecked(isTermNotExpired());
+          pfd.setDate(getTermPayFrom());
+          ptd.setDate(getTermPayTo());
+
+          // Flow ckContainer = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
+
+          tbl.setWidget(0, 0, ovt);
+          tbl.setWidget(0, 1, net);
+          conatainer.add(tbl);
+
+          // Flow dateContainer = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
+          tbl.setWidget(1, 0, new Label(Localized.dictionary().trdTerm()));
+          tbl.setWidget(1, 1, pfd);
+          tbl.setWidget(1, 2, new Label(BeeConst.STRING_MINUS));
+          tbl.setWidget(1, 3, ptd);
+          // conatainer.add(dateContainer);
+
+          Button filter = new Button(Localized.dictionary().doFilter());
+          filter.addClickHandler(arg0 -> {
+            setTermOverdue(ovt.isChecked());
+            setTermNotExpired(net.isChecked());
+            setTermPayFrom(pfd.getDate());
+            setTermPayTo(ptd.getDate());
+            update(true);
+          });
+
+          Button cancel = new Button(Localized.dictionary().cancel());
+          cancel.addClickHandler(event -> closeDialog());
+
+          Flow btnContainer = new Flow("bee-FilterSupplier-commandPanel");
+
+          btnContainer.add(filter);
+          btnContainer.add(cancel);
+          conatainer.add(btnContainer);
+
+          return conatainer;
+        }
+
+        private boolean isTermNotExpired() {
+          return termNotExpired;
+        }
+
+        private boolean isTermOverdue() {
+          return termOverdue;
+        }
+
+        private void setTermNotExpired(boolean termNotExpired) {
+          this.termNotExpired = termNotExpired;
+        }
+
+        private void setTermOverdue(boolean termOverdue) {
+          this.termOverdue = termOverdue;
+        }
+
+        public JustDate getTermPayFrom() {
+          return termPayFrom;
+        }
+
+        public void setTermPayFrom(JustDate termPayFrom) {
+          this.termPayFrom = termPayFrom;
+        }
+
+        public JustDate getTermPayTo() {
+          return termPayTo;
+        }
+
+        public void setTermPayTo(JustDate termPayTo) {
+          this.termPayTo = termPayTo;
+        }
+      };
+    }
+
+    return super.getFilterSupplier(columnName, columnDescription);
   }
 
   @Override
@@ -163,19 +397,9 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
   public void onClick(ClickEvent event) {
     final GridPresenter presenter = getGridPresenter();
     final Set<Long> ids = new HashSet<>();
-    final Set<Long> rowIds = new HashSet<>();
 
     for (RowInfo row : presenter.getGridView().getSelectedRows(SelectedRows.ALL)) {
-      rowIds.add(row.getId());
-    }
-
-    for (IsRow row : presenter.getGridView().getRowData()) {
-      if (rowIds.contains(row.getId())) {
-        Long companyId = row.getLong(getDataIndex(ClassifierConstants.COL_COMPANY));
-        if (DataUtils.isId(companyId)) {
-          ids.add(companyId);
-        }
-      }
+      ids.add(row.getId());
     }
 
     if (ids.isEmpty()) {
@@ -194,23 +418,15 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
       return;
     }
 
-    int idxCompany = getDataIndex(ClassifierConstants.COL_COMPANY);
-
     if (TradeConstants.COL_TRADE_DEBT_COUNT.equals(event.getColumnId())) {
       int idxCurrency = getDataIndex(AdministrationConstants.COL_CURRENCY);
-      GridOptions options = GridOptions.forFilter(
-          Filter.and(
-              Filter.or(
-                  Filter.and(
-                      Filter.equals(TradeConstants.COL_TRADE_CUSTOMER, activeRow.getLong(
-                          idxCompany)),
-                      Filter.isNull(TradeConstants.COL_SALE_PAYER)),
-                  Filter.equals(TradeConstants.COL_SALE_PAYER, activeRow.getLong(idxCompany))),
-              Filter.equals(AdministrationConstants.COL_CURRENCY, activeRow.getLong(idxCurrency)),
-              Filter.isPositive(TradeConstants.COL_TRADE_DEBT)));
+      GridOptions options = GridOptions.forFilter(Filter.and(Filter.equals(
+          TradeConstants.COL_TRADE_CUSTOMER, activeRow.getId()),
+          Filter.equals(AdministrationConstants.COL_CURRENCY, activeRow.getLong(idxCurrency)),
+          Filter.isPositive(TradeConstants.COL_TRADE_DEBT)));
 
-      GridFactory.openGrid(TradeConstants.GRID_SALES,
-          GridFactory.getGridInterceptor(TradeConstants.GRID_SALES),
+      GridFactory.openGrid(TradeConstants.GRID_ERP_SALES,
+          GridFactory.getGridInterceptor(TradeConstants.GRID_ERP_SALES),
           options, PresenterCallback.SHOW_IN_NEW_TAB);
     } else if (ClassifierConstants.COL_COMPANY_NAME.equals(event.getColumnId())) {
       RowEditor.open(ClassifierConstants.VIEW_COMPANIES, activeRow.getId(),
@@ -248,7 +464,8 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
         }
 
         if (response.hasResponse() && response.getResponse() instanceof String) {
-          getGridPresenter().getGridView().notifyInfo(response.getResponseAsString());
+          getGridPresenter().getGridView().notifyInfo(
+              new String[] {(String) response.getResponse()});
         }
 
         if (Popup.getActivePopup() != null) {

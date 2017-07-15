@@ -51,6 +51,15 @@
     <String name="BoLDriver" precision="60" label="=trdDriver" />
     <Relation name="BoLCarrier" relation="Companies" label="=carrier" />
 
+
+    <!-- Transrifus TradeAct SelfService { -->
+    <DateTime name="Visited" label="Žiūrėta" />
+    <!-- } Transrifus TradeAct SelfService -->
+
+    <!-- Transrifus Send invoices to mail { -->
+    <Boolean name="IsSentToEmail" label="=tradeSentToEmail" />
+    <Relation name="InvoiceTransferType" relation="InvoiceTransferTypes" label="=invoiceTransferType" />
+    <!-- } -->
   </Fields>
 
   <Constraints>

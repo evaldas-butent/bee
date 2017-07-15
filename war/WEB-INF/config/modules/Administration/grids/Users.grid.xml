@@ -20,6 +20,8 @@
 
     <DataColumn name="BlockAfter" />
     <DataColumn name="BlockBefore" />
+
+    <DataColumn name="EmployerId" editInPlace="true" />
   </g:columns>
 
   <g:rowStyle>

@@ -538,7 +538,7 @@ public class MailAccount {
     return findFolder(getSystemFolder(SystemFolder.Inbox));
   }
 
-  MailFolder getSentFolder() {
+ public MailFolder getSentFolder() {
     return findFolder(getSystemFolder(SystemFolder.Sent));
   }
 

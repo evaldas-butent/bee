@@ -213,9 +213,15 @@ public final class ClassifierKeeper {
     GridFactory.registerGridSupplier(ItemsGrid.getSupplierKey(true), GRID_ITEMS,
         new ItemsGrid(true));
 
+    GridFactory.registerGridInterceptor(GRID_COMPANY_CONTACTS, new CompanyContactsGrid());
+
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_FINANCIAL_STATES,
+        AdministrationConstants.ALS_COLOR_NAME, ColorStyleProvider
+            .createDefault(VIEW_FINANCIAL_STATES));
+
     MenuService.ITEMS.setHandler(parameters -> {
-      String key = ItemsGrid.getSupplierKey(BeeUtils.startsSame(parameters, "s"));
-      ViewFactory.createAndShow(key);
+        String key = ItemsGrid.getSupplierKey(BeeUtils.startsSame(parameters, "s"));
+        ViewFactory.createAndShow(key);
     });
 
     GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGrid());
@@ -235,6 +241,7 @@ public final class ClassifierKeeper {
 
     FormFactory.registerFormInterceptor(FORM_PERSON, new PersonForm());
     FormFactory.registerFormInterceptor(FORM_COMPANY, new CompanyForm());
+    FormFactory.registerFormInterceptor(FORM_COMPANY_PERSON, new CompanyPersonForm());
     FormFactory.registerFormInterceptor(FORM_NEW_COMPANY, new CompanyForm());
     FormFactory.registerFormInterceptor(FORM_COMPANY_ACTION, new CompanyActionForm());
     FormFactory.registerFormInterceptor(FORM_COMPANY_PERSON, new CompanyPersonForm());

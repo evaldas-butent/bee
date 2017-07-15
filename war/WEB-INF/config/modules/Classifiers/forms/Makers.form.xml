@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form>
+<f:Form height="100" width="400" caption="=makers" viewName="Makers"
+	name="Makers" xmlns:d="http://www.butent.com/decorator" xmlns:xi="http://www.w3.org/2001/XInclude"
+	xmlns:f="http://www.butent.com/form" xmlns="http://www.butent.com/widget" >
+
+	<FlowPanel>
+		<Table kind="controls">
+			<row>
+				<Label class="bee-required"
+					style="margin-left: 1em; text-align: right; padding-right: 9px;"
+					text="=name" />
+				<InputText style="width: 180px;" visible="true" source="Name" />
+			</row>
+		</Table>
+	</FlowPanel>
+</f:Form>

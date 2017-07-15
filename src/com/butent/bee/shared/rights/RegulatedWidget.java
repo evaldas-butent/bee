@@ -42,6 +42,12 @@ public enum RegulatedWidget implements HasLocalizedCaption {
       return constants.companyStructure();
     }
   },
+  TO_ERP {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.trSendToERP();
+    }
+  },
   EXPORT_TO_XLS {
     @Override
     public String getCaption(Dictionary constants) {

@@ -10,11 +10,25 @@
   flexGrow="1" renderMode="full"
   newRowCaption="=newItem" disabledActions="filter"
   >
+  <g:columns>
+    <SelectionColumn name="Select" width="20" />
+  </g:columns>
+
   <xi:include href="columns/TradeActItem.columns.xml" />
+
+  <g:columns>
+    <RelColumn name="Parent" editEnabled="true"  >
+      <renderToken source="ParentSeriesName"  suffix=" " />
+      <renderToken source="ParentNumber" suffix="/" />
+      <renderToken source="ParentId" prefix="=captionId" />
+    </RelColumn>
+
+  </g:columns>
 
   <xi:include href="columns/TradeActQuantity.columns.xml" />
 
   <g:columns>
+    <DataColumn name="ExternalStock" />
     <PropColumn name="returned_qty" type="double" label="=taQuantityReturned" visible="true">
       <style>
         <bodyStyle><ui:inline>color: red;</ui:inline></bodyStyle>
@@ -37,19 +51,69 @@
       <footer expression="&qty; * row.Area" />
     </DataColumn>
 
-    <DataColumn name="Price" visible="true">
+    <DataColumn name="Price" visible="true" required="true">
+      <dynStyle>
+        <ui:inline>
+          background-color: #fcc;
+        </ui:inline>
+        <ui:expression>!(row.Price)</ui:expression>
+      </dynStyle>
       <footer expression="&qty; * row.Price" />
     </DataColumn>
-    
+
+    <DataColumn name="ItemRentalPrice" visible="true" scale="2" >
+      <render>
+        <ui:expression>row.Quantity * row.ItemRentalPrice</ui:expression>
+      </render>
+      <footer aggregate="sum" scale="2" />
+    </DataColumn>
+
     <CalcColumn name="ItemPrices" type="string" cellType="html" label="=taItemPrices" width="100"
       exportable="false" verticalAlignment="middle" />
+
+    <CalcColumn name="Amount" type="decimal" caption="=trdAmountWoVat" scale="2">
+      <style>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+      <render>
+        <ui:function>
+          var sum = row.Price * &qty;;
+          var dscSum =  sum / 100 * row.Discount;
+          var vat = row.Vat;
+
+          sum -= dscSum;
+
+          if (Boolean(row.VatPlus)) {
+            if(Boolean(row.VatPercent)) {
+              vat = sum / 100 * vat;
+            }
+          } else {
+
+            if (Boolean(row.VatPercent)) {
+              vat = sum - (sum / (1 + vat / 100));
+            }
+            sum -= vat;
+          }
+
+          return sum;
+        </ui:function>
+      </render>
+      <footer aggregate="sum"/>
+    </CalcColumn>
   </g:columns>
 
   <xi:include href="columns/TradeActDiscount.columns.xml" />
   <xi:include href="columns/TradeActVat.columns.xml" />
   <xi:include href="columns/TradeActTotal.columns.xml" />
-
+ 
   <g:columns>
+    <RelColumn name="Sale" caption="=trdInvoiceId" readOnly="true" renderColumns="Sale"
+      editEnabled="true" editForm="SalesInvoice" editViewName="Sales"/>
     <DataColumn name="Note" visible="false" />
   </g:columns>
+  
+  <g:rowEditable>
+    <ui:expression>!row.Sale</ui:expression>
+  </g:rowEditable>
+  
 </g:Grid>

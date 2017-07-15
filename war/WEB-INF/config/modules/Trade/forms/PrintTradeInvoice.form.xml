@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY section "margin-top: 5px;">
+  <!ENTITY bold "font-weight:bold;">
+  <!ENTITY footer "position: absolute; bottom: 5px; display: inline-block;">
+  <!ENTITY form "PrintTradeInvoice">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+	xmlns:ui="http://www.butent.com/ui" name="&form;" caption="=trdInvoice"
+	disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
+	<FlowPanel style="padding: 10px; background-color: white;" contentEditable="true">
+		<HorizontalPanel>
+			<Image url="images/logo.png" />
+			<cell width="100" widthUnit="%">
+				<FlowPanel style="text-align:center; font-size:medium;">
+					<TextLabel style="&bold; text-transform: uppercase;">
+						<render>
+							<ui:expression>row.Proforma ? 'Sąskaita išankstiniam apmokėjimui'
+								: 'PVM Sąskaita-faktūra'</ui:expression>
+						</render>
+					</TextLabel>
+					<TextLabel source="InvoiceNo" style="font-weight: bold;">
+						<renderToken source="InvoicePrefix" prefix="Serija "
+							suffix=" " />
+						<renderToken source="InvoiceNo" prefix="Nr. " />
+					</TextLabel>
+				</FlowPanel>
+			</cell>
+		</HorizontalPanel>
+
+		<DateTimeLabel source="Date" format="DATE_LONG"
+			horizontalAlignment="right" />
+
+		<FlowPanel style="&section;">
+			<Table style="width:100%;" kind="output">
+				<row>
+					<cell style="vertical-align:top;">
+						<Label html="Tiekėjas:" />
+					</cell>
+					<cell style="vertical-align:top;">
+						<FlowPanel name="Supplier" />
+					</cell>
+				</row>
+				<row style="&section;">
+					<cell style="vertical-align:top;">
+						<Label html="Gavėjas:" />
+					</cell>
+					<cell rowSpan="2" style="vertical-align:top;">
+						<FlowPanel name="Customer" />
+					</cell>
+				</row>
+			</Table>
+		</FlowPanel>
+
+		<Table name="InvoiceDetails" style="&section; width:100%" kind="output">
+		<properties content="Items" />
+			<row>
+				<Label text="Materialinės vertybės pavadinimas">
+					<properties name="Name" />
+				</Label>
+				<Label text="Artikulas">
+					<properties name="Article" />
+				</Label>
+				<Label text="Mato vien.">
+					<properties name="Unit" />
+				</Label>
+				<Label text="Kiekis">
+					<properties name="Quantity" />
+				</Label>
+				<Label text="Kaina">
+					<properties name="Price" />
+				</Label>
+				<Label text="Suma">
+					<properties name="Amount" />
+				</Label>
+				<Label text="=trdVat" horizontalAlignment="right">
+					<properties name="Vat" />
+				</Label>
+			</row>
+			<row>
+				<cell colSpan="5">
+					<FlowPanel style="text-align: right;">
+						<Label text="Bendra suma:" />
+						<Label text="PVM suma:" />
+						<Label text="VISO:" style="&bold;" />
+					</FlowPanel>
+				</cell>
+				<FlowPanel style="text-align:right;">
+					<Label>
+						<properties name="AmountTotal" />
+					</Label>
+					<Label>
+						<properties name="VatTotal" />
+					</Label>
+					<Label style="&bold;">
+						<properties name="Total" />
+					</Label>
+				</FlowPanel>
+				<FlowPanel>
+					<Label>
+						<properties name="Currency" />
+					</Label>
+					<Label>
+						<properties name="Currency" />
+					</Label>
+					<Label style="&bold;">
+						<properties name="Currency" />
+					</Label>
+				</FlowPanel>
+			</row>
+		</Table>
+
+		<HorizontalPanel style="&section;">
+			<Label html="Suma žodžiais:" />
+			<Label name="TotalInWords" />
+		</HorizontalPanel>
+
+		<TextLabel source="Term" style="&section; &bold; white-space:pre-wrap;">
+			<renderToken source="Term" prefix="Sąskaitą apmokėti iki: " />
+		</TextLabel>
+
+		<Table kind="output">
+			<row style="vertical-align: text-top;">
+				<Label text="Papildoma informacija:   " />
+				<TextLabel source="Notes" style="white-space:pre-wrap;" />
+			</row>
+		</Table>
+
+		<Table style="width:100%; margin-top:10px;" kind="output">
+			<row style="&bold;">
+				<Label html="Išdavė" />
+				<Label html="Priėmė" />
+			</row>
+			<row style="font-size:xx-small;">
+				<Label html="(vardas, pavardė, pareigos ir parašas)" />
+				<Label html="(vardas, pavardė, pareigos ir parašas)" />
+			</row>
+			<row>
+				<TextLabel source="Manager" style="margin-top:5px;">
+					<renderToken source="ManagerFirstName" />
+					<renderToken source="ManagerLastName" />
+				</TextLabel>
+			</row>
+		</Table>
+	</FlowPanel>
+</f:Form>

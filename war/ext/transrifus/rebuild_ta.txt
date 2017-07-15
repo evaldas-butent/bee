@@ -1,0 +1,6 @@
+rebuild check
+
+
+sql Update "TradeActItems" Set "Parent" = (Select "TradeActs"."Parent" From
+"TradeActs" where "TradeActs"."TradeActID" = "TradeActItems"."TradeAct" AND "TradeActs"."Parent"
+IS NOT NULL AND "TradeActs"."Kind" = 2)

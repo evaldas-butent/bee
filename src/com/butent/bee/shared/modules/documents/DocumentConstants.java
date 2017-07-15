@@ -47,6 +47,7 @@ public final class DocumentConstants {
   public static final String COL_DOCUMENT_SENT_NUMBER = "SentNumber";
   public static final String COL_DOCUMENT_RECEIVED_NUMBER = "ReceivedNumber";
   public static final String COL_DOCUMENT_STATUS = "Status";
+  public static final String COL_DOCUMENT_STATUS_MAIN = "Main";
   public static final String COL_DOCUMENT_EXPIRES = "Expires";
   public static final String COL_DOCUMENT_USER = "User";
 
@@ -83,6 +84,7 @@ public final class DocumentConstants {
   public static final String ALS_PLACE_NAME = "PlaceName";
   public static final String ALS_STATUS_NAME = "StatusName";
   public static final String ALS_DOCUMENT_COMPANY_NAME = "CompanyName";
+  public static final String ALS_STATUS_MAIN = "StatusMain";
 
   public static final String FORM_DOCUMENT = "Document";
 

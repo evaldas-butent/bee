@@ -22,7 +22,9 @@ public final class TradeConstants {
   public static final String SVC_CREDIT_INFO = "CreditInfo";
   public static final String SVC_GET_DOCUMENT_DATA = "getTradeDocumentData";
   public static final String SVC_SEND_TO_ERP = "SendToERP";
+  public static final String SVC_SEND_COMPANY_TO_ERP = "SendCompanyToERP";
   public static final String SVC_REMIND_DEBTS_EMAIL = "RemindDebtsEmail";
+  public static final String SVC_GET_SALE_AMOUNTS = "GetSaleAmounts";
 
   public static final String SVC_GET_DOCUMENT_TYPE_CAPTION_AND_FILTER =
       "getTradeDocumentTypeCaptionAndFilter";
@@ -35,6 +37,7 @@ public final class TradeConstants {
   public static final String TBL_PURCHASE_USAGE = "PurchaseUsage";
   public static final String TBL_PURCHASE_ITEMS = "PurchaseItems";
   public static final String TBL_SALES = "Sales";
+  public static final String TBL_ERP_SALES = "ERPSales";
   public static final String TBL_SALES_SERIES = "SaleSeries";
   public static final String TBL_SALE_ITEMS = "SaleItems";
 
@@ -99,13 +102,16 @@ public final class TradeConstants {
   public static final String COL_SALE = "Sale";
   public static final String COL_SALE_PROFORMA = "Proforma";
   public static final String COL_SALE_PAYER = "Payer";
+  public static final String COL_SALE_LASTEST_PAYMENT = "LastestPayment";
 
   public static final String COL_TRADE_DATE = "Date";
   public static final String COL_TRADE_NUMBER = "Number";
   public static final String COL_TRADE_OPERATION = "Operation";
+  public static final String COL_TRADE_OPERATION_STATUS = "TradeStatus";
   public static final String COL_TRADE_INVOICE_PREFIX = "InvoicePrefix";
   public static final String COL_TRADE_SALE_SERIES = "SaleSeries";
   public static final String COL_TRADE_INVOICE_NO = "InvoiceNo";
+  public static final String COL_TRADE_ERP_INVOICE = "ERPInvoice";
   public static final String COL_TRADE_AMOUNT = "Amount";
   public static final String COL_TRADE_CURRENCY = "Currency";
   public static final String COL_TRADE_PAYMENT_TIME = "PaymentTime";
@@ -122,6 +128,8 @@ public final class TradeConstants {
   public static final String COL_TRADE_KIND = "Kind";
   public static final String COL_TRADE_DEBT = "Debt";
   public static final String COL_TRADE_DEBT_COUNT = "DebtCount";
+  public static final String COL_TRADE_CONTACT = "Contact";
+  public static final String COL_TRADE_TIME_UNIT = "TimeUnit";
   public static final String COL_TRADE_CHECK_NO = "CheckNo";
   public static final String COL_TRADE_JOIN = "Join";
 
@@ -142,6 +150,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_VAT_PERC = "VatPercent";
 
   public static final String COL_TRADE_DISCOUNT = "Discount";
+  public static final String COL_TRADE_WEIGHT = "Weight";
   public static final String COL_TRADE_DISCOUNT_PERC = "DiscountPercent";
 
   public static final String COL_TRADE_ITEM_ORDINAL = "Ordinal";
@@ -149,6 +158,13 @@ public final class TradeConstants {
   public static final String COL_TRADE_ITEM_QUANTITY = "Quantity";
   public static final String COL_TRADE_ITEM_PRICE = "Price";
   public static final String COL_TRADE_ITEM_NOTE = "Note";
+  public static final String COL_TRADE_TOTAL_WEIGHT = "TotalWeight";
+  public static final String COL_TRADE_TOTAL_AREA = "TotalArea";
+  public static final String COL_TRADE_TOTAL_PRICE = "TotalPrice";
+  public static final String COL_TRADE_TOTAL_REMAINING = "TotalRemaining";
+  public static final String COL_TRADE_TOTAL_DISCOUNT = "TotalDiscount";
+  public static final String COL_TRADE_TOTAL_ITEMS_QUANTITY = "TotalItemsQuantity";
+  public static final String COL_TRADE_SENT_ERP = "SentERP";
   public static final String COL_TRADE_ITEM_PARENT = "Parent";
   public static final String COL_TRADE_ITEM_WAREHOUSE_FROM = "ItemWarehouseFrom";
   public static final String COL_TRADE_ITEM_WAREHOUSE_TO = "ItemWarehouseTo";
@@ -176,6 +192,7 @@ public final class TradeConstants {
   public static final String COL_TEMPLATE_SUBJECT = "Subject";
   public static final String COL_TEMPLATE_FIRST_PARAGRAPH = "FirstParagraph";
   public static final String COL_TEMPLATE_LAST_PARAGRAPH = "LastParagraph";
+  public static final String COL_TRADE_STATUS = "Status";
 
   public static final String COL_TRADE_DOCUMENT_PHASE = "Phase";
   public static final String COL_TRADE_DOCUMENT_STATUS = "Status";
@@ -270,18 +287,23 @@ public final class TradeConstants {
   public static final String PROP_OVERALL_TOTAL = "OveralTotal";
   public static final String PROP_STOCK = "Stock";
 
+  public static final String PROP_AVERAGE_OVERDUE = "AverageOverdue";
+
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";
   public static final String VAR_OVERDUE = "Overdue";
 
   public static final String GRID_TRADE_OPERATIONS = "TradeOperations";
   public static final String GRID_TRADE_STATUSES = "TradeStatuses";
+  public static final String VIEW_TRADE_ACT_DRIVERS = "TradeActDrivers";
   public static final String GRID_TRADE_TAGS = "TradeTags";
 
   public static final String GRID_SERIES_MANAGERS = "SeriesManagers";
   public static final String GRID_DEBTS = "Debts";
   public static final String GRID_DEBT_REPORTS = "DebtReports";
   public static final String GRID_SALES = "Sales";
+
+  public static final String GRID_ERP_SALES = "ERPSales";
 
   public static final String FORM_DEBT_REPORT_TEMPLATE = "DebtReportTemplate";
 

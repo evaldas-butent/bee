@@ -7,8 +7,11 @@ name="ContactClassifiers" label="=settings" parent="Contacts" order="20" separat
   <Item name="CompanyGroups" label="=clientsGroups" service="grid" parameters="CompanyGroups" />
   <Item name="CompanyPriorities" label="=clientsPriorities" service="grid" parameters="CompanyPriorities" />
   <Item name="CompanySizes" label="=clientsCompanySizes" service="grid" parameters="CompanySizes" />
-  <Item name="FinancialStates" label="=clientsFinancialStates" service="grid" parameters="FinancialStates" />
-  <Item name="InformationSources" label="=clientsInformationSources" service="grid" parameters="InformationSources" />
+  <Item name="FinancialStates" label="=clientsFinancialStates" service="grid" parameters="FinancialStates" separator="true" />
+  <Item name="BankruptRisks" label="=clientsBankruptcyRisks" service="grid" parameters="CompanyBankruptRisks" />
+  <Item name="DelayedPaymentRisks" label="=clientsDelayedPaymentRisks" service="grid" parameters="DelayedPaymentRisks" />
+  <Item name="InvoiceTransferTypes" label="=invoiceTransferTypes" service="grid" parameters="InvoicetransferTypes" />
+  <Item name="InformationSources" label="=clientsInformationSources" service="grid" parameters="InformationSources" separator="true"/>
   <Item name="CompanyActivities" label="=clientsCompanyActivities" service="grid" parameters="CompanyActivities" />
   <Item name="Turnovers" label="=clientTurnovers" service="grid" parameters="Turnovers" />
   <Item name="CompanyRelationTypes" label="=clientsRelationTypes" service="grid" parameters="CompanyRelationTypes" />

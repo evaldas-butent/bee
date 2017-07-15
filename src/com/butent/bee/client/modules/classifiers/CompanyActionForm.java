@@ -29,7 +29,6 @@ import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.css.values.Display;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
@@ -121,12 +120,7 @@ final class CompanyActionForm extends AbstractFormInterceptor {
 
   @Override
   public void onLoad(FormView form) {
-    List<String> columns = Lists.newArrayList(CalendarConstants.COL_APPOINTMENT_TYPE_NAME,
-        CalendarConstants.COL_APPOINTMENT_TYPE_DURATION);
 
-    Filter filter = Filter.notNull(CalendarConstants.COL_APPOINTMENT_TYPE_DURATION);
-    Queries.getRowSet(CalendarConstants.VIEW_APPOINTMENT_TYPES, columns, filter,
-        getAppointmentTypesCallback());
   }
 
   @Override
@@ -184,9 +178,26 @@ final class CompanyActionForm extends AbstractFormInterceptor {
     createRegisterResultCheckBox(form, newRow);
     form.addCellValidationHandler(CalendarConstants.COL_STATUS, getStatusValidationHandler(
         form, newRow));
-    form.addCellValidationHandler(CalendarConstants.COL_APPOINTMENT_TYPE,
-        getAppointmentTypeValidation(form, newRow));
+
     super.onStartNewRow(form, oldRow, newRow);
+  }
+
+  @Override
+  public void onStart(FormView form) {
+
+    List<String> columns = Lists.newArrayList(CalendarConstants.COL_APPOINTMENT_TYPE_NAME,
+        CalendarConstants.COL_APPOINTMENT_TYPE_DURATION);
+
+    Filter filter = Filter.notNull(CalendarConstants.COL_APPOINTMENT_TYPE_DURATION);
+    Queries.getRowSet(CalendarConstants.VIEW_APPOINTMENT_TYPES, columns, filter,
+        getAppointmentTypesCallback());
+
+    form.addCellValidationHandler(CalendarConstants.COL_START_DATE_TIME,
+        getAppointmentTypeValidation(form));
+
+    form.addCellValidationHandler(CalendarConstants.COL_APPOINTMENT_TYPE,
+        getAppointmentTypeValidation(form));
+    super.onStart(form);
   }
 
   private static boolean canModify(FormView form, IsRow row) {
@@ -265,19 +276,16 @@ final class CompanyActionForm extends AbstractFormInterceptor {
     };
   }
 
-  private Handler getAppointmentTypeValidation(final FormView form, final IsRow row) {
+  private Handler getAppointmentTypeValidation(final FormView form) {
     return new Handler() {
 
       @Override
       public Boolean validateCell(CellValidateEvent event) {
         IsRow appointmentTypeRow = null;
+        DateTime time;
+        IsRow row = getActiveRow();
 
         if (getPlanedDurationColumnIndex() < 0) {
-          return true;
-        }
-
-        if (!BeeUtils
-            .isEmpty(row.getString(form.getDataIndex(CalendarConstants.COL_END_DATE_TIME)))) {
           return true;
         }
 
@@ -286,18 +294,21 @@ final class CompanyActionForm extends AbstractFormInterceptor {
           return true;
         }
 
-        if (!DataUtils.isId(BeeUtils.toLongOrNull(event.getNewValue()))) {
-          return true;
+        if (event.getColumnId().equals(CalendarConstants.COL_APPOINTMENT_TYPE)) {
+          appointmentTypeRow = plannedDurations.get(BeeUtils.toLong(event.getNewValue()));
+          time =
+              row.getDateTime(form.getDataIndex(CalendarConstants.COL_START_DATE_TIME));
+        } else {
+          appointmentTypeRow =
+              plannedDurations.get(BeeUtils.toLong(row
+                  .getString(form.getDataIndex(CalendarConstants.COL_APPOINTMENT_TYPE))));
+          time = new DateTime(BeeUtils.toLong(event.getNewValue()));
         }
-
-        appointmentTypeRow = plannedDurations.get(BeeUtils.toLong(event.getNewValue()));
 
         if (appointmentTypeRow == null) {
           return true;
         }
 
-        DateTime time =
-            row.getDateTime(form.getDataIndex(CalendarConstants.COL_START_DATE_TIME));
         DateTime plannedDurationTime = new DateTime(TimeUtils.parseTime(
             appointmentTypeRow.getString(getPlanedDurationColumnIndex())));
 

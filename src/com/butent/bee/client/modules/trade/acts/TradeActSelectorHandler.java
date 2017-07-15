@@ -5,6 +5,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -28,10 +29,12 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.time.DateTime;
@@ -157,7 +160,8 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
     }
   }
 
-  private static void applyActTemplate(final IsRow templRow, final FormView form) {
+  private static void applyActTemplate(final IsRow templRow, final FormView form,
+      final Callback<Boolean> validation) {
     IsRow targetRow = form.getActiveRow();
     List<BeeColumn> templColumns = Data.getColumns(VIEW_TRADE_ACT_TEMPLATES);
 
@@ -218,11 +222,11 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
         } else if (colName.contains(COL_TA_CURRENCY)) {
           upd = isTemplatable(actRow, templRow, COL_TA_CURRENCY);
 
-        } else if (colName.contains(COL_TA_VEHICLE)) {
-          upd = isTemplatable(actRow, templRow, COL_TA_VEHICLE);
+        } else if (colName.contains(COL_TA_INPUT_VEHICLE)) {
+          upd = isTemplatable(actRow, templRow, COL_TA_INPUT_VEHICLE);
 
-        } else if (colName.contains(COL_TA_DRIVER)) {
-          upd = isTemplatable(actRow, templRow, COL_TA_DRIVER);
+        } else if (colName.contains(COL_TA_INPUT_DRIVER)) {
+          upd = isTemplatable(actRow, templRow, COL_TA_INPUT_DRIVER);
 
         } else {
           upd = !BeeUtils.isEmpty(newValue) && targetRow.isNull(targetIndex);
@@ -241,6 +245,15 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
           form.refreshBySource(colName);
         }
         logger.debug(updatedColumns);
+      }
+
+      if (!form.validate(form, false)) {
+        if (validation != null) {
+          validation.onFailure();
+        }
+        return;
+      } else if (validation != null) {
+        validation.onSuccess(Boolean.TRUE);
       }
 
       ParameterList params = TradeActKeeper.createArgs(SVC_GET_TEMPLATE_ITEMS_AND_SERVICES);
@@ -429,7 +442,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
   }
 
   @Override
-  public void onDataSelector(SelectorEvent event) {
+  public void onDataSelector(final SelectorEvent event) {
     String relatedViewName = event.getRelatedViewName();
     if (BeeUtils.isEmpty(relatedViewName)) {
       return;
@@ -537,7 +550,17 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
           FormView form = ViewHelper.getForm(event.getSelector());
 
           if (relatedRow != null && form != null) {
-            applyActTemplate(relatedRow, form);
+            applyActTemplate(relatedRow, form, new Callback<Boolean>() {
+
+              @Override
+              public void onFailure(String... reason) {
+                event.getSelector().clearValue();
+              }
+
+              @Override
+              public void onSuccess(Boolean valid) {
+              }
+            });
           }
         }
         break;
@@ -573,9 +596,20 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
 
           if (isActOrTemplate(form)) {
             Long company = form.getLongValue(COL_TA_COMPANY);
-            Filter filter = DataUtils.isId(company) ? Filter.equals(COL_COMPANY, company) : null;
+            DateTime timeFrom = form.getDateTimeValue(COL_TA_DATE);
+            Filter filter;
 
-            event.getSelector().setAdditionalFilter(filter);
+            if (timeFrom != null) {
+              filter =
+                  DataUtils.isId(company) ? Filter.and(Filter.equals(COL_COMPANY, company),
+                      Filter.or(Filter.isMore(ClassifierConstants.COL_DATE_UNTIL,
+                          new DateTimeValue(timeFrom)),
+                          Filter.isNull(ClassifierConstants.COL_DATE_UNTIL))) : null;
+            } else {
+              filter = DataUtils.isId(company) ? Filter.equals(COL_COMPANY, company) : null;
+            }
+
+            event.getSelector().setAdditionalFilter(filter, true);
           }
 
         } else if (event.isChanged() && event.getRelatedRow() != null) {
@@ -589,6 +623,15 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
 
             String name = Data.getString(relatedViewName, event.getRelatedRow(), ALS_COMPANY_NAME);
             form.getActiveRow().setValue(form.getDataIndex(ALS_COMPANY_NAME), name);
+
+            for (String col : new String[] {ALS_CONTACT_PHYSICAL, ALS_COMPANY_TYPE_NAME}) {
+
+              if (!BeeConst.isUndef(form.getDataIndex(col)) && Data.containsColumn(
+                  relatedViewName, col)) {
+                form.getActiveRow().setValue(form.getDataIndex(col), Data.getString(
+                    relatedViewName, event.getRelatedRow(), col));
+              }
+            }
 
             form.refreshBySource(COL_TA_COMPANY);
           }
@@ -604,7 +647,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
 
           if (dst != null
               && (VIEW_TRADE_ACT_SERVICES.equals(viewName)
-              || VIEW_TRADE_ACT_TMPL_SERVICES.equals(viewName))) {
+                  || VIEW_TRADE_ACT_TMPL_SERVICES.equals(viewName))) {
 
             Integer oldDpw = Data.getInteger(viewName, dst, COL_TA_SERVICE_DAYS);
             Integer newDpw = Data.getInteger(relatedViewName, event.getRelatedRow(), COL_ITEM_DPW);

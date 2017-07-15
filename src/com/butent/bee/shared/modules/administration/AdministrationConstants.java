@@ -295,6 +295,7 @@ public final class AdministrationConstants {
   public static final String COL_USER_AGENT = "Agent";
   public static final String COL_LOGGED_IN = "LoggedIn";
   public static final String COL_LOGGED_OUT = "LoggedOut";
+  public static final String COL_EMPLOYER_ID = "EmployerId";
 
   public static final String COL_ROLE_NAME = "Name";
   public static final String COL_USER = "User";

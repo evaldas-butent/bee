@@ -74,7 +74,7 @@ public class TradeActStockReport extends ReportInterceptor {
   private static final String NAME_END_DATE = "EndDate";
 
   private static final List<String> FILTER_NAMES = Arrays.asList(COL_TA_COMPANY, COL_TA_OBJECT,
-      COL_WAREHOUSE, COL_CATEGORY, COL_TA_ITEM);
+      COL_WAREHOUSE, COL_CATEGORY, COL_TA_ITEM, COL_TA_OPERATION, COL_TA_SERIES, COL_TA_MANAGER);
 
   private static final List<String> GROUP_NAMES = Arrays.asList("Group0", "Group1");
   private static final List<String> GROUP_VALUES = Arrays.asList(COL_ITEM_TYPE, COL_ITEM_GROUP);

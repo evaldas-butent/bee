@@ -21,7 +21,9 @@
         <cell colSpan="3">
           <InputText source="Name" style="width: 425px;" visible="true" />
         </cell>
-        <DataSelector source="CompanyType" style="width: 80px;" required="true" />
+        <!-- Transrifus set company type not required { -->
+        <DataSelector source="CompanyType" style="width: 80px;" required="true"/>
+        <!-- } Transrifus -->
         <Label style="&lbl;" for="CompanyPriority" />
         <DataSelector source="CompanyPriority" style="width: 180px" />
         <FlowPanel name="qrFlowPanel" style="margin-left: 10px" />
@@ -45,7 +47,11 @@
         </cell>
         <Label for="EmailId" style="&lbl;" />
         <cell colSpan="1" for="EmailId">
-          <DataSelector style="width: 180px;" source="EmailId" maxLength="50" />
+          <FlowPanel>
+            <DataSelector style="width: 180px;" source="EmailId" maxLength="50" />
+            <CheckBox html="-" name="RemindEmail" source="RemindEmail" />
+            <CheckBox html="-" name="EmailInvoices" source="EmailInvoices" />
+          </FlowPanel>
         </cell>
       </row>
 
@@ -89,6 +95,17 @@
             <InputText source="Code" style="width: 280px;" />
             <Label text="=companyVATCode" style="&lbl;" for="VATCode" />
             <InputText source="VATCode" style="width: 280px;" upperCase="true" />
+          </row>
+          <row>
+            <Label style="&lbl;" for="BankruptcyRisk" text="=clientBankruptcyRisk" />
+            <DataSelector style="width: 280px;" source="BankruptcyRisk" />
+            <Label style="&lbl;" for="DelayedPaymentRisk" text="=clientDelayedPaymentRisk" />
+            <DataSelector style="width: 280px;" source="DelayedPaymentRisk" />
+          </row>
+          <row>
+            <Label style="&lbl;" for="InvoiceTransferType" text="=invoiceTransferType" />
+            <DataSelector style="width: 280px;" source="InvoiceTransferType" />
+            <CheckBox source="Physical" style="&lbl;"/>
           </row>
         </Table>
       </FlowPanel>
@@ -140,7 +157,15 @@
 
             <row for="FinancialState">
               <Label for="FinancialState" style="&lbl;" />
-              <DataSelector source="FinancialState" summarize="true" />
+              <!-- Tansrifus DataSelector source="FinancialState" summarize="true" / {-->
+              <Table kind="controls">
+                <row>
+                  <DataSelector source="FinancialState" renderColumns="FinancialStateName"
+                                choiceColumns="Name" summarize="true" />
+                  <FaLabel name="FinancialStateAudit" char="history" style="font-size: larger;" />
+                </row>
+              </Table>
+              <!-- } Transrifus -->
             </row>
 
             <row for="SupplierCreditDays">
@@ -287,6 +312,13 @@
         <text>=offers</text>
         <ChildGrid name="CompanyOrders" relColumn="Company" />
       </page>
+
+      <!-- Transrifus { -->
+      <page data="ERPSales">
+        <text>=trdERPSales</text>
+        <ChildGrid name="ERPSales" relColumn="Customer" />
+      </page>
+      <!-- } Transrifus -->
 
       <page for="Notes">
         <text>=notes</text>

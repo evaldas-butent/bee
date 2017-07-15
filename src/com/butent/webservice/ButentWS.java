@@ -5,11 +5,13 @@ import com.google.common.collect.ImmutableMap;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.server.utils.XmlUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -117,6 +119,59 @@ public final class ButentWS {
     }
   }
 
+  public SimpleRowSet getClients()
+      throws BeeException {
+
+    String answer;
+
+    try {
+      answer = process("GetClients", BeeConst.STRING_EMPTY);
+      // logger.info("GetClients", answer);
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+
+    SimpleRowSet resp =
+        xmlToSimpleRowSet(answer, "id", "klientas", "kodas", "pvm", "type",
+            "nuol_proc",
+            "postcode",
+            "adresas", "miestas", "salis", "telefonai", "email");
+    return resp;
+  }
+
+
+  public SimpleRowSet getDebts(JustDate fromDate, JustDate toDate, String companyName)
+      throws BeeException {
+    logger.debug("GetDebts: ", companyName, fromDate, toDate);
+
+    String answer;
+
+    StringBuilder data =
+        new StringBuilder("<VFPData><row>")
+            .append(
+                XmlUtils.tag("data_nuo",
+                    fromDate != null ? fromDate.toString() : BeeConst.STRING_EMPTY))
+            .append(
+                XmlUtils.tag("data_iki", toDate != null ? toDate.toString()
+                    : BeeConst.STRING_EMPTY))
+            .append(XmlUtils.tag("klientas", companyName))
+            .append("</row></VFPData>");
+
+    try {
+      answer = process("GetDebts", data.toString());
+      // logger.info("input", data.toString());
+      // logger.info("answer", answer);
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+
+    SimpleRowSet resp =
+        xmlToSimpleRowSet(answer, "data", "dokumentas", "dok_serija", "kitas_dok", "gavejas",
+            "manager",
+            "terminas", "viso", "viso_val", "apm_suma", "apm_val", "apm_data", "skola_w");
+    return resp;
+  }
+
   public SimpleRowSet getGoods(String filter) throws BeeException {
     logger.debug("GetGoods");
     String answer;
@@ -180,6 +235,39 @@ public final class ButentWS {
     return data;
   }
 
+  public SimpleRowSet getTurnovers(JustDate fromDate, JustDate toDate, String companyName)
+      throws BeeException {
+    logger.debug("GetTurnovers: ", companyName, fromDate, toDate);
+
+    String answer;
+
+    StringBuilder data =
+        new StringBuilder("<VFPData><row>")
+            .append(
+                XmlUtils.tag("data_nuo",
+                    fromDate != null ? fromDate.toString() : BeeConst.STRING_EMPTY))
+            .append(
+                XmlUtils.tag("data_iki", toDate != null ? toDate.toString()
+                    : BeeConst.STRING_EMPTY))
+            .append(XmlUtils.tag("klientas", companyName))
+            .append("</row></VFPData>");
+
+    try {
+      answer = process("GetTurnovers", data.toString());
+      // logger.info("input", data.toString());
+      // logger.info("answer", answer);
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+
+    SimpleRowSet resp =
+        xmlToSimpleRowSet(answer, "data", "dokumentas", "dok_serija", "kitas_dok", "gavejas",
+            "manager",
+            "terminas", "viso", "viso_val", "apm_suma", "apm_val", "apm_data", "skola_w");
+    return resp;
+  }
+
+
   public String importClient(String companyId, String companyName, String companyCode,
       String companyVATCode, String companyAddress, String companyPostIndex, String companyCity,
       String companyCountry)
@@ -218,6 +306,7 @@ public final class ButentWS {
     String answer;
 
     try {
+      logger.info(doc.getXml());
       answer = process("ImportDoc", doc.getXml());
     } catch (Exception e) {
       throw BeeException.error(e);
@@ -295,6 +384,7 @@ public final class ButentWS {
         bodyElement.addChildElement(attribute).addTextNode(attributes.get(attribute));
       }
     }
+    logger.debug(body.getTextContent());
     return message;
   }
 

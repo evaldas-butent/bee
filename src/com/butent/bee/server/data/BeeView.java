@@ -75,6 +75,7 @@ import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -1290,6 +1291,13 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   private void setFilter(SqlSelect ss, Filter flt, Long userId) {
+    if (BeeUtils.same(TradeConstants.VIEW_DEBT_REPORTS, getName())
+        && flt instanceof CompoundFilter && hasAggregate) {
+      if (((CompoundFilter) flt).getType() == CompoundType.AND) {
+        setTransrifusDebtReportFilter(ss, (CompoundFilter) flt, userId);
+        return;
+      }
+    }
     CompoundFilter f = Filter.and();
 
     if (filter != null) {
@@ -1319,6 +1327,78 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         }
       }
       ss.setWhere(condition);
+    }
+  }
+
+  /* @Transrifus. temporary fix before master fix */
+  @Deprecated
+  private void setTransrifusDebtReportFilter(SqlSelect ss, CompoundFilter flt, Long userId) {
+    CompoundFilter f = Filter.and();
+
+    if (filter != null) {
+      f.add(parseFilter(filter, userId));
+    }
+
+    if (!f.isEmpty()) {
+      IsCondition condition = getCondition(f);
+
+      if (hasAggregate) {
+        for (String col : columns.keySet()) {
+          if (isColAggregate(col) && f.involvesColumn(col)) {
+            ss.setHaving(condition);
+            break;
+          }
+        }
+        if (ss.getHaving() != null) {
+          for (String col : columns.keySet()) {
+            if (isColHidden(col) && !isColCalculated(col) && f.involvesColumn(col)) {
+              ss.addGroup(getSqlExpression(col));
+            }
+          }
+          return;
+        }
+      }
+      ss.setWhere(condition);
+    }
+
+    if (flt != null) {
+
+      HasConditions condition = SqlUtils.and();
+      HasConditions having = SqlUtils.and();
+
+      for (Filter subFilter : flt.getSubFilters()) {
+        IsCondition cond = getCondition(subFilter);
+
+        boolean isHaving = false;
+        for (String col : columns.keySet()) {
+          if (isColAggregate(col) && subFilter.involvesColumn(col)) {
+            having.add(cond);
+            isHaving = true;
+            break;
+          }
+        }
+
+        if (isHaving) {
+          for (String col : columns.keySet()) {
+            if (isColHidden(col) && !isColCalculated(col) && subFilter.involvesColumn(col)) {
+              ss.addGroup(getSqlExpression(col));
+            }
+          }
+        }
+
+        if (!isHaving) {
+          condition.add(cond);
+        }
+
+      }
+
+      if (!condition.isEmpty()) {
+        ss.setWhere(SqlUtils.and(ss.getWhere(), condition));
+      }
+
+      if (!having.isEmpty()) {
+        ss.setHaving(SqlUtils.and(ss.getHaving(), having));
+      }
     }
   }
 

@@ -30,6 +30,8 @@
       <SimpleColumn name="Mobile" />
       <SimpleColumn name="Fax" />
 
+      <SimpleColumn name="RemindEmail" />
+      <SimpleColumn name="EmailInvoices" />
       <SimpleColumn name="Email" alias="EmailId" />
       <SimpleJoin name="Email" joinType="LEFT">
         <SimpleColumn name="Email" />
@@ -91,7 +93,29 @@
     <SimpleColumn name="FinancialState" />
     <SimpleJoin joinType="LEFT" name="FinancialState">
       <SimpleColumn alias="FinancialStateName" name="Name" />
+      <SimpleColumn name="Color" />
+       <SimpleJoin name="Color" joinType="LEFT">
+        <SimpleColumn alias="ColorName" name="Name" />
+        <SimpleColumn name="Background" />
+        <SimpleColumn name="Foreground" />
+       </SimpleJoin>
     </SimpleJoin>
+
+    <SimpleColumn name="BankruptcyRisk"/>
+    <SimpleJoin joinType="LEFT" name="BankruptcyRisk">
+      <SimpleColumn alias="BankruptcyRiskName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="DelayedPaymentRisk"/>
+    <SimpleJoin joinType="LEFT" name="DelayedPaymentRisk">
+      <SimpleColumn alias="DelayedPaymentRiskName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="InvoiceTransferType"/>
+    <SimpleJoin joinType="LEFT" name="InvoiceTransferType">
+      <SimpleColumn alias="InvoiceTransferTypeName" name="Name" />
+    </SimpleJoin>
+
     <SimpleColumn name="DefaultBankAccount" />
     <SimpleColumn name="DefaultCompanyUser" />
     <SimpleJoin name="DefaultCompanyUser" joinType="LEFT">
@@ -104,6 +128,9 @@
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
+    <!-- Transrifus { -->
+    <SimpleColumn name="PercentInterest" />
+    <!-- } Transrifus -->
 
     <SimpleColumn name="DiscountPercent" />
 
@@ -120,7 +147,10 @@
     </SimpleJoin>
 
     <SimpleColumn name="Notes" />
-  </Columns>
+    <!-- Transrifus { -->
+    <SimpleColumn name="Physical" />
+    <!-- } Transrifus -->
+   </Columns>
   <Order>
     <OrderBy column="Name" />
   </Order>

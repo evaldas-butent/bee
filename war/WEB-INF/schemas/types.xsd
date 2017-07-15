@@ -171,7 +171,7 @@
         <xs:list itemType="fileInfoColumn" />
       </xs:simpleType>
       <xs:simpleType>
-        <xs:restriction base="xs:string" >
+        <xs:restriction base="xs:string">
           <xs:enumeration value="all" />
           <xs:enumeration value="none" />
         </xs:restriction>
@@ -311,6 +311,7 @@
       <xs:enumeration value="Companies" />
       <xs:enumeration value="CompanyActivities" />
       <xs:enumeration value="CompanyBankAccounts" />
+      <xs:enumeration value="CompanyBankruptRisks" />
       <xs:enumeration value="CompanyContacts" />
       <xs:enumeration value="CompanyDepartments" />
       <xs:enumeration value="CompanyGroups" />
@@ -342,6 +343,7 @@
       <xs:enumeration value="DebtReminderTemplates" />
       <xs:enumeration value="DebtReports" />
       <xs:enumeration value="DeliveryMethods" />
+      <xs:enumeration value="DelayedPaymentRisks" />
       <xs:enumeration value="Departments" />
       <xs:enumeration value="DepartmentEmployees" />
       <xs:enumeration value="DepartmentPositions" />
@@ -398,6 +400,8 @@
       <xs:enumeration value="EcRegistrations" />
       <xs:enumeration value="EditorTemplates" />
       <xs:enumeration value="Emails" />
+      <xs:enumeration value="EmployeeEarnings" />
+      <xs:enumeration value="ERPSales" />
       <xs:enumeration value="EmployeeObjects" />
       <xs:enumeration value="Employees" />
       <xs:enumeration value="Equipment" />
@@ -436,6 +440,7 @@
       <xs:enumeration value="IndicatorFilters" />
       <xs:enumeration value="InformationSources" />
       <xs:enumeration value="InvoiceTradeActs" />
+      <xs:enumeration value="InvoiceTransferTypes" />
       <xs:enumeration value="IpFilters" />
       <xs:enumeration value="ItemSuppliers" />
       <xs:enumeration value="ItemCategories" />
@@ -447,6 +452,7 @@
       <xs:enumeration value="Locations" />
       <xs:enumeration value="LossReasons" />
       <xs:enumeration value="Maintenance" />
+      <xs:enumeration value="Makers" />
       <xs:enumeration value="MaintenanceStates" />
       <xs:enumeration value="MaintenanceTypes" />
       <xs:enumeration value="Messages" />
@@ -492,7 +498,7 @@
       <xs:enumeration value="ProjectTMLStages" />
       <xs:enumeration value="ProjectTMLTaskCopy" />
       <xs:enumeration value="ProjectTMLUsers" />
-      <xs:enumeration value="ProjectTree"/>
+      <xs:enumeration value="ProjectTree" />
       <xs:enumeration value="ProjectTypes" />
       <xs:enumeration value="ProjectUsers" />
       <xs:enumeration value="PropertyGroups" />
@@ -606,6 +612,8 @@
       <xs:enumeration value="TimeZones" />
       <xs:enumeration value="TodoList" />
       <xs:enumeration value="TradeAccounts" />
+      <xs:enumeration value="TradeActDrivers" />
+      <xs:enumeration value="TradeActFiles" />
       <xs:enumeration value="TradeActInvoices" />
       <xs:enumeration value="TradeActItems" />
       <xs:enumeration value="TradeActNames" />
@@ -615,6 +623,7 @@
       <xs:enumeration value="TradeActTemplates" />
       <xs:enumeration value="TradeActTmplItems" />
       <xs:enumeration value="TradeActTmplServices" />
+      <xs:enumeration value="TradeActVehicles" />
       <xs:enumeration value="TradeDocumentFiles" />
       <xs:enumeration value="TradeDocumentItems" />
       <xs:enumeration value="TradeDocuments" />
@@ -675,7 +684,7 @@
       <xs:enumeration value="WorkSchedule" />
       <xs:enumeration value="Workspaces" />
 
-<!-- samples -->
+      <!-- samples -->
       <xs:enumeration value="DataTypes" />
     </xs:restriction>
   </xs:simpleType>

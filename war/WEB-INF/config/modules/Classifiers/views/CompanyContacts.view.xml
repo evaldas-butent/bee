@@ -44,6 +44,10 @@
 
       <SimpleColumn name="SocialContacts" />
       <SimpleColumn name="Notes" />
+
+      <!-- Transrifus {-->
+      <SimpleColumn name="EmailInvoices" />
+      <!-- } Transrifus -->
     </SimpleJoin>
   </Columns>
   <Order>

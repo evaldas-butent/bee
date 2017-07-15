@@ -1,5 +1,8 @@
 package com.butent.bee.client.modules.trade;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
@@ -15,13 +18,18 @@ import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
+import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseMessage;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
@@ -33,14 +41,17 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,6 +61,9 @@ import java.util.List;
 import java.util.Set;
 
 public final class TradeKeeper implements HandlesAllDataEvents {
+  public interface FilterCallback {
+    Filter getFilter();
+  }
 
   public static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "trade-";
 
@@ -57,6 +71,57 @@ public final class TradeKeeper implements HandlesAllDataEvents {
 
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.TRADE, method);
+  }
+
+  public static IdentifiableWidget createAmountAction(final String viewName,
+      final FilterCallback filterCallback,
+      final String salesRelColumn, final NotificationListener listener) {
+
+    Assert.notEmpty(viewName);
+
+    FaLabel summary = new FaLabel(FontAwesome.LINE_CHART);
+    summary.setTitle(Localized.dictionary().totalOf());
+
+    summary.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        ParameterList args = createArgs(SVC_GET_SALE_AMOUNTS);
+        args.addDataItem(VAR_VIEW_NAME, viewName);
+        args.addDataItem(Service.VAR_COLUMN, salesRelColumn);
+        Filter filter = null;
+
+        if (filterCallback != null) {
+          filter = filterCallback.getFilter();
+        }
+
+        if (filter != null) {
+          args.addDataItem(EcConstants.VAR_FILTER, Codec.beeSerialize(filter));
+        }
+
+        BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            response.notify(listener);
+          }
+        });
+      }
+    });
+
+    return summary;
+  }
+
+  public static IdentifiableWidget createAmountAction(final String viewName,
+      final Filter filter, final String salesRelColumn,
+      final NotificationListener listener) {
+
+    return createAmountAction(viewName, new FilterCallback() {
+
+      @Override
+      public Filter getFilter() {
+        return filter;
+      }
+    }, salesRelColumn, listener);
+
   }
 
   public static void register() {
@@ -68,6 +133,8 @@ public final class TradeKeeper implements HandlesAllDataEvents {
             COL_SERIES, COL_TRADE_MANAGER));
     GridFactory.registerGridInterceptor(GRID_DEBTS, new DebtsGrid());
     GridFactory.registerGridInterceptor(GRID_DEBT_REPORTS, new DebtReportsGrid());
+    GridFactory.registerGridInterceptor(GRID_SALES, new SalesGrid());
+    GridFactory.registerGridInterceptor(GRID_ERP_SALES, new ERPSalesGrid());
 
     GridFactory.registerGridInterceptor(GRID_TRADE_DOCUMENT_FILES,
         new FileGridInterceptor(COL_TRADE_DOCUMENT, COL_FILE, COL_FILE_CAPTION, ALS_FILE_NAME));

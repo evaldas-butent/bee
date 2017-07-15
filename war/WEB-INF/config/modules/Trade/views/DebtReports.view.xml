@@ -1,96 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view" xmlns:x="http://www.butent.com/expression"
-      xmlns:xs="http://www.w3.org/2001/XMLSchema" name="DebtReports" source="Sales"
-      caption="=trdDebtReports" filter="Debt AND (Debt &gt; 0)">
+<View xmlns="http://www.butent.com/view"
+      xmlns:x="http://www.butent.com/expression"
+
+  name="DebtReports" source="Companies" caption="=trdDebtReports"
+
+  >
   <Columns>
-    <HiddenColumn name="Customer" />
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="ExternalAdvance" />
 
-    <SimpleJoin joinType="LEFT" name="Customer">
-      <HiddenColumn name="Name" alias="CustomerName" />
-      <SimpleJoin name="CompanyType" joinType="LEFT">
-        <HiddenColumn name="Name" alias="CustomerTypeName" />
+    <SimpleJoin name="Contact" joinType="LEFT">
+      <SimpleJoin name="Email" joinType="LEFT">
+        <SimpleColumn name="Email" />
       </SimpleJoin>
     </SimpleJoin>
 
-    <HiddenColumn name="Payer" />
-
-    <SimpleJoin joinType="LEFT" name="Payer">
-      <HiddenColumn name="Name" alias="PayerName" />
-      <SimpleJoin name="CompanyType" joinType="LEFT">
-        <HiddenColumn name="Name" alias="PayerTypeName" />
+    <ExternalJoin name="Customer" source="ERPSales" joinType="INNER" filter="Debt > 0" >
+      <HiddenColumn name="Debt" />
+      <AggregateColumn name="Customer" aggregate="COUNT" alias="DebtCount"  label="=trInvoices" />
+      <AggregateColumn name="Debt" aggregate="SUM" alias="DebtSum" />
+      <HiddenColumn name="Term" />
+      <SimpleColumn name="Currency" />
+      <SimpleJoin name="Currency" joinType="LEFT">
+        <SimpleColumn name="Name" alias="CurrencyName"/>
       </SimpleJoin>
+    </ExternalJoin>
+
+    <SimpleColumn name="BankruptcyRisk"/>
+    <SimpleJoin joinType="LEFT" name="BankruptcyRisk">
+      <SimpleColumn alias="BankruptcyRiskName" name="Name" />
     </SimpleJoin>
 
-    <SimpleColumn name="Company">
-      <x:nvl type="LONG">
-        <x:number>"Payer"</x:number>
-        <x:number>"Customer"</x:number>
-      </x:nvl>
-    </SimpleColumn>
-
-    <SimpleColumn name="CompanyName">
-      <x:switch type="STRING">
-        <x:number>"Payer"</x:number>
-        <x:case>
-          <x:number>"Payer"</x:number>
-          <x:then>
-            <x:string>"PayerName"</x:string>
-          </x:then>
-        </x:case>
-        <x:else>
-          <x:string>"CustomerName"</x:string>
-        </x:else>
-      </x:switch>
-
-    </SimpleColumn>
-
-    <SimpleColumn name="CompanyTypeName">
-      <x:switch type="STRING">
-        <x:number>"Payer"</x:number>
-        <x:case>
-          <x:number>"Payer"</x:number>
-          <x:then>
-            <x:string>"PayerTypeName"</x:string>
-          </x:then>
-        </x:case>
-        <x:else>
-          <x:string>"CustomerTypeName"</x:string>
-        </x:else>
-      </x:switch>
-    </SimpleColumn>
-
-    <AggregateColumn name="Currency" aggregate="COUNT" alias="DebtCount"
-                     label="=trInvoices" />
-    <AggregateColumn name="Amount" aggregate="SUM" alias="AmountSum" />
-    <AggregateColumn name="Paid" aggregate="SUM" alias="PaidSum" />
-    <AggregateColumn name="Debt" aggregate="SUM" alias="DebtSum"
-                     label="=trdDebt">
-      <x:minus>
-        <x:number>"Amount"</x:number>
-        <x:nvl type="DECIMAL">
-          <x:number>"Paid"</x:number>
-          <x:number>0</x:number>
-        </x:nvl>
-      </x:minus>
-    </AggregateColumn>
-    <HiddenColumn name="Paid" />
-    <HiddenColumn name="Amount" />
-    <HiddenColumn name="Debt">
-      <x:minus>
-        <x:number>"Amount"</x:number>
-        <x:nvl type="DECIMAL">
-          <x:number>"Paid"</x:number>
-          <x:number>0</x:number>
-        </x:nvl>
-      </x:minus>
-    </HiddenColumn>
-    <SimpleColumn name="Currency" />
-    <SimpleJoin name="Currency" joinType="LEFT">
-      <SimpleColumn name="Name" alias="CurrencyName" />
+    <SimpleColumn name="DelayedPaymentRisk"/>
+    <SimpleJoin joinType="LEFT" name="DelayedPaymentRisk">
+      <SimpleColumn alias="DelayedPaymentRiskName" name="Name" />
+    </SimpleJoin>
+    <SimpleColumn name="FinancialState"/>
+    <SimpleJoin joinType="LEFT" name="FinancialState">
+      <SimpleColumn alias="FinancialStateName" name="Name" />
     </SimpleJoin>
   </Columns>
-  <GroupBy columns="Company CompanyName CompanyTypeName Currency" />
   <Order>
-    <OrderBy column="Company" />
+    <OrderBy column="Name" />
   </Order>
 </View>

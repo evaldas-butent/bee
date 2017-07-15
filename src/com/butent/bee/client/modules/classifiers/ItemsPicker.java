@@ -49,12 +49,12 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
-import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -69,7 +69,9 @@ import java.util.Map;
 
 public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<BeeRowSet> {
 
-  private static final String STYLE_PREFIX = TradeActKeeper.STYLE_PREFIX + "picker-";
+  protected static final String STYLE_PREFIX = TradeActKeeper.STYLE_PREFIX + "picker-";
+  protected static final String STYLE_ITEM_TABLE = STYLE_PREFIX + "item-table";
+
   private static final String STYLE_DIALOG = STYLE_PREFIX + "dialog";
   private static final String STYLE_SAVE = STYLE_PREFIX + "save";
   private static final String STYLE_CLOSE = STYLE_PREFIX + "close";
@@ -85,7 +87,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   public static final String STYLE_SEARCH_SPINNER_LOADING = STYLE_SEARCH_SPINNER + "-loading";
 
   private static final String STYLE_ITEM_PANEL = STYLE_PREFIX + "item-panel";
-  private static final String STYLE_ITEM_TABLE = STYLE_PREFIX + "item-table";
 
   private static final String STYLE_HEADER_ROW = STYLE_PREFIX + "header";
   private static final String STYLE_ITEM_ROW = STYLE_PREFIX + "item";
@@ -127,6 +128,8 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
   private static final String STYLE_QTY_PREFIX = STYLE_PREFIX + "qty-";
   private static final String STYLE_QTY_INPUT = STYLE_QTY_PREFIX + "input";
+
+  private static final String DATA_QTY = "qty";
 
   private static final List<String> SEARCH_COLUMNS = Lists.newArrayList(COL_ITEM_NAME,
       COL_ITEM_ARTICLE, COL_ITEM_TYPE, COL_ITEM_GROUP, COL_CATEGORY);
@@ -218,7 +221,10 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   private BeeRowSet items;
 
   private final Map<Long, ItemPrice> selectedPrices = new HashMap<>();
+  private Map<Long, Double> remainders = new HashMap<>();
   private final Flow itemPanel = new Flow(STYLE_ITEM_PANEL);
+  private final List<String> visibleTableCols = new ArrayList<>();
+  private Notification notification = new Notification();
   private NumberFormat priceFormat;
 
   private ChangeHandler quantityChangeHandler;
@@ -266,13 +272,215 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     openDialog(target);
   }
 
+  protected String getCaption() {
+    return Localized.dictionary().goods();
+  }
+
+  public List<String> getVisibleTableCols() {
+    return visibleTableCols;
+  }
+
+  protected void renderItems(Map<Long, Double> quantities, Map<Long, String> warehouses,
+      final Flow panel, final BeeRowSet itemList) {
+    List<Long> warehouseIds = new ArrayList<>();
+    if (!BeeUtils.isEmpty(warehouses)) {
+      warehouseIds.addAll(warehouses.keySet());
+    }
+
+    panel.clear();
+
+    HtmlTable table = new HtmlTable(STYLE_ITEM_TABLE);
+    visibleTableCols.clear();
+    DataInfo viewInfo = Data.getDataInfo(itemList.getViewName());
+
+    int r = 0;
+    int c = 0;
+
+    String pfx;
+
+    visibleTableCols.add(DataUtils.ID_TAG);
+    table.setText(r, c++, Localized.dictionary().captionId(),
+        STYLE_ID_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+
+    visibleTableCols.add(ALS_ITEM_TYPE_NAME);
+    table.setText(r, c++, Localized.dictionary().type(),
+        STYLE_TYPE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+
+    visibleTableCols.add(ALS_ITEM_GROUP_NAME);
+    table.setText(r, c++, Localized.dictionary().group(),
+        STYLE_GROUP_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+
+    visibleTableCols.add(ALS_ITEM_NAME);
+    table.setText(r, c++, Localized.dictionary().name(),
+        STYLE_NAME_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+
+    visibleTableCols.add(COL_ITEM_ARTICLE);
+    table.setText(r, c++, Localized.dictionary().article(),
+        STYLE_ARTICLE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+
+    for (ItemPrice ip : ItemPrice.values()) {
+      if (viewInfo != null && !BeeKeeper.getUser().isColumnVisible(viewInfo, ip.getPriceColumn())) {
+        continue;
+      }
+
+      table.setText(r, c, ip.getCaption(),
+          (ip == itemPrice) ? STYLE_SELECTED_PRICE_HEADER_CELL : STYLE_PRICE_HEADER_CELL);
+
+      visibleTableCols.add(ip.toString());
+      DomUtils.setDataColumn(table.getCellFormatter().getElement(r, c), ip.ordinal());
+      c++;
+    }
+
+    for (Long w : warehouseIds) {
+      pfx = isFrom(w) ? STYLE_FROM_PREFIX : STYLE_STOCK_PREFIX;
+      visibleTableCols.add(COL_WAREHOUSE + "_" + w);
+      table.setText(r, c++, warehouses.get(w), pfx + STYLE_HEADER_CELL_SUFFIX);
+    }
+
+    if (isOrder) {
+      visibleTableCols.add(ALS_WAREHOUSE_CODE);
+      table.setText(r, c++, itemList.getRow(0).getString(
+          DataUtils.getColumnIndex(ALS_WAREHOUSE_CODE, itemList.getColumns())),
+          STYLE_FROM_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+
+      visibleTableCols.add(COL_WAREHOUSE_REMAINDER);
+      table.setText(r, c++, Localized.dictionary().ordFreeRemainder(),
+          STYLE_FREE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+
+      visibleTableCols.add(COL_WAREHOUSE_REMAINDER + "1");
+      table.setText(r, c++, Localized.dictionary().ordResRemainder(),
+          STYLE_RESERVED_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+    }
+
+    visibleTableCols.add("QTY");
+    table.setText(r, c++, Localized.dictionary().quantity(),
+        STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+
+    table.getRowFormatter().addStyleName(r, STYLE_HEADER_ROW);
+
+    List<Integer> typeIndexes = Lists.newArrayList(itemList.getColumnIndex(ALS_PARENT_TYPE_NAME),
+        itemList.getColumnIndex(ALS_ITEM_TYPE_NAME));
+    List<Integer> groupIndexes = Lists.newArrayList(itemList.getColumnIndex(ALS_PARENT_GROUP_NAME),
+        itemList.getColumnIndex(ALS_ITEM_GROUP_NAME));
+
+    int nameIndex = itemList.getColumnIndex(COL_ITEM_NAME);
+    int articleIndex = itemList.getColumnIndex(COL_ITEM_ARTICLE);
+
+    EnumMap<ItemPrice, Integer> priceIndexes = new EnumMap<>(ItemPrice.class);
+    EnumMap<ItemPrice, Integer> currencyIndexes = new EnumMap<>(ItemPrice.class);
+
+    for (ItemPrice ip : ItemPrice.values()) {
+      priceIndexes.put(ip, itemList.getColumnIndex(ip.getPriceColumn()));
+      currencyIndexes.put(ip, itemList.getColumnIndex(ip.getCurrencyNameAlias()));
+    }
+
+    BeeColumn qtyColumn = Data.getColumn(VIEW_TRADE_ACT_ITEMS,
+        TradeConstants.COL_TRADE_ITEM_QUANTITY);
+
+    r++;
+    for (BeeRow item : itemList) {
+      c = 0;
+
+      table.setText(r, c++, BeeUtils.toString(item.getId()),
+          STYLE_ID_PREFIX + STYLE_CELL_SUFFIX);
+
+      table.setText(r, c++, DataUtils.join(itemList.getColumns(), item, typeIndexes,
+          BeeConst.STRING_EOL), STYLE_TYPE_PREFIX + STYLE_CELL_SUFFIX);
+      table.setText(r, c++, DataUtils.join(itemList.getColumns(), item, groupIndexes,
+          BeeConst.STRING_EOL), STYLE_GROUP_PREFIX + STYLE_CELL_SUFFIX);
+
+      table.setText(r, c++, item.getString(nameIndex),
+          STYLE_NAME_PREFIX + STYLE_CELL_SUFFIX);
+      table.setText(r, c++, item.getString(articleIndex),
+          STYLE_ARTICLE_PREFIX + STYLE_CELL_SUFFIX);
+
+      ItemPrice defPrice = selectedPrices.containsKey(item.getId())
+          ? selectedPrices.get(item.getId()) : itemPrice;
+
+      for (ItemPrice ip : ItemPrice.values()) {
+        if (viewInfo != null
+          && !BeeKeeper.getUser().isColumnVisible(viewInfo, ip.getPriceColumn())) {
+          continue;
+        }
+
+        String html = renderPrice(item, priceIndexes.get(ip), currencyIndexes.get(ip));
+
+        if (html == null) {
+          table.setText(r, c, BeeConst.STRING_EMPTY);
+        } else {
+          table.setHtml(r, c, html,
+              (ip == defPrice) ? STYLE_SELECTED_PRICE_CELL : STYLE_PRICE_CELL);
+          DomUtils.setDataColumn(table.getCellFormatter().getElement(r, c), ip.ordinal());
+        }
+        c++;
+      }
+
+      if (!warehouseIds.isEmpty() && !BeeUtils.isEmpty(item.getProperties())) {
+        for (Map.Entry<String, String> entry : item.getProperties().entrySet()) {
+          if (BeeUtils.isPrefix(entry.getKey(), PRP_WAREHOUSE_PREFIX)) {
+            Long w = BeeUtils.toLongOrNull(BeeUtils.removePrefix(entry.getKey(),
+                PRP_WAREHOUSE_PREFIX));
+
+            if (DataUtils.isId(w) && warehouseIds.contains(w)) {
+              Double stock = BeeUtils.toDouble(entry.getValue());
+              pfx = (isFrom(w) && BeeUtils.isPositive(stock))
+                  ? STYLE_FROM_PREFIX : STYLE_STOCK_PREFIX;
+
+              table.setHtml(r, c + warehouseIds.indexOf(w),
+                  renderStock(w, entry.getValue(), stock), pfx + STYLE_CELL_SUFFIX);
+            }
+          }
+        }
+      }
+
+      c += warehouseIds.size();
+
+      if (isOrder) {
+
+        Double rem =
+            item.getDouble(DataUtils.getColumnIndex(COL_WAREHOUSE_REMAINDER, itemList
+                .getColumns()));
+
+        table.setText(r, c++, rem.toString(), STYLE_REMAINDER_PREFIX + STYLE_CELL_SUFFIX);
+
+        table.setText(r, c++, item.getDouble(itemList.getNumberOfColumns() - 2).toString(),
+            STYLE_FREE_PREFIX + STYLE_CELL_SUFFIX);
+
+        table.setText(r, c++, item.getDouble(itemList.getNumberOfColumns() - 1).toString(),
+            STYLE_RESERVED_PREFIX + STYLE_CELL_SUFFIX);
+
+        remainders.put(item.getId(), item.getDouble(itemList.getNumberOfColumns() - 2));
+
+      }
+
+      Double qty = quantities.get(item.getId());
+      table.setWidget(r, c, renderQty(qtyColumn, qty), STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
+
+      DomUtils.setDataIndex(table.getRow(r), item.getId());
+
+      table.getRowFormatter().addStyleName(r, STYLE_ITEM_ROW);
+      if (BeeUtils.isPositive(qty)) {
+        table.getRowFormatter().addStyleName(r, STYLE_SELECTED_ROW);
+      }
+
+      r++;
+    }
+
+    panel.add(table);
+  }
+
   private Widget createSearch() {
     Flow panel = new Flow(STYLE_SEARCH_PANEL);
 
     final ListBox searchBy = new ListBox();
     searchBy.addStyleName(STYLE_SEARCH_BY);
 
+    final ListBox searchBy2 = new ListBox();
+    searchBy2.addStyleName(STYLE_SEARCH_BY);
+    searchBy2.addStyleName(STYLE_SEARCH_BY + "-2");
+
     searchBy.addItem(BeeConst.STRING_EMPTY, BeeConst.STRING_ASTERISK);
+    searchBy2.addItem(BeeConst.STRING_EMPTY, BeeConst.STRING_ASTERISK);
     String label;
 
     for (String column : SEARCH_COLUMNS) {
@@ -283,8 +491,10 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       }
 
       searchBy.addItem(label, column);
+      searchBy2.addItem(label, column);
     }
     searchBy.addItem(Localized.dictionary().captionId(), COL_ITEM);
+    searchBy2.addItem(Localized.dictionary().captionId(), COL_ITEM);
 
     panel.add(searchBy);
 
@@ -297,8 +507,21 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
         String query = BeeUtils.trim(searchBox.getValue());
         if (!BeeUtils.isEmpty(query)) {
-          doSearch(searchBy.getValue(), query);
+          doSearch(Lists.newArrayList(searchBy.getValue()), Lists.newArrayList(query));
         }
+      }
+    });
+
+    final InputText searchBox2 = new InputText();
+    DomUtils.setSearch(searchBox2);
+    searchBox2.setMaxLength(20);
+    searchBox2.addStyleName(STYLE_SEARCH_BOX);
+    searchBox2.addStyleName(STYLE_SEARCH_BOX + "-2");
+    searchBox2.addKeyDownHandler(event -> {
+      if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+        doSearch(Lists.newArrayList(searchBy.getValue(), searchBy2.getValue()), Lists
+            .newArrayList(BeeUtils.trim(searchBox.getValue()),
+                BeeUtils.trim(searchBox2.getValue())));
       }
     });
 
@@ -307,11 +530,13 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     FaLabel searchCommand = new FaLabel(FontAwesome.SEARCH, STYLE_SEARCH_COMMAND);
 
     searchCommand.addClickHandler(
-        event -> doSearch(searchBy.getValue(), BeeUtils.trim(searchBox.getValue())));
-
-    spinner = new FaLabel(FontAwesome.SPINNER, STYLE_SEARCH_SPINNER);
-
+      event -> doSearch(Lists.newArrayList(searchBy.getValue(), searchBy2.getValue()), Lists
+          .newArrayList(BeeUtils.trim(searchBox.getValue()),
+            BeeUtils.trim(searchBox2.getValue()))));
     panel.add(searchCommand);
+    panel.add(searchBy2);
+    panel.add(searchBox2);
+    spinner = new FaLabel(FontAwesome.SPINNER, STYLE_SEARCH_SPINNER);
     panel.add(spinner);
 
     return panel;
@@ -321,21 +546,34 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     return spinner;
   }
 
-  private void doSearch(String by, String query) {
+  private void doSearch(List<String> byList, List<String> queryList) {
     Filter filter = null;
-    boolean ok;
+    boolean ok = false;
 
-    if (BeeUtils.isEmpty(query) || Operator.CHAR_ANY.equals(query)) {
-      ok = true;
+    if (byList.size() != queryList.size()) {
+      return;
+    }
 
-    } else if (COL_ITEM.equals(by) && !DataUtils.isId(query)) {
-      BeeKeeper.getScreen().notifyWarning(
-          BeeUtils.joinWords(Localized.dictionary().invalidIdValue(), query));
-      ok = false;
+    for (int i = 0; i < queryList.size(); i++) {
+      String by = byList.get(i);
+      String query = queryList.get(i);
 
-    } else {
-      filter = buildFilter(by, query);
-      ok = true;
+      if (BeeUtils.isEmpty(query) || Operator.CHAR_ANY.equals(query)) {
+        ok = true;
+
+      } else if (COL_ITEM.equals(by) && !DataUtils.isId(query)) {
+        BeeKeeper.getScreen().notifyWarning(
+            BeeUtils.joinWords(Localized.dictionary().invalidIdValue(), query));
+        ok = false;
+
+      } else {
+        if (filter == null) {
+          filter = buildFilter(by, query);
+        } else {
+          filter = Filter.and(filter, buildFilter(by, query));
+        }
+        ok = true;
+      }
     }
 
     if (ok) {
@@ -373,7 +611,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
           }
 
           Map<Long, String> warehouses = TradeActKeeper.getWarehouses(whs);
-          renderItems(quantities, warehouses);
+          renderItems(quantities, warehouses, itemPanel, items);
 
           Scheduler.get().scheduleDeferred(() -> {
             Popup popup = UiHelper.getParentPopup(ItemsPicker.this);
@@ -403,7 +641,9 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       quantityChangeHandler = event -> {
         if (event.getSource() instanceof InputNumber) {
           InputNumber input = (InputNumber) event.getSource();
-          onQuantityChange(input.getElement(), input.getNumber());
+          if (DomUtils.dataEquals(input.getElement(), DATA_QTY, DATA_QTY)) {
+            onQuantityChange(input.getElement(), input.getNumber());
+          }
         }
       };
     }
@@ -421,7 +661,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     for (InputNumber input : inputs) {
       Double qty = input.getNumber();
 
-      if (BeeUtils.isPositive(qty)) {
+      if (BeeUtils.isPositive(qty) && DomUtils.dataEquals(input.getElement(), DATA_QTY, DATA_QTY)) {
         long id = DomUtils.getDataIndexLong(DomUtils.getParentRow(input.getElement(), false));
         if (DataUtils.isId(id)) {
           result.put(id, qty);
@@ -524,7 +764,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   }
 
   private void openDialog(Element target) {
-    final DialogBox dialog = DialogBox.withoutCloseBox(Localized.dictionary().goods(),
+    final DialogBox dialog = DialogBox.withoutCloseBox(getCaption(),
         STYLE_DIALOG);
 
     FaLabel save = new FaLabel(FontAwesome.SAVE);
@@ -549,15 +789,20 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       if (quantities.isEmpty()) {
         dialog.close();
 
-      } else {
-        Global.decide(Localized.dictionary().goods(),
-            Lists.newArrayList(Localized.dictionary().taSaveSelectedItems()),
-            new DecisionCallback() {
-              @Override
-              public void onConfirm() {
-                selectItems(quantities);
-                dialog.close();
-              }
+        } else {
+          Global.decide(Localized.dictionary().goods(),
+              Lists.newArrayList(Localized.dictionary().taSaveSelectedItems()),
+              new DecisionCallback() {
+                @Override
+                public void onConfirm() {
+                  if (isOrder) {
+                    if (!checkQuantities(quantities)) {
+                      return;
+                    }
+                  }
+                  selectItems(quantities);
+                  dialog.close();
+                }
 
               @Override
               public void onDeny() {
@@ -579,166 +824,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
     dialog.setWidget(this);
     dialog.showOnTop(target);
-  }
-
-  private void renderItems(Map<Long, Double> quantities, Map<Long, String> warehouses) {
-    List<Long> warehouseIds = new ArrayList<>();
-    if (!BeeUtils.isEmpty(warehouses)) {
-      warehouseIds.addAll(warehouses.keySet());
-    }
-
-    itemPanel.clear();
-
-    HtmlTable table = new HtmlTable(STYLE_ITEM_TABLE);
-
-    int r = 0;
-    int c = 0;
-
-    String pfx;
-
-    table.setText(r, c++, Localized.dictionary().captionId(),
-        STYLE_ID_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-
-    table.setText(r, c++, Localized.dictionary().type(),
-        STYLE_TYPE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-    table.setText(r, c++, Localized.dictionary().group(),
-        STYLE_GROUP_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-
-    table.setText(r, c++, Localized.dictionary().name(),
-        STYLE_NAME_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-    table.setText(r, c++, Localized.dictionary().article(),
-        STYLE_ARTICLE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-
-    for (ItemPrice ip : ItemPrice.values()) {
-      table.setText(r, c, ip.getCaption(),
-          (ip == itemPrice) ? STYLE_SELECTED_PRICE_HEADER_CELL : STYLE_PRICE_HEADER_CELL);
-
-      DomUtils.setDataColumn(table.getCellFormatter().getElement(r, c), ip.ordinal());
-      c++;
-    }
-
-    for (Long w : warehouseIds) {
-      pfx = isFrom(w) ? STYLE_FROM_PREFIX : STYLE_STOCK_PREFIX;
-      table.setText(r, c++, warehouses.get(w), pfx + STYLE_HEADER_CELL_SUFFIX);
-    }
-
-    if (isOrder) {
-      table.setText(r, c++, items.getRow(0).getString(
-          DataUtils.getColumnIndex(ALS_WAREHOUSE_CODE, items.getColumns())),
-          STYLE_FROM_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-      table.setText(r, c++, Localized.dictionary().ordFreeRemainder(),
-          STYLE_FREE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-      table.setText(r, c++, Localized.dictionary().ordResRemainder(),
-          STYLE_RESERVED_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-    }
-
-    table.setText(r, c++, Localized.dictionary().quantity(),
-        STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-
-    table.getRowFormatter().addStyleName(r, STYLE_HEADER_ROW);
-
-    List<Integer> typeIndexes = Lists.newArrayList(items.getColumnIndex(ALS_PARENT_TYPE_NAME),
-        items.getColumnIndex(ALS_ITEM_TYPE_NAME));
-    List<Integer> groupIndexes = Lists.newArrayList(items.getColumnIndex(ALS_PARENT_GROUP_NAME),
-        items.getColumnIndex(ALS_ITEM_GROUP_NAME));
-
-    int nameIndex = items.getColumnIndex(COL_ITEM_NAME);
-    int articleIndex = items.getColumnIndex(COL_ITEM_ARTICLE);
-
-    EnumMap<ItemPrice, Integer> priceIndexes = new EnumMap<>(ItemPrice.class);
-    EnumMap<ItemPrice, Integer> currencyIndexes = new EnumMap<>(ItemPrice.class);
-
-    for (ItemPrice ip : ItemPrice.values()) {
-      priceIndexes.put(ip, items.getColumnIndex(ip.getPriceColumn()));
-      currencyIndexes.put(ip, items.getColumnIndex(ip.getCurrencyNameAlias()));
-    }
-
-    BeeColumn qtyColumn = Data.getColumn(VIEW_TRADE_ACT_ITEMS,
-        TradeConstants.COL_TRADE_ITEM_QUANTITY);
-
-    r++;
-    for (BeeRow item : items) {
-      c = 0;
-
-      table.setText(r, c++, BeeUtils.toString(item.getId()),
-          STYLE_ID_PREFIX + STYLE_CELL_SUFFIX);
-
-      table.setText(r, c++, DataUtils.join(items.getColumns(), item, typeIndexes,
-          BeeConst.STRING_EOL), STYLE_TYPE_PREFIX + STYLE_CELL_SUFFIX);
-      table.setText(r, c++, DataUtils.join(items.getColumns(), item, groupIndexes,
-          BeeConst.STRING_EOL), STYLE_GROUP_PREFIX + STYLE_CELL_SUFFIX);
-
-      table.setText(r, c++, item.getString(nameIndex),
-          STYLE_NAME_PREFIX + STYLE_CELL_SUFFIX);
-      table.setText(r, c++, item.getString(articleIndex),
-          STYLE_ARTICLE_PREFIX + STYLE_CELL_SUFFIX);
-
-      ItemPrice defPrice = selectedPrices.containsKey(item.getId())
-          ? selectedPrices.get(item.getId()) : itemPrice;
-
-      for (ItemPrice ip : ItemPrice.values()) {
-        String html = renderPrice(item, priceIndexes.get(ip), currencyIndexes.get(ip));
-
-        if (html == null) {
-          table.setText(r, c, BeeConst.STRING_EMPTY);
-        } else {
-          table.setHtml(r, c, html,
-              (ip == defPrice) ? STYLE_SELECTED_PRICE_CELL : STYLE_PRICE_CELL);
-          DomUtils.setDataColumn(table.getCellFormatter().getElement(r, c), ip.ordinal());
-        }
-        c++;
-      }
-
-      if (!warehouseIds.isEmpty() && !BeeUtils.isEmpty(item.getProperties())) {
-        for (Map.Entry<String, String> entry : item.getProperties().entrySet()) {
-          if (BeeUtils.isPrefix(entry.getKey(), PRP_WAREHOUSE_PREFIX)) {
-            Long w = BeeUtils.toLongOrNull(BeeUtils.removePrefix(entry.getKey(),
-                PRP_WAREHOUSE_PREFIX));
-
-            if (DataUtils.isId(w) && warehouseIds.contains(w)) {
-              Double stock = BeeUtils.toDouble(entry.getValue());
-              pfx = (isFrom(w) && BeeUtils.isPositive(stock))
-                  ? STYLE_FROM_PREFIX : STYLE_STOCK_PREFIX;
-
-              table.setHtml(r, c + warehouseIds.indexOf(w),
-                  renderStock(w, entry.getValue(), stock), pfx + STYLE_CELL_SUFFIX);
-            }
-          }
-        }
-      }
-
-      c += warehouseIds.size();
-
-      if (isOrder) {
-
-        Double rem =
-            item.getDouble(DataUtils.getColumnIndex(COL_WAREHOUSE_REMAINDER, items.getColumns()));
-
-        table.setText(r, c++, rem.toString(), STYLE_REMAINDER_PREFIX + STYLE_CELL_SUFFIX);
-
-        table.setText(r, c++, item.getDouble(items.getNumberOfColumns() - 2).toString(),
-            STYLE_FREE_PREFIX + STYLE_CELL_SUFFIX);
-
-        table.setText(r, c++, item.getDouble(items.getNumberOfColumns() - 1).toString(),
-            STYLE_RESERVED_PREFIX + STYLE_CELL_SUFFIX);
-        item.setProperty(OrdersConstants.PRP_FREE_REMAINDER, item.getDouble(
-            items.getNumberOfColumns() - 2).toString());
-      }
-
-      Double qty = quantities.get(item.getId());
-      table.setWidget(r, c, renderQty(qtyColumn, qty), STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
-
-      DomUtils.setDataIndex(table.getRow(r), item.getId());
-
-      table.getRowFormatter().addStyleName(r, STYLE_ITEM_ROW);
-      if (BeeUtils.isPositive(qty)) {
-        table.getRowFormatter().addStyleName(r, STYLE_SELECTED_ROW);
-      }
-
-      r++;
-    }
-
-    itemPanel.add(table);
   }
 
   private String renderPrice(BeeRow item, int priceIndex, int currencyIndex) {
@@ -777,6 +862,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       input.setValue(qty);
     }
 
+    DomUtils.setDataProperty(input.getElement(), DATA_QTY, DATA_QTY);
     input.addChangeHandler(ensureQuantityChangeHandler());
 
     return input;
@@ -835,4 +921,16 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   public abstract Long getWarehouseFrom(IsRow row);
 
   public abstract boolean setIsOrder(IsRow row);
+
+  private boolean checkQuantities(Map<Long, Double> quantities) {
+    boolean valid = true;
+    for (Long id : quantities.keySet()) {
+      if (quantities.get(id) > remainders.get(id)) {
+        notification.severe(Localized.dictionary().ordQtyIsTooBig());
+        valid = false;
+        break;
+      }
+    }
+    return valid;
+  }
 }

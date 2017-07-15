@@ -8,7 +8,11 @@
     <SimpleColumn name="Company" />
     <SimpleJoin name="Company" joinType="LEFT">
       <SimpleColumn alias="CompanyName" name="Name" />
-    </SimpleJoin>   
+      <SimpleColumn alias="ContactPhysical" name="Physical" />
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="TypeName" />
+      </SimpleJoin>
+    </SimpleJoin>
     
     <SimpleColumn name="ObjectName" />
     <SimpleColumn name="ObjectAddress" />

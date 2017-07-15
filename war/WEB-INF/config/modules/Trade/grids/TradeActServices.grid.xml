@@ -12,6 +12,38 @@
   <xi:include href="columns/TradeActPrice.columns.xml" />
 
   <xi:include href="columns/TradeActDiscount.columns.xml" />
+
+  <g:columns>
+    <CalcColumn name="Amount" type="decimal" caption="=trdAmountWoVat" scale="2">
+      <style>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+      <render>
+        <ui:function>
+          var sum = row.Price * row.Quantity;
+          var dscSum =  sum / 100 * row.Discount;
+          var vat = row.Vat;
+
+          sum -= dscSum;
+
+          if (Boolean(row.VatPlus)) {
+          if(Boolean(row.VatPercent)) {
+          vat = sum / 100 * vat;
+          }
+          } else {
+
+          if (Boolean(row.VatPercent)) {
+          vat = sum - (sum / (1 + vat / 100));
+          }
+          sum -= vat;
+          }
+
+          return sum;
+        </ui:function>
+      </render>
+      <footer aggregate="sum"/>
+    </CalcColumn>
+  </g:columns>
   <xi:include href="columns/TradeActVat.columns.xml" />
   <xi:include href="columns/TradeActTotal.columns.xml" />
 

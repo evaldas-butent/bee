@@ -16,6 +16,9 @@
   <Item name="UpdateExchangeRates" label="=updateExchangeRatesMenu"
         service="update_exchange_rates" />
 
+
+  <Item label="=makers" name="Makers" parameters="Makers" service="grid" separator="true" />
+
   <Item name="TradeOperations" label="=trdOperations" service="grid" parameters="TradeOperations"
         separator="true" module="Trade Orders" />
 
@@ -34,6 +37,12 @@
 
   <Item name="PaymentTypes" label="=paymentTypes" service="grid" parameters="PaymentTypes"
         separator="true" />
+
+  <!-- Transrifus -->
+  <Item name="ActivityTypes" label="=activityTypes" service="grid" parameters="ActivityTypes"
+        separator="true" />
+  <Item name="CostCenters" label="=costCenters" service="grid" parameters="CostCenters" />
+  <!-- } Transrifus -->
 
   <Item name="RefVehicles" label="=vehicles" service="grid" parameters="Vehicles"
         separator="true" />

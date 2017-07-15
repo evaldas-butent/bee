@@ -68,6 +68,31 @@
             renderColumns="Name Article" newRowEnabled="false" editPopup="true"
             style="&multi;" summarize="true" />
         </row>
+        
+        <row>
+          <Label text="=trdOperationsShort" />
+          <MultiSelector name="Operation" viewName="TradeOperations" filter="Kind &lt; 2"
+            renderColumns="OperationName" newRowEnabled="false" style="&multi;" summarize="true" />
+        </row>
+        
+        <row>
+          <Label text="=seriesPlural" />
+          <MultiSelector name="Series" viewName="TradeSeries" renderColumns="SeriesName"
+            newRowEnabled="false" style="&multi;" summarize="true" />
+        </row>
+        
+        <row>
+          <Label text="=objects" />
+          <MultiSelector name="Object" viewName="CompanyObjects" 
+            renderColumns="ObjectName" choiceColumns="CompanyName ObjectName ObjectAddress"
+            newRowEnabled="false" editPopup="true" style="&multi;" summarize="true" />
+        </row>
+        
+        <row>
+          <Label text="=trdStatuses" />
+          <MultiSelector name="Status" viewName="TradeStatuses" renderColumns="StatusName"
+            newRowEnabled="false" style="&multi;" summarize="true" />
+        </row>
       </Table>
     </Disclosure>
     

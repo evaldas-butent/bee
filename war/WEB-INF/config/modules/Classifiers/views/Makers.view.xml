@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View newRowCaption="=newMaker" newRowForm="Makers"
+	editForm="Makers" module="Classifiers" caption="=makers" source="Makers"
+	name="Makers" xmlns="http://www.butent.com/view">
+
+	<Columns>
+		<SimpleColumn name="Name" />
+	</Columns>
+</View>

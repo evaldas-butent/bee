@@ -37,6 +37,9 @@
     <Numeric name="Cost" precision="15" scale="5" label="=cost" />
     <Relation name="CostCurrency" relation="Currencies" label="=costCurrency" />
 
+    <Numeric name="RentalPrice" label="=rentalPrice" precision="15" scale="5" />
+    <Relation name="RentalPriceCurrency" label="=rentalPriceCurrency" relation="Currencies" />
+
     <Numeric name="Price1" precision="15" scale="5" label="=price1" />
     <Relation name="Currency1" relation="Currencies" label="=currency1" />
     <Numeric name="Price2" precision="15" scale="5" label="=price2" />
@@ -59,6 +62,7 @@
     <Relation name="Currency10" relation="Currencies" label="=currency10" />
 
     <Boolean name="Vat" label="=vat" defValue="true" />
+    <Boolean name="ExportWebsite" label="=exportToWebsite" defValue="null" />
     <Numeric name="VatPercent" precision="3" label="=vatPercent" />
 
     <Boolean name="IsService" label="=service" />
@@ -80,11 +84,16 @@
 
     <Integer name="Ordinal" label="=ordinal" />
     <String name="ExternalCode" precision="10" label="=externalCode" />
+    <Numeric name="ExternalStock" precision="10" scale="3" label="ERP likutis" audit="false" />
 
     <Text name="Description" label="=description" />
     <Text name="Notes" label="=notes" />
 
     <Text name="Link" label="=link" />
+
+    <!-- Transrifus { -->
+    <Relation name="Maker" label="=maker" relation="Makers" />
+    <!-- } Transrifus -->
   </Fields>
 
   <Indexes>

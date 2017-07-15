@@ -11,10 +11,13 @@
       <Label for="SeriesName" />
       <InputText source="SeriesName" upperCase="true" style="width: 100px;"
         visible="true" />
+      <CheckBox source="SentERP"/>
     </row>
     <row>
       <Label for="Notes" />
-      <InputArea source="Notes" visibleLines="5" style="width: 350px;" />
+      <cell colSpan="2">
+        <InputArea source="Notes" visibleLines="5" style="width: 350px;" />
+      </cell>
     </row>
   </Table>
 

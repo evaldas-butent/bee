@@ -6,6 +6,9 @@
   >
   <Columns>
     <SimpleColumn name="TradeAct" />
+    <SimpleJoin name="TradeAct" joinType="LEFT">
+      <SimpleColumn name="ContinuousAct" />
+    </SimpleJoin>
 
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="INNER" name="Item">
@@ -21,6 +24,7 @@
 
       <SimpleColumn name="Vat" alias="ItemVat" />
       <SimpleColumn name="VatPercent" alias="ItemVatPercent" />
+      <SimpleColumn name="Ordinal" alias="ItemOrdinal" />
     </SimpleJoin>
 
     <SimpleColumn name="DateFrom" />
@@ -43,4 +47,7 @@
 
     <SimpleColumn name="Note" />
   </Columns>
+  <Order>
+    <OrderBy column="ItemOrdinal"/>
+  </Order>
 </View>

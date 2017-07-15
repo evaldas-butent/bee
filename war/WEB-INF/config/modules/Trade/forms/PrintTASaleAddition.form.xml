@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY section "margin-top: 5px;">
+  <!ENTITY bold "font-weight:bold;">
+  <!ENTITY form "PrintTASaleAddition">
+  <!ENTITY hdr ".bee-form-PrintTradeActSalePhysical .bee-trade-itemsInfo-header .bee-trade-itemsInfo-">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
+  name="&form;" caption="Sutarties priedas" disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
+  <FlowPanel style="padding: 10px; background-color: white; font-size:12px;" contentEditable="true"
+    class="bee-form-TradeActPrint bee-PrintableForm">
+    <Table kind="output" style="width:15cm">
+      <row>
+        <Image url="images/logo.png" style="width:6cm;" />
+        <FlowPanel style="padding: 10px; width:9cm;">
+          <TextLabel style="text-align: center; &bold; ">
+            <render>
+              <ui:expression>'Priedas Nr. ' + rowId + ' prie nuomos sutarties: ' + (row.ContractNumber ? row.ContractNumber : '')</ui:expression>
+            </render>
+          </TextLabel>
+          <DateTimeLabel source="Date" format="DATE_TIME_SHORT" style="text-align: center;" />
+        </FlowPanel>
+      </row>
+    </Table>
+
+    <FlowPanel style="margin-top:12px;">
+      <Table style="width:100%; border:1px solid black;" kind="output">
+        <row>
+          <cell style="vertical-align:top; width: 60%">
+            <Label html="Nuomotojas" style="font-weight: bold; margin-left:10px;" />
+          </cell>
+          <cell style="vertical-align:top; width: 40%">
+            <Label html="Nuomininkas" style="font-weight: bold;" />
+          </cell>
+        </row>
+        <row style="vertical-align: top">
+          <FlowPanel class="flexBox-vertical">
+            <FlowPanel name="Supplier" style="margin-left:10px;" />
+            <TextLabel source="Manager" style="margin-left:10px;">
+              <renderToken source="ManagerFirstName" prefix="Atsakingas asmuo: " />
+              <renderToken source="ManagerLastName" />
+              <renderToken source="ManagerMobile" prefix=" Mob.: " />
+            </TextLabel>
+          </FlowPanel>
+          <FlowPanel class="flexBox-vertical">
+            <FlowPanel name="Company" />
+            <TextLabel source="Contract" style="border-left: 1px solid black;">
+              <renderToken source="ContractName" />
+              <renderToken source="ContractNumber" />
+            </TextLabel>
+            <TextLabel source="Object">
+              <renderToken source="ObjectName" prefix="Objektas: " />
+              <renderToken source="ObjectAddress" />
+            </TextLabel>
+            <TextLabel source="Contact">
+              <renderToken source="ContactFirstName" prefix="Atsakingas asmuo: " />
+              <renderToken source="ContactLastName" />
+              <renderToken source="ContactMobile" prefix=" Mob.: " />
+            </TextLabel>
+          </FlowPanel>
+        </row>
+      </Table>
+    </FlowPanel>
+    <HtmlPanel style="&section;">
+      <span style="display:block; white-space:pre-wrap;">Pagal nuomos sutarties 3 straipsnį NUOMOTOJAS ir NUOMININKAS susitaria dėl šių toliau išdėstytų nuomos sąlygų bei įkainių.</span>
+    </HtmlPanel>
+    <br />
+    <TextLabel source="ActName" style="text-align:center; &bold; padding-top: 5px; padding-bottom: 10px;" />
+    <FlowPanel name="TradeActItems" class="TradeActItems" style="&section;" />
+    <br />
+    <FlowPanel name="TradeActServices" class="TradeActServices" style="&section;" />
+
+    <FlowPanel style="&section;">
+      <TextLabel source="Notes" style="display:block; white-space:pre-wrap; border:1px solid silver;
+        margin-top: 20px; min-height: 2em;">
+        <dynStyle>
+          <ui:inline>display: none;</ui:inline>
+          <ui:expression>!row.Notes</ui:expression>
+        </dynStyle>
+        <renderToken source="Notes" prefix="Pastabos: " />
+      </TextLabel>
+    </FlowPanel>
+    <br />
+    <Label html="Asmuo (asmenys), įgaliotas(-­i) priimti įrangą ir pasirašyti įrangos priėmimo­-perdavimo dokumentuose:" />
+    <Table style="width:100%; margin-top:10px;  border:1px solid silver; " kind="output">
+      <row style="text-align: center; border:1px solid silver;" >
+        <cell style="border:1px solid silver;">
+          <br />
+        </cell> 
+         <cell style="border:1px solid silver;">
+            <Label html="Vardas"/>
+        </cell>
+        <cell style="border:1px solid silver;">
+          <Label html="Pavardė" />
+        </cell>
+        <cell style="border:1px solid silver;">
+          <Label html="Pareigos" />
+        </cell>
+        <cell style="border:1px solid silver;">
+          <Label html="Telefonas"/>
+        </cell>
+      </row>
+       <row style="text-align: center; border:1px solid silver;" >
+        <cell style="border:1px solid silver;">
+          <Label html="1."/>
+        </cell> 
+         <cell style="border:1px solid silver;">
+             <br />
+        </cell>
+        <cell style="border:1px solid silver;">
+          <br />
+        </cell>
+        <cell style="border:1px solid silver;">
+          <br />
+        </cell>
+        <cell style="border:1px solid silver;">
+          <br />
+        </cell>
+      </row>
+      <row style="text-align: center; border:1px solid silver;" >
+        <cell style="border:1px solid silver;">
+         <Label html="2."/>
+        </cell> 
+         <cell style="border:1px solid silver;">
+             <br />
+        </cell>
+        <cell style="border:1px solid silver;">
+        <br />
+        </cell>
+        <cell style="border:1px solid silver;">
+           <br />
+        </cell>
+        <cell style="border:1px solid silver;">
+           <br />
+        </cell> 
+      </row>
+      <row style="text-align: center; border:1px solid silver;" >
+        <cell style="border:1px solid silver;">
+         <Label html="3."/>
+        </cell> 
+         <cell style="border:1px solid silver;">
+             <br />
+        </cell>
+        <cell style="border:1px solid silver;">
+           <br />
+        </cell>
+        <cell style="border:1px solid silver;">
+           <br />
+        </cell>
+        <cell style="border:1px solid silver;">
+           <br />
+        </cell> 
+      </row>
+      <row style="text-align: center; border:1px solid silver;" >
+       <cell style="border:1px solid silver;">
+        <Label html="4."/>
+        </cell> 
+         <cell style="border:1px solid silver;">
+             <br />
+        </cell>
+        <cell style="border:1px solid silver;">
+           <br />
+        </cell>
+        <cell style="border:1px solid silver;">
+           <br />
+        </cell>
+        <cell style="border:1px solid silver;">
+           <br />
+        </cell> 
+      </row>
+    </Table>
+
+    <Table style="width:100%; margin-top:10px;" kind="output">
+      <row>
+        <TextLabel source="Manager">
+          <renderToken source="ManagerPositionName" suffix=": &lt;br/&gt;" />
+          <renderToken source="ManagerFirstName" />
+          <renderToken source="ManagerLastName" />
+        </TextLabel>
+        <TextLabel source="Contact">
+          <renderToken source="ContactPositionName" suffix=": &lt;br/&gt;"/>
+          <renderToken source="ContactFirstName" />
+          <renderToken source="ContactLastName" />
+        </TextLabel>
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

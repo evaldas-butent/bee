@@ -42,6 +42,7 @@ public final class ServiceConstants {
           = "update_service_maintenance_object";
   public static final String SVC_INFORM_CUSTOMER = "inform_customer";
   public static final String SVC_GET_MAINTENANCE_NEW_ROW_VALUES = "getMaintenanceNewRowValues";
+  public static final String SVC_GET_SERVICE_OBJECT_DATA = "getServiceObjectData";
 
   public static final String TBL_SERVICE_TREE = "ServiceTree";
   public static final String TBL_SERVICE_OBJECTS = "ServiceObjects";
@@ -99,6 +100,12 @@ public final class ServiceConstants {
   public static final String COL_SERVICE_ADDRESS = "Address";
   public static final String COL_SERVICE_CUSTOMER = "Customer";
   public static final String COL_SERVICE_CONTRACTOR = "Contractor";
+
+  public static final String COL_SERVICE_MODEL = "Model";
+  public static final String COL_SERVICE_YEAR_OF_MANUFACTURE = "YearOfManufacture";
+  public static final String COL_SERVICE_INVENT_NO = "InventNo";
+  public static final String COL_SERVICE_BODY_NO = "BodyNo";
+  public static final String COL_SERVICE_SELLER = "Seller";
 
   public static final String COL_SERVICE_CRITERIA_GROUP = "Group";
   public static final String COL_SERVICE_CRITERIA_GROUP_NAME = "Name";

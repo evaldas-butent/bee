@@ -1,7 +1,13 @@
 package com.butent.bee.client.modules.classifiers;
 
+import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
@@ -9,6 +15,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
@@ -18,8 +25,11 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.ModalGrid;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.presenter.GridFormPresenter;
@@ -31,6 +41,8 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.validation.CellValidateEvent;
+import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -41,7 +53,10 @@ import com.butent.bee.client.view.grid.GridFormKind;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeRow;
@@ -53,6 +68,10 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -67,6 +86,11 @@ class CompanyForm extends AbstractFormInterceptor {
 
   CompanyForm() {
   }
+
+  private static final String WIDGET_FINANCIAL_STATE_AUDIT_NAME = COL_COMPANY_FINANCIAL_STATE
+      + "Audit";
+
+  private Button toErp;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -229,6 +253,31 @@ class CompanyForm extends AbstractFormInterceptor {
         }
       });
     }
+
+    if (widget instanceof HasClickHandlers
+        && BeeUtils.same(name, WIDGET_FINANCIAL_STATE_AUDIT_NAME)) {
+
+      HasClickHandlers button = (HasClickHandlers) widget;
+      button.addClickHandler(getFinancialStateAuditClickHandler());
+
+      if (widget instanceof UIObject) {
+        ((UIObject) widget).setTitle(Localized.dictionary().actionAudit());
+      }
+    }
+
+    if (widget instanceof InputBoolean && BeeUtils.same(name, COL_REMIND_EMAIL)) {
+
+      if (widget instanceof UIObject) {
+        ((UIObject) widget).setTitle(Localized.dictionary().sendReminder());
+      }
+    }
+
+    if (widget instanceof InputBoolean && BeeUtils.same(name, COL_EMAIL_INVOICES)) {
+
+      if (widget instanceof UIObject) {
+        ((UIObject) widget).setTitle(Localized.dictionary().trdInvoiceShort());
+      }
+    }
   }
 
   @Override
@@ -254,6 +303,137 @@ class CompanyForm extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new CompanyForm();
+  }
+
+  @Override
+  public boolean beforeCreateWidget(String name, Element description) {
+
+    if (BeeUtils.same(name, WIDGET_FINANCIAL_STATE_AUDIT_NAME)) {
+      return BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.AUDIT);
+    }
+
+    return super.beforeCreateWidget(name, description);
+  }
+
+  @Override
+  public boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand) {
+
+    if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.TO_ERP)) {
+      HeaderView header = form.getViewPresenter().getHeader();
+      header.clearCommandPanel();
+      header.addCommandItem(getToErp());
+    }
+
+    createCellValidationHandlers(form, row);
+    return super.onStartEdit(form, row, focusCommand);
+  }
+
+  @Override
+  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+    form.getViewPresenter().getHeader().clearCommandPanel();
+    createCellValidationHandlers(form, newRow);
+    newRow.setValue(form.getDataIndex(COL_REMIND_EMAIL), Boolean.TRUE);
+    newRow.setValue(form.getDataIndex(COL_EMAIL_INVOICES), Boolean.TRUE);
+    super.onStartNewRow(form, oldRow, newRow);
+  }
+
+  private static void createCellValidationHandlers(FormView form, IsRow row) {
+    if (form == null || row == null) {
+      return;
+    }
+
+    form.addCellValidationHandler(ClassifierConstants.COL_REMIND_EMAIL,
+        getRemindEmailValidationHandler(form));
+    form.addCellValidationHandler(ClassifierConstants.COL_EMAIL_INVOICES,
+        getRemindEmailValidationHandler(form));
+    form.addCellValidationHandler(COL_EMAIL_ID, getEmailIdValidationHandler(form, row));
+  }
+
+  private static Handler getEmailIdValidationHandler(final FormView form, final IsRow row) {
+    return new Handler() {
+
+      @Override
+      public Boolean validateCell(CellValidateEvent event) {
+        if (DataUtils.isId(BeeUtils.toLongOrNull(event.getNewValue()))) {
+          return Boolean.TRUE;
+        }
+
+        int idxRemindEmail = form.getDataIndex(COL_REMIND_EMAIL);
+        int idxEmailInvoices = form.getDataIndex(COL_EMAIL_INVOICES);
+
+        if (idxRemindEmail < 0) {
+          row.setValue(idxRemindEmail, (Boolean) null);
+          form.refreshBySource(COL_REMIND_EMAIL);
+        }
+
+        if (idxEmailInvoices < 0) {
+          row.setValue(idxEmailInvoices, (Boolean) null);
+          form.refreshBySource(COL_EMAIL_INVOICES);
+        }
+
+        if (idxRemindEmail > -1) {
+          return Boolean.TRUE;
+        }
+
+        if (idxEmailInvoices > -1) {
+          return Boolean.TRUE;
+        }
+        return Boolean.TRUE;
+      }
+    };
+  }
+
+  private ClickHandler getFinancialStateAuditClickHandler() {
+    return new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent event) {
+        FormView formView = getFormView();
+
+        if (formView == null) {
+          return;
+        }
+
+        IsRow activeRow = formView.getActiveRow();
+
+        if (activeRow == null) {
+          return;
+        }
+
+        GridFactory.openGrid(AdministrationConstants.GRID_HISTORY,
+            new FinancialStateHistoryHandler(formView.getViewName(),
+                Lists.newArrayList(Long.valueOf(activeRow.getId()))),
+            null, ModalGrid.opener(800, 500));
+      }
+    };
+  }
+
+  private static Handler getRemindEmailValidationHandler(final FormView form) {
+    return new Handler() {
+
+      @Override
+      public Boolean validateCell(CellValidateEvent event) {
+        String eventValue = event.getNewValue();
+
+        if (!BeeUtils.toBoolean(eventValue)) {
+          return Boolean.TRUE;
+        }
+
+        int idxEmailId = form.getDataIndex(COL_EMAIL_ID);
+
+        if (idxEmailId < 0) {
+          return Boolean.FALSE;
+        }
+
+        if (DataUtils.isId(form.getActiveRow().getLong(form.getDataIndex(COL_EMAIL_ID)))) {
+          return Boolean.TRUE;
+        } else {
+          form.notifySevere(Localized.dictionary().email(), Localized.dictionary()
+              .valueRequired());
+          return Boolean.FALSE;
+        }
+      }
+    };
   }
 
   @Override
@@ -304,6 +484,50 @@ class CompanyForm extends AbstractFormInterceptor {
 
   private boolean isFormSimple() {
     return FORM_NEW_COMPANY.equals(getFormView().getFormName());
+  }
+
+  private Button getToErp() {
+    if (toErp != null) {
+      return toErp;
+    }
+
+    toErp = new Button(Localized.dictionary().trSendToERP(), new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        if (DataUtils.isNewRow(getActiveRow())) {
+          return;
+        }
+        Global.confirm(Localized.dictionary().trSendToERP() + "?", new ConfirmationCallback() {
+          @Override
+          public void onConfirm() {
+            final HeaderView header = getHeaderView();
+            header.clearCommandPanel();
+            header.addCommandItem(new Image(Global.getImages().loading()));
+
+            ParameterList args = TradeKeeper.createArgs(TradeConstants.SVC_SEND_COMPANY_TO_ERP);
+            args.addDataItem(COL_COMPANY, getActiveRowId());
+
+            BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+              @Override
+              public void onResponse(ResponseObject response) {
+                header.clearCommandPanel();
+                header.addCommandItem(toErp);
+                response.notify(getFormView());
+
+                if (!response.hasErrors()) {
+                  getFormView().notifyInfo(Localized.dictionary().ok() + ":",
+                      response.getResponseAsString());
+                }
+              }
+            });
+          }
+        });
+      }
+    });
+
+    return toErp;
+
   }
 
   private void refreshCreditInfo() {

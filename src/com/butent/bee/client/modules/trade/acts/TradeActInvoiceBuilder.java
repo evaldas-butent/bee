@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.NodeList;
@@ -31,6 +32,8 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.DomUtils;
@@ -68,6 +71,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
@@ -171,7 +175,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     }
 
     private Double amount(int index, Long toCurrency, DateTime date) {
-      Double amount = TradeActUtils.serviceAmount(quantity, price, discounts.get(index), timeUnit,
+      Double amount = TradeActUtils.serviceAmount(quantity, price, null, timeUnit,
           factors.get(index));
 
       if (BeeUtils.nonZero(amount) && Money.canExchange(currency, toCurrency)) {
@@ -196,10 +200,20 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     private boolean minTermWarn(int index, Collection<Integer> holidays) {
       if (minTermStart == null || !BeeUtils.isPositive(minTerm)) {
         return false;
-      } else {
+      } else if (timeUnit == TradeActTimeUnit.DAY) {
         Range<DateTime> range = TradeActUtils.createRange(minTermStart, dateTo(index));
         int days = TradeActUtils.countServiceDays(range, holidays, dpws.get(index));
         return minTerm > days;
+      } else {
+        Range<DateTime> range = TradeActUtils.createRange(minTermStart, dateTo(index));
+        int months = 0;
+        if (range.hasLowerBound() && range.hasUpperBound()) {
+          months =
+              TimeUtils.fieldDifference(range.lowerEndpoint(), range.upperEndpoint(),
+                  TimeUtils.FIELD_MONTH);
+        }
+
+        return minTerm > months;
       }
     }
   }
@@ -244,6 +258,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   private static final String STYLE_SVC_ROW = STYLE_SVC_PREFIX + "row";
   private static final String STYLE_SVC_SELECTED = STYLE_SVC_PREFIX + "selected";
   private static final String STYLE_SVC_FOOTER = STYLE_SVC_PREFIX + "footer";
+  private static final String STYLE_SVC_ROW_MISSED = STYLE_SVC_ROW + "-missed";
 
   private static final String STYLE_LABEL_CELL_SUFFIX = "label";
   private static final String STYLE_CELL_SUFFIX = "cell";
@@ -289,85 +304,6 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
   private static final String KEY_SERVICE_ID = "service";
   private static final String KEY_RANGE_INDEX = "range";
-
-  private static List<Range<DateTime>> buildRanges(Range<DateTime> serviceRange,
-      Collection<Range<DateTime>> invoiceRanges, TradeActTimeUnit timeUnit) {
-
-    List<Range<DateTime>> result = new ArrayList<>();
-    if (serviceRange == null) {
-      return result;
-    }
-
-    if (BeeUtils.isEmpty(invoiceRanges)) {
-      result.add(serviceRange);
-      return result;
-    } else if (timeUnit == null) {
-      return result;
-    }
-
-    List<Range<Integer>> invoiceDays = new ArrayList<>();
-
-    for (Range<DateTime> range : invoiceRanges) {
-      int lower = range.lowerEndpoint().getDate().getDays();
-
-      int upper = range.upperEndpoint().getDate().getDays();
-      if (upper <= lower) {
-        upper = lower + 1;
-      }
-
-      invoiceDays.add(Range.closedOpen(lower, upper));
-    }
-
-    List<Integer> serviceDays = new ArrayList<>();
-
-    int from = serviceRange.lowerEndpoint().getDate().getDays();
-    int to = serviceRange.upperEndpoint().getDate().getDays();
-    if (to <= from) {
-      to = from + 1;
-    }
-
-    for (int d = from; d < to; d++) {
-      boolean ok = true;
-
-      for (Range<Integer> range : invoiceDays) {
-        if (range.contains(d)) {
-          ok = false;
-          break;
-        }
-      }
-
-      if (ok) {
-        serviceDays.add(d);
-      }
-    }
-
-    if (serviceDays.isEmpty()) {
-      return result;
-    }
-
-    from = serviceDays.get(0);
-    to = serviceDays.get(serviceDays.size() - 1) + 1;
-
-    if (from + serviceDays.size() == to) {
-      result.add(TradeActUtils.createRange(new JustDate(from), new JustDate(to)));
-      return result;
-    }
-
-    int p = 0;
-
-    for (int i = 1; i < serviceDays.size(); i++) {
-      int d = serviceDays.get(i);
-      if (from + i - p < d) {
-        result.add(TradeActUtils.createRange(new JustDate(from), new JustDate(from + i - p)));
-        from = d;
-        p = i;
-      }
-    }
-
-    result.add(TradeActUtils.createRange(new JustDate(from), new JustDate(to)));
-
-    return result;
-  }
 
   private static void onToggle(Toggle toggle, String styleSelected) {
     TableRowElement rowElement = DomUtils.getParentRow(toggle.getElement(), false);
@@ -416,8 +352,17 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   private final List<Service> services = new ArrayList<>();
 
   private Double defVatPercent;
+  private final Long companyId;
+  private final Long actId;
 
   TradeActInvoiceBuilder() {
+    this.companyId = null;
+    this.actId = null;
+  }
+
+  TradeActInvoiceBuilder(Long companyId, Long actId) {
+    this.companyId = companyId;
+    this.actId = actId;
   }
 
   @Override
@@ -495,24 +440,10 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   }
 
   @Override
-  public void onLoad(FormView form) {
+  public void onLoad(final FormView form) {
     Widget widget;
-
-    JustDate from = BeeKeeper.getStorage().getDate(storageKey(COL_TA_SERVICE_FROM));
-    if (from != null) {
-      widget = form.getWidgetByName(COL_TA_SERVICE_FROM);
-      if (widget instanceof InputDate) {
-        ((InputDate) widget).setDate(from);
-      }
-    }
-
-    JustDate to = BeeKeeper.getStorage().getDate(storageKey(COL_TA_SERVICE_TO));
-    if (to != null) {
-      widget = form.getWidgetByName(COL_TA_SERVICE_TO);
-      if (widget instanceof InputDate) {
-        ((InputDate) widget).setDate(to);
-      }
-    }
+    final Widget dateFrom;
+    Widget dateTo;
 
     Long seriesId =
         BeeUtils.toLongOrNull(BeeKeeper.getStorage().get(storageKey(COL_TRADE_SALE_SERIES)));
@@ -529,6 +460,42 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       if (widget instanceof UnboundSelector) {
         ((UnboundSelector) widget).setValue(currency, false);
       }
+    }
+
+    widget = form.getWidgetByName(COL_TA_COMPANY);
+    if (widget instanceof UnboundSelector
+        && getCompanyId() != null) {
+      ((UnboundSelector) widget).setValue(
+          getCompanyId(), true);
+      ((UnboundSelector) widget).setEnabled(false);
+      refresh(true);
+    } else {
+      ((UnboundSelector) widget).clearValue();
+      ((UnboundSelector) widget).setEnabled(true);
+    }
+
+    JustDate from = BeeKeeper.getStorage().getDate(storageKey(COL_TA_SERVICE_FROM));
+    dateFrom = form.getWidgetByName(COL_TA_SERVICE_FROM);
+    if (from != null && ((UnboundSelector) widget).isEnabled() && dateFrom instanceof InputDate) {
+      ((InputDate) dateFrom).setDate(from);
+    } else if (!((UnboundSelector) widget).isEnabled()) {
+      Queries.getRow(VIEW_TRADE_ACTS, actId, new RowCallback() {
+
+        @Override
+        public void onSuccess(BeeRow result) {
+          ((InputDate) dateFrom).setDate(result.getDateTime(Data
+              .getColumnIndex(VIEW_TRADE_ACTS,
+                  COL_TA_DATE)));
+        }
+      });
+    }
+
+    JustDate to = BeeKeeper.getStorage().getDate(storageKey(COL_TA_SERVICE_TO));
+    dateTo = form.getWidgetByName(COL_TA_SERVICE_TO);
+    if (to != null && ((UnboundSelector) widget).isEnabled() && dateTo instanceof InputDate) {
+      ((InputDate) dateTo).setDate(to);
+    } else if (!((UnboundSelector) widget).isEnabled()) {
+      ((InputDate) dateTo).setDate(new JustDate().getDate());
     }
   }
 
@@ -636,9 +603,9 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           Act act = null;
 
           for (BeeRow row : result) {
-            long actId = row.getLong(actIndex);
-            if (act == null || act.id() != actId) {
-              act = findAct(actId);
+            long resActId = row.getLong(actIndex);
+            if (act == null || act.id() != resActId) {
+              act = findAct(resActId);
               if (act == null) {
                 continue;
               }
@@ -654,6 +621,11 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
                 builderRange, act.range);
 
             if (serviceRange == null) {
+              if (tu == null && dateFrom == null && dateTo == null) {
+                Service empty = new Service(row, tu);
+                empty.quantity = row.getDouble(qtyIndex);
+                services.add(empty);
+              }
               continue;
             }
 
@@ -669,7 +641,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
               }
             }
 
-            List<Range<DateTime>> ranges = buildRanges(serviceRange, invoiceRanges, tu);
+            List<Range<DateTime>> ranges = TradeActUtils.buildRanges(serviceRange, invoiceRanges,
+                tu);
             if (ranges.isEmpty()) {
               continue;
             }
@@ -683,7 +656,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
             if (BeeUtils.isPositive(svc.tariff)) {
               Double p = TradeActUtils.calculateServicePrice(svc.price, dateTo, act.itemTotal(),
-                  svc.tariff, priceScale);
+                  svc.tariff, svc.quantity, priceScale);
               if (BeeUtils.isPositive(p)) {
                 svc.price = p;
               }
@@ -694,7 +667,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
             svc.minTerm = row.getInteger(minTermIndex);
 
-            if (tu == TradeActTimeUnit.DAY && BeeUtils.isPositive(svc.minTerm)) {
+            if (BeeUtils.isPositive(svc.minTerm)) {
               if (dateFrom == null) {
                 svc.minTermStart = TradeActUtils.getLower(act.range);
               } else {
@@ -705,6 +678,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             Double discount = row.getDouble(discountIndex);
 
             for (Range<DateTime> r : ranges) {
+              LogUtils.getRootLogger().debug("Creating service", row.getId(), r.toString());
               if (tu == null) {
                 svc.add(r, factor, dpw, discount);
 
@@ -783,6 +757,11 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     }
 
     Long seriesId = getSeriesId();
+    if (!DataUtils.isId(seriesId)) {
+      getFormView().notifySevere(
+          Localized.dictionary().trdSeries() + " " + Localized.dictionary().valueRequired());
+      return;
+    }
     Long currency = getCurrency();
 
     Multimap<Long, Integer> ss = getSelectedServices(STYLE_SVC_SELECTED);
@@ -797,29 +776,17 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     List<String> notes = new ArrayList<>();
 
     int actIndex = selectedServices.getColumnIndex(COL_TRADE_ACT);
-
-    int itemNameIndex = selectedServices.getColumnIndex(ALS_ITEM_NAME);
-    int objectNameIndex = Data.getColumnIndex(VIEW_TRADE_ACTS, COL_COMPANY_OBJECT_NAME);
-    int objectAddressIndex = Data.getColumnIndex(VIEW_TRADE_ACTS, COL_COMPANY_OBJECT_ADDRESS);
+    Set<Long> prepareApproveActs = Sets.newLinkedHashSet();
 
     for (Service svc : services) {
       if (ss.containsKey(svc.id())) {
         BeeRow row = DataUtils.cloneRow(svc.row);
         selectedServices.addRow(row);
 
-        String itemName = svc.row.getString(itemNameIndex);
+        Long svcActId = svc.row.getLong(actIndex);
 
-        Long actId = svc.row.getLong(actIndex);
-        Act act = findAct(actId);
-
-        String objectInfo = (act == null) ? null
-            : BeeUtils.joinWords(act.row.getString(objectNameIndex),
-                act.row.getString(objectAddressIndex));
-
-        for (Integer idx : ss.get(svc.id())) {
-          Range<DateTime> r = svc.ranges.get(idx);
-          String period = TimeUtils.renderPeriod(r.lowerEndpoint(), r.upperEndpoint());
-          notes.add(BeeUtils.joinItems(itemName, period, objectInfo));
+        if (DataUtils.isId(svcActId)) {
+          prepareApproveActs.add(svcActId);
         }
       }
     }
@@ -862,6 +829,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     params.addDataItem(sales.getViewName(), sales.serialize());
     params.addDataItem(saleItems.getViewName(), saleItems.serialize());
+    params.addDataItem(VAR_ID_LIST, DataUtils.buildIdList(prepareApproveActs));
 
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
@@ -871,9 +839,10 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
           RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_SALES, result, null);
           DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_INVOICES);
+          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS);
 
           refresh(false);
-          RowEditor.open(VIEW_SALES, result, Opener.MODAL);
+          RowEditor.open(VIEW_SALES, result.getId(), Opener.MODAL);
         }
       }
     });
@@ -883,7 +852,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       Multimap<Long, Integer> selectedRanges, Long currency) {
 
     List<String> colNames = Lists.newArrayList(COL_SALE, COL_ITEM, COL_TRADE_ITEM_ARTICLE,
-        COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
+        COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT,
         COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
         COL_TRADE_ITEM_NOTE);
 
@@ -906,10 +875,12 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     int priceIndex = invoiceItems.getColumnIndex(COL_TRADE_ITEM_PRICE);
     int priceScale = invoiceItems.getColumn(COL_TRADE_ITEM_PRICE).getScale();
+    int discountScale = invoiceItems.getColumn(COL_TRADE_DISCOUNT).getScale();
 
     int vatPlusIndex = invoiceItems.getColumnIndex(COL_TRADE_VAT_PLUS);
     int vatIndex = invoiceItems.getColumnIndex(COL_TRADE_VAT);
     int vatPercentIndex = invoiceItems.getColumnIndex(COL_TRADE_VAT_PERC);
+    int discountIndex = invoiceItems.getColumnIndex(COL_TRADE_DISCOUNT);
 
     DateTime date = TimeUtils.nowMinutes();
 
@@ -929,11 +900,18 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           inv.setProperty(COL_TA_INVOICE_SERVICE, BeeUtils.toString(row.getId()));
 
           Double amount = svc.amount(idx, currency, date);
+          Double discount = svc.discounts.get(idx);
 
           if (BeeUtils.isPositive(amount) && BeeUtils.isPositive(svc.quantity)) {
             inv.setValue(priceIndex, BeeUtils.round(amount / svc.quantity, priceScale));
           } else {
             inv.clearCell(priceIndex);
+          }
+
+          if (BeeUtils.isPositive(discount)) {
+            inv.setValue(discountIndex, BeeUtils.round(discount, discountScale));
+          } else {
+            inv.clearCell(discountIndex);
           }
 
           if (BeeUtils.isPositive(svc.vatPercent)) {
@@ -944,12 +922,17 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
           JustDate from = svc.dateFrom(idx);
           JustDate to = svc.dateTo(idx);
+          Double factor = svc.factors.get(idx);
 
           if (from != null) {
             inv.setProperty(PRP_TA_SERVICE_FROM, BeeUtils.toString(from.getDays()));
           }
           if (to != null) {
             inv.setProperty(PRP_TA_SERVICE_TO, BeeUtils.toString(to.getDays()));
+          }
+
+          if (factor != null) {
+            inv.setProperty(COL_TA_SERVICE_FACTOR, factor);
           }
 
           invoiceItems.addRow(inv);
@@ -998,6 +981,10 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     return getContainerByWidgetName(VIEW_TRADE_ACTS);
   }
 
+  private Long getActId() {
+    return actId;
+  }
+
   private JustDate getDateFrom() {
     return getDateByWidgetName(COL_TA_SERVICE_FROM);
   }
@@ -1016,7 +1003,15 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   }
 
   private Long getCompany() {
-    return getSelectedIdByWidgetName(COL_TA_COMPANY);
+    if (getCompanyId() == null) {
+      return getSelectedIdByWidgetName(COL_TA_COMPANY);
+    } else {
+      return getCompanyId();
+    }
+  }
+
+  private Long getCompanyId() {
+    return companyId;
   }
 
   private Long getCurrency() {
@@ -1157,6 +1152,10 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     }
     if (end != null) {
       params.addQueryItem(COL_TA_SERVICE_TO, end.getDays());
+    }
+
+    if (getActId() != null) {
+      params.addQueryItem(COL_TA_ACT, getActId());
     }
 
     params.addQueryItem(COL_TA_COMPANY, company);
@@ -1469,38 +1468,42 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     r++;
     for (Service svc : services) {
-      for (int idx = 0; idx < svc.ranges.size(); idx++) {
-        c = 0;
+      for (int idx = svc.ranges.size() > 0 ? 0 : BeeConst.UNDEF; idx < svc.ranges.size(); idx++) {
 
-        long actId = svc.row.getLong(actIndex);
-        if (act == null || act.id() != actId) {
-          act = findAct(actId);
+        c = 0;
+        long svcActId = svc.row.getLong(actIndex);
+        if (act == null || act.id() != svcActId) {
+          act = findAct(svcActId);
         }
 
-        toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
-            STYLE_SVC_TOGGLE_WIDGET, false);
+        if (svc.quantity != null && svc.quantity > 0 && !BeeConst.isUndef(idx)) {
+          toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
+              STYLE_SVC_TOGGLE_WIDGET, false);
 
-        toggle.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            if (event.getSource() instanceof Toggle) {
-              onToggle((Toggle) event.getSource(), STYLE_SVC_SELECTED);
+          toggle.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+              if (event.getSource() instanceof Toggle) {
+                onToggle((Toggle) event.getSource(), STYLE_SVC_SELECTED);
 
-              commandSave.setStyleName(STYLE_COMMAND_DISABLED,
-                  !Selectors.contains(table.getElement(),
-                      Selectors.classSelector(STYLE_SVC_SELECTED)));
+                commandSave.setStyleName(STYLE_COMMAND_DISABLED,
+                    !Selectors.contains(table.getElement(),
+                        Selectors.classSelector(STYLE_SVC_SELECTED)));
+              }
             }
-          }
-        });
+          });
 
-        table.setWidget(r, c++, toggle, STYLE_SVC_TOGGLE_PREFIX + STYLE_CELL_SUFFIX);
+          table.setWidget(r, c++, toggle, STYLE_SVC_TOGGLE_PREFIX + STYLE_CELL_SUFFIX);
+        } else {
+          c++;
+        }
 
-        table.setText(r, c++, BeeUtils.toString(actId),
+        table.setText(r, c++, BeeUtils.toString(svcActId),
             STYLE_SVC_ACT_PREFIX + STYLE_CELL_SUFFIX);
 
-        table.setText(r, c++, TimeUtils.renderDate(svc.dateFrom(idx)),
+        table.setText(r, c++, BeeConst.isUndef(idx) ? "" : Format.renderDate(svc.dateFrom(idx)),
             STYLE_SVC_FROM_PREFIX + STYLE_CELL_SUFFIX);
-        table.setText(r, c++, TimeUtils.renderDate(svc.dateTo(idx)),
+        table.setText(r, c++, BeeConst.isUndef(idx) ? "" : Format.renderDate(svc.dateTo(idx)),
             STYLE_SVC_TO_PREFIX + STYLE_CELL_SUFFIX);
 
         table.setText(r, c++, svc.row.getString(itemIndex),
@@ -1525,15 +1528,18 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             STYLE_SVC_CURRENCY_PREFIX + STYLE_CELL_SUFFIX);
 
         if (svc.timeUnit == null) {
-          table.setText(r, c++, TimeUtils.renderDate(svc.dateFrom(idx)),
+          table.setText(r, c++, BeeConst.isUndef(idx) ? "" : Format.renderDate(svc.dateFrom(idx)),
               STYLE_SVC_FACTOR_PREFIX + STYLE_CELL_SUFFIX);
         } else {
-          table.setWidget(r, c++, createFactorWidget(svc.factors.get(idx)),
-              STYLE_SVC_FACTOR_PREFIX + STYLE_CELL_SUFFIX);
+          table.setWidget(r, c++, BeeConst.isUndef(idx)
+              ? null
+              : createFactorWidget(svc.factors.get(idx)),
+            STYLE_SVC_FACTOR_PREFIX + STYLE_CELL_SUFFIX);
         }
 
         if (svc.timeUnit == TradeActTimeUnit.DAY) {
-          table.setWidget(r, c++, createDpwWidget(svc.dpws.get(idx), holidays),
+          table.setWidget(r, c++, BeeConst.isUndef(idx) ? null : createDpwWidget(svc.dpws.get(idx),
+            holidays),
               STYLE_SVC_DPW_PREFIX + STYLE_CELL_SUFFIX);
         } else {
           table.setText(r, c++, null, STYLE_SVC_DPW_PREFIX + STYLE_CELL_SUFFIX);
@@ -1542,10 +1548,16 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         table.setText(r, c++, render(svc.minTerm), STYLE_SVC_MIN_TERM_CELL,
             svc.minTermWarn(idx, holidays) ? STYLE_SVC_MIN_TERM_WARN : null);
 
-        table.setWidget(r, c++, createDiscountWidget(svc.discounts.get(idx)),
+        table.setWidget(r, c++, BeeConst.isUndef(idx) ? null : createDiscountWidget(svc.discounts
+          .get(idx)),
             STYLE_SVC_DISCOUNT_PREFIX + STYLE_CELL_SUFFIX);
 
-        Double amount = svc.amount(idx, currency, date);
+        Double amount = null;
+        if (BeeConst.isUndef(idx)) {
+          amount = 0D;
+        } else {
+          amount = svc.amount(idx, currency, date);
+        }
         table.setText(r, c++, renderAmount(amount), STYLE_SVC_AMOUNT_CELL);
 
         if (BeeUtils.isDouble(amount)) {
@@ -1555,8 +1567,15 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         Element rowElement = table.getRow(r);
         rowElement.addClassName(STYLE_SVC_ROW);
 
+        if (svc.ranges.size() > 1 && idx < svc.ranges.size() - 1) {
+          rowElement.addClassName(STYLE_SVC_ROW_MISSED);
+        }
+
         DomUtils.setDataProperty(rowElement, KEY_SERVICE_ID, svc.id());
-        DomUtils.setDataProperty(rowElement, KEY_RANGE_INDEX, idx);
+
+        if (!BeeConst.isUndef(idx)) {
+          DomUtils.setDataProperty(rowElement, KEY_RANGE_INDEX, idx);
+        }
 
         r++;
       }

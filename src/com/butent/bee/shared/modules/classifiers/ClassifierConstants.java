@@ -112,9 +112,12 @@ public final class ClassifierConstants {
   public static final String GRID_PERSONS = "Persons";
   public static final String GRID_COMPANIES = "Companies";
   public static final String GRID_COMPANY_BANK_ACCOUNTS = "CompanyBankAccounts";
+  public static final String GRID_COMPANY_CONTACTS = "CompanyContacts";
   public static final String GRID_COMPANY_USERS = "CompanyUsers";
 
   public static final String GRID_ITEMS = "Items";
+  public static final String GRID_FINANCIAL_STATES = "FinancialStates";
+  public static final String GRID_COMPANY_PERSONS = "CompanyPersons";
 
   public static final String GRID_CHART_OF_ACCOUNTS = "ChartOfAccounts";
   public static final String GRID_JOURNALS = "Journals";
@@ -155,6 +158,8 @@ public final class ClassifierConstants {
   public static final String COL_CATEGORY = "Category";
   public static final String COL_CATEGORY_NAME = "Name";
   public static final String COL_CATEGORY_PARENT = "Parent";
+
+  public static final String COL_FINANCIAL_STATE_NAME = "Name";
 
   public static final String COL_ITEM = "Item";
   public static final String COL_ITEM_NAME = "Name";
@@ -210,6 +215,9 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_KPN_CODE = "KPNCode";
 
 
+  public static final String COL_ITEM_RENTAL_PRICE = "RentalPrice";
+  public static final String COL_ITEM_RENTAL_PRICE_CURRENCY = "RentalPriceCurrency";
+
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";
   public static final String COL_TIME_UNIT = "TimeUnit";
@@ -221,6 +229,7 @@ public final class ClassifierConstants {
   public static final String COL_MOBILE = "Mobile";
   public static final String COL_FAX = "Fax";
   public static final String COL_EMAIL = "Email";
+  public static final String COL_EMAIL_ID = "EmailId";
   public static final String COL_EMAIL_ADDRESS = "Email";
   public static final String COL_ADDRESS = "Address";
   public static final String COL_POST_INDEX = "PostIndex";
@@ -230,6 +239,7 @@ public final class ClassifierConstants {
   public static final String COL_REMIND_ACTION_BEFORE = "CompanyActionRemindBefore";
   public static final String COL_TASKS_MAILING_TIME = "TasksMailingTime";
   public static final String COL_EMAIL_INVOICES = "EmailInvoices";
+  public static final String COL_SOCIAL_CONTACTS = "SocialContacts";
 
   public static final String COL_CITY = "City";
   public static final String COL_CITY_NAME = "Name";
@@ -247,6 +257,7 @@ public final class ClassifierConstants {
   public static final String COL_BRANCH_CODE = "Code";
   public static final String COL_BRANCH_PRIMARY_WAREHOUSE = "PrimaryWarehouse";
 
+  public static final String COL_DATE_UNTIL = "DateUntil";
   public static final String COL_DEFAULT_BANK_ACCOUNT = "DefaultBankAccount";
   public static final String COL_DEFAULT_COMPANY_USER = "DefaultCompanyUser";
 
@@ -296,6 +307,7 @@ public final class ClassifierConstants {
   public static final String COL_DISCOUNT_PERCENT = "Percent";
   public static final String COL_DISCOUNT_PRICE = "Price";
   public static final String COL_DISCOUNT_CURRENCY = "Currency";
+  public static final String COL_EXTERNAL_STOCK = "ExternalStock";
 
   public static final String COL_ACCOUNT_CODE = "AccountCode";
   public static final String COL_ACCOUNT_NAME = "AccountName";
@@ -319,6 +331,7 @@ public final class ClassifierConstants {
 
   public static final String ALS_CITY_NAME = "CityName";
   public static final String ALS_COUNTRY_NAME = "CountryName";
+  public static final String ALS_COUNTRY_CODE = "CountryCode";
 
   public static final String ALS_POSITION_NAME = "PositionName";
   public static final String ALS_PRIMARY_POSITION = "PrimaryPosition";

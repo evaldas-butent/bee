@@ -31,6 +31,7 @@ public class OrderTmplItemsPicker extends ItemsPicker {
           callback.onSuccess(BeeRowSet.restore(response.getResponseAsString()));
         } else {
           BeeKeeper.getScreen().notifyWarning(Localized.dictionary().nothingFound());
+          getSpinner().setStyleName(STYLE_SEARCH_SPINNER_LOADING, false);
         }
       }
     });

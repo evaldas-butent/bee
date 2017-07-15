@@ -5,7 +5,7 @@
   >
   <g:columns>
     <DataColumn name="SeriesName" minWidth="100" visible="true" />
-
+    <DataColumn name="SentERP" />
     <DataColumn name="Notes" whiteSpace="normal" flexGrow="1" />
   </g:columns>
 </g:Grid>

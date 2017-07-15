@@ -6,6 +6,7 @@
   >
   <Fields>
     <Relation name="Name" relation="TradeActNames" label="=tradeActName" />
+    <Relation name="Contract" relation="Documents" label="=trdContract" />
 
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=taDate" />
     <DateTime name="Until" label="=taUntil" />
@@ -27,10 +28,28 @@
       label="=currency" />
 
     <Relation name="Vehicle" relation="Vehicles" label="=trVehicle" />
+    <Relation name="InputVehicle" relation="TradeActVehicles" label="=trVehicle" />
     <Relation name="Driver" relation="Drivers" label="=trdDriver" />
+    <Relation name="InputDriver" relation="TradeActDrivers" label="=trdDriver" />
 
     <Text name="Notes" label="=notes" />
 
     <Relation name="Parent" relation="TradeActs" label="=taParent" />
+    <Relation name="ContinuousAct" relation="TradeActs" label="=taKindContinuous" cascade="SET_NULL"/>
+    <Relation name="ReturnAct" relation="TradeActs" label="=taKindReturn" cascade="SET_NULL" />
+
+    <String name="RegistrationNo" label="=taRegistrationNo" precision="30" />
   </Fields>
+  <Constraints>
+    <Unique fields="Series Number" />
+  </Constraints>
+  <Indexes>
+    <Index unique="true">
+      <PostgreSql>((CASE "RegistrationNo" WHEN '0' THEN NULL ELSE "RegistrationNo" || ' '
+        || COALESCE("Series", 0) END))
+      </PostgreSql>
+      <MsSql></MsSql>
+      <Oracle></Oracle>
+    </Index>
+  </Indexes>
 </Table>
