@@ -13,7 +13,6 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.ui.WidgetInterceptor;
 import com.butent.bee.client.view.HasGridView;
-import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
@@ -36,6 +35,9 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
 
   void afterCreatePresenter(Presenter presenter);
 
+  default void afterDeleteRow(long rowId) {
+  }
+
   void afterInsertRow(IsRow result, boolean forced);
 
   void afterRefresh(FormView form, IsRow row);
@@ -50,11 +52,11 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
 
   void beforeStateChange(State state, boolean modal);
 
+  boolean focusName(String name);
+
   boolean focusSource(String source);
 
   FormView getFormView();
-
-  HeaderView getHeaderView();
 
   FormInterceptor getInstance();
 
@@ -95,4 +97,6 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
   boolean saveOnPrintNewRow();
 
   void setFormView(FormView form);
+
+  boolean showReadOnly(boolean readOnly);
 }

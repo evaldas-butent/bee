@@ -21,6 +21,7 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.administration.HistoryHandler;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Printer;
@@ -395,14 +396,15 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       return parentLabels;
     }
 
-    if (getGridView().isChild()) {
+    if (getGridView().hasChildUi()) {
       FormView form = ViewHelper.getForm(getMainView().asWidget());
 
       if (form != null && !BeeUtils.isEmpty(form.getViewName()) && form.getActiveRow() != null) {
         DataInfo dataInfo = Data.getDataInfo(form.getViewName());
 
         if (dataInfo != null) {
-          String label = DataUtils.getRowCaption(dataInfo, form.getActiveRow());
+          String label = DataUtils.getRowCaption(dataInfo, form.getActiveRow(),
+              Format.getDateRenderer(), Format.getDateTimeRenderer());
 
           if (!BeeUtils.isEmpty(label)) {
             return Lists.newArrayList(label);
@@ -580,6 +582,15 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     if (!BeeUtils.isEmpty(getRoles())) {
       getDataProvider().toggleRightsState(rightsState);
       refresh(true, false);
+    }
+  }
+
+  @Override
+  public void hasAnyRows(Filter filter, Consumer<Boolean> callback) {
+    if (Objects.equals(getDataProvider().getUserFilter(), filter)) {
+      callback.accept(!getGridView().isEmpty());
+    } else {
+      getDataProvider().hasAnyRows(filter, callback);
     }
   }
 
@@ -986,12 +997,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
                     long from = rows.get(1 - index).getId();
                     long into = rows.get(index).getId();
 
-                    Queries.mergeRows(getViewName(), from, into, new Queries.IntCallback() {
-                      @Override
-                      public void onSuccess(Integer result) {
-                        getGridView().getGrid().clearSelection();
-                      }
-                    });
+                    Queries.mergeRows(getViewName(), from, into,
+                        result -> getGridView().getGrid().clearSelection());
                   }
                 }, BeeConst.UNDEF, null, null, null, null,
                 (widget, name) -> {
@@ -1054,7 +1061,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     if (!indexes.isEmpty()) {
       for (IsRow row : rows) {
-        result.add(DataUtils.join(columns, row, indexes, BeeConst.DEFAULT_LIST_SEPARATOR));
+        result.add(DataUtils.join(columns, row, indexes, BeeConst.DEFAULT_LIST_SEPARATOR,
+            Format.getDateRenderer(), Format.getDateTimeRenderer()));
       }
     }
 
@@ -1068,7 +1076,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           result.add(idLabel);
         } else {
           result.add(BeeUtils.joinItems(idLabel,
-              DataUtils.join(columns, row, indexes, BeeConst.DEFAULT_LIST_SEPARATOR)));
+              DataUtils.join(columns, row, indexes, BeeConst.DEFAULT_LIST_SEPARATOR,
+                  Format.getDateRenderer(), Format.getDateTimeRenderer())));
         }
       }
     }

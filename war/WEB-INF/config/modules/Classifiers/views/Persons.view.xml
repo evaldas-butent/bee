@@ -43,11 +43,11 @@
     </SimpleJoin>
 
     <SimpleColumn name="PhotoFile" />
+    <SimpleJoin name="PhotoFile" joinType="LEFT">
+      <SimpleColumn name="Hash" label="=photo" />
+    </SimpleJoin>
     <SimpleColumn name="Notes" />
-    <!-- @DEPRECATED -->
-    <SimpleColumn name="Photo" />
-    <!-- } -->
- 
+
     <SimpleColumn name="Activity" />
     <SimpleJoin name="Activity" joinType="LEFT">
       <SimpleColumn alias="ActivityName" name="Name" />

@@ -10,7 +10,7 @@
     <InputText source="Phone" summarize="true" />
     <Label for="EmailId" style="&lbl;" />
     <cell colSpan="2" for="EmailId" >
-      <!-- Transrifus DataSelector source="EmailId" style="&inp;" maxLength="50" editEnabled="true"
+      <!-- Transrifus DataSelector source="EmailId" style="&inp;" maxLength="255" editEnabled="true"
         summarize="true" /{-->
       <Table kind="controls">
         <row>
@@ -42,7 +42,7 @@
     <cell colSpan="5">
       <ChildSelector viewName="RecipientsGroups" childTable="RcpsGroupsContacts"
         targetRelColumn="CompanyPerson" sourceRelColumn="RecipientsGroup" renderColumns="GroupName"
-        choiceColumns="GroupName" label="=mailRecipientsGroups" style="width: 100%;" summarize="true" 
+        choiceColumns="GroupName" label="=mailRecipientsGroups" style="width: 100%;" summarize="true"
         filter="Creator {u} or Visibility = 0" />
     </cell>
   </row>

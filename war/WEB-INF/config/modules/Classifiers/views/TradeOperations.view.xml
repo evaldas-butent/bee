@@ -4,6 +4,7 @@
       name="TradeOperations" source="TradeOperations"
       caption="=trdOperations" newRowCaption="=trdNewOperation"
       newRowForm="TradeOperation" editForm="TradeOperation"
+      module="Trade Transport Orders Service"
 >
   <Columns>
     <SimpleColumn name="OperationName" />
@@ -14,6 +15,8 @@
     <SimpleColumn name="Price" />
 
     <SimpleColumn name="OperationVatMode" />
+    <SimpleColumn name="VatPercent" />
+
     <SimpleColumn name="OperationDiscountMode" />
 
     <SimpleColumn name="WarehouseFrom" />

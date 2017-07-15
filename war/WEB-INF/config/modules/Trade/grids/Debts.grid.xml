@@ -6,7 +6,7 @@
 	disabledActions="add delete"
 	readOnly="true"
 	filter = "Debt > 0"
-	caption="=trdDebts"
+	caption="=debts"
 	>
 
 	<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">

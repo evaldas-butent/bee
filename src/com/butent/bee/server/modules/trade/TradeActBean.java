@@ -71,6 +71,9 @@ import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
+import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -239,7 +242,9 @@ public class TradeActBean implements HasTimerService {
     return response;
   }
 
-  public Collection<BeeParameter> getDefaultParameters(String module) {
+  public Collection<BeeParameter> getDefaultParameters() {
+    String module = ModuleAndSub.of(Module.TRADE, SubModule.ACTS).getName();
+
     return Lists.newArrayList(
         BeeParameter.createText(module, PRM_IMPORT_TA_ITEM_RX, false, RX_IMPORT_ACT_ITEM),
         BeeParameter.createNumber(module, PRM_TA_NUMBER_LENGTH, false, 6),
@@ -2238,8 +2243,13 @@ public class TradeActBean implements HasTimerService {
       COL_TRADE_SALE_SERIES));
 
     if (groupBy.isEmpty()) {
+      query.addFromLeft(TBL_SALES_SERIES,
+          sys.joinTables(TBL_SALES_SERIES, TBL_SALES, COL_TRADE_SALE_SERIES));
+
       query.addFields(TBL_SALE_ITEMS, COL_SALE);
-      query.addFields(TBL_SALES, COL_TRADE_DATE, /*COL_TRADE_INVOICE_PREFIX,*/
+      query.addFields(TBL_SALES, COL_TRADE_DATE);
+      query.addField(TBL_SALES_SERIES, COL_SERIES_NAME, /*COL_TRADE_INVOICE_PREFIX);
+      query.addFields(TBL_SALES,*/
         COL_TRADE_INVOICE_NO);
       query.addField(TBL_SALES_SERIES, COL_SERIES_NAME, COL_TRADE_INVOICE_PREFIX);
       query.addFields(rangeAlias, COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO);

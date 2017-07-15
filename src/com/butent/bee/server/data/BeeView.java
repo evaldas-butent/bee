@@ -12,6 +12,7 @@ import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.IsFrom;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
@@ -105,6 +106,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class BeeView implements BeeObject, HasExtendedInfo {
 
+  @FunctionalInterface
   public interface ConditionProvider {
     IsCondition getCondition(BeeView view, List<String> args);
   }
@@ -694,6 +696,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return info;
   }
 
+  public List<IsFrom> getFrom() {
+    return query.getFrom();
+  }
+
   @Override
   public String getModule() {
     return module;
@@ -1142,7 +1148,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
           if (field.isTranslatable() && BeeUtils.allEmpty(parent, col.locale)) {
             for (SupportedLocale locale : SupportedLocale.values()) {
-              if (locale.isActive() && !Objects.equals(locale, SupportedLocale.USER_DEFAULT)) {
+              if (locale.isActive() && !locale.isUserDefault()) {
                 String lang = locale.getLanguage();
                 addColumn(alias, field, Localized.column(colName, lang), lang, aggregate, hidden,
                     parent, null, Localized.maybeTranslate(BeeUtils.notEmpty(col.label,
@@ -1177,23 +1183,48 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       logger.warning(flt.getClass().getSimpleName(), "view not found:", flt.getInView());
       return null;
     }
+
     String column = flt.getColumn();
     String tbl;
     String fld;
 
-    if (BeeUtils.same(column, getSourceIdName())) {
+    if (BeeUtils.same(column, getSourceIdName()) || BeeUtils.same(column, ColumnInFilter.ID_TAG)) {
       tbl = getSourceAlias();
       fld = getSourceIdName();
     } else {
       tbl = getColumnTable(column);
       fld = getColumnField(column);
     }
-    String inTbl = inView.getColumnTable(flt.getInColumn());
-    String inFld = inView.getColumnField(flt.getInColumn());
+
+    String inColumn = flt.getInColumn();
+    String inTbl;
+    String inFld;
+
+    if (BeeUtils.same(inColumn, ColumnInFilter.ID_TAG)) {
+      inTbl = inView.getSourceAlias();
+      inFld = inView.getSourceIdName();
+    } else {
+      inTbl = inView.getColumnTable(inColumn);
+      inFld = inView.getColumnField(inColumn);
+    }
 
     Filter inFilter = flt.getInFilter();
 
-    return SqlUtils.in(tbl, fld, inTbl, inFld, inView.getCondition(inFilter));
+    SqlSelect inQuery = new SqlSelect()
+        .setDistinctMode(true)
+        .addFields(inTbl, inFld);
+
+    if (flt.needsFrom() || !inView.getSourceAlias().equals(inTbl)) {
+      inQuery.setFrom(inView.getFrom());
+    } else {
+      inQuery.addFrom(inTbl);
+    }
+
+    if (inFilter != null) {
+      inQuery.setWhere(inView.getCondition(inFilter));
+    }
+
+    return SqlUtils.in(tbl, fld, inQuery);
   }
 
   private IsCondition getCondition(ColumnIsNullFilter flt) {

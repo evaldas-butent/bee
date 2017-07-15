@@ -1057,7 +1057,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     } else if (TimeUtils.isMeq(start, end)) {
       Collections.addAll(messages, Localized.dictionary().invalidRange(),
-          TimeUtils.renderPeriod(start, end));
+          TimeUtils.renderPeriod(Format.renderDate(start), Format.renderDate(end)));
     }
 
     if (messages.isEmpty()) {
@@ -1319,9 +1319,9 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       table.setText(r, c++, act.row.getString(nameIndex),
           STYLE_ACT_NAME_PREFIX + STYLE_CELL_SUFFIX);
 
-      table.setText(r, c++, TimeUtils.renderCompact(act.row.getDateTime(dateIndex)),
+      table.setText(r, c++, Format.renderDateTime(act.row.getDateTime(dateIndex)),
           STYLE_ACT_DATE_PREFIX + STYLE_CELL_SUFFIX);
-      table.setText(r, c++, TimeUtils.renderCompact(act.row.getDateTime(untilIndex)),
+      table.setText(r, c++, Format.renderDateTime(act.row.getDateTime(untilIndex)),
           STYLE_ACT_UNTIL_PREFIX + STYLE_CELL_SUFFIX);
 
       table.setText(r, c++, act.row.getString(seriesNameIndex),

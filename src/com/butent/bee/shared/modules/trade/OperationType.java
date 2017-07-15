@@ -1,11 +1,16 @@
 package com.butent.bee.shared.modules.trade;
 
 import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.finance.TradeAccounts;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 public enum OperationType implements HasLocalizedCaption {
-  PURCHASE(false, true, true) {
+  PURCHASE(false, true, true, true, DebtKind.PAYABLE) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.trdTypePurchase();
@@ -35,9 +40,14 @@ public enum OperationType implements HasLocalizedCaption {
     public Long getVatCredit(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getTradePayables();
     }
+
+    @Override
+    public ItemPrice getDefaultPrice() {
+      return ItemPrice.COST;
+    }
   },
 
-  SALE(true, false, false) {
+  SALE(true, false, false, false, DebtKind.RECEIVABLE) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.trdTypeSale();
@@ -67,9 +77,14 @@ public enum OperationType implements HasLocalizedCaption {
     public Long getVatCredit(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getVatPayable();
     }
+
+    @Override
+    public ItemPrice getDefaultPrice() {
+      return ItemPrice.SALE;
+    }
   },
 
-  TRANSFER(true, true, false) {
+  TRANSFER(true, true, false, false, null) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.trdTypeTransfer();
@@ -99,9 +114,14 @@ public enum OperationType implements HasLocalizedCaption {
     public Long getVatCredit(TradeAccounts tradeAccounts) {
       return null;
     }
+
+    @Override
+    public ItemPrice getDefaultPrice() {
+      return ItemPrice.COST;
+    }
   },
 
-  WRITE_OFF(true, false, false) {
+  WRITE_OFF(true, false, false, false, null) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.trdTypeWriteOff();
@@ -131,9 +151,14 @@ public enum OperationType implements HasLocalizedCaption {
     public Long getVatCredit(TradeAccounts tradeAccounts) {
       return null;
     }
+
+    @Override
+    public ItemPrice getDefaultPrice() {
+      return ItemPrice.COST;
+    }
   },
 
-  POS(true, false, false) {
+  POS(true, false, false, false, null) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.trdTypePointOfSale();
@@ -163,9 +188,14 @@ public enum OperationType implements HasLocalizedCaption {
     public Long getVatCredit(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getVatPayable();
     }
+
+    @Override
+    public ItemPrice getDefaultPrice() {
+      return ItemPrice.SALE;
+    }
   },
 
-  CUSTOMER_RETURN(false, true, true) {
+  CUSTOMER_RETURN(false, true, true, false, DebtKind.PAYABLE) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.trdTypeCustomerReturn();
@@ -195,9 +225,14 @@ public enum OperationType implements HasLocalizedCaption {
     public Long getVatCredit(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getTradeReceivables();
     }
+
+    @Override
+    public ItemPrice getDefaultPrice() {
+      return ItemPrice.SALE;
+    }
   },
 
-  RETURN_TO_SUPPLIER(true, false, false) {
+  RETURN_TO_SUPPLIER(true, false, false, true, DebtKind.RECEIVABLE) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.trdTypeReturnToSupplier();
@@ -227,18 +262,57 @@ public enum OperationType implements HasLocalizedCaption {
     public Long getVatCredit(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getVatReceivable();
     }
+
+    @Override
+    public ItemPrice getDefaultPrice() {
+      return ItemPrice.COST;
+    }
   };
+
+  public static Collection<OperationType> getStockProducers() {
+    Set<OperationType> producers = new HashSet<>();
+
+    for (OperationType type : values()) {
+      if (type.producesStock()) {
+        producers.add(type);
+      }
+    }
+
+    return producers;
+  }
+
+  public static Collection<OperationType> getStockConsumers() {
+    Set<OperationType> consumers = new HashSet<>();
+
+    for (OperationType type : values()) {
+      if (type.consumesStock()) {
+        consumers.add(type);
+      }
+    }
+
+    return consumers;
+  }
 
   private final boolean consumesStock;
   private final boolean producesStock;
 
   private final boolean providesCost;
 
-  OperationType(boolean consumesStock, boolean producesStock, boolean providesCost) {
+  private final boolean requireOperationForPriceCalculation;
+
+  private final DebtKind debtKind;
+
+  OperationType(boolean consumesStock, boolean producesStock, boolean providesCost,
+      boolean requireOperationForPriceCalculation, DebtKind debtKind) {
+
     this.consumesStock = consumesStock;
     this.producesStock = producesStock;
 
     this.providesCost = providesCost;
+
+    this.requireOperationForPriceCalculation = requireOperationForPriceCalculation;
+
+    this.debtKind = debtKind;
   }
 
   public boolean consumesStock() {
@@ -253,6 +327,18 @@ public enum OperationType implements HasLocalizedCaption {
     return providesCost;
   }
 
+  public boolean requireOperationForPriceCalculation() {
+    return requireOperationForPriceCalculation;
+  }
+
+  public DebtKind getDebtKind() {
+    return debtKind;
+  }
+
+  public boolean hasDebt() {
+    return debtKind != null;
+  }
+
   public abstract Long getAmountDebit(TradeAccounts tradeAccounts);
 
   public abstract Long getAmountCredit(TradeAccounts tradeAccounts);
@@ -262,4 +348,6 @@ public enum OperationType implements HasLocalizedCaption {
   public abstract Long getVatDebit(TradeAccounts tradeAccounts);
 
   public abstract Long getVatCredit(TradeAccounts tradeAccounts);
+
+  public abstract ItemPrice getDefaultPrice();
 }

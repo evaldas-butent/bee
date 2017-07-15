@@ -25,8 +25,12 @@
   
   <g:columns>
     <IdColumn name="Id" />
-    <DataColumn name="CategoryName" visible="false" />
+    <DataColumn name="ArticleNo" visible="true"/>
+    <DataColumn name="Model" visible="true"/>
+    <RelColumn name="ServiceManufacturer" renderColumns="ManufacturerName" visible="true"/>
+    <DataColumn name="SerialNo" visible="true"/>
     <DataColumn name="Address" visible="true" />
+    <DataColumn name="CategoryName" visible="false" />
 
     <DataColumn name="Model" caption="=svcModel" />
     <DataColumn name="YearOfManufacture" caption="=svcYearOfManufacture" />
@@ -37,7 +41,7 @@
 
     <RelColumn name="Customer" renderColumns="CustomerName" visible="true" />
     <RelColumn name="Contractor" />
-
+    <RelColumn name="ContactPerson" renderColumns="ContactFirstName ContactLastName" visible="true" />
     <PropColumn name="Criterion" type="string" dynamic="true" />
   </g:columns>
 </g:Grid>

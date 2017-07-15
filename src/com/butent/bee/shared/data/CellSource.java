@@ -1,7 +1,5 @@
 package com.butent.bee.shared.data;
 
-import com.google.gwt.text.shared.AbstractRenderer;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
@@ -12,15 +10,17 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.function.Function;
 
-public final class CellSource extends AbstractRenderer<IsRow> implements HasPrecision, HasScale,
-    HasValueType, BeeSerializable {
+public final class CellSource implements HasPrecision, HasScale, HasValueType, BeeSerializable {
 
   private enum Serial {
     SOURCE_TYPE, USER_ID, NAME, INDEX, VALUE_TYPE, PRECISION, SCALE, IS_TEXT
@@ -86,12 +86,9 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
   private boolean isText;
 
   private CellSource() {
-    super();
   }
 
   private CellSource(SourceType sourceType, String name, Integer index, ValueType valueType) {
-    super();
-
     this.sourceType = sourceType;
     this.name = name;
     this.index = index;
@@ -362,8 +359,9 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
     return isText;
   }
 
-  @Override
-  public String render(IsRow row) {
+  public String render(IsRow row, Function<HasDateValue, String> dateRenderer,
+      Function<HasDateValue, String> dateTimeRenderer) {
+
     if (row == null) {
       return null;
 
@@ -371,7 +369,8 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
       return BeeUtils.toString(row.getId());
 
     } else if (sourceType == SourceType.VERSION) {
-      return new DateTime(row.getVersion()).toString();
+      return (dateTimeRenderer == null)
+          ? null : dateTimeRenderer.apply(new DateTime(row.getVersion()));
 
     } else if (isEmpty(row)) {
       return null;
@@ -385,11 +384,12 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
 
         case DATE:
           JustDate date = getDate(row);
-          return (date == null) ? null : date.toString();
+          return (date == null || dateRenderer == null) ? null : dateRenderer.apply(date);
 
         case DATE_TIME:
           DateTime dateTime = getDateTime(row);
-          return (dateTime == null) ? null : dateTime.toCompactString();
+          return (dateTime == null || dateTimeRenderer == null)
+              ? null : dateTimeRenderer.apply(dateTime);
 
         case DECIMAL:
           BigDecimal decimal = getDecimal(row);
@@ -483,26 +483,43 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
     }
   }
 
-  public void set(IsRow row, String value) {
+  public boolean set(IsRow row, String value) {
     Assert.notNull(row);
+    boolean changed = false;
 
     switch (sourceType) {
       case COLUMN:
-        row.setValue(index, value);
+        if (!Objects.equals(row.getString(index), value)) {
+          row.setValue(index, value);
+          changed = true;
+        }
         break;
 
       case PROPERTY:
-        row.setProperty(name, userId, value);
+        if (!Objects.equals(row.getProperty(name, userId), value)) {
+          row.setProperty(name, userId, value);
+          changed = true;
+        }
         break;
 
       case ID:
-        row.setId(BeeUtils.toLong(value));
+        long id = BeeUtils.toLong(value);
+        if (!Objects.equals(row.getId(), id)) {
+          row.setId(id);
+          changed = true;
+        }
         break;
 
       case VERSION:
-        row.setVersion(BeeUtils.toLong(value));
+        long version = BeeUtils.toLong(value);
+        if (!Objects.equals(row.getVersion(), version)) {
+          row.setVersion(version);
+          changed = true;
+        }
         break;
     }
+
+    return changed;
   }
 
   public void setIsText(boolean isText) {

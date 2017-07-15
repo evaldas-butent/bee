@@ -87,14 +87,13 @@
       </row>
 
       <row>
-        <Label for="Company" visible="true" class="bee-required" />
-        <DataSelector source="Company" name="Company" style="&inpw;" visible="true"
-                      choiceColumns="Name TypeName" disablable="false"
-                      renderColumns="CompanyName TypeName" required="true" />
+        <Label for="Company" visible="true" class="bee-required"/>
+        <DataSelector source="Company" name="Company"style="&inpw;" visible="true" choiceColumns="Name TypeName" disablable="false"
+          renderColumns="CompanyName TypeName"required="true"/>
 
-        <Label for="Object" name="labelObject" />
-        <DataSelector source="Object" name="Object" renderColumns="ObjectName" disablable="false"
-          choiceColumns="CompanyName TypeName ObjectName ObjectAddress" newRowEnabled="true" newRowForm="CompanyObject"
+        <Label for="Object" name="labelObject"/>
+        <DataSelector source="Object" name="Object"renderColumns="ObjectName" disablable="false"
+          choiceColumns="CompanyName TypeNameObjectName ObjectAddress" newRowEnabled="true" newRowForm="CompanyObject"
           style="&inpw;" />
       </row>
 
@@ -127,9 +126,10 @@
       <row>
         <FlowPanel/>
         <DataSelector source="Vehicle"
-          renderColumns="VehicleParentModel VehicleModel VehicleNumber" newRowEnabled="true"
+          renderColumns="VehicleBrand VehicleModel VehicleNumber" newRowEnabled="true"
           style="&inpw;" />
-        <FlowPanel/>
+
+        <FlowPanel />
         <DataSelector source="Driver" renderColumns="DriverFirstName DriverLastName"
           newRowEnabled="true" style="&inpw;" />
       </row>

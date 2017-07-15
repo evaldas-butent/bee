@@ -27,6 +27,7 @@ import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -267,10 +268,10 @@ public final class NewMailMessage extends AbstractFormInterceptor
 
   @Override
   public void onSelection(SelectionEvent<FileInfo> event) {
-    final FileInfo file = event.getSelectedItem();
+    FileInfo file = event.getSelectedItem();
 
     if (attachmentsWidget.contains(file)) {
-      FileUtils.uploadFile(file, new Callback<Long>() {
+      FileUtils.uploadFile(file, new Callback<FileInfo>() {
         @Override
         public void onFailure(String... reason) {
           attachmentsWidget.removeFile(file);
@@ -278,8 +279,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
         }
 
         @Override
-        public void onSuccess(Long id) {
-          file.setFileId(id);
+        public void onSuccess(FileInfo info) {
           attachmentsWidget.refreshFile(file);
         }
       });
@@ -352,7 +352,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
   private void initHeader(DialogBox dialog) {
     FaLabel send = new FaLabel(FontAwesome.PAPER_PLANE);
     send.setTitle(Localized.dictionary().send());
-    send.enableAnimation();
+    send.enableAnimation(Previewer.getActionSensitivityMillis());
     send.addClickHandler(this);
 
     dialog.insertAction(1, send);

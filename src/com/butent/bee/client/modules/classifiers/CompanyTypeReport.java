@@ -22,7 +22,7 @@ import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
-import com.butent.bee.client.output.ReportParameters;
+import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -45,7 +45,6 @@ import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -155,7 +154,7 @@ public class CompanyTypeReport extends ReportInterceptor {
     DateTime upper = (ym == null) ? end : BeeUtils.min(ym.nextMonth().getDate().getDateTime(), end);
 
     if (lower != null || upper != null) {
-      labels.add(TimeUtils.renderPeriod(lower, upper));
+      labels.add(Format.renderPeriod(lower, upper));
     }
 
     filterArgs.add((lower == null) ? null : lower.serialize());
@@ -286,7 +285,7 @@ public class CompanyTypeReport extends ReportInterceptor {
       typesLabel = null;
     } else {
       params.addDataItem(COL_RELATION_TYPE, types);
-      typesLabel = getFilterLabel(NAME_TYPES);
+      typesLabel = getSelectorLabel(NAME_TYPES);
     }
 
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
@@ -336,7 +335,7 @@ public class CompanyTypeReport extends ReportInterceptor {
   protected String getBookmarkLabel() {
     return BeeUtils.joinWords(getReportCaption(),
         Format.renderPeriod(getDateTime(NAME_START_DATE), getDateTime(NAME_END_DATE)),
-        getFilterLabel(NAME_TYPES));
+        getSelectorLabel(NAME_TYPES));
   }
 
   @Override

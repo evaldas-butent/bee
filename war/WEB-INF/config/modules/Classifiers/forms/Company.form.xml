@@ -22,7 +22,8 @@
           <InputText source="Name" style="width: 425px;" visible="true" />
         </cell>
         <!-- Transrifus set company type not required { -->
-        <DataSelector source="CompanyType" style="width: 80px;" required="true"/>
+        <DataSelector source="CompanyType" style="width: 80px;" required="true"
+                      choiceColumns="Name" renderColumns="TypeName" placeholder="=companyStatus"/>
         <!-- } Transrifus -->
         <Label style="&lbl;" for="CompanyPriority" />
         <DataSelector source="CompanyPriority" style="width: 180px" />
@@ -254,7 +255,7 @@
         </FlowPanel>
       </page>
 
-      <page module="Trade Orders">
+      <page module="Trade Orders Service">
         <text>=discounts</text>
         <FlowPanel class="flexBox-vertical">
           <HorizontalPanel style="margin-bottom: 1em;">
@@ -313,6 +314,11 @@
         <ChildGrid name="CompanyOrders" relColumn="Company" />
       </page>
 
+      <page data="Cars" module="Cars" >
+        <text>=cars</text>
+        <ChildGrid name="CompanyCars" relColumn="Owner" />
+      </page>
+
       <!-- Transrifus { -->
       <page data="ERPSales">
         <text>=trdERPSales</text>
@@ -325,6 +331,11 @@
         <SimplePanel>
           <InputArea source="Notes" class="occupy-1" summarize="true" />
         </SimplePanel>
+      </page>
+
+      <page module="Service" data="ServiceMaintenance">
+        <text>=svcMaintenance</text>
+        <ChildGrid name="ServiceMaintenance" relColumn="Company" />
       </page>
     </TabbedPages>
   </FlowPanel>

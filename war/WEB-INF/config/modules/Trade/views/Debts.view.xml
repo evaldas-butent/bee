@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
       xmlns:x="http://www.butent.com/expression"
 
-  name="Debts" source="ERPSales" caption="=trdDebts"
+  name="Debts" source="ERPSales" caption="=debts" module="Trade Transport Orders Service"
   >
   <Columns>
     <SimpleColumn name="Date" />

@@ -3,13 +3,16 @@ package com.butent.bee.client.modules.transport.charts;
 import com.google.gwt.user.client.ui.HasEnabled;
 
 import com.butent.bee.client.Global;
-import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.client.i18n.Format;
+import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.modules.transport.TransportConstants.ChartDataType;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,41 +21,7 @@ import java.util.Set;
 
 class ChartData implements HasEnabled {
 
-  enum Type implements HasCaption {
-    DRIVER(Localized.dictionary().drivers()),
-    DRIVER_GROUP(Localized.dictionary().driverGroupsShort()),
-    CARGO(Localized.dictionary().cargos()),
-    CARGO_TYPE(Localized.dictionary().trCargoTypes()),
-    CUSTOMER(Localized.dictionary().transportationCustomers()),
-    MANAGER(Localized.dictionary().managers()),
-    LOADING(Localized.dictionary().cargoLoading()),
-    ORDER(Localized.dictionary().trOrders()),
-    ORDER_STATUS(Localized.dictionary().trOrderStatus()),
-    PLACE(Localized.dictionary().cargoHandlingPlaces()),
-    TRAILER(Localized.dictionary().trailers()),
-    TRIP(Localized.dictionary().trips()),
-    TRIP_STATUS(Localized.dictionary().trTripStatus()),
-    TRIP_ARRIVAL(Localized.dictionary().transportArrival()),
-    TRIP_DEPARTURE(Localized.dictionary().transportDeparture()),
-    TRUCK(Localized.dictionary().trucks()),
-    UNLOADING(Localized.dictionary().cargoUnloading()),
-    VEHICLE_GROUP(Localized.dictionary().vehicleGroupsShort()),
-    VEHICLE_MODEL(Localized.dictionary().vehicleModelsShort()),
-    VEHICLE_TYPE(Localized.dictionary().trVehicleTypesShort());
-
-    private final String caption;
-
-    Type(String caption) {
-      this.caption = caption;
-    }
-
-    @Override
-    public String getCaption() {
-      return caption;
-    }
-  }
-
-  private final Type type;
+  private final ChartDataType type;
 
   private final Set<String> items = new HashSet<>();
   private final List<String> orderedItems = new ArrayList<>();
@@ -65,7 +34,7 @@ class ChartData implements HasEnabled {
 
   private boolean enabled = true;
 
-  ChartData(Type type) {
+  ChartData(ChartDataType type) {
     this.type = type;
   }
 
@@ -106,7 +75,7 @@ class ChartData implements HasEnabled {
 
   void add(JustDate date) {
     if (date != null) {
-      add(date.toString(), (long) date.getDays());
+      add(Format.renderDate(date), (long) date.getDays());
     }
   }
 
@@ -165,6 +134,10 @@ class ChartData implements HasEnabled {
     }
   }
 
+  Set<Long> getIds() {
+    return ids;
+  }
+
   Long getItemId(String item) {
     return itemToId.get(item);
   }
@@ -175,7 +148,15 @@ class ChartData implements HasEnabled {
       orderedItems.addAll(items);
 
       if (size() > 1) {
-        orderedItems.sort(null);
+        Comparator<String> comparator;
+
+        if (type.getValueType() == ValueType.DATE) {
+          comparator = (o1, o2) -> BeeUtils.compareNullsFirst(itemToId.get(o1), itemToId.get(o2));
+        } else {
+          comparator = null;
+        }
+
+        orderedItems.sort(comparator);
       }
     }
     return orderedItems;
@@ -198,7 +179,13 @@ class ChartData implements HasEnabled {
     return result;
   }
 
-  Type getType() {
+  Set<Long> getSelectedIds() {
+    Set<Long> selectedIds = new HashSet<>();
+    getSelectedItems().forEach(itemName -> selectedIds.add(getItemId(itemName)));
+    return selectedIds;
+  }
+
+  ChartDataType getType() {
     return type;
   }
 

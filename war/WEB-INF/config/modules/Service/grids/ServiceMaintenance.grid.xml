@@ -12,13 +12,15 @@
     <DataColumn name="CompanyName" label="=client" visible="true"/>
     <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName" label="=contact" visible="true" />
     <DataColumn name="ContactPhone" visible="true"/>
-    <RelColumn name="State" renderColumns="StateName" visible="true" />
+    <RelColumn name="State" renderColumns="StateName" visible="true"
+               backgroundSource="Background" foregroundSource="Foreground" filterSupplier="list" />
     <RelColumn name="Repairer" renderColumns="RepairerFirstName RepairerLastName" visible="true" />
     <DataColumn name="Date" visible="true" />
     <DataColumn name="CategoryName" label="=svcDeviceCategory" visible="true" />
     <DataColumn name="Model" visible="true" />
     <DataColumn name="SerialNo" visible="true" />
     <DataColumn name="Description" visible="true"/>
+    <DataColumn name="ArticleNo" visible="true" />
   </g:columns>
   <g:rowStyle>
     <ui:class>bee-service-maintenance-late</ui:class>

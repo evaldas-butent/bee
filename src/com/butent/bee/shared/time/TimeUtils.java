@@ -65,8 +65,8 @@ public final class TimeUtils {
   public static final RangeOptions CLOSED_REQUIRED = new RangeOptions(false, false, true);
   public static final RangeOptions CLOSED_NOT_REQUIRED = new RangeOptions(false, false, false);
 
-  public static final char DATE_FIELD_SEPARATOR = '-';
-  public static final char DATE_TIME_SEPARATOR = ' ';
+  static final char DATE_TIME_SEPARATOR = ' ';
+
   public static final char TIME_FIELD_SEPARATOR = ':';
   public static final char MILLIS_SEPARATOR = '.';
 
@@ -177,8 +177,7 @@ public final class TimeUtils {
       } else if (d2 instanceof JustDate) {
         return d1.getDate().compareTo((JustDate) d2);
       } else if (d2 instanceof HasDateValue) {
-        return d1.getDate().getDateTime()
-            .compareTo(((HasDateValue) d2).getDateTime());
+        return d1.getDate().getDateTime().compareTo(((HasDateValue) d2).getDateTime());
       }
 
     } else if (d1 instanceof JustDate) {
@@ -222,29 +221,6 @@ public final class TimeUtils {
     return fieldDifference(start, end, FIELD_DATE);
   }
 
-  public static String dateToString(HasDateValue date) {
-    return dateToString(date, false);
-  }
-
-  public static String dateToString(HasDateValue date, boolean dropCentury) {
-    if (date == null) {
-      return BeeConst.STRING_EMPTY;
-
-    } else {
-      int year = date.getYear();
-      if (dropCentury) {
-        year %= 100;
-      }
-
-      return dateToString(year, date.getMonth(), date.getDom());
-    }
-  }
-
-  public static String dateToString(int year, int month, int dom) {
-    return yearToString(year) + DATE_FIELD_SEPARATOR + monthToString(month)
-        + DATE_FIELD_SEPARATOR + dayOfMonthToString(dom);
-  }
-
   public static int dayDiff(HasDateValue start, HasDateValue end) {
     Assert.notNull(start);
     Assert.notNull(end);
@@ -262,6 +238,10 @@ public final class TimeUtils {
 
   public static int dom() {
     return today().getDom();
+  }
+
+  public static long dropMillis(long time) {
+    return time - time % MILLIS_PER_SECOND;
   }
 
   public static String elapsedMillis(long start) {
@@ -415,14 +395,6 @@ public final class TimeUtils {
     }
   }
 
-  public static boolean hasTimePart(HasDateValue dt) {
-    if (dt instanceof DateTime) {
-      return dt.getHour() > 0 || dt.getMinute() > 0 || dt.getSecond() > 0 || dt.getMillis() > 0;
-    } else {
-      return false;
-    }
-  }
-
   public static boolean isBetween(HasDateValue dt, HasDateValue min, HasDateValue max,
       RangeOptions options) {
     Assert.notNull(options);
@@ -511,7 +483,11 @@ public final class TimeUtils {
   }
 
   public static boolean isWeekend(HasDateValue dt) {
-    return dt != null && dt.getDow() >= 6;
+    return dt != null && isWeekend(dt.getDow());
+  }
+
+  public static boolean isWeekend(int dow) {
+    return dow >= 6;
   }
 
   public static boolean isYear(Integer year) {
@@ -1061,54 +1037,6 @@ public final class TimeUtils {
     return new DateTime(BeeUtils.randomLong(min.getTime(), max.getTime()));
   }
 
-  public static String render(HasYearMonth dt) {
-    if (dt == null) {
-      return BeeConst.STRING_EMPTY;
-    } else {
-      return dt.toString();
-    }
-  }
-
-  public static String renderCompact(HasDateValue dt) {
-    return renderCompact(dt, false);
-  }
-
-  public static String renderCompact(HasDateValue dt, boolean dropCurrentYear) {
-    if (dt == null) {
-      return BeeConst.STRING_EMPTY;
-
-    } else if (dt instanceof DateTime) {
-      if (dropCurrentYear && isCurrentYear(dt)) {
-        String ds = renderMonthDay(dt);
-        String ts = ((DateTime) dt).toCompactTimeString();
-        return BeeUtils.isEmpty(ts) ? ds : (ds + DATE_TIME_SEPARATOR + ts);
-      } else {
-        return ((DateTime) dt).toCompactString();
-      }
-
-    } else if (dropCurrentYear && isCurrentYear(dt)) {
-      return renderMonthDay(dt);
-    } else {
-      return dt.toString();
-    }
-  }
-
-  public static String renderDate(HasDateValue dt) {
-    if (dt == null) {
-      return BeeConst.STRING_EMPTY;
-    } else {
-      return dt.getDate().toString();
-    }
-  }
-
-  public static String renderDateTime(long time) {
-    return renderDateTime(time, false);
-  }
-
-  public static String renderDateTime(long time, boolean showMillis) {
-    return new DateTime(showMillis ? time : (time - time % MILLIS_PER_SECOND)).toString();
-  }
-
   public static String renderMillis(long millis) {
     if (millis < 0) {
       return BeeConst.STRING_EMPTY;
@@ -1162,70 +1090,6 @@ public final class TimeUtils {
     int hours = minutes / MINUTES_PER_HOUR;
     return (leadingZero ? padTwo(hours) : BeeUtils.toString(hours)) + TIME_FIELD_SEPARATOR
         + padTwo(minutes % MINUTES_PER_HOUR);
-  }
-
-  public static String renderMinutes(long time, boolean leadingZero) {
-    if (time < 0) {
-      return BeeConst.STRING_EMPTY;
-    } else {
-      return renderMinutes(BeeUtils.toInt(time % MILLIS_PER_DAY / MILLIS_PER_MINUTE), leadingZero);
-    }
-  }
-
-  public static String renderMonthDay(HasDateValue date) {
-    if (date == null) {
-      return BeeConst.STRING_EMPTY;
-    } else {
-      return renderMonthDay(date.getMonth(), date.getDom());
-    }
-  }
-
-  public static String renderMonthDay(int month, int dom) {
-    return monthToString(month) + DATE_FIELD_SEPARATOR + dayOfMonthToString(dom);
-  }
-
-  public static String renderPeriod(DateTime start, DateTime end) {
-    return renderPeriod(start, end, false);
-  }
-
-  public static String renderPeriod(DateTime start, DateTime end, boolean dropCurrentYear) {
-    if (start == null) {
-      if (end == null) {
-        return BeeConst.STRING_EMPTY;
-      } else {
-        return PERIOD_SEPARATOR + renderCompact(end, dropCurrentYear);
-      }
-
-    } else if (end == null) {
-      return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR;
-
-    } else if (start.equals(end)) {
-      return renderCompact(start, dropCurrentYear);
-
-    } else if (sameDate(start, end)) {
-      return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR
-          + (hasTimePart(end) ? end.toCompactTimeString() : renderCompact(end, dropCurrentYear));
-
-    } else {
-      return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR
-          + renderCompact(end, dropCurrentYear);
-    }
-  }
-
-  public static String renderPeriod(JustDate start, JustDate end) {
-    if (start == null) {
-      if (end == null) {
-        return BeeConst.STRING_EMPTY;
-      } else {
-        return PERIOD_SEPARATOR + end.toString();
-      }
-
-    } else if (end == null) {
-      return start.toString() + PERIOD_SEPARATOR;
-
-    } else {
-      return start.toString() + PERIOD_SEPARATOR + end.toString();
-    }
   }
 
   public static String renderPeriod(String start, String end) {

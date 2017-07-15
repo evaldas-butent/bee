@@ -261,9 +261,116 @@
   color: #00e;
 }
 
-.bee-trade-document-new-item-selector td:nth-child(3),
-.bee-trade-document-new-item-selector td:nth-child(5) {
+.bee-grid-TradeDocumentItems.bee-GridContainer-no-data .bee-trade-price-calculation,
+.bee-grid-TradeDocumentItems.bee-GridContainer-no-data .bee-trade-cost-calculation,
+.bee-grid-TradeExpenditures.bee-GridContainer-no-data .bee-trade-cost-calculation {
+  visibility: hidden;
+}
+.bee-form-TradeDocument .bee-disabled .bee-trade-price-calculation,
+.bee-form-TradeDocument .bee-disabled .bee-trade-cost-calculation,
+.bee-form-TradeDocument .bee-disabled .bee-trade-fin-post {
+  visibility: hidden;
+}
+.bee-trade-show-item-stock[disabled],
+.bee-trade-show-related-documents[disabled] {
+  visibility: hidden;
+}
+
+.bee-trade-item-picker-new-item,
+.bee-trade-item-picker-new-service {
+  padding: 3px 8px;
+  margin-right: 1em;
+  color: #414142;
+}
+
+.bee-trade-item-picker-search-panel {
+  margin: 2ex 1em;
+}
+.bee-trade-item-picker-search-box {
+  font-size: medium;
+}
+.bee-trade-item-picker-search-command {
+  display: inline-block;
+  margin-left: 1em;
+  font-size: large;
+  color: #888;
+}
+.bee-trade-item-picker-search-command:hover {
+  color: black;
+}
+.bee-trade-item-picker-search-spinner {
+  display: inline-block;
+  margin-left: 1em;
+  font-size: large;
+  color: #444;
+  visibility: hidden;
+}
+.bee-trade-item-picker-search-running .bee-trade-item-picker-search-spinner {
+  visibility: visible;
+  animation: rotate 1s linear infinite;
+}
+.bee-trade-item-picker-search-by-container {
+  display: inline-block;
+}
+.bee-trade-item-picker-search-by-selector {
+  margin-left: 1em;
+}
+
+.bee-trade-item-picker-item-panel {
+  max-height: 75vh;
+  overflow: auto;
+}
+.bee-trade-item-picker-item-table {
+  border-collapse: collapse;
+}
+.bee-trade-item-picker-header td {
+  padding: 3px 5px;
+  border: 1px solid #ddd;
+  text-align: center;
+  font-weight: bolder;
+}
+.bee-trade-item-picker-item-price-label {
+  max-width: 80px;
+}
+.bee-trade-item-picker-qty-label,
+.bee-trade-item-picker-qty-footer,
+.bee-trade-item-picker-total-footer {
+  cursor: pointer;
+}
+
+.bee-trade-item-picker-item:nth-child(odd) {
+  background-color: #f5f5f5;
+}
+.bee-trade-item-picker-item:nth-child(even) {
+  background-color: #ebebeb;
+}
+.bee-trade-item-picker-item:hover {
+  background-color: blanchedalmond;
+}
+.bee-trade-item-picker-item-selected td {
+  background-color: aquamarine;
+}
+
+.bee-trade-item-picker-item td {
+  padding: 2px 5px;
+  border: 1px solid #ddd;
+}
+.bee-trade-item-picker-footer td {
+  padding: 3px 5px;
+  font-weight: bolder;
+}
+
+.bee-trade-item-picker-id-cell,
+.bee-trade-item-picker-item-price-cell,
+.bee-trade-item-picker-price-cell,
+.bee-trade-item-picker-total-cell,
+.bee-trade-item-picker-qty-footer,
+.bee-trade-item-picker-price-footer,
+.bee-trade-item-picker-discount-footer,
+.bee-trade-item-picker-vat-footer,
+.bee-trade-item-picker-total-footer {
   text-align: right;
+  white-space: nowrap;
 }
 .bee-form-TradeActPrint {
   padding:0 !important;
@@ -280,4 +387,221 @@
 .bee-trade-print-item-ordinal {
     max-width: 2em;
     width: 2em;
+}
+
+.bee-trade-item-picker-unit-cell,
+.bee-trade-item-picker-stock-cell,
+.bee-trade-item-picker-discount-cell,
+.bee-trade-item-picker-vat-cell {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.bee-trade-item-picker-id-cell:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.bee-trade-item-picker-type-cell,
+.bee-trade-item-picker-group-cell {
+  white-space: pre-line;
+}
+
+.bee-trade-item-picker-main-warehouse-label,
+.bee-trade-item-picker-main-warehouse-cell {
+  background-color: azure;
+}
+.bee-trade-item-picker-main-warehouse-label:hover,
+.bee-trade-item-picker-main-warehouse-cell[data-avail]:hover {
+  cursor: pointer;
+  background-color: white;
+  outline: green solid 1px;
+  outline-offset: -1px;
+}
+
+.bee-trade-item-picker-reserved {
+  margin-left: 5px;
+  color: crimson;
+  cursor: pointer;
+}
+.bee-trade-item-picker-available {
+  margin-left: 8px;
+  font-weight: bolder;
+}
+
+.bee-trade-item-picker-qty-cell {
+  text-align: center;
+}
+.bee-trade-item-picker-qty-cell .bee-trade-item-picker-qty-input {
+  width: 60px;
+  font-weight: bolder;
+  font-size: larger;
+}
+
+.bee-trade-item-picker-service .bee-trade-item-picker-name-cell,
+.bee-trade-item-picker-service .bee-trade-item-picker-qty-input {
+  color: darkblue;
+}
+
+.bee-trade-item-picker-empty .bee-trade-item-picker-pager {
+  visibility: hidden;
+}
+.bee-trade-item-picker-pager .bee-SimplePager-info {
+  font-style: italic;
+}
+
+.bee-trade-item-stock-table {
+  border-collapse: collapse;
+}
+.bee-trade-item-stock-table td {
+  padding: 2px 5px;
+  border: 1px solid #ddd;
+}
+.bee-trade-item-stock-header {
+  text-align: center;
+  font-weight: bolder;
+}
+.bee-trade-item-stock-body .bee-trade-item-stock-reserved {
+  cursor: pointer;
+}
+.bee-trade-item-stock-available {
+  font-weight: bolder;
+}
+.bee-trade-item-stock-footer {
+  text-align: center;
+  font-weight: bolder;
+  font-size: larger;
+  background-color: whitesmoke;
+}
+.bee-trade-item-stock-footer .bee-trade-item-stock-warehouse {
+  text-align: right;
+  font-size: inherit;
+}
+
+.bee-trade-report-stock-table,
+.bee-trade-report-movement-of-goods-table {
+  border-collapse: collapse;
+}
+
+.bee-trade-report-stock-header,
+.bee-trade-report-movement-of-goods-header {
+  background-color: #4caf50;
+  color: white;
+}
+.bee-trade-report-stock-body:nth-child(odd),
+.bee-trade-report-movement-of-goods-body:nth-child(odd) {
+  background-color: #f5f5f5;
+}
+.bee-trade-report-stock-body:nth-child(even),
+.bee-trade-report-movement-of-goods-body:nth-child(even) {
+  background-color: white;
+}
+.bee-trade-report-stock-footer,
+.bee-trade-report-movement-of-goods-footer {
+  background-color: #ebebeb;
+}
+
+.bee-trade-report-stock-body:hover,
+.bee-trade-report-stock-footer:hover,
+.bee-trade-report-movement-of-goods-body:hover,
+.bee-trade-report-movement-of-goods-footer:hover {
+  background-color: blanchedalmond;
+}
+
+.bee-trade-report-stock-table td,
+.bee-trade-report-movement-of-goods-table td {
+  padding: 3px 5px;
+  border: 1px solid #ddd;
+  white-space: nowrap;
+}
+.bee-trade-report-stock-table .bee-trade-report-stock-qty-row td,
+.bee-trade-report-movement-of-goods-table .bee-trade-report-movement-of-goods-qty-row td {
+  border-bottom-color: transparent;
+}
+
+.bee-trade-report-stock-header,
+.bee-trade-report-stock-row-total,
+.bee-trade-report-stock-footer,
+.bee-trade-report-movement-of-goods-header,
+.bee-trade-report-movement-of-goods-row-total,
+.bee-trade-report-movement-of-goods-footer {
+  font-weight: bolder;
+}
+.bee-trade-report-stock-header .bee-trade-report-stock-column-empty-label,
+.bee-trade-report-movement-of-goods-header .bee-trade-report-movement-of-goods-column-empty-label {
+  font-weight: normal;
+}
+.bee-trade-report-stock-table .bee-trade-report-stock-header td,
+.bee-trade-report-movement-of-goods-table .bee-trade-report-movement-of-goods-header td {
+  white-space: pre;
+}
+
+.bee-trade-report-stock-amount-row,
+.bee-trade-report-movement-of-goods-amount-row {
+  font-style: italic;
+}
+
+.bee-trade-report-stock-footer .bee-trade-report-stock-row-total,
+.bee-trade-report-movement-of-goods-footer .bee-trade-report-movement-of-goods-row-total {
+  font-size: larger;
+}
+
+.bee-trade-report-stock-header td,
+.bee-trade-report-movement-of-goods-header td {
+  text-align: center;
+}
+
+.bee-trade-report-stock-price,
+.bee-trade-report-stock-qty,
+.bee-trade-report-stock-amount,
+.bee-trade-report-movement-of-goods-price,
+.bee-trade-report-movement-of-goods-qty,
+.bee-trade-report-movement-of-goods-amount {
+  text-align: right;
+}
+
+.bee-trade-report-stock-editable,
+.bee-trade-report-movement-of-goods-editable {
+  cursor: pointer;
+}
+.bee-trade-report-stock-editable:hover,
+.bee-trade-report-movement-of-goods-editable:hover {
+  color: #00e;
+}
+
+.bee-form-PaymentSuppliers .bee-TabbedPages-tabCaption,
+.bee-form-PaymentCustomers .bee-TabbedPages-tabCaption {
+  align-self: center;
+  -webkit-align-self: center;
+  -ms-flex-item-align: center;
+}
+.bee-trade-payment-summary-amount {
+  padding-left: 5px;
+  text-align: right;
+  font-size: large;
+}
+.bee-trade-payment-summary-currency {
+  vertical-align: middle;
+}
+
+.bee-trade-debts-phase-toggle {
+  padding-right: 1vw;
+}
+.bee-Button.bee-trade-debt-command-discharge,
+.bee-Button.bee-trade-prepayment-command-discharge {
+  margin-right: 1vw;
+  font-size: larger;
+  border: 1px solid green;
+}
+.bee-Button.bee-trade-debt-command-discharge {
+  margin-left: 1vw;
+}
+.bee-GridContainer-no-data .bee-trade-debt-command-discharge,
+.bee-GridContainer-no-data .bee-trade-prepayment-command-discharge {
+  visibility: hidden;
+}
+.bee-trade-payment-updating .bee-trade-debt-command-discharge,
+.bee-trade-payment-updating .bee-trade-prepayment-command-discharge {
+  opacity: 0.5;
+  cursor: wait;
 }

@@ -10,7 +10,9 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.modules.mail.Relations;
+import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
@@ -23,6 +25,7 @@ import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.ui.UiConstants;
@@ -41,9 +44,48 @@ import java.util.Set;
  */
 final class TaskHelper {
 
+  static class TaskRelationsHandler implements SelectorEvent.Handler {
+
+    private IsRow taskRow;
+
+    @Override
+    public void onDataSelector(SelectorEvent event) {
+      if (event.isNewRow()) {
+        String viewName = event.getRelatedViewName();
+        IsRow relRow = event.getNewRow();
+
+        switch (viewName) {
+          case CalendarConstants.VIEW_APPOINTMENTS:
+            if (getTaskRow() != null) {
+              Data.setValue(viewName, relRow, CalendarConstants.COL_START_DATE_TIME,
+                Data.getDateTime(VIEW_TASKS, getTaskRow(), COL_START_TIME));
+              Data.setValue(viewName, relRow, CalendarConstants.COL_END_DATE_TIME,
+                Data.getDateTime(VIEW_TASKS, getTaskRow(), COL_FINISH_TIME));
+
+              if (BeeUtils.isTrue(Data.getBoolean(VIEW_TASKS, getTaskRow(), COL_PRIVATE_TASK))) {
+                Data.setValue(viewName, relRow, CalendarConstants.COL_VISIBILITY,
+                  CalendarConstants.CalendarVisibility.PRIVATE.ordinal());
+              } else {
+                Data.setValue(viewName, relRow, CalendarConstants.COL_VISIBILITY,
+                  CalendarConstants.CalendarVisibility.EDITABLE.ordinal());
+              }
+            }
+            break;
+        }
+      }
+    }
+
+    IsRow getTaskRow() {
+      return taskRow;
+    }
+
+    void setTaskRow(IsRow taskRow) {
+      this.taskRow = taskRow;
+    }
+  }
+
   static final String NAME_TASK_TREE = "TaskTree";
   static final String NAME_ORDER = "TaskEventsOrder";
-
 
   static ParameterList createTaskParams(FormView form, TaskConstants.TaskEvent event,
                                         BeeRow newRow, Collection<RowChildren> updatedRelations,
@@ -84,7 +126,8 @@ final class TaskHelper {
     }
 
     if (event != TaskEvent.CREATE_SCHEDULED) {
-      notes = TaskUtils.getUpdateNotes(Data.getDataInfo(viewName), oldRow, newRow);
+      notes = TaskUtils.getUpdateNotes(Data.getDataInfo(viewName), oldRow, newRow,
+          Format.getDateRenderer(), Format.getDateTimeRenderer());
     }
 
     if (form.isEnabled() && event != TaskEvent.CREATE_SCHEDULED) {
@@ -162,7 +205,7 @@ final class TaskHelper {
       return oldRelations;
     }
 
-    relations.getOldRowChildren(true).forEach(relation -> {
+    relations.getOldRowChildren().forEach(relation -> {
       String relViewName = Data.getColumnRelation(relation.getRepository(),
         relation.getChildColumn());
       oldRelations.put(relViewName, relation.getChildrenIds());

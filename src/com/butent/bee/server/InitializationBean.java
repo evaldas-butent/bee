@@ -1,6 +1,7 @@
 package com.butent.bee.server;
 
 import com.butent.bee.server.communication.ChatBean;
+import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.i18n.LocalizationBean;
@@ -38,6 +39,8 @@ public class InitializationBean {
   @EJB
   ParamHolderBean prm;
   @EJB
+  ConcurrencyBean cb;
+  @EJB
   ChatBean chat;
   @EJB
   UiHolderBean ui;
@@ -53,19 +56,23 @@ public class InitializationBean {
     Config.init();
 
     Localizations.init();
-    Localized.setGlossary(Localizations.getGlossary(SupportedLocale.USER_DEFAULT));
+    Localized.setGlossary(Localizations.getGlossary(SupportedLocale.getUserDefault()));
 
     sys.init();
-
     prm.init();
+    cb.init();
+
     moduleBean.getModules().forEach(moduleName -> prm.refreshParameters(moduleName));
 
     Map<String, String> props = prm.getMap(AdministrationConstants.PRM_SERVER_PROPERTIES);
     if (!BeeUtils.isEmpty(props)) {
       props.forEach(Config::setProperty);
     }
-    SupportedLocale.ACTIVE_LOCALES.clear();
-    SupportedLocale.ACTIVE_LOCALES.addAll(Config.getList(Service.PROPERTY_ACTIVE_LOCALES));
+
+    if (SupportedLocale.setUserDefault(Config.getProperty(Service.PROPERTY_DEFAULT_LOCALE))) {
+      Localized.setGlossary(Localizations.getGlossary(SupportedLocale.getUserDefault()));
+    }
+    SupportedLocale.setActiveLocales(Config.getList(Service.PROPERTY_ACTIVE_LOCALES));
 
     sys.initViews();
     chat.init();
@@ -77,9 +84,9 @@ public class InitializationBean {
     usr.initIpFilters();
 
     Collection<SupportedLocale> customizedLocales = loc.customizeGlossaries();
-    if (BeeUtils.contains(customizedLocales, SupportedLocale.USER_DEFAULT)
+    if (BeeUtils.contains(customizedLocales, SupportedLocale.getUserDefault())
         || BeeUtils.contains(customizedLocales, SupportedLocale.DICTIONARY_DEFAULT)) {
-      Localized.setGlossary(Localizations.getGlossary(SupportedLocale.USER_DEFAULT));
+      Localized.setGlossary(Localizations.getGlossary(SupportedLocale.getUserDefault()));
     }
 
     ui.init();

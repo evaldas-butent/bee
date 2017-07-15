@@ -45,6 +45,11 @@ public final class DateTimeFormatInfoEN implements DateTimeFormatInfo {
   }
 
   @Override
+  public String dateFormatCompact() {
+    return "yy-MM-dd";
+  }
+
+  @Override
   public DateOrdering dateOrdering() {
     return DateOrdering.YMD;
   }
@@ -98,6 +103,11 @@ public final class DateTimeFormatInfoEN implements DateTimeFormatInfo {
   @Override
   public String formatYearMonthFull() {
     return "y MMMM";
+  }
+
+  @Override
+  public String formatYearMonthStandalone() {
+    return "y LLLL";
   }
 
   @Override

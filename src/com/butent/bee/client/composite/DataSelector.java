@@ -380,7 +380,14 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
         case KeyCodes.KEY_TAB:
           consume();
-          exit(true, State.CLOSED, keyCode, hasModifiers);
+
+          if (!isStrict() && !getSelector().isShowing() && !isWaiting()
+              && !BeeUtils.equalsTrim(getValue(), getDisplayValue())) {
+
+            setSelection(null, parse(getDisplayValue()), true);
+          } else {
+            exit(true, State.CLOSED, keyCode, hasModifiers);
+          }
           break;
 
         default:
@@ -818,6 +825,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         choiceColumns, dataInfo.getColumns(), cellSource);
 
     oracle.addRowCountChangeHandler(parameter -> setAlive(parameter > 0));
+    oracle.addRowDeleteHandler(this::onRowDelete);
 
     oracle.addDataReceivedHandler(rowSet -> {
       if (!DataUtils.isEmpty(rowSet)) {
@@ -1025,6 +1033,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   public String getDisplayValue() {
     return getInput().getText();
+  }
+
+  public Widget getDrill() {
+    return drill;
   }
 
   public String getEditForm() {
@@ -1373,9 +1385,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return Collections.emptyList();
   }
 
-  /**
-   * @param ch
-   */
   protected boolean consumeCharacter(char ch) {
     return false;
   }
@@ -1470,6 +1479,12 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   protected boolean isStrict() {
     return strict;
+  }
+
+  protected void onRowDelete(long id) {
+    if (!hasValueSource() && Objects.equals(getEditorValueAsId(), id)) {
+      clearValue();
+    }
   }
 
   @Override
@@ -1680,10 +1695,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private int getColumnCount() {
     return getChoiceColumns().size();
-  }
-
-  private Widget getDrill() {
-    return drill;
   }
 
   private Value getEditorValue() {

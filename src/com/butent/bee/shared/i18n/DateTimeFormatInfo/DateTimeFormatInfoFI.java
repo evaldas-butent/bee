@@ -45,6 +45,11 @@ public final class DateTimeFormatInfoFI implements DateTimeFormatInfo {
   }
 
   @Override
+  public String dateFormatCompact() {
+    return "d.M.yy";
+  }
+
+  @Override
   public DateOrdering dateOrdering() {
     return DateOrdering.DMY;
   }
@@ -127,6 +132,11 @@ public final class DateTimeFormatInfoFI implements DateTimeFormatInfo {
 
   @Override
   public String formatYearMonthFull() {
+    return "MMMM y";
+  }
+
+  @Override
+  public String formatYearMonthStandalone() {
     return "LLLL y";
   }
 

@@ -31,6 +31,7 @@ import com.butent.bee.shared.Size;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.i18n.PredefinedFormat;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateRange;
@@ -501,7 +502,7 @@ public final class TimeBoardHelper {
       @Override
       public void onFailure(String... reason) {
         settings.setValue(0, index, oldValue);
-        super.onFailure(reason);
+        RowCallback.super.onFailure(reason);
       }
 
       @Override
@@ -578,7 +579,7 @@ public final class TimeBoardHelper {
     if (date == null) {
       return null;
     } else {
-      return BeeUtils.buildLines(date.toString(), Format.renderDayOfWeek(date));
+      return BeeUtils.buildLines(Format.renderDate(date), Format.renderDayOfWeek(date));
     }
   }
 
@@ -638,11 +639,11 @@ public final class TimeBoardHelper {
     if (start == null && end == null) {
       return BeeConst.STRING_EMPTY;
     } else if (start == null) {
-      return end.toString();
+      return Format.renderDate(end);
     } else if (end == null || start.equals(end)) {
-      return start.toString();
+      return Format.renderDate(start);
     } else {
-      return BeeUtils.joinWords(start, end);
+      return BeeUtils.joinWords(Format.renderDate(start), Format.renderDate(end));
     }
   }
 
@@ -881,7 +882,6 @@ public final class TimeBoardHelper {
       final Widget widget, final boolean isStart) {
 
     Binder.addClickHandler(widget, event -> {
-
       final JustDate startBound = owner.getMaxRange().lowerEndpoint();
       final JustDate endBound = owner.getMaxRange().upperEndpoint();
 
@@ -891,7 +891,7 @@ public final class TimeBoardHelper {
       final JustDate oldValue = isStart ? oldStart : oldEnd;
 
       final Popup popup = new Popup(OutsideClick.CLOSE);
-      DatePicker datePicker = new DatePicker(oldValue, startBound, endBound);
+      final DatePicker datePicker = new DatePicker(oldValue, startBound, endBound);
 
       datePicker.addValueChangeHandler(vce -> {
         popup.close();
@@ -919,6 +919,10 @@ public final class TimeBoardHelper {
       });
 
       popup.setWidget(datePicker);
+
+      popup.setHideOnEscape(true);
+      popup.addOpenHandler(oe -> datePicker.setFocus(true));
+
       popup.showRelativeTo(EventUtils.getTargetElement(event.getNativeEvent().getEventTarget()));
     });
   }
@@ -1065,7 +1069,7 @@ public final class TimeBoardHelper {
         && dayWidth > DAY_SEPARATOR_WIDTH * 2
         && (index == count - 1 || date.getDom() == 1
         || TimeUtils.isMore(date, TimeUtils.today())
-            && dayWidth >= MIN_DAY_WIDTH_FOR_SEPARATOR)) {
+        && dayWidth >= MIN_DAY_WIDTH_FOR_SEPARATOR)) {
       return DAY_SEPARATOR_WIDTH;
     } else {
       return 0;
@@ -1085,7 +1089,7 @@ public final class TimeBoardHelper {
   private static Widget renderDate(JustDate date, String styleName, int width, int height) {
     Size maxSize = new Size(width, height);
 
-    String text = date.toString();
+    String text = Format.renderDate(date);
     Size size = Rulers.getLineSize(null, text, false);
 
     if (maxSize.encloses(size)) {
@@ -1100,39 +1104,20 @@ public final class TimeBoardHelper {
   }
 
   private static Widget renderDate(JustDate date, String styleName, Size maxSize) {
-    String text = date.toString();
+    String text = Format.renderDate(date);
     Size size = Rulers.getLineSize(null, text, false);
 
-    String s = null;
+    if (size.getWidth() > maxSize.getWidth()) {
+      text = Format.renderDateCompact(date);
+      size = Rulers.getLineSize(null, text, false);
 
-    for (int i = 0; i < 5 && size.getWidth() > maxSize.getWidth(); i++) {
-      switch (i) {
-        case 0:
-          s = text.substring(2);
-          break;
-
-        case 1:
-          s = BeeUtils.join(String.valueOf(TimeUtils.DATE_FIELD_SEPARATOR), date.getYear() % 100,
-              date.getMonth(), date.getDom());
-          break;
-
-        case 2:
-          s = text.substring(5);
-          break;
-
-        case 3:
-          s = BeeUtils.join(String.valueOf(TimeUtils.DATE_FIELD_SEPARATOR),
-              date.getMonth(), date.getDom());
-          break;
-
-        default:
-          s = text.substring(5);
+      if (size.getWidth() > maxSize.getWidth()) {
+        text = Format.render(PredefinedFormat.MONTH_NUM_DAY, date);
+        size = Rulers.getLineSize(null, text, false);
       }
-
-      size = Rulers.getLineSize(null, s, false);
     }
 
-    Widget widget = renderLabel(BeeUtils.nvl(s, text), styleName);
+    Widget widget = renderLabel(text, styleName);
 
     if (!maxSize.encloses(size) && size.isValid()) {
       double x = Math.min((double) maxSize.getWidth() / size.getWidth(), 1.0);
@@ -1158,22 +1143,28 @@ public final class TimeBoardHelper {
 
     Size maxSize = new Size(width, height);
 
-    String startText = start.toString();
+    String startText = Format.renderDate(start);
     Size startSize = Rulers.getLineSize(null, startText, false);
 
-    String endText = end.toString();
+    String endText = Format.renderDate(end);
     Size endSize = Rulers.getLineSize(null, endText, false);
 
     if (maxSize.encloses(startSize, endSize)) {
       return Pair.of(renderLabel(startText, startStyle), renderLabel(endText, endStyle));
     }
 
+    startText = Format.renderDateCompact(start);
+    startSize = Rulers.getLineSize(null, startText, false);
+
+    endText = Format.renderDateCompact(end);
+    endSize = Rulers.getLineSize(null, endText, false);
+
+    if (maxSize.encloses(startSize, endSize)) {
+      return Pair.of(renderLabel(startText, startStyle), renderLabel(endText, endStyle));
+    }
+
     if (start.getYear() == end.getYear()) {
-      if (TimeUtils.sameMonth(start, end)) {
-        endText = BeeUtils.right(end.toString(), 2);
-      } else {
-        endText = BeeUtils.right(end.toString(), 5);
-      }
+      endText = Format.render(PredefinedFormat.MONTH_NUM_DAY, end);
 
       if (maxSize.encloses(startSize, endSize)) {
         return Pair.of(renderLabel(startText, startStyle), renderLabel(endText, endStyle));

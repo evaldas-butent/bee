@@ -32,6 +32,7 @@
       <row>
         <Label name="TermLabel" for="Term" />
         <InputDateTime source="Term" />
+        <CheckBox name="Urgent" summarize="true" text="=svcUrgent" />
       </row>
       <row>
         <Label name="ItemLabel" for="Item" />
@@ -42,7 +43,12 @@
         <DataSelector source="Currency" for="Price" newRowEnabled="false" editEnabled="false"/>
       </row>
       <row>
-        <Label name="WarrantyLabel" text="=svcWarrantyValidTo" class="bee-required"/>
+        <Label name="WarrantyTypeLabel" text="=svcWarrantyType" class="bee-required"/>
+        <UnboundSelector name="WarrantyType" viewName="WarrantyTypes" editViewName="WarrantyTypes"
+                      renderColumns="Name" />
+      </row>
+      <row>
+        <Label name="WarrantyLabel" text="=svcWarrantyValidTo"/>
         <InputDateTime name="Warranty" text="=svcWarrantyValidTo"/>
       </row>
     </Table>

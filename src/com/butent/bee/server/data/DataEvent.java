@@ -13,7 +13,9 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public abstract class DataEvent {
@@ -56,7 +58,18 @@ public abstract class DataEvent {
     }
   }
 
-  public static class ViewInsertEvent extends ViewModifyEvent {
+  public interface InsertOrUpdate {
+    default void addValue(BeeColumn column, Value value) {
+      getColumns().add(column);
+      getRow().addValue(value);
+    }
+
+    List<BeeColumn> getColumns();
+
+    BeeRow getRow();
+  }
+
+  public static class ViewInsertEvent extends ViewModifyEvent implements InsertOrUpdate {
     private final List<BeeColumn> columns;
     private final BeeRow row;
 
@@ -69,15 +82,12 @@ public abstract class DataEvent {
       this.row = row;
     }
 
-    public void addValue(BeeColumn column, Value value) {
-      columns.add(column);
-      row.addValue(value);
-    }
-
+    @Override
     public List<BeeColumn> getColumns() {
       return columns;
     }
 
+    @Override
     public BeeRow getRow() {
       return row;
     }
@@ -126,7 +136,7 @@ public abstract class DataEvent {
     }
   }
 
-  public static class ViewUpdateEvent extends ViewModifyEvent {
+  public static class ViewUpdateEvent extends ViewModifyEvent implements InsertOrUpdate {
     private final List<BeeColumn> columns;
     private final BeeRow row;
 
@@ -139,10 +149,12 @@ public abstract class DataEvent {
       this.row = row;
     }
 
+    @Override
     public List<BeeColumn> getColumns() {
       return columns;
     }
 
+    @Override
     public BeeRow getRow() {
       return row;
     }
@@ -155,6 +167,7 @@ public abstract class DataEvent {
   private boolean afterStage;
 
   private Object userObject;
+  private Map<String, Object> attributes;
 
   private DataEvent(String targetName) {
     this.targetName = Assert.notEmpty(targetName);
@@ -177,12 +190,20 @@ public abstract class DataEvent {
     }
   }
 
+  public Object getAttribute(String name) {
+    return (attributes == null) ? null : attributes.get(name);
+  }
+
   public String getTargetName() {
     return targetName;
   }
 
   public Object getUserObject() {
     return userObject;
+  }
+
+  public boolean hasAttribute(String name) {
+    return attributes != null && attributes.containsKey(name);
   }
 
   public boolean hasErrors() {
@@ -199,6 +220,13 @@ public abstract class DataEvent {
 
   public boolean isTarget(String... targets) {
     return ArrayUtils.isEmpty(targets) || ArrayUtils.contains(targets, getTargetName());
+  }
+
+  public void setAttribute(String name, Object value) {
+    if (attributes == null) {
+      this.attributes = new HashMap<>();
+    }
+    attributes.put(name, value);
   }
 
   public void setUserObject(Object userObject) {

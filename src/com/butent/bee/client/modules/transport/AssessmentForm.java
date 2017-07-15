@@ -45,6 +45,7 @@ import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
@@ -65,7 +66,6 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.client.view.grid.interceptor.ParentRowRefreshGrid;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
@@ -102,7 +102,6 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -400,7 +399,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                       public void onSuccess(Integer result) {
                         if (reset) {
                           DataChangeEvent.fireLocal(BeeKeeper.getBus(), viewName,
-                              DataChangeEvent.CANCEL_RESET_REFRESH);
+                              DataChangeEvent.CANCEL_RESET_REFRESH, null);
                         } else {
                           DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(),
                               VIEW_CHILD_ASSESSMENTS);
@@ -409,7 +408,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                     });
               } else if (reset) {
                 DataChangeEvent.fireLocal(BeeKeeper.getBus(), viewName,
-                    DataChangeEvent.CANCEL_RESET_REFRESH);
+                    DataChangeEvent.CANCEL_RESET_REFRESH, null);
               }
             }
           });
@@ -461,7 +460,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     if (widget instanceof ChildGrid) {
       switch (name) {
         case TBL_CARGO_INCOMES:
-          ((ChildGrid) widget).setGridInterceptor(new ParentRowRefreshGrid());
+          ((ChildGrid) widget).setGridInterceptor(new CargoIncomesGrid());
           break;
 
         case TBL_CARGO_EXPENSES:
@@ -469,8 +468,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
             @Override
             public boolean previewModify(Set<Long> rowIds) {
               if (super.previewModify(rowIds)) {
-                Data.onTableChange(TBL_ASSESSMENT_FORWARDERS,
-                    EnumSet.of(DataChangeEvent.Effect.REFRESH));
+                Data.refreshLocal(TBL_ASSESSMENT_FORWARDERS);
                 return true;
               }
               return false;
@@ -711,7 +709,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
   private static String buildLog(String caption, String value, String oldLog) {
     return BeeUtils.join("\n\n",
-        TimeUtils.nowMinutes().toCompactString() + " " + caption + "\n" + value, oldLog);
+        Format.renderDateTime(TimeUtils.nowMinutes()) + " " + caption + "\n" + value, oldLog);
   }
 
   private void createLetter() {
@@ -745,7 +743,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           }
         }
         table.setText(c, 1, BeeUtils.joinWords(fld.contains("Date")
-            ? TimeUtils.renderCompact(DateTime.restore(value)) : value, value2));
+            ? Format.renderDateTime(DateTime.restore(value)) : value, value2));
         c++;
       }
     }
@@ -770,7 +768,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
             for (int i = 0; i < places.getNumberOfRows(); i++) {
               table.getCellFormatter().setColSpan(r, 0, 2);
-              table.setText(r, 0, BeeUtils.joinItems(TimeUtils.renderCompact(places
+              table.setText(r, 0, BeeUtils.joinItems(Format.renderDateTime(places
                       .getDateTime(i, COL_PLACE_DATE)), places.getString(i, COL_PLACE_ADDRESS),
                   places.getString(i, COL_PLACE_POST_INDEX),
                   places.getString(i, ALS_COUNTRY_NAME)));
@@ -855,7 +853,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
                 for (Entry<String, DateTime> entry : dates.entrySet()) {
                   log = buildLog(BeeUtils.joinWords(entry.getKey(),
-                      entry.getValue() != null ? entry.getValue().toCompactString()
+                      entry.getValue() != null ? Format.renderDateTime(entry.getValue())
                           : loc.filterNullLabel()), value, log);
                 }
                 form.getActiveRow().setValue(logIdx, log);

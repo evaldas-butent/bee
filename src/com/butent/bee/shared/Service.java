@@ -11,6 +11,7 @@ public final class Service {
   public static final String PROPERTY_AUDIT_OFF = "DisableAuditing";
   public static final String PROPERTY_MODULES = "Modules";
   public static final String PROPERTY_VIEW_MODULES = "ViewModules";
+  public static final String PROPERTY_DEFAULT_LOCALE = "DefaultLocale";
   public static final String PROPERTY_ACTIVE_LOCALES = "ActiveLocales";
   public static final String PROPERTY_IDLE_TIMEOUT = "IdleSessionTimeoutInMinutes";
 
@@ -197,6 +198,7 @@ public final class Service {
   public static final String VAR_FILE_NAME = RPC_VAR_PREFIX + "file_name";
 
   public static final String VAR_OPTIONS = RPC_VAR_PREFIX + "options";
+  public static final String VAR_REQUIRED = RPC_VAR_PREFIX + "required";
 
   public static final String VAR_REPORT = RPC_VAR_PREFIX + "report";
   public static final String VAR_REPORT_PARAMETERS = VAR_REPORT + "_params";

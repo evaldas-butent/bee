@@ -59,7 +59,8 @@ public final class DocumentsHandler {
                 COL_DOCUMENT_RECEIVED, COL_DOCUMENT_SENT, COL_DOCUMENT_RECEIVED_NUMBER,
                 COL_DOCUMENT_SENT_NUMBER, COL_DESCRIPTION, ClassifierConstants.COL_FIRST_NAME,
                 ClassifierConstants.COL_LAST_NAME, ClassifierConstants.ALS_POSITION_NAME, "Notes"),
-            BeeConst.STRING_SPACE));
+            BeeConst.STRING_SPACE, Format.getDateRenderer(), Format.getDateTimeRenderer()));
+
       } else if (event.hasView(VIEW_DOCUMENT_FILES)) {
         event.setResult(BeeUtils.joinWords(
             Data.getString(event.getViewName(), event.getRow(), COL_FILE_CAPTION),
@@ -204,10 +205,15 @@ public final class DocumentsHandler {
             public void onSuccess(Integer result) {
               if (result == 0) {
                 Queries.insert(AdministrationConstants.VIEW_RELATIONS, Data.getColumns(
-                    AdministrationConstants.VIEW_RELATIONS,
-                    Lists.newArrayList(COL_DOCUMENT_COMPANY,
-                        COL_DOCUMENT)), Lists.newArrayList(company, BeeUtils
-                    .toString(rowId)));
+                  AdministrationConstants.VIEW_RELATIONS,
+                  Lists.newArrayList(COL_DOCUMENT_COMPANY, COL_DOCUMENT)),
+                  Lists.newArrayList(company, BeeUtils.toString(rowId)),
+                  null, new RowCallback() {
+                    @Override
+                    public void onSuccess(BeeRow result) {
+                      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_RELATED_DOCUMENTS);
+                    }
+                  });
               }
             }
           });

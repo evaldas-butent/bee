@@ -13,6 +13,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import org.w3c.dom.Document;
@@ -172,6 +173,21 @@ public final class ButentWS {
     return resp;
   }
 
+  public SimpleRowSet getEmployees(DateTime getChangesFrom) throws BeeException {
+    logger.debug("GetEmployees:", getChangesFrom);
+    String answer;
+
+    try {
+      answer = process("GetEmployee", XmlUtils.tag("time", getChangesFrom));
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+    SimpleRowSet data = xmlToSimpleRowSet(answer, "CODE", "NAME", "SURNAME", "BIRTHDAY", "ETATAS",
+        "DEPARTCODE", "POSITIONCODE", "ADDRESS1", "MOBILEPHONE", "EMAIL", "DIRBA_NUO", "DISMISSED");
+    logger.debug("GetEmployees cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
+    return data;
+  }
+
   public SimpleRowSet getGoods(String filter) throws BeeException {
     logger.debug("GetGoods");
     String answer;
@@ -206,6 +222,20 @@ public final class ButentWS {
     return data;
   }
 
+  public SimpleRowSet getObjects() throws BeeException {
+    logger.debug("GetObjects");
+    String answer;
+
+    try {
+      answer = process("GetObjects", "");
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+    SimpleRowSet data = xmlToSimpleRowSet(answer, "OBJEKTAS", "OBJEKT_ID");
+    logger.debug("GetObjects cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
+    return data;
+  }
+
   public SimpleRowSet getStocks(String code) throws BeeException {
     logger.debug("GetStocks");
     String answer;
@@ -232,6 +262,21 @@ public final class ButentWS {
     }
     SimpleRowSet data = xmlToSimpleRowSet(answer, columns);
     logger.debug("GetSQLData cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
+    return data;
+  }
+
+  public SimpleRowSet getTimeCards(DateTime getChangesFrom) throws BeeException {
+    logger.debug("GetTimeCards:", getChangesFrom);
+    String answer;
+
+    try {
+      answer = process("GetTimeCard", XmlUtils.tag("time", getChangesFrom));
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+    SimpleRowSet data = xmlToSimpleRowSet(answer, "TAB_NR", "DATA_NUO", "DATA_IKI", "TAB_KODAS",
+      "PAVAD", "ISAK_PAVAD", "D_TAB_ID");
+    logger.debug("GetTimeCards cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
     return data;
   }
 

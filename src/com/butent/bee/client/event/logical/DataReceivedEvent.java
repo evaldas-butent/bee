@@ -9,6 +9,7 @@ import java.util.List;
 
 public class DataReceivedEvent extends GwtEvent<DataReceivedEvent.Handler> {
 
+  @FunctionalInterface
   public interface Handler extends EventHandler {
     void onDataReceived(DataReceivedEvent event);
   }
@@ -20,9 +21,15 @@ public class DataReceivedEvent extends GwtEvent<DataReceivedEvent.Handler> {
   }
 
   private final List<? extends IsRow> rows;
+  private final boolean insert;
 
   public DataReceivedEvent(List<? extends IsRow> rows) {
+    this(rows, false);
+  }
+
+  public DataReceivedEvent(List<? extends IsRow> rows, boolean insert) {
     this.rows = rows;
+    this.insert = insert;
   }
 
   @Override
@@ -32,6 +39,10 @@ public class DataReceivedEvent extends GwtEvent<DataReceivedEvent.Handler> {
 
   public List<? extends IsRow> getRows() {
     return rows;
+  }
+
+  public boolean isInsert() {
+    return insert;
   }
 
   @Override

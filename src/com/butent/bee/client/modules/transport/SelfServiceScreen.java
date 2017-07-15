@@ -5,17 +5,15 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_USER_LOCALE;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
@@ -36,9 +34,7 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
@@ -46,7 +42,6 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.UserInterface;
@@ -104,6 +99,7 @@ public class SelfServiceScreen extends ScreenImpl {
     Data.setReadOnlyViews(Collections.singleton(VIEW_CARGO_INVOICES));
 
     Data.setColumnReadOnly(VIEW_SHIPMENT_REQUESTS, ClassifierConstants.COL_COMPANY_PERSON);
+    Data.setColumnReadOnly(VIEW_SHIPMENT_REQUESTS, COL_QUERY_MANAGER);
 
     GridFactory.hideColumn("ShipmentRegisteredRequests", COL_QUERY_STATUS);
     GridFactory.hideColumn("ShipmentRegisteredRequests", COL_QUERY_REASON);
@@ -118,17 +114,14 @@ public class SelfServiceScreen extends ScreenImpl {
     if (getCommandPanel() != null) {
       getCommandPanel().clear();
     }
-    addCommandItem(new Button(Localized.dictionary().trSelfServiceCommandNewRequest(),
+    addCommandItem(new Button(Localized.dictionary().createNew(),
         event -> {
           DataInfo info = Data.getDataInfo(VIEW_SHIPMENT_REQUESTS);
           BeeRow row = RowFactory.createEmptyRow(info, true);
 
-          RowFactory.createRow(info, row, Modality.ENABLED, new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
-              openRequests();
-              showSuccessInfo(result);
-            }
+          RowFactory.createRow(info, row, Modality.ENABLED, result -> {
+            openRequests();
+            showSuccessInfo(result);
           });
         }));
     addCommandItem(new Button(Localized.dictionary().trSelfServiceCommandRequests(),
@@ -149,22 +142,18 @@ public class SelfServiceScreen extends ScreenImpl {
                 ev.consume();
                 Queries.getRowSet(TradeConstants.VIEW_SALE_FILES, null,
                     Filter.equals(TradeConstants.COL_SALE, ev.getRowValue().getId()),
-                    new Queries.RowSetCallback() {
-                      @Override
-                      public void onSuccess(BeeRowSet result) {
-                        if (!DataUtils.isEmpty(result)) {
-                          int r = result.getNumberOfRows() - 1;
-                          FileInfo fileInfo = new FileInfo(
-                              result.getLong(r, AdministrationConstants.COL_FILE),
-                              result.getString(r, AdministrationConstants.ALS_FILE_NAME),
-                              result.getLong(r, AdministrationConstants.ALS_FILE_SIZE),
-                              result.getString(r, AdministrationConstants.ALS_FILE_TYPE));
+                    result -> {
+                      if (!DataUtils.isEmpty(result)) {
+                        int r = result.getNumberOfRows() - 1;
+                        FileInfo fileInfo = new FileInfo(result.getLong(r, COL_FILE),
+                            result.getString(r, COL_FILE_HASH),
+                            result.getString(r, ALS_FILE_NAME),
+                            result.getLong(r, ALS_FILE_SIZE),
+                            result.getString(r, ALS_FILE_TYPE));
 
-                          fileInfo.setCaption(result.getString(r,
-                              AdministrationConstants.COL_FILE_CAPTION));
+                        fileInfo.setCaption(result.getString(r, COL_FILE_CAPTION));
 
-                          ReportUtils.preview(fileInfo);
-                        }
+                        ReportUtils.preview(fileInfo);
                       }
                     });
               }
@@ -234,13 +223,10 @@ public class SelfServiceScreen extends ScreenImpl {
     args.addDataItem(COL_USER_LOCALE, result.getInteger(
         Data.getColumnIndex(VIEW_SHIPMENT_REQUESTS, COL_USER_LOCALE)));
 
-    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        String message = (String) response.getResponse();
-        if (!BeeUtils.isEmpty(message)) {
-          Global.showInfo(message);
-        }
+    BeeKeeper.getRpc().makePostRequest(args, response -> {
+      String message = (String) response.getResponse();
+      if (!BeeUtils.isEmpty(message)) {
+        Global.showInfo(message);
       }
     });
   }
