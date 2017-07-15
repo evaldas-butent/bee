@@ -133,8 +133,10 @@
 
     <Details open="true">
       <Summary text="=cargoInformation" style="&summary;" />
-      <ChildGrid name="CargoLoadingUnbound" relColumn="Cargo" source="Cargo" style="min-height: 170px;"/>
-      <ChildGrid name="CargoUnloadingUnbound" relColumn="Cargo" source="Cargo" style="min-height: 170px;"/>
+      <ChildGrid name="CargoLoadingUnbound" relColumn="Cargo" source="Cargo"
+                 style="min-height: 170px;" />
+      <ChildGrid name="CargoUnloadingUnbound" relColumn="Cargo" source="Cargo"
+                 style="min-height: 170px;" />
     </Details>
     &separator;
 
@@ -163,7 +165,7 @@
             <DataSelector source="ShippingTerm" required="true" filter="SelfService"
                           order="SelfService, Name" newRowEnabled="false" />
             <FaLabel name="Incoterms" char="question_circle" disablable="false"
-              style="display: inline-block; margin-left: 5px;"/>
+                     style="display: inline-block; margin-left: 5px;" />
           </FlowPanel>
         </row>
 
@@ -184,7 +186,7 @@
           </cell>
           <Label for="Value" name="ValueLabel" />
           <FlowPanel>
-            <InputMoney source="Value" style="&decimal;" currencySource="ValueCurrency"/>
+            <InputMoney source="Value" style="&decimal;" currencySource="ValueCurrency" />
             <DataSelector source="ValueCurrency" newRowEnabled="false" editEnabled="false"
                           placeholder="=currencyShort" style="&unit;" filter="SelfService" />
           </FlowPanel>
@@ -208,9 +210,11 @@
       <row>
         <Label for="ManagerPhone" />
         <TextLabel source="ManagerPhone">
-          <renderToken source="ManagerPhone" />
-          <renderToken source="ManagerMobile" prefix=", " />
-          <renderToken source="ManagerFax" prefix=", " />
+          <render>
+            <ui:expression>(row.ManagerMobile||'')
+              + (row.ManagerMobile &amp;&amp; row.ManagerPhone ? ', ' : '') + (row.ManagerPhone||'')
+            </ui:expression>
+          </render>
         </TextLabel>
       </row>
     </Table>
@@ -317,7 +321,7 @@
       </dynStyle>
       <page>
         <text>=files</text>
-        <ChildGrid name="CargoFiles" relColumn="Cargo" source="Cargo" disablable="false"/>
+        <ChildGrid name="CargoFiles" relColumn="Cargo" source="Cargo" disablable="false" />
       </page>
       <page>
         <text>=mails</text>
