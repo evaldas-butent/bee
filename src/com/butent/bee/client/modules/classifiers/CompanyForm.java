@@ -430,7 +430,7 @@ class CompanyForm extends AbstractFormInterceptor {
         GridFactory.openGrid(AdministrationConstants.GRID_HISTORY,
             new FinancialStateHistoryHandler(formView.getViewName(),
                 Lists.newArrayList(Long.valueOf(activeRow.getId()))),
-            null, ModalGrid.opener(800, 500));
+            null, ModalGrid.opener(800, 500, true));
       }
     };
   }

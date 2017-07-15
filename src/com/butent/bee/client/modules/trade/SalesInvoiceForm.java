@@ -132,7 +132,7 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
                           Arrays.asList(
                               BeeUtils.toString(id),
                               BeeUtils.toString(fileInfo.getId()),
-                              TimeUtils.nowMinutes().toCompactString(),
+                              Format.renderDateTime(TimeUtils.nowMinutes()),
                               BeeUtils.toString(messageId)),
                           null,
                           new RowInsertCallback(info.getViewName()) {

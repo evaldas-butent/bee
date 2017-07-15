@@ -300,6 +300,13 @@ public final class TradeConstants {
   public static final String ALS_STATUS_BACKGROUND = "StatusBackground";
   public static final String ALS_STATUS_FOREGROUND = "StatusForeground";
 
+  public static final String ALS_OVERDUE_COUNT = "OverdueCount";
+  public static final String ALS_OVERDUE_SUM = "OverdueSum";
+  public static final String ALS_SALES_COUNT = "SalesCount";
+  public static final String ALS_SALES_SUM = "SalesSum";
+  public static final String ALS_TRADE_STATUS_NAME = "TradeStatusName";
+  public static final String ALS_TRADE_STATUS = "TradeStatus";
+
   public static final String ALS_EXPENDITURE_TYPE_SUPPLIER = "TypeSupplier";
 
   public static final String ALS_WAREHOUSE_FROM_CODE = "WarehouseFromCode";
@@ -314,7 +321,7 @@ public final class TradeConstants {
   public static final String ALS_PARENT_COST_CURRENCY = "ParentCostCurrency";
 
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
-
+  public static final String PROP_OVERALL_TOTAL = "OveralTotal";
   public static final String PROP_STOCK = "Stock";
   public static final String PROP_RESERVED = "Reserved";
   public static final String PROP_WAREHOUSES = "Warehouses";

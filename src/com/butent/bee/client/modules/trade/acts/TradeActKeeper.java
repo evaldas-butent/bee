@@ -24,6 +24,7 @@ import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -162,7 +163,7 @@ public final class TradeActKeeper {
                             Arrays.asList(
                                 BeeUtils.toString(id),
                                 BeeUtils.toString(fileInfo.getId()),
-                                TimeUtils.nowMinutes().toCompactString(),
+                                Format.renderDateTime(TimeUtils.nowMinutes()),
                                 BeeUtils.toString(messageId)),
                             null,
                             new RowInsertCallback(info.getViewName()) {
