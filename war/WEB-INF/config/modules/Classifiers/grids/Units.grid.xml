@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
         name="Units" viewName="Units" caption="=units"
-        newRowWindow="modal" editWindow="modal"
+        newRowWindow="modal"
 >
   <g:columns>
     <DataColumn name="Name" visible="true" />

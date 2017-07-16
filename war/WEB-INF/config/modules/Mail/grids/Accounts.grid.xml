@@ -3,9 +3,9 @@
 
         name="Accounts" viewName="Accounts" caption="=mailAccounts"
         newRowForm="NewAccount" newRowWindow="modal"
-        editForm="Account" editWindow="modal"
+        editForm="Account"
         filter="User={u} OR AccountUser={u}"
-    >
+>
 
   <g:columns>
     <DataColumn name="Description" />
