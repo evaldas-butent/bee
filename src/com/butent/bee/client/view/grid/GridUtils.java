@@ -132,10 +132,16 @@ public final class GridUtils {
           ? BeeKeeper.getUser().getChildEditWindow() : BeeKeeper.getUser().getGridEditWindow();
 
       if (BeeUtils.isEmpty(wtp)) {
-        wtp = isChild ? Settings.getChildEditWindow() : Settings.getGridEditWindow();
+        if (!isChild && BeeKeeper.getUser().openInNewTab()) {
+          windowType = WindowType.NEW_TAB;
+        } else {
+          wtp = isChild ? Settings.getChildEditWindow() : Settings.getGridEditWindow();
+        }
       }
 
-      windowType = WindowType.parse(wtp);
+      if (windowType == null) {
+        windowType = WindowType.parse(wtp);
+      }
 
       if (windowType == null) {
         windowType = isChild ? WindowType.DEFAULT_CHILD_EDIT : WindowType.DEFAULT_GRID_EDIT;
