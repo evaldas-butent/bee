@@ -8,7 +8,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.ElementSize;
-import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
@@ -40,25 +39,18 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
 
     private final DataInfo dataInfo;
     private final long rowId;
-    private final String initialCaption;
+    private final String rowCaption;
 
-    private Container(DataInfo dataInfo, long rowId, String initialCaption) {
+    private Container(DataInfo dataInfo, long rowId, String rowCaption) {
       super();
       this.dataInfo = dataInfo;
       this.rowId = rowId;
-      this.initialCaption = initialCaption;
+      this.rowCaption = rowCaption;
     }
 
     @Override
     public String getCaption() {
-      String caption = DataUtils.getRowCaption(dataInfo, getForm().getActiveRow(),
-          Format.getDateRenderer(), Format.getDateTimeRenderer());
-
-      if (BeeUtils.isEmpty(caption)) {
-        return BeeUtils.notEmpty(initialCaption, getHeader().getCaption());
-      } else {
-        return caption;
-      }
+      return BeeUtils.notEmpty(rowCaption, getHeader().getCaption());
     }
 
     @Override
@@ -78,15 +70,18 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
 
   private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.EDITOR);
 
-  private static HeaderView createHeader(String caption, Set<Action> enabledActions,
-      Set<Action> disabledActions) {
+  private static HeaderView createHeader(String caption, long rowId, String rowCaption,
+      Set<Action> enabledActions, Set<Action> disabledActions) {
 
     HeaderView formHeader = new HeaderImpl();
     formHeader.asWidget().addStyleName(STYLE_HEADER);
 
-    formHeader.create(caption, false, false, null, uiOptions, enabledActions, disabledActions,
-        Action.NO_ACTIONS);
+    formHeader.create(caption, false, false, null, uiOptions,
+        enabledActions, disabledActions, Action.NO_ACTIONS);
     formHeader.addCaptionStyle(STYLE_CAPTION);
+
+    formHeader.setRowId(rowId);
+    formHeader.setRowMessage(rowCaption);
 
     return formHeader;
   }
@@ -98,7 +93,7 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
 
   private HandlesActions actionDelegate;
 
-  public RowPresenter(FormView formView, DataInfo dataInfo, long rowId, String initialCaption,
+  public RowPresenter(FormView formView, DataInfo dataInfo, long rowId, String rowCaption,
       Set<Action> enabledActions, Set<Action> disabledActions) {
 
     this.formView = formView;
@@ -114,9 +109,10 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
       ea.add(Action.BOOKMARK);
     }
 
-    HeaderView headerView = createHeader(formView.getCaption(), ea, disabledActions);
+    HeaderView headerView = createHeader(formView.getCaption(), rowId, rowCaption,
+        ea, disabledActions);
 
-    this.container = new Container(dataInfo, rowId, initialCaption);
+    this.container = new Container(dataInfo, rowId, rowCaption);
     container.addStyleName(STYLE_CONTAINER);
     container.addStyleName(UiOption.getStyleName(uiOptions));
     container.addStyleName(formView.getContainerStyleName());
