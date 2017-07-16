@@ -126,7 +126,7 @@
             <col index="1" kind="label" />
 
             <row>
-              <CheckBox source="OpenInNewTab" summarize="true" />
+              <CheckBox source="WorkspaceContinue" summarize="true" />
 
               <Label for="ClickSensitivityMillis" />
               <InputSpinner source="ClickSensitivityMillis" minValue="0" maxValue="1000" step="50"
@@ -134,7 +134,8 @@
             </row>
 
             <row>
-              <CheckBox source="WorkspaceContinue" summarize="true" />
+              <CheckBox name="ShowNewMessagesNotifier" source="ShowNewMessagesNotifier"
+                        summarize="true" />
 
               <Label for="ClickSensitivityDistance" />
               <InputSpinner source="ClickSensitivityDistance" minValue="0" maxValue="99"
@@ -142,8 +143,7 @@
             </row>
 
             <row>
-              <CheckBox name="ShowNewMessagesNotifier" source="ShowNewMessagesNotifier"
-                        summarize="true" />
+              <CheckBox name="Assistant" source="Assistant" summarize="true" />
 
               <Label for="ActionSensitivityMillis" />
               <InputSpinner source="ActionSensitivityMillis" minValue="0" maxValue="2000" step="100"
@@ -151,7 +151,7 @@
             </row>
 
             <row>
-              <CheckBox name="Assistant" source="Assistant" summarize="true" />
+              <text />
 
               <Label for="NewsRefreshIntervalSeconds" />
               <InputSpinner source="NewsRefreshIntervalSeconds" minValue="0" maxValue="1000"
@@ -184,6 +184,13 @@
         <FlowPanel>
           <Table kind="controls" style="margin-top: 1vh;">
             <col index="0" kind="label" />
+
+            <row>
+              <text />
+              <cell style="padding-bottom: 1vh;">
+                <CheckBox source="OpenInNewTab" summarize="true" />
+              </cell>
+            </row>
 
             <row>
               <Label for="GridEditWindow" />
