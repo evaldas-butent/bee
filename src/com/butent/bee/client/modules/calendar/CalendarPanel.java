@@ -13,7 +13,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
@@ -160,7 +159,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
       switch (item.getItemType()) {
         case APPOINTMENT:
-          CalendarKeeper.openAppointment((Appointment) item, getCalendarId());
+          CalendarKeeper.openAppointment((Appointment) item, getCalendarId(), null);
           break;
         case TASK:
           RowEditor.open(TaskConstants.VIEW_TASKS, item.getId(), Opener.MODAL);
@@ -891,12 +890,9 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
         BeeUtils.toString(newEnd.getTime()));
 
     Queries.update(viewName, row.getId(), row.getVersion(), columns, oldValues, newValues, null,
-        new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            row.setVersion(result.getVersion());
-            RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_APPOINTMENTS, result);
-          }
+        result -> {
+          row.setVersion(result.getVersion());
+          RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_APPOINTMENTS, result);
         });
 
     appointment.setStart(newStart);
