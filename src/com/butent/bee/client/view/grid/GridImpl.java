@@ -2,6 +2,7 @@ package com.butent.bee.client.view.grid;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -2943,12 +2944,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     if (form != null) {
       GridFormPresenter presenter = (GridFormPresenter) form.getViewPresenter();
-
-      String caption = getRowCaption(rowValue);
-      if (!BeeUtils.isEmpty(caption)) {
-        presenter.setCaption(caption);
-      }
-      updateEditFormMessage(presenter, rowValue);
+      updateEditFormHeader(presenter, rowValue);
 
       final boolean enableForm;
 
@@ -2974,9 +2970,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
             form.focus();
           }
 
-          if (event.getOnFormFocus() != null) {
-            event.getOnFormFocus().accept(form);
-          }
+          event.onFocus(form);
         }
 
         fireEvent(new GridFormEvent(GridFormKind.EDIT, State.OPEN, getEditWindowType()));
@@ -3040,15 +3034,16 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     Consumer<FormView> onOpen = form -> {
       setLoading(gridForm, false);
 
+      updateEditFormHeader(form.getViewPresenter(), rowValue);
+
       boolean enableForm = editable && form.isRowEditable(rowValue, false);
       form.setEnabled(enableForm);
 
       if (enableForm) {
-        focusWidget(form, editableColumn);
-
-        if (event.getOnFormFocus() != null) {
-          event.getOnFormFocus().accept(form);
-        }
+        Scheduler.get().scheduleDeferred(() -> {
+          focusWidget(form, editableColumn);
+          event.onFocus(form);
+        });
       }
     };
 
@@ -3546,13 +3541,22 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     fireEvent(event);
   }
 
-  private void updateEditFormMessage(GridFormPresenter presenter, IsRow row) {
-    if (getEditShowId()) {
-      presenter.getHeader().showRowId(row);
-    }
+  private void updateEditFormHeader(Presenter presenter, IsRow row) {
+    HeaderView header = (presenter == null) ? null : presenter.getHeader();
 
-    if (getEditMessage() != null) {
-      presenter.getHeader().showRowMessage(getEditMessage(), row);
+    if (header != null) {
+      String caption = getRowCaption(row);
+      if (!BeeUtils.isEmpty(caption)) {
+        header.setCaption(caption);
+      }
+
+      if (getEditShowId()) {
+        header.showRowId(row);
+      }
+
+      if (getEditMessage() != null) {
+        header.showRowMessage(getEditMessage(), row);
+      }
     }
   }
 
