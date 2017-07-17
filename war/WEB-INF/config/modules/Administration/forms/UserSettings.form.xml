@@ -198,12 +198,12 @@
                 &windowTypes;
               </ListBox>
             </row>
-            <row>
-              <Label for="GridNewRowWindow" />
-              <ListBox source="GridNewRowWindow" summarize="true">
-                &windowTypes;
-              </ListBox>
-            </row>
+            <!--<row>-->
+              <!--<Label for="GridNewRowWindow" />-->
+              <!--<ListBox source="GridNewRowWindow" summarize="true">-->
+                <!--&windowTypes;-->
+              <!--</ListBox>-->
+            <!--</row>-->
 
             <row>
               <Label for="ChildEditWindow" />
@@ -211,12 +211,12 @@
                 &windowTypes;
               </ListBox>
             </row>
-            <row>
-              <Label for="ChildNewRowWindow" />
-              <ListBox source="ChildNewRowWindow" summarize="true">
-                &windowTypes;
-              </ListBox>
-            </row>
+            <!--<row>-->
+              <!--<Label for="ChildNewRowWindow" />-->
+              <!--<ListBox source="ChildNewRowWindow" summarize="true">-->
+                <!--&windowTypes;-->
+              <!--</ListBox>-->
+            <!--</row>-->
           </Table>
         </FlowPanel>
       </page>

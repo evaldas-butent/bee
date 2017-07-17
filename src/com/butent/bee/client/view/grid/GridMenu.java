@@ -222,8 +222,9 @@ public class GridMenu {
 
       @Override
       boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
-        return isEditable(gridDescription)
-            && BeeKeeper.getUser().canCreateData(gridDescription.getViewName());
+//        return isEditable(gridDescription)
+//            && BeeKeeper.getUser().canCreateData(gridDescription.getViewName());
+        return false;
       }
 
       @Override
