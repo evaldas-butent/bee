@@ -286,3 +286,7 @@
 .bee-mail-SearchExtended {
   color: red;
 }
+
+.bee-form-NewMailMessage .bee-FileCollector-hiddenWidget {
+  width: 105px;
+}

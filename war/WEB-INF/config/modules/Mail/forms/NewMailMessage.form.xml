@@ -28,7 +28,7 @@
         </row>
       </Table>
 
-      <FlowPanel class="flexBox-horizontal">
+      <FlowPanel class="flexBox-horizontal" style="margin-bottom:3px;">
         <FlowPanel class="flexible">
           <InputText name="Subject" placeholder="=mailSubject" style="width:100%"
                      autocomplete="true" />
