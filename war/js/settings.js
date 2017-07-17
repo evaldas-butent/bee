@@ -24,7 +24,7 @@ var BeeSettings = {
   "clickSensitivityDistance": 10,
   "actionSensitivityMillis": 500,
   "newsRefreshIntervalSeconds": 60,
-  "dialogResizerWidth": 10,
+  "dialogResizerWidth": 6,
   "reducedInteractionStatusMinutes": 15,
   "incomingChatMessageSound": "notification.wav",
   "incomingChatMessageVolume": 0.5,

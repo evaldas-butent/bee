@@ -510,7 +510,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
   private static final double DEFAULT_ANIMATION_DURATION = 250;
 
-  private static final int RESIZER_WIDTH = BeeUtils.positive(Settings.getDialogResizerWidth(), 10);
+  private static final int RESIZER_WIDTH = BeeUtils.positive(Settings.getDialogResizerWidth(), 6);
 
   private static final int MIN_WIDTH = RESIZER_WIDTH * 3;
   private static final int MIN_HEIGHT = RESIZER_WIDTH * 3;
