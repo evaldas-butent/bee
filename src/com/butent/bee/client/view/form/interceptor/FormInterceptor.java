@@ -60,6 +60,10 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
 
   FormInterceptor getInstance();
 
+  default Presenter getPresenter() {
+    return (getFormView() == null) ? null : getFormView().getViewPresenter();
+  }
+
   AbstractCellRenderer getRenderer(WidgetDescription widgetDescription);
 
   BeeRowSet getRowSet();

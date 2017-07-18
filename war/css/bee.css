@@ -1018,7 +1018,10 @@
   white-space: pre;
 }
 
-.bee-GridFormContainer, .bee-NewRowContainer, .bee-RowContainer {
+.bee-GridFormContainer,
+.bee-NewRowContainer,
+.bee-RowContainer,
+.bee-ModalForm-content.bee-FormContainer {
   position: absolute;
   left: 0;
   right: 0;

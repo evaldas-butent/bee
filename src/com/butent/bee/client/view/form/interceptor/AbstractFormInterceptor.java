@@ -181,8 +181,8 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
 
   @Override
   public GridView getGridView() {
-    if (getFormView() != null && getFormView().getViewPresenter() instanceof HasGridView) {
-      return ((HasGridView) getFormView().getViewPresenter()).getGridView();
+    if (getPresenter() instanceof HasGridView) {
+      return ((HasGridView) getPresenter()).getGridView();
     } else {
       return null;
     }
@@ -190,8 +190,7 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
 
   @Override
   public HeaderView getHeaderView() {
-    return (getFormView() == null || getFormView().getViewPresenter() == null) ? null
-        : getFormView().getViewPresenter().getHeader();
+    return (getPresenter() == null) ? null : getPresenter().getHeader();
   }
 
   @Override
