@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.mail;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -12,6 +13,7 @@ import static com.butent.bee.shared.modules.mail.MailConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.MultiSelector;
@@ -22,6 +24,7 @@ import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -45,6 +48,7 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -101,27 +105,36 @@ public final class NewMailMessage extends AbstractFormInterceptor
         newMessage.initHeader(presenter.getHeader());
 
         FormView formView = ((FormPresenter) presenter).getFormView();
-        ModalForm dialog = new ModalForm(presenter, formView, false);
+        WindowType windowType = getWindowType();
 
-        dialog.addOpenHandler(event -> {
-          Widget focusWidget = newMessage.getFocusWidget();
+        if (windowType.isPopup()) {
+          ModalForm dialog = new ModalForm(presenter, formView, false);
 
-          if (focusWidget == null) {
-            UiHelper.focus(formView.asWidget());
-          } else {
-            UiHelper.focus(focusWidget);
-          }
-        });
+          dialog.setPreviewEnabled(windowType == WindowType.MODAL);
+          dialog.center();
 
-        if (!Popup.hasEventPreview()) {
-          dialog.setPreviewEnabled(false);
+        } else {
+          PresenterCallback.SHOW_IN_NEW_TAB.onCreate(presenter);
         }
-
-        dialog.center();
       }
     });
 
     return newMessage;
+  }
+
+  private static WindowType getWindowType() {
+    if (Popup.hasEventPreview()) {
+      return WindowType.MODAL;
+
+    } else {
+      String wtp = BeeKeeper.getUser().getNewMailMessageWindow();
+      if (BeeUtils.isEmpty(wtp)) {
+        wtp = Settings.getNewMailMessageWindow();
+      }
+
+      WindowType windowType = WindowType.parse(wtp);
+      return (windowType == null) ? WindowType.DEFAULT_NEW_MAIL_MESSAGE : windowType;
+    }
   }
 
   private AccountInfo account;
@@ -261,6 +274,21 @@ public final class NewMailMessage extends AbstractFormInterceptor
         }
       });
     }
+  }
+
+  @Override
+  public void onStart(FormView form) {
+    super.onStart(form);
+
+    Scheduler.get().scheduleDeferred(() -> {
+      Widget focusWidget = getFocusWidget();
+
+      if (focusWidget == null) {
+        UiHelper.focus(form.asWidget());
+      } else {
+        UiHelper.focus(focusWidget);
+      }
+    });
   }
 
   public void setCallback(BiConsumer<Long, Boolean> callback) {

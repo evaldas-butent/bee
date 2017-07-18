@@ -39,6 +39,7 @@ var BeeSettings = {
   "gridNewRowWindow": "on-top",
   "childEditWindow": "modal",
   "childNewRowWindow": "modal",
+  "newMailMessageWindow": "detached",
   "theme" : {
     "WorkspaceMarginRight": 25,
     "ViewHeaderHeight": "600, 30, 1200, 52",

@@ -197,6 +197,10 @@ public final class Settings {
     return (d == null) ? BeeConst.UNDEF : BeeUtils.toLong(d);
   }
 
+  public static String getNewMailMessageWindow() {
+    return getString("newMailMessageWindow");
+  }
+
   public static int getNewsRefreshIntervalSeconds() {
     return getInt("newsRefreshIntervalSeconds");
   }

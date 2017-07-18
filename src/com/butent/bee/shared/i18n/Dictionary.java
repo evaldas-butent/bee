@@ -3612,6 +3612,8 @@ public interface Dictionary {
 
   default String mailNewMessage() {return g("mailNewMessage");}
 
+  default String mailNewMessageWindow() {return g("mailNewMessageWindow");}
+
   default String mailNewNewsletter() {return g("mailNewNewsletter");}
 
   default String mailNewRecipientsGroup() {return g("mailNewRecipientsGroup");}

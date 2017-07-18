@@ -68,6 +68,8 @@
 
     <SimpleColumn name="ChildEditWindow" />
     <SimpleColumn name="ChildNewRowWindow" />
+
+    <SimpleColumn name="NewMailMessageWindow" />
   </Columns>
   
   <Order>

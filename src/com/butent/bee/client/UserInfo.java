@@ -187,6 +187,10 @@ public class UserInfo implements HasInfo {
     return userData.getLogin();
   }
 
+  public String getNewMailMessageWindow() {
+    return getSetting(COL_NEW_MAIL_MESSAGE_WINDOW);
+  }
+
   public int getNewsRefreshIntervalSeconds() {
     return newsRefreshIntervalSeconds;
   }

@@ -24,6 +24,10 @@
       <item value="on-top">=windowOnTop</item>
       <item value="detached">=windowDetached</item>
       <item value="modal">=windowModal</item>'>
+    <!ENTITY wt3 '
+      <item value="new-tab">=windowNewTab</item>
+      <item value="detached">=windowDetached</item>
+      <item value="modal">=windowModal</item>'>
     ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
         xmlns:ui="http://www.butent.com/ui"
@@ -217,6 +221,13 @@
                 <!--&windowTypes;-->
               <!--</ListBox>-->
             <!--</row>-->
+
+            <row>
+              <Label for="NewMailMessageWindow" />
+              <ListBox source="NewMailMessageWindow" summarize="true">
+                &wt3;
+              </ListBox>
+            </row>
           </Table>
         </FlowPanel>
       </page>

@@ -44,6 +44,8 @@
     <DataColumn name="ChildEditWindow" visible="false" />
     <DataColumn name="ChildNewRowWindow" visible="false" />
 
+    <DataColumn name="NewMailMessageWindow" visible="false" />
+
     <DataColumn name="Style" visible="false" />
   </g:columns>
 </g:Grid>
