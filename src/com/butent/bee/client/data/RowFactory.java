@@ -603,7 +603,7 @@ public final class RowFactory {
     dialog.setPreviewEnabled(modal);
 
     if (target == null) {
-      dialog.center();
+      dialog.centerOrCascade(formView.getContainerStyleName());
     } else {
       dialog.showRelativeTo(target.getElement());
     }

@@ -408,7 +408,7 @@ public final class RowEditor {
       dialog.setPreviewEnabled(opener.getModality() == Modality.ENABLED);
 
       if (opener.getTarget() == null) {
-        dialog.center();
+        dialog.centerOrCascade(formView.getContainerStyleName());
       } else {
         dialog.showRelativeTo(opener.getTarget());
       }

@@ -111,7 +111,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
           ModalForm dialog = new ModalForm(presenter, formView, false);
 
           dialog.setPreviewEnabled(windowType == WindowType.MODAL);
-          dialog.center();
+          dialog.centerOrCascade(formView.getContainerStyleName());
 
         } else {
           PresenterCallback.SHOW_IN_NEW_TAB.onCreate(presenter);
