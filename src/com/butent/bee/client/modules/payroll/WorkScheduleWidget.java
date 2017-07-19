@@ -60,10 +60,12 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.DndDiv;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -219,10 +221,13 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   private static final String STYLE_WD_LABEL = STYLE_PREFIX + "wd-label";
   private static final String STYLE_WH_LABEL = STYLE_PREFIX + "wh-label";
   private static final String STYLE_WAPPROVED_LABEL = STYLE_PREFIX + "wapproved-label";
+  private static final String STYLE_WPAYROLL_FUND_LABEL = STYLE_PREFIX + "wpayroll-fund-label";
+  private static final String STYLE_WPAYROLL_FUND_NUMBER = STYLE_PREFIX + "wpayroll-fund-number";
   private static final String STYLE_WD_SUM = STYLE_PREFIX + "wd-sum";
   private static final String STYLE_WH_SUM = STYLE_PREFIX + "wh-sum";
   private static final String STYLE_WD_TOTAL = STYLE_PREFIX + "wd-total";
   private static final String STYLE_WH_TOTAL = STYLE_PREFIX + "wh-total";
+  private static final String STYLE_WP_TOTAL = STYLE_PREFIX + "wp-total";
 
   private static final String STYLE_NEW_SUBSTITUTION_PREFIX = STYLE_PREFIX + "new-substitution-";
 
@@ -361,6 +366,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   private BeeRowSet timeCardCodes;
   private BeeRowSet timeRanges;
   private BeeRowSet tableLocks;
+  private BeeRowSet tableInfo;
 
   private final Set<Integer> holidays = new HashSet<>();
 
@@ -525,6 +531,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     setTimeCardCodes(null);
     setTimeRanges(null);
     setTableLocks(null);
+    setTableInfo(null);
   }
 
   protected BeeRow findObject(long id) {
@@ -664,6 +671,10 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     return wsData;
   }
 
+  protected BeeRowSet getTableInfo() {
+    return tableInfo;
+  }
+
   protected BeeRowSet getTableLocks() {
     return tableLocks;
   }
@@ -789,6 +800,10 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   protected void setWsData(BeeRowSet wsData) {
     this.wsData = wsData;
+  }
+
+  protected void setTableInfo(BeeRowSet tableInfo) {
+    this.tableInfo = tableInfo;
   }
 
   protected void setTableLocks(BeeRowSet tableLocks) {
@@ -1408,6 +1423,19 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     return result;
   }
 
+  private Pair<Long, String> getWorkScheduleInfo(YearMonth date, Long partitionId, String column) {
+    BeeRowSet rs = getTableInfo();
+    for (int i = 0; i < rs.getNumberOfRows(); i++) {
+      YearMonth infoDate = new YearMonth(rs.getDate(i, COL_WORK_SCHEDULE_DATE));
+      if (Objects.equals(partitionId, rs.getLong(i,
+          scheduleParent.getWorkSchedulePartitionColumn())) && infoDate.equals(date)) {
+        return Pair.of(rs.getRow(i).getId(), rs.getRow(i).getString(rs.getColumnIndex(column)));
+      }
+    }
+
+    return Pair.of(null, null);
+  }
+
   private Long getWorkScheduleLockId(YearMonth date, Long partitionId) {
     BeeRowSet rs = getTableLocks();
     for (int i = 0; i < rs.getNumberOfRows(); i++) {
@@ -1825,16 +1853,15 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         });
   }
 
-  private void onWorkScheduleLockerClick(Long lockId, Long employee, YearMonth date) {
+  private void onWorkScheduleLockerClick(Long lockId, Long employee, YearMonth date,
+      InputNumber payrollFund) {
     if (DataUtils.isId(lockId)
       && (BeeKeeper.getUser().isAdministrator()
       || BeeKeeper.getUser().canDeleteData(VIEW_WORK_SCHEDULE_LOCKS))) {
       Global.confirm(Localized.dictionary().actionChange(), () ->
-        Queries.deleteRow(VIEW_WORK_SCHEDULE_LOCKS, lockId, new Queries.IntCallback() {
-          @Override
-          public void onSuccess(Integer result) {
-            refresh();
-          }
+        Queries.deleteRow(VIEW_WORK_SCHEDULE_LOCKS, lockId, result -> {
+          refresh();
+          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_EMPLOYEE_OBJECTS);
         })
       );
 
@@ -1847,15 +1874,45 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
         Queries.insert(VIEW_WORK_SCHEDULE_LOCKS, Data.getColumns(VIEW_WORK_SCHEDULE_LOCKS, cols),
           Queries.asList(kind.ordinal(), getRelationId(), employee, date.getDate()),
-          null, new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
+          null, lockRow -> {
+              if (payrollFund != null && !BeeUtils.isEmpty(payrollFund.getValue())) {
+                List<String> fundCols = Arrays.asList(
+                  scheduleParent.getWorkScheduleRelationColumn(),
+                  scheduleParent.getEmployeeObjectPartitionColumn(),
+                  COL_DATE_FROM, COL_EMPLOYEE_OBJECT_UNTIL, COL_EMPLOYEE_OBJECT_FUND,
+                  COL_WOKR_SCHEDULE_LOCK);
+
+                Queries.insert(TBL_EMPLOYEE_OBJECTS,
+                  Data.getColumns(TBL_EMPLOYEE_OBJECTS, fundCols),
+                  Queries.asList(getRelationId(), employee, date.getDate(), date.getLast(),
+                    payrollFund.getValue(), lockRow.getId()), null, employeeObjectRow ->
+                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_EMPLOYEE_OBJECTS));
+              }
               refresh();
-            }
-          });
+        });
       });
     } else {
       notifyWarning(Localized.dictionary().actionNotAllowed());
+    }
+  }
+
+  private void onWorkScheduleInfoEdit(Pair<Long, String> workScheduleInfo, Long employee,
+      YearMonth date, String value, String column) {
+    if (!DataUtils.isId(workScheduleInfo.getA()) && !BeeUtils.isEmpty(value)) {
+      List<String> fundCols = Arrays.asList(scheduleParent.getWorkScheduleRelationColumn(),
+          scheduleParent.getEmployeeObjectPartitionColumn(), COL_WORK_SCHEDULE_DATE,
+          column);
+
+      Queries.insert(VIEW_WORK_SCHEDULE_INFO, Data.getColumns(VIEW_WORK_SCHEDULE_INFO, fundCols),
+          Queries.asList(getRelationId(), employee, date.getDate(), value));
+
+    } else if (DataUtils.isId(workScheduleInfo.getA()) && !BeeUtils.isEmpty(value)) {
+      Queries.update(VIEW_WORK_SCHEDULE_INFO, Filter.compareId(workScheduleInfo.getA()), column,
+          value, null);
+
+    } else if (DataUtils.isId(workScheduleInfo.getA()) && BeeUtils.isEmpty(value)) {
+      Queries.deleteRow(VIEW_WORK_SCHEDULE_INFO, workScheduleInfo.getA(), result ->
+        workScheduleInfo.setA(null));
     }
   }
 
@@ -2265,6 +2322,12 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     c++;
     CustomDiv whTotal = new CustomDiv();
     table.setWidgetAndStyle(r, c, whTotal, STYLE_WH_TOTAL);
+
+    if (kind == WorkScheduleKind.ACTUAL) {
+      c++;
+      CustomDiv wPayrollTotal = new CustomDiv();
+      table.setWidgetAndStyle(r, c, wPayrollTotal, STYLE_WP_TOTAL);
+    }
   }
 
   private void renderHeaders(List<YearMonth> months) {
@@ -2291,7 +2354,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     headerPanel.add(print);
 
     table.setWidgetAndStyle(HEADER_ROW, 0, headerPanel, STYLE_HEADER_PANEL);
-    table.getCellFormatter().setColSpan(HEADER_ROW, 0, DAY_START_COL + days + 3);
+    table.getCellFormatter().setColSpan(HEADER_ROW, 0, DAY_START_COL + days
+        + (kind == WorkScheduleKind.ACTUAL ? 4 : 3));
 
     Widget monthSelector = renderMonthSelector();
     table.setWidgetAndStyle(MONTH_ROW, MONTH_COL - 1, monthSelector, STYLE_MONTH_SELECTOR);
@@ -2325,8 +2389,12 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     table.setWidgetAndStyle(DAY_ROW, DAY_START_COL + days + 1, whLabel, STYLE_WH_LABEL);
 
     if (kind == WorkScheduleKind.ACTUAL) {
+      Label wPayrollFundLabel = new Label(Localized.dictionary().salaryFund());
+      table.setWidgetAndStyle(DAY_ROW, DAY_START_COL + days + 2, wPayrollFundLabel,
+          STYLE_WPAYROLL_FUND_LABEL);
+
       Label wApprovedLabel = new Label(Localized.dictionary().ordApprove());
-      table.setWidgetAndStyle(DAY_ROW, DAY_START_COL + days + 2, wApprovedLabel,
+      table.setWidgetAndStyle(DAY_ROW, DAY_START_COL + days + 3, wApprovedLabel,
         STYLE_WAPPROVED_LABEL);
     }
   }
@@ -2491,7 +2559,12 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       IdPair partIds = getPartitionIds(DomUtils.getParentRow(targetElement, false));
 
       if (partIds != null && partIds.hasA()) {
-        clearSchedule(partIds);
+        Long lockId = getWorkScheduleLockId(activeMonth, partIds.getA());
+        if (DataUtils.isId(lockId)) {
+          notifyWarning(Localized.dictionary().readOnly());
+        } else {
+          clearSchedule(partIds);
+        }
       }
     });
 
@@ -2548,11 +2621,25 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
     if (kind == WorkScheduleKind.ACTUAL) {
       Long lockId = getWorkScheduleLockId(activeMonth, partIds.getA());
+
+      Pair<Long, String> workScheduleInfo = getWorkScheduleInfo(activeMonth, partIds.getA(),
+          COL_EMPLOYEE_OBJECT_FUND);
+      InputNumber payrollFund = new InputNumber();
+      payrollFund.setEnabled(!DataUtils.isId(lockId));
+      payrollFund.setValue(workScheduleInfo.getB());
+      payrollFund.addValueChangeHandler(valueChangeEvent -> {
+        onWorkScheduleInfoEdit(workScheduleInfo, partIds.getA(), activeMonth,
+            valueChangeEvent.getValue(), COL_EMPLOYEE_OBJECT_FUND);
+        updatePayrollFundTotal();
+      });
+      table.setWidgetAndStyle(r, DAY_START_COL + days + 2, payrollFund, STYLE_WPAYROLL_FUND_NUMBER);
+
       Flow wApproved = new Flow();
       FaLabel locker = new FaLabel(DataUtils.isId(lockId) ? FontAwesome.LOCK : FontAwesome.UNLOCK);
-      locker.addClickHandler(e -> onWorkScheduleLockerClick(lockId, partIds.getA(), activeMonth));
+      locker.addClickHandler(e ->
+          onWorkScheduleLockerClick(lockId, partIds.getA(), activeMonth, payrollFund));
       wApproved.add(locker);
-      table.setWidgetAndStyle(r, DAY_START_COL + days + 2, wApproved, STYLE_WAPPROVED_LABEL);
+      table.setWidgetAndStyle(r, DAY_START_COL + days + 3, wApproved, STYLE_WAPPROVED_LABEL);
     }
   }
 
@@ -2965,6 +3052,28 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     }
   }
 
+  private void updatePayrollFundTotal() {
+    Element wpTot = Selectors.getElementByClassName(table.getElement(), STYLE_WP_TOTAL);
+    if (wpTot != null) {
+      List<Element> fundSources = Selectors.getElementsByClassName(table.getElement(),
+          STYLE_WPAYROLL_FUND_NUMBER);
+      if (fundSources.isEmpty()) {
+        wpTot.setInnerText(BeeConst.STRING_EMPTY);
+
+      } else {
+        double payrollFundSum = 0;
+        for (Element fundElement : fundSources) {
+          Widget fundWidget = table.getWidgetByElement(fundElement);
+          if (fundWidget instanceof InputNumber) {
+            payrollFundSum += BeeUtils.toDouble(((InputNumber) fundWidget).getValue());
+          }
+        }
+
+        wpTot.setInnerText(BeeUtils.toString(payrollFundSum));
+      }
+    }
+  }
+
   private void updateSchedule() {
     Queries.getRowSet(VIEW_WORK_SCHEDULE, null, getWorkScheduleFilter(),
         new Queries.RowSetCallback() {
@@ -3075,5 +3184,6 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         whTot.setInnerText(TimeUtils.renderTime(millis, false));
       }
     }
+    updatePayrollFundTotal();
   }
 }

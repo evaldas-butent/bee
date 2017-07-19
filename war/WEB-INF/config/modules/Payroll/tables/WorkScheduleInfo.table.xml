@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="WorkScheduleInfo"
+  idName="WorkScheduleInfoID"
+  >
+  <Fields>
+    <Relation name="Object" notNull="true" relation="Locations" cascade="DELETE"
+              label="=objectLocation" />
+    <Relation name="Employee" notNull="true" relation="Employees" cascade="DELETE"
+      label="=employee" />
+
+    <Date name="Date" label="=date" />
+    <Numeric name="Fund" precision="12" scale="2" label="=salaryFund" />
+  </Fields>
+  <Constraints>
+    <Unique fields="Object Employee Date"/>
+  </Constraints>
+</Table>

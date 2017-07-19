@@ -690,6 +690,7 @@
       <xs:enumeration value="Warehouses" />
       <xs:enumeration value="WarrantyTypes" />
       <xs:enumeration value="WorkSchedule" />
+      <xs:enumeration value="WorkScheduleInfo" />
       <xs:enumeration value="WorkScheduleLocks" />
       <xs:enumeration value="Workspaces" />
 

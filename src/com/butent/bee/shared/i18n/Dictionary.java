@@ -5771,6 +5771,8 @@ public interface Dictionary {
 
   default String timeSheet() {return g("timeSheet");}
 
+  default String timeSheetInfo() {return g("timeSheetInfo");}
+
   default String timeSheetLock() {return g("timeSheetLock");}
 
   default String timeZone() {return g("timeZone");}
