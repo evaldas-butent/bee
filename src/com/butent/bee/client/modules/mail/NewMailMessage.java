@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.mail;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -112,6 +111,8 @@ public final class NewMailMessage extends AbstractFormInterceptor
           ModalForm dialog = new ModalForm(presenter, formView, false);
 
           dialog.setPreviewEnabled(windowType == WindowType.MODAL);
+          dialog.focusOnOpen(newMessage.getFocusWidget());
+
           dialog.centerOrCascade(formView.getContainerStyleName());
 
         } else {
@@ -296,15 +297,9 @@ public final class NewMailMessage extends AbstractFormInterceptor
   public void onStart(FormView form) {
     super.onStart(form);
 
-    Scheduler.get().scheduleDeferred(() -> {
-      Widget focusWidget = getFocusWidget();
-
-      if (focusWidget == null) {
-        UiHelper.focus(form.asWidget());
-      } else {
-        UiHelper.focus(focusWidget);
-      }
-    });
+    if (!UiHelper.isModal(form.asWidget())) {
+      UiHelper.focus(getFocusWidget());
+    }
   }
 
   public void setCallback(BiConsumer<Long, Boolean> callback) {
