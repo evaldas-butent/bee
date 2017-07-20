@@ -2,12 +2,12 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
-  
+
   name="ServiceObjects" viewName="ServiceObjects"
   caption="=svcObjects" editShowId="true"
   autoFit="true" enabledActions="copy"
 >
-  
+
   <g:west size="200" splitterSize="2">
     <w:DataTree name="ServiceTree" caption="=categories" viewName="ServiceTree"
         parentColumn="Parent">
@@ -22,7 +22,7 @@
       </w:form>
     </w:DataTree>
   </g:west>
-  
+
   <g:columns>
     <IdColumn name="Id" />
     <DataColumn name="ArticleNo" visible="true"/>
@@ -32,7 +32,6 @@
     <DataColumn name="Address" visible="true" />
     <DataColumn name="CategoryName" visible="false" />
 
-    <DataColumn name="Model" caption="=svcModel" />
     <DataColumn name="YearOfManufacture" caption="=svcYearOfManufacture" />
     <DataColumn name="InventNo" caption="=svcInventNo" />
     <DataColumn name="BodyNo" caption="=svcBodyNo" />
