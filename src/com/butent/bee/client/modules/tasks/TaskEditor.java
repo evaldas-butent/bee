@@ -37,6 +37,8 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.DecisionCallback;
+import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
@@ -102,6 +104,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.html.builder.Factory;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -2390,11 +2393,30 @@ class TaskEditor extends ProductSupportInterceptor {
       if (oldRow != null) {
         resetField(form, oldRow, row, COL_OWNER);
       }
-    } else if (userData.canEditData(VIEW_TASKS) && BeeUtils.isTrue(taskPrivate) && oldRow != null) {
+    } else if (userData.canEditData(VIEW_TASKS) && oldRow != null) {
       Long oldOwner = oldRow.getLong(form.getDataIndex(COL_OWNER));
-      addObserver(form, row, oldOwner);
-    }
 
-    form.refresh();
+      if (BeeUtils.isTrue(taskPrivate)) {
+        addObserver(form, row, oldOwner);
+      } else {
+        Global.decide(Localized.dictionary().crmTaskOwnerChangeCaption(),
+            Arrays.asList(Localized.dictionary().crmTaskOwnerChange(Factory.b().text(BeeUtils.joinWords(
+                userData.getFirstName(), userData.getLastName())).build()),
+                Localized.dictionary().crmTaskOwnerAddToObservers()), new DecisionCallback() {
+
+              @Override
+              public void onCancel() {
+                resetField(form, oldRow, row, COL_OWNER);
+                form.refresh();
+              }
+
+              @Override
+              public void onConfirm() {
+                addObserver(form, row, oldOwner);
+                form.refresh();
+              }
+            }, DialogConstants.DECISION_YES);
+      }
+    }
   }
 }

@@ -1319,6 +1319,16 @@ public interface Dictionary {
     return Localized.format(g("crmTaskOwnerCanNotBe"), _m);
   }
 
+  default String crmTaskOwnerChangeCaption() {return g("crmTaskOwnerChangeCaption");}
+
+  default String crmTaskOwnerChange(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("crmTaskOwnerChange"), _m);
+  }
+
+  default String crmTaskOwnerAddToObservers() {return g("crmTaskOwnerAddToObservers");}
+
   default String crmTaskParameters() {return g("crmTaskParameters");}
 
   default String crmTaskPriority() {return g("crmTaskPriority");}
