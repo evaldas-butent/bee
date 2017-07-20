@@ -2400,8 +2400,8 @@ class TaskEditor extends ProductSupportInterceptor {
         addObserver(form, row, oldOwner);
       } else {
         Global.decide(Localized.dictionary().crmTaskOwnerChangeCaption(),
-            Arrays.asList(Localized.dictionary().crmTaskOwnerChange(Factory.b().text(BeeUtils.joinWords(
-                userData.getFirstName(), userData.getLastName())).build()),
+            Arrays.asList(Localized.dictionary().crmTaskOwnerChange(Factory.b().text(
+                BeeUtils.joinWords(userData.getFirstName(), userData.getLastName())).build()),
                 Localized.dictionary().crmTaskOwnerAddToObservers()), new DecisionCallback() {
 
               @Override
