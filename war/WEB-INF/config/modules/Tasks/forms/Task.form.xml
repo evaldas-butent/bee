@@ -105,12 +105,6 @@
                 </row>
 
                 <row>
-                  <Label for="Type" />
-                  <DataSelector source="Type" name="Type" renderColumns="TypeName"
-                                newRowEnabled="true" style="&inp2x;" disablable="true" />
-                </row>
-
-                <row>
                   <Label for="Product" name="Product" />
                   <DataSelector source="Product" renderColumns="ProductName" newRowEnabled="true"
                                 style="&inp2x;" filter="Visible" />
@@ -127,6 +121,12 @@
                   <DataSelector source="Contact" editPopup="true" newRowEnabled="true" style="&inp2x;"
                     renderColumns="ContactFirstName ContactLastName"
                     choiceColumns="FirstName LastName CompanyName" options="Company" />
+                </row>
+
+                <row>
+                  <Label for="Type" />
+                  <DataSelector source="Type" name="Type" renderColumns="TypeName"
+                                newRowEnabled="true" style="&inp2x;" disablable="true" />
                 </row>
               </Table>
 

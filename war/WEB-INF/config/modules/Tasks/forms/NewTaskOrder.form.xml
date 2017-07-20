@@ -74,6 +74,12 @@
                       renderColumns="ContactFirstName ContactLastName"
                       choiceColumns="FirstName LastName CompanyName" options="Company" />
       </row>
+
+      <row>
+        <Label for="Type" />
+        <DataSelector source="Type" name="Type" renderColumns="TypeName" newRowEnabled="true" style="&inp2x;"
+                      disablable="true" />
+      </row>
     </Table>
 
     <Table kind="controls" style="&tbl;" cellStyle="&cell;">
@@ -96,7 +102,7 @@
     </Table>
 
     <Disclosure open="false" style="margin-top: 2ex;" >
-      <Label text="PAGRINDINĖ INFORMACIJA" />
+      <Label text="PAPILDOMA INFORMACIJA" />
 
       <FlowPanel>
         <Table kind="controls" style="&tbl;" cellStyle="&cell;">
@@ -140,12 +146,6 @@
             <Label text="=crmTaskTemplate" data="TaskTemplates" />
             <UnboundSelector viewName="TaskTemplates" choiceColumns="Name" newRowEnabled="false"
                              style="&inp2x;" data="TaskTemplates" />
-          </row>
-
-          <row>
-            <Label for="Type" />
-            <DataSelector source="Type" name="Type" renderColumns="TypeName" newRowEnabled="true" style="&inp2x;"
-                          disablable="true" />
           </row>
 
           <row>

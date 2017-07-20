@@ -67,14 +67,14 @@
         <row>
           <Label for="Supplier" />
           <cell colSpan="3">
-            <DataSelector source="Supplier" style="width: 510px;" />
+            <DataSelector source="Supplier" style="width: 100%;" />
           </cell>
         </row>
 
         <row>
           <Label for="Price" />
           <FlowPanel>
-            <InputMoney source="Price" style="width: 90px; &inline;" />
+            <InputMoney source="Price" style="width: 100px; &inline;" />
             <Label text="EUR" style="&inline; margin-left: 5px;" />
           </FlowPanel>
 
@@ -98,11 +98,18 @@
 
         <row>
           <Label for="PaperEnvelope" />
-          <FlowPanel>
-            <InputInteger source="PaperEnvelope" minValue="0" maxValue="999"
-                          style="width: 90px; &inline;" />
-            <Label text="g/m2" style="&inline; margin-left: 5px;" />
-          </FlowPanel>
+          <ListBox source="PaperEnvelope" style="width: 175px;" >
+            <item>Popierius</item>
+            <item>Vokai</item>
+            <item>Plastikas</item>
+            <item>Plėvelė</item>
+            <item>Tentas</item>
+            <item>Drobė</item>
+            <item>Kompozitas</item>
+            <item>Interjerinės medžiagos</item>
+            <item>Užsakovo</item>
+            <item>Kita</item>
+          </ListBox>
 
           <Label for="PaperEnvelopeNote" />
           <InputText source="PaperEnvelopeNote" style="width: 285px;" />
@@ -124,7 +131,7 @@
 
         <row>
           <Label for="Offset" />
-          <ListBox source="Offset" style="width: 120px;" >
+          <ListBox source="Offset" style="width: 175px;" >
             <item>matinis</item>
             <item>blizgus</item>
           </ListBox>
@@ -135,13 +142,13 @@
 
         <row>
           <Label for="Laminate1" />
-          <ListBox source="Laminate1" style="width: 120px;" >
+          <ListBox source="Laminate1" style="width: 175px;" >
             <item>Vienpusis</item>
             <item>Abipusis</item>
           </ListBox>
 
           <Label />
-          <ListBox source="Laminate2" style="width: 120px;" >
+          <ListBox source="Laminate2" style="width: 175px;" >
             <item>MATINIS</item>
             <item>BLIZGUS</item>
             <item>AKSOMAS</item>
@@ -151,7 +158,7 @@
         <row>
           <Label for="Printed" />
           <cell colSpan="3">
-            <DataSelector source="Printed" style="width: 510px;"
+            <DataSelector source="Printed" style="width: 100%;"
                           renderColumns="PrintedFirstName PrintedLastName"
                           choiceColumns="FirstName LastName CompanyName" />
           </cell>
@@ -160,7 +167,7 @@
         <row>
           <Label for="ProductFormat" class="bee-required" />
           <cell colSpan="3">
-            <InputText source="ProductFormat" style="width: 510px;" autocomplete="true"
+            <InputText source="ProductFormat" style="width: 100%;" autocomplete="true"
                        required="true"/>
           </cell>
         </row>
@@ -169,28 +176,31 @@
           <Label for="Quantity" class="bee-required" />
           <FlowPanel>
             <InputInteger source="Quantity" minValue="0" maxValue="9999" required="true"
-                          style="width: 60px; &inline;" />
+                          style="width: 80px; &inline;" />
             <Label text="vnt" style="&inline; margin-left: 5px;" />
           </FlowPanel>
 
           <Label for="NumberOfRuns" />
-          <FlowPanel>
-            <InputInteger source="NumberOfRuns" minValue="0" maxValue="9999"
-                          style="width: 60px; &inline;" />
-            <Label text="vnt" style="&inline; margin-left: 5px;" />
-          </FlowPanel>
+          <cell colSpan="3">
+            <FlowPanel>
+              <InputInteger source="NumberOfRuns" minValue="0" maxValue="9999"
+                            style="width: 60px; &inline;" />
+              <Label text="vnt" style="&inline; margin-left: 5px;" />
+            </FlowPanel>
+          </cell>
         </row>
 
         <row>
           <Label for="Note" />
           <cell colSpan="3">
-            <InputText source="Note" style="width: 510px;" />
+            <InputText source="Note" style="width: 100%;" />
           </cell>
         </row>
 
         <row>
           <Label for="Counter" />
-          <InputInteger source="Counter" minValue="0" maxValue="99999" style="width: 60px;" />
+          <InputInteger source="Counter" minValue="0" maxValue="9999999" format="0000000"
+                        style="width: 80px;" />
 
           <Label for="Waster" />
           <FlowPanel>
@@ -208,6 +218,51 @@
   </Disclosure>
 
   <Disclosure open="false" style="margin-top: 2ex;">
+    <Label text="SUNAUDOTOS MEDŽIAGOS" />
+    <FlowPanel>
+      <Table kind="controls">
+      <col index="0" cellStyle="&col;" />
+      <col index="2" cellStyle="&col;" />
+        <row>
+          <Label for="Material" />
+          <FlowPanel>
+            <InputInteger source="Material" minValue="0" maxValue="9999" style="width: 200px;" />
+            <Label text="m2" style="&inline; margin-left: 5px;" />
+          </FlowPanel>
+
+          <Label for="Paints" style="width: 70px;" />
+          <FlowPanel>
+            <InputInteger source="Paints" minValue="0" maxValue="9999" style="width: 200px;" />
+            <Label text="ml" style="&inline; margin-left: 5px;" />
+          </FlowPanel>
+        </row>
+
+        <row>
+          <Label for="Pores" />
+          <FlowPanel>
+            <InputInteger source="Pores" minValue="0" maxValue="9999" style="width: 200px;" />
+            <Label text="vnt." style="&inline; margin-left: 5px;" />
+          </FlowPanel>
+
+
+          <Label for="Rings" style="width: 70px;" />
+          <FlowPanel>
+            <InputInteger source="Rings" minValue="0" maxValue="9999" style="width: 200px;" />
+            <Label text="vnt." style="&inline; margin-left: 5px;" />
+          </FlowPanel>
+        </row>
+
+        <row>
+          <Label for="OtherMaterial" />
+          <cell colSpan="3">
+            <InputText source="OtherMaterial" style="width: 510px;" />
+          </cell>
+        </row>
+      </Table>
+    </FlowPanel>
+  </Disclosure>
+
+  <Disclosure open="false" style="margin-top: 2ex;">
     <Label text="APDAILA" />
     <FlowPanel>
       <Table kind="controls" >
@@ -218,7 +273,7 @@
         <row>
           <Label for="DecorationSupplier" />
           <cell colSpan="5">
-            <DataSelector source="DecorationSupplier" style="width: 510px;" />
+            <DataSelector source="DecorationSupplier" style="width: 495px;" />
           </cell>
         </row>
 
@@ -229,10 +284,10 @@
           <Label for="Number" />
           <cell colSpan="3">
             <FlowPanel>
-              <InputText source="Number" style="&inline; width: 100px;" />
+              <InputText source="Number" style="&inline; width: 105px;" />
 
               <Label for="Date" style="&inline; margin-right: 5px; margin-left: 15px;" />
-              <InputDate source="Date" style="&inline; width: 100px;" />
+              <InputDate source="Date" style="&inline; width: 105px;" />
             </FlowPanel>
           </cell>
         </row>
@@ -240,13 +295,13 @@
         <row>
           <Label for="DecorationPrice" />
           <FlowPanel>
-            <InputMoney source="DecorationPrice" style="width: 90px; &inline;" />
+            <InputMoney source="DecorationPrice" style="width: 100px; &inline;" />
             <Label text="EUR" style="&inline; margin-left: 5px;" />
           </FlowPanel>
 
           <Label for="DecorationSupplierNote" />
           <cell colSpan="3">
-            <InputText source="DecorationSupplierNote" style="width: 250px;" />
+            <InputText source="DecorationSupplierNote" style="width: 260px;" />
           </cell>
         </row>
 
@@ -256,31 +311,46 @@
             <item>Į formatą</item>
             <item>BE baltų kraštų</item>
             <item>SU baltais kraštais</item>
+            <item>Užlenkti kraštus</item>
+            <item>Neužlenkti kraštų</item>
             <item>Nekirpti</item>
           </ListBox>
 
           <Label for="Stitching" />
-          <ListBox source="Stitching" style="width: 90px;" >
-            <item>Kabės</item>
-            <item>Kniedės</item>
-            <item>Kita</item>
-          </ListBox>
+          <cell colSpan="4">
+            <FlowPanel>
+              <ListBox source="Stitching" style="width: 165px; &inline;" >
+                <item>Kabės</item>
+                <item>Kniedės</item>
+                <item>Kita</item>
+              </ListBox>
 
-          <InputText source="OtherStitching" style="width: 100px;" />
+              <InputText source="OtherStitching" style="&inline; width: 90px; margin-left: 5px;" />
+            </FlowPanel>
+          </cell>
         </row>
 
         <row>
           <Label for="Bending" />
-          <InputInteger source="Bending" minValue="0" maxValue="99" />
-
-          <Label for="Spiral" />
-          <ListBox source="Spiral" style="width: 90px;" >
-            <item>Kieta</item>
-            <item>Minkšta</item>
-            <item>B/J</item>
+          <ListBox source="Bending" style="width: 150px;" >
+            <item>Lenkimas</item>
+            <item>Bigas</item>
+            <item>Ploteriavimas</item>
           </ListBox>
 
-          <InputInteger source="OtherSpiral" minValue="0" maxValue="99" style="width: 100px;" />
+          <Label for="Spiral" />
+          <cell colSpan="4">
+            <FlowPanel>
+              <ListBox source="Spiral" style="width: 165px; &inline;" >
+                <item>Kieta</item>
+                <item>Minkšta</item>
+                <item>B/J</item>
+              </ListBox>
+
+              <InputInteger source="OtherSpiral" minValue="0" maxValue="99"
+                            style="&inline; width: 90px; margin-left: 5px;" />
+            </FlowPanel>
+          </cell>
         </row>
 
         <row>
@@ -288,13 +358,20 @@
           <InputInteger source="Selection" minValue="0" maxValue="99" />
 
           <Label for="Holes" />
-          <ListBox source="Holes" style="width: 90px;" >
-            <item>3 mm</item>
-            <item>5 mm</item>
-            <item>kita</item>
-          </ListBox>
+          <cell colSpan="4">
+            <FlowPanel>
+              <ListBox source="Holes" style="width: 165px; &inline;" >
+                <item>3 mm</item>
+                <item>5 mm</item>
+                <item>žiedai visu perimetru</item>
+                <item>žiedai kitaip</item>
+                <item>kita</item>
+              </ListBox>
 
-          <InputInteger source="OtherHoles" minValue="0" maxValue="99" style="width: 100px;" />
+              <InputInteger source="OtherHoles" minValue="0" maxValue="99"
+                            style="&inline; width: 90px; margin-left: 5px;" />
+            </FlowPanel>
+          </cell>
         </row>
 
         <row>
@@ -302,23 +379,34 @@
           <InputText source="Glue" />
 
           <Label for="Punching" />
-          <ListBox source="Punching" style="width: 90px;">
-            <item>senas</item>
-            <item>naujas</item>
-          </ListBox>
+          <cell colSpan="4">
+            <FlowPanel>
+              <ListBox source="Punching" style="width: 165px; &inline;" >
+                <item>senas</item>
+                <item>naujas</item>
+              </ListBox>
+            </FlowPanel>
+          </cell>
         </row>
 
         <row>
           <Label for="GlueNote" />
           <cell colSpan="5">
-            <InputText source="GlueNote" style="width: 510px;" />
+            <InputText source="GlueNote" style="width: 495px;" />
+          </cell>
+        </row>
+
+        <row>
+          <Label for="Mounting" />
+          <cell colSpan="5">
+            <InputText source="Mounting" style="width: 495px;" />
           </cell>
         </row>
 
         <row>
           <Label for="Made" />
           <cell colSpan="5">
-            <DataSelector source="Made" style="width: 510px;"
+            <DataSelector source="Made" style="width: 495px;"
                           renderColumns="MadeFirstName MadeLastName"
                           choiceColumns="FirstName LastName CompanyName" />
           </cell>
@@ -329,13 +417,13 @@
           <InputText source="Series" style="width: 120px;" />
 
           <Label for="From" />
-          <InputInteger source="From" minValue="0" maxValue="99999" style="width: 60px;" />
+          <InputInteger source="From" minValue="0" maxValue="99999" style="width: 80px;" />
 
           <cell colSpan="2" >
             <FlowPanel>
               <Label for="To" style="&inline; margin-right: 5px; margin-left: 55px;" />
               <InputInteger source="To" minValue="0" maxValue="99999"
-                            style="&inline; width: 60px;" />
+                            style="&inline; width: 80px;" />
             </FlowPanel>
           </cell>
         </row>
@@ -343,7 +431,7 @@
         <row>
           <Label for="Packed" />
           <cell colSpan="5">
-            <DataSelector source="Packed" style="width: 510px;"
+            <DataSelector source="Packed" style="width: 495px;"
                           renderColumns="PackedFirstName PackedLastName"
                           choiceColumns="FirstName LastName CompanyName" />
           </cell>
@@ -352,24 +440,29 @@
         <row>
           <Label for="MarkOnPack" />
           <cell colSpan="5">
-            <InputText source="MarkOnPack" style="width: 510px;" />
+            <InputText source="MarkOnPack" style="width: 495px;" />
           </cell>
         </row>
 
         <row>
           <Label for="Packing" />
-          <ListBox source="Packing" style="width: 120px;">
-            <item>į dėžes</item>
-            <item>į vakuumą</item>
-            <item>į popierių</item>
-            <item>kita</item>
-          </ListBox>
-
-          <InputText source="OtherPacking" style="width: 100px;" />
           <cell colSpan="3" >
             <FlowPanel>
-              <Label for="Total" style="&inline; margin-right: 5px; margin-left: 95px;" />
-              <InputText source="Total" style="&inline; width: 120px;" />
+              <ListBox source="Packing" style="width: 165px; &inline;" >
+                <item>į dėžes</item>
+                <item>į vakuumą</item>
+                <item>į popierių</item>
+                <item>kita</item>
+              </ListBox>
+
+              <InputText source="OtherPacking" style="width: 100px; &inline; margin-left: 5px;" />
+            </FlowPanel>
+          </cell>
+
+          <cell colSpan="3" >
+            <FlowPanel>
+              <Label for="Total" style="&inline; margin-right: 5px;" />
+              <InputText source="Total" style="&inline; width: 140px;" />
             </FlowPanel>
           </cell>
         </row>

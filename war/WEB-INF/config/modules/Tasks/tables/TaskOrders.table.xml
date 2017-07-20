@@ -21,7 +21,7 @@
     <String name="PressNumber" precision="10" label="Numeris" />
     <Date name="PressDate" label="Data" />
     <String name="SupplierNote" precision="100" label="Pastaba" />
-    <Integer name="PaperEnvelope" label="Popierius / vokai" />
+    <String name="PaperEnvelope" precision="25" label="Žaliava" />
     <String name="PaperEnvelopeNote" precision="100" label="Pastaba" />
     <Integer name="Color1" label="Spalvingumas" />
     <Integer name="Color2" label="Spalvingumas" />
@@ -39,6 +39,12 @@
     <Integer name="Good" label="Geri" />
     <Text name="Note" label="Pastaba" />
 
+    <Integer name="Material" label="Žaliava" />
+    <Integer name="Paints" label="Dažai" />
+    <Integer name="Pores" label="Porėmis" />
+    <Integer name="Rings" label="Žiedai" />
+    <String name="OtherMaterial" precision="100" label="Kita" />
+
     <Relation name="DecorationSupplier" relation="Companies" label="Tiekėjas" />
     <Numeric name="DecorationPrice" precision="7" scale="2" label="Kaina" />
     <String name="DecorationSupplierNote" precision="100" label="Pastaba" />
@@ -48,13 +54,14 @@
     <String name="OtherStitching" precision="10" />
     <String name="Spiral" precision="10" label="Spiralės" />
     <Integer name="OtherSpiral" />
-    <String name="Holes" precision="10" label="Skylės" />
+    <String name="Holes" precision="25" label="Skylės" />
     <Integer name="OtherHoles" />
     <String name="Punching" precision="10" label="Štancavimas" />
-    <Integer name="Bending" label="Lenkimas / bigas" />
+    <String name="Bending" precision="15" label="Apdaila" />
     <Integer name="Selection" label="Parink. / perfor." />
     <String name="Glue" precision="30" label="Klijavimas" />
     <String name="GlueNote" precision="100" label="Pastaba" />
+    <String name="Mounting" precision="100" label="Montavimas" />
     <String name="Series" precision="3" label="Serija" />
     <Integer name="From" label="Nr. nuo" />
     <Integer name="To" label="Nr. iki" />

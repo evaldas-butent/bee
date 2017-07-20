@@ -26,7 +26,7 @@
         name="TaskOrder" viewName="Tasks" caption="=crmTask" showRowId="true" printHeader="true"
         width="1024" height="768" favorite="Summary"
 >
-  <f:properties jasperReports="Task_lt" />
+  <f:properties jasperReports="Task_lt:Užsakymas, InternalTask_lt:Vidinis užsakymas" />
   <SplitPanel splitterSize="1" style="margin:5px;" name="Split" >
     <west size="660">
       <TabbedPages resizable="false" name="TabbedPages" >
@@ -94,6 +94,12 @@
                                 renderColumns="ContactFirstName ContactLastName"
                                 choiceColumns="FirstName LastName CompanyName" options="Company" />
                 </row>
+
+                <row>
+                  <Label for="Type" />
+                  <DataSelector source="Type" name="Type" renderColumns="TypeName"
+                                newRowEnabled="true" style="&inp2x;" disablable="true" />
+                </row>
               </Table>
 
               <Table kind="controls" style="&tbl;" cellStyle="&cell;">
@@ -124,12 +130,19 @@
                     </TextLabel>
                   </FlowPanel>
                 </row>
+
+                <row>
+                  <br />
+                  <br />
+                  <br />
+                  <FlowPanel name="TaskExtensions" style="&inp2;" />
+                </row>
               </Table>
               <FlowPanel name="TaskDurations" data="TaskDurations"
                          style="overflow: auto; width: 524px; margin-top: 10px;" />
 
               <Disclosure open="false" style="margin-top: 2ex;" >
-              <Label text="PAGRINDINĖ INFORMACIJA" />
+              <Label text="PAPILDOMA INFORMACIJA" />
                 <FlowPanel>
                   <Table kind="controls" style="&tbl;" cellStyle="&cell;" >
                     <col index="0" cellStyle="&col1;" />
@@ -142,12 +155,6 @@
                     <row>
                       <Label for="Status" />
                       <ListBox source="Status" style="&inp2;" readOnly="true" visible="true" />
-                    </row>
-
-                    <row>
-                      <Label for="Type" />
-                      <DataSelector source="Type" name="Type" renderColumns="TypeName"
-                                    newRowEnabled="true" style="&inp2x;" disablable="true" />
                     </row>
 
                     <row>
@@ -179,13 +186,6 @@
                   <Table kind="controls" style="&tbl;" cellStyle="&cell;">
                     <col index="0" cellStyle="&col1;" />
                     <col index="2" cellStyle="&col3;" />
-
-                    <row>
-                      <br />
-                      <br />
-                      <br />
-                      <FlowPanel name="TaskExtensions" style="&inp2;" />
-                    </row>
 
                     <row>
                       <Label for="ExpectedDuration" />

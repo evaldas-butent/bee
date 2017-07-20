@@ -52,6 +52,12 @@
   <SimpleColumn name="Good" />
   <SimpleColumn name="Note" />
 
+  <SimpleColumn name="Material" />
+  <SimpleColumn name="Paints" />
+  <SimpleColumn name="Pores" />
+  <SimpleColumn name="Rings" />
+  <SimpleColumn name="OtherMaterial" />
+
   <SimpleColumn name="DecorationSupplier" />
   <SimpleJoin name="DecorationSupplier" joinType="LEFT">
     <SimpleColumn alias="DecorationSupplierName" name="Name" />
@@ -87,6 +93,7 @@
   <SimpleColumn name="Selection" />
   <SimpleColumn name="Glue" />
   <SimpleColumn name="GlueNote" />
+  <SimpleColumn name="Mounting" />
   <SimpleColumn name="Series" />
   <SimpleColumn name="From" />
   <SimpleColumn name="To" />
