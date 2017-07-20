@@ -39,6 +39,7 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
@@ -136,6 +137,21 @@ public final class NewMailMessage extends AbstractFormInterceptor
       return (windowType == null) ? WindowType.DEFAULT_NEW_MAIL_MESSAGE : windowType;
     }
   }
+
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "mail-NewMessage-";
+
+  private static final String STYLE_ACCOUNTS = STYLE_PREFIX + "accounts";
+  private static final String STYLE_ACCOUNTS_SINGLE = STYLE_ACCOUNTS + "-single";
+  private static final String STYLE_ACCOUNTS_MULTI = STYLE_ACCOUNTS + "-multi";
+
+  private static final String STYLE_SIGNATURE_LABEL = STYLE_PREFIX + "signature-label";
+  private static final String STYLE_SIGNATURES = STYLE_PREFIX + "signatures";
+  private static final String STYLE_SIGNATURES_ZERO = STYLE_SIGNATURES + "-zero";
+  private static final String STYLE_SIGNATURES_SINGLE = STYLE_SIGNATURES + "-single";
+  private static final String STYLE_SIGNATURES_MULTI = STYLE_SIGNATURES + "-multi";
+
+  private static final String STYLE_SEND = STYLE_PREFIX + "send";
+  private static final String STYLE_SAVE = STYLE_PREFIX + "save";
 
   private AccountInfo account;
   private final List<AccountInfo> accounts = new ArrayList<>();
@@ -360,6 +376,9 @@ public final class NewMailMessage extends AbstractFormInterceptor
 
   private void initHeader(HeaderView header) {
     final ListBox accountsWidget = new ListBox();
+    accountsWidget.addStyleName(STYLE_ACCOUNTS);
+    accountsWidget.addStyleName((accounts.size() > 1)
+        ? STYLE_ACCOUNTS_MULTI : STYLE_ACCOUNTS_SINGLE);
 
     for (int i = 0; i < accounts.size(); i++) {
       AccountInfo accountInfo = accounts.get(i);
@@ -369,6 +388,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
         accountsWidget.setSelectedIndex(i);
       }
     }
+
     accountsWidget.setEnabled(accountsWidget.getItemCount() > 1);
     accountsWidget.addChangeHandler(event -> {
       AccountInfo selectedAccount = accounts.get(accountsWidget.getSelectedIndex());
@@ -380,6 +400,11 @@ public final class NewMailMessage extends AbstractFormInterceptor
     });
 
     header.addCommandItem(accountsWidget);
+
+    final Label signatureLabel = new Label(Localized.dictionary().mailSignature() + ":");
+    signatureLabel.addStyleName(STYLE_SIGNATURE_LABEL);
+
+    signaturesWidget.addStyleName(STYLE_SIGNATURES);
 
     Queries.getRowSet(TBL_SIGNATURES, null,
         Filter.equals(COL_USER, BeeKeeper.getUser().getUserId()), result -> {
@@ -395,18 +420,33 @@ public final class NewMailMessage extends AbstractFormInterceptor
               event -> applySignature(BeeUtils.toLongOrNull(signaturesWidget.getValue())));
 
           applySignature(isDraft ? null : account.getSignatureId());
+
+          String styleName;
+          switch (signaturesWidget.getItemCount()) {
+            case 0:
+              styleName = STYLE_SIGNATURES_ZERO;
+              break;
+            case 1:
+              styleName = STYLE_SIGNATURES_SINGLE;
+              break;
+            default:
+              styleName = STYLE_SIGNATURES_MULTI;
+          }
+
+          signatureLabel.addStyleName(styleName);
+          signaturesWidget.addStyleName(styleName);
         });
 
-    header.addCommandItem(new Label(Localized.dictionary().mailSignature() + ":"));
+    header.addCommandItem(signatureLabel);
     header.addCommandItem(signaturesWidget);
 
-    FaLabel send = new FaLabel(FontAwesome.PAPER_PLANE);
+    FaLabel send = new FaLabel(FontAwesome.PAPER_PLANE, STYLE_SEND);
     send.setTitle(Localized.dictionary().send());
     send.addClickHandler(event -> onSave(false));
 
     header.addCommandItem(send);
 
-    FaLabel save = new FaLabel(FontAwesome.SAVE);
+    FaLabel save = new FaLabel(FontAwesome.SAVE, STYLE_SAVE);
     save.setTitle(Localized.dictionary().actionSave());
     save.addClickHandler(event -> onSave(true));
 

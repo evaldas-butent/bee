@@ -8,10 +8,11 @@
 >
   <FlowPanel class="flexBox-vertical">
 
-    <FlowPanel class="bee-mail-Envelope" style="margin:5px 5px 0 5px;">
-      <Table kind="custom">
+    <FlowPanel class="bee-mail-Envelope" style="margin:10px 15px 0 15px;">
+      <Table kind="custom" cellStyle="padding-top:0; padding-bottom:4px;">
         <col index="0" kind="label" cellStyle="white-space:nowrap;" />
         <col index="1" width="100" widthUnit="%" />
+
         <row>
           <Label text="=mailTo" />
           <MultiSelector name="To" viewName="UserEmails" choiceColumns="Label Email"
@@ -29,7 +30,7 @@
         </row>
       </Table>
 
-      <FlowPanel class="flexBox-horizontal" style="margin-top:2px;">
+      <FlowPanel class="flexBox-horizontal">
         <FlowPanel class="flexible">
           <InputText name="Subject" placeholder="=mailSubject" style="width:100%"
                      autocomplete="true" />
@@ -44,6 +45,7 @@
       </FlowPanel>
     </FlowPanel>
 
-    <RichTextEditor name="Message" class="bee-mail-Content flexible" style="margin:5px;" />
+    <RichTextEditor name="Message" class="bee-mail-Content flexible"
+                    style="margin:5px 15px 10px 15px;" />
   </FlowPanel>
 </f:Form>
