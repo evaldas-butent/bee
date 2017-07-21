@@ -31,8 +31,6 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
-import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.InputCallback;
@@ -69,7 +67,6 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
@@ -97,7 +94,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class DocumentDataForm extends AbstractFormInterceptor
     implements ClickHandler, SelectionHandler<Pair<Integer, SelectionOrigin>> {
@@ -129,18 +125,15 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
     public void initTemplates(final String editorId) {
       Queries.getRowSet(TBL_EDITOR_TEMPLATES, null,
-          Filter.isEqual(COL_EDITOR_TEMPLATE_ORIGIN, Value.getValue(ORIGIN)), new RowSetCallback() {
-            @Override
-            public void onSuccess(BeeRowSet result) {
-              Map<String, String> templates = new HashMap<>();
+          Filter.isEqual(COL_EDITOR_TEMPLATE_ORIGIN, Value.getValue(ORIGIN)), result -> {
+            Map<String, String> templates = new HashMap<>();
 
-              for (BeeRow beeRow : result) {
-                templates.put(DataUtils.getString(result, beeRow, COL_EDITOR_TEMPLATE_NAME),
-                    DataUtils.getString(result, beeRow, COL_EDITOR_TEMPLATE_CONTENT));
-              }
-
-              init(editorId, templates);
+            for (BeeRow beeRow : result) {
+              templates.put(DataUtils.getString(result, beeRow, COL_EDITOR_TEMPLATE_NAME),
+                  DataUtils.getString(result, beeRow, COL_EDITOR_TEMPLATE_CONTENT));
             }
+
+            init(editorId, templates);
           });
     }
 
@@ -453,29 +446,23 @@ public class DocumentDataForm extends AbstractFormInterceptor
     Dictionary loc = Localized.dictionary();
 
     Global.inputCollection(loc.mainCriteria(), loc.name(), true,
-        criteria.keySet(), new Consumer<Collection<String>>() {
-          @Override
-          public void accept(Collection<String> collection) {
-            Map<String, Editor> oldCriteria = new HashMap<>(criteria);
-            criteria.clear();
+        criteria.keySet(), collection -> {
+          Map<String, Editor> oldCriteria = new HashMap<>(criteria);
+          criteria.clear();
 
-            for (String crit : collection) {
-              Editor input = oldCriteria.get(crit);
+          for (String crit : collection) {
+            Editor input = oldCriteria.get(crit);
 
-              if (input == null) {
-                input = createAutocomplete("DistinctCriterionValues", COL_CRITERION_VALUE, crit);
-              }
-              criteria.put(crit, input);
+            if (input == null) {
+              input = createAutocomplete("DistinctCriterionValues", COL_CRITERION_VALUE, crit);
             }
-            render();
+            criteria.put(crit, input);
           }
-        }, new Function<String, Editor>() {
-          @Override
-          public Editor apply(String value) {
-            Editor editor = createAutocomplete("DistinctCriteria", COL_CRITERION_NAME, null);
-            editor.setValue(value);
-            return editor;
-          }
+          render();
+        }, value -> {
+          Editor editor = createAutocomplete("DistinctCriteria", COL_CRITERION_NAME, null);
+          editor.setValue(value);
+          return editor;
         });
   }
 
@@ -613,8 +600,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-    requery(newRow);
+  public void onStartNewRow(FormView form, IsRow row) {
+    requery(row);
   }
 
   @Override
@@ -646,64 +633,61 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
   protected void parseContent(final String content, Long dataId, final Consumer<String> consumer) {
     Queries.getRowSet(VIEW_DATA_CRITERIA, null,
-        Filter.equals(COL_DOCUMENT_DATA, dataId), new RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            Multimap<String, Pair<String, String>> data = LinkedListMultimap.create();
-            int grpIdx = result.getColumnIndex(COL_CRITERIA_GROUP_NAME);
-            int crtIdx = result.getColumnIndex(COL_CRITERION_NAME);
-            int valIdx = result.getColumnIndex(COL_CRITERION_VALUE);
+        Filter.equals(COL_DOCUMENT_DATA, dataId), result -> {
+          Multimap<String, Pair<String, String>> data = LinkedListMultimap.create();
+          int grpIdx = result.getColumnIndex(COL_CRITERIA_GROUP_NAME);
+          int crtIdx = result.getColumnIndex(COL_CRITERION_NAME);
+          int valIdx = result.getColumnIndex(COL_CRITERION_VALUE);
 
-            for (BeeRow row : result.getRows()) {
-              data.put(row.getString(grpIdx), Pair.of(row.getString(crtIdx),
-                  row.getString(valIdx)));
-            }
-            final List<String> groupBlocks = Lists.newArrayList(Splitter
-                .on("<!--{" + VIEW_CRITERIA_GROUPS + "}-->").split(content));
+          for (BeeRow row : result.getRows()) {
+            data.put(row.getString(grpIdx), Pair.of(row.getString(crtIdx),
+                row.getString(valIdx)));
+          }
+          final List<String> groupBlocks = Lists.newArrayList(Splitter
+              .on("<!--{" + VIEW_CRITERIA_GROUPS + "}-->").split(content));
 
-            StringBuilder sb = new StringBuilder();
+          StringBuilder sb = new StringBuilder();
 
-            for (int i = 0; i < groupBlocks.size(); i++) {
-              String groupBlock = groupBlocks.get(i);
+          for (int i = 0; i < groupBlocks.size(); i++) {
+            String groupBlock = groupBlocks.get(i);
 
-              if (i % 2 > 0 && i < groupBlocks.size() - 1) {
-                List<String> criteriaBlocks = Splitter.on("<!--{" + VIEW_CRITERIA + "}-->")
-                    .splitToList(groupBlock);
+            if (i % 2 > 0 && i < groupBlocks.size() - 1) {
+              List<String> criteriaBlocks = Splitter.on("<!--{" + VIEW_CRITERIA + "}-->")
+                  .splitToList(groupBlock);
 
-                for (String group : data.keySet()) {
-                  if (BeeUtils.isEmpty(group)) {
-                    continue;
-                  }
-                  for (int j = 0; j < criteriaBlocks.size(); j++) {
-                    String criteriaBlock = criteriaBlocks.get(j)
-                        .replace("{" + COL_CRITERIA_GROUP_NAME + "}", group);
+              for (String group : data.keySet()) {
+                if (BeeUtils.isEmpty(group)) {
+                  continue;
+                }
+                for (int j = 0; j < criteriaBlocks.size(); j++) {
+                  String criteriaBlock = criteriaBlocks.get(j)
+                      .replace("{" + COL_CRITERIA_GROUP_NAME + "}", group);
 
-                    if (j % 2 > 0 && j < criteriaBlocks.size() - 1) {
-                      for (Pair<String, String> pair : data.get(group)) {
-                        sb.append(criteriaBlock.replace("{" + COL_CRITERION_NAME + "}",
-                            BeeUtils.nvl(pair.getA(), ""))
-                            .replace("{" + COL_CRITERION_VALUE + "}",
-                                BeeUtils.nvl(pair.getB(), "")));
-                      }
-                    } else {
-                      sb.append(criteriaBlock);
+                  if (j % 2 > 0 && j < criteriaBlocks.size() - 1) {
+                    for (Pair<String, String> pair : data.get(group)) {
+                      sb.append(criteriaBlock.replace("{" + COL_CRITERION_NAME + "}",
+                          BeeUtils.nvl(pair.getA(), ""))
+                          .replace("{" + COL_CRITERION_VALUE + "}",
+                              BeeUtils.nvl(pair.getB(), "")));
                     }
+                  } else {
+                    sb.append(criteriaBlock);
                   }
                 }
-              } else {
-                sb.append(groupBlock);
               }
+            } else {
+              sb.append(groupBlock);
             }
-            String parsed = sb.toString().replace("&Scaron;", "Š").replace("&scaron;", "š");
-            Collection<Pair<String, String>> mainCriteria = data.get(null);
-
-            if (!BeeUtils.isEmpty(mainCriteria)) {
-              for (Pair<String, String> entry : mainCriteria) {
-                parsed = parsed.replace("{" + entry.getA() + "}", BeeUtils.nvl(entry.getB(), ""));
-              }
-            }
-            consumer.accept(parsed);
           }
+          String parsed = sb.toString().replace("&Scaron;", "Š").replace("&scaron;", "š");
+          Collection<Pair<String, String>> mainCriteria = data.get(null);
+
+          if (!BeeUtils.isEmpty(mainCriteria)) {
+            for (Pair<String, String> entry : mainCriteria) {
+              parsed = parsed.replace("{" + entry.getA() + "}", BeeUtils.nvl(entry.getB(), ""));
+            }
+          }
+          consumer.accept(parsed);
         });
   }
 
@@ -818,31 +802,28 @@ public class DocumentDataForm extends AbstractFormInterceptor
     Queries.getRowSet(VIEW_DATA_CRITERIA, null,
         Filter.and(Filter.isEqual(COL_DOCUMENT_DATA, Value.getValue(dataId)),
             Filter.isNull(COL_CRITERIA_GROUP_NAME)),
-        new RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            if (result.getNumberOfRows() > 0) {
-              groupId = result.getRow(0).getId();
+        result -> {
+          if (result.getNumberOfRows() > 0) {
+            groupId = result.getRow(0).getId();
 
-              for (BeeRow crit : result.getRows()) {
-                String name = Data.getString(VIEW_DATA_CRITERIA, crit, COL_CRITERION_NAME);
+            for (BeeRow crit : result.getRows()) {
+              String name = Data.getString(VIEW_DATA_CRITERIA, crit, COL_CRITERION_NAME);
 
-                if (!BeeUtils.isEmpty(name)) {
-                  String value = Data.getString(VIEW_DATA_CRITERIA, crit, COL_CRITERION_VALUE);
+              if (!BeeUtils.isEmpty(name)) {
+                String value = Data.getString(VIEW_DATA_CRITERIA, crit, COL_CRITERION_VALUE);
 
-                  Autocomplete box = createAutocomplete("DistinctCriterionValues",
-                      COL_CRITERION_VALUE, name);
+                Autocomplete box = createAutocomplete("DistinctCriterionValues",
+                    COL_CRITERION_VALUE, name);
 
-                  UiHelper.enableAndStyle(box, row.isEditable());
-                  box.setValue(value);
+                UiHelper.enableAndStyle(box, row.isEditable());
+                box.setValue(value);
 
-                  criteriaHistory.put(name, value);
-                  criteria.put(name, box);
-                  ids.put(name, Data.getLong(VIEW_DATA_CRITERIA, crit, "ID"));
-                }
+                criteriaHistory.put(name, value);
+                criteria.put(name, box);
+                ids.put(name, Data.getLong(VIEW_DATA_CRITERIA, crit, "ID"));
               }
-              render();
             }
+            render();
           }
         });
   }
@@ -903,25 +884,14 @@ public class DocumentDataForm extends AbstractFormInterceptor
           Queries.insert(VIEW_CRITERIA, Data.getColumns(VIEW_CRITERIA,
               Lists.newArrayList(COL_CRITERIA_GROUP, COL_CRITERION_NAME, COL_CRITERION_VALUE)),
               Lists.newArrayList(BeeUtils.toString(id), entry.getKey(), entry.getValue()), null,
-              new RowCallback() {
-                @Override
-                public void onSuccess(BeeRow result) {
-                  scheduler.execute();
-                }
-              });
+              result -> scheduler.execute());
         }
       };
       if (!DataUtils.isId(groupId)) {
-        ensureDataId(row, (dataId) -> {
-          Queries.insert(VIEW_CRITERIA_GROUPS,
-              Data.getColumns(VIEW_CRITERIA_GROUPS, Lists.newArrayList(COL_DOCUMENT_DATA)),
-              Lists.newArrayList(BeeUtils.toString(dataId)), null, new RowCallback() {
-                @Override
-                public void onSuccess(BeeRow result) {
-                  consumer.accept(result.getId());
-                }
-              });
-        });
+        ensureDataId(row, (dataId) -> Queries.insert(VIEW_CRITERIA_GROUPS,
+            Data.getColumns(VIEW_CRITERIA_GROUPS, Lists.newArrayList(COL_DOCUMENT_DATA)),
+            Lists.newArrayList(BeeUtils.toString(dataId)), null,
+            result -> consumer.accept(result.getId())));
       } else {
         consumer.accept(groupId);
       }
@@ -929,21 +899,11 @@ public class DocumentDataForm extends AbstractFormInterceptor
     if (!BeeUtils.isEmpty(changedValues)) {
       for (Entry<Long, String> entry : changedValues.entrySet()) {
         Queries.update(VIEW_CRITERIA, Filter.compareId(entry.getKey()),
-            COL_CRITERION_VALUE, new TextValue(entry.getValue()), new IntCallback() {
-              @Override
-              public void onSuccess(Integer result) {
-                scheduler.execute();
-              }
-            });
+            COL_CRITERION_VALUE, new TextValue(entry.getValue()), result -> scheduler.execute());
       }
     }
     if (!flt.isEmpty()) {
-      Queries.delete(VIEW_CRITERIA, flt, new IntCallback() {
-        @Override
-        public void onSuccess(Integer result) {
-          scheduler.execute();
-        }
-      });
+      Queries.delete(VIEW_CRITERIA, flt, result -> scheduler.execute());
     }
     return true;
   }

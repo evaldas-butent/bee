@@ -636,8 +636,8 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-    super.onStartNewRow(form, oldRow, newRow);
+  public void onStartNewRow(FormView form, IsRow row) {
+    super.onStartNewRow(form, row);
 
     if (otherInfo != null) {
       otherInfo.setOpen(true);
@@ -651,7 +651,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       if (!response.isEmpty() && !response.hasErrors()) {
         Map<String, String> columnsData = Codec
             .deserializeLinkedHashMap(response.getResponseAsString());
-        columnsData.forEach((column, value) -> newRow.setValue(getDataIndex(column), value));
+        columnsData.forEach((column, value) -> row.setValue(getDataIndex(column), value));
       }
       form.removeStyleName(STYLE_PROGRESS_CONTAINER);
       form.removeStyleName(STYLE_PROGRESS_BAR);

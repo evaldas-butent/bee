@@ -9,7 +9,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -53,22 +52,19 @@ public class NewRoleForm extends AbstractFormInterceptor {
   }
 
   @Override
-  public void onStartNewRow(final FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(final FormView form, IsRow row) {
     if (baseRole != null) {
-      Queries.getRowCount(form.getViewName(), null, new IntCallback() {
-        @Override
-        public void onSuccess(Integer result) {
-          boolean defaultRequired = BeeUtils.isPositive(result);
-          baseRole.setNullable(!defaultRequired);
+      Queries.getRowCount(form.getViewName(), null, result -> {
+        boolean defaultRequired = BeeUtils.isPositive(result);
+        baseRole.setNullable(!defaultRequired);
 
-          Widget w = form.getWidgetByName("RoleCaption");
+        Widget w = form.getWidgetByName("RoleCaption");
 
-          if (w != null) {
-            w.setStyleName(StyleUtils.NAME_REQUIRED, defaultRequired);
-          }
+        if (w != null) {
+          w.setStyleName(StyleUtils.NAME_REQUIRED, defaultRequired);
         }
       });
     }
-    super.onStartNewRow(form, oldRow, newRow);
+    super.onStartNewRow(form, row);
   }
 }

@@ -589,7 +589,7 @@ public final class RowFactory {
 
     dialog.addOpenHandler(event -> {
       if (formView.getFormInterceptor() != null) {
-        formView.getFormInterceptor().onStartNewRow(formView, null, row);
+        formView.getFormInterceptor().onStartNewRow(formView, row);
       }
       formView.updateRow(row, true);
 

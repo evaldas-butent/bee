@@ -275,15 +275,15 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow row) {
     Global.getParameterRelation(PRM_SERVICE_WAREHOUSE, (id, text) -> {
       if (DataUtils.isId(id)) {
-        newRow.setValue(getDataIndex(COL_WAREHOUSE), id);
-        newRow.setValue(Data.getColumnIndex(TBL_SERVICE_ORDERS, ALS_WAREHOUSE_CODE), text);
+        row.setValue(getDataIndex(COL_WAREHOUSE), id);
+        row.setValue(Data.getColumnIndex(TBL_SERVICE_ORDERS, ALS_WAREHOUSE_CODE), text);
         form.refreshBySource(COL_WAREHOUSE);
       }
     });
-    super.onStartNewRow(form, oldRow, newRow);
+    super.onStartNewRow(form, row);
   }
 
   @Override

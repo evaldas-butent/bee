@@ -9,13 +9,9 @@ import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
-import com.butent.bee.client.data.Queries.RowSetCallback;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.modules.mail.NewMailMessage;
@@ -35,8 +31,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -106,14 +100,10 @@ public class OrderForm extends PrintFormInterceptor {
           params.addDataItem(COL_ORDER, row.getId());
           params.addDataItem(COL_WAREHOUSE, form.getLongValue(COL_WAREHOUSE));
 
-          BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-
-            @Override
-            public void onResponse(ResponseObject response) {
-              if (!response.hasErrors()) {
-                updateStatus(form, OrdersStatus.APPROVED);
-                save(form);
-              }
+          BeeKeeper.getRpc().makePostRequest(params, response -> {
+            if (!response.hasErrors()) {
+              updateStatus(form, OrdersStatus.APPROVED);
+              save(form);
             }
           });
         }));
@@ -250,14 +240,10 @@ public class OrderForm extends PrintFormInterceptor {
 
             Filter filter = Filter.equals(COL_ORDER, getActiveRowId());
             Queries.update(VIEW_ORDER_ITEMS, filter, COL_RESERVED_REMAINDER,
-                new NumberValue(BeeConst.DOUBLE_ZERO), new IntCallback() {
-
-                  @Override
-                  public void onSuccess(Integer result) {
-                    getActiveRow().setValue(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE),
-                        newValue);
-                    update();
-                  }
+                new NumberValue(BeeConst.DOUBLE_ZERO), result -> {
+                  getActiveRow().setValue(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE),
+                      newValue);
+                  update();
                 });
           }
         });
@@ -275,7 +261,7 @@ public class OrderForm extends PrintFormInterceptor {
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow row) {
 
     Global.getParameterRelation(PRM_MANAGER_WAREHOUSE, (aLong, s) -> {
       GridView parentGrid = getGridView();
@@ -283,18 +269,18 @@ public class OrderForm extends PrintFormInterceptor {
         return;
       }
 
-      if (BeeUtils.isEmpty(newRow.getString(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE)))) {
+      if (BeeUtils.isEmpty(row.getString(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE)))) {
         String gridName = GRID_COMPANY_ORDERS.equals(parentGrid.getGridName()) ? GRID_OFFERS
             : parentGrid.getGridName();
 
-        newRow.setValue(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE), gridName);
+        row.setValue(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE), gridName);
       }
 
       if (GRID_OFFERS.equals(parentGrid.getGridName())) {
         int statusIdx = Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS);
         int endDateIdx = Data.getColumnIndex(VIEW_ORDERS, COL_END_DATE);
 
-        if (Objects.equals(OrdersStatus.PREPARED.ordinal(), newRow.getInteger(statusIdx))) {
+        if (Objects.equals(OrdersStatus.PREPARED.ordinal(), row.getInteger(statusIdx))) {
           DateTime now = TimeUtils.nowMillis();
           int year = now.getYear();
           int month = now.getMonth() + 3;
@@ -303,21 +289,21 @@ public class OrderForm extends PrintFormInterceptor {
             year++;
             month = month - 12;
           }
-          newRow.setValue(endDateIdx, new DateTime(year, month, now.getDom()));
+          row.setValue(endDateIdx, new DateTime(year, month, now.getDom()));
         }
       }
 
-      newRow.setValue(getDataIndex(COL_WAREHOUSE), aLong);
-      newRow.setValue(Data.getColumnIndex(VIEW_ORDERS, ALS_WAREHOUSE_CODE), s);
+      row.setValue(getDataIndex(COL_WAREHOUSE), aLong);
+      row.setValue(Data.getColumnIndex(VIEW_ORDERS, ALS_WAREHOUSE_CODE), s);
       getFormView().refreshBySource(COL_WAREHOUSE);
 
       Global.getParameterRelation(PRM_DEFAULT_SALE_OPERATION, (t, u) -> {
-        newRow.setValue(getDataIndex(COL_ORDER_TRADE_OPERATION), t);
-        newRow.setValue(Data.getColumnIndex(VIEW_ORDERS, COL_TRADE_OPERATION_NAME), u);
+        row.setValue(getDataIndex(COL_ORDER_TRADE_OPERATION), t);
+        row.setValue(Data.getColumnIndex(VIEW_ORDERS, COL_TRADE_OPERATION_NAME), u);
         getFormView().refreshBySource(COL_ORDER_TRADE_OPERATION);
       });
     });
-    super.onStartNewRow(form, oldRow, newRow);
+    super.onStartNewRow(form, row);
   }
 
   @Override
@@ -359,13 +345,9 @@ public class OrderForm extends PrintFormInterceptor {
         DataUtils.getUpdated(form.getViewName(), form.getDataColumns(), form.getOldRow(),
             getActiveRow(), form.getChildrenForUpdate());
 
-    Queries.updateRow(rowSet, new RowCallback() {
-
-      @Override
-      public void onSuccess(BeeRow result) {
-        RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), result);
-        form.refresh();
-      }
+    Queries.updateRow(rowSet, result -> {
+      RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), result);
+      form.refresh();
     });
   }
 
@@ -392,36 +374,28 @@ public class OrderForm extends PrintFormInterceptor {
   private static void checkIsFinish(final FormView form) {
 
     Filter filter = Filter.equals(COL_ORDER, form.getActiveRowId());
-    Queries.getRowSet(VIEW_ORDER_ITEMS, null, filter, new RowSetCallback() {
+    Queries.getRowSet(VIEW_ORDER_ITEMS, null, filter, result -> {
+      int qtyIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, TradeConstants.COL_TRADE_ITEM_QUANTITY);
 
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        int qtyIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, TradeConstants.COL_TRADE_ITEM_QUANTITY);
+      if (result != null) {
+        for (IsRow row : result) {
+          Double completed = row.getPropertyDouble(PRP_COMPLETED_INVOICES);
+          Double qty = row.getDouble(qtyIdx);
 
-        if (result != null) {
-          for (IsRow row : result) {
-            Double completed = row.getPropertyDouble(PRP_COMPLETED_INVOICES);
-            Double qty = row.getDouble(qtyIdx);
-
-            if (BeeUtils.unbox(completed) <= 0 || !Objects.equals(completed, qty)) {
-              form.notifySevere(Localized.dictionary().ordEmptyInvoice());
-              return;
-            }
+          if (BeeUtils.unbox(completed) <= 0 || !Objects.equals(completed, qty)) {
+            form.notifySevere(Localized.dictionary().ordEmptyInvoice());
+            return;
           }
-
-          Queries.update(VIEW_ORDER_ITEMS, Filter.equals(COL_ORDER, form.getActiveRowId()),
-              COL_RESERVED_REMAINDER, new IntegerValue(0), new IntCallback() {
-
-                @Override
-                public void onSuccess(Integer count) {
-                  updateStatus(form, OrdersStatus.FINISH);
-                  int dateIdx = Data.getColumnIndex(VIEW_ORDERS, COL_END_DATE);
-                  form.getActiveRow().setValue(dateIdx, TimeUtils.nowMinutes());
-
-                  save(form);
-                }
-              });
         }
+
+        Queries.update(VIEW_ORDER_ITEMS, Filter.equals(COL_ORDER, form.getActiveRowId()),
+            COL_RESERVED_REMAINDER, new IntegerValue(0), count -> {
+              updateStatus(form, OrdersStatus.FINISH);
+              int dateIdx = Data.getColumnIndex(VIEW_ORDERS, COL_END_DATE);
+              form.getActiveRow().setValue(dateIdx, TimeUtils.nowMinutes());
+
+              save(form);
+            });
       }
     });
   }

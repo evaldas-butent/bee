@@ -2011,7 +2011,15 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   @Override
   public void startNewRow(boolean copy) {
+    if (!isEnabled() || isReadOnly()) {
+      return;
+    }
+
     GridForm gridForm = getNewRowForm();
+
+//    WindowType windowType = Popup.hasEventPreview() ? WindowType.MODAL : getNewRowWindowType();
+//    if (windowType == WindowType.NEW_TAB || windowType == WindowType.DETACHED) {
+//    }
 
     if (gridForm.getFormView() != null) {
       openNewRow(copy);
@@ -3054,74 +3062,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   private void openNewRow(boolean copy) {
-    if (!isEnabled() || isReadOnly()) {
-      return;
-    }
-
     IsRow oldRow = getGrid().getActiveRow();
-    final IsRow newRow = DataUtils.createEmptyRow(getDataColumns().size());
-
-    List<String> defCols = new ArrayList<>();
-    if (!newRowDefaults.isEmpty()) {
-      defCols.addAll(newRowDefaults);
-    }
-
-    boolean isCopy = copy && oldRow != null;
-
-    if (isCopy) {
-      if (copyColumns.isEmpty()) {
-        for (int i = 0; i < getDataColumns().size(); i++) {
-          if (!oldRow.isNull(i)) {
-            newRow.setValue(i, oldRow.getString(i));
-          }
-        }
-
-      } else {
-        for (int i : copyColumns) {
-          if (!oldRow.isNull(i)) {
-            newRow.setValue(i, oldRow.getString(i));
-
-            if (!defCols.isEmpty()) {
-              String colId = getDataColumns().get(i).getId();
-              if (defCols.contains(colId)) {
-                defCols.remove(colId);
-              }
-            }
-          }
-        }
-      }
-    }
-
-    if (!defCols.isEmpty()) {
-      DataUtils.setDefaults(newRow, defCols, getDataColumns(), Global.getDefaults());
-      RelationUtils.setDefaults(getDataInfo(), newRow, defCols, getDataColumns(),
-          BeeKeeper.getUser().getUserData());
-    }
-
-    if (!isCopy) {
-      for (EditableColumn editableColumn : getEditableColumns().values()) {
-        if (editableColumn.hasCarry()) {
-          if (oldRow == null) {
-            oldRow = DataUtils.createEmptyRow(getDataColumns().size());
-          }
-
-          String carry = editableColumn.getCarryValue(oldRow);
-          if (!BeeUtils.isEmpty(carry)) {
-            int index = editableColumn.getColIndex();
-            newRow.setValue(index, carry);
-
-            if (editableColumn.hasRelation()
-                && BeeUtils.equalsTrim(carry, oldRow.getString(index))) {
-              RelationUtils.setRelatedValues(getDataInfo(), editableColumn.getColumnId(),
-                  newRow, oldRow);
-            }
-          }
-        }
-      }
-    }
+    IsRow newRow = prepareNewRow(oldRow, copy);
 
     if (getGridInterceptor() != null
-        && !getGridInterceptor().onStartNewRow(this, oldRow, newRow, isCopy)) {
+        && !getGridInterceptor().onStartNewRow(this, oldRow, newRow, copy)) {
       return;
     }
 
@@ -3149,14 +3094,12 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     if (form.getFormInterceptor() != null) {
-      form.getFormInterceptor().onStartNewRow(form, oldRow, newRow);
+      form.getFormInterceptor().onStartNewRow(form, newRow);
     }
 
-    if (form.getViewPresenter() instanceof GridFormPresenter) {
+    if (!BeeUtils.isEmpty(caption) && form.getViewPresenter() instanceof GridFormPresenter) {
       GridFormPresenter presenter = (GridFormPresenter) form.getViewPresenter();
-      if (!BeeUtils.isEmpty(caption)) {
-        presenter.setCaption(caption);
-      }
+      presenter.setCaption(caption);
     }
 
     setOnFormOpen(() -> {
@@ -3256,6 +3199,71 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     fireEvent(event);
+  }
+
+  private IsRow prepareNewRow(IsRow oldRow, boolean copy) {
+    IsRow newRow = DataUtils.createEmptyRow(getDataColumns().size());
+
+    List<String> defCols = new ArrayList<>();
+    if (!newRowDefaults.isEmpty()) {
+      defCols.addAll(newRowDefaults);
+    }
+
+    boolean isCopy = copy && oldRow != null;
+
+    if (isCopy) {
+      if (copyColumns.isEmpty()) {
+        for (int i = 0; i < getDataColumns().size(); i++) {
+          if (!oldRow.isNull(i)) {
+            newRow.setValue(i, oldRow.getString(i));
+          }
+        }
+
+      } else {
+        for (int i : copyColumns) {
+          if (!oldRow.isNull(i)) {
+            newRow.setValue(i, oldRow.getString(i));
+
+            if (!defCols.isEmpty()) {
+              String colId = getDataColumns().get(i).getId();
+              if (defCols.contains(colId)) {
+                defCols.remove(colId);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (!defCols.isEmpty()) {
+      DataUtils.setDefaults(newRow, defCols, getDataColumns(), Global.getDefaults());
+      RelationUtils.setDefaults(getDataInfo(), newRow, defCols, getDataColumns(),
+          BeeKeeper.getUser().getUserData());
+    }
+
+    if (!isCopy) {
+      IsRow carryRow = (oldRow == null)
+          ? DataUtils.createEmptyRow(getDataColumns().size()) : oldRow;
+
+      for (EditableColumn editableColumn : getEditableColumns().values()) {
+        if (editableColumn.hasCarry()) {
+          String carry = editableColumn.getCarryValue(carryRow);
+
+          if (!BeeUtils.isEmpty(carry)) {
+            int index = editableColumn.getColIndex();
+            newRow.setValue(index, carry);
+
+            if (editableColumn.hasRelation()
+                && BeeUtils.equalsTrim(carry, carryRow.getString(index))) {
+              RelationUtils.setRelatedValues(getDataInfo(), editableColumn.getColumnId(),
+                  newRow, carryRow);
+            }
+          }
+        }
+      }
+    }
+
+    return newRow;
   }
 
   private void saveChanges(FormView form, IsRow oldRow, IsRow newRow, RowCallback callback) {

@@ -293,7 +293,7 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow row) {
   }
 
   @Override

@@ -11,7 +11,6 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_ITEM_
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -24,9 +23,7 @@ import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
@@ -61,14 +58,11 @@ public class MaintenancePayrollForm extends AbstractFormInterceptor
       ParameterList params = ServiceKeeper.createArgs(SVC_GET_REPAIRER_TARIFF);
       params.addDataItem(COL_REPAIRER, event.getValue());
 
-      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-            @Override
-            public void onResponse(ResponseObject response) {
-              if (!response.hasErrors()) {
-                getFormView().updateCell(COL_PAYROLL_TARIFF, response.getResponseAsString());
-              }
-            }
-          });
+      BeeKeeper.getRpc().makePostRequest(params, response -> {
+        if (!response.hasErrors()) {
+          getFormView().updateCell(COL_PAYROLL_TARIFF, response.getResponseAsString());
+        }
+      });
     }
   }
 
@@ -76,40 +70,37 @@ public class MaintenancePayrollForm extends AbstractFormInterceptor
   public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
     event.consume();
     Queries.getRowSet(TBL_SERVICE_ITEMS, null, Filter.equals(COL_SERVICE_MAINTENANCE,
-        BeeUtils.toLong(event.getValue(COL_SERVICE_MAINTENANCE))), new Queries.RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet itemsRowSet) {
-        if (!itemsRowSet.isEmpty()) {
-          double totalBasicAmount = 0;
-          int costIndex = itemsRowSet.getColumnIndex(COL_ITEM + COL_ITEM_COST);
-          int quantityIndex = itemsRowSet.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+        BeeUtils.toLong(event.getValue(COL_SERVICE_MAINTENANCE))), itemsRowSet -> {
+          if (!itemsRowSet.isEmpty()) {
+            double totalBasicAmount = 0;
+            int costIndex = itemsRowSet.getColumnIndex(COL_ITEM + COL_ITEM_COST);
+            int quantityIndex = itemsRowSet.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
 
-          for (BeeRow itemRow : itemsRowSet) {
-            totalBasicAmount += ServiceUtils.calculateBasicAmount(
-                BeeUtils.unbox(itemRow.getPropertyDouble(PRP_AMOUNT_WO_VAT)),
-                BeeUtils.unbox(itemRow.getDouble(costIndex)),
-                BeeUtils.unbox(itemRow.getDouble(quantityIndex)));
+            for (BeeRow itemRow : itemsRowSet) {
+              totalBasicAmount += ServiceUtils.calculateBasicAmount(
+                  BeeUtils.unbox(itemRow.getPropertyDouble(PRP_AMOUNT_WO_VAT)),
+                  BeeUtils.unbox(itemRow.getDouble(costIndex)),
+                  BeeUtils.unbox(itemRow.getDouble(quantityIndex)));
+            }
+            event.getColumns().add(DataUtils.getColumn(COL_PAYROLL_BASIC_AMOUNT, getDataColumns()));
+            event.getColumns().add(DataUtils.getColumn(COL_PAYROLL_SALARY, getDataColumns()));
+            event.getValues().add(BeeUtils.toString(totalBasicAmount));
+            event.getValues().add(BeeUtils.toString(ServiceUtils.calculateSalary(BeeUtils.toDouble(
+                event.getValue(COL_PAYROLL_TARIFF)), totalBasicAmount)));
           }
-          event.getColumns().add(DataUtils.getColumn(COL_PAYROLL_BASIC_AMOUNT, getDataColumns()));
-          event.getColumns().add(DataUtils.getColumn(COL_PAYROLL_SALARY, getDataColumns()));
-          event.getValues().add(BeeUtils.toString(totalBasicAmount));
-          event.getValues().add(BeeUtils.toString(ServiceUtils.calculateSalary(BeeUtils.toDouble(
-              event.getValue(COL_PAYROLL_TARIFF)), totalBasicAmount)));
-        }
-        listener.fireEvent(event);
-      }
-    });
+          listener.fireEvent(event);
+        });
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow row) {
     GridView parentGrid = getGridView();
 
     if (parentGrid != null) {
       IsRow parentRow = ViewHelper.getFormRow(parentGrid.asWidget());
       if (parentRow != null) {
         form.getWidgetBySource(COL_SERVICE_MAINTENANCE).setVisible(false);
-        newRow.setValue(getDataIndex(COL_SERVICE_MAINTENANCE), parentRow.getId());
+        row.setValue(getDataIndex(COL_SERVICE_MAINTENANCE), parentRow.getId());
         Widget maintenanceLabelWidget = form.getWidgetByName(COL_SERVICE_MAINTENANCE + LABEL_NAME);
 
         if (maintenanceLabelWidget instanceof Label) {
@@ -117,6 +108,6 @@ public class MaintenancePayrollForm extends AbstractFormInterceptor
         }
       }
     }
-    super.onStartNewRow(form, oldRow, newRow);
+    super.onStartNewRow(form, row);
   }
 }

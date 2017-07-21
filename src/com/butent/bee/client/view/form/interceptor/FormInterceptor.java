@@ -94,7 +94,7 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
 
   boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand);
 
-  void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow);
+  void onStartNewRow(FormView form, IsRow row);
 
   void onUnload(FormView form);
 

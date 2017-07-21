@@ -326,9 +326,9 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     public int compareTo(TabEntry o) {
       Assert.notNull(o);
 
-      int res = Integer.valueOf(getTabIndex()).compareTo(o.getTabIndex());
+      int res = Integer.compare(getTabIndex(), o.getTabIndex());
       if (res == BeeConst.COMPARE_EQUAL) {
-        res = Integer.valueOf(getOrder()).compareTo(o.getOrder());
+        res = Integer.compare(getOrder(), o.getOrder());
       }
       return res;
     }
@@ -1993,7 +1993,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     if (getFormInterceptor() != null) {
-      getFormInterceptor().onStartNewRow(this, row, newRow);
+      getFormInterceptor().onStartNewRow(this, newRow);
     }
 
     setActiveRow(newRow);

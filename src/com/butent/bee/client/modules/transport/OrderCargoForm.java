@@ -136,11 +136,11 @@ class OrderCargoForm extends AbstractFormInterceptor {
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow row) {
     form.getViewPresenter().getHeader().clearCommandPanel();
 
     if (defaultCargoType != null) {
-      RelationUtils.updateRow(Data.getDataInfo(form.getViewName()), COL_CARGO_TYPE, newRow,
+      RelationUtils.updateRow(Data.getDataInfo(form.getViewName()), COL_CARGO_TYPE, row,
           Data.getDataInfo(VIEW_CARGO_TYPES), defaultCargoType, true);
     }
   }
