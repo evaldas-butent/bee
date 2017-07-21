@@ -1865,8 +1865,8 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_TASKS,
         sys.getIdName(TBL_TASKS)), SqlConstants.SqlDataType.STRING, 20, 0), COL_TASK));
 
-    Stream.of(COL_SUMMARY, COL_PRIORITY, COL_START_TIME, COL_FINISH_TIME,
-        COL_EXPECTED_DURATION, COL_EXPECTED_EXPENSES, COL_STATUS)
+    Stream.of(COL_SUMMARY, COL_PRIORITY, COL_START_TIME, COL_FINISH_TIME, COL_COMPLETED,
+        COL_APPROVED, COL_EXPECTED_DURATION, COL_EXPECTED_EXPENSES, COL_STATUS)
         .forEach(col -> clause.add(report.getCondition(TBL_TASKS, col)));
 
     clause.add(report.getCondition(owner, COL_OWNER));
@@ -1894,7 +1894,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     SqlSelect select = new SqlSelect()
         .addField(TBL_TASKS, sys.getIdName(TBL_TASKS), COL_TASK)
         .addFields(TBL_TASKS, COL_SUMMARY, COL_PRIORITY, COL_START_TIME, COL_FINISH_TIME,
-            COL_EXPECTED_DURATION, COL_EXPECTED_EXPENSES, COL_STATUS)
+            COL_COMPLETED, COL_APPROVED, COL_EXPECTED_DURATION, COL_EXPECTED_EXPENSES, COL_STATUS)
 
         .addExpr(owner, COL_OWNER)
         .addExpr(executor, COL_EXECUTOR)

@@ -640,7 +640,9 @@ public enum Report implements HasWidgetSupplier {
           new ReportDateTimeItem(COL_DURATION_DATE,
               Data.getColumnLabel(TBL_EVENT_DURATIONS, COL_DURATION_DATE)),
           new ReportTimeDurationItem(COL_DURATION,
-              Data.getColumnLabel(TBL_EVENT_DURATIONS, COL_DURATION))
+              Data.getColumnLabel(TBL_EVENT_DURATIONS, COL_DURATION)),
+          new ReportDateTimeItem(COL_COMPLETED, Data.getColumnLabel(VIEW_TASKS, COL_COMPLETED)),
+          new ReportDateTimeItem(COL_APPROVED, Data.getColumnLabel(VIEW_TASKS, COL_APPROVED))
       );
     }
 

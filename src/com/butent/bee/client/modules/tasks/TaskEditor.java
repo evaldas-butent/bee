@@ -1406,8 +1406,13 @@ class TaskEditor extends ProductSupportInterceptor {
         status = TaskStatus.COMPLETED;
         event = TaskEvent.COMPLETE;
       }
+
       BeeRow newRow = getNewRow(status);
       newRow.setValue(getFormView().getDataIndex(COL_COMPLETED), completed);
+
+      if (isOwner() && isExecutor()) {
+        newRow.setValue(getFormView().getDataIndex(COL_APPROVED), completed);
+      }
 
       ParameterList params = createParams(event, newRow, comment);
 
