@@ -188,6 +188,7 @@
         <FlowPanel>
           <Table kind="controls" style="margin-top: 1vh;">
             <col index="0" kind="label" />
+            <col index="2" kind="label" />
 
             <row>
               <text />
@@ -201,26 +202,24 @@
               <ListBox source="GridEditWindow" summarize="true">
                 &windowTypes;
               </ListBox>
-            </row>
-            <!--<row>-->
-              <!--<Label for="GridNewRowWindow" />-->
-              <!--<ListBox source="GridNewRowWindow" summarize="true">-->
-                <!--&windowTypes;-->
-              <!--</ListBox>-->
-            <!--</row>-->
 
-            <row>
               <Label for="ChildEditWindow" />
               <ListBox source="ChildEditWindow" summarize="true">
                 &windowTypes;
               </ListBox>
             </row>
-            <!--<row>-->
-              <!--<Label for="ChildNewRowWindow" />-->
-              <!--<ListBox source="ChildNewRowWindow" summarize="true">-->
-                <!--&windowTypes;-->
-              <!--</ListBox>-->
-            <!--</row>-->
+
+            <row>
+              <Label for="GridNewRowWindow" />
+              <ListBox source="GridNewRowWindow" summarize="true">
+                &windowTypes;
+              </ListBox>
+
+              <Label for="ChildNewRowWindow" />
+              <ListBox source="ChildNewRowWindow" summarize="true">
+                &windowTypes;
+              </ListBox>
+            </row>
 
             <row>
               <Label for="NewMailMessageWindow" />

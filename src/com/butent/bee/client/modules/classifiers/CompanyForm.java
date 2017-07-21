@@ -16,7 +16,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
-import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.trade.TradeKeeper;
@@ -30,6 +29,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -388,7 +388,7 @@ class CompanyForm extends AbstractFormInterceptor {
 
       WindowType windowType;
       if (UiHelper.isModal(getFormView().asWidget())) {
-        windowType = Popup.hasEventPreview() ? WindowType.MODAL : WindowType.DETACHED;
+        windowType = ViewHelper.normalize(WindowType.DETACHED);
       } else {
         windowType = WindowType.NEW_TAB;
       }

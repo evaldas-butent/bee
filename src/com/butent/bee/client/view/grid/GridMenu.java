@@ -222,14 +222,13 @@ public class GridMenu {
 
       @Override
       boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
-//        return isEditable(gridDescription)
-//            && BeeKeeper.getUser().canCreateData(gridDescription.getViewName());
-        return false;
+        return isEditable(gridDescription)
+            && BeeKeeper.getUser().canCreateData(gridDescription.getViewName());
       }
 
       @Override
       boolean isVisible(GridPresenter presenter) {
-        return presenter.getGridView().getFormCount(GridFormKind.NEW_ROW) > 0;
+        return true;
       }
 
       @Override

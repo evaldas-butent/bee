@@ -12,6 +12,11 @@ public enum WindowType implements HasLocalizedCaption {
     }
 
     @Override
+    public boolean isAutonomous() {
+      return true;
+    }
+
+    @Override
     public boolean isPopup() {
       return false;
     }
@@ -21,6 +26,11 @@ public enum WindowType implements HasLocalizedCaption {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.windowOnTop();
+    }
+
+    @Override
+    public boolean isAutonomous() {
+      return false;
     }
 
     @Override
@@ -36,6 +46,11 @@ public enum WindowType implements HasLocalizedCaption {
     }
 
     @Override
+    public boolean isAutonomous() {
+      return true;
+    }
+
+    @Override
     public boolean isPopup() {
       return true;
     }
@@ -45,6 +60,11 @@ public enum WindowType implements HasLocalizedCaption {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.windowModal();
+    }
+
+    @Override
+    public boolean isAutonomous() {
+      return false;
     }
 
     @Override
@@ -85,6 +105,8 @@ public enum WindowType implements HasLocalizedCaption {
   public String getCode() {
     return code;
   }
+
+  public abstract boolean isAutonomous();
 
   public abstract boolean isPopup();
 }

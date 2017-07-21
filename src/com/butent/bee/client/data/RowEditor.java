@@ -7,7 +7,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Modality;
-import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Printer;
@@ -228,14 +227,7 @@ public final class RowEditor {
               result.setEnabled(false);
             }
 
-            Opener formOpener;
-            if (opener.getModality() != Modality.ENABLED && Popup.hasEventPreview()) {
-              formOpener = Opener.modal(opener.getOnOpen());
-            } else {
-              formOpener = opener;
-            }
-
-            launch(formDescription, result, dataInfo, row, formOpener, rowCallback);
+            launch(formDescription, result, dataInfo, row, opener.normalize(), rowCallback);
           }
         });
   }

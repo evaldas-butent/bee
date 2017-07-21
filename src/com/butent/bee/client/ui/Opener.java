@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dialog.Modality;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
@@ -132,5 +133,13 @@ public final class Opener {
 
   public Element getTarget() {
     return target;
+  }
+
+  public Opener normalize() {
+    if (getModality() != Modality.ENABLED && Popup.hasEventPreview()) {
+      return new Opener(Modality.ENABLED, getTarget(), getPresenterCallback(), getOnOpen());
+    } else {
+      return this;
+    }
   }
 }
