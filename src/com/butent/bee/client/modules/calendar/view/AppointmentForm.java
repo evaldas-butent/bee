@@ -57,7 +57,7 @@ public class AppointmentForm extends AbstractFormInterceptor {
             Data.setValue(VIEW_TASKS, row, COL_COMPANY, companyId);
             Data.setValue(VIEW_TASKS, row, ALS_COMPANY_NAME, company);
           }
-          RowFactory.createRelatedRow(formName, row, selector, null);
+          RowFactory.createRelatedRow(formName, row, selector);
         }
       } else {
         Filter filter = null;

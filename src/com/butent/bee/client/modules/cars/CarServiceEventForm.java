@@ -30,6 +30,7 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -145,7 +146,7 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
         COL_TRADE_CUSTOMER + COL_PERSON, COL_CAR, COL_CAR).forEach((s, t) ->
         RelationUtils.copyWithDescendants(eventInfo, s, eventRow, orderInfo, t, orderRow));
 
-    RowFactory.createRow(orderInfo, orderRow, null, result -> {
+    RowFactory.createRow(orderInfo, orderRow, Opener.MODAL, result -> {
       RelationUtils.updateRow(eventInfo, COL_SERVICE_ORDER, eventRow, orderInfo, result, true);
       getFormView().refresh();
     });

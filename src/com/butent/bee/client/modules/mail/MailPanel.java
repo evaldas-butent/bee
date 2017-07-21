@@ -13,12 +13,10 @@ import static com.butent.bee.shared.modules.mail.MailConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Icon;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
@@ -42,6 +40,7 @@ import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.HeaderView;
@@ -68,7 +67,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
@@ -686,7 +684,7 @@ public class MailPanel extends AbstractFormInterceptor {
                 DataUtils.getString(grid.getDataColumns(), row, "SenderEmail"));
           }
         }
-        RowFactory.createRow(dataInfo, newRow, Modality.ENABLED);
+        RowFactory.createRow(dataInfo, newRow, Opener.MODAL);
       });
       header.addCommandItem(accountSettings);
     }
@@ -704,12 +702,9 @@ public class MailPanel extends AbstractFormInterceptor {
 
         Queries.getRowSet(TBL_PLACES, Collections.singletonList(COL_FOLDER),
             Filter.equals(COL_FOLDER, getCurrentFolder()),
-            new Queries.RowSetCallback() {
-              @Override
-              public void onSuccess(BeeRowSet result) {
-                removeMessages(result.getRowIds());
-                purgeWidget.setEnabled(true);
-              }
+            result -> {
+              removeMessages(result.getRowIds());
+              purgeWidget.setEnabled(true);
             });
       }
     });
@@ -736,12 +731,7 @@ public class MailPanel extends AbstractFormInterceptor {
     if (syncAll) {
       params.addDataItem(Service.VAR_CHECK, BeeUtils.toString(syncAll));
     }
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(getFormView());
-      }
-    });
+    BeeKeeper.getRpc().makePostRequest(params, response -> response.notify(getFormView()));
   }
 
   List<AccountInfo> getAccounts() {
@@ -821,23 +811,20 @@ public class MailPanel extends AbstractFormInterceptor {
     ParameterList params = MailKeeper.createArgs(SVC_GET_FOLDERS);
     params.addDataItem(COL_ACCOUNT, account.getAccountId());
 
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(getFormView());
+    BeeKeeper.getRpc().makePostRequest(params, response -> {
+      response.notify(getFormView());
 
-        Map<String, String> map = Codec.deserializeHashMap(response.getResponseAsString());
-        account.setRootFolder(MailFolder.restore(map.get(COL_FOLDER)));
+      Map<String, String> map = Codec.deserializeHashMap(response.getResponseAsString());
+      account.setRootFolder(MailFolder.restore(map.get(COL_FOLDER)));
 
-        for (SystemFolder sysFolder : EnumSet.complementOf(EnumSet.of(SystemFolder.Inbox))) {
-          account.setSystemFolder(sysFolder, BeeUtils.toLong(map.get(sysFolder.name())));
-        }
-        if (account == getCurrentAccount()) {
-          MailKeeper.rebuildController();
+      for (SystemFolder sysFolder : EnumSet.complementOf(EnumSet.of(SystemFolder.Inbox))) {
+        account.setSystemFolder(sysFolder, BeeUtils.toLong(map.get(sysFolder.name())));
+      }
+      if (account == getCurrentAccount()) {
+        MailKeeper.rebuildController();
 
-          if (afterRequery != null) {
-            afterRequery.execute();
-          }
+        if (afterRequery != null) {
+          afterRequery.execute();
         }
       }
     });
@@ -859,12 +846,7 @@ public class MailPanel extends AbstractFormInterceptor {
     params.addDataItem(COL_FLAGS, flag.name());
     params.addDataItem("on", Codec.pack(on));
 
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(getFormView());
-      }
-    });
+    BeeKeeper.getRpc().makePostRequest(params, response -> response.notify(getFormView()));
   }
 
   private static String getStorageKey() {
@@ -912,18 +894,15 @@ public class MailPanel extends AbstractFormInterceptor {
           params.addDataItem(COL_ACCOUNT, getCurrentAccount().getAccountId());
           params.addDataItem(COL_PLACE, DataUtils.buildIdList(ids));
 
-          BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-            @Override
-            public void onResponse(ResponseObject response) {
-              response.notify(getFormView());
+          BeeKeeper.getRpc().makePostRequest(params, response -> {
+            response.notify(getFormView());
 
-              if (!response.hasErrors()) {
-                String msg = response.getResponseAsString();
-                Dictionary loc = Localized.dictionary();
+            if (!response.hasErrors()) {
+              String msg = response.getResponseAsString();
+              Dictionary loc = Localized.dictionary();
 
-                getFormView().notifyInfo(purge ? loc.mailDeletedMessages(msg)
-                    : loc.mailMovedMessagesToTrash(msg));
-              }
+              getFormView().notifyInfo(purge ? loc.mailDeletedMessages(msg)
+                  : loc.mailMovedMessagesToTrash(msg));
             }
           });
           removeRows(ids);

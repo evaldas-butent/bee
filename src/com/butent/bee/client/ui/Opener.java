@@ -22,10 +22,14 @@ public final class Opener {
   private static final Opener ON_TOP = new Opener(PresenterCallback.SHOW_IN_ACTIVE_PANEL);
 
   public static Opener detached(Consumer<FormView> onOpen) {
-    if (onOpen == null) {
+    return detached(null, onOpen);
+  }
+
+  public static Opener detached(Element target, Consumer<FormView> onOpen) {
+    if (target == null && onOpen == null) {
       return DETACHED;
     } else {
-      return new Opener(Modality.DISABLED, null, null, onOpen);
+      return new Opener(Modality.DISABLED, target, null, onOpen);
     }
   }
 
@@ -47,11 +51,27 @@ public final class Opener {
     return null;
   }
 
+  public static Opener in(WindowType windowType, Element target, Consumer<FormView> onOpen) {
+    if (windowType == WindowType.DETACHED) {
+      return detached(target, onOpen);
+
+    } else if (windowType == WindowType.MODAL) {
+      return modal(target, onOpen);
+
+    } else {
+      return in(windowType, onOpen);
+    }
+  }
+
   public static Opener modal(Consumer<FormView> onOpen) {
-    if (onOpen == null) {
+    return modal(null, onOpen);
+  }
+
+  public static Opener modal(Element target, Consumer<FormView> onOpen) {
+    if (target == null && onOpen == null) {
       return MODAL;
     } else {
-      return new Opener(Modality.ENABLED, null, null, onOpen);
+      return new Opener(Modality.ENABLED, target, null, onOpen);
     }
   }
 

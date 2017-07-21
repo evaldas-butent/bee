@@ -7,13 +7,10 @@ import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
@@ -21,7 +18,6 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -40,7 +36,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiConsumer;
 
 final class InvoiceBuilder {
 
@@ -113,117 +108,100 @@ final class InvoiceBuilder {
           Filter.equals(COL_SERVICE_MAINTENANCE, maintenanceId));
     }
 
-    Queries.getRowSet(VIEW_MAINTENANCE, null, filter, new Queries.RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        if (DataUtils.isEmpty(result)) {
-          form.notifyInfo(Localized.dictionary().noData());
+    Queries.getRowSet(VIEW_MAINTENANCE, null, filter, result -> {
+      if (DataUtils.isEmpty(result)) {
+        form.notifyInfo(Localized.dictionary().noData());
 
-        } else {
-          ServiceHelper.selectMaintenanceItems(objId, result,
-              Localized.dictionary().trdNewInvoice(), Localized.dictionary().createInvoice(),
-              STYLE_PREFIX, new BiConsumer<Long, BeeRowSet>() {
-                @Override
-                public void accept(Long t, BeeRowSet u) {
-                  buildHeader(t, u);
-                }
-              });
-        }
+      } else {
+        ServiceHelper.selectMaintenanceItems(objId, result,
+            Localized.dictionary().trdNewInvoice(), Localized.dictionary().createInvoice(),
+            STYLE_PREFIX, InvoiceBuilder::buildHeader);
       }
     });
   }
 
   private static void buildHeader(long objId, final BeeRowSet items) {
-    Queries.getRow(VIEW_SERVICE_OBJECTS, objId, new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow objRow) {
-        DataInfo invInfo = Data.getDataInfo(VIEW_SERVICE_INVOICES);
-        BeeRow invRow = RowFactory.createEmptyRow(invInfo, true);
+    Queries.getRow(VIEW_SERVICE_OBJECTS, objId, objRow -> {
+      DataInfo invInfo = Data.getDataInfo(VIEW_SERVICE_INVOICES);
+      BeeRow invRow = RowFactory.createEmptyRow(invInfo, true);
 
-        invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_KIND), 1);
+      invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_KIND), 1);
 
-        Long customer = Data.getLong(VIEW_SERVICE_OBJECTS, objRow, COL_SERVICE_CUSTOMER);
-        if (DataUtils.isId(customer)) {
-          invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_CUSTOMER), customer);
-          invRow.setValue(invInfo.getColumnIndex(TradeConstants.ALS_CUSTOMER_NAME),
-              Data.getString(VIEW_SERVICE_OBJECTS, objRow, ALS_SERVICE_CUSTOMER_NAME));
+      Long customer = Data.getLong(VIEW_SERVICE_OBJECTS, objRow, COL_SERVICE_CUSTOMER);
+      if (DataUtils.isId(customer)) {
+        invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_CUSTOMER), customer);
+        invRow.setValue(invInfo.getColumnIndex(TradeConstants.ALS_CUSTOMER_NAME),
+            Data.getString(VIEW_SERVICE_OBJECTS, objRow, ALS_SERVICE_CUSTOMER_NAME));
+      }
+
+      UserData userData = BeeKeeper.getUser().getUserData();
+      if (userData != null) {
+        invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_MANAGER),
+            userData.getUserId());
+        RelationUtils.setUserFields(invInfo, invRow, TradeConstants.COL_TRADE_MANAGER, userData);
+
+        invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_SUPPLIER),
+            userData.getCompany());
+        invRow.setValue(invInfo.getColumnIndex(TradeConstants.ALS_SUPPLIER_NAME),
+            userData.getCompanyName());
+      }
+
+      Integer days = Data.getInteger(VIEW_SERVICE_OBJECTS, objRow,
+          ClassifierConstants.COL_COMPANY_CREDIT_DAYS);
+      if (BeeUtils.isPositive(days)) {
+        invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_TERM),
+            TimeUtils.nextDay(TimeUtils.today(), days));
+      }
+
+      for (BeeRow row : items) {
+        Long currency = row.getLong(items.getColumnIndex(AdministrationConstants.COL_CURRENCY));
+
+        if (DataUtils.isId(currency)) {
+          invRow.setValue(invInfo.getColumnIndex(AdministrationConstants.COL_CURRENCY), currency);
+          invRow.setValue(invInfo.getColumnIndex(AdministrationConstants.ALS_CURRENCY_NAME),
+              row.getString(items.getColumnIndex(AdministrationConstants.ALS_CURRENCY_NAME)));
+          break;
         }
+      }
 
-        UserData userData = BeeKeeper.getUser().getUserData();
-        if (userData != null) {
-          invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_MANAGER),
-              userData.getUserId());
-          RelationUtils.setUserFields(invInfo, invRow, TradeConstants.COL_TRADE_MANAGER, userData);
+      final InvoiceInterceptor interceptor = new InvoiceInterceptor();
 
-          invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_SUPPLIER),
-              userData.getCompany());
-          invRow.setValue(invInfo.getColumnIndex(TradeConstants.ALS_SUPPLIER_NAME),
-              userData.getCompanyName());
-        }
+      RowFactory.createRow("NewServiceInvoice", null, invInfo, invRow, Opener.MODAL,
+          interceptor, result -> {
+            ParameterList params = ServiceKeeper.createArgs(SVC_CREATE_INVOICE_ITEMS);
 
-        Integer days = Data.getInteger(VIEW_SERVICE_OBJECTS, objRow,
-            ClassifierConstants.COL_COMPANY_CREDIT_DAYS);
-        if (BeeUtils.isPositive(days)) {
-          invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_TERM),
-              TimeUtils.nextDay(TimeUtils.today(), days));
-        }
+            params.addQueryItem(COL_MAINTENANCE_INVOICE, result.getId());
 
-        for (BeeRow row : items) {
-          Long currency = row.getLong(items.getColumnIndex(AdministrationConstants.COL_CURRENCY));
+            Long currency = Data.getLong(VIEW_SERVICE_INVOICES, result,
+                AdministrationConstants.COL_CURRENCY);
+            if (DataUtils.isId(currency)) {
+              params.addQueryItem(AdministrationConstants.COL_CURRENCY, currency);
+            }
 
-          if (DataUtils.isId(currency)) {
-            invRow.setValue(invInfo.getColumnIndex(AdministrationConstants.COL_CURRENCY), currency);
-            invRow.setValue(invInfo.getColumnIndex(AdministrationConstants.ALS_CURRENCY_NAME),
-                row.getString(items.getColumnIndex(AdministrationConstants.ALS_CURRENCY_NAME)));
-            break;
-          }
-        }
+            if (DataUtils.isId(interceptor.getMainItem())) {
+              params.addQueryItem(PROP_MAIN_ITEM, interceptor.getMainItem());
+            }
 
-        final InvoiceInterceptor interceptor = new InvoiceInterceptor();
+            List<Long> ids = new ArrayList<>();
+            for (IsRow item : items) {
+              ids.add(item.getId());
+            }
 
-        RowFactory.createRow("NewServiceInvoice", null, invInfo, invRow, Modality.ENABLED, null,
-            interceptor, null, new RowCallback() {
-              @Override
-              public void onSuccess(BeeRow result) {
-                ParameterList params = ServiceKeeper.createArgs(SVC_CREATE_INVOICE_ITEMS);
+            params.addDataItem(VIEW_MAINTENANCE, DataUtils.buildIdList(ids));
 
-                params.addQueryItem(COL_MAINTENANCE_INVOICE, result.getId());
+            final long invId = result.getId();
 
-                Long currency = Data.getLong(VIEW_SERVICE_INVOICES, result,
-                    AdministrationConstants.COL_CURRENCY);
-                if (DataUtils.isId(currency)) {
-                  params.addQueryItem(AdministrationConstants.COL_CURRENCY, currency);
-                }
+            BeeKeeper.getRpc().makeRequest(params, response -> {
+              response.notify(BeeKeeper.getScreen());
 
-                if (DataUtils.isId(interceptor.getMainItem())) {
-                  params.addQueryItem(PROP_MAIN_ITEM, interceptor.getMainItem());
-                }
+              if (!response.hasErrors()) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_MAINTENANCE);
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDER_CHILD_INVOICES);
 
-                List<Long> ids = new ArrayList<>();
-                for (IsRow item : items) {
-                  ids.add(item.getId());
-                }
-
-                params.addDataItem(VIEW_MAINTENANCE, DataUtils.buildIdList(ids));
-
-                final long invId = result.getId();
-
-                BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-                  @Override
-                  public void onResponse(ResponseObject response) {
-                    response.notify(BeeKeeper.getScreen());
-
-                    if (!response.hasErrors()) {
-                      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_MAINTENANCE);
-                      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDER_CHILD_INVOICES);
-
-                      RowEditor.open(VIEW_ORDER_CHILD_INVOICES, invId, Opener.MODAL);
-                    }
-                  }
-                });
+                RowEditor.open(VIEW_ORDER_CHILD_INVOICES, invId, Opener.MODAL);
               }
             });
-      }
+          });
     });
   }
 

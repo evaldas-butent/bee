@@ -21,7 +21,6 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.EventUtils;
@@ -293,7 +292,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   public boolean beforeAction(Action action, Presenter presenter) {
     switch (action) {
       case ADD:
-        RowFactory.createRow(VIEW_DEPARTMENTS, Modality.ENABLED, result -> refresh());
+        RowFactory.createRow(VIEW_DEPARTMENTS, Opener.MODAL, result -> refresh());
         return false;
 
       case CONFIGURE:

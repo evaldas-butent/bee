@@ -12,17 +12,14 @@ import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
@@ -47,7 +44,6 @@ import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.Cursor;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -241,12 +237,9 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
                         commentId, BeeUtils.toString(result1.getId()), f.getCaption());
 
                     Queries.insert(VIEW_DISCUSSIONS_FILES, columns, values, null,
-                        new RowCallback() {
-                          @Override
-                          public void onSuccess(BeeRow row) {
-                            att.clear();
-                            renderContent(getFormView(), false);
-                          }
+                        row -> {
+                          att.clear();
+                          renderContent(getFormView(), false);
                         });
                   });
                 }
@@ -457,8 +450,8 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       DataInfo data = Data.getDataInfo(VIEW_DISCUSSIONS);
       BeeRow emptyRow = RowFactory.createEmptyRow(data, true);
       RowFactory.createRow(FORM_NEW_ANNOUNCEMENT, Localized.dictionary().announcementNew(),
-          data, emptyRow, Modality.ENABLED, presenter.getMainView().asWidget(),
-          new CreateDiscussionInterceptor(), null, null);
+          data, emptyRow, Opener.relativeTo(presenter.getMainView().getElement()),
+          new CreateDiscussionInterceptor(), null);
 
       return false;
     }
@@ -805,62 +798,58 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     }
     ParameterList params = DiscussionsKeeper.createArgs(SVC_GET_ANNOUNCEMENTS_DATA);
 
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-
-      @Override
-      public void onResponse(ResponseObject response) {
-        Assert.notNull(response);
-        adsTable.clear();
-        adsTable.setVisible(false);
-        if (forceRefresh) {
-          clearCache(adsFlow);
-        }
-        if (response.isEmpty()) {
-          renderWelcomeSection(adsFlow);
-          return;
-        }
-
-        if (!response.hasResponse(Pair.class)) {
-          renderWelcomeSection(adsFlow);
-          return;
-        }
-
-        setEmptyForm(true);
-
-        Pair<String, String> results = Pair.restore(response.getResponseAsString());
-        String serializedAnnouncements = results.getA();
-        if (BeeUtils.isEmpty(serializedAnnouncements)) {
-          return;
-        }
-        SimpleRowSet rs = SimpleRowSet.restore(serializedAnnouncements);
-
-        String serializedAnnouncementsFiles = results.getB();
-        Map<Long, List<FileInfo>> discussionFilesMap = new HashMap<>();
-        if (!BeeUtils.isEmpty(serializedAnnouncementsFiles)) {
-          SimpleRowSet rsFiles = SimpleRowSet.restore(results.getB());
-          discussionFilesMap = generateDiscussionFilesMap(rsFiles);
-        }
-
-        clearUnused(adsFlow, rs);
-        setLastTopicPosition(null);
-
-        for (SimpleRow rsRow : rs) {
-          if (rs.hasColumn(ALS_BIRTHDAY) && !BeeUtils.isEmpty(rsRow.getValue(ALS_BIRTHDAY))) {
-            renderBirthdaySection(rsRow, adsFlow, forceRefresh);
-          } else {
-            renderAnnouncementsSection(rsRow, rs, adsFlow,
-                discussionFilesMap.get(rsRow.getLong(COL_DISCUSSION)));
-          }
-        }
-
-        if (isEmptyForm()) {
-          // adsTable.setVisible(true);
-          renderWelcomeSection(adsFlow);
-        } else {
-          adsTable.setVisible(false);
-        }
-
+    BeeKeeper.getRpc().makePostRequest(params, response -> {
+      Assert.notNull(response);
+      adsTable.clear();
+      adsTable.setVisible(false);
+      if (forceRefresh) {
+        clearCache(adsFlow);
       }
+      if (response.isEmpty()) {
+        renderWelcomeSection(adsFlow);
+        return;
+      }
+
+      if (!response.hasResponse(Pair.class)) {
+        renderWelcomeSection(adsFlow);
+        return;
+      }
+
+      setEmptyForm(true);
+
+      Pair<String, String> results = Pair.restore(response.getResponseAsString());
+      String serializedAnnouncements = results.getA();
+      if (BeeUtils.isEmpty(serializedAnnouncements)) {
+        return;
+      }
+      SimpleRowSet rs = SimpleRowSet.restore(serializedAnnouncements);
+
+      String serializedAnnouncementsFiles = results.getB();
+      Map<Long, List<FileInfo>> discussionFilesMap = new HashMap<>();
+      if (!BeeUtils.isEmpty(serializedAnnouncementsFiles)) {
+        SimpleRowSet rsFiles = SimpleRowSet.restore(results.getB());
+        discussionFilesMap = generateDiscussionFilesMap(rsFiles);
+      }
+
+      clearUnused(adsFlow, rs);
+      setLastTopicPosition(null);
+
+      for (SimpleRow rsRow : rs) {
+        if (rs.hasColumn(ALS_BIRTHDAY) && !BeeUtils.isEmpty(rsRow.getValue(ALS_BIRTHDAY))) {
+          renderBirthdaySection(rsRow, adsFlow, forceRefresh);
+        } else {
+          renderAnnouncementsSection(rsRow, rs, adsFlow,
+              discussionFilesMap.get(rsRow.getLong(COL_DISCUSSION)));
+        }
+      }
+
+      if (isEmptyForm()) {
+        // adsTable.setVisible(true);
+        renderWelcomeSection(adsFlow);
+      } else {
+        adsTable.setVisible(false);
+      }
+
     });
   }
 

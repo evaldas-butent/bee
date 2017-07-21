@@ -1,11 +1,9 @@
 package com.butent.bee.client.modules.tasks;
 
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -27,44 +25,36 @@ class ChildTaskTemplatesGrid extends AbstractGridInterceptor {
       return true;
     }
 
-    presenter.getGridView().ensureRelId(new IdCallback() {
-      @Override
-      public void onSuccess(Long relId) {
-        DataInfo childTaskDataInfo = Data.getDataInfo(presenter.getViewName());
+    presenter.getGridView().ensureRelId(relId -> {
+      DataInfo childTaskDataInfo = Data.getDataInfo(presenter.getViewName());
 
-        BeeRow childTemplateTask = RowFactory.createEmptyRow(childTaskDataInfo, true);
-        String relColumn = presenter.getGridView().getRelColumn();
+      BeeRow childTemplateTask = RowFactory.createEmptyRow(childTaskDataInfo, true);
+      String relColumn = presenter.getGridView().getRelColumn();
 
-        FormView parentForm = ViewHelper.getForm(presenter.getMainView());
-        if (parentForm != null) {
-          DataInfo parentFormDataInfo = Data.getDataInfo(parentForm.getViewName());
-          IsRow parentFormRow = parentForm.getActiveRow();
+      FormView parentForm = ViewHelper.getForm(presenter.getMainView());
+      if (parentForm != null) {
+        DataInfo parentFormDataInfo = Data.getDataInfo(parentForm.getViewName());
+        IsRow parentFormRow = parentForm.getActiveRow();
 
-          RelationUtils.updateRow(childTaskDataInfo, relColumn, childTemplateTask,
-              parentFormDataInfo, parentFormRow, true);
+        RelationUtils.updateRow(childTaskDataInfo, relColumn, childTemplateTask,
+            parentFormDataInfo, parentFormRow, true);
 
-          if (BeeUtils.same(parentForm.getViewName(), ProjectConstants.VIEW_PROJECT_TEMPLATES)) {
-            fillProjectData(childTaskDataInfo, childTemplateTask, parentFormDataInfo,
-                parentFormRow);
-          }
-
-          if (BeeUtils.same(parentForm.getViewName(),
-              ProjectConstants.VIEW_PROJECT_TEMPLATE_STAGES)) {
-            fillProjectStageData(childTaskDataInfo, childTemplateTask, parentFormDataInfo,
-                parentFormRow);
-            fillProjectData(childTaskDataInfo, childTemplateTask, parentFormDataInfo,
-                parentFormRow);
-          }
+        if (BeeUtils.same(parentForm.getViewName(), ProjectConstants.VIEW_PROJECT_TEMPLATES)) {
+          fillProjectData(childTaskDataInfo, childTemplateTask, parentFormDataInfo,
+              parentFormRow);
         }
 
-        RowFactory.createRow(childTaskDataInfo, childTemplateTask, Modality.ENABLED,
-            new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            presenter.handleAction(Action.REFRESH);
-          }
-        });
+        if (BeeUtils.same(parentForm.getViewName(),
+            ProjectConstants.VIEW_PROJECT_TEMPLATE_STAGES)) {
+          fillProjectStageData(childTaskDataInfo, childTemplateTask, parentFormDataInfo,
+              parentFormRow);
+          fillProjectData(childTaskDataInfo, childTemplateTask, parentFormDataInfo,
+              parentFormRow);
+        }
       }
+
+      RowFactory.createRow(childTaskDataInfo, childTemplateTask, Opener.MODAL,
+          result -> presenter.handleAction(Action.REFRESH));
     });
 
     return false;

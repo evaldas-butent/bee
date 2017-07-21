@@ -1,11 +1,9 @@
 package com.butent.bee.client.modules.tasks;
 
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -29,30 +27,20 @@ public class ChildRequestsGrid extends AbstractGridInterceptor {
       return true;
     }
 
-    presenter.getGridView().ensureRelId(new IdCallback() {
+    presenter.getGridView().ensureRelId(relId -> {
+      DataInfo childRequestDataInfo = Data.getDataInfo(presenter.getViewName());
+      BeeRow childRequestRow = RowFactory.createEmptyRow(childRequestDataInfo, true);
+      String relColumn = presenter.getGridView().getRelColumn();
+      FormView parentForm = ViewHelper.getForm(presenter.getMainView());
 
-      @Override
-      public void onSuccess(Long relId) {
-        DataInfo childRequestDataInfo = Data.getDataInfo(presenter.getViewName());
-        BeeRow childRequestRow = RowFactory.createEmptyRow(childRequestDataInfo, true);
-        String relColumn = presenter.getGridView().getRelColumn();
-        FormView parentForm = ViewHelper.getForm(presenter.getMainView());
-
-        if (parentForm != null) {
-          DataInfo parentFormDataInfo = Data.getDataInfo(parentForm.getViewName());
-          IsRow parentFormRow = parentForm.getActiveRow();
-          RelationUtils.updateRow(childRequestDataInfo, relColumn, childRequestRow,
-              parentFormDataInfo, parentFormRow, true);
-        }
-        RowFactory.createRow(childRequestDataInfo, childRequestRow, Modality.ENABLED,
-            new RowCallback() {
-
-          @Override
-          public void onSuccess(BeeRow result) {
-            presenter.handleAction(Action.REFRESH);
-          }
-        });
+      if (parentForm != null) {
+        DataInfo parentFormDataInfo = Data.getDataInfo(parentForm.getViewName());
+        IsRow parentFormRow = parentForm.getActiveRow();
+        RelationUtils.updateRow(childRequestDataInfo, relColumn, childRequestRow,
+            parentFormDataInfo, parentFormRow, true);
       }
+      RowFactory.createRow(childRequestDataInfo, childRequestRow, Opener.MODAL,
+          result -> presenter.handleAction(Action.REFRESH));
     });
 
     return false;

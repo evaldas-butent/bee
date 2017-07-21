@@ -14,7 +14,6 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.grid.ChildGrid;
@@ -23,6 +22,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -135,8 +135,8 @@ class PersonForm extends AbstractFormInterceptor {
               Data.setValue(viewName, newRow, COL_PERSON, id);
 
               RowFactory.createRow(dataInfo.getNewRowForm(),
-                  Localized.dictionary().newPersonCompany(), dataInfo, newRow, Modality.ENABLED,
-                  null, new AbstractFormInterceptor() {
+                  Localized.dictionary().newPersonCompany(), dataInfo, newRow, Opener.MODAL,
+                  new AbstractFormInterceptor() {
                     @Override
                     public boolean beforeCreateWidget(String widgetName, Element description) {
                       if (BeeUtils.startsWith(widgetName, COL_PERSON)) {
@@ -149,8 +149,7 @@ class PersonForm extends AbstractFormInterceptor {
                     public FormInterceptor getInstance() {
                       return null;
                     }
-                  }, null,
-                  result -> Data.refreshLocal(viewName));
+                  }, result -> Data.refreshLocal(viewName));
             }
           });
           return false;

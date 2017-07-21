@@ -6,10 +6,8 @@ import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
@@ -73,12 +71,8 @@ class RelatedTasksGrid extends TasksGrid {
             }
           }
         }
-        RowFactory.createRow(dataInfo, row, Modality.ENABLED, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            presenter.handleAction(Action.REFRESH);
-          }
-        });
+        RowFactory.createRow(dataInfo, row, Opener.MODAL,
+            result -> presenter.handleAction(Action.REFRESH));
       }
     });
 
@@ -90,12 +84,9 @@ class RelatedTasksGrid extends TasksGrid {
     final Long taskId = getTaskId(row);
 
     if (DataUtils.isId(taskId)) {
-      Queries.deleteRow(VIEW_TASKS, taskId, new Queries.IntCallback() {
-        @Override
-        public void onSuccess(Integer result) {
-          RowDeleteEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, taskId);
-          presenter.handleAction(Action.REFRESH);
-        }
+      Queries.deleteRow(VIEW_TASKS, taskId, result -> {
+        RowDeleteEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, taskId);
+        presenter.handleAction(Action.REFRESH);
       });
     }
 

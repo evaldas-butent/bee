@@ -17,7 +17,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Icon;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.ColumnFooter;
@@ -554,7 +553,7 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
     prjRow.setValue(idxPrjDescription, selectedRow.getValue(idxTaskDescription));
     prjRow.setValue(idxPrjStartDate, new JustDate());
 
-    RowFactory.createRow(prjDataInfo, prjRow, Modality.ENABLED, projectRow -> {
+    RowFactory.createRow(prjDataInfo, prjRow, Opener.MODAL, projectRow -> {
       final List<Long> observers = Lists.newArrayList();
       // Temporary disabled create project users
       // DataUtils.parseIdList(selectedRow.getProperty(TaskConstants.PROP_OBSERVERS));
@@ -777,7 +776,7 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
       }
     }
 
-    RowFactory.createRow(targetInfo, newRow, Modality.ENABLED,
+    RowFactory.createRow(targetInfo, newRow, Opener.MODAL,
         result -> afterCopyAsRecurringTask());
   }
 
@@ -836,7 +835,7 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
       }
     }
 
-    RowFactory.createRow(dataInfo, newRow, Modality.ENABLED, result -> afterCopyTask());
+    RowFactory.createRow(dataInfo, newRow, Opener.MODAL, result -> afterCopyTask());
   }
 
   private AbstractFormInterceptor getNewProjectFormInterceptor(final IsRow selectedRow) {

@@ -129,7 +129,7 @@ public class MailMessage extends AbstractFormInterceptor {
                     row.setProperty(PROP_FILES, Codec.beeSerialize(attachments));
                   }
 
-                  RowFactory.createRelatedRow(formName, row, selector, null);
+                  RowFactory.createRelatedRow(formName, row, selector);
                 }
               }
             };

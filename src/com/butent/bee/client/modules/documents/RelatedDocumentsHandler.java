@@ -9,7 +9,6 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
@@ -100,7 +99,7 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
     }
 
     if (!relationEnsured) {
-      RowFactory.createRow(info, docRow, Modality.ENABLED, result -> {
+      RowFactory.createRow(info, docRow, Opener.MODAL, result -> {
         final long docId = result.getId();
 
         presenter.getGridView().ensureRelId(relId
@@ -113,7 +112,7 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
           }));
       });
     } else {
-      RowFactory.createRow(info, docRow, Modality.ENABLED, result -> {
+      RowFactory.createRow(info, docRow, Opener.MODAL, result -> {
         presenter.handleAction(Action.REFRESH);
         ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
       });

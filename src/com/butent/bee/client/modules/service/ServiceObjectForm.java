@@ -24,7 +24,6 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.AutocompleteEvent;
@@ -35,6 +34,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -215,7 +215,7 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
                     COL_SERVICE_CUSTOMER, ALS_SERVICE_CUSTOMER_NAME, ALS_CUSTOMER_TYPE_NAME);
                 ServiceUtils.fillContractorAndManufacturerValues(newRow, objectRow);
 
-                RowFactory.createRow(maintenanceDataInfo, newRow, Modality.ENABLED);
+                RowFactory.createRow(maintenanceDataInfo, newRow, Opener.MODAL);
               });
               return false;
             } else {

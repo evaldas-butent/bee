@@ -15,7 +15,6 @@ import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.trade.TradeKeeper;
@@ -191,8 +190,8 @@ class CompanyForm extends AbstractFormInterceptor {
               Data.setValue(viewName, newRow, COL_COMPANY, id);
 
               RowFactory.createRow(dataInfo.getNewRowForm(),
-                  Localized.dictionary().newCompanyPerson(), dataInfo, newRow, Modality.ENABLED,
-                  null, new AbstractFormInterceptor() {
+                  Localized.dictionary().newCompanyPerson(), dataInfo, newRow, Opener.MODAL,
+                  new AbstractFormInterceptor() {
                     @Override
                     public boolean beforeCreateWidget(String widgetName, Element description) {
                       if (BeeUtils.startsWith(widgetName, COL_COMPANY)) {
@@ -205,7 +204,7 @@ class CompanyForm extends AbstractFormInterceptor {
                     public FormInterceptor getInstance() {
                       return null;
                     }
-                  }, null, result -> Data.refreshLocal(viewName));
+                  }, result -> Data.refreshLocal(viewName));
             }
           });
           return false;

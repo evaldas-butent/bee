@@ -1,11 +1,9 @@
 package com.butent.bee.client.modules.tasks;
 
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -30,14 +28,7 @@ class ChildRecurringTasksGrid extends RecurringTasksGrid {
       return true;
     }
 
-    presenter.getGridView().ensureRelId(new IdCallback() {
-
-      @Override
-      public void onSuccess(Long relId) {
-        fillRelations(presenter);
-      }
-
-    });
+    presenter.getGridView().ensureRelId(relId -> fillRelations(presenter));
     return false;
   }
 
@@ -52,12 +43,8 @@ class ChildRecurringTasksGrid extends RecurringTasksGrid {
   }
 
   private static void createRow(final GridPresenter presenter, DataInfo rowData, BeeRow row) {
-    RowFactory.createRow(rowData, row, Modality.ENABLED, new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow result) {
-        presenter.handleAction(Action.REFRESH);
-      }
-    });
+    RowFactory.createRow(rowData, row, Opener.MODAL,
+        result -> presenter.handleAction(Action.REFRESH));
   }
 
   private static void fillProjectData(DataInfo childDataInfo, IsRow childRow,
