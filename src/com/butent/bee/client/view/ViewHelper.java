@@ -42,6 +42,23 @@ public final class ViewHelper {
     return (view == null) ? null : view.asWidget();
   }
 
+  public static GridView findGridById(String id) {
+    if (BeeUtils.isEmpty(id)) {
+      return null;
+
+    } else {
+      Widget widget = DomUtils.getWidget(id);
+
+      if (widget instanceof GridView) {
+        return (GridView) widget;
+      } else if (widget instanceof HasGridView) {
+        return ((HasGridView) widget).getGridView();
+      } else {
+        return null;
+      }
+    }
+  }
+
   public static View getActiveView(Element target) {
     Popup popup = Popup.getActivePopup();
 

@@ -12,7 +12,6 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetDescription;
-import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditEndEvent;
@@ -181,11 +180,7 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
 
   @Override
   public GridView getGridView() {
-    if (getPresenter() instanceof HasGridView) {
-      return ((HasGridView) getPresenter()).getGridView();
-    } else {
-      return null;
-    }
+    return (getFormView() == null) ? null : getFormView().getBackingGrid();
   }
 
   @Override

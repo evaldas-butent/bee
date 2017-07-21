@@ -313,8 +313,10 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
 
   @Override
   public void onStartNewRow(final FormView form, IsRow row) {
-/*
-    if (form != null && oldRow != null && row != null) {
+    GridView grid = (form == null) ? null : form.getBackingGrid();
+    IsRow oldRow = (grid == null) ? null : grid.getGrid().getActiveRow();
+
+    if (oldRow != null && row != null) {
       final int index = getDataIndex(COL_TRADE_SERIES);
       final String series = BeeUtils.trim(oldRow.getString(index));
 
@@ -329,24 +331,20 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
             Filter.in(COL_SERIES, VIEW_TRADE_SERIES, Data.getIdColumn(VIEW_TRADE_SERIES),
                 Filter.equals(COL_SERIES_NAME, series)));
 
-        Queries.getRowCount(VIEW_SERIES_MANAGERS, filter, new Queries.IntCallback() {
-          @Override
-          public void onSuccess(Integer result) {
-            if (BeeUtils.isPositive(result) && form.getActiveRow() != null
-                && BeeUtils.isEmpty(form.getActiveRow().getString(index))) {
+        Queries.getRowCount(VIEW_SERIES_MANAGERS, filter, result -> {
+          if (BeeUtils.isPositive(result) && form.getActiveRow() != null
+              && BeeUtils.isEmpty(form.getActiveRow().getString(index))) {
 
-              form.getActiveRow().setValue(index, series);
-              if (form.getOldRow() != null) {
-                form.getOldRow().setValue(index, series);
-              }
-
-              form.refreshBySource(COL_TRADE_SERIES);
+            form.getActiveRow().setValue(index, series);
+            if (form.getOldRow() != null) {
+              form.getOldRow().setValue(index, series);
             }
+
+            form.refreshBySource(COL_TRADE_SERIES);
           }
         });
       }
     }
-*/
 
     super.onStartNewRow(form, row);
   }

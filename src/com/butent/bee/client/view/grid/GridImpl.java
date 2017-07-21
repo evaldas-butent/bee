@@ -2017,9 +2017,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     GridForm gridForm = getNewRowForm();
 
-//    WindowType windowType = Popup.hasEventPreview() ? WindowType.MODAL : getNewRowWindowType();
-//    if (windowType == WindowType.NEW_TAB || windowType == WindowType.DETACHED) {
-//    }
+    //  WindowType windowType = Popup.hasEventPreview() ? WindowType.MODAL : getNewRowWindowType();
+    //  if (windowType == WindowType.NEW_TAB || windowType == WindowType.DETACHED) {
+    //  }
 
     if (gridForm.getFormView() != null) {
       openNewRow(copy);
@@ -2137,6 +2137,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
       FormFactory.createFormView(gridForm.getName(), getViewName(), getDataColumns(), true,
           (formDescription, result) -> {
+            result.setBackingGridId(getId());
+
             createFormContainer(gridForm, result, GridFormKind.EDIT, null, getEditWindowType());
             gridForm.setFormView(result);
 
@@ -2295,6 +2297,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private void embraceNewRowForm(GridForm gridForm, FormView formView) {
     if (gridForm != null && formView != null) {
+      formView.setBackingGridId(getId());
+
       createFormContainer(gridForm, formView, GridFormKind.NEW_ROW, getNewRowCaption(),
           getNewRowWindowType());
       gridForm.setFormView(formView);
@@ -3042,6 +3046,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     Consumer<FormView> onOpen = form -> {
       setLoading(gridForm, false);
 
+      form.setBackingGridId(getId());
       updateEditFormHeader(form.getViewPresenter(), rowValue);
 
       boolean enableForm = editable && form.isRowEditable(rowValue, false);

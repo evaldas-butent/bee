@@ -66,6 +66,7 @@ import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
+import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewHelper;
@@ -422,6 +423,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private final List<DynamicStyler> dynamicStylers = new ArrayList<>();
   private final List<String> rowConsumers = new ArrayList<>();
 
+  private String backingGridId;
+
   public FormImpl(String formName) {
     super(Position.RELATIVE, Overflow.AUTO);
     this.formName = formName;
@@ -746,6 +749,23 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public long getActiveRowId() {
     return (getActiveRow() == null) ? BeeConst.LONG_UNDEF : getActiveRow().getId();
+  }
+
+  @Override
+  public GridView getBackingGrid() {
+    if (getViewPresenter() instanceof HasGridView) {
+      return ((HasGridView) getViewPresenter()).getGridView();
+
+    } else if (!BeeUtils.isEmpty(getBackingGridId())) {
+      return ViewHelper.findGridById(getBackingGridId());
+
+    } else {
+      return null;
+    }
+  }
+
+  private String getBackingGridId() {
+    return backingGridId;
   }
 
   @Override
@@ -1789,6 +1809,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public void setAdding(boolean adding) {
     this.adding = adding;
+  }
+
+  @Override
+  public void setBackingGridId(String backingGridId) {
+    this.backingGridId = backingGridId;
   }
 
   @Override
