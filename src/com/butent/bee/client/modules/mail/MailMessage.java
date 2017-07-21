@@ -475,7 +475,7 @@ public class MailMessage extends AbstractFormInterceptor {
           for (RowChildren rowChildren : relList) {
             if (BeeUtils.same(COL_TASK, rowChildren.getChildColumn())) {
               BeeRowSet rowSet = new BeeRowSet(TBL_TASK_EVENTS, Data.getColumns(TBL_TASK_EVENTS,
-                  Arrays.asList(COL_TASK, COL_PUBLISHER, COL_PUBLISH_TIME, COL_COMMENT,
+                  Arrays.asList(COL_TASK, COL_PUBLISHER, COL_PUBLISH_TIME, COL_EVENT_NOTE,
                       COL_EVENT)));
 
               for (Long taskId : DataUtils.parseIdList(rowChildren.getChildrenIds())) {
@@ -485,7 +485,7 @@ public class MailMessage extends AbstractFormInterceptor {
                   row.setValue(rowSet.getColumnIndex(COL_PUBLISHER),
                       BeeKeeper.getUser().getUserId());
                   row.setValue(rowSet.getColumnIndex(COL_PUBLISH_TIME), TimeUtils.nowMillis());
-                  row.setValue(rowSet.getColumnIndex(COL_COMMENT),
+                  row.setValue(rowSet.getColumnIndex(COL_EVENT_NOTE),
                       TaskUtils.getInsertNote(Localized.dictionary().mailMessage(),
                           BeeUtils.joinWords(getDate(), getSubject())));
                   row.setValue(rowSet.getColumnIndex(COL_EVENT), TaskEvent.EDIT);
