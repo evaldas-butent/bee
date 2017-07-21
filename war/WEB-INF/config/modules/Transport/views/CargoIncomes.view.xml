@@ -48,6 +48,7 @@
 
     <SimpleColumn name="InsuranceCertificate" />
 
+    <SimpleColumn name="CargoTrip" />
     <SimpleColumn name="Trip" />
     <SimpleJoin name="Trip" joinType="LEFT">
       <SimpleColumn name="TripNo" />
