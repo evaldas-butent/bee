@@ -11,7 +11,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.ModalForm;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -488,12 +487,12 @@ public final class RowFactory {
       interceptor.afterCreatePresenter(presenter);
     }
 
-    final ModalForm dialog = new ModalForm(presenter, formView, false);
+    final ModalForm dialog = opener.isPopup() ? new ModalForm(presenter, formView, false) : null;
 
     final RowCallback closer = new RowCallback() {
       @Override
       public void onCancel() {
-        dialog.close();
+        closeForm();
         if (callback != null) {
           callback.onCancel();
         }
@@ -501,9 +500,17 @@ public final class RowFactory {
 
       @Override
       public void onSuccess(BeeRow result) {
-        dialog.close();
+        closeForm();
         if (callback != null) {
           callback.onSuccess(result);
+        }
+      }
+
+      private void closeForm() {
+        if (opener.isPopup()) {
+          dialog.close();
+        } else {
+          BeeKeeper.getScreen().closeWidget(presenter.getMainView());
         }
       }
     };
@@ -554,7 +561,8 @@ public final class RowFactory {
                       closer.onSuccess(result);
 
                       RowEditor.open(dataInfo.getViewName(), result,
-                          Opener.modal(fv -> fv.getViewPresenter().handleAction(Action.PRINT)));
+                          Opener.in(opener.getWindowType(),
+                              fv -> fv.getViewPresenter().handleAction(Action.PRINT)));
                     }
                   });
                 });
@@ -570,22 +578,11 @@ public final class RowFactory {
       }
     });
 
-    dialog.setOnSave(input -> {
-      if (formView.checkOnSave(input)) {
-        presenter.handleAction(Action.SAVE);
+    Runnable onOpen = () -> {
+      if (interceptor != null) {
+        interceptor.onStartNewRow(formView, row);
       }
-    });
 
-    dialog.setOnEscape(input -> {
-      if (formView.checkOnClose(input)) {
-        presenter.handleAction(Action.CLOSE);
-      }
-    });
-
-    dialog.addOpenHandler(event -> {
-      if (formView.getFormInterceptor() != null) {
-        formView.getFormInterceptor().onStartNewRow(formView, row);
-      }
       formView.updateRow(row, true);
 
       formView.focus();
@@ -593,14 +590,34 @@ public final class RowFactory {
       if (opener.getOnOpen() != null) {
         opener.getOnOpen().accept(formView);
       }
-    });
+    };
 
-    dialog.setPreviewEnabled(opener.getModality() == Modality.ENABLED);
+    if (opener.isPopup()) {
+      dialog.setOnSave(input -> {
+        if (formView.checkOnSave(input)) {
+          presenter.handleAction(Action.SAVE);
+        }
+      });
 
-    if (opener.getTarget() == null) {
-      dialog.centerOrCascade(formView.getContainerStyleName());
+      dialog.setOnEscape(input -> {
+        if (formView.checkOnClose(input)) {
+          presenter.handleAction(Action.CLOSE);
+        }
+      });
+
+      dialog.addOpenHandler(event -> onOpen.run());
+
+      dialog.setPreviewEnabled(opener.isModal());
+
+      if (opener.getTarget() == null) {
+        dialog.centerOrCascade(formView.getContainerStyleName());
+      } else {
+        dialog.showRelativeTo(opener.getTarget());
+      }
+
     } else {
-      dialog.showRelativeTo(opener.getTarget());
+      opener.onCreate(presenter);
+      onOpen.run();
     }
   }
 

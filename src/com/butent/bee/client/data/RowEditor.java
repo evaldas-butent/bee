@@ -6,7 +6,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.ModalForm;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Printer;
@@ -286,8 +285,7 @@ public final class RowEditor {
       formView.getFormInterceptor().afterCreatePresenter(presenter);
     }
 
-    final ModalForm dialog = (opener.getModality() == null)
-        ? null : new ModalForm(presenter, formView, false);
+    final ModalForm dialog = opener.isPopup() ? new ModalForm(presenter, formView, false) : null;
 
     final RowCallback closer = new RowCallback() {
       @Override
@@ -307,7 +305,7 @@ public final class RowEditor {
       }
 
       private void closeForm() {
-        if (opener.getModality() != null) {
+        if (opener.isPopup()) {
           dialog.close();
         } else {
           BeeKeeper.getScreen().closeWidget(presenter.getMainView());
@@ -378,7 +376,7 @@ public final class RowEditor {
       }
     };
 
-    if (opener.getModality() != null) {
+    if (opener.isPopup()) {
       if (enabledActions.contains(Action.SAVE)) {
         dialog.setOnSave(input -> {
           if (formView.checkOnSave(input)) {
@@ -397,7 +395,7 @@ public final class RowEditor {
 
       dialog.addOpenHandler(event -> formView.editRow(oldRow, focusCommand));
 
-      dialog.setPreviewEnabled(opener.getModality() == Modality.ENABLED);
+      dialog.setPreviewEnabled(opener.isModal());
 
       if (opener.getTarget() == null) {
         dialog.centerOrCascade(formView.getContainerStyleName());
@@ -406,9 +404,7 @@ public final class RowEditor {
       }
 
     } else {
-      if (opener.getPresenterCallback() != null) {
-        opener.getPresenterCallback().onCreate(presenter);
-      }
+      opener.onCreate(presenter);
       formView.editRow(oldRow, focusCommand);
     }
   }

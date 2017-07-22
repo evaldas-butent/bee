@@ -4,8 +4,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
@@ -15,11 +15,11 @@ import java.util.function.Consumer;
 
 public final class Opener {
 
-  public static final Opener MODAL = new Opener(Modality.ENABLED, null);
-  public static final Opener DETACHED = new Opener(Modality.DISABLED, null);
+  public static final Opener MODAL = new Opener(WindowType.MODAL);
+  public static final Opener DETACHED = new Opener(WindowType.DETACHED);
 
-  public static final Opener NEW_TAB = new Opener(PresenterCallback.SHOW_IN_NEW_TAB);
-  private static final Opener ON_TOP = new Opener(PresenterCallback.SHOW_IN_ACTIVE_PANEL);
+  public static final Opener NEW_TAB = new Opener(WindowType.NEW_TAB);
+  private static final Opener ON_TOP = new Opener(WindowType.ON_TOP);
 
   public static Opener detached(Consumer<FormView> onOpen) {
     return detached(null, onOpen);
@@ -29,7 +29,7 @@ public final class Opener {
     if (target == null && onOpen == null) {
       return DETACHED;
     } else {
-      return new Opener(Modality.DISABLED, target, null, onOpen);
+      return new Opener(WindowType.DETACHED, target, onOpen);
     }
   }
 
@@ -71,7 +71,7 @@ public final class Opener {
     if (target == null && onOpen == null) {
       return MODAL;
     } else {
-      return new Opener(Modality.ENABLED, target, null, onOpen);
+      return new Opener(WindowType.MODAL, target, onOpen);
     }
   }
 
@@ -87,7 +87,7 @@ public final class Opener {
     if (onOpen == null) {
       return NEW_TAB;
     } else {
-      return new Opener(null, null, NEW_TAB.getPresenterCallback(), onOpen);
+      return new Opener(WindowType.NEW_TAB, null, onOpen);
     }
   }
 
@@ -95,12 +95,12 @@ public final class Opener {
     if (onOpen == null) {
       return ON_TOP;
     } else {
-      return new Opener(null, null, ON_TOP.getPresenterCallback(), onOpen);
+      return new Opener(WindowType.ON_TOP, null, onOpen);
     }
   }
 
   public static Opener relativeTo(Element element) {
-    return new Opener(Modality.ENABLED, element);
+    return new Opener(WindowType.MODAL, element);
   }
 
   public static Opener relativeTo(UIObject obj) {
@@ -111,53 +111,75 @@ public final class Opener {
     }
   }
 
-  public static Opener with(PresenterCallback callback) {
-    Assert.notNull(callback);
-    return new Opener(callback);
+  public static Opener with(PresenterCallback presenterCallback) {
+    WindowType windowType = BeeKeeper.getUser().openInNewTab()
+        ? WindowType.ON_TOP : WindowType.NEW_TAB;
+
+    return new Opener(windowType, null, null, presenterCallback);
   }
 
-  private final Modality modality;
+  private final WindowType windowType;
   private final Element target;
 
-  private final PresenterCallback presenterCallback;
   private final Consumer<FormView> onOpen;
+  private final PresenterCallback presenterCallback;
 
-  private Opener(Modality modality, Element target) {
-    this(modality, target, null, null);
+  private Opener(WindowType windowType) {
+    this(windowType, null, null, null);
   }
 
-  private Opener(Modality modality, Element target, PresenterCallback presenterCallback,
-      Consumer<FormView> onOpen) {
+  private Opener(WindowType windowType, Element target) {
+    this(windowType, target, null, null);
+  }
 
-    this.modality = modality;
+  private Opener(WindowType windowType, Element target, Consumer<FormView> onOpen) {
+    this(windowType, target, onOpen, null);
+  }
+
+  private Opener(WindowType windowType, Element target, Consumer<FormView> onOpen,
+      PresenterCallback presenterCallback) {
+
+    this.windowType = windowType;
     this.target = target;
-    this.presenterCallback = presenterCallback;
     this.onOpen = onOpen;
-  }
-
-  private Opener(PresenterCallback presenterCallback) {
-    this(null, null, presenterCallback, null);
-  }
-
-  public Modality getModality() {
-    return modality;
+    this.presenterCallback = presenterCallback;
   }
 
   public Consumer<FormView> getOnOpen() {
     return onOpen;
   }
 
-  public PresenterCallback getPresenterCallback() {
-    return presenterCallback;
-  }
-
   public Element getTarget() {
     return target;
   }
 
+  public WindowType getWindowType() {
+    return windowType;
+  }
+
+  public boolean isModal() {
+    return getWindowType() == WindowType.MODAL;
+  }
+
+  public boolean isPopup() {
+    return getWindowType().isPopup();
+  }
+
+  public void onCreate(Presenter presenter) {
+    if (presenterCallback != null) {
+      presenterCallback.onCreate(presenter);
+
+    } else if (getWindowType() == WindowType.NEW_TAB) {
+      PresenterCallback.SHOW_IN_NEW_TAB.onCreate(presenter);
+
+    } else if (getWindowType() == WindowType.ON_TOP) {
+      PresenterCallback.SHOW_IN_ACTIVE_PANEL.onCreate(presenter);
+    }
+  }
+
   public Opener normalize() {
-    if (getModality() != Modality.ENABLED && Popup.hasEventPreview()) {
-      return new Opener(Modality.ENABLED, getTarget(), getPresenterCallback(), getOnOpen());
+    if (!isModal() && Popup.hasEventPreview()) {
+      return new Opener(WindowType.MODAL, getTarget(), getOnOpen(), presenterCallback);
     } else {
       return this;
     }
