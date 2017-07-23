@@ -2122,6 +2122,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       getDataObserver().stop();
     }
 
+    GridView gridView = getBackingGrid();
+    if (gridView != null) {
+      gridView.formUnload(this);
+    }
+
     super.onUnload();
   }
 
