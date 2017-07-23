@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="ExpeditionTrips" viewName="ExpeditionTrips" caption="=trExpeditionTrips"
-  newRowWindow="modal" order="TripID desc" flexGrow="1"
-  >
-
+        name="ExpeditionTrips" viewName="ExpeditionTrips" caption="=trExpeditionTrips"
+        order="TripID desc" flexGrow="1"
+>
   <g:columns>
     <DataColumn name="Date" />
     <DataColumn name="ExpeditionType" caption="=trExpeditionType" />

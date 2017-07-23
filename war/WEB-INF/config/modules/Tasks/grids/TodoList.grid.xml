@@ -2,7 +2,6 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
         name="TodoList" viewName="TodoList" caption="=crmTodoList"
-        newRowWindow="modal"
         filter="Creator={u} or Visibility = 0"
 >
   <g:columns>
