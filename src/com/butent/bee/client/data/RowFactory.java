@@ -470,7 +470,7 @@ public final class RowFactory {
         });
   }
 
-  private static void openForm(final FormView formView, String caption, final DataInfo dataInfo,
+  public static void openForm(final FormView formView, String caption, final DataInfo dataInfo,
       final BeeRow row, Opener opener, final RowCallback callback) {
 
     final String cap = BeeUtils.notEmpty(caption, formView.getCaption(), DEFAULT_CAPTION);

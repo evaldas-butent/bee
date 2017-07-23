@@ -236,8 +236,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       }
     }
 
-    private boolean removeState(State state) {
-      return states.remove(state);
+    private void removeState(State state) {
+      states.remove(state);
     }
 
     private void reset() {
@@ -945,8 +945,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     String viewName = gridDescription.getViewName();
     if (newRowForms.isEmpty() && !BeeUtils.isEmpty(viewName) && !isReadOnly()
         && BeeKeeper.getUser().canCreateData(viewName)) {
-      generateNewRowForm();
+
       setNewRowFormGenerated(true);
+      newRowForms.add(new GridForm(generateNewRowFormName()));
     }
 
     if (gridInterceptor != null) {
@@ -2238,16 +2239,23 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   private void createNewRowForm(final GridForm gridForm, final WindowType windowType,
       final BeeRow newRow) {
 
-    if (!gridForm.isLoading()) {
+    if (isNewRowFormGenerated()) {
+      FormView formView = generateNewRowForm(generateNewRowFormName());
+
+      if (formView != null) {
+        embraceNewRowForm(gridForm, formView, windowType);
+
+        if (newRow != null && isAttached()) {
+          openNewRow(formView, windowType, newRow);
+        }
+      }
+
+    } else if (!gridForm.isLoading()) {
       setLoading(gridForm, true);
 
       FormFactory.createFormView(gridForm.getName(), getViewName(), getDataColumns(), true,
           (formDescription, result) -> {
-            result.setBackingGridId(getId());
-
-            createFormContainer(gridForm, result, GridFormKind.NEW_ROW, getNewRowCaption(),
-                windowType);
-            gridForm.setFormView(result);
+            embraceNewRowForm(gridForm, result, windowType);
 
             setLoading(gridForm, false);
 
@@ -2314,12 +2322,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     return !BeeUtils.isEmpty(columnId) && BeeUtils.containsSame(getEditInPlace(), columnId);
   }
 
-  private void embraceNewRowForm(GridForm gridForm, FormView formView) {
+  private void embraceNewRowForm(GridForm gridForm, FormView formView, WindowType windowType) {
     if (gridForm != null && formView != null) {
       formView.setBackingGridId(getId());
 
-      createFormContainer(gridForm, formView, GridFormKind.NEW_ROW, getNewRowCaption(),
-          getNewRowWindowType());
+      createFormContainer(gridForm, formView, GridFormKind.NEW_ROW, getNewRowCaption(), windowType);
       gridForm.setFormView(formView);
     }
   }
@@ -2343,26 +2350,31 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     return widget != null && UiHelper.focus(widget);
   }
 
-  private void generateNewRowForm() {
-    String newRowColumns = BeeUtils.notEmpty(gridDescription.getNewRowColumns(),
-        (getDataInfo() == null) ? null : getDataInfo().getNewRowColumns());
+  private String generateNewRowFormName() {
+    return "grid-" + getGridName() + "-new-row";
+  }
+
+  private FormView generateNewRowForm(String formName) {
+    String newRowColumns = gridDescription.getNewRowColumns();
+    if (BeeUtils.isEmpty(newRowColumns) && getDataInfo() != null) {
+      newRowColumns = getDataInfo().getNewRowColumns();
+    }
 
     if (BeeConst.STRING_MINUS.equals(newRowColumns)) {
-      return;
+      return null;
     }
 
     final List<String> columnNames = getNewRowColumnNames(newRowColumns);
 
     if (columnNames.isEmpty()) {
-      logger.severe("grid", gridDescription.getName(), "new row columns not available");
-      return;
+      logger.severe("grid", getGridName(), "new row columns not available");
+      return null;
     }
 
-    String formName = "grid-" + gridDescription.getName() + "-new-row";
     final String rootName = "root";
 
     FormDescription formDescription = FormFactory.createFormDescription(formName,
-        ImmutableMap.of(UiConstants.ATTR_VIEW_NAME, gridDescription.getViewName()),
+        ImmutableMap.of(UiConstants.ATTR_VIEW_NAME, getViewName()),
         FormWidget.TABLE, ImmutableMap.of(UiConstants.ATTR_NAME, rootName));
 
     FormView form = new FormImpl(formName);
@@ -2404,10 +2416,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     form.setCaption(Localized.dictionary().newRow());
 
-    GridForm gridForm = new GridForm(formName);
-    newRowForms.add(gridForm);
-
-    embraceNewRowForm(gridForm, form);
+    return form;
   }
 
   private GridFormKind getActiveFormKind() {
@@ -3143,7 +3152,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     };
 
     String formName = gridForm.getName();
-    String caption = getRowCaption(newRow);
+    String caption = BeeUtils.notEmpty(getRowCaption(newRow), getNewRowCaption());
 
     Opener opener = Opener.in(windowType, onOpen);
 
@@ -3159,7 +3168,16 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       }
     };
 
-    RowFactory.createRow(formName, caption, getDataInfo(), newRow, opener, callback);
+    if (isNewRowFormGenerated()) {
+      FormView formView = generateNewRowForm(generateNewRowFormName());
+
+      if (formView != null) {
+        RowFactory.openForm(formView, caption, getDataInfo(), newRow, opener, callback);
+      }
+
+    } else {
+      RowFactory.createRow(formName, caption, getDataInfo(), newRow, opener, callback);
+    }
   }
 
   private List<GridForm> parseForms(GridFormKind kind) {
