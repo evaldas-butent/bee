@@ -182,9 +182,15 @@ public final class GridUtils {
 
       if (BeeUtils.isEmpty(wtp)) {
         wtp = isChild ? Settings.getChildNewRowWindow() : Settings.getGridNewRowWindow();
+
+        if (!isChild && BeeKeeper.getUser().openInNewTab() && !BeeUtils.isUpperCase(wtp)) {
+          windowType = WindowType.NEW_TAB;
+        }
       }
 
-      windowType = WindowType.parse(wtp);
+      if (windowType == null) {
+        windowType = WindowType.parse(wtp);
+      }
 
       if (windowType == null) {
         windowType = isChild ? WindowType.DEFAULT_CHILD_NEW_ROW : WindowType.DEFAULT_GRID_NEW_ROW;
