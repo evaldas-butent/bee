@@ -8,6 +8,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -2474,6 +2475,13 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     form.setCaption(Localized.dictionary().newRow());
 
+    double width = RowFactory.GENERATED_FORM_WIDTH;
+    double height = RowFactory.GENERATED_HEADER_HEIGHT + RowFactory.GENERATED_HEIGHT_MARGIN
+        + columnNames.size() * RowFactory.GENERATED_ROW_HEIGHT;
+
+    form.setWidthValue(width);
+    form.setHeightValue(Math.min(height, Window.getClientHeight() * 3 / 4));
+
     return form;
   }
 
@@ -3166,21 +3174,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     getGrid().setEditing(true);
     setAdding(true);
 
-    if (isNewRowFormGenerated()) {
-      List<String> columnIds = getGrid().getColumnIds();
-      List<Element> formElements =
-          Selectors.getElementsWithDataProperty(form.getElement(), KEY_COLUMN);
-
-      if (!BeeUtils.isEmpty(columnIds) && !BeeUtils.isEmpty(formElements)) {
-        formElements.forEach(fe -> {
-          if (BeeUtils.containsSame(columnIds, DomUtils.getDataProperty(fe, KEY_COLUMN))) {
-            StyleUtils.unhideDisplay(fe);
-          } else {
-            StyleUtils.hideDisplay(fe);
-          }
-        });
-      }
-    }
+    prepareNewRowForm(form);
 
     if (form.getFormInterceptor() != null) {
       form.getFormInterceptor().onStartNewRow(form, newRow);
@@ -3211,6 +3205,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
       form.setBackingGridId(getId());
       gridForm.onOpen(form);
+
+      prepareNewRowForm(form);
     };
 
     String formName = gridForm.getName();
@@ -3234,6 +3230,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       FormView formView = generateNewRowForm(generateNewRowFormName());
 
       if (formView != null) {
+        formView.setAdding(true);
+        formView.setEditing(true);
+        formView.start(null);
+
         RowFactory.openForm(formView, caption, getDataInfo(), newRow, opener, callback);
       }
 
@@ -3395,6 +3395,24 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     return newRow;
   }
 
+  private void prepareNewRowForm(FormView form) {
+    if (isNewRowFormGenerated()) {
+      List<String> columnIds = getGrid().getColumnIds();
+      List<Element> formElements =
+          Selectors.getElementsWithDataProperty(form.getElement(), KEY_COLUMN);
+
+      if (!BeeUtils.isEmpty(columnIds) && !BeeUtils.isEmpty(formElements)) {
+        formElements.forEach(fe -> {
+          if (BeeUtils.containsSame(columnIds, DomUtils.getDataProperty(fe, KEY_COLUMN))) {
+            StyleUtils.unhideDisplay(fe);
+          } else {
+            StyleUtils.hideDisplay(fe);
+          }
+        });
+      }
+    }
+  }
+
   private void saveChanges(FormView form, IsRow oldRow, IsRow newRow, RowCallback callback) {
     Collection<RowChildren> children = (form == null) ? null : form.getChildrenForUpdate();
     SaveChangesEvent event = SaveChangesEvent.create(oldRow, newRow, getDataColumns(), children,
@@ -3510,28 +3528,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     if (show) {
       if (modal) {
-        if (kind == GridFormKind.NEW_ROW && isNewRowFormGenerated()
-            && !gridForm.hasState(State.INITIALIZED)) {
-
-          Widget w = form.getRootWidget().asWidget();
-          while (w != null && !DomUtils.sameId(w, popup)) {
-            StyleUtils.makeRelative(w);
-            StyleUtils.setTop(w, 0);
-
-            w = w.getParent();
-          }
-
-          if (form.getViewPresenter() != null) {
-            HeaderView hv = form.getViewPresenter().getHeader();
-            if (hv != null) {
-              StyleUtils.makeRelative(hv.asWidget());
-            }
-          }
-
-          StyleUtils.clearWidth(popup);
-          StyleUtils.clearHeight(popup);
-        }
-
         if (kind == GridFormKind.NEW_ROW && hasChildUi() && isNewRowFormGenerated()) {
           int x = getAbsoluteLeft();
           int y = getAbsoluteTop();
