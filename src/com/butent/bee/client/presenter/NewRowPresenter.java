@@ -186,6 +186,18 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     if (!formView.validate(formView, true)) {
       return;
     }
+
+    GridView gridView = formView.getBackingGrid();
+    if (gridView != null && gridView.likeAMotherlessChild()) {
+      gridView.ensureRelId(result -> {
+        if (!gridView.likeAMotherlessChild()) {
+          save(callback);
+        }
+      });
+
+      return;
+    }
+
     IsRow row = formView.getActiveRow();
 
     if (DataUtils.isNewRow(row)) {

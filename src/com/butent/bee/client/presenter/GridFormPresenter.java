@@ -225,7 +225,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
   }
 
   public void save(Consumer<IsRow> consumer) {
-    final FormView form = getForm();
+    FormView form = getForm();
     if (!form.validate(form, true)) {
       return;
     }
