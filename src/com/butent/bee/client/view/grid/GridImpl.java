@@ -1433,6 +1433,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     return relColumn;
   }
 
+  @Override
   public Long getRelId() {
     return relId;
   }
@@ -3182,8 +3183,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     String caption = getRowCaption(newRow);
     if (!BeeUtils.isEmpty(caption) && form.getViewPresenter() instanceof GridFormPresenter) {
-      GridFormPresenter presenter = (GridFormPresenter) form.getViewPresenter();
-      presenter.setCaption(caption);
+      form.getViewPresenter().setCaption(caption);
     }
 
     setOnFormOpen(() -> {
@@ -3284,7 +3284,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
       if (!BeeUtils.isEmpty(getRelColumn()) && BeeUtils.same(getRelColumn(), dataColumn.getId())) {
         if (!DataUtils.isId(getRelId())) {
-          callback.onFailure(BeeUtils.joinWords(getViewName(), getRelColumn(), "invalid rel id"));
+          callback.onFailure(BeeUtils.joinWords(getViewName(), getRelColumn(),
+              Localized.dictionary().invalidIdValue(getRelId())));
           return;
         }
 

@@ -95,6 +95,8 @@ public interface GridView extends DataView,
 
   String getRelColumn();
 
+  Long getRelId();
+
   Collection<RowInfo> getSelectedRows(SelectedRows mode);
 
   boolean hasChildUi();
