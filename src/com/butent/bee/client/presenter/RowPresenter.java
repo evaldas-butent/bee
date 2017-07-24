@@ -71,7 +71,7 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
 
   private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.EDITOR);
 
-  private static HeaderView createHeader(String caption, long rowId, String rowCaption,
+  private static HeaderView createHeader(String caption, long rowId, String rowMessage,
       Set<Action> enabledActions, Set<Action> disabledActions) {
 
     HeaderView formHeader = new HeaderImpl();
@@ -82,7 +82,7 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
     formHeader.addCaptionStyle(STYLE_CAPTION);
 
     formHeader.setRowId(rowId);
-    formHeader.setRowMessage(rowCaption);
+    formHeader.setRowMessage(rowMessage);
 
     return formHeader;
   }
@@ -94,7 +94,8 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
 
   private HandlesActions actionDelegate;
 
-  public RowPresenter(FormView formView, DataInfo dataInfo, long rowId, String rowCaption,
+  public RowPresenter(FormView formView, DataInfo dataInfo, long rowId,
+      String rowCaption, String rowMessage,
       Set<Action> enabledActions, Set<Action> disabledActions) {
 
     this.formView = formView;
@@ -110,7 +111,7 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
       ea.add(Action.BOOKMARK);
     }
 
-    HeaderView headerView = createHeader(formView.getCaption(), rowId, rowCaption,
+    HeaderView headerView = createHeader(formView.getCaption(), rowId, rowMessage,
         ea, disabledActions);
 
     this.container = new Container(dataInfo, rowId, rowCaption);

@@ -278,9 +278,18 @@ public final class RowEditor {
       disabledActions.add(Action.SAVE);
     }
 
+    String rowCaption;
+    String rowMessage = DataUtils.getRowCaption(dataInfo, oldRow,
+        Format.getDateRenderer(), Format.getDateTimeRenderer());
+
+    if (BeeUtils.isEmpty(rowMessage)) {
+      rowCaption = BeeUtils.joinWords(formView.getCaption(), oldRow.getId());
+    } else {
+      rowCaption = rowMessage;
+    }
+
     final RowPresenter presenter = new RowPresenter(formView, dataInfo, oldRow.getId(),
-        DataUtils.getRowCaption(dataInfo, oldRow, Format.getDateRenderer(),
-            Format.getDateTimeRenderer()), enabledActions, disabledActions);
+        rowCaption, rowMessage, enabledActions, disabledActions);
 
     if (formView.getFormInterceptor() != null) {
       formView.getFormInterceptor().afterCreatePresenter(presenter);
