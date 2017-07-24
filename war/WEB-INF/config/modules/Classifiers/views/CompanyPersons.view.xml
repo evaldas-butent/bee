@@ -2,10 +2,10 @@
 <View xmlns="http://www.butent.com/view"
 
       name="CompanyPersons" source="CompanyPersons" module="Classifiers.Contacts"
-      caption="=companyPersons"
+      caption="=companyPersons" rowCaption="FirstName LastName CompanyName"
       newRowForm="CompanyPerson" newRowCaption="=newCompanyPerson"
       editForm="CompanyPerson"
-    >
+>
   <Columns>
     <SimpleColumn name="Company" />
     <SimpleJoin name="Company" joinType="LEFT">

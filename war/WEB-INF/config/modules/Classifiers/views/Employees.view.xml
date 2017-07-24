@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Employees" source="Employees"
-  editForm="Employee" newRowForm="Employee"
-  caption="=employees" newRowCaption="=newEmployee"
-  >
+      name="Employees" source="Employees"
+      editForm="Employee" newRowForm="Employee"
+      caption="=employees" newRowCaption="=newEmployee"
+      rowCaption="FirstName LastName CompanyName"
+>
   <Columns>
     <SimpleColumn name="CompanyPerson" />
     <SimpleJoin name="CompanyPerson" joinType="LEFT">
@@ -21,7 +22,7 @@
         <SimpleColumn name="FirstName" />
         <SimpleColumn name="LastName" />
         <SimpleJoin name="Contact" joinType="LEFT">
-          <SimpleColumn name="Address"  alias="PersonAddress"  />
+          <SimpleColumn name="Address" alias="PersonAddress" />
         </SimpleJoin>
         <SimpleColumn name="DateOfBirth" />
       </SimpleJoin>
@@ -38,7 +39,7 @@
 
       <SimpleColumn name="DateOfEmployment" />
       <SimpleColumn name="DateOfDismissal" />
-  
+
       <SimpleJoin name="Contact" joinType="LEFT">
         <SimpleColumn name="Phone" />
         <SimpleColumn name="Mobile" />
