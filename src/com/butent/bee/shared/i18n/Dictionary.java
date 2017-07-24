@@ -1313,13 +1313,13 @@ public interface Dictionary {
 
   default String crmTaskOutOfObservers() {return g("crmTaskOutOfObservers");}
 
+  default String crmTaskOwnerAddToObservers() {return g("crmTaskOwnerAddToObservers");}
+
   default String crmTaskOwnerCanNotBe(Object p0) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{0}", p0);
     return Localized.format(g("crmTaskOwnerCanNotBe"), _m);
   }
-
-  default String crmTaskOwnerChangeCaption() {return g("crmTaskOwnerChangeCaption");}
 
   default String crmTaskOwnerChange(Object p0) {
     Map<String, Object> _m = new HashMap<>();
@@ -1327,7 +1327,7 @@ public interface Dictionary {
     return Localized.format(g("crmTaskOwnerChange"), _m);
   }
 
-  default String crmTaskOwnerAddToObservers() {return g("crmTaskOwnerAddToObservers");}
+  default String crmTaskOwnerChangeCaption() {return g("crmTaskOwnerChangeCaption");}
 
   default String crmTaskParameters() {return g("crmTaskParameters");}
 
@@ -3957,6 +3957,8 @@ public interface Dictionary {
   default String newPayment() {return g("newPayment");}
 
   default String newPaymentTerm() {return g("newPaymentTerm");}
+
+  default String newPaymentType() {return g("newPaymentType");}
 
   default String newPerson() {return g("newPerson");}
 

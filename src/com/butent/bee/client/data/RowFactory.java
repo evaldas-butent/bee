@@ -72,7 +72,7 @@ public final class RowFactory {
 
   public static final int GENERATED_FORM_WIDTH = 500;
   public static final int GENERATED_HEADER_HEIGHT = 40;
-  public static final int GENERATED_ROW_HEIGHT = 60;
+  public static final int GENERATED_ROW_HEIGHT = 40;
   public static final int GENERATED_HEIGHT_MARGIN = 20;
 
   private static final String STYLE_MENU_POPUP = STYLE_PREFIX + "menu-popup";

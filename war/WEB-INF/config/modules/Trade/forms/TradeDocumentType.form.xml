@@ -2,8 +2,9 @@
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
 
-        name="TradeDocumentType" viewName="TradeDocumentTypes" caption="=trdDocumentType">
-
+        name="TradeDocumentType" viewName="TradeDocumentTypes" caption="=trdDocumentType"
+        width="700" height="400"
+>
   <Table kind="controls">
     <col index="0" kind="label" />
     <col index="2" kind="label" />
