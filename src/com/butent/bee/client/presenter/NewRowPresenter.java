@@ -92,6 +92,11 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
       return;
     }
 
+    GridView gridView = formView.getBackingGrid();
+    if (gridView != null && !gridView.validateFormData(formView, notificationListener, false)) {
+      return;
+    }
+
     IsRow row = formView.getActiveRow();
 
     if (DataUtils.isNewRow(row)) {
@@ -187,15 +192,21 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
       return;
     }
 
-    GridView gridView = formView.getBackingGrid();
-    if (gridView != null && gridView.likeAMotherlessChild()) {
-      gridView.ensureRelId(result -> {
-        if (!gridView.likeAMotherlessChild()) {
-          save(callback);
-        }
-      });
+    final GridView gridView = formView.getBackingGrid();
+    if (gridView != null) {
+      if (!gridView.validateFormData(formView, formView, true)) {
+        return;
+      }
 
-      return;
+      if (gridView.likeAMotherlessChild()) {
+        gridView.ensureRelId(result -> {
+          if (!gridView.likeAMotherlessChild()) {
+            save(callback);
+          }
+        });
+
+        return;
+      }
     }
 
     IsRow row = formView.getActiveRow();
@@ -226,6 +237,15 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
             @Override
             public void onSuccess(BeeRow result) {
               RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
+
+              if (formView.getFormInterceptor() != null) {
+                formView.getFormInterceptor().afterUpdateRow(result);
+              }
+
+              if (gridView != null && gridView.getGridInterceptor() != null) {
+                gridView.getGridInterceptor().afterUpdateRow(result);
+              }
+
               if (callback != null) {
                 callback.onSuccess(result);
               }

@@ -19,6 +19,7 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
@@ -448,6 +449,14 @@ public final class RowEditor {
       }
     }
 
+    GridView gridView = formView.getBackingGrid();
+    if (gridView != null && gridView.getGridInterceptor() != null) {
+      gridView.getGridInterceptor().onSaveChanges(gridView, event);
+      if (event.isConsumed()) {
+        return;
+      }
+    }
+
     if (event.isEmpty()) {
       callback.onCancel();
     } else {
@@ -456,7 +465,16 @@ public final class RowEditor {
   }
 
   private static boolean validate(FormView formView) {
-    return formView.validate(formView, true);
+    if (!formView.validate(formView, true)) {
+      return false;
+    }
+
+    GridView gridView = formView.getBackingGrid();
+    if (gridView != null && !gridView.validateFormData(formView, formView, true)) {
+      return false;
+    }
+
+    return true;
   }
 
   private RowEditor() {

@@ -16,6 +16,7 @@ import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormAndHeader;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -197,6 +198,11 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
           formView.getFormInterceptor().afterUpdateRow(result);
         }
 
+        GridView gridView = formView.getBackingGrid();
+        if (gridView != null && gridView.getGridInterceptor() != null) {
+          gridView.getGridInterceptor().afterUpdateRow(result);
+        }
+
         if (event.getCallback() != null) {
           event.getCallback().onSuccess(result);
         }
@@ -205,8 +211,7 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
 
     if (DataUtils.isEmpty(updated)) {
       Queries.updateChildren(dataInfo.getViewName(), event.getOldRow().getId(),
-          event.getChildren(),
-          updateCallback);
+          event.getChildren(), updateCallback);
     } else {
       Queries.updateRow(updated, updateCallback);
     }
