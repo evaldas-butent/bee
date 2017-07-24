@@ -2994,8 +2994,10 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         && !Objects.equals(currentUser, DataUtils.getLong(taskData, taskRow, COL_EXECUTOR))) {
       Long senderAccountId = mail.getSenderAccountId("forward task:");
 
+      boolean pref = BeeConst.isTrue(taskRow.getProperty(PROP_MAIL));
+
       if (senderAccountId != null) {
-        ResponseObject mailResponse = mailNewTask(senderAccountId, taskId, true, false);
+        ResponseObject mailResponse = mailNewTask(senderAccountId, taskId, pref, false);
         response.addMessagesFrom(mailResponse);
       }
     }
