@@ -292,7 +292,11 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   public boolean beforeAction(Action action, Presenter presenter) {
     switch (action) {
       case ADD:
-        RowFactory.createRow(VIEW_DEPARTMENTS, Opener.MODAL, result -> refresh());
+        RowFactory.createRow(VIEW_DEPARTMENTS, result -> {
+          if (isAttached()) {
+            refresh();
+          }
+        });
         return false;
 
       case CONFIGURE:

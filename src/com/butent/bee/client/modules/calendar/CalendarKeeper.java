@@ -30,7 +30,6 @@ import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
@@ -206,7 +205,7 @@ public final class CalendarKeeper {
           BeeRow newRow = RowFactory.createEmptyRow(dataInfo);
           newRow.setValue(dataInfo.getColumnIndex(COL_START_DATE_TIME), start);
           newRow.setProperty(TBL_ATTENDEES, attendeeId);
-          RowFactory.createRow(dataInfo, newRow, Opener.MODAL);
+          RowFactory.createRow(dataInfo, newRow);
           return;
         }
         BeeRowSet rowSet = CACHE.getRowSet(VIEW_CAL_APPOINTMENT_TYPES);

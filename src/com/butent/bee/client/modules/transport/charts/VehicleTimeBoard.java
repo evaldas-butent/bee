@@ -27,7 +27,6 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.client.timeboard.TimeBoardRowLayout;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.DndDiv;
@@ -165,7 +164,7 @@ abstract class VehicleTimeBoard extends ChartBase {
   @Override
   public void handleAction(Action action) {
     if (Action.ADD.equals(action)) {
-      RowFactory.createRow(VIEW_VEHICLES, Opener.DETACHED);
+      RowFactory.createRow(VIEW_VEHICLES);
     } else {
       super.handleAction(action);
     }
@@ -435,7 +434,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       DataInfo dataInfo = Data.getDataInfo(VIEW_TRIPS);
       BeeRow newRow = createNewTripRow(dataInfo, row, date);
 
-      RowFactory.createRow(dataInfo, newRow, Opener.DETACHED);
+      RowFactory.createRow(dataInfo, newRow);
     }
   }
 

@@ -143,6 +143,10 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
 
   boolean initDescription(GridDescription gridDescription);
 
+  default boolean isAttached() {
+    return getGridView() != null && getGridView().asWidget().isAttached();
+  }
+
   boolean isRowEditable(IsRow row);
 
   boolean onClose(GridPresenter presenter);

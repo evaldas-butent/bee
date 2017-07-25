@@ -71,8 +71,12 @@ class RelatedTasksGrid extends TasksGrid {
             }
           }
         }
-        RowFactory.createRow(dataInfo, row, Opener.MODAL,
-            result -> presenter.handleAction(Action.REFRESH));
+
+        RowFactory.createRow(dataInfo, row, result -> {
+          if (isAttached()) {
+            presenter.handleAction(Action.REFRESH);
+          }
+        });
       }
     });
 

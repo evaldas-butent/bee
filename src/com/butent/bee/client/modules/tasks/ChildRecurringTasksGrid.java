@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.tasks;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -43,8 +42,11 @@ class ChildRecurringTasksGrid extends RecurringTasksGrid {
   }
 
   private static void createRow(final GridPresenter presenter, DataInfo rowData, BeeRow row) {
-    RowFactory.createRow(rowData, row, Opener.MODAL,
-        result -> presenter.handleAction(Action.REFRESH));
+    RowFactory.createRow(rowData, row, result -> {
+      if (presenter.getMainView() != null && presenter.getMainView().asWidget().isAttached()) {
+        presenter.handleAction(Action.REFRESH);
+      }
+    });
   }
 
   private static void fillProjectData(DataInfo childDataInfo, IsRow childRow,

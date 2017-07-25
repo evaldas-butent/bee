@@ -34,7 +34,6 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -215,7 +214,7 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
                     COL_SERVICE_CUSTOMER, ALS_SERVICE_CUSTOMER_NAME, ALS_CUSTOMER_TYPE_NAME);
                 ServiceUtils.fillContractorAndManufacturerValues(newRow, objectRow);
 
-                RowFactory.createRow(maintenanceDataInfo, newRow, Opener.MODAL);
+                RowFactory.createRow(maintenanceDataInfo, newRow);
               });
               return false;
             } else {

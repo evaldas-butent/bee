@@ -29,7 +29,7 @@ public class CarServiceEvent extends Appointment {
       result.setValue(dataInfo.getColumnIndex(COL_START_DATE_TIME), newStart);
       result.setValue(dataInfo.getColumnIndex(COL_END_DATE_TIME), newEnd);
       RowFactory.setDefaults(result, dataInfo);
-      RowFactory.createRow(dataInfo, result, Opener.MODAL);
+      RowFactory.createRow(dataInfo, result);
     });
     return true;
   }

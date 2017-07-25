@@ -22,7 +22,6 @@ import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewSupplier;
@@ -100,7 +99,7 @@ public final class TradeActKeeper {
 
           prepareNewTradeAct(row, kind);
 
-          RowFactory.createRow(dataInfo, row, Opener.MODAL);
+          RowFactory.createRow(dataInfo, row);
         });
       }
     });

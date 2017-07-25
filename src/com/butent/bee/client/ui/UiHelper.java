@@ -411,6 +411,39 @@ public final class UiHelper {
     }
   }
 
+  public static WindowType getOtherEditWindowType() {
+    if (Popup.hasEventPreview()) {
+      return WindowType.MODAL;
+
+    } else {
+      String wtp = BeeKeeper.getUser().getOtherEditWindows();
+
+      if (BeeUtils.isEmpty(wtp)) {
+        wtp = Settings.getOtherEditWindows();
+
+        if (BeeKeeper.getUser().openInNewTab() && !BeeUtils.isUpperCase(wtp)) {
+          return WindowType.NEW_TAB;
+        }
+      }
+
+      return BeeUtils.nvl(WindowType.parse(wtp), WindowType.DEFAULT_OTHER_EDIT);
+    }
+  }
+
+  public static WindowType getOtherNewRowWindowType() {
+    if (Popup.hasEventPreview()) {
+      return WindowType.MODAL;
+
+    } else {
+      String wtp = BeeKeeper.getUser().getOtherNewRowWindows();
+      if (BeeUtils.isEmpty(wtp)) {
+        wtp = Settings.getOtherNewRowWindows();
+      }
+
+      return BeeUtils.nvl(WindowType.parse(wtp), WindowType.DEFAULT_OTHER_NEW_ROW);
+    }
+  }
+
   public static Popup getParentPopup(Widget w) {
     Assert.notNull(w);
 

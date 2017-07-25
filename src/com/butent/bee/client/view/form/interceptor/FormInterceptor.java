@@ -72,6 +72,10 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
 
   boolean hasFooter(int rowCount);
 
+  default boolean isAttached() {
+    return getFormView() != null && getFormView().asWidget().isAttached();
+  }
+
   boolean isRowEditable(IsRow row);
 
   boolean isWidgetEditable(EditableWidget editableWidget, IsRow row);

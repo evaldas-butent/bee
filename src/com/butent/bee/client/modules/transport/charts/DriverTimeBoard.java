@@ -29,7 +29,6 @@ import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.client.timeboard.TimeBoardRowLayout;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.widget.CustomDiv;
@@ -245,7 +244,7 @@ final class DriverTimeBoard extends ChartBase {
   @Override
   public void handleAction(Action action) {
     if (Action.ADD.equals(action)) {
-      RowFactory.createRow(VIEW_DRIVERS, Opener.DETACHED);
+      RowFactory.createRow(VIEW_DRIVERS);
     } else {
       super.handleAction(action);
     }

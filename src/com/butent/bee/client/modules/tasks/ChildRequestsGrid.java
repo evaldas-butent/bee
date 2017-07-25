@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.tasks;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -39,8 +38,12 @@ public class ChildRequestsGrid extends AbstractGridInterceptor {
         RelationUtils.updateRow(childRequestDataInfo, relColumn, childRequestRow,
             parentFormDataInfo, parentFormRow, true);
       }
-      RowFactory.createRow(childRequestDataInfo, childRequestRow, Opener.MODAL,
-          result -> presenter.handleAction(Action.REFRESH));
+
+      RowFactory.createRow(childRequestDataInfo, childRequestRow, result -> {
+        if (isAttached()) {
+          presenter.handleAction(Action.REFRESH);
+        }
+      });
     });
 
     return false;

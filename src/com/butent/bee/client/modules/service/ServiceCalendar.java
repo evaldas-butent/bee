@@ -264,7 +264,7 @@ final class ServiceCalendar extends TimeBoard {
   public void handleAction(Action action) {
     switch (action) {
       case ADD:
-        RowFactory.createRow(VIEW_SERVICE_OBJECTS, Opener.MODAL);
+        RowFactory.createRow(VIEW_SERVICE_OBJECTS);
         break;
 
       case EXPORT:

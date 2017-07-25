@@ -22,7 +22,6 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -135,7 +134,7 @@ class PersonForm extends AbstractFormInterceptor {
               Data.setValue(viewName, newRow, COL_PERSON, id);
 
               RowFactory.createRow(dataInfo.getNewRowForm(),
-                  Localized.dictionary().newPersonCompany(), dataInfo, newRow, Opener.MODAL,
+                  Localized.dictionary().newPersonCompany(), dataInfo, newRow,
                   new AbstractFormInterceptor() {
                     @Override
                     public boolean beforeCreateWidget(String widgetName, Element description) {

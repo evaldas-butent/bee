@@ -28,7 +28,6 @@ import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
@@ -643,7 +642,7 @@ public class TripForm extends PrintFormInterceptor {
         interceptor.defaultDriver = getLongValue(COL_DRIVER);
 
         RowFactory.createRow(info.getNewRowForm(), info.getNewRowCaption(), info, newRow,
-            Opener.MODAL, interceptor, null);
+            interceptor, null);
       });
     }
     return copyAction;

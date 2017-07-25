@@ -20,7 +20,6 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AttachmentRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditorAssistant;
@@ -103,7 +102,7 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
       BeeRow emptyRow = RowFactory.createEmptyRow(data, true);
 
       RowFactory.createRow(FORM_NEW_ANNOUNCEMENT, Localized.dictionary().announcementNew(),
-          data, emptyRow, Opener.MODAL, new CreateDiscussionInterceptor(), null);
+          data, emptyRow, new CreateDiscussionInterceptor(), null);
       return false;
     }
     return super.beforeAddRow(presenter, copy);

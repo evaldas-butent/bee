@@ -48,7 +48,6 @@ import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.ui.UiConstants;
-import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -82,7 +81,6 @@ public final class RowFactory {
   private static final int GENERATED_AREA_HEIGHT = 60;
 
   private static final String DEFAULT_CAPTION = Localized.dictionary().actionNew();
-  private static final WindowType DEFAULT_WINDOW_TYPE = WindowType.MODAL;
 
   private static final BeeLogger logger = LogUtils.getLogger(RowFactory.class);
 
@@ -197,6 +195,10 @@ public final class RowFactory {
     createRow(viewName, opener, null);
   }
 
+  public static void createRow(String viewName, RowCallback rowCallback) {
+    createRow(viewName, getDefaultOpener(), rowCallback);
+  }
+
   public static void createRow(String viewName, Opener opener, RowCallback rowCallback) {
     Assert.notEmpty(viewName);
 
@@ -210,8 +212,16 @@ public final class RowFactory {
         dataInfo, row, opener, null, rowCallback);
   }
 
+  public static void createRow(DataInfo dataInfo, BeeRow row) {
+    createRow(dataInfo, row, getDefaultOpener());
+  }
+
   public static void createRow(DataInfo dataInfo, BeeRow row, Opener opener) {
     createRow(dataInfo, row, opener, null);
+  }
+
+  public static void createRow(DataInfo dataInfo, BeeRow row, RowCallback rowCallback) {
+    createRow(dataInfo, row, getDefaultOpener(), rowCallback);
   }
 
   public static void createRow(DataInfo dataInfo, BeeRow row, Opener opener,
@@ -223,9 +233,21 @@ public final class RowFactory {
   }
 
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
+      RowCallback rowCallback) {
+
+    createRow(formName, caption, dataInfo, row, getDefaultOpener(), null, rowCallback);
+  }
+
+  public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
       Opener opener, RowCallback rowCallback) {
 
     createRow(formName, caption, dataInfo, row, opener, null, rowCallback);
+  }
+
+  public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
+      FormInterceptor formInterceptor, RowCallback rowCallback) {
+
+    createRow(formName, caption, dataInfo, row, getDefaultOpener(), formInterceptor, rowCallback);
   }
 
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
@@ -276,7 +298,7 @@ public final class RowFactory {
           DataInfo dataInfo = Data.getDataInfo(DiscussionsConstants.VIEW_DISCUSSIONS);
           BeeRow row = createEmptyRow(dataInfo, true);
 
-          RowFactory.createRow(DiscussionsConstants.FORM_NEW_ANNOUNCEMENT,
+          createRow(DiscussionsConstants.FORM_NEW_ANNOUNCEMENT,
               Localized.dictionary().announcementNew(), dataInfo, row, getDefaultOpener(), null);
         });
 
@@ -456,7 +478,7 @@ public final class RowFactory {
   }
 
   private static Opener getDefaultOpener() {
-    return Opener.in(DEFAULT_WINDOW_TYPE, null);
+    return Opener.in(UiHelper.getOtherNewRowWindowType(), null);
   }
 
   private static void getForm(String formName, final String caption,
@@ -473,8 +495,14 @@ public final class RowFactory {
             result.setEditing(true);
             result.start(null);
 
-            Opener formOpener = (opener == null) ? getDefaultOpener() : opener;
-            openForm(result, caption, dataInfo, row, formOpener.normalize(), rowCallback);
+            Opener formOpener;
+            if (opener == null) {
+              formOpener = getDefaultOpener();
+            } else {
+              formOpener = opener.normalize();
+            }
+
+            openForm(result, caption, dataInfo, row, formOpener, rowCallback);
           }
         });
   }

@@ -190,7 +190,7 @@ class CompanyForm extends AbstractFormInterceptor {
               Data.setValue(viewName, newRow, COL_COMPANY, id);
 
               RowFactory.createRow(dataInfo.getNewRowForm(),
-                  Localized.dictionary().newCompanyPerson(), dataInfo, newRow, Opener.MODAL,
+                  Localized.dictionary().newCompanyPerson(), dataInfo, newRow,
                   new AbstractFormInterceptor() {
                     @Override
                     public boolean beforeCreateWidget(String widgetName, Element description) {

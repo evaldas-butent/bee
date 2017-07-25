@@ -83,8 +83,11 @@ class RelatedRecurringTasksGrid extends AbstractGridInterceptor {
             row.setProperty(PFX_RELATED + relViewName, DataUtils.buildIdList(relId));
           }
         }
-        RowFactory.createRow(dataInfo, row, Opener.MODAL,
-            result -> presenter.handleAction(Action.REFRESH));
+        RowFactory.createRow(dataInfo, row, result -> {
+          if (isAttached()) {
+            presenter.handleAction(Action.REFRESH);
+          }
+        });
       });
     }
 

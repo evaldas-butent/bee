@@ -89,8 +89,11 @@ class ChildTasksGrid extends TasksGrid {
           }
         }
       }
-      RowFactory.createRow(childTaskDataInfo, childTaskRow, Opener.MODAL,
-          result -> presenter.handleAction(Action.REFRESH));
+      RowFactory.createRow(childTaskDataInfo, childTaskRow, result -> {
+        if (isAttached()) {
+          presenter.handleAction(Action.REFRESH);
+        }
+      });
     });
 
     return false;
