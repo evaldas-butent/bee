@@ -7,7 +7,7 @@
 >
   <g:columns>
 
-    <RelColumn name="Item" filter="IsService" />
+    <RelColumn name="Item" />
     <DataColumn name="Description" />
     <DataColumn name="Quantity" />
     <DataColumn name="Price" >
