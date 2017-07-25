@@ -139,7 +139,7 @@ public final class RowFactory {
         }
       }
 
-      Opener opener = Opener.in(DEFAULT_WINDOW_TYPE, selector.getElement(),
+      Opener opener = Opener.in(UiHelper.getRelationNewRowWindowType(), selector.getElement(),
           event.getOnOpenNewRow());
 
       createRelatedRow(formName, row, selector, opener);
@@ -150,7 +150,7 @@ public final class RowFactory {
     Assert.notNull(selector);
 
     createRelatedRow(formName, row, selector,
-        Opener.in(DEFAULT_WINDOW_TYPE, selector.getElement(), null));
+        Opener.in(UiHelper.getRelationNewRowWindowType(), selector.getElement(), null));
   }
 
   private static void createRelatedRow(String formName, BeeRow row, final DataSelector selector,
@@ -166,16 +166,25 @@ public final class RowFactory {
         opener, null, new RowCallback() {
           @Override
           public void onCancel() {
-            selector.setAdding(false);
-            selector.setFocus(true);
+            if (selector.isAttached() && selector.isAdding()) {
+              selector.setAdding(false);
+
+              if (UiHelper.isInteractive(selector)) {
+                selector.setFocus(true);
+              }
+            }
           }
 
           @Override
           public void onSuccess(BeeRow result) {
-            SelectorEvent.fireRowCreated(selector, result);
+            if (selector.isAttached() && selector.isAdding()) {
+              SelectorEvent.fireRowCreated(selector, result);
+              selector.setAdding(false);
 
-            selector.setAdding(false);
-            selector.setSelection(result, null, true);
+              if (UiHelper.isInteractive(selector)) {
+                selector.setSelection(result, null, true);
+              }
+            }
           }
         });
   }

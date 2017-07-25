@@ -445,6 +445,20 @@ public final class UiHelper {
     return null;
   }
 
+  public static WindowType getRelationNewRowWindowType() {
+    if (Popup.hasEventPreview()) {
+      return WindowType.MODAL;
+
+    } else {
+      String wtp = BeeKeeper.getUser().getRelationNewRowWindow();
+      if (BeeUtils.isEmpty(wtp)) {
+        wtp = Settings.getRelationNewRowWindow();
+      }
+
+      return BeeUtils.nvl(WindowType.parse(wtp), WindowType.DEFAULT_RELATION_NEW_ROW);
+    }
+  }
+
   public static Consumer<InputText> getTextBoxResizer(final int reserve) {
     return input -> {
       String value = input.getValue();
