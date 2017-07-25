@@ -39,6 +39,10 @@ var BeeSettings = {
   "gridNewRowWindow": "on-top",
   "childEditWindow": "modal",
   "childNewRowWindow": "modal",
+  "relationEditWindow": "new-tab",
+  "relationNewRowWindow": "modal",
+  "otherEditWindows": "new-tab",
+  "otherNewRowWindows": "modal",
   "newMailMessageWindow": "detached",
   "theme" : {
     "WorkspaceMarginRight": 25,

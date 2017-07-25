@@ -395,6 +395,10 @@ public final class AdministrationConstants {
   public static final String COL_GRID_NEW_ROW_WINDOW = "GridNewRowWindow";
   public static final String COL_CHILD_EDIT_WINDOW = "ChildEditWindow";
   public static final String COL_CHILD_NEW_ROW_WINDOW = "ChildNewRowWindow";
+  public static final String COL_RELATION_EDIT_WINDOW = "RelationEditWindow";
+  public static final String COL_RELATION_NEW_ROW_WINDOW = "RelationNewRowWindow";
+  public static final String COL_OTHER_EDIT_WINDOWS = "OtherEditWindows";
+  public static final String COL_OTHER_NEW_ROW_WINDOWS = "OtherNewRowWindows";
   public static final String COL_NEW_MAIL_MESSAGE_WINDOW = "NewMailMessageWindow";
 
   public static final String COL_UI_THEME = "UiTheme";

@@ -4216,7 +4216,11 @@ public interface Dictionary {
 
   default String otherCosts() {return g("otherCosts");}
 
+  default String otherEditWindows() {return g("otherEditWindows");}
+
   default String otherInfo() {return g("otherInfo");}
+
+  default String otherNewRowWindows() {return g("otherNewRowWindows");}
 
   default String outsized() {return g("outsized");}
 
@@ -5084,6 +5088,10 @@ public interface Dictionary {
   default String relatedTo() {return g("relatedTo");}
 
   default String relation() {return g("relation");}
+
+  default String relationEditWindow() {return g("relationEditWindow");}
+
+  default String relationNewRowWindow() {return g("relationNewRowWindow");}
 
   default String relationStateName() {return g("relationStateName");}
 

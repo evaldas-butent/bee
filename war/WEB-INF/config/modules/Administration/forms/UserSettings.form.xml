@@ -192,14 +192,29 @@
 
             <row>
               <text />
-              <cell style="padding-bottom: 1vh;">
+              <text />
+              <text />
+
+              <cell style="padding-bottom: 2vh;">
                 <CheckBox source="OpenInNewTab" summarize="true" />
               </cell>
             </row>
 
             <row>
+              <Label for="GridNewRowWindow" />
+              <ListBox source="GridNewRowWindow" summarize="true">
+                &windowTypes;
+              </ListBox>
+
               <Label for="GridEditWindow" />
               <ListBox source="GridEditWindow" summarize="true">
+                &windowTypes;
+              </ListBox>
+            </row>
+
+            <row>
+              <Label for="ChildNewRowWindow" />
+              <ListBox source="ChildNewRowWindow" summarize="true">
                 &windowTypes;
               </ListBox>
 
@@ -210,18 +225,30 @@
             </row>
 
             <row>
-              <Label for="GridNewRowWindow" />
-              <ListBox source="GridNewRowWindow" summarize="true">
-                &windowTypes;
+              <Label for="RelationNewRowWindow" />
+              <ListBox source="RelationNewRowWindow" summarize="true">
+                &wt3;
               </ListBox>
 
-              <Label for="ChildNewRowWindow" />
-              <ListBox source="ChildNewRowWindow" summarize="true">
-                &windowTypes;
+              <Label for="RelationEditWindow" />
+              <ListBox source="RelationEditWindow" summarize="true">
+                &wt3;
               </ListBox>
             </row>
 
             <row>
+              <Label for="OtherNewRowWindows" />
+              <ListBox source="OtherNewRowWindows" summarize="true">
+                &wt3;
+              </ListBox>
+
+              <Label for="OtherEditWindows" />
+              <ListBox source="OtherEditWindows" summarize="true">
+                &wt3;
+              </ListBox>
+            </row>
+
+            <row module="Mail">
               <Label for="NewMailMessageWindow" />
               <ListBox source="NewMailMessageWindow" summarize="true">
                 &wt3;

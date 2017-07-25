@@ -213,6 +213,14 @@ public final class Settings {
     return getObject("onStartup");
   }
 
+  public static String getOtherEditWindows() {
+    return getString("otherEditWindows");
+  }
+
+  public static String getOtherNewRowWindows() {
+    return getString("otherNewRowWindows");
+  }
+
   public static int getProviderMaxPrefetchSteps() {
     return getInt("providerMaxPrefetchSteps");
   }
@@ -231,6 +239,14 @@ public final class Settings {
 
   public static int getReducedInteractionStatusMinutes() {
     return getInt("reducedInteractionStatusMinutes");
+  }
+
+  public static String getRelationEditWindow() {
+    return getString("relationEditWindow");
+  }
+
+  public static String getRelationNewRowWindow() {
+    return getString("relationNewRowWindow");
   }
 
   public static String getReleaseDate() {
