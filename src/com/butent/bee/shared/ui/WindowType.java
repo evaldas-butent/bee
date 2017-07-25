@@ -85,6 +85,12 @@ public enum WindowType implements HasLocalizedCaption {
   public static final WindowType DEFAULT_CHILD_EDIT = MODAL;
   public static final WindowType DEFAULT_CHILD_NEW_ROW = MODAL;
 
+  public static final WindowType DEFAULT_RELATION_EDIT = NEW_TAB;
+  public static final WindowType DEFAULT_RELATION_NEW_ROW = MODAL;
+
+  public static final WindowType DEFAULT_OTHER_EDIT = NEW_TAB;
+  public static final WindowType DEFAULT_OTHER_NEW_ROW = MODAL;
+
   public static final WindowType DEFAULT_NEW_MAIL_MESSAGE = DETACHED;
 
   public static WindowType parse(String input) {

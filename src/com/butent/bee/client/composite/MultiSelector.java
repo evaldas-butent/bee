@@ -49,6 +49,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -711,21 +712,15 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
   private void editChoice(long rowId) {
     if (BeeConst.isUndef(getEditSourceIndex())) {
-      boolean modal = isEditModal();
-      RowCallback rowCallback;
+      WindowType windowType = UiHelper.normalizeRelationEditWindowType(getEditWindowType());
+      Opener opener = Opener.in(windowType, getElement(), null);
 
-      if (modal) {
-        rowCallback = new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            updateChoice(result);
-          }
-        };
-      } else {
-        rowCallback = null;
-      }
+      RowCallback rowCallback = row -> {
+        if (isAttached()) {
+          updateChoice(row);
+        }
+      };
 
-      Opener opener = modal ? Opener.relativeTo(getWidget()) : Opener.NEW_TAB;
       RowEditor.openForm(getEditForm(), getOracle().getDataInfo(), Filter.compareId(rowId), opener,
           rowCallback);
 
@@ -733,13 +728,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       BeeRow row = getOracle().getCachedRow(rowId);
 
       if (row == null) {
-        Queries.getRow(getOracle().getViewName(), rowId, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            editChoiceSource(result);
-          }
-        });
-
+        Queries.getRow(getOracle().getViewName(), rowId, this::editChoiceSource);
       } else {
         editChoiceSource(row);
       }
@@ -761,26 +750,21 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       return;
     }
 
-    boolean modal = isEditModal();
-    RowCallback rowCallback;
+    WindowType windowType = UiHelper.normalizeRelationEditWindowType(getEditWindowType());
+    Opener opener = Opener.in(windowType, getElement(), null);
 
-    if (modal) {
-      rowCallback = new RowCallback() {
-        @Override
-        public void onSuccess(BeeRow result) {
-          if (result != null && !BeeUtils.same(getEditViewName(), getOracle().getViewName())) {
-            RelationUtils.updateRow(getOracle().getDataInfo(),
-                getOracle().getDataInfo().getColumnId(sourceIndex), choiceRow,
-                Data.getDataInfo(getEditViewName()), result, false);
-            updateChoice(choiceRow);
-          }
-        }
-      };
-    } else {
-      rowCallback = null;
-    }
+    RowCallback rowCallback = result -> {
+      if (isAttached() && result != null
+          && !BeeUtils.same(getEditViewName(), getOracle().getViewName())) {
 
-    Opener opener = modal ? Opener.relativeTo(getWidget()) : Opener.NEW_TAB;
+        RelationUtils.updateRow(getOracle().getDataInfo(),
+            getOracle().getDataInfo().getColumnId(sourceIndex), choiceRow,
+            Data.getDataInfo(getEditViewName()), result, false);
+
+        updateChoice(choiceRow);
+      }
+    };
+
     RowEditor.openForm(getEditForm(), Data.getDataInfo(getEditViewName()),
         Filter.compareId(sourceId), opener, rowCallback);
   }
@@ -930,26 +914,23 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
         renderCachedChoices(choices);
 
       } else {
-        getData(notCached, new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            if (result != null) {
-              for (BeeRow row : result) {
-                String label = getRenderer().render(row);
+        getData(notCached, result -> {
+          if (result != null) {
+            for (BeeRow row : result) {
+              String label = getRenderer().render(row);
 
-                if (!BeeUtils.isEmpty(label)) {
-                  for (Choice choice : choices) {
-                    if (Objects.equals(row.getId(), choice.getRowId())) {
-                      cache.put(choice, label);
-                      break;
-                    }
+              if (!BeeUtils.isEmpty(label)) {
+                for (Choice choice : choices) {
+                  if (Objects.equals(row.getId(), choice.getRowId())) {
+                    cache.put(choice, label);
+                    break;
                   }
                 }
               }
             }
-
-            renderCachedChoices(choices);
           }
+
+          renderCachedChoices(choices);
         });
       }
     }

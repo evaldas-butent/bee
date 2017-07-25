@@ -739,7 +739,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private final String editViewName;
   private final String editForm;
-  private final Boolean editModal;
+  private final WindowType editWindowType;
 
   private final boolean editEnabled;
 
@@ -886,7 +886,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
       this.editForm = ef;
 
-      this.editModal = WindowType.MODAL == relation.getEditWindowType();
+      this.editWindowType = relation.getEditWindowType();
       this.editEnabled = !BeeUtils.isEmpty(ev) && !BeeUtils.isEmpty(ef)
           && Data.isViewVisible(ev);
 
@@ -915,7 +915,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       this.editViewName = null;
 
       this.editForm = null;
-      this.editModal = null;
+      this.editWindowType = null;
       this.editEnabled = false;
 
       this.editTargetIndex = BeeConst.UNDEF;
@@ -1150,10 +1150,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   @Override
   public boolean isEditing() {
     return getInput().isEditing();
-  }
-
-  public Boolean isEditModal() {
-    return BeeUtils.isTrue(editModal) || UiHelper.isModal(getWidget());
   }
 
   public boolean isEmbedded() {
@@ -1408,6 +1404,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return editViewName;
   }
 
+  protected WindowType getEditWindowType() {
+    return editWindowType;
+  }
+
   protected InputWidget getInput() {
     return input;
   }
@@ -1641,11 +1641,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       return;
     }
 
-    boolean modal = isEditModal();
-    RowCallback rowCallback;
+    WindowType windowType = UiHelper.normalizeRelationEditWindowType(getEditWindowType());
+    Opener opener = Opener.in(windowType, getElement(), null);
 
-    if (modal) {
-      rowCallback = result -> {
+    RowCallback rowCallback = result -> {
+      if (isAttached()) {
         if (BeeUtils.same(getEditViewName(), getOracle().getViewName())) {
           setRelatedRow(result);
 
@@ -1668,13 +1668,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         if (getRelatedRow() != null) {
           fireEvent(new EditStopEvent(State.EDITED));
         }
-      };
+      }
+    };
 
-    } else {
-      rowCallback = null;
-    }
-
-    Opener opener = modal ? Opener.relativeTo(getWidget()) : Opener.NEW_TAB;
     RowEditor.openForm(getEditForm(), Data.getDataInfo(getEditViewName()), Filter.compareId(rowId),
         opener, rowCallback);
   }

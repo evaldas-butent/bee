@@ -44,6 +44,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.ui.HasMaxLength;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -610,6 +611,28 @@ public final class UiHelper {
 
     children.get(index).setFocus(true);
     return true;
+  }
+
+  public static WindowType normalizeRelationEditWindowType(WindowType input) {
+    if (Popup.hasEventPreview()) {
+      return WindowType.MODAL;
+
+    } else if (input != null) {
+      return input;
+
+    } else {
+      String wtp = BeeKeeper.getUser().getRelationEditWindow();
+
+      if (BeeUtils.isEmpty(wtp)) {
+        wtp = Settings.getRelationEditWindow();
+
+        if (BeeKeeper.getUser().openInNewTab() && !BeeUtils.isUpperCase(wtp)) {
+          return WindowType.NEW_TAB;
+        }
+      }
+
+      return BeeUtils.nvl(WindowType.parse(wtp), WindowType.DEFAULT_RELATION_EDIT);
+    }
   }
 
   public static void pressKey(TextBox widget, char key) {

@@ -2943,37 +2943,36 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       return false;
     }
 
-    boolean modal;
-    if (UiHelper.isModal(this)) {
-      modal = true;
+    Filter filter = BeeUtils.isEmpty(editTarget)
+        ? Filter.compareId(sourceValue) : Filter.equals(editTarget, sourceValue);
 
+    WindowType windowType;
+    if (relation != null) {
+      windowType = relation.getEditWindowType();
+    } else if (columnRelation != null) {
+      windowType = columnRelation.getEditWindowType();
     } else {
-      WindowType windowType;
-      if (relation != null) {
-        windowType = relation.getEditWindowType();
-      } else if (columnRelation != null) {
-        windowType = columnRelation.getEditWindowType();
-      } else {
-        windowType = null;
-      }
-
-      modal = WindowType.MODAL == windowType
-          || windowType == null && charCode != EditStartEvent.CLICK;
+      windowType = null;
     }
 
-    RowCallback rowCallback;
-    if (modal) {
-      rowCallback = new RowCallback() {
-        @Override
-        public void onCancel() {
+    final Opener opener = Opener.in(UiHelper.normalizeRelationEditWindowType(windowType), null);
+
+    RowCallback rowCallback = new RowCallback() {
+      @Override
+      public void onCancel() {
+        if (opener.isModal() && UiHelper.isInteractive(getGrid())) {
           getGrid().refocus();
         }
+      }
 
-        @Override
-        public void onSuccess(BeeRow result) {
+      @Override
+      public void onSuccess(BeeRow result) {
+        if (isAttached() && getGrid().containsRow(row.getId())) {
+
           if (BeeUtils.isEmpty(editTarget) || editDataInfo.getIdColumn().equals(editTarget)) {
-            if (!RelationUtils.updateRow(getDataInfo(), editSource, row, editDataInfo, result,
-                false).isEmpty()) {
+            if (DataUtils.sameId(row, result) && !RelationUtils.updateRow(getDataInfo(),
+                editSource, row, editDataInfo, result, false).isEmpty()) {
+
               getGrid().refreshCell(row.getId(), columnId);
             }
 
@@ -2989,20 +2988,14 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
             }
           }
 
-          getGrid().refocus();
+          if (opener.isModal() && UiHelper.isInteractive(getGrid())) {
+            getGrid().refocus();
+          }
         }
-      };
+      }
+    };
 
-    } else {
-      rowCallback = null;
-    }
-
-    Filter filter = BeeUtils.isEmpty(editTarget)
-        ? Filter.compareId(sourceValue) : Filter.equals(editTarget, sourceValue);
-
-    Opener opener = modal ? Opener.MODAL : Opener.NEW_TAB;
     RowEditor.openForm(formName, editDataInfo, filter, opener, rowCallback);
-
     return true;
   }
 
