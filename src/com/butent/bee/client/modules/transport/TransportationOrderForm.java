@@ -16,7 +16,6 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -230,7 +229,7 @@ class TransportationOrderForm extends PrintFormInterceptor implements ClickHandl
           Global.confirm(Localized.dictionary().trCopyOrder(), () ->
               TransportUtils.copyOrderWithCargos(getActiveRowId(), Filter.equals(COL_ORDER,
                   getActiveRowId()), (newOrderId, newCargos) ->
-                  RowEditor.open(getViewName(), newOrderId, Opener.MODAL)))
+                  RowEditor.open(getViewName(), newOrderId)))
       );
     }
 

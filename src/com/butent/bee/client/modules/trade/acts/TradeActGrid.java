@@ -561,7 +561,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
           BeeRow template = BeeRow.restore(response.getResponseAsString());
           DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_TEMPLATES);
 
-          RowEditor.open(VIEW_TRADE_ACT_TEMPLATES, template, Opener.MODAL);
+          RowEditor.open(VIEW_TRADE_ACT_TEMPLATES, template);
         }
       });
     }

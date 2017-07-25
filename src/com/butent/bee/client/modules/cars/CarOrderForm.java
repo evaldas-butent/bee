@@ -437,7 +437,7 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
 
   private void buildCar() {
     if (hasCar(getActiveRow())) {
-      RowEditor.open(VIEW_CARS, getLongValue(COL_CAR), Opener.NEW_TAB);
+      RowEditor.open(VIEW_CARS, getLongValue(COL_CAR));
       return;
     }
     if (!getFormView().isEnabled()) {
@@ -553,7 +553,7 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
 
         TradeKeeper.createDocument(doc, tradeId -> {
           DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), VIEW_TRADE_DOCUMENTS);
-          RowEditor.open(VIEW_TRADE_DOCUMENTS, tradeId, Opener.NEW_TAB);
+          RowEditor.open(VIEW_TRADE_DOCUMENTS, tradeId);
         });
       }
     });

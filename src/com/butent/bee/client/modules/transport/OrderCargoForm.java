@@ -15,7 +15,6 @@ import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -157,7 +156,7 @@ class OrderCargoForm extends AbstractFormInterceptor {
           Global.confirm(Localized.dictionary().trCopyOrder(), () ->
               TransportUtils.copyOrderWithCargos(orderId, Filter.compareId(getActiveRowId()),
                   (newOrderId, newCargos) ->
-                  RowEditor.open(getViewName(), BeeUtils.peek(newCargos).getId(), Opener.MODAL)));
+                  RowEditor.open(getViewName(), BeeUtils.peek(newCargos).getId())));
         }
       });
     }

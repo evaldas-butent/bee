@@ -129,7 +129,7 @@ public class DocumentForm extends DocumentDataForm {
                     if (DataUtils.isId(oldId)) {
                       Queries.deleteRow(VIEW_DOCUMENT_DATA, oldId);
                     }
-                    RowEditor.open(VIEW_DOCUMENT_TEMPLATES, row.getId(), Opener.MODAL);
+                    RowEditor.open(VIEW_DOCUMENT_TEMPLATES, row.getId());
                   }))));
   private ChildGrid itemsGrid;
   private Relations rel;

@@ -17,7 +17,6 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.FaLabel;
@@ -129,7 +128,7 @@ public class MaintenanceEventsHandler extends EventsBoard {
       editLabel.addClickHandler(
           event -> RowEditor.openForm(FORM_MAINTENANCE_COMMENT,
               Data.getDataInfo(getEventsDataViewName()),
-              row, Opener.MODAL, null, new MaintenanceCommentForm(maintenanceRow)));
+              row, null, new MaintenanceCommentForm(maintenanceRow)));
 
       if (BeeKeeper.getUser().canDeleteData(getEventsDataViewName())) {
         Flow rowCellDelete = createEventRowCell(infoPanel, "Delete", null, false);

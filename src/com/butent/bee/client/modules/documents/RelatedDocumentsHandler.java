@@ -72,7 +72,7 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
           break;
         case ClassifierConstants.VIEW_COMPANIES:
           RelationUtils.updateRow(info, COL_DOCUMENT_COMPANY, docRow,
-            Data.getDataInfo(parentViewName), parentRow, true);
+              Data.getDataInfo(parentViewName), parentRow, true);
           relationEnsured = true;
           break;
         default:
@@ -89,12 +89,12 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
 
           if (relationEnsured) {
             docRow.setProperty(Relations.PFX_RELATED + parentViewName,
-              DataUtils.buildIdList(parentRow.getId()));
+                DataUtils.buildIdList(parentRow.getId()));
           }
       }
       if (!BeeUtils.isEmpty(parentColumn)) {
         RelationUtils.copyWithDescendants(Data.getDataInfo(parentViewName), parentColumn,
-          parentRow, info, COL_DOCUMENT_COMPANY, docRow);
+            parentRow, info, COL_DOCUMENT_COMPANY, docRow);
       }
     }
 
@@ -103,13 +103,13 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
         final long docId = result.getId();
 
         presenter.getGridView().ensureRelId(relId
-          -> Queries.insert(AdministrationConstants.VIEW_RELATIONS,
-          Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
-            Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
-          Queries.asList(docId, relId), null, row -> {
-            presenter.handleAction(Action.REFRESH);
-            ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
-          }));
+            -> Queries.insert(AdministrationConstants.VIEW_RELATIONS,
+            Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
+                Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
+            Queries.asList(docId, relId), null, row -> {
+              presenter.handleAction(Action.REFRESH);
+              ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
+            }));
       });
     } else {
       RowFactory.createRow(info, docRow, Opener.MODAL, result -> {
@@ -134,8 +134,11 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
       Long docId = event.getRowValue().getLong(documentIndex);
 
       if (DataUtils.isId(docId)) {
-        RowEditor.open(VIEW_DOCUMENTS, docId, Opener.MODAL,
-          result -> getGridPresenter().handleAction(Action.REFRESH));
+        RowEditor.open(VIEW_DOCUMENTS, docId, result -> {
+          if (isAttached()) {
+            getGridPresenter().handleAction(Action.REFRESH);
+          }
+        });
       }
     }
   }

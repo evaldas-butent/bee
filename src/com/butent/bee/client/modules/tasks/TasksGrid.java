@@ -308,7 +308,7 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
       if (TaskStatus.NOT_SCHEDULED == status && BeeKeeper.getUser().canCreateData(getViewName())) {
         event.consume();
         RowEditor.openForm(FORM_NEW_TASK, Data.getDataInfo(getViewName()),
-            Filter.compareId(row.getId()), Opener.MODAL);
+            Filter.compareId(row.getId()));
 
       } else if (TaskStatus.NOT_SCHEDULED == status) {
         event.consume();

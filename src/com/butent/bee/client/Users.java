@@ -1,7 +1,5 @@
 package com.butent.bee.client;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.RowEditor;
@@ -10,7 +8,6 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.Badge;
 import com.butent.bee.client.widget.CustomDiv;
@@ -83,48 +80,38 @@ public class Users {
       CustomDiv nameWidget = new CustomDiv(STYLE_PREFIX + "name");
       nameWidget.setText(userData.getUserSign());
 
-      nameWidget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          RowEditor.open(ClassifierConstants.VIEW_PERSONS, personId, Opener.MODAL);
-        }
-      });
+      nameWidget.addClickHandler(
+          event -> RowEditor.open(ClassifierConstants.VIEW_PERSONS, personId));
 
       add(nameWidget);
 
       FaLabel tweetWidget = new FaLabel(FontAwesome.TWITTER);
       tweetWidget.addStyleName(STYLE_PREFIX + "tweet");
 
-      tweetWidget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          Global.inputString(Global.getUsers().getFirstName(userId), null, new StringCallback() {
-            @Override
-            public void onSuccess(String value) {
-              String fromSession = Endpoint.getSessionId();
-              Long fromUser = BeeKeeper.getUser().getUserId();
+      tweetWidget.addClickHandler(
+          event -> Global.inputString(Global.getUsers().getFirstName(userId), null,
+              new StringCallback() {
+                @Override
+                public void onSuccess(String value) {
+                  String fromSession = Endpoint.getSessionId();
+                  Long fromUser = BeeKeeper.getUser().getUserId();
 
-              if (!BeeUtils.isEmpty(fromSession) && fromUser != null) {
-                Endpoint.send(NotificationMessage.dialog(fromSession, getSessionId(),
-                    new TextMessage(fromUser, BeeUtils.trim(value))));
-              }
-            }
-          }, null, null, NotificationMessage.MAX_LENGTH);
-        }
-      });
+                  if (!BeeUtils.isEmpty(fromSession) && fromUser != null) {
+                    Endpoint.send(NotificationMessage.dialog(fromSession, getSessionId(),
+                        new TextMessage(fromUser, BeeUtils.trim(value))));
+                  }
+                }
+              }, null, null, NotificationMessage.MAX_LENGTH));
 
       add(tweetWidget);
 
       FaLabel homeWidget = new FaLabel(FontAwesome.HOME);
       homeWidget.addStyleName(STYLE_PREFIX + "home");
 
-      homeWidget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          String from = Endpoint.getSessionId();
-          if (!BeeUtils.isEmpty(from)) {
-            Endpoint.send(LocationMessage.query(from, getSessionId()));
-          }
+      homeWidget.addClickHandler(event -> {
+        String from = Endpoint.getSessionId();
+        if (!BeeUtils.isEmpty(from)) {
+          Endpoint.send(LocationMessage.query(from, getSessionId()));
         }
       });
 

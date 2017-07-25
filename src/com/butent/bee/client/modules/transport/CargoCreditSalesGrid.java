@@ -224,7 +224,7 @@ public class CargoCreditSalesGrid extends AbstractGridInterceptor implements Cli
                     Data.onViewChange(presenter.getViewName(),
                         DataChangeEvent.CANCEL_RESET_REFRESH);
                     RowEditor.openForm(FORM_CARGO_PURCHASE_INVOICE, purchaseInfo,
-                        Filter.compareId(row.getId()), Opener.MODAL);
+                        Filter.compareId(row.getId()));
                   }
                 });
                 onCancel();

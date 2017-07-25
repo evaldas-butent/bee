@@ -151,7 +151,7 @@ final class DefectBuilder {
                 DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_MAINTENANCE);
                 DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_SERVICE_OBJECTS);
 
-                RowEditor.open(VIEW_SERVICE_DEFECTS, dfId, Opener.MODAL);
+                RowEditor.open(VIEW_SERVICE_DEFECTS, dfId);
               }
             });
           });

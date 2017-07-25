@@ -32,7 +32,6 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
@@ -1108,7 +1107,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
       label.setTitle(fullName);
     }
 
-    label.addClickHandler(event -> RowEditor.open(VIEW_DEPARTMENTS, id, Opener.MODAL));
+    label.addClickHandler(event -> RowEditor.open(VIEW_DEPARTMENTS, id));
 
     DndHelper.makeSource(label, DATA_TYPE_DEPARTMENT, id, STYLE_DEPARTMENT_DRAG);
     panel.add(label);
@@ -1423,7 +1422,11 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
     image.addClickHandler(event -> {
       Long person = getEmployeeRelation(emplId, COL_PERSON);
-      RowEditor.open(VIEW_PERSONS, person, Opener.MODAL, result -> refresh());
+      RowEditor.open(VIEW_PERSONS, person, result -> {
+        if (isAttached()) {
+          refresh();
+        }
+      });
     });
 
     photoContainer.add(image);
@@ -1436,7 +1439,11 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
     label.addClickHandler(event -> {
       Long cp = getEmployeeRelation(emplId, COL_COMPANY_PERSON);
-      RowEditor.open(VIEW_COMPANY_PERSONS, cp, Opener.MODAL, result -> refresh());
+      RowEditor.open(VIEW_COMPANY_PERSONS, cp, result -> {
+        if (isAttached()) {
+          refresh();
+        }
+      });
     });
 
     styleName = boss ? STYLE_BOSS_LABEL : STYLE_EMPLOYEE_LABEL;

@@ -30,7 +30,6 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
@@ -251,7 +250,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
     DataInfo data = Data.getDataInfo(getEventsDataViewName());
 
     BeeRow row = RowFactory.createEmptyRow(data, true);
-    RowFactory.createRow(data.getNewRowForm(), data.getCaption(), data, row, Opener.MODAL,
+    RowFactory.createRow(data.getNewRowForm(), data.getCaption(), data, row,
         getNewEventFormInterceptor(), null);
   }
 

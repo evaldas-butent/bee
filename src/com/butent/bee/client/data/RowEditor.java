@@ -14,6 +14,7 @@ import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.CloseCallback;
@@ -83,6 +84,10 @@ public final class RowEditor {
     return ViewFactory.SupplierKind.ROW_EDITOR.getKey(name);
   }
 
+  public static void open(String viewName, IsRow row) {
+    open(viewName, row, null);
+  }
+
   public static void open(String viewName, IsRow row, Opener opener) {
     open(viewName, row, opener, null);
   }
@@ -99,8 +104,16 @@ public final class RowEditor {
     openForm(formName, dataInfo, row, opener, rowCallback, null);
   }
 
+  public static boolean open(String viewName, Long rowId) {
+    return open(viewName, rowId, null, null);
+  }
+
   public static boolean open(String viewName, Long rowId, Opener opener) {
     return open(viewName, rowId, opener, null);
+  }
+
+  public static boolean open(String viewName, Long rowId, RowCallback rowCallback) {
+    return open(viewName, rowId, null, rowCallback);
   }
 
   public static boolean open(String viewName, Long rowId, Opener opener, RowCallback rowCallback) {
@@ -122,18 +135,34 @@ public final class RowEditor {
     return true;
   }
 
+  public static void openForm(String formName, DataInfo dataInfo, Filter filter) {
+    openForm(formName, dataInfo, filter, null);
+  }
+
   public static void openForm(String formName, DataInfo dataInfo, Filter filter, Opener opener) {
     openForm(formName, dataInfo, filter, opener, null, null);
   }
 
   public static void openForm(String formName, DataInfo dataInfo, Filter filter,
       Opener opener, RowCallback rowCallback) {
+
     openForm(formName, dataInfo, filter, opener, rowCallback, null);
   }
 
   public static void openForm(String formName, DataInfo dataInfo, Filter filter,
+      RowCallback rowCallback, FormInterceptor formInterceptor) {
+
+    openForm(formName, dataInfo, filter, null, rowCallback, formInterceptor);
+  }
+
+  public static void openForm(String formName, DataInfo dataInfo, Filter filter,
       Opener opener, RowCallback rowCallback, FormInterceptor formInterceptor) {
+
     getRow(formName, dataInfo, filter, opener, rowCallback, formInterceptor);
+  }
+
+  public static void openForm(String formName, String viewName, IsRow row) {
+    openForm(formName, viewName, row, null, null);
   }
 
   public static void openForm(String formName, String viewName, IsRow row, Opener opener,
@@ -149,14 +178,26 @@ public final class RowEditor {
     openForm(formName, dataInfo, row, opener, rowCallback, null);
   }
 
+  public static void openForm(String formName, DataInfo dataInfo, IsRow row,
+      RowCallback rowCallback, FormInterceptor formInterceptor) {
+
+    openForm(formName, dataInfo, row, null, rowCallback, formInterceptor);
+  }
+
   public static void openForm(String formName, DataInfo dataInfo, IsRow row, Opener opener,
       RowCallback rowCallback, FormInterceptor formInterceptor) {
 
     Assert.notNull(dataInfo);
     Assert.notNull(row);
-    Assert.notNull(opener);
 
-    if (!RowActionEvent.fireEditRow(dataInfo.getViewName(), row, opener, formName)) {
+    Opener formOpener;
+    if (opener == null) {
+      formOpener = Opener.in(UiHelper.getOtherEditWindowType(), null);
+    } else {
+      formOpener = opener.normalize();
+    }
+
+    if (!RowActionEvent.fireEditRow(dataInfo.getViewName(), row, formOpener, formName)) {
       return;
     }
 
@@ -174,12 +215,11 @@ public final class RowEditor {
       }
     }
 
-    createForm(fn, dataInfo, row, opener, rowCallback, formInterceptor);
+    createForm(fn, dataInfo, row, formOpener, rowCallback, formInterceptor);
   }
 
   public static boolean parse(String input, final Opener opener) {
     Assert.notEmpty(input);
-    Assert.notNull(opener);
 
     final String viewName = BeeUtils.getPrefix(input, BeeConst.CHAR_UNDER);
     if (BeeUtils.isEmpty(viewName)) {
@@ -227,7 +267,7 @@ public final class RowEditor {
               result.setEnabled(false);
             }
 
-            launch(formDescription, result, dataInfo, row, opener.normalize(), rowCallback);
+            launch(formDescription, result, dataInfo, row, opener, rowCallback);
           }
         });
   }

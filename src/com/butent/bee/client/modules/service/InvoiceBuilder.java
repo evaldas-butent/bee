@@ -198,7 +198,7 @@ final class InvoiceBuilder {
                 DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_MAINTENANCE);
                 DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDER_CHILD_INVOICES);
 
-                RowEditor.open(VIEW_ORDER_CHILD_INVOICES, invId, Opener.MODAL);
+                RowEditor.open(VIEW_ORDER_CHILD_INVOICES, invId);
               }
             });
           });

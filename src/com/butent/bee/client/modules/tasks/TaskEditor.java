@@ -213,7 +213,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
       for (final Long extTaskId : extTasks) {
         InternalLink url = new InternalLink(BeeUtils.toString(extTaskId));
-        url.addClickHandler(arg0 -> RowEditor.open(VIEW_TASKS, extTaskId, Opener.NEW_TAB));
+        url.addClickHandler(arg0 -> RowEditor.open(VIEW_TASKS, extTaskId));
 
         ((Flow) widget).add(url);
       }

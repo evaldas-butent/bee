@@ -234,7 +234,6 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
 
   private static void openProjectFullForm(long projectId) {
     RowEditor.openForm(ProjectConstants.FORM_PROJECT,
-        Data.getDataInfo(ProjectConstants.VIEW_PROJECTS), Filter.compareId(projectId),
-        Opener.NEW_TAB);
+        Data.getDataInfo(ProjectConstants.VIEW_PROJECTS), Filter.compareId(projectId));
   }
 }

@@ -27,7 +27,7 @@ public class DocumentTemplateForm extends DocumentDataForm {
                     if (DataUtils.isId(oldId)) {
                       Queries.deleteRow(VIEW_DOCUMENT_DATA, oldId);
                     }
-                    RowEditor.open(TBL_DOCUMENTS, row.getId(), Opener.MODAL);
+                    RowEditor.open(TBL_DOCUMENTS, row.getId());
                   }))));
 
   @Override

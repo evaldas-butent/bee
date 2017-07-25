@@ -12,7 +12,6 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.RowCountChangeEvent;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
@@ -94,7 +93,7 @@ class TradeDebtsGrid extends AbstractGridInterceptor {
 
     IsRow row = event.getRowValue();
     if (row != null) {
-      RowEditor.open(getViewName(), row, Opener.NEW_TAB);
+      RowEditor.open(getViewName(), row);
     }
   }
 

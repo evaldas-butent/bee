@@ -1752,7 +1752,7 @@ public class TradeItemPicker extends Flow implements HasPaging {
     if (cell.hasClassName(STYLE_ID + STYLE_CELL_SUFFIX)) {
       long id = getRowId(cell);
       if (DataUtils.isId(id)) {
-        RowEditor.open(VIEW_ITEMS, id, Opener.MODAL);
+        RowEditor.open(VIEW_ITEMS, id);
       }
 
     } else if (cell.hasClassName(STYLE_MAIN_WAREHOUSE + STYLE_CELL_SUFFIX)) {

@@ -10,7 +10,6 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -32,7 +31,7 @@ class RelatedTasksGrid extends TasksGrid {
 
   private static void openTask(Long id) {
     if (DataUtils.isId(id)) {
-      RowEditor.open(VIEW_TASKS, id, Opener.MODAL);
+      RowEditor.open(VIEW_TASKS, id);
     }
   }
 

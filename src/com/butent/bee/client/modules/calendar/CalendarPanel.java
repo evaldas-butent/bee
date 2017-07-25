@@ -39,7 +39,6 @@ import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
@@ -162,7 +161,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
           CalendarKeeper.openAppointment((Appointment) item, getCalendarId(), null);
           break;
         case TASK:
-          RowEditor.open(TaskConstants.VIEW_TASKS, item.getId(), Opener.MODAL);
+          RowEditor.open(TaskConstants.VIEW_TASKS, item.getId());
           break;
       }
     });

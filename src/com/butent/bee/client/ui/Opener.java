@@ -111,10 +111,7 @@ public final class Opener {
     }
   }
 
-  public static Opener with(PresenterCallback presenterCallback) {
-    WindowType windowType = BeeKeeper.getUser().openInNewTab()
-        ? WindowType.ON_TOP : WindowType.NEW_TAB;
-
+  public static Opener with(WindowType windowType, PresenterCallback presenterCallback) {
     return new Opener(windowType, null, null, presenterCallback);
   }
 

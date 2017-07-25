@@ -8,7 +8,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.modules.calendar.Appointment;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -36,7 +35,7 @@ public class CarServiceEvent extends Appointment {
 
   @Override
   public boolean handlesOpenAction() {
-    RowEditor.open(TBL_SERVICE_EVENTS, getEventId(), Opener.MODAL);
+    RowEditor.open(TBL_SERVICE_EVENTS, getEventId());
     return true;
   }
 

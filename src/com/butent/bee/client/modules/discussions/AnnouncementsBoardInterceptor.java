@@ -271,7 +271,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       if (DataUtils.isId(id) && BeeKeeper.getUser().isDataVisible(viewName)) {
 
         ClickHandler handler = arg0 -> {
-          RowEditor.open(viewName, id, Opener.NEW_TAB);
+          RowEditor.open(viewName, id);
           markAsRead();
         };
         if (commentCount != null) {

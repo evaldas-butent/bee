@@ -2474,7 +2474,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
           KEY_PART);
 
       if (DataUtils.isId(id)) {
-        RowEditor.open(scheduleParent.getPartitionViewName(), id, Opener.MODAL);
+        RowEditor.open(scheduleParent.getPartitionViewName(), id);
       }
     });
 
@@ -2499,7 +2499,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
             KEY_SUBST);
 
         if (DataUtils.isId(id)) {
-          RowEditor.open(VIEW_EMPLOYEES, id, Opener.MODAL);
+          RowEditor.open(VIEW_EMPLOYEES, id);
         }
       });
 

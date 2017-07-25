@@ -41,7 +41,6 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -760,7 +759,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
                       @Override
                       public void run() {
                         if (Objects.equals(placesRowSets.size(), ++copiedGrids)) {
-                          RowEditor.open(getViewName(), shipmentRequestRow.getId(), Opener.MODAL);
+                          RowEditor.open(getViewName(), shipmentRequestRow.getId());
                         }
                       }
                     };
@@ -1173,7 +1172,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
       if (!BeeUtils.isEmpty(viewName)) {
         Long id = BeeUtils.nvl(assessment, order);
         Label label = new Label(BeeUtils.joinWords(loc.trOrder(), id));
-        label.addClickHandler((e) -> RowEditor.open(viewName, id, Opener.MODAL));
+        label.addClickHandler((e) -> RowEditor.open(viewName, id));
         ((HasWidgets) widget).add(label);
       }
     }

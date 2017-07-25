@@ -16,6 +16,7 @@ import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -45,7 +46,7 @@ public final class ViewFactory {
     ROW_EDITOR("row_") {
       @Override
       void create(String item, ViewCallback callback) {
-        RowEditor.parse(item, Opener.with(getPresenterCallback(callback)));
+        RowEditor.parse(item, Opener.with(WindowType.NEW_TAB, getPresenterCallback(callback)));
       }
     },
 

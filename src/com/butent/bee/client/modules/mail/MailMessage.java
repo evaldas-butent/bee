@@ -45,7 +45,6 @@ import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.utils.FileUtils;
@@ -363,7 +362,7 @@ public class MailMessage extends AbstractFormInterceptor {
                   break;
 
                 default:
-                  RowEditor.open(TBL_PLACES, BeeUtils.toLong(index), Opener.MODAL);
+                  RowEditor.open(TBL_PLACES, BeeUtils.toLong(index));
                   break;
               }
             });
