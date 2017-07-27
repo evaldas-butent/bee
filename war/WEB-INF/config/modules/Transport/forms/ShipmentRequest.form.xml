@@ -205,9 +205,11 @@
       <row>
         <Label for="ManagerPhone" />
         <TextLabel source="ManagerPhone">
-          <renderToken source="ManagerPhone" />
-          <renderToken source="ManagerMobile" prefix=", " />
-          <renderToken source="ManagerFax" prefix=", " />
+          <render>
+            <ui:expression>(row.ManagerMobile||'')
+              + (row.ManagerMobile &amp;&amp; row.ManagerPhone ? ', ' : '') + (row.ManagerPhone||'')
+            </ui:expression>
+          </render>
         </TextLabel>
       </row>
     </Table>

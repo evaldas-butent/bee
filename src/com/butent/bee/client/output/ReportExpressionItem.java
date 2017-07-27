@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ReportExpressionItem extends ReportItem {
 
@@ -158,7 +159,8 @@ public class ReportExpressionItem extends ReportItem {
   private void render(Flow container, List<ReportItem> reportItems) {
     Runnable refresh = () -> render(container, reportItems);
     container.clear();
-    List<ReportItem> choiceItems = new ArrayList<>(reportItems);
+    List<ReportItem> choiceItems = reportItems.stream()
+        .filter(item -> !item.isResultItem()).collect(Collectors.toList());
 
     for (int i = 0; i < temporaryExpression.size(); i++) {
       Pair<String, ReportItem> pair = temporaryExpression.get(i);
