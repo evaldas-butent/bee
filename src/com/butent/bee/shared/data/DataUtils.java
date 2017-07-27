@@ -975,7 +975,7 @@ public final class DataUtils {
       String value = render((i >= 0) ? dataInfo.getColumns().get(i) : null, row, i,
           dateRenderer, dateTimeRenderer);
 
-      if (!BeeUtils.isEmpty(value)) {
+      if (!BeeUtils.isEmpty(value) && sb.indexOf(value) < 0) {
         if (sb.length() > 0) {
           sb.append(sep);
         }
@@ -1002,7 +1002,7 @@ public final class DataUtils {
       }
 
       String value = render(column, row, i, dateRenderer, dateTimeRenderer);
-      if (!BeeUtils.isEmpty(value)) {
+      if (!BeeUtils.isEmpty(value) && sb.indexOf(value) < 0) {
         if (sb.length() > 0) {
           sb.append(sep);
         }
@@ -1034,7 +1034,7 @@ public final class DataUtils {
       String value = render(BeeUtils.getQuietly(columns, index), row,
           index, dateRenderer, dateTimeRenderer);
 
-      if (!BeeUtils.isEmpty(value)) {
+      if (!BeeUtils.isEmpty(value) && sb.indexOf(value) < 0) {
         if (sb.length() > 0) {
           sb.append(sep);
         }
