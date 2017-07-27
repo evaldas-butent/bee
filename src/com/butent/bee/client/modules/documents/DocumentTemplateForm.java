@@ -37,6 +37,6 @@ public class DocumentTemplateForm extends DocumentDataForm {
     if (!DataUtils.isNewRow(row)) {
       getHeaderView().addCommandItem(newDocumentButton);
     }
-    super.onStart(form);
+    super.afterRefresh(form, row);
   }
 }

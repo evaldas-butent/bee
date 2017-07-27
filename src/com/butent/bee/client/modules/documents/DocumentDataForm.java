@@ -49,6 +49,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.JsFunction;
 import com.butent.bee.client.utils.JsUtils;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -61,6 +62,7 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.State;
@@ -398,6 +400,12 @@ public class DocumentDataForm extends AbstractFormInterceptor
   }
 
   @Override
+  public void afterRefresh(FormView form, IsRow row) {
+    maybeAddTemplateSelectionCommand(form);
+    super.afterRefresh(form, row);
+  }
+
+  @Override
   public void afterUpdateRow(IsRow result) {
     save(result);
   }
@@ -511,85 +519,90 @@ public class DocumentDataForm extends AbstractFormInterceptor
     }
   }
 
-  @Override
-  public void onStart(final FormView form) {
-    if (getHeaderView() == null || getGridView() == null) {
-      return;
-    }
+  protected void maybeAddTemplateSelectionCommand(final FormView form) {
+    HeaderView header = getHeaderView();
     UserInfo user = BeeKeeper.getUser();
 
-    if (user.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
-      getHeaderView().addCommandItem(new Button(Localized.dictionary().selectDocumentTemplate(),
-          new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              if (!form.validate(form, true)) {
-                return;
-              }
-              Relation relation = Relation.create(VIEW_DOCUMENT_TEMPLATES,
-                  Lists.newArrayList(ALS_CATEGORY_NAME, COL_DOCUMENT_TEMPLATE_NAME));
-              relation.disableNewRow();
-              relation.setCaching(Caching.QUERY);
+    String styleName = BeeConst.CSS_CLASS_PREFIX + "documents-TemplateSelectionCommand";
 
-              final UnboundSelector selector = UnboundSelector.create(relation);
+    if (header != null && header.getCommandByStyleName(styleName) == null
+        && user.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
 
-              Global.inputWidget(Localized.dictionary().documentTemplateName(), selector,
-                  new InputCallback() {
-                    @Override
-                    public String getErrorMessage() {
-                      if (selector.getRelatedRow() == null) {
-                        UiHelper.focus(selector);
-                        return Localized.dictionary().valueRequired();
-                      }
-                      return InputCallback.super.getErrorMessage();
-                    }
+      Button command = new Button(Localized.dictionary().selectDocumentTemplate());
+      command.addStyleName(styleName);
 
-                    @Override
-                    public void onSuccess() {
-                      final Long templateData = Data.getLong(VIEW_DOCUMENT_TEMPLATES,
-                          selector.getRelatedRow(), COL_DOCUMENT_DATA);
+      command.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          if (!form.validate(form, true)) {
+            return;
+          }
+          Relation relation = Relation.create(VIEW_DOCUMENT_TEMPLATES,
+              Lists.newArrayList(ALS_CATEGORY_NAME, COL_DOCUMENT_TEMPLATE_NAME));
+          relation.disableNewRow();
+          relation.setCaching(Caching.QUERY);
 
-                      if (!DataUtils.isId(templateData)) {
-                        return;
-                      }
-                      if (form.getViewPresenter() instanceof ParentRowCreator) {
-                        ((ParentRowCreator) form.getViewPresenter()).createParentRow(form,
-                            new Callback<IsRow>() {
+          final UnboundSelector selector = UnboundSelector.create(relation);
+
+          Global.inputWidget(Localized.dictionary().documentTemplateName(), selector,
+              new InputCallback() {
+                @Override
+                public String getErrorMessage() {
+                  if (selector.getRelatedRow() == null) {
+                    UiHelper.focus(selector);
+                    return Localized.dictionary().valueRequired();
+                  }
+                  return InputCallback.super.getErrorMessage();
+                }
+
+                @Override
+                public void onSuccess() {
+                  final Long templateData = Data.getLong(VIEW_DOCUMENT_TEMPLATES,
+                      selector.getRelatedRow(), COL_DOCUMENT_DATA);
+
+                  if (!DataUtils.isId(templateData)) {
+                    return;
+                  }
+                  if (form.getViewPresenter() instanceof ParentRowCreator) {
+                    ((ParentRowCreator) form.getViewPresenter()).createParentRow(form,
+                        new Callback<IsRow>() {
+                          @Override
+                          public void onSuccess(final IsRow row) {
+                            DocumentsHandler.copyDocumentData(templateData, new IdCallback() {
                               @Override
-                              public void onSuccess(final IsRow row) {
-                                DocumentsHandler.copyDocumentData(templateData, new IdCallback() {
-                                  @Override
-                                  public void onSuccess(Long newDataId) {
-                                    final Long oldDataId =
-                                        row.getLong(form.getDataIndex(COL_DOCUMENT_DATA));
+                              public void onSuccess(Long newDataId) {
+                                final Long oldDataId =
+                                    row.getLong(form.getDataIndex(COL_DOCUMENT_DATA));
 
-                                    Queries.update(form.getViewName(),
-                                        row.getId(), row.getVersion(),
-                                        DataUtils.getColumns(form.getDataColumns(),
-                                            Lists.newArrayList(COL_DOCUMENT_DATA)),
-                                        Arrays.asList(DataUtils.isId(oldDataId)
-                                            ? BeeUtils.toString(oldDataId) : null),
-                                        Arrays.asList(BeeUtils.toString(newDataId)),
-                                        null, new RowUpdateCallback(form.getViewName()) {
-                                          @Override
-                                          public void onSuccess(BeeRow result) {
-                                            if (DataUtils.isId(oldDataId)) {
-                                              Queries.deleteRow(VIEW_DOCUMENT_DATA, oldDataId);
-                                            }
-                                            super.onSuccess(result);
-                                            requery(result);
-                                            form.refresh();
-                                          }
-                                        });
-                                  }
-                                });
+                                Queries.update(form.getViewName(),
+                                    row.getId(), row.getVersion(),
+                                    DataUtils.getColumns(form.getDataColumns(),
+                                        Lists.newArrayList(COL_DOCUMENT_DATA)),
+                                    Arrays.asList(DataUtils.isId(oldDataId)
+                                        ? BeeUtils.toString(oldDataId) : null),
+                                    Arrays.asList(BeeUtils.toString(newDataId)),
+                                    null, new RowUpdateCallback(form.getViewName()) {
+                                      @Override
+                                      public void onSuccess(BeeRow result) {
+                                        if (DataUtils.isId(oldDataId)) {
+                                          Queries.deleteRow(VIEW_DOCUMENT_DATA, oldDataId);
+                                        }
+                                        super.onSuccess(result);
+                                        requery(result);
+                                        form.refresh();
+                                      }
+                                    });
                               }
                             });
-                      }
-                    }
-                  });
-            }
-          }));
+                          }
+                        });
+                  }
+                }
+              });
+        }
+      });
+
+      header.addCommandItem(command);
     }
   }
 

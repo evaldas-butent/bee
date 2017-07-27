@@ -169,7 +169,7 @@ public class DocumentForm extends DocumentDataForm {
     if (!newRow && user.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
       getHeaderView().addCommandItem(newTemplateButton);
     }
-    super.onStart(form);
+    super.afterRefresh(form, row);
   }
 
   @Override
