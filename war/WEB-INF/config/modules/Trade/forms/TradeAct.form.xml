@@ -88,11 +88,11 @@
 
       <row>
         <Label for="Company" visible="true" class="bee-required"/>
-        <DataSelector source="Company" name="Company"style="&inpw;" visible="true" choiceColumns="Name TypeName" disablable="false"
-          renderColumns="CompanyName TypeName"required="true"/>
+        <DataSelector source="Company" name="Company" style="&inpw;" visible="true" choiceColumns="Name TypeName" disablable="false"
+          renderColumns="CompanyName TypeName" required="true"/>
 
         <Label for="Object" name="labelObject"/>
-        <DataSelector source="Object" name="Object"renderColumns="ObjectName" disablable="false"
+        <DataSelector source="Object" name="Object" renderColumns="ObjectName" disablable="false"
           choiceColumns="CompanyName TypeNameObjectName ObjectAddress" newRowEnabled="true" newRowForm="CompanyObject"
           style="&inpw;" />
       </row>
