@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.tasks;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -14,6 +15,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 class ChildTaskTemplatesGrid extends AbstractGridInterceptor {
@@ -52,7 +54,10 @@ class ChildTaskTemplatesGrid extends AbstractGridInterceptor {
         }
       }
 
-      RowFactory.createRow(childTaskDataInfo, childTemplateTask, result -> {
+      WindowType windowType = getNewRowWindowType();
+      Opener opener = Opener.maybeCreate(windowType);
+
+      RowFactory.createRow(childTaskDataInfo, childTemplateTask, opener, result -> {
         if (isAttached()) {
           presenter.handleAction(Action.REFRESH);
         }

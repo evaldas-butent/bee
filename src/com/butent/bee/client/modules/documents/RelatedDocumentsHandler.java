@@ -27,6 +27,7 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class RelatedDocumentsHandler extends AbstractGridInterceptor {
@@ -64,8 +65,8 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
     if (parentForm != null) {
       parentViewName = parentForm.getViewName();
     }
-    if (parentRow != null && !BeeUtils.isEmpty(parentViewName)) {
 
+    if (parentRow != null && !BeeUtils.isEmpty(parentViewName)) {
       switch (parentViewName) {
         case ProjectConstants.VIEW_PROJECTS:
           parentColumn = ProjectConstants.COL_COMAPNY;
@@ -98,23 +99,31 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
       }
     }
 
-    if (!relationEnsured) {
-      RowFactory.createRow(info, docRow, Opener.MODAL, result -> {
-        final long docId = result.getId();
+    WindowType windowType = getNewRowWindowType();
+    Opener opener = Opener.maybeCreate(windowType);
 
-        presenter.getGridView().ensureRelId(relId
-            -> Queries.insert(AdministrationConstants.VIEW_RELATIONS,
-            Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
-                Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
-            Queries.asList(docId, relId), null, row -> {
-              presenter.handleAction(Action.REFRESH);
-              ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
-            }));
+    if (!relationEnsured) {
+      RowFactory.createRow(info, docRow, opener, result -> {
+        if (isAttached()) {
+          final long docId = result.getId();
+
+          presenter.getGridView().ensureRelId(relId
+              -> Queries.insert(AdministrationConstants.VIEW_RELATIONS,
+              Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
+                  Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
+              Queries.asList(docId, relId), null, row -> {
+                presenter.handleAction(Action.REFRESH);
+                ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
+              }));
+        }
       });
+
     } else {
-      RowFactory.createRow(info, docRow, Opener.MODAL, result -> {
-        presenter.handleAction(Action.REFRESH);
-        ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
+      RowFactory.createRow(info, docRow, opener, result -> {
+        if (isAttached()) {
+          presenter.handleAction(Action.REFRESH);
+          ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
+        }
       });
     }
 
@@ -134,7 +143,10 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
       Long docId = event.getRowValue().getLong(documentIndex);
 
       if (DataUtils.isId(docId)) {
-        RowEditor.open(VIEW_DOCUMENTS, docId, result -> {
+        WindowType windowType = getEditWindowType();
+        Opener opener = Opener.maybeCreate(windowType);
+
+        RowEditor.open(VIEW_DOCUMENTS, docId, opener, result -> {
           if (isAttached()) {
             getGridPresenter().handleAction(Action.REFRESH);
           }

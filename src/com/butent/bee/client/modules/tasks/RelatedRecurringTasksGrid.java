@@ -15,6 +15,7 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -29,6 +30,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -82,7 +84,11 @@ class RelatedRecurringTasksGrid extends AbstractGridInterceptor {
             row.setProperty(PFX_RELATED + relViewName, DataUtils.buildIdList(relId));
           }
         }
-        RowFactory.createRow(dataInfo, row, result -> {
+
+        WindowType windowType = getNewRowWindowType();
+        Opener opener = Opener.maybeCreate(windowType);
+
+        RowFactory.createRow(dataInfo, row, opener, result -> {
           if (isAttached()) {
             presenter.handleAction(Action.REFRESH);
           }
@@ -143,7 +149,10 @@ class RelatedRecurringTasksGrid extends AbstractGridInterceptor {
 
   private void openRecurringTask(Long rtId) {
     if (DataUtils.isId(rtId)) {
-      RowEditor.open(VIEW_RECURRING_TASKS, rtId, result -> {
+      WindowType windowType = getEditWindowType();
+      Opener opener = Opener.maybeCreate(windowType);
+
+      RowEditor.open(VIEW_RECURRING_TASKS, rtId, opener, result -> {
         if (isAttached()) {
           getGridPresenter().handleAction(Action.REFRESH);
         }

@@ -31,6 +31,7 @@ import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -89,7 +90,11 @@ class ChildTasksGrid extends TasksGrid {
           }
         }
       }
-      RowFactory.createRow(childTaskDataInfo, childTaskRow, result -> {
+
+      WindowType windowType = getNewRowWindowType();
+      Opener opener = Opener.maybeCreate(windowType);
+
+      RowFactory.createRow(childTaskDataInfo, childTaskRow, opener, result -> {
         if (isAttached()) {
           presenter.handleAction(Action.REFRESH);
         }

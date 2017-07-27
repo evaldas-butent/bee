@@ -41,6 +41,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.WindowType;
 
 import java.util.Collection;
 import java.util.List;
@@ -112,6 +113,10 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
 
   Pair<String, String> getDeleteRowsMessage(int selectedRows);
 
+  default WindowType getEditWindowType() {
+    return (getGridView() == null) ? null : getGridView().getEditWindowType();
+  }
+
   AbstractFilterSupplier getFilterSupplier(String columnName, ColumnDescription columnDescription);
 
   ColumnFooter getFooter(String columnName, ColumnDescription columnDescription);
@@ -129,6 +134,10 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
   List<FilterComponent> getInitialUserFilters(List<FilterComponent> defaultFilters);
 
   GridInterceptor getInstance();
+
+  default WindowType getNewRowWindowType() {
+    return (getGridView() == null) ? null : getGridView().getNewRowWindowType();
+  }
 
   List<String> getParentLabels();
 

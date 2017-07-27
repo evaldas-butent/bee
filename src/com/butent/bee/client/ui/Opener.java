@@ -63,6 +63,10 @@ public final class Opener {
     }
   }
 
+  public static Opener maybeCreate(WindowType windowType) {
+    return (windowType == null) ? null : in(windowType, null);
+  }
+
   public static Opener modal(Consumer<FormView> onOpen) {
     return modal(null, onOpen);
   }

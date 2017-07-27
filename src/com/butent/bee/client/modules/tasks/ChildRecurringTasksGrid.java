@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.tasks;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -14,6 +15,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 class ChildRecurringTasksGrid extends RecurringTasksGrid {
@@ -41,8 +43,11 @@ class ChildRecurringTasksGrid extends RecurringTasksGrid {
     return true;
   }
 
-  private static void createRow(final GridPresenter presenter, DataInfo rowData, BeeRow row) {
-    RowFactory.createRow(rowData, row, result -> {
+  private void createRow(final GridPresenter presenter, DataInfo rowData, BeeRow row) {
+    WindowType windowType = getNewRowWindowType();
+    Opener opener = Opener.maybeCreate(windowType);
+
+    RowFactory.createRow(rowData, row, opener, result -> {
       if (presenter.getMainView() != null && presenter.getMainView().asWidget().isAttached()) {
         presenter.handleAction(Action.REFRESH);
       }
@@ -92,7 +97,7 @@ class ChildRecurringTasksGrid extends RecurringTasksGrid {
 
   }
 
-  private static void fillRelations(GridPresenter presenter) {
+  private void fillRelations(GridPresenter presenter) {
     DataInfo childDataInfo = Data.getDataInfo(presenter.getViewName());
     BeeRow childRow = RowFactory.createEmptyRow(childDataInfo, true);
     FormView parentForm = ViewHelper.getForm(presenter.getMainView());
