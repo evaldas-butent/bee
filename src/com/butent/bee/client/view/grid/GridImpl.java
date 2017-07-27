@@ -3679,6 +3679,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
       if (getEditMessage() != null) {
         header.showRowMessage(getEditMessage(), row);
+
+      } else if (presenter instanceof GridFormPresenter) {
+        header.setRowMessage(DataUtils.getRowCaption(getDataInfo(), row,
+            Format.getDateRenderer(), Format.getDateTimeRenderer()));
       }
     }
   }
