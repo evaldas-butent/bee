@@ -3148,15 +3148,23 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     String formName = gridForm.getName();
     Opener opener = Opener.in(windowType, onOpen);
 
-    RowCallback callback = result -> {
-      if (isAttached() && DataUtils.hasId(result)) {
-        if (feed != null) {
-          getGrid().removeRowById(result.getId());
-          getGrid().refresh();
-        }
+    RowCallback callback = new RowCallback() {
+      @Override
+      public void onDeny() {
+        setLoading(gridForm, false);
+      }
 
-        if (getGridInterceptor() != null) {
-          getGridInterceptor().afterUpdateRow(result);
+      @Override
+      public void onSuccess(BeeRow result) {
+        if (isAttached() && DataUtils.hasId(result)) {
+          if (feed != null) {
+            getGrid().removeRowById(result.getId());
+            getGrid().refresh();
+          }
+
+          if (getGridInterceptor() != null) {
+            getGridInterceptor().afterUpdateRow(result);
+          }
         }
       }
     };

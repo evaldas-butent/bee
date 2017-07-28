@@ -198,6 +198,9 @@ public final class RowEditor {
     }
 
     if (!RowActionEvent.fireEditRow(dataInfo.getViewName(), row, formOpener, formName)) {
+      if (rowCallback != null) {
+        rowCallback.onDeny();
+      }
       return;
     }
 
