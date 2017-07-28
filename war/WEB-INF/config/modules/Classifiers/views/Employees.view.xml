@@ -4,7 +4,7 @@
       name="Employees" source="Employees"
       editForm="Employee" newRowForm="Employee"
       caption="=employees" newRowCaption="=newEmployee"
-      rowCaption="FirstName LastName CompanyName"
+      rowCaption="FirstName LastName, CompanyName"
 >
   <Columns>
     <SimpleColumn name="CompanyPerson" />

@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
       name="CompanyPersons" source="CompanyPersons" module="Classifiers.Contacts"
-      caption="=companyPersons" rowCaption="FirstName LastName CompanyName"
+      caption="=companyPersons" rowCaption="FirstName LastName, CompanyName"
       newRowForm="CompanyPerson" newRowCaption="=newCompanyPerson"
       editForm="CompanyPerson"
 >
