@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
       name="Requests" source="Requests" caption="=crmRequests"
-      newRowForm="NewRequest" editForm="Request" rowCaption="Summary"
+      newRowForm="NewRequest" editForm="Request" rowCaption="Id"
 >
   <Relation renderColumns="Id Summary FirstName LastName" />
   <Columns>
