@@ -124,7 +124,7 @@ class RelatedTasksGrid extends TasksGrid {
 
   @Override
   protected void afterCopyTask() {
-    if (getGridPresenter() != null) {
+    if (isAttached() && getGridPresenter() != null) {
       getGridPresenter().handleAction(Action.REFRESH);
     }
   }

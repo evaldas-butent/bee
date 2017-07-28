@@ -80,6 +80,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -307,8 +308,12 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
 
       if (TaskStatus.NOT_SCHEDULED == status && BeeKeeper.getUser().canCreateData(getViewName())) {
         event.consume();
+
+        WindowType windowType = getEditWindowType();
+        Opener opener = Opener.maybeCreate(windowType);
+
         RowEditor.openForm(FORM_NEW_TASK, Data.getDataInfo(getViewName()),
-            Filter.compareId(row.getId()));
+            Filter.compareId(row.getId()), opener);
 
       } else if (TaskStatus.NOT_SCHEDULED == status) {
         event.consume();
@@ -776,8 +781,7 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
       }
     }
 
-    RowFactory.createRow(targetInfo, newRow, Opener.MODAL,
-        result -> afterCopyAsRecurringTask());
+    RowFactory.createRow(targetInfo, newRow, result -> afterCopyAsRecurringTask());
   }
 
   private void copyTask(BeeRow oldRow) {
@@ -835,7 +839,7 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
       }
     }
 
-    RowFactory.createRow(dataInfo, newRow, Opener.MODAL, result -> afterCopyTask());
+    RowFactory.createRow(dataInfo, newRow, result -> afterCopyTask());
   }
 
   private AbstractFormInterceptor getNewProjectFormInterceptor(final IsRow selectedRow) {
