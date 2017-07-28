@@ -31,13 +31,16 @@ import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
+import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -120,15 +123,27 @@ public final class CalendarKeeper {
         }
 
       } else if ((event.isCellClick() || event.isEditRow() || event.isOpenFavorite())
-          && event.hasView(VIEW_APPOINTMENTS)) {
+          && event.hasView(VIEW_APPOINTMENTS) && event.hasRow()) {
 
-        event.consume();
+        Appointment appointment = Appointment.create(event.getRow());
 
-        if (event.hasRow()) {
+        if (event.isEditRow()) {
+          if (!appointment.isVisible(BeeKeeper.getUser().getUserId())) {
+            View view = ViewHelper.getActiveView(DomUtils.getActiveElement());
+            NotificationListener listener = (view instanceof NotificationListener)
+                ? (NotificationListener) view : BeeKeeper.getScreen();
+            listener.notifyInfo(CalendarVisibility.PRIVATE.getCaption());
+
+            event.consume();
+          }
+
+        } else {
+          event.consume();
+
           ensureData(new Command() {
             @Override
             public void execute() {
-              openAppointment(Appointment.create(event.getRow()), null, event.getOnOpen());
+              openAppointment(appointment, null, event.getOnOpen());
             }
           });
         }
