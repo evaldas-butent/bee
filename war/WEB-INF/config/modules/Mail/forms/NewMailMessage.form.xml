@@ -4,6 +4,7 @@
 
         name="NewMailMessage" caption="=mailNewMessage"
         width="760" widthUnit="px" height="500" heightUnit="px"
+        containerStyle="min-width: 500px; min-height: 300px;"
         disabledActions="print"
 >
   <FlowPanel class="flexBox-vertical">
