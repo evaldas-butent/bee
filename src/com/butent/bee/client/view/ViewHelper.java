@@ -25,6 +25,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -40,6 +41,23 @@ public final class ViewHelper {
 
   public static Widget asWidget(View view) {
     return (view == null) ? null : view.asWidget();
+  }
+
+  public static GridView findGridById(String id) {
+    if (BeeUtils.isEmpty(id)) {
+      return null;
+
+    } else {
+      Widget widget = DomUtils.getWidget(id);
+
+      if (widget instanceof GridView) {
+        return (GridView) widget;
+      } else if (widget instanceof HasGridView) {
+        return ((HasGridView) widget).getGridView();
+      } else {
+        return null;
+      }
+    }
   }
 
   public static View getActiveView(Element target) {
@@ -435,6 +453,10 @@ public final class ViewHelper {
     if (form != null) {
       Scheduler.get().scheduleDeferred(form::onResize);
     }
+  }
+
+  public static WindowType normalize(WindowType windowType) {
+    return Popup.hasEventPreview() ? WindowType.MODAL : windowType;
   }
 
   public static void refresh(View view) {

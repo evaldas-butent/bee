@@ -1,7 +1,9 @@
 package com.butent.bee.client;
 
 import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Split;
@@ -36,6 +38,16 @@ public interface Screen extends NotificationListener, HasExtendedInfo {
   String addProgress(HasProgress widget);
 
   void closeAll();
+
+  default boolean closeById(String id) {
+    Widget widget = DomUtils.getWidget(id);
+
+    if (widget instanceof IdentifiableWidget) {
+      return closeWidget((IdentifiableWidget) widget);
+    } else {
+      return false;
+    }
+  }
 
   boolean closeWidget(IdentifiableWidget widget);
 

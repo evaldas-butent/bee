@@ -6,12 +6,15 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Consumable;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataEvent;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.function.Consumer;
 
 public final class RowActionEvent extends Event<RowActionEvent.Handler> implements DataEvent,
     Consumable, HasViewName {
@@ -94,6 +97,10 @@ public final class RowActionEvent extends Event<RowActionEvent.Handler> implemen
   @Override
   public Type<Handler> getAssociatedType() {
     return TYPE;
+  }
+
+  public Consumer<FormView> getOnOpen() {
+    return (getOpener() == null) ? null : getOpener().getOnOpen();
   }
 
   public Opener getOpener() {

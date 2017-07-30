@@ -21,10 +21,6 @@ public class ModalForm extends ModalView {
     return "modal-form";
   }
 
-  public void open() {
-    center();
-  }
-
   public void unload() {
     if (wasAttached) {
       pendingUnload = true;

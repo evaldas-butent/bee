@@ -8,7 +8,6 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
@@ -22,13 +21,11 @@ import com.butent.bee.client.output.Report;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -201,23 +198,20 @@ public class TradeStockReport extends ReportInterceptor {
       ParameterList parameters = TradeKeeper.createArgs(getService());
       parameters.addDataItem(Service.VAR_REPORT_PARAMETERS, reportParameters.serialize());
 
-      BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          if (response.hasMessages()) {
-            response.notify(getFormView());
-          }
+      BeeKeeper.getRpc().makeRequest(parameters, response -> {
+        if (response.hasMessages()) {
+          response.notify(getFormView());
+        }
 
-          if (response.hasResponse()) {
-            Map<String, String> data = Codec.deserializeHashMap(response.getResponseAsString());
-            render(data);
+        if (response.hasResponse()) {
+          Map<String, String> data = Codec.deserializeHashMap(response.getResponseAsString());
+          render(data);
 
-            sheet.addHeaders(getLabels(false));
-            sheet.autoSizeAll();
+          sheet.addHeaders(getLabels(false));
+          sheet.autoSizeAll();
 
-          } else {
-            getFormView().notifyWarning(Localized.dictionary().nothingFound());
-          }
+        } else {
+          getFormView().notifyWarning(Localized.dictionary().nothingFound());
         }
       });
     }
@@ -916,7 +910,7 @@ public class TradeStockReport extends ReportInterceptor {
       Long id = DomUtils.getDataPropertyLong(cell, KEY_ID);
 
       if (group != null && DataUtils.isId(id)) {
-        RowEditor.open(group.editViewName(), id, Opener.MODAL);
+        RowEditor.open(group.editViewName(), id);
       }
     }
   }

@@ -3,7 +3,7 @@
 
       name="ImportOptions" source="ImportOptions"
       caption="=trImportOptions" newRowCaption="=trImportNewOption"
-      editForm="ImportOption"
+      editForm="ImportOption" rowCaption="Description"
 >
   <Columns>
     <SimpleColumn name="Type" />

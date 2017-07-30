@@ -108,6 +108,14 @@ public class UserInfo implements HasInfo {
     return actionSensitivityMillis;
   }
 
+  public String getChildEditWindow() {
+    return getSetting(COL_CHILD_EDIT_WINDOW);
+  }
+
+  public String getChildNewRowWindow() {
+    return getSetting(COL_CHILD_NEW_ROW_WINDOW);
+  }
+
   public int getClickSensitivityDistance() {
     return clickSensitivityDistance;
   }
@@ -138,6 +146,14 @@ public class UserInfo implements HasInfo {
 
   public String getFirstName() {
     return isLoggedIn() ? userData.getFirstName() : null;
+  }
+
+  public String getGridEditWindow() {
+    return getSetting(COL_GRID_EDIT_WINDOW);
+  }
+
+  public String getGridNewRowWindow() {
+    return getSetting(COL_GRID_NEW_ROW_WINDOW);
   }
 
   @Override
@@ -171,8 +187,20 @@ public class UserInfo implements HasInfo {
     return userData.getLogin();
   }
 
+  public String getNewMailMessageWindow() {
+    return getSetting(COL_NEW_MAIL_MESSAGE_WINDOW);
+  }
+
   public int getNewsRefreshIntervalSeconds() {
     return newsRefreshIntervalSeconds;
+  }
+
+  public String getOtherEditWindows() {
+    return getSetting(COL_OTHER_EDIT_WINDOWS);
+  }
+
+  public String getOtherNewRowWindows() {
+    return getSetting(COL_OTHER_NEW_ROW_WINDOWS);
   }
 
   public Presence getPresence() {
@@ -184,6 +212,14 @@ public class UserInfo implements HasInfo {
       return null;
     }
     return userData.getProperty(property);
+  }
+
+  public String getRelationEditWindow() {
+    return getSetting(COL_RELATION_EDIT_WINDOW);
+  }
+
+  public String getRelationNewRowWindow() {
+    return getSetting(COL_RELATION_NEW_ROW_WINDOW);
   }
 
   public String getSessionId() {

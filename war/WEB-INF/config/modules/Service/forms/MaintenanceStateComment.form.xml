@@ -12,7 +12,7 @@
     <Table kind="controls" cellStyle="vertical-align: top">
       <col index="0" kind="label" />
       <row>
-        <Label text="=svcServiceState" />
+        <Label text="=svcServiceState" for="EventNote"/>
         <TextLabel source="EventNote" class="bee-output" />
       </row>
       <row>
@@ -23,7 +23,7 @@
       </row>
       <row>
         <text/>
-        <CheckBox source="ShowCustomer" summarize="true" style="width:"/>
+        <CheckBox source="ShowCustomer" summarize="true" />
       </row>
       <row>
         <text/>
@@ -32,7 +32,7 @@
       <row>
         <Label name="TermLabel" for="Term" />
         <InputDateTime source="Term" />
-        <CheckBox name="Urgent" summarize="true" text="=svcUrgent" />
+        <CheckBox name="Urgent" summarize="true" for="Urgent" data="ServiceMaintenance" text="=svcUrgent"/>
       </row>
       <row>
         <Label name="ItemLabel" for="Item" />
@@ -42,12 +42,12 @@
                       summarize="true" />
         <DataSelector source="Currency" for="Price" newRowEnabled="false" editEnabled="false"/>
       </row>
-      <row>
+      <row for="WarrantyType" data="ServiceMaintenance">
         <Label name="WarrantyTypeLabel" text="=svcWarrantyType" class="bee-required"/>
         <UnboundSelector name="WarrantyType" viewName="WarrantyTypes" editViewName="WarrantyTypes"
                       renderColumns="Name" />
       </row>
-      <row>
+      <row for="Warranty" data="ServiceMaintenance">
         <Label name="WarrantyLabel" text="=svcWarrantyValidTo"/>
         <InputDateTime name="Warranty" text="=svcWarrantyValidTo"/>
       </row>

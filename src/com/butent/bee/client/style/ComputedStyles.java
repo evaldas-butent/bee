@@ -4,10 +4,12 @@ import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
 
+import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -33,6 +35,55 @@ public class ComputedStyles implements HasLength, HasInfo {
   public static String get(UIObject obj, String p) {
     Assert.notNull(obj);
     return get(obj.getElement(), p);
+  }
+
+  public static Pair<Double, CssUnit> getCssLength(Element el, String p) {
+    String value = get(el, p);
+
+    if (BeeUtils.isEmpty(value)) {
+      return null;
+    } else {
+      return StyleUtils.parseCssLength(value);
+    }
+  }
+
+  public static Dimensions getDimensions(Element el) {
+    Assert.notNull(el);
+    Dimensions dim = new Dimensions();
+
+    Pair<Double, CssUnit> width = getCssLength(el, CssProperties.WIDTH);
+    if (width != null) {
+      dim.setWidth(width.getA(), width.getB());
+    }
+    Pair<Double, CssUnit> height = getCssLength(el, CssProperties.HEIGHT);
+    if (height != null) {
+      dim.setHeight(height.getA(), height.getB());
+    }
+
+    Pair<Double, CssUnit> minWidth = getCssLength(el, CssProperties.MIN_WIDTH);
+    if (minWidth != null) {
+      dim.setMinWidth(minWidth.getA(), minWidth.getB());
+    }
+    Pair<Double, CssUnit> minHeight = getCssLength(el, CssProperties.MIN_HEIGHT);
+    if (minHeight != null) {
+      dim.setMinHeight(minHeight.getA(), minHeight.getB());
+    }
+
+    Pair<Double, CssUnit> maxWidth = getCssLength(el, CssProperties.MAX_WIDTH);
+    if (maxWidth != null) {
+      dim.setMaxWidth(maxWidth.getA(), maxWidth.getB());
+    }
+    Pair<Double, CssUnit> maxHeight = getCssLength(el, CssProperties.MAX_HEIGHT);
+    if (maxHeight != null) {
+      dim.setMaxHeight(maxHeight.getA(), maxHeight.getB());
+    }
+
+    return dim;
+  }
+
+  public static Dimensions getDimensions(UIObject obj) {
+    Assert.notNull(obj);
+    return getDimensions(obj.getElement());
   }
 
   public static Map<String, String> getNormalized(Element el) {

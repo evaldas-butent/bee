@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="CompanyUsageReport" viewName="Companies" flexGrow="1" disabledActions="close"
-  editPopup="true"
-  >
+        name="CompanyUsageReport" viewName="Companies" flexGrow="1" disabledActions="close"
+        editWindow="new-tab" newRowWindow="new-tab"
+>
   <g:columns>
     <DataColumn name="Name" visible="true" />
     <DataColumn name="TypeName" caption="=companyStatus" />
@@ -22,8 +22,8 @@
     <DataColumn name="CityName" caption="=city" />
     <DataColumn name="CountryName" caption="=country" />
     <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
-      caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
-      filterOptions="-" visible="false">
+                caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
+                filterOptions="-" visible="false">
       <renderer type="flag" />
     </CalcColumn>
   </g:columns>

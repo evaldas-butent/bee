@@ -501,6 +501,7 @@
 .bee-Header-caption {
   color: black;
   margin-left: 30px;
+  white-space: nowrap;
 }
 .bee-Header-message {
   margin-left: 8px;
@@ -1018,7 +1019,10 @@
   white-space: pre;
 }
 
-.bee-GridFormContainer, .bee-NewRowContainer, .bee-RowContainer {
+.bee-GridFormContainer,
+.bee-NewRowContainer,
+.bee-RowContainer,
+.bee-ModalForm-content.bee-FormContainer {
   position: absolute;
   left: 0;
   right: 0;
@@ -2126,6 +2130,9 @@
   -webkit-justify-content: space-between;
   -ms-flex-pack: justify;
 }
+.bee-FilterSupplier-counter:not(:empty) {
+  padding-left: 5px;
+}
 
 .bee-FilterSupplier-dateTime-caption {
   margin-bottom: 5px;
@@ -2133,21 +2140,18 @@
 .bee-FilterSupplier-dateTime-label {
   width: 40px;
 }
-.bee-FilterSupplier-dateTime-date {
+input[type="text"].bee-FilterSupplier-dateTime-date {
   width: 100px;
 }
-.bee-FilterSupplier-dateTime-time {
-  width: 60px;
-}
 
-.bee-FilterSupplier-id-editor {
+input[type="text"].bee-FilterSupplier-id-editor {
   width: 80px;
 }
 
 .bee-FilterSupplier-value-caption {
   margin-bottom: 5px;
 }
-.bee-FilterSupplier-value-editor {
+input[type="text"].bee-FilterSupplier-value-editor {
   width: 150px;
 }
 .bee-FilterSupplier-value-error {
@@ -2176,8 +2180,8 @@
   width: 40px;
   display: inline-block;
 }
-.bee-FilterSupplier-range-from-input,
-.bee-FilterSupplier-range-to-input {
+input[type="text"].bee-FilterSupplier-range-from-input,
+input[type="text"].bee-FilterSupplier-range-to-input {
   width: 120px;
 }
 .bee-FilterSupplier-range-emptiness {
@@ -3326,19 +3330,25 @@
   }
 }
 
-.bee-GridMenu-popup {
+.bee-GridMenu-popup,
+.bee-GridMenu-wtp-popup {
   background-color: white;
   border: 1px solid rgba(0, 0, 0, 0.2);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
-.bee-GridMenu-table {
+.bee-GridMenu-table,
+.bee-GridMenu-wtp-table {
   border-collapse: collapse;
 }
-.bee-GridMenu-table tr:hover {
+.bee-GridMenu-table tr:hover,
+.bee-GridMenu-wtp-table tr:hover {
   background-color: #f2f2f2;
   cursor: pointer;
 }
-.bee-GridMenu-table .bee-GridMenu-section-header:hover {
+.bee-GridMenu-table .bee-GridMenu-not-selectable:hover,
+.bee-GridMenu-wtp-table .bee-GridMenu-wtp-selected:hover,
+.bee-GridMenu-not-selectable .bee-GridMenu-icon,
+.bee-GridMenu-wtp-selected .bee-GridMenu-wtp-icon {
   cursor: auto;
 }
 .bee-GridMenu-table .bee-GridMenu-separator-cell:hover {
@@ -3348,26 +3358,40 @@
 .bee-GridMenu-table td {
   padding: 4px 10px;
 }
+.bee-GridMenu-wtp-table td {
+  padding: 2px 5px;
+}
+.bee-GridMenu-table .bee-GridMenu-sub-menu-icon-cell {
+  padding-right: 4px;
+}
 .bee-GridMenu-table .bee-GridMenu-separator-cell {
   padding-left: 0;
   padding-right: 0;
 }
-.bee-GridMenu-popup .bee-fa-label {
+.bee-GridMenu-popup .bee-fa-label,
+.bee-GridMenu-wtp-popup .bee-fa-label {
   font-size: large;
   color: #414142;
 }
-.bee-GridMenu-table tr:hover .bee-fa-label {
+.bee-GridMenu-table tr:hover .bee-fa-label,
+.bee-GridMenu-wtp-table tr:hover .bee-fa-label {
   color: black;
 }
-.bee-GridMenu-label-cell:hover {
+.bee-GridMenu-label-cell:hover,
+.bee-GridMenu-wtp-item:hover {
   font-weight: bold;
 }
-.bee-GridMenu-section-header .bee-GridMenu-label-cell:hover {
+.bee-GridMenu-not-selectable .bee-GridMenu-label-cell:hover {
   font-weight: normal;
 }
 .bee-GridMenu-separator {
   height: 1px;
   background-color: #ccc;
+}
+
+.bee-GridMenu-dependent .bee-GridMenu-label {
+  max-width: 250px;
+  white-space: pre-line;
 }
 
 .bee-CellGridColumn-rights {
@@ -3447,6 +3471,13 @@ input[type="text"],
 textarea,
 .bee-DataSelector-editableContainer {
   width: 150px;
+}
+
+input[type="text"].bee-InputTime {
+  width: 68px;
+}
+input[type="text"].bee-InputTimeOfDay {
+  width: 60px;
 }
 
 .bee-ChangePassword-table {
@@ -4110,7 +4141,8 @@ textarea,
 
 .bee-MenuRoot .bee-potentially-bold::after,
 .bee-TabbedPages-tab .bee-potentially-bold::after,
-.bee-GridMenu-table .bee-potentially-bold::after {
+.bee-GridMenu-table .bee-potentially-bold::after,
+.bee-GridMenu-wtp-table .bee-potentially-bold::after {
   content: attr(data-text);
   font-weight: bold;
   display: block;

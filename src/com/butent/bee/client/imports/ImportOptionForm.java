@@ -19,7 +19,6 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.form.FormView;
@@ -74,7 +73,7 @@ public class ImportOptionForm extends AbstractFormInterceptor implements ClickHa
 
       mappings.setTitle(Localized.dictionary().trImportMappings());
       mappings.addClickHandler(clickEvent -> RowEditor.openForm(FORM_IMPORT_MAPPINGS,
-          Data.getDataInfo(getViewName()), getActiveRow(), Opener.MODAL, null,
+          Data.getDataInfo(getViewName()), getActiveRow(), null,
           new ImportOptionMappingsForm(getStringValue(COL_IMPORT_DATA))));
       getHeaderView().addCommandItem(mappings);
     }

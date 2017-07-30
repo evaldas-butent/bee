@@ -28,5 +28,12 @@ public interface Presenter extends HandlesActions, HasCaption {
 
   void onViewUnload();
 
+  default void setCaption(String caption) {
+    HeaderView header = getHeader();
+    if (header != null) {
+      header.setCaption(caption);
+    }
+  }
+
   void setEventSource(String eventSource);
 }

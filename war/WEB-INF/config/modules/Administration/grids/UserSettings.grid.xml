@@ -38,6 +38,20 @@
 
     <DataColumn name="ShowGridFilterCommand" visible="false" />
 
+    <DataColumn name="GridEditWindow" visible="false" />
+    <DataColumn name="GridNewRowWindow" visible="false" />
+
+    <DataColumn name="ChildEditWindow" visible="false" />
+    <DataColumn name="ChildNewRowWindow" visible="false" />
+
+    <DataColumn name="RelationEditWindow" visible="false" />
+    <DataColumn name="RelationNewRowWindow" visible="false" />
+
+    <DataColumn name="OtherEditWindows" visible="false" />
+    <DataColumn name="OtherNewRowWindows" visible="false" />
+
+    <DataColumn name="NewMailMessageWindow" module="Mail" visible="false" />
+
     <DataColumn name="Style" visible="false" />
   </g:columns>
 </g:Grid>

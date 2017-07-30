@@ -89,6 +89,7 @@ import com.butent.bee.shared.ui.HasStringValue;
 import com.butent.bee.shared.ui.HasVisibleLines;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.SelectorColumn;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -738,7 +739,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private final String editViewName;
   private final String editForm;
-  private final Boolean editModal;
+  private final WindowType editWindowType;
 
   private final boolean editEnabled;
 
@@ -885,7 +886,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
       this.editForm = ef;
 
-      this.editModal = relation.isEditModal();
+      this.editWindowType = relation.getEditWindowType();
       this.editEnabled = !BeeUtils.isEmpty(ev) && !BeeUtils.isEmpty(ef)
           && Data.isViewVisible(ev);
 
@@ -914,7 +915,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       this.editViewName = null;
 
       this.editForm = null;
-      this.editModal = null;
+      this.editWindowType = null;
       this.editEnabled = false;
 
       this.editTargetIndex = BeeConst.UNDEF;
@@ -1149,10 +1150,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   @Override
   public boolean isEditing() {
     return getInput().isEditing();
-  }
-
-  public Boolean isEditModal() {
-    return BeeUtils.isTrue(editModal) || UiHelper.isModal(getWidget());
   }
 
   public boolean isEmbedded() {
@@ -1407,6 +1404,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return editViewName;
   }
 
+  protected WindowType getEditWindowType() {
+    return editWindowType;
+  }
+
   protected InputWidget getInput() {
     return input;
   }
@@ -1640,43 +1641,36 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       return;
     }
 
-    boolean modal = isEditModal();
-    RowCallback rowCallback;
+    WindowType windowType = UiHelper.normalizeRelationEditWindowType(getEditWindowType());
+    Opener opener = Opener.in(windowType, getElement(), null);
 
-    if (modal) {
-      rowCallback = new RowCallback() {
-        @Override
-        public void onSuccess(BeeRow result) {
-          if (BeeUtils.same(getEditViewName(), getOracle().getViewName())) {
-            setRelatedRow(result);
+    RowCallback rowCallback = result -> {
+      if (isAttached()) {
+        if (BeeUtils.same(getEditViewName(), getOracle().getViewName())) {
+          setRelatedRow(result);
 
-          } else {
-            BeeRow row = getRelatedRow();
-            Long id = getEditorValueAsId();
+        } else {
+          BeeRow row = getRelatedRow();
+          Long id = getEditorValueAsId();
 
-            if (row == null && DataUtils.isId(id)) {
-              row = getOracle().getCachedRow(id);
-            }
-
-            if (row != null && !BeeConst.isUndef(getEditSourceIndex())) {
-              RelationUtils.updateRow(getOracle().getDataInfo(),
-                  getOracle().getDataInfo().getColumnId(getEditSourceIndex()), row,
-                  Data.getDataInfo(getEditViewName()), result, false);
-              setRelatedRow(row);
-            }
+          if (row == null && DataUtils.isId(id)) {
+            row = getOracle().getCachedRow(id);
           }
 
-          if (getRelatedRow() != null) {
-            fireEvent(new EditStopEvent(State.EDITED));
+          if (row != null && !BeeConst.isUndef(getEditSourceIndex())) {
+            RelationUtils.updateRow(getOracle().getDataInfo(),
+                getOracle().getDataInfo().getColumnId(getEditSourceIndex()), row,
+                Data.getDataInfo(getEditViewName()), result, false);
+            setRelatedRow(row);
           }
         }
-      };
 
-    } else {
-      rowCallback = null;
-    }
+        if (getRelatedRow() != null) {
+          fireEvent(new EditStopEvent(State.EDITED));
+        }
+      }
+    };
 
-    Opener opener = modal ? Opener.relativeTo(getWidget()) : Opener.NEW_TAB;
     RowEditor.openForm(getEditForm(), Data.getDataInfo(getEditViewName()), Filter.compareId(rowId),
         opener, rowCallback);
   }

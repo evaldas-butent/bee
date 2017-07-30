@@ -9,16 +9,15 @@ import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.Modifiers;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
@@ -26,7 +25,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -119,16 +117,13 @@ public final class CalendarUtils {
           dstInfo, ClassifierConstants.COL_CONTACT, dstRow);
     }
 
-    RowFactory.createRow(dstInfo, dstRow, Modality.ENABLED, new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow result) {
-        Queries.deleteRowAndFire(VIEW_APPOINTMENTS, appointment.getId());
+    RowFactory.createRow(dstInfo, dstRow, Opener.MODAL, result -> {
+      Queries.deleteRowAndFire(VIEW_APPOINTMENTS, appointment.getId());
 
-        if (panel != null) {
-          GridView grid = ViewHelper.getChildGrid(panel.getTodoContainer(), GRID_CALENDAR_TODO);
-          if (grid != null && !grid.getGrid().containsRow(result.getId())) {
-            grid.getViewPresenter().handleAction(Action.REFRESH);
-          }
+      if (panel != null) {
+        GridView grid = ViewHelper.getChildGrid(panel.getTodoContainer(), GRID_CALENDAR_TODO);
+        if (grid != null && !grid.getGrid().containsRow(result.getId())) {
+          grid.getViewPresenter().handleAction(Action.REFRESH);
         }
       }
     });
@@ -495,53 +490,50 @@ public final class CalendarUtils {
     final String svc = isNew ? SVC_CREATE_APPOINTMENT : SVC_UPDATE_APPOINTMENT;
     ParameterList params = CalendarKeeper.createArgs(svc);
 
-    BeeKeeper.getRpc().sendText(params, Codec.beeSerialize(rowSet), new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasErrors()) {
-          notificationListener.notifySevere(response.getErrors());
+    BeeKeeper.getRpc().sendText(params, Codec.beeSerialize(rowSet), response -> {
+      if (response.hasErrors()) {
+        notificationListener.notifySevere(response.getErrors());
 
-        } else if (!response.hasResponse(BeeRow.class)) {
-          notificationListener.notifySevere(svc, ": response not a BeeRow");
+      } else if (!response.hasResponse(BeeRow.class)) {
+        notificationListener.notifySevere(svc, ": response not a BeeRow");
 
+      } else {
+        BeeRow result = BeeRow.restore((String) response.getResponse());
+        if (result == null) {
+          notificationListener.notifySevere(svc, ": cannot restore row");
         } else {
-          BeeRow result = BeeRow.restore((String) response.getResponse());
-          if (result == null) {
-            notificationListener.notifySevere(svc, ": cannot restore row");
+
+          if (!BeeUtils.isEmpty(attList)) {
+            result.setProperty(TBL_APPOINTMENT_ATTENDEES, attList);
+          }
+          if (!BeeUtils.isEmpty(ownerList)) {
+            result.setProperty(TBL_APPOINTMENT_OWNERS, ownerList);
+          }
+          if (!BeeUtils.isEmpty(propList)) {
+            result.setProperty(TBL_APPOINTMENT_PROPS, propList);
+          }
+          if (!BeeUtils.isEmpty(remindList)) {
+            result.setProperty(TBL_APPOINTMENT_REMINDERS, remindList);
+          }
+
+          if (isNew) {
+            RowInsertEvent.fire(BeeKeeper.getBus(), viewName, result,
+                appointmentBuilder != null ? appointmentBuilder.getFormView().getId() : null);
           } else {
+            RowUpdateEvent.fire(BeeKeeper.getBus(), viewName, result);
+          }
 
-            if (!BeeUtils.isEmpty(attList)) {
-              result.setProperty(TBL_APPOINTMENT_ATTENDEES, attList);
-            }
-            if (!BeeUtils.isEmpty(ownerList)) {
-              result.setProperty(TBL_APPOINTMENT_OWNERS, ownerList);
-            }
-            if (!BeeUtils.isEmpty(propList)) {
-              result.setProperty(TBL_APPOINTMENT_PROPS, propList);
-            }
-            if (!BeeUtils.isEmpty(remindList)) {
-              result.setProperty(TBL_APPOINTMENT_REMINDERS, remindList);
-            }
+          Appointment appointment = Appointment.create(result);
+          State state = isNew ? State.CREATED : State.CHANGED;
+          AppointmentEvent.fire(appointment, state);
 
-            if (isNew) {
-              RowInsertEvent.fire(BeeKeeper.getBus(), viewName, result,
-                  appointmentBuilder != null ? appointmentBuilder.getFormView().getId() : null);
-            } else {
-              RowUpdateEvent.fire(BeeKeeper.getBus(), viewName, result);
-            }
-
-            Appointment appointment = Appointment.create(result);
-            State state = isNew ? State.CREATED : State.CHANGED;
-            AppointmentEvent.fire(appointment, state);
-
-            if (callback != null) {
-              callback.onSuccess(result);
-            }
+          if (callback != null) {
+            callback.onSuccess(result);
           }
         }
-        if (appointmentBuilder != null) {
-          appointmentBuilder.setSaving(false);
-        }
+      }
+      if (appointmentBuilder != null) {
+        appointmentBuilder.setSaving(false);
       }
     });
 

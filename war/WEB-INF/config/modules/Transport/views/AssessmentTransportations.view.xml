@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="AssessmentTransportations" source="Trips" caption="=trAssessmentTransportations"
-      filter="!(AssessmentForwarder) AND Assessment"
+      filter="!(AssessmentForwarder) AND Assessment" rowCaption="ID TripNo"
   >
   <Columns>
     <IdColumn name="ID" />

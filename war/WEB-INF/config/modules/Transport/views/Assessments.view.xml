@@ -5,7 +5,7 @@
       name="Assessments" source="Assessments" module="Transport.Logistics"
       caption="=assessments"
       newRowForm="Assessment"
-      editForm="Assessment"
+      editForm="Assessment" rowCaption="ID OrderNo"
 >
   <Relation renderColumns="OrderNo Date CustomerName" />
   <Columns>

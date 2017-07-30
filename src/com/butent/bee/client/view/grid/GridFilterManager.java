@@ -398,6 +398,8 @@ public class GridFilterManager {
 
     ClickHandler clickHandler = event -> {
       filterSupplier.setEffectiveFilter(getFilter(externalFilter, columnInfo.getColumnId()));
+      filterSupplier.setFiltersOnCommit(!hasSubmitCommand);
+
       filterSupplier.onRequest(button.getElement(), () -> {
         if (hasSubmitCommand) {
           if (filterSupplier.isEmpty()) {

@@ -32,7 +32,7 @@
       <xs:attribute name="readOnly" type="xs:boolean" />
       <xs:attribute name="caption" type="xs:string" />
       <xs:attribute name="editForm" type="tp:nameType" />
-      <xs:attribute name="rowCaption" type="tp:fieldNames" />
+      <xs:attribute name="rowCaption" type="xs:string" />
       <xs:attribute name="newRowForm" type="tp:nameType" />
       <xs:attribute name="newRowColumns" type="tp:fieldNames" />
       <xs:attribute name="newRowCaption" type="xs:string" />

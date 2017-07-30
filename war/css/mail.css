@@ -286,3 +286,18 @@
 .bee-mail-SearchExtended {
   color: red;
 }
+
+.bee-mail-NewMessage-signature-label {
+  padding-left: 1ex;
+  padding-right: 2px;
+}
+.bee-mail-NewMessage-signatures-zero {
+  display: none;
+}
+.bee-mail-NewMessage-send {
+  margin-left: 1ex;
+}
+
+.bee-form-NewMailMessage .bee-FileCollector-hiddenWidget {
+  width: 105px;
+}

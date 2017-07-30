@@ -1029,6 +1029,7 @@ public final class TaskConstants {
   public static final String PRM_DEFAULT_REST_REQUEST_TYPE = "DefaultRestRequestType";
   public static final String PRM_DEFAULT_REST_REQUEST_FORM = "DefaultRestRequestForm";
   public static final String PRM_CREATE_PRIVATE_TASK_FIRST = "CreatePrivateTaskFirst";
+  public static final String PRM_SUMMARY_EXPIRED_TASK_PERCENT = "SummaryExpiredTaskPercent";
 
   public static final String TASK_STATUS_STYLE = "bee-header-caption_state";
   public static final String TASK_STATUS_STYLE_NOT_VISITED = TASK_STATUS_STYLE + "_not_visited";

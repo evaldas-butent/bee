@@ -10,6 +10,7 @@
     <DataColumn name="Task" editEnabled="true" />
     <DataColumn name="Status" />
     <DataColumn name="Completed" />
+    <DataColumn name="Approved" />
 
     <DataColumn name="DurationDate" format="DATE_SHORT" flexShrink="0" visible="true" />
     <DataColumn name="DurationType" visible="true" />

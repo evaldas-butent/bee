@@ -10,8 +10,8 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -202,12 +202,8 @@ public final class ProjectsHelper {
         Filter.equals(AdministrationConstants.COL_USER, currentUserId));
 
     Queries.update(TBL_PROJECT_USAGE, flt, COL_ACCESS,
-        BeeUtils.toString(System.currentTimeMillis()), new Queries.IntCallback() {
-          @Override
-          public void onSuccess(Integer result) {
-            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECTS);
-          }
-        });
+        BeeUtils.toString(System.currentTimeMillis()),
+        result -> DataChangeEvent.fireRefresh(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECTS));
 
   }
 
@@ -220,8 +216,7 @@ public final class ProjectsHelper {
             .getDataIndex(COL_PROJECT_NAME))));
 
     RowFactory.createRow(FORM_NEW_PROJECT_REASON_COMMENT, caption, data, emptyRow,
-        Modality.ENABLED, null,
-        new NewReasonCommentForm(form, row, event), null, new RowCallback() {
+        Opener.DETACHED, new NewReasonCommentForm(form, row, event), new RowCallback() {
 
           @Override
           public void onSuccess(BeeRow result) {
@@ -295,16 +290,12 @@ public final class ProjectsHelper {
         return result;
       }
 
-      Queries.getRow(relView, Filter.compareId(BeeUtils.toLong(value)), cols, new RowCallback() {
-
-        @Override
-        public void onSuccess(BeeRow wResult) {
-          if (relatedValue == null) {
-            return;
-          }
-
-          relatedValue.onSuccess(BeeUtils.join(BeeConst.STRING_SPACE, wResult.getValues()));
+      Queries.getRow(relView, Filter.compareId(BeeUtils.toLong(value)), cols, wResult -> {
+        if (relatedValue == null) {
+          return;
         }
+
+        relatedValue.onSuccess(BeeUtils.join(BeeConst.STRING_SPACE, wResult.getValues()));
       });
 
       return result;
@@ -355,16 +346,12 @@ public final class ProjectsHelper {
         List<String> values = Lists.newArrayList(BeeUtils.toString(projectId),
             BeeUtils.toString(eventId), BeeUtils.toString(result.getId()), fileInfo.getCaption());
 
-        Queries.insert(eventFilesViewName, columns, values, null, new RowCallback() {
-
-          @Override
-          public void onSuccess(BeeRow row) {
-            counter.set(counter.get() + 1);
-            if (counter.get() == files.size()) {
-              if (allUploadCallback != null) {
-                allUploadCallback.onSuccess(Boolean.TRUE);
-                RowInsertEvent.fire(BeeKeeper.getBus(), eventFilesViewName, row, null);
-              }
+        Queries.insert(eventFilesViewName, columns, values, null, row -> {
+          counter.set(counter.get() + 1);
+          if (counter.get() == files.size()) {
+            if (allUploadCallback != null) {
+              allUploadCallback.onSuccess(Boolean.TRUE);
+              RowInsertEvent.fire(BeeKeeper.getBus(), eventFilesViewName, row, null);
             }
           }
         });
@@ -375,15 +362,12 @@ public final class ProjectsHelper {
   private static RowCallback getEventRowCallback(final String eventFilesViewName,
       final long projectId, final List<FileInfo> files, final Callback<BeeRow> idCallback,
       final Callback<Boolean> uploaded) {
-    return new RowCallback() {
 
-      @Override
-      public void onSuccess(BeeRow result) {
-        if (idCallback != null) {
-          idCallback.onSuccess(result);
-        }
-        createFiles(eventFilesViewName, projectId, result.getId(), files, uploaded);
+    return result -> {
+      if (idCallback != null) {
+        idCallback.onSuccess(result);
       }
+      createFiles(eventFilesViewName, projectId, result.getId(), files, uploaded);
     };
   }
 

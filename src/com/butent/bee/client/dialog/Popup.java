@@ -23,9 +23,11 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.animation.AnimationState;
 import com.butent.bee.client.animation.RafCallback;
+import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
+import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.PreviewHandler;
@@ -35,6 +37,7 @@ import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.screen.BodyPanel;
+import com.butent.bee.client.style.ComputedStyles;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.BeeConst;
@@ -311,6 +314,32 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
               int maxWidth = DomUtils.getClientWidth() + w - getElement().getOffsetWidth();
               int maxHeight = clientHeight + h - getElement().getOffsetHeight();
 
+              Dimensions dimensions;
+              if (getWidget() == null) {
+                dimensions = ComputedStyles.getDimensions(getElement());
+              } else {
+                dimensions = ComputedStyles.getDimensions(getWidget());
+                dimensions.merge(ComputedStyles.getDimensions(getElement()));
+              }
+
+              int z = dimensions.getIntMinWidth();
+              if (z > 0) {
+                minWidth = Math.min(w, z);
+              }
+              z = dimensions.getIntMinHeight();
+              if (z > 0) {
+                minHeight = Math.min(h, z);
+              }
+
+              z = dimensions.getIntMaxWidth();
+              if (z > 0) {
+                maxWidth = Math.min(maxWidth, Math.max(w, z));
+              }
+              z = dimensions.getIntMaxHeight();
+              if (z > 0) {
+                maxHeight = Math.min(maxHeight, Math.max(h, z));
+              }
+
               this.bounds = new Bounds(minWidth, minHeight, maxWidth, maxHeight);
               break;
           }
@@ -510,7 +539,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
   private static final double DEFAULT_ANIMATION_DURATION = 250;
 
-  private static final int RESIZER_WIDTH = BeeUtils.positive(Settings.getDialogResizerWidth(), 10);
+  private static final int RESIZER_WIDTH = BeeUtils.positive(Settings.getDialogResizerWidth(), 6);
 
   private static final int MIN_WIDTH = RESIZER_WIDTH * 3;
   private static final int MIN_HEIGHT = RESIZER_WIDTH * 3;
@@ -625,18 +654,20 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   }
 
   public void cascade() {
-    int x = BeeUtils.clamp(Window.getClientWidth() / 30, 5, 30);
-    int y = BeeUtils.clamp(Window.getClientHeight() / 30, 5, 30);
-    cascade(x, y);
-  }
-
-  public void cascade(int x, int y) {
     Popup activePopup = getActivePopup();
+
     if (activePopup == null) {
       center();
     } else {
-      showAt(activePopup.getAbsoluteLeft() + x, activePopup.getAbsoluteTop() + y);
+      cascade(activePopup.getAbsoluteLeft(), activePopup.getAbsoluteTop());
     }
+  }
+
+  private void cascade(int left, int top) {
+    int x = BeeUtils.clamp(Window.getClientWidth() / 30, 5, 30);
+    int y = BeeUtils.clamp(Window.getClientHeight() / 30, 5, 30);
+
+    showAt(left + x, top + y);
   }
 
   public void center() {
@@ -646,6 +677,38 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
       setPopupPosition(Math.max(left, 0), Math.max(top, 0));
     });
+  }
+
+  public void centerOrCascade(String styleName) {
+    if (BeeUtils.isEmpty(styleName)) {
+      center();
+
+    } else {
+      int left = -1;
+      int top = -1;
+
+      String selector = Selectors.classSelector(styleName);
+
+      for (Popup p : getVisiblePopups()) {
+        if ((p.getElement().hasClassName(styleName) || Selectors.contains(p.getElement(), selector))
+            && p.isInWindow(30)) {
+
+          int x = p.getAbsoluteLeft();
+          int y = p.getAbsoluteTop();
+
+          if (x > left || y > top) {
+            left = x;
+            top = y;
+          }
+        }
+      }
+
+      if (left >= 0 && top >= 0) {
+        cascade(left, top);
+      } else {
+        center();
+      }
+    }
   }
 
   public void close() {
@@ -683,14 +746,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
   public PreviewConsumer getOnSave() {
     return onSave;
-  }
-
-  public int getPopupLeft() {
-    return getElement().getAbsoluteLeft();
-  }
-
-  public int getPopupTop() {
-    return getElement().getAbsoluteTop();
   }
 
   public boolean hideOnEscape() {
@@ -994,6 +1049,12 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
   private void hide(boolean fireEvent) {
     hide(CloseEvent.Cause.SCRIPT, null, fireEvent);
+  }
+
+  private boolean isInWindow(int margin) {
+    return getElement().getAbsoluteLeft() >= margin && getElement().getAbsoluteTop() >= margin
+        && getElement().getAbsoluteRight() + margin <= Window.getClientWidth()
+        && getElement().getAbsoluteBottom() + margin <= Window.getClientHeight();
   }
 
   private boolean maybeAnimate(Runnable onClose) {

@@ -45,7 +45,6 @@ import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.utils.FileUtils;
@@ -129,7 +128,7 @@ public class MailMessage extends AbstractFormInterceptor {
                     row.setProperty(PROP_FILES, Codec.beeSerialize(attachments));
                   }
 
-                  RowFactory.createRelatedRow(formName, row, selector, null);
+                  RowFactory.createRelatedRow(formName, row, selector);
                 }
               }
             };
@@ -363,7 +362,7 @@ public class MailMessage extends AbstractFormInterceptor {
                   break;
 
                 default:
-                  RowEditor.open(TBL_PLACES, BeeUtils.toLong(index), Opener.MODAL);
+                  RowEditor.open(TBL_PLACES, BeeUtils.toLong(index));
                   break;
               }
             });
@@ -475,7 +474,7 @@ public class MailMessage extends AbstractFormInterceptor {
           for (RowChildren rowChildren : relList) {
             if (BeeUtils.same(COL_TASK, rowChildren.getChildColumn())) {
               BeeRowSet rowSet = new BeeRowSet(TBL_TASK_EVENTS, Data.getColumns(TBL_TASK_EVENTS,
-                  Arrays.asList(COL_TASK, COL_PUBLISHER, COL_PUBLISH_TIME, COL_COMMENT,
+                  Arrays.asList(COL_TASK, COL_PUBLISHER, COL_PUBLISH_TIME, COL_EVENT_NOTE,
                       COL_EVENT)));
 
               for (Long taskId : DataUtils.parseIdList(rowChildren.getChildrenIds())) {
@@ -485,7 +484,7 @@ public class MailMessage extends AbstractFormInterceptor {
                   row.setValue(rowSet.getColumnIndex(COL_PUBLISHER),
                       BeeKeeper.getUser().getUserId());
                   row.setValue(rowSet.getColumnIndex(COL_PUBLISH_TIME), TimeUtils.nowMillis());
-                  row.setValue(rowSet.getColumnIndex(COL_COMMENT),
+                  row.setValue(rowSet.getColumnIndex(COL_EVENT_NOTE),
                       TaskUtils.getInsertNote(Localized.dictionary().mailMessage(),
                           BeeUtils.joinWords(getDate(), getSubject())));
                   row.setValue(rowSet.getColumnIndex(COL_EVENT), TaskEvent.EDIT);
