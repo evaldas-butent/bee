@@ -23,6 +23,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.animation.AnimationState;
 import com.butent.bee.client.animation.RafCallback;
+import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
@@ -36,6 +37,7 @@ import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.screen.BodyPanel;
+import com.butent.bee.client.style.ComputedStyles;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.BeeConst;
@@ -311,6 +313,32 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
               int maxWidth = DomUtils.getClientWidth() + w - getElement().getOffsetWidth();
               int maxHeight = clientHeight + h - getElement().getOffsetHeight();
+
+              Dimensions dimensions;
+              if (getWidget() == null) {
+                dimensions = ComputedStyles.getDimensions(getElement());
+              } else {
+                dimensions = ComputedStyles.getDimensions(getWidget());
+                dimensions.merge(ComputedStyles.getDimensions(getElement()));
+              }
+
+              int z = dimensions.getIntMinWidth();
+              if (z > 0) {
+                minWidth = Math.min(w, z);
+              }
+              z = dimensions.getIntMinHeight();
+              if (z > 0) {
+                minHeight = Math.min(h, z);
+              }
+
+              z = dimensions.getIntMaxWidth();
+              if (z > 0) {
+                maxWidth = Math.min(maxWidth, Math.max(w, z));
+              }
+              z = dimensions.getIntMaxHeight();
+              if (z > 0) {
+                maxHeight = Math.min(maxHeight, Math.max(h, z));
+              }
 
               this.bounds = new Bounds(minWidth, minHeight, maxWidth, maxHeight);
               break;
