@@ -154,7 +154,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       footer = null;
     }
 
-    addStyleName(content.getContainerClassName());
+    StyleUtils.updateAppearance(this, content.getContainerClassName(), content.getContainerStyle());
 
     addNorth(header, header.getHeight());
     setHeaderId(header.getWidgetId());

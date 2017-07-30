@@ -9,6 +9,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.output.Printable;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
@@ -117,7 +118,9 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
     this.container = new Container(dataInfo, rowId, rowCaption);
     container.addStyleName(STYLE_CONTAINER);
     container.addStyleName(UiOption.getStyleName(uiOptions));
-    container.addStyleName(formView.getContainerClassName());
+
+    StyleUtils.updateAppearance(container,
+        formView.getContainerClassName(), formView.getContainerStyle());
 
     container.addTopHeightFillHorizontal(headerView.asWidget(), 0, headerView.getHeight());
     container.addTopBottomFillHorizontal(formView.asWidget(), headerView.getHeight(), 0);

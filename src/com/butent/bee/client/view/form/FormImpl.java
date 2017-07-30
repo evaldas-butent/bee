@@ -410,6 +410,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private int activeEditableIndex = BeeConst.UNDEF;
 
   private Dimensions dimensions;
+  private String containerStyle;
 
   private State state;
 
@@ -621,6 +622,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     setPrintFooter(formDescription.printFooter());
 
     setDimensions(formDescription.getDimensions());
+    setContainerStyle(formDescription.getContainerStyle());
 
     setOptions(formDescription.getOptions());
     setProperties(formDescription.getProperties());
@@ -824,6 +826,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     return result;
+  }
+
+  @Override
+  public String getContainerStyle() {
+    return containerStyle;
   }
 
   @Override
@@ -2544,6 +2551,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       view.setStyleName(STYLE_HAS_ROW_ID, hasId);
       view.setStyleName(STYLE_NO_ROW_ID, !hasId);
     }
+  }
+
+  private void setContainerStyle(String containerStyle) {
+    this.containerStyle = containerStyle;
   }
 
   private void setDataColumns(List<BeeColumn> dataColumns) {

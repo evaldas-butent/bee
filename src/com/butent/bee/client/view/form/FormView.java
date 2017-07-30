@@ -80,6 +80,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
     return BeeConst.CSS_CLASS_PREFIX + "form-" + BeeUtils.trim(getFormName()) + "-container";
   }
 
+  String getContainerStyle();
+
   DateTime getDateTimeValue(String source);
 
   HasDataTable getDisplay();

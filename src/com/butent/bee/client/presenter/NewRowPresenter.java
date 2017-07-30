@@ -7,6 +7,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
@@ -266,7 +267,9 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     FormAndHeader formContainer = new FormAndHeader();
     formContainer.addStyleName(STYLE_CONTAINER);
     formContainer.addStyleName(UiOption.getStyleName(uiOptions));
-    formContainer.addStyleName(formView.getContainerClassName());
+
+    StyleUtils.updateAppearance(formContainer,
+        formView.getContainerClassName(), formView.getContainerStyle());
 
     formContainer.addTopHeightFillHorizontal(headerView.asWidget(), 0, headerView.getHeight());
     formContainer.addTopBottomFillHorizontal(formView.asWidget(), headerView.getHeight(), 0);
