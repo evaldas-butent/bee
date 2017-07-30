@@ -3537,7 +3537,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           popup.showAt(x, y);
 
         } else {
-          popup.centerOrCascade(form.getContainerStyleName());
+          popup.centerOrCascade(form.getContainerClassName());
         }
 
       } else {

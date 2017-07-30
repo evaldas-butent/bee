@@ -117,7 +117,7 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
     this.container = new Container(dataInfo, rowId, rowCaption);
     container.addStyleName(STYLE_CONTAINER);
     container.addStyleName(UiOption.getStyleName(uiOptions));
-    container.addStyleName(formView.getContainerStyleName());
+    container.addStyleName(formView.getContainerClassName());
 
     container.addTopHeightFillHorizontal(headerView.asWidget(), 0, headerView.getHeight());
     container.addTopBottomFillHorizontal(formView.asWidget(), headerView.getHeight(), 0);

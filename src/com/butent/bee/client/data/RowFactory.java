@@ -647,7 +647,7 @@ public final class RowFactory {
       dialog.setPreviewEnabled(opener.isModal());
 
       if (opener.getTarget() == null) {
-        dialog.centerOrCascade(formView.getContainerStyleName());
+        dialog.centerOrCascade(formView.getContainerClassName());
       } else {
         dialog.showRelativeTo(opener.getTarget());
       }

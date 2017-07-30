@@ -260,7 +260,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     formContainer.addStyleName(STYLE_FORM_CONTAINER);
     formContainer.addStyleName(getFormStyle(STYLE_FORM_CONTAINER, edit));
     formContainer.addStyleName(UiOption.getStyleName(uiOptions));
-    formContainer.addStyleName(formView.getContainerStyleName());
+    formContainer.addStyleName(formView.getContainerClassName());
 
     formContainer.addTopHeightFillHorizontal(headerView.asWidget(), 0, headerView.getHeight());
     formContainer.addTopBottomFillHorizontal(formView.asWidget(), headerView.getHeight(), 0);

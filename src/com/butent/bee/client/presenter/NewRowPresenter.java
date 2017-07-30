@@ -266,7 +266,7 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     FormAndHeader formContainer = new FormAndHeader();
     formContainer.addStyleName(STYLE_CONTAINER);
     formContainer.addStyleName(UiOption.getStyleName(uiOptions));
-    formContainer.addStyleName(formView.getContainerStyleName());
+    formContainer.addStyleName(formView.getContainerClassName());
 
     formContainer.addTopHeightFillHorizontal(headerView.asWidget(), 0, headerView.getHeight());
     formContainer.addTopBottomFillHorizontal(formView.asWidget(), headerView.getHeight(), 0);

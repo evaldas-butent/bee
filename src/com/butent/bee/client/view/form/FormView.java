@@ -76,7 +76,7 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   Collection<RowChildren> getChildrenForUpdate();
 
-  default String getContainerStyleName() {
+  default String getContainerClassName() {
     return BeeConst.CSS_CLASS_PREFIX + "form-" + BeeUtils.trim(getFormName()) + "-container";
   }
 

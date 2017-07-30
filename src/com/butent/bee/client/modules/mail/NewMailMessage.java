@@ -113,7 +113,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
           dialog.setPreviewEnabled(windowType == WindowType.MODAL);
           dialog.focusOnOpen(newMessage.getFocusWidget());
 
-          dialog.centerOrCascade(formView.getContainerStyleName());
+          dialog.centerOrCascade(formView.getContainerClassName());
 
         } else {
           PresenterCallback.SHOW_IN_NEW_TAB.onCreate(presenter);
