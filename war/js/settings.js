@@ -1,9 +1,9 @@
 var BeeSettings = {
   "appName": "B-NOVO",
-  "version": "1.7",
+  "version": "1.8",
   "licence": "",
-  "build": "",
-  "releaseDate": "",
+  "build": "4892",
+  "releaseDate": "2017.07.30",
   "logoImage": "images/logo_white.png",
   "logoOpen": "http://www.b-novo.lt",
   "providerSensitivityMillis": 300,
