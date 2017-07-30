@@ -257,6 +257,10 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
+    if (row == null) {
+      return;
+    }
+
     drawComments(row);
 
     updateStateDataSelector(false);
