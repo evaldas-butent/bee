@@ -64,6 +64,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -127,7 +128,7 @@ public final class CalendarKeeper {
 
         Appointment appointment = Appointment.create(event.getRow());
 
-        if (event.isEditRow()) {
+        if (event.isEditRow() && NameUtils.isIdentifier(event.getOptions())) {
           if (!appointment.isVisible(BeeKeeper.getUser().getUserId())) {
             View view = ViewHelper.getActiveView(DomUtils.getActiveElement());
             NotificationListener listener = (view instanceof NotificationListener)
