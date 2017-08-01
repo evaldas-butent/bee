@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-07-25T11:44:48 -->
+<!-- 2017-08-01T11:10:00 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="AssessmentTransportation" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isSummaryWithPageHeaderAndFooter="true" whenResourceMissingType="Error" uuid="b0daefcc-9db0-4ed1-b9d6-49143492176f">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.Invocation"/>
@@ -272,7 +272,8 @@
 	<group name="Group1">
 		<groupExpression><![CDATA[$V{grp}]]></groupExpression>
 		<groupHeader>
-			<band height="210">
+			<band height="220">
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				<frame>
 					<reportElement positionType="Float" x="0" y="30" width="275" height="144" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="5522bea6-8373-4154-9141-3f03f694dcaf">
 						<property name="ShowOutOfBoundContent" value="true"/>
@@ -573,10 +574,19 @@
 					<textElement markup="html">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>" + $R{contractAmount} + "</b>", BeeUtils.round($V{getAmount}.toString(), 2) , $P{TransportationCurrencyName}, "(<b>" + $V{d}.vat() + "</b>", BeeUtils.round($V{getVat}.toString(), 2) + " " + $P{TransportationCurrencyName} + ",", "<b>" + $V{d}.withoutVat() + "</b>", BeeUtils.round(BeeUtils.toString($V{getAmount} - $V{getVat}), 2) +" " + $P{TransportationCurrencyName} + ")", ($P{PaymentDays} != null) ? BeeUtils.joinWords("<b>" + $R{paymentTerm} + "</b> ", $P{PaymentDays}) : "")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>" + $R{contractAmount} + "</b>", BeeUtils.round($V{getAmount}.toString(), 2) , $P{TransportationCurrencyName}, "(<b>" + $V{d}.vat() + "</b>", BeeUtils.round($V{getVat}.toString(), 2) + " " + $P{TransportationCurrencyName} + ",", "<b>" + $V{d}.withoutVat() + "</b>", BeeUtils.round(BeeUtils.toString($V{getAmount} - $V{getVat}), 2) +" " + $P{TransportationCurrencyName} + ")")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement positionType="Float" x="0" y="200" width="555" height="10" isRemoveLineWhenBlank="true" uuid="e7b89e80-0b80-4565-9f03-13da36968145">
+						<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{PaymentDays})]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>" + $R{paymentTerm} + "</b> ", $P{PaymentDays})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="0" y="210" width="555" height="10" isRemoveLineWhenBlank="true" uuid="7aa2e90c-343f-4d84-84ae-a19ba3957ffa">
 						<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{ExpeditionType})]]></printWhenExpression>
 					</reportElement>
 					<textElement markup="html">
