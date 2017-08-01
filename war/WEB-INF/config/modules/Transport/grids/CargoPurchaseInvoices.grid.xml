@@ -56,7 +56,7 @@
 
     <DataColumn name="Exported" />
 
-    <DataColumn name="NewNumber" />
+    <PropColumn name="NewNumber" type="string" caption="Patikslintas Nr." />
 
     <CalcColumn name="Order" type="string" caption="=orderNumber" maxWidth="300">
       <render>

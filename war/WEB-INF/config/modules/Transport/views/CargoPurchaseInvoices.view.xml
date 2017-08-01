@@ -85,10 +85,6 @@
       </SimpleJoin>
     </ExternalJoin>
 
-    <ExternalJoin name="Purchase" source="PurchaseItems" joinType="LEFT">
-      <AggregateColumn name="Number" alias="NewNumber" aggregate="MAX" />
-    </ExternalJoin>
-
     <ExternalJoin name="Purchase" source="CargoIncomes" joinType="LEFT">
       <AggregateColumn name="Purchase" alias="Sale" aggregate="MAX" />
     </ExternalJoin>

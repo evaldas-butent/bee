@@ -159,6 +159,8 @@ public class TransportModuleBean implements BeeModule {
   @EJB MailModuleBean mail;
   @EJB ConcurrencyBean cb;
 
+  @EJB CustomTransportModuleBean custom;
+
   private static IsExpression getAssessmentTurnoverExpression(SqlSelect query, String source,
       String defDateSource, String defDateAlias, Long currency, boolean woVat) {
 
@@ -309,7 +311,7 @@ public class TransportModuleBean implements BeeModule {
           .addOrder(als, VAR_UNLOADING)));
 
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_AMOUNTS)) {
-      response = getAssessmentAmounts(reqInfo.getParameter(VAR_VIEW_NAME),
+      response = custom.getAssessmentAmounts(reqInfo.getParameter(VAR_VIEW_NAME),
           Filter.restore(reqInfo.getParameter(EcConstants.VAR_FILTER)));
 
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_QUANTITY_REPORT)) {
@@ -457,6 +459,8 @@ public class TransportModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    sys.registerDataEventHandler(custom);
+
     sys.registerDataEventHandler(transportHandler);
 
     transportHandler.initConditions();
@@ -529,35 +533,6 @@ public class TransportModuleBean implements BeeModule {
           }
           for (BeeRow row : rowSet.getRows()) {
             cache.row(row.getId()).forEach(row::setProperty);
-          }
-        }
-      }
-
-      @Subscribe
-      @AllowConcurrentEvents
-      public void calcInvoiceVat(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_CARGO_INVOICES, VIEW_CARGO_PURCHASE_INVOICES,
-            VIEW_SELF_SERVICE_INVOICES) && event.hasData()) {
-          String tbl;
-          String fld;
-
-          if (event.isTarget(VIEW_CARGO_PURCHASE_INVOICES)) {
-            tbl = TBL_PURCHASE_ITEMS;
-            fld = COL_PURCHASE;
-          } else {
-            tbl = TBL_SALE_ITEMS;
-            fld = COL_SALE;
-          }
-          SimpleRowSet rs = qs.getData(new SqlSelect()
-              .addFields(tbl, fld)
-              .addSum(TradeModuleBean.getVatExpression(tbl), COL_TRADE_VAT)
-              .addFrom(tbl)
-              .setWhere(SqlUtils.inList(tbl, fld, event.getRowset().getRowIds()))
-              .addGroup(tbl, fld));
-
-          for (BeeRow row : event.getRowset().getRows()) {
-            row.setProperty(COL_TRADE_VAT,
-                rs.getValueByKey(fld, BeeUtils.toString(row.getId()), COL_TRADE_VAT));
           }
         }
       }
@@ -842,27 +817,6 @@ public class TransportModuleBean implements BeeModule {
                   .setWhere(clause))
               .setWhere(clause));
         }
-      }
-
-      @Subscribe
-      @AllowConcurrentEvents
-      public void convertToMainCurrency(ViewQueryEvent event) {
-        com.butent.bee.server.Invocation.locateRemoteBean(CustomTransportModuleBean.class)
-            .convertToMainCurrency(event);
-      }
-
-      @Subscribe
-      @AllowConcurrentEvents
-      public void convertVATToMainCurrency(ViewQueryEvent event) {
-        com.butent.bee.server.Invocation.locateRemoteBean(CustomTransportModuleBean.class)
-            .convertVATToMainCurrency(event);
-      }
-
-      @Subscribe
-      @AllowConcurrentEvents
-      public void maybeInsertAssessmentObservers(ViewInsertEvent event) {
-        com.butent.bee.server.Invocation.locateRemoteBean(CustomTransportModuleBean.class)
-            .maybeInsertAssessmentObservers(event);
       }
 
       @Subscribe
@@ -1650,11 +1604,9 @@ public class TransportModuleBean implements BeeModule {
       if (BeeUtils.unbox(row.getBoolean(COL_TRANSPORTATION))) {
         Long cargo = row.getLong(COL_CARGO);
 
-        String value = BeeUtils.join("-",
-            BeeUtils.joinWords(places.get(cargo, ALS_LOADING_COUNTRY_CODE),
-                BeeUtils.parenthesize(places.get(cargo, ALS_LOADING_COUNTRY_NAME))),
-            BeeUtils.joinWords(places.get(cargo, ALS_UNLOADING_COUNTRY_CODE),
-                BeeUtils.parenthesize(places.get(cargo, ALS_UNLOADING_COUNTRY_NAME))));
+        String value = BeeUtils.join("\n", row.getValue(COL_ADDITIONAL_ROUTE),
+            row.isTrue(COL_SHOW_ADDITIONAL_ROUTE) ? BeeUtils.join("-", places.get(cargo,
+                ALS_LOADING_COUNTRY_CODE), places.get(cargo, ALS_UNLOADING_COUNTRY_CODE)) : null);
 
         if (!BeeUtils.isEmpty(value)) {
           valueMap.put(COL_ORDER_NOTES, value);
@@ -2123,42 +2075,6 @@ public class TransportModuleBean implements BeeModule {
       qs.insertData(insert);
     }
     return ResponseObject.emptyResponse();
-  }
-
-  private ResponseObject getAssessmentAmounts(String viewName, Filter filter) {
-    Map<String, Double> result = new HashMap<>();
-    BeeView view = sys.getView(viewName);
-    Assert.state(BeeUtils.same(view.getSourceName(), TBL_ASSESSMENTS));
-
-    SqlSelect select = view.getQuery(usr.getCurrentUserId(), filter)
-        .resetFields().resetOrder()
-        .addFields(view.getSourceAlias(), view.getSourceIdName());
-
-    for (String tbl : new String[] {TBL_CARGO_INCOMES, TBL_CARGO_EXPENSES}) {
-      SqlSelect query = new SqlSelect()
-          .addFrom(TBL_ASSESSMENTS)
-          .addFromInner(TBL_ORDER_CARGO,
-              sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO))
-          .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-          .addFromInner(tbl, SqlUtils.joinUsing(TBL_ASSESSMENTS, tbl, COL_CARGO))
-          .setWhere(SqlUtils.in(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), select));
-
-      IsExpression xpr = ExchangeUtils.exchangeField(query,
-          TradeModuleBean.getWithoutVatExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
-          SqlUtils.field(tbl, COL_CURRENCY), SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE),
-              SqlUtils.field(TBL_ORDERS, COL_DATE)));
-
-      result.put(tbl, qs.getDouble(query.addSum(xpr, VAR_TOTAL)));
-    }
-    Dictionary loc = usr.getDictionary();
-
-    return ResponseObject.info(BeeUtils.joinWords(loc.incomes(),
-        BeeUtils.round(BeeUtils.unbox(result.get(TBL_CARGO_INCOMES)), 2)),
-        BeeUtils.joinWords(loc.expenses(),
-            BeeUtils.round(BeeUtils.unbox(result.get(TBL_CARGO_EXPENSES)), 2)),
-        BeeUtils.joinWords(loc.profit(),
-            BeeUtils.round(BeeUtils.round(BeeUtils.unbox(result.get(TBL_CARGO_INCOMES)), 2)
-                - BeeUtils.round(BeeUtils.unbox(result.get(TBL_CARGO_EXPENSES)), 2), 2)));
   }
 
   private ResponseObject getAssessmentQuantityReport(RequestInfo reqInfo) {
