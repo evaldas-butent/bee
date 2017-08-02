@@ -505,6 +505,14 @@ public enum Report implements HasWidgetSupplier {
 
       return Collections.singletonList(report);
     }
+
+    @Override
+    public LinkedHashMap<String, Editor> getReportParams() {
+      LinkedHashMap<String, Editor> params = new LinkedHashMap<>();
+      params.put(COL_CURRENCY, getCurrencyEditor());
+      params.put(COL_TRADE_VAT, getWoVatEditor());
+      return params;
+    }
   },
 
   TRANSPORT_TRIP_COSTS_REPORT(ModuleAndSub.of(Module.TRANSPORT), SVC_TRIP_COSTS_REPORT) {
