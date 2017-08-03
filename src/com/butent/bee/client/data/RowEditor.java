@@ -16,6 +16,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.ViewFactory;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
@@ -23,6 +24,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -43,6 +45,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public final class RowEditor {
@@ -57,6 +60,9 @@ public final class RowEditor {
 
   private static final Set<String> hasEditorDelegates = new HashSet<>();
   private static final Map<String, FormNameProvider> formNameProviders = new HashMap<>();
+
+  private static final Map<String, Filter> visibilityFilters = new HashMap<>();
+  private static final Map<String, String> visibilityMessages = new HashMap<>();
 
   public static String getFormName(String formName, DataInfo dataInfo) {
     if (!BeeUtils.isEmpty(formName)) {
@@ -255,6 +261,18 @@ public final class RowEditor {
     }
   }
 
+  public static void registerVisibilityFilter(String viewName, Filter filter, String message) {
+    if (!BeeUtils.isEmpty(viewName)) {
+      if (filter != null) {
+        visibilityFilters.put(viewName, filter);
+      }
+
+      if (!BeeUtils.isEmpty(message)) {
+        visibilityMessages.put(viewName, message);
+      }
+    }
+  }
+
   private static void createForm(String formName, final DataInfo dataInfo, final IsRow row,
       final Opener opener, final RowCallback rowCallback, FormInterceptor formInterceptor) {
 
@@ -278,8 +296,40 @@ public final class RowEditor {
   private static void getRow(final String formName, final DataInfo dataInfo, Filter filter,
       final Opener opener, final RowCallback rowCallback, final FormInterceptor formInterceptor) {
 
-    Queries.getRow(dataInfo.getViewName(), filter, null,
-        result -> openForm(formName, dataInfo, result, opener, rowCallback, formInterceptor));
+    final Filter flt = Filter.and(filter, visibilityFilters.get(dataInfo.getViewName()));
+
+    Queries.getRow(dataInfo.getViewName(), flt, null, new RowCallback() {
+      @Override
+      public void onFailure(String... reason) {
+        notAvailable();
+      }
+
+      @Override
+      public void onSuccess(BeeRow result) {
+        if (DataUtils.hasId(result)) {
+          openForm(formName, dataInfo, result, opener, rowCallback, formInterceptor);
+        } else {
+          notAvailable();
+        }
+      }
+
+      private void notAvailable() {
+        if (rowCallback != null) {
+          rowCallback.onDeny();
+        }
+
+        NotificationListener listener = ViewHelper.getNotificationListener();
+
+        String message = visibilityMessages.get(dataInfo.getViewName());
+        if (BeeUtils.isEmpty(message)) {
+          listener.notifyWarning(Localized.maybeTranslate(dataInfo.getCaption()),
+              Objects.toString(flt),
+              Localized.dictionary().noData());
+        } else {
+          listener.notifyWarning(message);
+        }
+      }
+    });
   }
 
   private static boolean isValidFormName(String formName) {

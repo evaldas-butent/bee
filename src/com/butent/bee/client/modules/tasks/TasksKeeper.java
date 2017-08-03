@@ -236,6 +236,12 @@ public final class TasksKeeper {
       }
     });
 
+    Long userId = BeeKeeper.getUser().getUserId();
+    if (DataUtils.isId(userId)) {
+      RowEditor.registerVisibilityFilter(VIEW_TASKS, TaskUtils.getTaskPrivacyFilter(userId),
+          Localized.dictionary().crmTaskPrivate());
+    }
+
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ASSIGNED,
         TasksGrid.getFeedFilterHandler(Feed.TASKS_ASSIGNED));
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_DELEGATED,
