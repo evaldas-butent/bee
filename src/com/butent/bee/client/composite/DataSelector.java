@@ -1180,6 +1180,15 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public void normalizeDisplay(String normalizedValue) {
   }
 
+  @Override
+  public void onCheckForUpdate() {
+    if (!isStrict() && ValueType.isString(valueType)
+        && !BeeUtils.equalsTrim(getValue(), getDisplayValue())) {
+
+      setSelection(null, parse(getDisplayValue()), false);
+    }
+  }
+
   public void onRefresh(IsRow targetRow) {
     if (!BeeConst.isUndef(getEditTargetIndex())) {
       if (targetRow == null) {
