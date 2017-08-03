@@ -140,6 +140,7 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
   }
 
   public boolean checkForUpdate(boolean normalize) {
+    getEditor().onCheckForUpdate();
     return update(null, false, normalize);
   }
 

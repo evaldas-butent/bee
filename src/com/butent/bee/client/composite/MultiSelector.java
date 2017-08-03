@@ -413,6 +413,10 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   }
 
   @Override
+  public void onCheckForUpdate() {
+  }
+
+  @Override
   public void render(IsRow row) {
     if (cellSource != null) {
       String input = cellSource.getString(row);

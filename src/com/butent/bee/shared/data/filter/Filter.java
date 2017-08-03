@@ -542,6 +542,10 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return or(or(f1, f2), f3);
   }
 
+  public static Filter or(Filter f1, Filter f2, Filter f3, Filter f4) {
+    return or(or(f1, f2), or(f3, f4));
+  }
+
   public static Filter restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;

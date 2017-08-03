@@ -14,9 +14,11 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
@@ -52,7 +54,7 @@ public final class TaskUtils {
       }
 
       if (BeeUtils.unbox(row.getInteger(info.getColumnIndex(COL_STATUS)))
-        != TaskStatus.COMPLETED.ordinal()) {
+          != TaskStatus.COMPLETED.ordinal()) {
         if (resp != null) {
           resp.addWarning(
               BeeUtils.joinWords(Localized.dictionary().crmTask(), row.getId()),
@@ -141,6 +143,13 @@ public final class TaskUtils {
     }
 
     return result;
+  }
+
+  public static Filter getTaskPrivacyFilter(long userId) {
+    return Filter.or(Filter.isNull(COL_PRIVATE_TASK),
+        Filter.equals(COL_OWNER, userId), Filter.equals(COL_EXECUTOR, userId),
+        Filter.in(COL_TASK_ID, VIEW_TASK_USERS, COL_TASK,
+            Filter.equals(AdministrationConstants.COL_USER, userId)));
   }
 
   public static List<Long> getTaskUsers(IsRow row, List<BeeColumn> columns) {
