@@ -670,12 +670,12 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private static final List<Integer> inputDelayMillis = new ArrayList<>();
 
-  static boolean determineInstantSearch(Relation relation, int dataSize) {
+  static boolean determineInstantSearch(Relation relation, DataInfo dataInfo, int dataSize) {
     if (relation.getInstant() != null) {
       return relation.getInstant();
     }
 
-    Operator operator = relation.nvlOperator();
+    Operator operator = SelectionOracle.getOperator(relation, dataInfo);
     if (!EnumUtils.in(operator, Operator.STARTS, Operator.CONTAINS)) {
       return false;
     }
@@ -963,7 +963,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
 
     Data.estimateSize(relation.getViewName(), dataSize -> {
-      setInstant(determineInstantSearch(relation, dataSize));
+      setInstant(determineInstantSearch(relation, dataInfo, dataSize));
       oracle.init(relation, dataSize);
 
       State state = getInitialState();

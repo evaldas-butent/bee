@@ -32,7 +32,6 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.AutocompleteEvent;
-import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuItem;
@@ -50,7 +49,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumable;
 import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
@@ -69,7 +67,6 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 
 public final class Autocomplete extends Composite implements Editor, HasVisibleLines, HasTextBox,
     HasCapsLock, HasKeyDownHandlers, Launchable {
@@ -311,13 +308,10 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
 
       popup.setKeyboardPartner(partner);
 
-      popup.addCloseHandler(new CloseEvent.Handler() {
-        @Override
-        public void onClose(CloseEvent event) {
-          if (event.userCaused()) {
-            getMenu().clearItems();
-            exit(false, State.CANCELED);
-          }
+      popup.addCloseHandler(event -> {
+        if (event.userCaused()) {
+          getMenu().clearItems();
+          exit(false, State.CANCELED);
         }
       });
     }
@@ -329,19 +323,9 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
     private MenuItem createNavigationItem(boolean next) {
       Scheduler.ScheduledCommand command;
       if (next) {
-        command = new Scheduler.ScheduledCommand() {
-          @Override
-          public void execute() {
-            nextPage();
-          }
-        };
+        command = Autocomplete.this::nextPage;
       } else {
-        command = new Scheduler.ScheduledCommand() {
-          @Override
-          public void execute() {
-            prevPage();
-          }
-        };
+        command = Autocomplete.this::prevPage;
       }
 
       MenuItem item = new MenuItem(menu, next ? ITEM_NEXT : ITEM_PREV, ItemType.LABEL, command);
@@ -526,20 +510,17 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
 
   private static final char SHOW_SELECTOR = '*';
 
-  private final Callback callback = new Callback() {
-    @Override
-    public void onSuggestionsReady(Request request, Response response) {
-      Autocomplete.this.getInput().removeStyleName(STYLE_WAITING);
+  private final Callback callback = (request, response) -> {
+    Autocomplete.this.getInput().removeStyleName(STYLE_WAITING);
 
-      if (request.isEmpty()) {
-        Autocomplete.this.setAlive(!response.isEmpty());
-      }
-      if (isEditing()) {
-        setHasMore(response.hasMoreSuggestions());
-        getSelector().showSuggestions(response, Autocomplete.this);
-      }
-      Autocomplete.this.setWaiting(false);
+    if (request.isEmpty()) {
+      Autocomplete.this.setAlive(!response.isEmpty());
     }
+    if (isEditing()) {
+      setHasMore(response.hasMoreSuggestions());
+      getSelector().showSuggestions(response, Autocomplete.this);
+    }
+    Autocomplete.this.setWaiting(false);
   };
 
   private int visibleLines = DEFAULT_VISIBLE_LINES;
@@ -585,18 +566,10 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
     this.input = new InputWidget();
     this.selector = new Selector(input.getElement(), relation.getSelectorClass());
 
-    oracle.addRowCountChangeHandler(new Consumer<Integer>() {
-      @Override
-      public void accept(Integer parameter) {
-        Autocomplete.this.setAlive(parameter > 0);
-      }
-    });
-    oracle.addDataReceivedHandler(new Consumer<BeeRowSet>() {
-      @Override
-      public void accept(BeeRowSet rowSet) {
-        if (!DataUtils.isEmpty(rowSet)) {
-          AutocompleteEvent.fire(Autocomplete.this, State.LOADED);
-        }
+    oracle.addRowCountChangeHandler(parameter -> Autocomplete.this.setAlive(parameter > 0));
+    oracle.addDataReceivedHandler(rowSet -> {
+      if (!DataUtils.isEmpty(rowSet)) {
+        AutocompleteEvent.fire(Autocomplete.this, State.LOADED);
       }
     });
     if (BeeUtils.isPositive(relation.getVisibleLines())) {
@@ -607,7 +580,7 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
     init(input, embedded);
 
     Data.estimateSize(relation.getViewName(), dataSize -> {
-      setInstant(DataSelector.determineInstantSearch(relation, dataSize));
+      setInstant(DataSelector.determineInstantSearch(relation, dataInfo, dataSize));
       oracle.init(relation, dataSize);
     });
   }
@@ -928,29 +901,18 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
     super.onLoad();
 
     if (!isHandledByForm()) {
-      addFocusHandler(new FocusHandler() {
-        @Override
-        public void onFocus(FocusEvent event) {
-          setEditing(true);
-        }
-      });
+      addFocusHandler(event -> setEditing(true));
     }
 
-    addBlurHandler(new BlurHandler() {
-      @Override
-      public void onBlur(BlurEvent event) {
-        if (!isHandledByForm()) {
-          setEditing(false);
-        }
+    addBlurHandler(event -> {
+      if (!isHandledByForm()) {
+        setEditing(false);
       }
     });
 
-    addEditStopHandler(new EditStopEvent.Handler() {
-      @Override
-      public void onEditStop(EditStopEvent event) {
-        if (!isHandledByForm()) {
-          UiHelper.moveFocus(getParent(), getElement(), true);
-        }
+    addEditStopHandler(event -> {
+      if (!isHandledByForm()) {
+        UiHelper.moveFocus(getParent(), getElement(), true);
       }
     });
   }
@@ -985,12 +947,7 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
   }
 
   private void addItem(MenuBar menu, final String value) {
-    Scheduler.ScheduledCommand menuCommand = new Scheduler.ScheduledCommand() {
-      @Override
-      public void execute() {
-        setSelection(value);
-      }
-    };
+    Scheduler.ScheduledCommand menuCommand = () -> setSelection(value);
     MenuItem item = new MenuItem(menu, value, menuCommand);
 
     menu.addItem(item);
