@@ -20,6 +20,7 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -317,6 +318,12 @@ public final class ViewHelper {
     } else {
       return null;
     }
+  }
+
+  public static NotificationListener getNotificationListener() {
+    View view = getActiveView(DomUtils.getActiveElement());
+    return (view instanceof NotificationListener)
+        ? (NotificationListener) view : BeeKeeper.getScreen();
   }
 
   public static Collection<PagerView> getPagers(HasWidgets container) {

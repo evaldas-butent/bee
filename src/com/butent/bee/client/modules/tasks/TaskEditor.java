@@ -806,30 +806,6 @@ class TaskEditor extends ProductSupportInterceptor {
   }
 
   @Override
-  public void onSetActiveRow(IsRow row) {
-
-    boolean privateTask =
-        BeeUtils.unbox(row.getBoolean(Data.getColumnIndex(TaskConstants.VIEW_TASKS,
-            COL_PRIVATE_TASK)));
-
-    if (privateTask) {
-      Filter filter =
-          Filter.and(Filter.notNull(COL_PRIVATE_TASK), Filter.or(Filter.equals(COL_OWNER,
-              userId), Filter.equals(COL_EXECUTOR, userId), Filter.in("TaskID",
-              VIEW_TASK_USERS, COL_TASK, Filter.equals(AdministrationConstants.COL_USER,
-                  userId))));
-      Queries.getRowSet(TaskConstants.VIEW_TASKS, null, filter, result -> {
-        if (!result.getRowIds().contains(row.getId())) {
-          getFormView().getViewPresenter().handleAction(Action.CLOSE);
-          getFormView().notifySevere(Localized.dictionary().crmTaskPrivate());
-        }
-      });
-    } else {
-      super.onSetActiveRow(row);
-    }
-  }
-
-  @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
     final IsRow oldRow = event.getOldRow();
     IsRow newRow = event.getNewRow();
