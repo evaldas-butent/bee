@@ -85,6 +85,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
     FormFactory.registerFormInterceptor("DataRights", new DataRightsHandler());
     FormFactory.registerFormInterceptor("FieldRights", new FieldRightsHandler());
+    FormFactory.registerFormInterceptor("ListRights", new ListRightsHandler());
 
     FormFactory.registerFormInterceptor("WidgetRights", new WidgetRightsHandler());
   }

@@ -3460,6 +3460,8 @@ public interface Dictionary {
 
   default String list() {return g("list");}
 
+  default String lists() {return g("lists");}
+
   default String liters() {return g("liters");}
 
   default String loading() {return g("loading");}
@@ -4075,6 +4077,8 @@ public interface Dictionary {
   default String objectData() {return g("objectData");}
 
   default String objectField() {return g("objectField");}
+
+  default String objectList() {return g("objectList");}
 
   default String objectLocation() {return g("objectLocation");}
 
