@@ -2239,8 +2239,6 @@ public class TradeActBean implements HasTimerService {
     query.addFromLeft(rangeQuery, rangeAlias,
         SqlUtils.join(TBL_SALE_ITEMS, sys.getIdName(TBL_SALE_ITEMS),
             rangeAlias, COL_TA_INVOICE_ITEM));
-    query.addFromLeft(TBL_SALES_SERIES, sys.joinTables(TBL_SALES_SERIES, TBL_SALES,
-      COL_TRADE_SALE_SERIES));
 
     if (groupBy.isEmpty()) {
       query.addFromLeft(TBL_SALES_SERIES,
@@ -2248,10 +2246,8 @@ public class TradeActBean implements HasTimerService {
 
       query.addFields(TBL_SALE_ITEMS, COL_SALE);
       query.addFields(TBL_SALES, COL_TRADE_DATE);
-      query.addField(TBL_SALES_SERIES, COL_SERIES_NAME, /*COL_TRADE_INVOICE_PREFIX);
-      query.addFields(TBL_SALES,*/
-        COL_TRADE_INVOICE_NO);
       query.addField(TBL_SALES_SERIES, COL_SERIES_NAME, COL_TRADE_INVOICE_PREFIX);
+      query.addFields(TBL_SALES, COL_TRADE_INVOICE_NO);
       query.addFields(rangeAlias, COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO);
     }
 
