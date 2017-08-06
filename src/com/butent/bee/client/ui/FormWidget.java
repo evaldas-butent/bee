@@ -192,7 +192,8 @@ public enum FormWidget {
   CANVAS("Canvas", EnumSet.of(Type.DISPLAY)),
   CHECK_BOX("CheckBox", EnumSet.of(Type.EDITABLE)),
   CHILD_GRID(UiConstants.TAG_CHILD_GRID, EnumSet.of(Type.IS_CHILD, Type.IS_GRID)),
-  CHILD_SELECTOR("ChildSelector", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.IS_CHILD)),
+  CHILD_SELECTOR(UiConstants.TAG_CHILD_SELECTOR,
+      EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.IS_CHILD)),
   COLOR_EDITOR("ColorEditor", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   COMPLEX_PANEL("ComplexPanel", EnumSet.of(Type.HAS_LAYERS)),
   CUSTOM("Custom", EnumSet.of(Type.IS_CUSTOM)),
@@ -1180,6 +1181,18 @@ public enum FormWidget {
             widgetInterceptor.configureRelation(name, relation);
           }
           widget = ChildSelector.create(viewName, relation, attributes);
+
+          if (widget != null && !BeeUtils.isEmpty(viewName)) {
+            String listName = BeeUtils.notEmpty(attributes.get(UiConstants.ATTR_LIST_NAME),
+                attributes.get(UiConstants.ATTR_CHILD_TABLE));
+
+            if (BeeKeeper.getUser().isListRequired(viewName, listName)) {
+              attributes.put(UiConstants.ATTR_REQUIRED, BeeConst.STRING_TRUE);
+            }
+            if (!BeeKeeper.getUser().canEditList(viewName, listName)) {
+              attributes.put(UiConstants.ATTR_READ_ONLY, BeeConst.STRING_TRUE);
+            }
+          }
         }
         break;
 
@@ -1946,10 +1959,18 @@ public enum FormWidget {
           UiHelper.setDefaultBounds((HasBounds) widget, column);
         }
 
-      } else if (isLabel() && attributes.containsKey(UiConstants.ATTR_FOR)) {
-        BeeColumn forColumn = getColumn(columns, attributes, UiConstants.ATTR_FOR);
-        if (forColumn != null) {
-          associateLabel(widget, forColumn);
+      } else if (isLabel()) {
+        if (attributes.containsKey(UiConstants.ATTR_FOR)) {
+          BeeColumn forColumn = getColumn(columns, attributes, UiConstants.ATTR_FOR);
+          if (forColumn != null) {
+            associateLabel(widget, forColumn);
+          }
+
+        } else if (attributes.containsKey(UiConstants.ATTR_LIST_NAME)) {
+          String listName = attributes.get(UiConstants.ATTR_LIST_NAME);
+          if (BeeKeeper.getUser().isListRequired(viewName, listName)) {
+            widget.addStyleName(StyleUtils.NAME_REQUIRED);
+          }
         }
       }
 

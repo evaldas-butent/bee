@@ -127,6 +127,8 @@ final class ListRightsHandler extends MultiStateForm {
 
     add(ClassifierConstants.VIEW_COMPANIES, MailConstants.VIEW_RCPS_GROUPS_CONTACTS,
         dictionary.mailRecipientsGroups());
+    add(ClassifierConstants.VIEW_COMPANY_PERSONS, MailConstants.VIEW_RCPS_GROUPS_CONTACTS,
+        dictionary.mailRecipientsGroups());
     add(ClassifierConstants.VIEW_COMPANY_CONTACTS, MailConstants.VIEW_RCPS_GROUPS_CONTACTS,
         dictionary.mailRecipientsGroups());
     add(ClassifierConstants.VIEW_PERSONS, MailConstants.VIEW_RCPS_GROUPS_CONTACTS,
