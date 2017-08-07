@@ -51,6 +51,8 @@
         </ui:expression>
       </render>
     </CalcColumn>
+
+    <RelColumn name="Customer" renderColumns="CustomerName CustomerTypeName" />
   </g:columns>
 
   <g:predefinedFilter name="new_answered"

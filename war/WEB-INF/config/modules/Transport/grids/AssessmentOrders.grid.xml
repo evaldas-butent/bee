@@ -70,6 +70,8 @@
     </CalcColumn>
 
     <DataColumn name="Log" visible="false" />
+
+    <RelColumn name="Customer" renderColumns="CustomerName CustomerTypeName" />
   </g:columns>
 
   <g:rowStyle>
