@@ -58,8 +58,8 @@
         </FlowPanel>
       </row>
 
-      <row data="ItemCategories">
-        <Label text="=itemCategories" />
+      <row data="ItemCategories" listName="ItemCategories">
+        <Label text="=itemCategories" listName="ItemCategories" />
         <cell colSpan="5">
           <ChildSelector name="Categories" childTable="ItemCategories" viewName="CategoryTree"
                          targetRelColumn="Item" sourceRelColumn="Category" newRowEnabled="false"

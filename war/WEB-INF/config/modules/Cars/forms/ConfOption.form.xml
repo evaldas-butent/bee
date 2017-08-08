@@ -56,14 +56,13 @@
         <InputText source="OptionName2" style="width:100%;" />
       </cell>
     </row>
-    <row>
-      <Label text="=packet" data="ConfPacketOptions" />
+    <row data="ConfPacketOptions" listName="ConfPacketOptions">
+      <Label text="=packet" listName="ConfPacketOptions" />
       <cell colSpan="3">
         <ChildSelector childTable="ConfPacketOptions" targetRelColumn="Packet"
                        viewName="ConfOptions" sourceRelColumn="Option" newRowEnabled="false"
                        style="width:100%;" choiceColumns="Code Code2 OptionName GroupName TypeName"
-                       renderColumns="Code Code2 OptionName" label="=packet"
-                       data="ConfPacketOptions" />
+                       renderColumns="Code Code2 OptionName" label="=packet" />
       </cell>
     </row>
   </Table>

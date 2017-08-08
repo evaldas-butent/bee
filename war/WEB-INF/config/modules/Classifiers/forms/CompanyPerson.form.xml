@@ -39,8 +39,8 @@
         <InputDate source="DateOfDismissal" style="width: 200px;" />
       </row>
 
-      <row>
-        <Label text="=mailRecipientsGroups" />
+      <row data="RcpsGroupsContacts" listName="RcpsGroupsContacts">
+        <Label text="=mailRecipientsGroups" listName="RcpsGroupsContacts" />
         <cell colSpan="3">
           <ChildSelector viewName="RecipientsGroups" childTable="RcpsGroupsContacts"
                          targetRelColumn="CompanyPerson" sourceRelColumn="RecipientsGroup"

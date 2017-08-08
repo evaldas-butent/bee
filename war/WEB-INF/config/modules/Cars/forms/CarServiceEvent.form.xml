@@ -83,8 +83,8 @@
         </cell>
       </row>
 
-      <row>
-        <Label text="=symptoms" data="CarSymptoms" />
+      <row listName="CarServiceSymptoms">
+        <Label text="=symptoms" listName="CarServiceSymptoms" />
         <cell colSpan="3">
           <ChildSelector property="CarServiceSymptoms" name="CarServiceSymptoms"
                          viewName="CarSymptoms"
