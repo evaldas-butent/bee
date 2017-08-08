@@ -1288,8 +1288,9 @@ class TaskEditor extends ProductSupportInterceptor {
       String comment = dialog.getComment(cid);
       String time = dialog.getTime(durIds.get(COL_DURATION));
       Long type = dialog.getSelector(durIds.get(COL_DURATION_TYPE)).getRelatedId();
+      List<FileInfo> files = dialog.getFiles(fid);
 
-      if (BeeUtils.allEmpty(comment, time)) {
+      if (BeeUtils.allEmpty(comment, time) && BeeUtils.isEmpty(files)) {
         showError(Localized.dictionary().crmEnterCommentOrDuration());
         return;
       }
@@ -1302,7 +1303,7 @@ class TaskEditor extends ProductSupportInterceptor {
       ParameterList params = createParams(TaskEvent.COMMENT, comment);
 
       if (setDurationParams(dialog, durIds, params)) {
-        sendRequest(params, TaskEvent.COMMENT, dialog.getFiles(fid));
+        sendRequest(params, TaskEvent.COMMENT, files);
         dialog.close();
       }
     });
