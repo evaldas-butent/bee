@@ -47,6 +47,11 @@ final class ListRightsHandler extends MultiStateForm {
   }
 
   @Override
+  protected String formatModule(ModuleAndSub moduleAndSub) {
+    return (moduleAndSub == null) ? null : moduleAndSub.getCaption();
+  }
+
+  @Override
   public FormInterceptor getInstance() {
     return new ListRightsHandler();
   }
@@ -92,7 +97,7 @@ final class ListRightsHandler extends MultiStateForm {
             String name = pair.getA();
             String caption = pair.getB();
 
-            result.add(new RightsObject(name, BeeUtils.notEmpty(caption, name), viewName));
+            result.add(new RightsObject(name, BeeUtils.notEmpty(caption, name), ms, 0, viewName));
           });
         }
       }
