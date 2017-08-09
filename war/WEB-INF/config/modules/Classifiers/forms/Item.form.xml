@@ -2,8 +2,8 @@
 <!DOCTYPE Form[
     <!ENTITY foritem "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>row.IsService</ui:expression></dynStyle>">
     <!ENTITY forservice "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>!row.IsService</ui:expression></dynStyle>">
-    <!ENTITY pricescale "4">
-    <!ENTITY costscale "4">
+    <!ENTITY pricescale "2">
+    <!ENTITY costscale "2">
     <!ENTITY pricestyle "width: 120px;">
     <!ENTITY currencystyle "width: 50px;">
     ]>

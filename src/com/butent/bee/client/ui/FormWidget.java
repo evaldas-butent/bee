@@ -508,14 +508,24 @@ public enum FormWidget {
 
     if (BeeUtils.isDigit(s)) {
       scale = BeeUtils.toInt(s);
-    } else if (column != null && !BeeConst.isUndef(column.getScale())) {
-      scale = money
-          ? Math.min(column.getScale(), Format.getDefaultMoneyScale()) : column.getScale();
+    } else if (money) {
+      scale = Format.getDefaultMoneyScale();
     } else {
-      scale = money ? Format.getDefaultMoneyScale() : BeeConst.UNDEF;
+      scale = BeeConst.UNDEF;
     }
 
-    widget.setScale(scale);
+    int columnScale = (column == null) ? BeeConst.UNDEF : column.getScale();
+    if (scale > 0 && columnScale >= 0) {
+      scale = Math.min(scale, columnScale);
+    }
+
+    if (money && scale == Format.getDefaultMoneyScale()) {
+      widget.setScale(scale);
+    } else if (columnScale >= 0) {
+      widget.setScale(columnScale);
+    } else if (scale >= 0) {
+      widget.setScale(scale);
+    }
 
     String pattern = attributes.get(UiConstants.ATTR_FORMAT);
     NumberFormat format;
@@ -523,14 +533,21 @@ public enum FormWidget {
     if (BeeUtils.isEmpty(pattern)) {
       if (money && scale == Format.getDefaultMoneyScale()) {
         format = Format.getDefaultMoneyFormat();
-      } else {
+      } else if (Math.max(scale, 0) < columnScale) {
+        format = Format.getDecimalFormat(Math.max(scale, 0), columnScale);
+      } else if (scale >= 0) {
         format = Format.getDecimalFormat(scale);
+      } else {
+        format = null;
       }
+
     } else {
       format = Format.getNumberFormat(pattern);
     }
 
-    widget.setNumberFormat(format);
+    if (format != null) {
+      widget.setNumberFormat(format);
+    }
 
     String currencySource = attributes.get(HasRelatedCurrency.ATTR_CURRENCY_SOURCE);
     if (!BeeUtils.isEmpty(currencySource)) {
