@@ -227,7 +227,8 @@ public final class ButentWS {
 
   public String importClient(String companyId, String companyName, String companyCode,
       String companyVATCode, String companyAddress, String companyPostIndex, String companyCity,
-      String companyCountry)
+      String companyCountry, String companyPhone, String companyEmail, String creditDays,
+      String supplierCreditDays)
       throws BeeException {
 
     logger.debug("ImportClient:", "importing client...");
@@ -241,6 +242,10 @@ public final class ButentWS {
         .append(XmlUtils.tag("indeksas", companyPostIndex))
         .append(XmlUtils.tag("miestas", companyCity))
         .append(XmlUtils.tag("salis", companyCountry))
+        .append(XmlUtils.tag("telefonai", companyPhone))
+        .append(XmlUtils.tag("e_mail", companyEmail))
+        .append(XmlUtils.tag("dienos", creditDays))
+        .append(XmlUtils.tag("tiek_dien", supplierCreditDays))
         .append("</client>");
 
     String answer;
