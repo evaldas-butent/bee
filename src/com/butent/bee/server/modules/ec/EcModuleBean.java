@@ -3186,10 +3186,11 @@ public class EcModuleBean implements BeeModule {
           .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_SUPPLIER_CODE)
           .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY)
           .addFields(TBL_COMPANIES, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE,
-              sys.getIdName(TBL_COMPANIES))
-          .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
+              sys.getIdName(TBL_COMPANIES), COL_COMPANY_CREDIT_DAYS, COL_COMPANY_SUPPLIER_DAYS)
+          .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX, COL_PHONE)
           .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
           .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
+          .addFields(TBL_EMAILS, COL_EMAIL)
           .addFrom(TBL_ORDERS)
           .addFromLeft(TBL_CLIENTS, sys.joinTables(TBL_CLIENTS, TBL_ORDERS, COL_ORDER_CLIENT))
           .addFromLeft(TBL_BRANCHES,
@@ -3204,6 +3205,7 @@ public class EcModuleBean implements BeeModule {
           .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
           .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
           .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
+          .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
           .setWhere(SqlUtils.equals(TBL_ORDERS, sys.getIdName(TBL_ORDERS), orderId)));
 
       String company = null;
@@ -3213,7 +3215,9 @@ public class EcModuleBean implements BeeModule {
             .importClient(order.getValue(sys.getIdName(TBL_COMPANIES)), order.getValue(COL_COMPANY),
                 order.getValue(COL_COMPANY_CODE), order.getValue(COL_COMPANY_VAT_CODE),
                 order.getValue(COL_ADDRESS), order.getValue(COL_POST_INDEX),
-                order.getValue(COL_CITY), order.getValue(COL_COUNTRY), null, null);
+                order.getValue(COL_CITY), order.getValue(COL_COUNTRY), null, null,
+                order.getValue(COL_PHONE), order.getValue(COL_EMAIL),
+                order.getValue(COL_COMPANY_CREDIT_DAYS), order.getValue(COL_COMPANY_SUPPLIER_DAYS));
       } catch (BeeException e) {
         response = response.addError(e);
       }

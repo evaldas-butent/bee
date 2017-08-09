@@ -2032,18 +2032,20 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     if (DataUtils.isId(companyId)) {
       data = qs.getRow(new SqlSelect()
           .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE,
-              "ERPType", "ERPGroup")
+              "ERPType", "ERPGroup", COL_COMPANY_CREDIT_DAYS, COL_COMPANY_SUPPLIER_DAYS)
           .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
           .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, COL_COMPANY_TYPE)
-          .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
+          .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX, COL_PHONE)
           .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
           .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
+          .addFields(TBL_EMAILS, COL_EMAIL)
           .addFrom(TBL_COMPANIES)
           .addFromLeft(TBL_COMPANY_TYPES,
               sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
           .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
           .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
           .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
+          .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
           .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
     }
     if (data != null) {
@@ -2060,7 +2062,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                 data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
                 data.getValue(COL_POST_INDEX), data.getValue(COL_CITY),
                 data.getValue(COL_COUNTRY), data.getValue("ERPType"),
-                data.getValue("ERPGroup"));
+                data.getValue("ERPGroup"),  data.getValue(COL_PHONE),
+                data.getValue(COL_EMAIL), data.getValue(COL_COMPANY_CREDIT_DAYS),
+                data.getValue(COL_COMPANY_SUPPLIER_DAYS));
 
         response.setResponse(company);
 
@@ -2156,17 +2160,19 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         if (DataUtils.isId(id) && !companies.containsKey(id)) {
           SimpleRow data = qs.getRow(new SqlSelect()
               .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE,
-                  "ERPType", "ERPGroup")
+                  "ERPType", "ERPGroup", COL_COMPANY_CREDIT_DAYS, COL_COMPANY_SUPPLIER_DAYS)
               .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, COL_COMPANY_TYPE)
-              .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
+              .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX, COL_PHONE)
               .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
               .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
+              .addFields(TBL_EMAILS, COL_EMAIL)
               .addFrom(TBL_COMPANIES)
               .addFromLeft(TBL_COMPANY_TYPES,
                   sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
               .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
               .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
               .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
+              .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
               .setWhere(sys.idEquals(TBL_COMPANIES, id)));
 
           try {
@@ -2178,7 +2184,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                     data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
                     data.getValue(COL_POST_INDEX), data.getValue(COL_CITY),
                     data.getValue(COL_COUNTRY), data.getValue("ERPType"),
-                    data.getValue("ERPGroup"));
+                    data.getValue("ERPGroup"), data.getValue(COL_PHONE),
+                    data.getValue(COL_EMAIL), data.getValue(COL_COMPANY_CREDIT_DAYS),
+                    data.getValue(COL_COMPANY_SUPPLIER_DAYS));
 
             companies.put(id, company);
 
