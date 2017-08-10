@@ -4,13 +4,11 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.ModalGrid;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -36,14 +34,10 @@ public class RecipientsGroupsGrid extends AbstractGridInterceptor {
 
   @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
-    presenter.getGridView().ensureRelId(new IdCallback() {
-
-      @Override
-      public void onSuccess(Long result) {
-        if (!BeeUtils.isEmpty(gridName)) {
-          parentId = result;
-          getGridDialog();
-        }
+    presenter.getGridView().ensureRelId(result -> {
+      if (!BeeUtils.isEmpty(gridName)) {
+        parentId = result;
+        getGridDialog();
       }
     });
     return false;
@@ -99,8 +93,7 @@ public class RecipientsGroupsGrid extends AbstractGridInterceptor {
         if (DataUtils.isId(companyId)) {
           RowEditor.openForm(FORM_COMPANY,
               Data.getDataInfo(VIEW_COMPANIES),
-              Filter.compareId(companyId),
-              Opener.MODAL);
+              Filter.compareId(companyId));
         }
 
         break;
@@ -110,8 +103,7 @@ public class RecipientsGroupsGrid extends AbstractGridInterceptor {
         if (DataUtils.isId(personId)) {
           RowEditor.openForm(FORM_PERSON,
               Data.getDataInfo(VIEW_PERSONS),
-              Filter.compareId(personId),
-              Opener.MODAL);
+              Filter.compareId(personId));
         }
 
         break;
@@ -122,8 +114,7 @@ public class RecipientsGroupsGrid extends AbstractGridInterceptor {
         if (DataUtils.isId(companyPersonId)) {
           RowEditor.openForm(FORM_COMPANY_PERSON,
               Data.getDataInfo(VIEW_COMPANY_PERSONS),
-              Filter.compareId(companyPersonId),
-              Opener.MODAL);
+              Filter.compareId(companyPersonId));
         }
 
         break;

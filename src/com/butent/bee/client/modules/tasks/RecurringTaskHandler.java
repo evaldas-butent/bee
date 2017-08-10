@@ -15,10 +15,8 @@ import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
@@ -31,7 +29,6 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.HeaderView;
@@ -46,7 +43,6 @@ import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -374,12 +370,9 @@ class RecurringTaskHandler extends ProductSupportInterceptor implements CellVali
           if (getFormView().isRowEnabled(activeRow)) {
             updateSize = Queries.update(getViewName(), getFormView().getDataColumns(),
                 getFormView().getOldRow(), activeRow, getFormView().getChildrenForUpdate(),
-                new RowCallback() {
-                  @Override
-                  public void onSuccess(BeeRow result) {
-                    RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
-                    showSchedule(result.getId());
-                  }
+                result -> {
+                  RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
+                  showSchedule(result.getId());
                 });
 
           } else {
@@ -626,7 +619,7 @@ class RecurringTaskHandler extends ProductSupportInterceptor implements CellVali
       case EDIT:
         dataRow = getOffspring(dataId);
         if (dataRow != null) {
-          RowEditor.open(VIEW_TASKS, dataRow, Opener.MODAL);
+          RowEditor.open(VIEW_TASKS, dataRow);
         }
         break;
 
@@ -641,13 +634,10 @@ class RecurringTaskHandler extends ProductSupportInterceptor implements CellVali
       case DELETE:
         Global.confirmDelete(getOffspringLabel(dataId), Icon.WARNING,
             Collections.singletonList(Localized.dictionary().crmTaskDeleteQuestion()),
-            () -> Queries.delete(VIEW_TASKS, Filter.compareId(dataId), new Queries.IntCallback() {
-              @Override
-              public void onSuccess(Integer result) {
-                if (BeeUtils.isPositive(result)) {
-                  RowDeleteEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, dataId);
-                  onOffspringDelete(dataId, dayNumber, source);
-                }
+            () -> Queries.delete(VIEW_TASKS, Filter.compareId(dataId), result -> {
+              if (BeeUtils.isPositive(result)) {
+                RowDeleteEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, dataId);
+                onOffspringDelete(dataId, dayNumber, source);
               }
             }), rowElement);
         break;
@@ -731,26 +721,23 @@ class RecurringTaskHandler extends ProductSupportInterceptor implements CellVali
               params.addQueryItem(COL_EXECUTOR, executor);
             }
 
-            BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-              @Override
-              public void onResponse(ResponseObject response) {
-                if (response.hasResponse(BeeRowSet.class)) {
-                  BeeRowSet taskData = BeeRowSet.restore(response.getResponseAsString());
+            BeeKeeper.getRpc().makeRequest(params, response -> {
+              if (response.hasResponse(BeeRowSet.class)) {
+                BeeRowSet taskData = BeeRowSet.restore(response.getResponseAsString());
 
-                  if (!DataUtils.isEmpty(taskData)) {
-                    for (BeeRow row : taskData.getRows()) {
-                      offspring.put(dayNumber, row);
-                    }
+                if (!DataUtils.isEmpty(taskData)) {
+                  for (BeeRow row : taskData.getRows()) {
+                    offspring.put(dayNumber, row);
+                  }
 
-                    String message =
-                        Localized.dictionary().crmCreatedNewTasks(taskData.getNumberOfRows());
-                    BeeKeeper.getScreen().notifyInfo(message);
+                  String message =
+                      Localized.dictionary().crmCreatedNewTasks(taskData.getNumberOfRows());
+                  BeeKeeper.getScreen().notifyInfo(message);
 
-                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
+                  DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
 
-                    if (callback != null) {
-                      callback.run();
-                    }
+                  if (callback != null) {
+                    callback.run();
                   }
                 }
               }
@@ -991,52 +978,49 @@ class RecurringTaskHandler extends ProductSupportInterceptor implements CellVali
     ParameterList params = TasksKeeper.createArgs(SVC_RT_GET_SCHEDULING_DATA);
     params.addQueryItem(VAR_RT_ID, rtId);
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (getFormView() == null || !getFormView().asWidget().isAttached()
-            || !DomUtils.isVisible(getFormView().getElement())) {
-          return;
-        }
-        if (!DataUtils.idEquals(getActiveRow(), rtId)) {
-          return;
-        }
-
-        if (response.hasErrors()) {
-          response.notify(getFormView());
-          return;
-        }
-
-        clearOffspring();
-        setExecutors(null);
-
-        List<ScheduleDateRange> scheduleDateRanges = new ArrayList<>();
-
-        if (response.hasResponse()) {
-          Map<String, String> data = Codec.deserializeLinkedHashMap(response.getResponseAsString());
-
-          if (data.containsKey(AdministrationConstants.VIEW_USERS)) {
-            setExecutors(BeeRowSet.restore(data.get(AdministrationConstants.VIEW_USERS)));
-          }
-
-          if (data.containsKey(VIEW_TASKS)) {
-            BeeRowSet tasks = BeeRowSet.restore(data.get(VIEW_TASKS));
-            if (!DataUtils.isEmpty(tasks)) {
-              addOffspring(tasks);
-            }
-          }
-
-          if (data.containsKey(VIEW_RT_DATES)) {
-            BeeRowSet rtDates = BeeRowSet.restore(data.get(VIEW_RT_DATES));
-            if (!DataUtils.isEmpty(rtDates)) {
-              scheduleDateRanges.addAll(TaskUtils.getScheduleDateRanges(rtDates));
-            }
-          }
-        }
-
-        boolean fertile = getExecutors() != null && getFormView().isRowEnabled(getActiveRow());
-        timeCube(scheduleDateRanges, fertile);
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      if (getFormView() == null || !getFormView().asWidget().isAttached()
+          || !DomUtils.isVisible(getFormView().getElement())) {
+        return;
       }
+      if (!DataUtils.idEquals(getActiveRow(), rtId)) {
+        return;
+      }
+
+      if (response.hasErrors()) {
+        response.notify(getFormView());
+        return;
+      }
+
+      clearOffspring();
+      setExecutors(null);
+
+      List<ScheduleDateRange> scheduleDateRanges = new ArrayList<>();
+
+      if (response.hasResponse()) {
+        Map<String, String> data = Codec.deserializeLinkedHashMap(response.getResponseAsString());
+
+        if (data.containsKey(AdministrationConstants.VIEW_USERS)) {
+          setExecutors(BeeRowSet.restore(data.get(AdministrationConstants.VIEW_USERS)));
+        }
+
+        if (data.containsKey(VIEW_TASKS)) {
+          BeeRowSet tasks = BeeRowSet.restore(data.get(VIEW_TASKS));
+          if (!DataUtils.isEmpty(tasks)) {
+            addOffspring(tasks);
+          }
+        }
+
+        if (data.containsKey(VIEW_RT_DATES)) {
+          BeeRowSet rtDates = BeeRowSet.restore(data.get(VIEW_RT_DATES));
+          if (!DataUtils.isEmpty(rtDates)) {
+            scheduleDateRanges.addAll(TaskUtils.getScheduleDateRanges(rtDates));
+          }
+        }
+      }
+
+      boolean fertile = getExecutors() != null && getFormView().isRowEnabled(getActiveRow());
+      timeCube(scheduleDateRanges, fertile);
     });
   }
 

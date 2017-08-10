@@ -4,7 +4,7 @@
 
       name="TripPurchaseInvoices" source="Purchases" caption="=trTripPurchaseInvoices"
       editForm="TripPurchaseInvoice"
-      newRowForm="NewPurchase" newRowCaption="=trNewCargoPurchaseInvoice"
+      newRowForm="NewPurchase" newRowCaption="=trNewCargoPurchaseInvoice" rowCaption="InvoicePrefix InvoiceNo"
 >
   <Columns>
     <SimpleColumn name="Date" />

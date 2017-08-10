@@ -2,11 +2,13 @@ package com.butent.bee.client.view.grid;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -152,7 +154,6 @@ import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Wildcards;
 import com.butent.bee.shared.utils.Wildcards.Pattern;
@@ -185,6 +186,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     private String containerId;
     private ModalForm popup;
 
+    private final Set<String> widgetIds = new HashSet<>();
+
     private final Set<State> states = EnumSet.noneOf(State.class);
 
     private GridForm(String name) {
@@ -193,6 +196,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     private void addState(State state) {
       states.add(state);
+    }
+
+    private void closeWidgets() {
+      widgetIds.forEach(id -> BeeKeeper.getScreen().closeById(id));
     }
 
     private IsRow getActiveRow() {
@@ -223,14 +230,46 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       return states.contains(state);
     }
 
+    private boolean isLoading() {
+      return hasState(State.LOADING);
+    }
+
+    private boolean isModal() {
+      return getPopup() != null;
+    }
+
+    private void onClose(String id) {
+      if (!BeeUtils.isEmpty(id)) {
+        widgetIds.remove(id);
+      }
+    }
+
+    private void onOpen(FormView form) {
+      String id = getFormWidgetId(form);
+
+      if (!BeeUtils.isEmpty(id)) {
+        widgetIds.add(id);
+      }
+    }
+
     private void onUnload() {
       if (getPopup() != null) {
         getPopup().unload();
       }
     }
 
-    private boolean removeState(State state) {
-      return states.remove(state);
+    private void removeState(State state) {
+      states.remove(state);
+    }
+
+    private void reset() {
+      onUnload();
+
+      setFormView(null);
+      setContainerId(null);
+      setPopup(null);
+
+      states.clear();
     }
 
     private void setContainerId(String containerId) {
@@ -243,6 +282,14 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     private void setLabel(String label) {
       this.label = label;
+    }
+
+    private void setLoading(boolean loading) {
+      if (loading) {
+        addState(State.LOADING);
+      } else {
+        removeState(State.LOADING);
+      }
     }
 
     private void setPopup(ModalForm popup) {
@@ -265,6 +312,16 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     Flow container = new Flow(STYLE_PROGRESS_CONTAINER);
     container.add(new CustomDiv(STYLE_PROGRESS_BAR));
     return container;
+  }
+
+  private static String getFormWidgetId(FormView formView) {
+    if (formView == null) {
+      return null;
+
+    } else {
+      Popup p = UiHelper.getParentPopup(formView.asWidget());
+      return (p == null) ? formView.getViewPresenter().getMainView().getWidgetId() : p.getId();
+    }
   }
 
   private static boolean isColumnReadOnly(String viewName, String source,
@@ -344,8 +401,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   private Evaluator editMessage;
   private boolean editShowId;
   private final Set<String> editInPlace = new HashSet<>();
-
-  private EditStartEvent pendingEditStartEvent;
 
   private boolean adding;
   private String activeFormContainerId;
@@ -922,8 +977,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     String viewName = gridDescription.getViewName();
     if (newRowForms.isEmpty() && !BeeUtils.isEmpty(viewName) && !isReadOnly()
         && BeeKeeper.getUser().canCreateData(viewName)) {
-      generateNewRowForm();
+
       setNewRowFormGenerated(true);
+      newRowForms.add(new GridForm(generateNewRowFormName()));
     }
 
     if (gridInterceptor != null) {
@@ -936,6 +992,12 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       final Callback<IsRow> callback) {
 
     final FormView form = getForm(getActiveFormKind());
+    if (form == null) {
+      if (callback != null) {
+        callback.onFailure(getGridName(), "active form not available");
+      }
+      return;
+    }
 
     if (!form.validate(notificationListener, false)) {
       return;
@@ -1078,11 +1140,17 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   @Override
   public void formConfirm(final Consumer<IsRow> consumer) {
     final FormView form = getForm(getActiveFormKind());
-    Assert.notNull(form, "formConfirm: active form is null");
+    if (form == null) {
+      logger.severe(getGridName(), "formConfirm: active form is null");
+      return;
+    }
 
     IsRow oldRow = form.getOldRow();
     final IsRow newRow = form.getActiveRow();
-    Assert.notNull(newRow, "formConfirm: active row is null");
+    if (newRow == null) {
+      logger.severe(getGridName(), "formConfirm: active row is null");
+      return;
+    }
 
     if (!validateFormData(form, form, true)) {
       return;
@@ -1186,6 +1254,16 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           }
         }
       });
+    }
+  }
+
+  @Override
+  public void formUnload(FormView formView) {
+    if (formView != null && isAttached()) {
+      String id = getFormWidgetId(formView);
+
+      newRowForms.forEach(gridForm -> gridForm.onClose(id));
+      editForms.forEach(gridForm -> gridForm.onClose(id));
     }
   }
 
@@ -1355,6 +1433,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     return relColumn;
   }
 
+  @Override
   public Long getRelId() {
     return relId;
   }
@@ -1597,19 +1676,35 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     if (editForms.isEmpty() || editInPlace(event.getColumnId())) {
-      openEditor(event, null);
+      openEditor(event, null, null);
+      return;
+    }
 
-    } else if (EnumUtils.in(getEditWindowType(), WindowType.NEW_TAB, WindowType.DETACHED)
-        && !Popup.hasEventPreview()) {
+    GridForm gridForm = getEditForm();
+    WindowType windowType = ViewHelper.normalize(getEditWindowType());
 
-      openEditWindow(event, getEditWindowType());
+    boolean create = false;
 
-    } else if (getEditForm().getFormView() != null) {
-      openEditor(event, getEditForm().getFormView());
+    if (windowType.isAutonomous()) {
+      if (!gridForm.isLoading()) {
+        openEditWindow(event, gridForm, windowType);
+      }
+
+    } else if (gridForm.getFormView() != null) {
+      if (gridForm.isModal() == windowType.isPopup()) {
+        openEditor(event, gridForm.getFormView(), windowType);
+
+      } else {
+        gridForm.reset();
+        create = true;
+      }
 
     } else {
-      setPendingEditStartEvent(event);
-      createEditForm();
+      create = true;
+    }
+
+    if (create) {
+      createEditForm(gridForm, windowType, event);
     }
   }
 
@@ -1969,18 +2064,43 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   @Override
   public void startNewRow(boolean copy) {
+    if (!isEnabled() || isReadOnly()) {
+      return;
+    }
+
+    IsRow oldRow = getGrid().getActiveRow();
+    BeeRow newRow = prepareNewRow(oldRow, copy);
+
+    if (getGridInterceptor() != null
+        && !getGridInterceptor().onStartNewRow(this, oldRow, newRow, copy)) {
+      return;
+    }
+
     GridForm gridForm = getNewRowForm();
+    WindowType windowType = ViewHelper.normalize(getNewRowWindowType());
 
-    if (gridForm.getFormView() != null) {
-      openNewRow(copy);
+    boolean create = false;
 
-    } else {
-      gridForm.addState(State.PENDING);
-      if (copy) {
-        gridForm.addState(State.COPYING);
+    if (windowType.isAutonomous()) {
+      if (!gridForm.isLoading()) {
+        openNewRowWindow(gridForm, windowType, newRow);
       }
 
-      createNewRowForm();
+    } else if (gridForm.getFormView() != null) {
+      if (gridForm.isModal() == windowType.isPopup()) {
+        openNewRow(gridForm.getFormView(), windowType, newRow);
+
+      } else {
+        gridForm.reset();
+        create = true;
+      }
+
+    } else {
+      create = true;
+    }
+
+    if (create) {
+      createNewRowForm(gridForm, windowType, newRow);
     }
   }
 
@@ -2061,7 +2181,12 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     for (GridForm gridForm : newRowForms) {
       gridForm.onUnload();
+
+      if (isChild()) {
+        gridForm.closeWidgets();
+      }
     }
+
     for (GridForm gridForm : editForms) {
       gridForm.onUnload();
     }
@@ -2071,7 +2196,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private void closeEditForm() {
     showForm(GridFormKind.EDIT, false);
-    fireEvent(new GridFormEvent(GridFormKind.EDIT, State.CLOSED, getEditWindowType()));
+    fireEvent(new GridFormEvent(GridFormKind.EDIT, State.CLOSED,
+        ViewHelper.normalize(getEditWindowType())));
 
     if (feed != null) {
       getGrid().getRowData().remove(getActiveRow());
@@ -2081,22 +2207,23 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     maybeResizeGrid();
   }
 
-  private void createEditForm() {
-    final GridForm gridForm = getEditForm();
+  private void createEditForm(final GridForm gridForm, final WindowType windowType,
+      final EditStartEvent event) {
 
-    if (gridForm != null && !gridForm.hasState(State.LOADING)) {
-      gridForm.addState(State.LOADING);
+    if (!gridForm.isLoading()) {
+      setLoading(gridForm, true);
 
       FormFactory.createFormView(gridForm.getName(), getViewName(), getDataColumns(), true,
           (formDescription, result) -> {
-            createFormContainer(gridForm, result, GridFormKind.EDIT, null, getEditWindowType());
+            result.setBackingGridId(getId());
+
+            createFormContainer(gridForm, result, GridFormKind.EDIT, null, windowType);
             gridForm.setFormView(result);
 
-            gridForm.removeState(State.LOADING);
+            setLoading(gridForm, false);
 
-            if (getPendingEditStartEvent() != null) {
-              openEditor(getPendingEditStartEvent(), result);
-              setPendingEditStartEvent(null);
+            if (event != null && isAttached()) {
+              openEditor(event, result, windowType);
             }
           });
     }
@@ -2108,7 +2235,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     String formCaption = BeeUtils.notEmpty(caption, formView.getCaption());
 
     EnumSet<Action> actions = EnumSet.of(Action.PRINT, Action.CLOSE);
-    if (kind != GridFormKind.EDIT) {
+    if (kind == GridFormKind.NEW_ROW) {
       actions.add(Action.SAVE);
     } else if (!isReadOnly()) {
       if (hasEditMode()) {
@@ -2128,7 +2255,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     Widget container = gfp.getMainView().asWidget();
 
-    if (WindowType.MODAL == windowType || Popup.hasEventPreview()) {
+    if (windowType.isPopup()) {
       ModalForm popup = new ModalForm(gfp, formView, true);
 
       popup.setOnSave(input -> {
@@ -2169,21 +2296,31 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
   }
 
-  private void createNewRowForm() {
-    final GridForm gridForm = getNewRowForm();
+  private void createNewRowForm(final GridForm gridForm, final WindowType windowType,
+      final BeeRow newRow) {
 
-    if (gridForm != null && !gridForm.hasState(State.LOADING)) {
-      gridForm.addState(State.LOADING);
+    if (isNewRowFormGenerated()) {
+      FormView formView = generateNewRowForm(generateNewRowFormName());
+
+      if (formView != null) {
+        embraceNewRowForm(gridForm, formView, windowType);
+
+        if (newRow != null && isAttached()) {
+          openNewRow(formView, windowType, newRow);
+        }
+      }
+
+    } else if (!gridForm.isLoading()) {
+      setLoading(gridForm, true);
 
       FormFactory.createFormView(gridForm.getName(), getViewName(), getDataColumns(), true,
           (formDescription, result) -> {
-            embraceNewRowForm(gridForm, result);
-            gridForm.removeState(State.LOADING);
+            embraceNewRowForm(gridForm, result, windowType);
 
-            boolean pending = gridForm.removeState(State.PENDING);
-            boolean copy = gridForm.removeState(State.COPYING);
-            if (pending) {
-              openNewRow(copy);
+            setLoading(gridForm, false);
+
+            if (newRow != null && isAttached()) {
+              openNewRow(result, windowType, newRow);
             }
           });
     }
@@ -2245,15 +2382,16 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     return !BeeUtils.isEmpty(columnId) && BeeUtils.containsSame(getEditInPlace(), columnId);
   }
 
-  private void embraceNewRowForm(GridForm gridForm, FormView formView) {
+  private void embraceNewRowForm(GridForm gridForm, FormView formView, WindowType windowType) {
     if (gridForm != null && formView != null) {
-      createFormContainer(gridForm, formView, GridFormKind.NEW_ROW, getNewRowCaption(),
-          getNewRowWindowType());
+      formView.setBackingGridId(getId());
+
+      createFormContainer(gridForm, formView, GridFormKind.NEW_ROW, getNewRowCaption(), windowType);
       gridForm.setFormView(formView);
     }
   }
 
-  private void focusForm(FormView form, EditableColumn editableColumn) {
+  private boolean focusWidget(FormView form, EditableColumn editableColumn) {
     Widget widget = null;
 
     if (editableColumn != null) {
@@ -2269,31 +2407,34 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       }
     }
 
-    if (widget == null || !UiHelper.focus(widget)) {
-      form.focus();
-    }
+    return widget != null && UiHelper.focus(widget);
   }
 
-  private void generateNewRowForm() {
-    String newRowColumns = BeeUtils.notEmpty(gridDescription.getNewRowColumns(),
-        (getDataInfo() == null) ? null : getDataInfo().getNewRowColumns());
+  private String generateNewRowFormName() {
+    return "grid-" + getGridName() + "-new-row";
+  }
+
+  private FormView generateNewRowForm(String formName) {
+    String newRowColumns = gridDescription.getNewRowColumns();
+    if (BeeUtils.isEmpty(newRowColumns) && getDataInfo() != null) {
+      newRowColumns = getDataInfo().getNewRowColumns();
+    }
 
     if (BeeConst.STRING_MINUS.equals(newRowColumns)) {
-      return;
+      return null;
     }
 
     final List<String> columnNames = getNewRowColumnNames(newRowColumns);
 
     if (columnNames.isEmpty()) {
-      logger.severe("grid", gridDescription.getName(), "new row columns not available");
-      return;
+      logger.severe("grid", getGridName(), "new row columns not available");
+      return null;
     }
 
-    String formName = "grid-" + gridDescription.getName() + "-new-row";
     final String rootName = "root";
 
     FormDescription formDescription = FormFactory.createFormDescription(formName,
-        ImmutableMap.of(UiConstants.ATTR_VIEW_NAME, gridDescription.getViewName()),
+        ImmutableMap.of(UiConstants.ATTR_VIEW_NAME, getViewName()),
         FormWidget.TABLE, ImmutableMap.of(UiConstants.ATTR_NAME, rootName));
 
     FormView form = new FormImpl(formName);
@@ -2335,10 +2476,14 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     form.setCaption(Localized.dictionary().newRow());
 
-    GridForm gridForm = new GridForm(formName);
-    newRowForms.add(gridForm);
+    double width = RowFactory.GENERATED_FORM_WIDTH;
+    double height = RowFactory.GENERATED_HEADER_HEIGHT + RowFactory.GENERATED_HEIGHT_MARGIN
+        + columnNames.size() * RowFactory.GENERATED_ROW_HEIGHT;
 
-    embraceNewRowForm(gridForm, form);
+    form.setWidthValue(width);
+    form.setHeightValue(Math.min(height, Window.getClientHeight() * 3 / 4));
+
+    return form;
   }
 
   private GridFormKind getActiveFormKind() {
@@ -2457,15 +2602,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     return notification;
   }
 
-  private EditStartEvent getPendingEditStartEvent() {
-    return pendingEditStartEvent;
-  }
-
   private String getRowCaption(IsRow row) {
-    if (getGridInterceptor() == null) {
-      return null;
-    }
-    return getGridInterceptor().getRowCaption(row);
+    return (getGridInterceptor() == null) ? null : getGridInterceptor().getRowCaption(row);
   }
 
   private Evaluator getRowEditable() {
@@ -2805,37 +2943,36 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       return false;
     }
 
-    boolean modal;
-    if (UiHelper.isModal(this)) {
-      modal = true;
+    Filter filter = BeeUtils.isEmpty(editTarget)
+        ? Filter.compareId(sourceValue) : Filter.equals(editTarget, sourceValue);
 
+    WindowType windowType;
+    if (relation != null) {
+      windowType = relation.getEditWindowType();
+    } else if (columnRelation != null) {
+      windowType = columnRelation.getEditWindowType();
     } else {
-      WindowType windowType;
-      if (relation != null) {
-        windowType = relation.getEditWindowType();
-      } else if (columnRelation != null) {
-        windowType = columnRelation.getEditWindowType();
-      } else {
-        windowType = null;
-      }
-
-      modal = WindowType.MODAL == windowType
-          || windowType == null && charCode != EditStartEvent.CLICK;
+      windowType = null;
     }
 
-    RowCallback rowCallback;
-    if (modal) {
-      rowCallback = new RowCallback() {
-        @Override
-        public void onCancel() {
+    final Opener opener = Opener.in(UiHelper.normalizeRelationEditWindowType(windowType), null);
+
+    RowCallback rowCallback = new RowCallback() {
+      @Override
+      public void onCancel() {
+        if (opener.isModal() && UiHelper.isInteractive(getGrid())) {
           getGrid().refocus();
         }
+      }
 
-        @Override
-        public void onSuccess(BeeRow result) {
+      @Override
+      public void onSuccess(BeeRow result) {
+        if (isAttached() && getGrid().containsRow(row.getId())) {
+
           if (BeeUtils.isEmpty(editTarget) || editDataInfo.getIdColumn().equals(editTarget)) {
-            if (!RelationUtils.updateRow(getDataInfo(), editSource, row, editDataInfo, result,
-                false).isEmpty()) {
+            if (DataUtils.sameId(row, result) && !RelationUtils.updateRow(getDataInfo(),
+                editSource, row, editDataInfo, result, false).isEmpty()) {
+
               getGrid().refreshCell(row.getId(), columnId);
             }
 
@@ -2851,20 +2988,14 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
             }
           }
 
-          getGrid().refocus();
+          if (opener.isModal() && UiHelper.isInteractive(getGrid())) {
+            getGrid().refocus();
+          }
         }
-      };
+      }
+    };
 
-    } else {
-      rowCallback = null;
-    }
-
-    Filter filter = BeeUtils.isEmpty(editTarget)
-        ? Filter.compareId(sourceValue) : Filter.equals(editTarget, sourceValue);
-
-    Opener opener = modal ? Opener.MODAL : Opener.NEW_TAB;
     RowEditor.openForm(formName, editDataInfo, filter, opener, rowCallback);
-
     return true;
   }
 
@@ -2874,7 +3005,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
   }
 
-  private void openEditor(final EditStartEvent event, final FormView form) {
+  private void openEditor(final EditStartEvent event, final FormView form,
+      final WindowType windowType) {
+
     final IsRow rowValue = event.getRowValue();
     String columnId = event.getColumnId();
     final EditableColumn editableColumn = getEditableColumn(columnId, false);
@@ -2906,12 +3039,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     if (form != null) {
       GridFormPresenter presenter = (GridFormPresenter) form.getViewPresenter();
-
-      String caption = getRowCaption(rowValue);
-      if (!BeeUtils.isEmpty(caption)) {
-        presenter.setCaption(caption);
-      }
-      updateEditFormMessage(presenter, rowValue);
+      updateEditFormHeader(presenter, rowValue);
 
       final boolean enableForm;
 
@@ -2933,19 +3061,19 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
       final ScheduledCommand focusCommand = () -> {
         if (enableForm) {
-          focusForm(form, editableColumn);
-
-          if (event.getOnFormFocus() != null) {
-            event.getOnFormFocus().accept(form);
+          if (!focusWidget(form, editableColumn)) {
+            form.focus();
           }
+
+          event.onFocus(form);
         }
 
-        fireEvent(new GridFormEvent(GridFormKind.EDIT, State.OPEN, getEditWindowType()));
+        fireEvent(new GridFormEvent(GridFormKind.EDIT, State.OPEN, windowType));
       };
 
       setOnFormOpen(() -> form.editRow(rowValue, focusCommand));
 
-      fireEvent(new GridFormEvent(GridFormKind.EDIT, State.PENDING, getEditWindowType()));
+      fireEvent(new GridFormEvent(GridFormKind.EDIT, State.PENDING, windowType));
       showForm(GridFormKind.EDIT, true);
 
       return;
@@ -2989,147 +3117,130 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         BeeUtils.toChar(event.getCharCode()), this);
   }
 
-  private void openEditWindow(EditStartEvent event, WindowType windowType) {
-    IsRow rowValue = event.getRowValue();
+  private void openEditWindow(EditStartEvent event, GridForm gridForm, WindowType windowType) {
+    IsRow row = event.getRowValue();
     String columnId = event.getColumnId();
     EditableColumn editableColumn = getEditableColumn(columnId, false);
 
-    boolean editable = isEnabled() && !isReadOnly() && isRowEditable(rowValue, null);
+    boolean editable = isEnabled() && !isReadOnly() && isRowEditable(row, null);
+
+    setLoading(gridForm, true);
 
     Consumer<FormView> onOpen = form -> {
-      boolean enableForm = editable && form.isRowEditable(rowValue, false);
+      setLoading(gridForm, false);
+
+      form.setBackingGridId(getId());
+      gridForm.onOpen(form);
+
+      updateEditFormHeader(form.getViewPresenter(), row);
+
+      boolean enableForm = editable && form.isRowEditable(row, false);
       form.setEnabled(enableForm);
 
       if (enableForm) {
-        focusForm(form, editableColumn);
+        Scheduler.get().scheduleDeferred(() -> {
+          focusWidget(form, editableColumn);
+          event.onFocus(form);
+        });
+      }
+    };
 
-        if (event.getOnFormFocus() != null) {
-          event.getOnFormFocus().accept(form);
+    String formName = gridForm.getName();
+    Opener opener = Opener.in(windowType, onOpen);
+
+    RowCallback callback = new RowCallback() {
+      @Override
+      public void onDeny() {
+        setLoading(gridForm, false);
+      }
+
+      @Override
+      public void onSuccess(BeeRow result) {
+        if (isAttached() && DataUtils.hasId(result)) {
+          if (feed != null) {
+            getGrid().removeRowById(result.getId());
+            getGrid().refresh();
+          }
+
+          if (getGridInterceptor() != null) {
+            getGridInterceptor().afterUpdateRow(result);
+          }
         }
       }
     };
 
-    String formName = getEditForm().getName();
-    Opener opener = Opener.in(windowType, onOpen);
-
-    RowEditor.openForm(formName, getViewName(), rowValue, opener, null);
+    RowEditor.openForm(formName, getViewName(), row, opener, callback);
   }
 
-  private void openNewRow(boolean copy) {
-    if (!isEnabled() || isReadOnly()) {
-      return;
-    }
-
-    IsRow oldRow = getGrid().getActiveRow();
-    final IsRow newRow = DataUtils.createEmptyRow(getDataColumns().size());
-
-    List<String> defCols = new ArrayList<>();
-    if (!newRowDefaults.isEmpty()) {
-      defCols.addAll(newRowDefaults);
-    }
-
-    boolean isCopy = copy && oldRow != null;
-
-    if (isCopy) {
-      if (copyColumns.isEmpty()) {
-        for (int i = 0; i < getDataColumns().size(); i++) {
-          if (!oldRow.isNull(i)) {
-            newRow.setValue(i, oldRow.getString(i));
-          }
-        }
-
-      } else {
-        for (int i : copyColumns) {
-          if (!oldRow.isNull(i)) {
-            newRow.setValue(i, oldRow.getString(i));
-
-            if (!defCols.isEmpty()) {
-              String colId = getDataColumns().get(i).getId();
-              if (defCols.contains(colId)) {
-                defCols.remove(colId);
-              }
-            }
-          }
-        }
-      }
-    }
-
-    if (!defCols.isEmpty()) {
-      DataUtils.setDefaults(newRow, defCols, getDataColumns(), Global.getDefaults());
-      RelationUtils.setDefaults(getDataInfo(), newRow, defCols, getDataColumns(),
-          BeeKeeper.getUser().getUserData());
-    }
-
-    if (!isCopy) {
-      for (EditableColumn editableColumn : getEditableColumns().values()) {
-        if (editableColumn.hasCarry()) {
-          if (oldRow == null) {
-            oldRow = DataUtils.createEmptyRow(getDataColumns().size());
-          }
-
-          String carry = editableColumn.getCarryValue(oldRow);
-          if (!BeeUtils.isEmpty(carry)) {
-            int index = editableColumn.getColIndex();
-            newRow.setValue(index, carry);
-
-            if (editableColumn.hasRelation()
-                && BeeUtils.equalsTrim(carry, oldRow.getString(index))) {
-              RelationUtils.setRelatedValues(getDataInfo(), editableColumn.getColumnId(),
-                  newRow, oldRow);
-            }
-          }
-        }
-      }
-    }
-
-    if (getGridInterceptor() != null
-        && !getGridInterceptor().onStartNewRow(this, oldRow, newRow, isCopy)) {
-      return;
-    }
-
+  private void openNewRow(final FormView form, final WindowType windowType, BeeRow newRow) {
     getGrid().setEditing(true);
     setAdding(true);
 
-    String caption = getRowCaption(newRow);
-
-    final FormView form = getForm(GridFormKind.NEW_ROW);
-
-    if (isNewRowFormGenerated()) {
-      List<String> columnIds = getGrid().getColumnIds();
-      List<Element> formElements =
-          Selectors.getElementsWithDataProperty(form.getElement(), KEY_COLUMN);
-
-      if (!BeeUtils.isEmpty(columnIds) && !BeeUtils.isEmpty(formElements)) {
-        formElements.forEach(fe -> {
-          if (BeeUtils.containsSame(columnIds, DomUtils.getDataProperty(fe, KEY_COLUMN))) {
-            StyleUtils.unhideDisplay(fe);
-          } else {
-            StyleUtils.hideDisplay(fe);
-          }
-        });
-      }
-    }
+    prepareNewRowForm(form);
 
     if (form.getFormInterceptor() != null) {
-      form.getFormInterceptor().onStartNewRow(form, oldRow, newRow);
+      form.getFormInterceptor().onStartNewRow(form, newRow);
     }
 
-    if (form.getViewPresenter() instanceof GridFormPresenter) {
-      GridFormPresenter presenter = (GridFormPresenter) form.getViewPresenter();
-      if (!BeeUtils.isEmpty(caption)) {
-        presenter.setCaption(caption);
-      }
+    String caption = getRowCaption(newRow);
+    if (!BeeUtils.isEmpty(caption) && form.getViewPresenter() instanceof GridFormPresenter) {
+      form.getViewPresenter().setCaption(caption);
     }
 
     setOnFormOpen(() -> {
       form.updateRow(newRow, true);
       form.focus();
 
-      fireEvent(new GridFormEvent(GridFormKind.NEW_ROW, State.OPEN, getNewRowWindowType()));
+      fireEvent(new GridFormEvent(GridFormKind.NEW_ROW, State.OPEN, windowType));
     });
 
-    fireEvent(new GridFormEvent(GridFormKind.NEW_ROW, State.PENDING, getNewRowWindowType()));
+    fireEvent(new GridFormEvent(GridFormKind.NEW_ROW, State.PENDING, windowType));
     showForm(GridFormKind.NEW_ROW, true);
+  }
+
+  private void openNewRowWindow(GridForm gridForm, WindowType windowType, BeeRow newRow) {
+    setLoading(gridForm, true);
+
+    Consumer<FormView> onOpen = form -> {
+      setLoading(gridForm, false);
+
+      form.setBackingGridId(getId());
+      gridForm.onOpen(form);
+
+      prepareNewRowForm(form);
+    };
+
+    String formName = gridForm.getName();
+    String caption = BeeUtils.notEmpty(getRowCaption(newRow), getNewRowCaption());
+
+    Opener opener = Opener.in(windowType, onOpen);
+
+    RowCallback callback = result -> {
+      if (isAttached() && DataUtils.hasId(result)) {
+        if (!getGrid().containsRow(result.getId())) {
+          getGrid().insertRow(result, false);
+        }
+
+        if (getGridInterceptor() != null) {
+          getGridInterceptor().afterInsertRow(result);
+        }
+      }
+    };
+
+    if (isNewRowFormGenerated()) {
+      FormView formView = generateNewRowForm(generateNewRowFormName());
+
+      if (formView != null) {
+        formView.setAdding(true);
+        formView.setEditing(true);
+        formView.start(null);
+
+        RowFactory.openForm(formView, caption, getDataInfo(), newRow, opener, callback);
+      }
+
+    } else {
+      RowFactory.createRow(formName, caption, getDataInfo(), newRow, opener, callback);
+    }
   }
 
   private List<GridForm> parseForms(GridFormKind kind) {
@@ -3174,7 +3285,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
       if (!BeeUtils.isEmpty(getRelColumn()) && BeeUtils.same(getRelColumn(), dataColumn.getId())) {
         if (!DataUtils.isId(getRelId())) {
-          callback.onFailure(BeeUtils.joinWords(getViewName(), getRelColumn(), "invalid rel id"));
+          callback.onFailure(BeeUtils.joinWords(getViewName(), getRelColumn(),
+              Localized.dictionary().invalidIdValue(getRelId())));
           return;
         }
 
@@ -3218,6 +3330,89 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     fireEvent(event);
+  }
+
+  private BeeRow prepareNewRow(IsRow oldRow, boolean copy) {
+    BeeRow newRow = DataUtils.createEmptyRow(getDataColumns().size());
+
+    List<String> defCols = new ArrayList<>();
+    if (!newRowDefaults.isEmpty()) {
+      defCols.addAll(newRowDefaults);
+    }
+
+    boolean isCopy = copy && oldRow != null;
+
+    if (isCopy) {
+      if (copyColumns.isEmpty()) {
+        for (int i = 0; i < getDataColumns().size(); i++) {
+          if (!oldRow.isNull(i)) {
+            newRow.setValue(i, oldRow.getString(i));
+          }
+        }
+
+      } else {
+        for (int i : copyColumns) {
+          if (!oldRow.isNull(i)) {
+            newRow.setValue(i, oldRow.getString(i));
+
+            if (!defCols.isEmpty()) {
+              String colId = getDataColumns().get(i).getId();
+              if (defCols.contains(colId)) {
+                defCols.remove(colId);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (!defCols.isEmpty()) {
+      DataUtils.setDefaults(newRow, defCols, getDataColumns(), Global.getDefaults());
+      RelationUtils.setDefaults(getDataInfo(), newRow, defCols, getDataColumns(),
+          BeeKeeper.getUser().getUserData());
+    }
+
+    if (!isCopy) {
+      IsRow carryRow = (oldRow == null)
+          ? DataUtils.createEmptyRow(getDataColumns().size()) : oldRow;
+
+      for (EditableColumn editableColumn : getEditableColumns().values()) {
+        if (editableColumn.hasCarry()) {
+          String carry = editableColumn.getCarryValue(carryRow);
+
+          if (!BeeUtils.isEmpty(carry)) {
+            int index = editableColumn.getColIndex();
+            newRow.setValue(index, carry);
+
+            if (editableColumn.hasRelation()
+                && BeeUtils.equalsTrim(carry, carryRow.getString(index))) {
+              RelationUtils.setRelatedValues(getDataInfo(), editableColumn.getColumnId(),
+                  newRow, carryRow);
+            }
+          }
+        }
+      }
+    }
+
+    return newRow;
+  }
+
+  private void prepareNewRowForm(FormView form) {
+    if (isNewRowFormGenerated()) {
+      List<String> columnIds = getGrid().getColumnIds();
+      List<Element> formElements =
+          Selectors.getElementsWithDataProperty(form.getElement(), KEY_COLUMN);
+
+      if (!BeeUtils.isEmpty(columnIds) && !BeeUtils.isEmpty(formElements)) {
+        formElements.forEach(fe -> {
+          if (BeeUtils.containsSame(columnIds, DomUtils.getDataProperty(fe, KEY_COLUMN))) {
+            StyleUtils.unhideDisplay(fe);
+          } else {
+            StyleUtils.hideDisplay(fe);
+          }
+        });
+      }
+    }
   }
 
   private void saveChanges(FormView form, IsRow oldRow, IsRow newRow, RowCallback callback) {
@@ -3278,6 +3473,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     this.editShowId = editShowId;
   }
 
+  private void setLoading(GridForm gridForm, boolean loading) {
+    gridForm.setLoading(loading);
+    setStyleName(StyleUtils.NAME_LOADING, loading);
+  }
+
   private void setNewRowCaption(String newRowCaption) {
     this.newRowCaption = newRowCaption;
   }
@@ -3300,10 +3500,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private void setOptions(String options) {
     this.options = options;
-  }
-
-  private void setPendingEditStartEvent(EditStartEvent pendingEditStartEvent) {
-    this.pendingEditStartEvent = pendingEditStartEvent;
   }
 
   private void setProperties(Map<String, String> properties) {
@@ -3334,28 +3530,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     if (show) {
       if (modal) {
-        if (kind == GridFormKind.NEW_ROW && isNewRowFormGenerated()
-            && !gridForm.hasState(State.INITIALIZED)) {
-
-          Widget w = form.getRootWidget().asWidget();
-          while (w != null && !DomUtils.sameId(w, popup)) {
-            StyleUtils.makeRelative(w);
-            StyleUtils.setTop(w, 0);
-
-            w = w.getParent();
-          }
-
-          if (form.getViewPresenter() != null) {
-            HeaderView hv = form.getViewPresenter().getHeader();
-            if (hv != null) {
-              StyleUtils.makeRelative(hv.asWidget());
-            }
-          }
-
-          StyleUtils.clearWidth(popup);
-          StyleUtils.clearHeight(popup);
-        }
-
         if (kind == GridFormKind.NEW_ROW && hasChildUi() && isNewRowFormGenerated()) {
           int x = getAbsoluteLeft();
           int y = getAbsoluteTop();
@@ -3363,7 +3537,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           popup.showAt(x, y);
 
         } else {
-          popup.center();
+          popup.centerOrCascade(form.getContainerClassName());
         }
 
       } else {
@@ -3498,13 +3672,26 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     fireEvent(event);
   }
 
-  private void updateEditFormMessage(GridFormPresenter presenter, IsRow row) {
-    if (getEditShowId()) {
-      presenter.getHeader().showRowId(row);
-    }
+  private void updateEditFormHeader(Presenter presenter, IsRow row) {
+    HeaderView header = (presenter == null) ? null : presenter.getHeader();
 
-    if (getEditMessage() != null) {
-      presenter.getHeader().showRowMessage(getEditMessage(), row);
+    if (header != null) {
+      String caption = getRowCaption(row);
+      if (!BeeUtils.isEmpty(caption)) {
+        header.setCaption(caption);
+      }
+
+      if (getEditShowId()) {
+        header.showRowId(row);
+      }
+
+      if (getEditMessage() != null) {
+        header.showRowMessage(getEditMessage(), row);
+
+      } else if (presenter instanceof GridFormPresenter) {
+        header.setRowMessage(DataUtils.getRowCaption(getDataInfo(), row,
+            Format.getDateRenderer(), Format.getDateTimeRenderer()));
+      }
     }
   }
 

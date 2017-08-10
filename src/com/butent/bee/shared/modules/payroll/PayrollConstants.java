@@ -187,6 +187,7 @@ public final class PayrollConstants {
   public static final String VIEW_TIME_CARD_CODES = "TimeCardCodes";
   public static final String VIEW_TIME_RANGES = "TimeRanges";
   public static final String VIEW_WORK_SCHEDULE_LOCKS = "WorkScheduleLocks";
+  public static final String VIEW_WORK_SCHEDULE_INFO = "WorkScheduleInfo";
 
   public static final String COL_TAB_NUMBER = "TabNumber";
   public static final String COL_SALARY = "Salary";

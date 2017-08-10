@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  
-  name="UserGroupMembers" viewName="UserGroupMembers" caption="=userGroupMembers"
-  newRowColumns="-" minColumnWidth="100" flexGrow="1"
-  >
+
+        name="UserGroupMembers" viewName="UserGroupMembers" caption="=userGroupMembers"
+        newRowColumns="-" minColumnWidth="100" flexGrow="1"
+>
   <g:columns>
-    <DataColumn name="Login" editWindow="modal" />
+    <DataColumn name="Login" editEnabled="true" />
     <DataColumn name="FirstName" />
     <DataColumn name="LastName" visible="true" />
     <DataColumn name="CompanyName" label="=company" />

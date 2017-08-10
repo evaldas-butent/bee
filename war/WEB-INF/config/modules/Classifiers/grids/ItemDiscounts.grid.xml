@@ -5,7 +5,7 @@
   name="ItemDiscounts" viewName="Discounts" caption="=discounts"
   >
   <g:columns>
-    <RelColumn name="Company" editWindow="modal" />
+    <RelColumn name="Company" editEnabled="true" />
   </g:columns>
 
   <xi:include href="columns/Discount.columns.xml" />

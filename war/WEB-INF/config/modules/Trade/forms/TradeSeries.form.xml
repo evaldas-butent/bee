@@ -3,7 +3,7 @@
         xmlns:f="http://www.butent.com/form"
 
         name="TradeSeries" viewName="TradeSeries" caption="=trdSeries"
-        width="500" height="300"
+        width="700" height="360"
 >
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls" style="margin-top: 1vh; margin-bottom: 2vh;">

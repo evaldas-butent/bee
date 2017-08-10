@@ -2,8 +2,8 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
         name="Countries" viewName="Countries" caption="=countries"
-        maxColumnWidth="300" newRowWindow="modal" editWindow="modal"
-    >
+        maxColumnWidth="300"
+>
   <g:columns>
     <DataColumn name="Name" minWidth="100" visible="true" />
     <DataColumn name="Code" />

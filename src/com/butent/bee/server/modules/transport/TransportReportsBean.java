@@ -862,7 +862,7 @@ public class TransportReportsBean {
         .addExpr(firstLastNameJoiner.apply(TBL_PERSONS), COL_DRIVER)
         .addFields(tmpTrips, COL_TRIP_NO, COL_DATE_FROM, COL_DATE_TO, COL_STATUS,
             COL_SPEEDOMETER_BEFORE, COL_SPEEDOMETER_AFTER, COL_FUEL_BEFORE, COL_FUEL_AFTER,
-            COL_NOTES, COL_TRADE_MANAGER, COL_MAIN_DRIVER)
+            COL_NOTES, COL_TRADE_MANAGER, COL_MAIN_DRIVER, ALS_TRAILER_NUMBER, ALS_VEHICLE_NUMBER)
         .addFrom(TBL_TRIP_COSTS)
         .setWhere(costsClause)
         .addFromLeft(tmpTrips, SqlUtils.join(tmpTrips, sys.getIdName(TBL_TRIPS),
@@ -890,7 +890,7 @@ public class TransportReportsBean {
         .addExpr(SqlUtils.constant(BeeConst.STRING_EMPTY), COL_DRIVER)
         .addFields(tmpTrips, COL_TRIP_NO, COL_DATE_FROM, COL_DATE_TO, COL_STATUS,
             COL_SPEEDOMETER_BEFORE, COL_SPEEDOMETER_AFTER, COL_FUEL_BEFORE, COL_FUEL_AFTER,
-            COL_NOTES, COL_TRADE_MANAGER, COL_MAIN_DRIVER)
+            COL_NOTES, COL_TRADE_MANAGER, COL_MAIN_DRIVER, ALS_TRAILER_NUMBER, ALS_VEHICLE_NUMBER)
         .addFrom(TBL_TRIP_FUEL_COSTS)
         .addFromLeft(tmpTrips, SqlUtils.join(tmpTrips, sys.getIdName(TBL_TRIPS),
             TBL_TRIP_FUEL_COSTS, COL_TRIP))

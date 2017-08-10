@@ -20,13 +20,11 @@ import com.butent.bee.client.Storage;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.DialogConstants;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
@@ -398,12 +396,9 @@ public class TradeItemPicker extends Flow implements HasPaging {
       Data.setValue(VIEW_ITEMS, row, COL_ITEM_IS_SERVICE, isService);
     }
 
-    RowFactory.createRow(dataInfo, row, Modality.ENABLED, new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow result) {
-        if (DataUtils.hasId(result)) {
-          doQuery(Filter.compareId(result.getId()), Collections.emptySet());
-        }
+    RowFactory.createRow(dataInfo, row, Opener.MODAL, result -> {
+      if (DataUtils.hasId(result)) {
+        doQuery(Filter.compareId(result.getId()), Collections.emptySet());
       }
     });
   }
@@ -1757,7 +1752,7 @@ public class TradeItemPicker extends Flow implements HasPaging {
     if (cell.hasClassName(STYLE_ID + STYLE_CELL_SUFFIX)) {
       long id = getRowId(cell);
       if (DataUtils.isId(id)) {
-        RowEditor.open(VIEW_ITEMS, id, Opener.MODAL);
+        RowEditor.open(VIEW_ITEMS, id);
       }
 
     } else if (cell.hasClassName(STYLE_MAIN_WAREHOUSE + STYLE_CELL_SUFFIX)) {

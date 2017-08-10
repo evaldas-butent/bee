@@ -69,6 +69,10 @@ public interface HeaderView extends View, IndexedPanel, Printable, HasClickHandl
 
   void setMessage(int index, String message, String styleName);
 
+  void setRowId(Long rowId);
+
+  void setRowMessage(String message);
+
   void showAction(Action action, boolean visible);
 
   void showReadOnly(boolean readOnly);

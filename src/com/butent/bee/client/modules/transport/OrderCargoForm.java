@@ -22,7 +22,6 @@ import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -363,11 +362,11 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow row) {
     form.getViewPresenter().getHeader().clearCommandPanel();
 
     if (defaultCargoType != null) {
-      RelationUtils.updateRow(Data.getDataInfo(form.getViewName()), COL_CARGO_TYPE, newRow,
+      RelationUtils.updateRow(Data.getDataInfo(form.getViewName()), COL_CARGO_TYPE, row,
           Data.getDataInfo(VIEW_CARGO_TYPES), defaultCargoType, true);
     }
 
@@ -416,7 +415,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
           Global.confirm(Localized.dictionary().trCopyOrder(), () ->
               TransportUtils.copyOrderWithCargos(orderId, Filter.compareId(getActiveRowId()),
                   (newOrderId, newCargos) ->
-                  RowEditor.open(getViewName(), BeeUtils.peek(newCargos).getId(), Opener.MODAL)));
+                  RowEditor.open(getViewName(), BeeUtils.peek(newCargos).getId())));
         }
       });
     }

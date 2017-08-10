@@ -670,12 +670,12 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private static final List<Integer> inputDelayMillis = new ArrayList<>();
 
-  static boolean determineInstantSearch(Relation relation, int dataSize) {
+  static boolean determineInstantSearch(Relation relation, DataInfo dataInfo, int dataSize) {
     if (relation.getInstant() != null) {
       return relation.getInstant();
     }
 
-    Operator operator = relation.nvlOperator();
+    Operator operator = SelectionOracle.getOperator(relation, dataInfo);
     if (!EnumUtils.in(operator, Operator.STARTS, Operator.CONTAINS)) {
       return false;
     }
@@ -739,7 +739,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private final String editViewName;
   private final String editForm;
-  private final Boolean editModal;
+  private final WindowType editWindowType;
 
   private final boolean editEnabled;
 
@@ -886,7 +886,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
       this.editForm = ef;
 
-      this.editModal = WindowType.MODAL == relation.getEditWindowType();
+      this.editWindowType = relation.getEditWindowType();
       this.editEnabled = !BeeUtils.isEmpty(ev) && !BeeUtils.isEmpty(ef)
           && Data.isViewVisible(ev);
 
@@ -915,7 +915,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       this.editViewName = null;
 
       this.editForm = null;
-      this.editModal = null;
+      this.editWindowType = null;
       this.editEnabled = false;
 
       this.editTargetIndex = BeeConst.UNDEF;
@@ -963,7 +963,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
 
     Data.estimateSize(relation.getViewName(), dataSize -> {
-      setInstant(determineInstantSearch(relation, dataSize));
+      setInstant(determineInstantSearch(relation, dataInfo, dataSize));
       oracle.init(relation, dataSize);
 
       State state = getInitialState();
@@ -1152,10 +1152,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return getInput().isEditing();
   }
 
-  public Boolean isEditModal() {
-    return BeeUtils.isTrue(editModal) || UiHelper.isModal(getWidget());
-  }
-
   public boolean isEmbedded() {
     return embedded;
   }
@@ -1182,6 +1178,15 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   @Override
   public void normalizeDisplay(String normalizedValue) {
+  }
+
+  @Override
+  public void onCheckForUpdate() {
+    if (!isStrict() && ValueType.isString(valueType)
+        && !BeeUtils.equalsTrim(getValue(), getDisplayValue())) {
+
+      setSelection(null, parse(getDisplayValue()), false);
+    }
   }
 
   public void onRefresh(IsRow targetRow) {
@@ -1406,6 +1411,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   protected String getEditViewName() {
     return editViewName;
+  }
+
+  protected WindowType getEditWindowType() {
+    return editWindowType;
   }
 
   protected InputWidget getInput() {
@@ -1641,11 +1650,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       return;
     }
 
-    boolean modal = isEditModal();
-    RowCallback rowCallback;
+    WindowType windowType = UiHelper.normalizeRelationEditWindowType(getEditWindowType());
+    Opener opener = Opener.in(windowType, getElement(), null);
 
-    if (modal) {
-      rowCallback = result -> {
+    RowCallback rowCallback = result -> {
+      if (isAttached()) {
         if (BeeUtils.same(getEditViewName(), getOracle().getViewName())) {
           setRelatedRow(result);
 
@@ -1668,13 +1677,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         if (getRelatedRow() != null) {
           fireEvent(new EditStopEvent(State.EDITED));
         }
-      };
+      }
+    };
 
-    } else {
-      rowCallback = null;
-    }
-
-    Opener opener = modal ? Opener.relativeTo(getWidget()) : Opener.NEW_TAB;
     RowEditor.openForm(getEditForm(), Data.getDataInfo(getEditViewName()), Filter.compareId(rowId),
         opener, rowCallback);
   }

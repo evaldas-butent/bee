@@ -1049,8 +1049,7 @@ public final class DomUtils {
   }
 
   public static Widget getPhysicalChild(Widget root, String id) {
-    Assert.notNull(root);
-    return getChildByElement(root, getElement(id));
+    return getChildByElement(root, getElementQuietly(id));
   }
 
   public static int getRelativeLeft(Element parent, Element child) {

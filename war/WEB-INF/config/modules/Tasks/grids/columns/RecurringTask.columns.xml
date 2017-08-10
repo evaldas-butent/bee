@@ -14,7 +14,7 @@
              sortBy="ContactLastName ContactFirstName" visible="false" />
 
   <RelColumn name="Project" renderColumns="ProjectName" visible="false" autoFit="true"
-             editWindow="new-tab" />
+             editEnabled="true" />
 
   <RelColumn name="Product" renderColumns="ProductName" visible="false">
     <dynStyle>

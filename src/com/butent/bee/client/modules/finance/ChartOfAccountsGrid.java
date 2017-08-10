@@ -8,17 +8,14 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
@@ -96,57 +93,54 @@ class ChartOfAccountsGrid extends AbstractGridInterceptor {
         Filter.anyString(COL_FIN_INDICATOR_NAME, names.values()),
         Filter.anyString(COL_FIN_INDICATOR_ABBREVIATION, abbreviations.values()));
 
-    Queries.getRowSet(VIEW_FINANCIAL_INDICATORS, columns, filter, new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            Set<String> existingNames = new HashSet<>();
-            Set<String> existingAbbreviations = new HashSet<>();
+    Queries.getRowSet(VIEW_FINANCIAL_INDICATORS, columns, filter, result -> {
+      Set<String> existingNames = new HashSet<>();
+      Set<String> existingAbbreviations = new HashSet<>();
 
-            if (!DataUtils.isEmpty(result)) {
-              int nameIndex = result.getColumnIndex(COL_FIN_INDICATOR_NAME);
-              int abbreviationIndex = result.getColumnIndex(COL_FIN_INDICATOR_ABBREVIATION);
+      if (!DataUtils.isEmpty(result)) {
+        int nameIndex = result.getColumnIndex(COL_FIN_INDICATOR_NAME);
+        int abbreviationIndex = result.getColumnIndex(COL_FIN_INDICATOR_ABBREVIATION);
 
-              for (BeeRow row : result) {
-                String name = BeeUtils.trimRight(row.getString(nameIndex));
-                String abbreviation = BeeUtils.trimRight(row.getString(abbreviationIndex));
+        for (BeeRow row : result) {
+          String name = BeeUtils.trimRight(row.getString(nameIndex));
+          String abbreviation = BeeUtils.trimRight(row.getString(abbreviationIndex));
 
-                if (!name.isEmpty()) {
-                  existingNames.add(name);
-                }
-                if (!abbreviation.isEmpty()) {
-                  existingAbbreviations.add(abbreviation);
-                }
-              }
-            }
-
-            final List<TurnoverOrBalance> types = new ArrayList<>();
-            List<String> captions = new ArrayList<>();
-
-            for (TurnoverOrBalance type : TurnoverOrBalance.values()) {
-              if (!existingNames.contains(names.get(type))
-                  && !existingAbbreviations.contains(abbreviations.get(type))) {
-
-                types.add(type);
-                captions.add(type.getCaption());
-              }
-            }
-
-            if (types.isEmpty()) {
-              Global.sayHuh("OMG", "ENOUGH", "ALREADY");
-
-            } else {
-              Global.choiceWithCancel(Localized.dictionary().finIndicatorCreate(),
-                  BeeUtils.joinWords(accountCode, accountName), captions, index -> {
-                    if (BeeUtils.isIndex(types, index)) {
-                      TurnoverOrBalance type = types.get(index);
-
-                      createIndicator(type, accountId, names.get(type), abbreviations.get(type),
-                          normalBalance, background, foreground);
-                    }
-                  });
-            }
+          if (!name.isEmpty()) {
+            existingNames.add(name);
+          }
+          if (!abbreviation.isEmpty()) {
+            existingAbbreviations.add(abbreviation);
           }
         }
+      }
+
+      final List<TurnoverOrBalance> types = new ArrayList<>();
+      List<String> captions = new ArrayList<>();
+
+      for (TurnoverOrBalance type : TurnoverOrBalance.values()) {
+        if (!existingNames.contains(names.get(type))
+            && !existingAbbreviations.contains(abbreviations.get(type))) {
+
+          types.add(type);
+          captions.add(type.getCaption());
+        }
+      }
+
+      if (types.isEmpty()) {
+        Global.sayHuh("OMG", "ENOUGH", "ALREADY");
+
+      } else {
+        Global.choiceWithCancel(Localized.dictionary().finIndicatorCreate(),
+            BeeUtils.joinWords(accountCode, accountName), captions, index -> {
+              if (BeeUtils.isIndex(types, index)) {
+                TurnoverOrBalance type = types.get(index);
+
+                createIndicator(type, accountId, names.get(type), abbreviations.get(type),
+                    normalBalance, background, foreground);
+              }
+            });
+      }
+    }
     );
   }
 
@@ -176,13 +170,10 @@ class ChartOfAccountsGrid extends AbstractGridInterceptor {
       row.setValue(dataInfo.getColumnIndex(COL_FOREGROUND), foreground);
     }
 
-    Queries.insert(dataInfo.getViewName(), dataInfo.getColumns(), row, new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow result) {
-        if (DataUtils.hasId(result)) {
-          RowInsertEvent.fire(BeeKeeper.getBus(), dataInfo.getViewName(), result, null);
-          addIndicatorAccount(result.getId(), accountId);
-        }
+    Queries.insert(dataInfo.getViewName(), dataInfo.getColumns(), row, result -> {
+      if (DataUtils.hasId(result)) {
+        RowInsertEvent.fire(BeeKeeper.getBus(), dataInfo.getViewName(), result, null);
+        addIndicatorAccount(result.getId(), accountId);
       }
     });
   }
@@ -191,12 +182,7 @@ class ChartOfAccountsGrid extends AbstractGridInterceptor {
     Queries.insert(VIEW_INDICATOR_ACCOUNTS,
         Data.getColumns(VIEW_INDICATOR_ACCOUNTS, COL_FIN_INDICATOR, COL_INDICATOR_ACCOUNT),
         Queries.asList(indicatorId, accountId), null,
-        new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            RowEditor.open(VIEW_FINANCIAL_INDICATORS, indicatorId, Opener.MODAL);
-          }
-        });
+        result -> RowEditor.open(VIEW_FINANCIAL_INDICATORS, indicatorId));
   }
 
   private static String sanitizeAccountCode(String input) {

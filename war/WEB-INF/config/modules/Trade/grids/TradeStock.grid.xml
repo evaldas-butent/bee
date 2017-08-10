@@ -19,10 +19,10 @@
     <DataColumn name="Date" />
 
     <DataColumn name="ItemName" flexGrow="2" editSource="Item" editViewName="Items"
-                editWindow="modal" visible="true" />
+                visible="true" />
     <DataColumn name="Article" flexGrow="1" />
 
-    <DataColumn name="WarehouseCode" label="=warehouse" editWindow="modal" />
+    <DataColumn name="WarehouseCode" label="=warehouse" editEnabled="true" />
 
     <DataColumn name="Quantity" scale="0" visible="true" />
     <DataColumn name="UnitName" label="=unitShort" />

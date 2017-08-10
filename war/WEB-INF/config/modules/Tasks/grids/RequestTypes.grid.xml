@@ -2,10 +2,10 @@
 <g:Grid xmlns="http://www.butent.com/column"
         xmlns:g="http://www.butent.com/grid"
         xmlns:ui="http://www.butent.com/ui"
-  
-  name="RequestTypes" viewName="RequestTypes" caption="=crmRequestTypes"
-  minColumnWidth="120" newRowWindow="modal"
-  >
+
+        name="RequestTypes" viewName="RequestTypes" caption="=crmRequestTypes"
+        minColumnWidth="120"
+>
   <g:columns>
     <DataColumn name="Ordinal" width="20" />
     <DataColumn name="Name" visible="true" />
@@ -22,7 +22,7 @@
       </dynStyle>
       <editor type="color" />
     </DataColumn>
-    
+
     <DataColumn name="ProductRequired" />
   </g:columns>
 </g:Grid>

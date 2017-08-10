@@ -1214,6 +1214,9 @@ public class QueryServiceBean {
 
   public boolean sqlExists(SqlSelect query) {
     SqlSelect ss = query.copyOf().resetOrder().setLimit(1);
+    if (ss.isEmpty()) {
+      ss.addConstant(null, "dummy");
+    }
     return !DataUtils.isEmpty(getData(ss));
   }
 

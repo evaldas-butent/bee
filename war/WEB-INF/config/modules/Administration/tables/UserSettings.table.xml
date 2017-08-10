@@ -47,5 +47,13 @@
 
     <String name="ChildEditWindow" precision="20" label="=childEditWindow" />
     <String name="ChildNewRowWindow" precision="20" label="=childNewRowWindow" />
+
+    <String name="RelationEditWindow" precision="20" label="=relationEditWindow" />
+    <String name="RelationNewRowWindow" precision="20" label="=relationNewRowWindow" />
+
+    <String name="OtherEditWindows" precision="20" label="=otherEditWindows" />
+    <String name="OtherNewRowWindows" precision="20" label="=otherNewRowWindows" />
+
+    <String name="NewMailMessageWindow" precision="20" label="=mailNewMessageWindow" />
   </Fields>
 </Table>

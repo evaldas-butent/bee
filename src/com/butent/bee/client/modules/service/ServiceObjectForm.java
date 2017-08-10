@@ -18,17 +18,12 @@ import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.Autocomplete;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
-import com.butent.bee.client.data.Queries.RowSetCallback;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.AutocompleteEvent;
@@ -50,11 +45,9 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
@@ -72,7 +65,6 @@ import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -80,7 +72,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickHandler,
     RowActionEvent.Handler, SelectorEvent.Handler, RowUpdateEvent.Handler, DataChangeEvent.Handler {
@@ -223,7 +214,7 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
                     COL_SERVICE_CUSTOMER, ALS_SERVICE_CUSTOMER_NAME, ALS_CUSTOMER_TYPE_NAME);
                 ServiceUtils.fillContractorAndManufacturerValues(newRow, objectRow);
 
-                RowFactory.createRow(maintenanceDataInfo, newRow, Modality.ENABLED);
+                RowFactory.createRow(maintenanceDataInfo, newRow);
               });
               return false;
             } else {
@@ -256,19 +247,13 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
 
     ParameterList params = ServiceKeeper.createArgs(SVC_UPDATE_SERVICE_MAINTENANCE_OBJECT);
     params.addDataItem(COL_SERVICE_OBJECT, result.getId());
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (!response.isEmpty() && !response.hasErrors()) {
-          Queries.getRow(TBL_SERVICE_MAINTENANCE, response.getResponseAsLong(), new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
-              if (result != null) {
-                RowUpdateEvent.fire(BeeKeeper.getBus(), TBL_SERVICE_MAINTENANCE, result);
-              }
-            }
-          });
-        }
+    BeeKeeper.getRpc().makePostRequest(params, response -> {
+      if (!response.isEmpty() && !response.hasErrors()) {
+        Queries.getRow(TBL_SERVICE_MAINTENANCE, response.getResponseAsLong(), result1 -> {
+          if (result1 != null) {
+            RowUpdateEvent.fire(BeeKeeper.getBus(), TBL_SERVICE_MAINTENANCE, result1);
+          }
+        });
       }
     });
   }
@@ -283,32 +268,26 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
     Dictionary loc = Localized.dictionary();
 
     Global.inputCollection(loc.mainCriteria(), loc.name(), true, criteriaEditors.keySet(),
-        new Consumer<Collection<String>>() {
-          @Override
-          public void accept(Collection<String> collection) {
-            Map<String, Editor> oldCriteria = new HashMap<>(criteriaEditors);
-            criteriaEditors.clear();
+        collection -> {
+          Map<String, Editor> oldCriteria = new HashMap<>(criteriaEditors);
+          criteriaEditors.clear();
 
-            for (String crit : collection) {
-              Editor input = oldCriteria.get(crit);
+          for (String crit : collection) {
+            Editor input = oldCriteria.get(crit);
 
-              if (input == null) {
-                input = createAutocomplete(VIEW_SERVICE_DISTINCT_VALUES,
-                    COL_SERVICE_CRITERION_VALUE, crit);
-              }
-              criteriaEditors.put(crit, input);
+            if (input == null) {
+              input = createAutocomplete(VIEW_SERVICE_DISTINCT_VALUES,
+                  COL_SERVICE_CRITERION_VALUE, crit);
             }
-            render();
+            criteriaEditors.put(crit, input);
           }
+          render();
         },
-        new Function<String, Editor>() {
-          @Override
-          public Editor apply(String value) {
-            Editor editor = createAutocomplete(VIEW_SERVICE_DISTINCT_CRITERIA,
-                COL_SERVICE_CRITERION_NAME, null);
-            editor.setValue(value);
-            return editor;
-          }
+        value -> {
+          Editor editor = createAutocomplete(VIEW_SERVICE_DISTINCT_CRITERIA,
+              COL_SERVICE_CRITERION_NAME, null);
+          editor.setValue(value);
+          return editor;
         });
   }
 
@@ -333,28 +312,25 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
         && BeeUtils.isTrue(getActiveRow().getBoolean(getDataIndex(COL_COMPANY_TYPE_PERSON)))) {
       Long companyId = getActiveRow().getLong(getDataIndex(COL_SERVICE_CUSTOMER));
       Queries.getRow(VIEW_COMPANY_PERSONS, Filter.equals(COL_COMPANY, companyId), null,
-          new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow companyPersonRow) {
-              if (companyPersonRow != null && DataUtils.isId(companyPersonRow.getId())) {
-                DataInfo targetDataInfo = Data.getDataInfo(getViewName());
-                DataInfo sourceDataInfo = Data.getDataInfo(VIEW_COMPANY_PERSONS);
+          companyPersonRow -> {
+            if (companyPersonRow != null && DataUtils.isId(companyPersonRow.getId())) {
+              DataInfo targetDataInfo = Data.getDataInfo(getViewName());
+              DataInfo sourceDataInfo = Data.getDataInfo(VIEW_COMPANY_PERSONS);
 
-                getActiveRow().setValue(targetDataInfo.getColumnIndex(ALS_CONTACT_PERSON),
-                    companyPersonRow.getId());
-                RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_PHONE, getActiveRow(),
-                    sourceDataInfo, COL_PHONE, companyPersonRow);
-                RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_FIRST_NAME,
-                    getActiveRow(), sourceDataInfo, COL_FIRST_NAME, companyPersonRow);
-                RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_LAST_NAME,
-                    getActiveRow(), sourceDataInfo, COL_LAST_NAME, companyPersonRow);
-                RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_EMAIL, getActiveRow(),
-                    sourceDataInfo, COL_EMAIL, companyPersonRow);
-                RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_ADDRESS, getActiveRow(),
-                    sourceDataInfo, COL_ADDRESS, companyPersonRow);
+              getActiveRow().setValue(targetDataInfo.getColumnIndex(ALS_CONTACT_PERSON),
+                  companyPersonRow.getId());
+              RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_PHONE, getActiveRow(),
+                  sourceDataInfo, COL_PHONE, companyPersonRow);
+              RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_FIRST_NAME,
+                  getActiveRow(), sourceDataInfo, COL_FIRST_NAME, companyPersonRow);
+              RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_LAST_NAME,
+                  getActiveRow(), sourceDataInfo, COL_LAST_NAME, companyPersonRow);
+              RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_EMAIL, getActiveRow(),
+                  sourceDataInfo, COL_EMAIL, companyPersonRow);
+              RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_ADDRESS, getActiveRow(),
+                  sourceDataInfo, COL_ADDRESS, companyPersonRow);
 
-                getFormView().refreshBySource(ALS_CONTACT_PERSON);
-              }
+              getFormView().refreshBySource(ALS_CONTACT_PERSON);
             }
           });
     }
@@ -453,8 +429,8 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-    requery(newRow);
+  public void onStartNewRow(FormView form, IsRow row) {
+    requery(row);
   }
 
   @Override
@@ -529,32 +505,29 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
     Filter filter = Filter.and(Filter.equals(COL_SERVICE_OBJECT, objId),
         Filter.isNull(COL_SERVICE_CRITERIA_GROUP_NAME));
 
-    Queries.getRowSet(VIEW_SERVICE_OBJECT_CRITERIA, null, filter, new RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        if (result.getNumberOfRows() > 0) {
-          criteriaGroupId = result.getRow(0).getId();
+    Queries.getRowSet(VIEW_SERVICE_OBJECT_CRITERIA, null, filter, result -> {
+      if (result.getNumberOfRows() > 0) {
+        criteriaGroupId = result.getRow(0).getId();
 
-          for (BeeRow crit : result) {
-            String name = DataUtils.getString(result, crit, COL_SERVICE_CRITERION_NAME);
+        for (BeeRow crit : result) {
+          String name = DataUtils.getString(result, crit, COL_SERVICE_CRITERION_NAME);
 
-            if (!BeeUtils.isEmpty(name)) {
-              String value = DataUtils.getString(result, crit, COL_SERVICE_CRITERION_VALUE);
+          if (!BeeUtils.isEmpty(name)) {
+            String value = DataUtils.getString(result, crit, COL_SERVICE_CRITERION_VALUE);
 
-              Autocomplete box = createAutocomplete(VIEW_SERVICE_DISTINCT_VALUES,
-                  COL_SERVICE_CRITERION_VALUE, name);
+            Autocomplete box = createAutocomplete(VIEW_SERVICE_DISTINCT_VALUES,
+                COL_SERVICE_CRITERION_VALUE, name);
 
-              box.setValue(value);
+            box.setValue(value);
 
-              criteriaHistory.put(name, value);
-              criteriaEditors.put(name, box);
+            criteriaHistory.put(name, value);
+            criteriaEditors.put(name, box);
 
-              criteriaIds.put(name, DataUtils.getLong(result, crit, "ID"));
-            }
+            criteriaIds.put(name, DataUtils.getLong(result, crit, "ID"));
           }
-
-          render();
         }
+
+        render();
       }
     });
   }
@@ -616,36 +589,25 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
     };
 
     if (!BeeUtils.isEmpty(newValues)) {
-      final Consumer<Long> consumer = new Consumer<Long>() {
-        @Override
-        public void accept(Long id) {
-          List<BeeColumn> columns = Data.getColumns(VIEW_SERVICE_CRITERIA,
-              Lists.newArrayList(COL_SERVICE_CRITERIA_GROUP,
-                  COL_SERVICE_CRITERION_NAME, COL_SERVICE_CRITERION_VALUE));
+      final Consumer<Long> consumer = id -> {
+        List<BeeColumn> columns = Data.getColumns(VIEW_SERVICE_CRITERIA,
+            Lists.newArrayList(COL_SERVICE_CRITERIA_GROUP,
+                COL_SERVICE_CRITERION_NAME, COL_SERVICE_CRITERION_VALUE));
 
-          for (Entry<String, String> entry : newValues.entrySet()) {
-            List<String> values = Lists.newArrayList(BeeUtils.toString(id),
-                entry.getKey(), entry.getValue());
+        for (Entry<String, String> entry : newValues.entrySet()) {
+          List<String> values = Lists.newArrayList(BeeUtils.toString(id),
+              entry.getKey(), entry.getValue());
 
-            Queries.insert(VIEW_SERVICE_CRITERIA, columns, values, null, new RowCallback() {
-              @Override
-              public void onSuccess(BeeRow result) {
-                scheduler.execute();
-              }
-            });
-          }
+          Queries.insert(VIEW_SERVICE_CRITERIA, columns, values, null,
+              result -> scheduler.execute());
         }
       };
 
       if (!DataUtils.isId(criteriaGroupId)) {
         Queries.insert(VIEW_SERVICE_CRITERIA_GROUPS,
             Data.getColumns(VIEW_SERVICE_CRITERIA_GROUPS, Lists.newArrayList(COL_SERVICE_OBJECT)),
-            Lists.newArrayList(BeeUtils.toString(row.getId())), null, new RowCallback() {
-              @Override
-              public void onSuccess(BeeRow result) {
-                consumer.accept(result.getId());
-              }
-            });
+            Lists.newArrayList(BeeUtils.toString(row.getId())), null,
+            result -> consumer.accept(result.getId()));
       } else {
         consumer.accept(criteriaGroupId);
       }
@@ -654,22 +616,13 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
     if (!BeeUtils.isEmpty(changedValues)) {
       for (Entry<Long, String> entry : changedValues.entrySet()) {
         Queries.update(VIEW_SERVICE_CRITERIA, Filter.compareId(entry.getKey()),
-            COL_SERVICE_CRITERION_VALUE, new TextValue(entry.getValue()), new IntCallback() {
-              @Override
-              public void onSuccess(Integer result) {
-                scheduler.execute();
-              }
-            });
+            COL_SERVICE_CRITERION_VALUE, new TextValue(entry.getValue()),
+            result -> scheduler.execute());
       }
     }
 
     if (!flt.isEmpty()) {
-      Queries.delete(VIEW_SERVICE_CRITERIA, flt, new IntCallback() {
-        @Override
-        public void onSuccess(Integer result) {
-          scheduler.execute();
-        }
-      });
+      Queries.delete(VIEW_SERVICE_CRITERIA, flt, result -> scheduler.execute());
     }
 
     return true;

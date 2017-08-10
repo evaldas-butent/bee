@@ -1,26 +1,18 @@
 package com.butent.bee.client.modules.ec;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.modules.administration.AdministrationUtils;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -62,12 +54,9 @@ class EcRegistrationForm extends AbstractFormInterceptor {
     }
 
     String caption = Localized.dictionary().ipBlockCommand();
-    AdministrationUtils.blockHost(caption, host, getFormView(), new Callback<String>() {
-      @Override
-      public void onSuccess(String result) {
-        if (getFormView().isInteractive()) {
-          getHeaderView().clearCommandPanel();
-        }
+    AdministrationUtils.blockHost(caption, host, getFormView(), result -> {
+      if (getFormView().isInteractive()) {
+        getHeaderView().clearCommandPanel();
       }
     });
   }
@@ -130,39 +119,32 @@ class EcRegistrationForm extends AbstractFormInterceptor {
 
     String caption = Localized.dictionary().ecRegistrationCommandCreate();
     AdministrationUtils.createUser(caption, login, password, UserInterface.E_COMMERCE, userFields,
-        getFormView(), new IdCallback() {
-          @Override
-          public void onSuccess(Long result) {
-            if (getFormView().isInteractive()) {
-              getHeaderView().clearCommandPanel();
-            }
-
-            ParameterList params = EcKeeper.createArgs(SVC_CREATE_CLIENT);
-            params.addQueryItem(EcConstants.VAR_MAIL, 1);
-
-            params.addDataItem(COL_CLIENT_USER, result);
-            params.addDataItem(COL_CLIENT_TYPE, type.ordinal());
-            params.addDataItem(COL_CLIENT_PRIMARY_BRANCH, branch);
-
-            params.addNotEmptyData(COL_CLIENT_PERSON_CODE, personCode);
-            params.addNotEmptyData(COL_CLIENT_ACTIVITY, activity);
-
-            params.addDataItem(AdministrationConstants.COL_PASSWORD, password);
-            params.addNotNullData(AdministrationConstants.COL_USER_LOCALE, locale);
-
-            BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-              @Override
-              public void onResponse(ResponseObject response) {
-                EcKeeper.dispatchMessages(response);
-
-                if (response.hasResponse(BeeRow.class)) {
-                  DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_CLIENTS);
-                  RowEditor.open(VIEW_CLIENTS, BeeRow.restore(response.getResponseAsString()),
-                      Opener.MODAL);
-                }
-              }
-            });
+        getFormView(), result -> {
+          if (getFormView().isInteractive()) {
+            getHeaderView().clearCommandPanel();
           }
+
+          ParameterList params = EcKeeper.createArgs(SVC_CREATE_CLIENT);
+          params.addQueryItem(EcConstants.VAR_MAIL, 1);
+
+          params.addDataItem(COL_CLIENT_USER, result);
+          params.addDataItem(COL_CLIENT_TYPE, type.ordinal());
+          params.addDataItem(COL_CLIENT_PRIMARY_BRANCH, branch);
+
+          params.addNotEmptyData(COL_CLIENT_PERSON_CODE, personCode);
+          params.addNotEmptyData(COL_CLIENT_ACTIVITY, activity);
+
+          params.addDataItem(AdministrationConstants.COL_PASSWORD, password);
+          params.addNotNullData(AdministrationConstants.COL_USER_LOCALE, locale);
+
+          BeeKeeper.getRpc().makeRequest(params, response -> {
+            EcKeeper.dispatchMessages(response);
+
+            if (response.hasResponse(BeeRow.class)) {
+              DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_CLIENTS);
+              RowEditor.open(VIEW_CLIENTS, BeeRow.restore(response.getResponseAsString()));
+            }
+          });
         });
   }
 
@@ -188,12 +170,7 @@ class EcRegistrationForm extends AbstractFormInterceptor {
         if (this.registerCommand == null) {
           this.registerCommand =
               new Button(Localized.dictionary().ecRegistrationCommandCreate(),
-                  new ClickHandler() {
-                    @Override
-                    public void onClick(ClickEvent event) {
-                      onCreateUser();
-                    }
-                  });
+                  event -> onCreateUser());
         }
         header.addCommandItem(this.registerCommand);
       }
@@ -202,12 +179,7 @@ class EcRegistrationForm extends AbstractFormInterceptor {
           && Data.isViewEditable(AdministrationConstants.VIEW_IP_FILTERS)) {
         if (this.blockCommand == null) {
           this.blockCommand =
-              new Button(Localized.dictionary().ipBlockCommand(), new ClickHandler() {
-                @Override
-                public void onClick(ClickEvent event) {
-                  onBlock();
-                }
-              });
+              new Button(Localized.dictionary().ipBlockCommand(), event -> onBlock());
         }
         header.addCommandItem(this.blockCommand);
       }

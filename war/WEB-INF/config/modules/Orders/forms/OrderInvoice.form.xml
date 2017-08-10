@@ -157,8 +157,4 @@
       </page>
     </TabbedPages>
   </FlowPanel>
-
-  <f:rowMessage>
-    <ui:expression>row.Sale</ui:expression>
-  </f:rowMessage>
 </f:Form>

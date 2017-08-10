@@ -9,12 +9,10 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -194,35 +192,17 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
       final Freight freight = (Freight) data;
       String title = freight.getCargoAndTripTitle();
 
-      Trip.createForCargo(this, freight, title, new RowCallback() {
-        @Override
-        public void onSuccess(final BeeRow tripRow) {
-          freight.updateTrip(tripRow.getId(), new RowCallback() {
-
-            @Override
-            public void onSuccess(BeeRow ct) {
-              afterAssignToNewTrip(freight, tripRow);
-            }
-          });
-        }
-      });
+      Trip.createForCargo(this, freight, title,
+          tripRow -> freight.updateTrip(tripRow.getId(),
+              ct -> afterAssignToNewTrip(freight, tripRow)));
 
     } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO)) {
       final OrderCargo orderCargo = (OrderCargo) data;
       String title = orderCargo.getTitle();
 
-      Trip.createForCargo(this, orderCargo, title, new RowCallback() {
-        @Override
-        public void onSuccess(final BeeRow tripRow) {
-          orderCargo.assignToTrip(tripRow.getId(), new RowCallback() {
-
-            @Override
-            public void onSuccess(BeeRow ct) {
-              afterAssignToNewTrip(orderCargo, tripRow);
-            }
-          });
-        }
-      });
+      Trip.createForCargo(this, orderCargo, title,
+          tripRow -> orderCargo.assignToTrip(tripRow.getId(),
+              ct -> afterAssignToNewTrip(orderCargo, tripRow)));
     }
   }
 
@@ -237,7 +217,7 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
       }
 
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), viewNames);
-      RowEditor.open(VIEW_TRIPS, tripRow, Opener.MODAL);
+      RowEditor.open(VIEW_TRIPS, tripRow);
     });
   }
 

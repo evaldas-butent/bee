@@ -29,7 +29,7 @@ public class ProjectAppointmentsGrid extends AbstractGridInterceptor {
     event.consume();
 
     CalendarKeeper.openAppointment(Appointment.create(event.getRowValue()), null,
-        CalendarConstants.DEFAULT_EDIT_APPOINTMENT_FORM);
+        CalendarConstants.DEFAULT_EDIT_APPOINTMENT_FORM, null);
   }
 
   @Override

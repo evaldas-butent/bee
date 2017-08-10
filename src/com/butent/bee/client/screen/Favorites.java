@@ -1,8 +1,6 @@
 package com.butent.bee.client.screen;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -12,12 +10,10 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.BookmarkEvent;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.shared.Assert;
@@ -81,7 +77,7 @@ public class Favorites implements HandlesDeleteEvents {
           return;
         }
 
-        RowEditor.openForm(formName, dataInfo, Filter.compareId(id), Opener.modeless());
+        RowEditor.openForm(formName, dataInfo, Filter.compareId(id));
       }
     };
 
@@ -118,12 +114,7 @@ public class Favorites implements HandlesDeleteEvents {
       InternalLink itemWidget = new InternalLink(html.trim());
       itemWidget.addStyleName(ITEM_STYLE);
 
-      itemWidget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          Group.this.open(key, id, html);
-        }
-      });
+      itemWidget.addClickHandler(event -> Group.this.open(key, id, html));
 
       return itemWidget;
     }
@@ -259,34 +250,22 @@ public class Favorites implements HandlesDeleteEvents {
     FaLabel edit = new FaLabel(FontAwesome.EDIT, EDIT_STYLE);
     edit.setTitle(Localized.dictionary().actionRename());
 
-    edit.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Global.inputString(Localized.dictionary().actionRename(), null, new StringCallback() {
-          @Override
-          public void onSuccess(String value) {
-            updateItem(group, key, item.getId(), value);
-          }
-        }, null, item.getHtml(), BeeConst.UNDEF, display.getEventRowElement(event, false));
-      }
-    });
+    edit.addClickHandler(
+        event -> Global
+            .inputString(Localized.dictionary().actionRename(), null, new StringCallback() {
+              @Override
+              public void onSuccess(String value) {
+                updateItem(group, key, item.getId(), value);
+              }
+            }, null, item.getHtml(), BeeConst.UNDEF, display.getEventRowElement(event, false)));
 
     display.setWidget(row, EDIT_COLUMN, edit);
 
     FaLabel delete = new FaLabel(FontAwesome.TRASH_O, DELETE_STYLE);
     delete.setTitle(Localized.dictionary().actionRemove());
 
-    delete.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Global.confirmRemove(group.getCaption(key), item.getHtml(), new ConfirmationCallback() {
-          @Override
-          public void onConfirm() {
-            removeItem(group, key, item.getId());
-          }
-        }, display.getEventRowElement(event, false));
-      }
-    });
+    delete.addClickHandler(event -> Global.confirmRemove(group.getCaption(key), item.getHtml(),
+        () -> removeItem(group, key, item.getId()), display.getEventRowElement(event, false)));
 
     display.setWidget(row, DELETE_COLUMN, delete);
   }

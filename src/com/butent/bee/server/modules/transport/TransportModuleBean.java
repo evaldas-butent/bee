@@ -1055,7 +1055,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
               if (BeeUtils.isEmpty(text)) {
                 return;
               }
-              mail.sendMail(accountId, email, null, text);
+              String id = BeeUtils.toString(event.getRow().getId());
+
+              mail.sendMail(accountId, email, null,
+                  text.replace("[CONTRACT_ID]", id).replace("{CONTRACT_ID}", id));
             }
           }
         }

@@ -5,6 +5,7 @@
       source="OrderCargo"
       editForm="OrderCargo"
       caption="=cargos"
+      rowCaption="CargoID"
 >
   <Relation renderColumns="Description" />
   <Columns>

@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
-  xmlns:x="http://www.butent.com/expression"
 
-  name="Requests" source="Requests" caption="=crmRequests"
-  newRowForm="NewRequest" editForm="Request"
-  >
+      name="Requests" source="Requests" caption="=crmRequests"
+      newRowForm="NewRequest" editForm="Request" rowCaption="Id"
+>
   <Relation renderColumns="Id Summary FirstName LastName" />
   <Columns>
-    <IdColumn name="Id"/>
+    <IdColumn name="Id" />
     <SimpleColumn name="Summary" />
     <SimpleColumn name="Date" />
     <SimpleColumn name="Content" />
@@ -17,7 +16,7 @@
     <SimpleColumn name="Result" />
     <SimpleColumn name="ResultProperties" />
     <SimpleColumn name="Priority" />
-      
+
     <SimpleColumn name="Customer" />
     <SimpleJoin joinType="LEFT" name="Customer">
       <SimpleColumn name="Name" alias="CustomerName" />
@@ -25,55 +24,55 @@
         <SimpleColumn name="Name" alias="TypeName" />
       </SimpleJoin>
     </SimpleJoin>
-  
-      <SimpleColumn name="RequestType" />
-      <SimpleJoin joinType="LEFT" name="RequestType" >
-        <SimpleColumn name="Name" alias="RequestTypeName" />
-        <SimpleColumn name="ProductRequired" />
-        <SimpleColumn name="TaskType" />
-        <SimpleColumn name="Background" alias="TypeBackground"/>
-        <SimpleColumn name="Foreground" alias="TypeForeground"/>
-      </SimpleJoin>
-      
-      <SimpleColumn name="RequestForm" />
-      <SimpleJoin joinType="LEFT" name="RequestForm" >
-        <SimpleColumn name="Name" alias="RequestFormName" />
-      </SimpleJoin>
-            
-      <SimpleColumn name="CustomerPerson" />
-      <SimpleJoin name="CustomerPerson" joinType="LEFT">
-        <SimpleJoin name="Person" joinType="LEFT">
-          <SimpleColumn name="FirstName" alias="PersonFirstName" />
-          <SimpleColumn name="LastName" alias="PersonLastName" />
-        </SimpleJoin>
-      </SimpleJoin>
 
-      <SimpleColumn name="Manager" />
-      <SimpleJoin name="Manager" joinType="LEFT">
-        <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
-        <SimpleJoin name="CompanyPerson" joinType="LEFT">
-          <SimpleJoin name="Person" joinType="LEFT">
-            <SimpleColumn name="FirstName" />
-            <SimpleColumn name="LastName" />
-          </SimpleJoin>
+    <SimpleColumn name="RequestType" />
+    <SimpleJoin joinType="LEFT" name="RequestType">
+      <SimpleColumn name="Name" alias="RequestTypeName" />
+      <SimpleColumn name="ProductRequired" />
+      <SimpleColumn name="TaskType" />
+      <SimpleColumn name="Background" alias="TypeBackground" />
+      <SimpleColumn name="Foreground" alias="TypeForeground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="RequestForm" />
+    <SimpleJoin joinType="LEFT" name="RequestForm">
+      <SimpleColumn name="Name" alias="RequestFormName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="CustomerPerson" />
+    <SimpleJoin name="CustomerPerson" joinType="LEFT">
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn name="FirstName" alias="PersonFirstName" />
+        <SimpleColumn name="LastName" alias="PersonLastName" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Manager" />
+    <SimpleJoin name="Manager" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" />
+          <SimpleColumn name="LastName" />
         </SimpleJoin>
       </SimpleJoin>
-      
-      <SimpleColumn name="Creator" />
-      <SimpleJoin name="Creator" joinType="LEFT">
-        <SimpleJoin name="CompanyPerson" joinType="LEFT">
-          <SimpleJoin name="Person" joinType="LEFT">
-            <SimpleColumn name="FirstName" alias="CreatorFirstName" />
-            <SimpleColumn name="LastName" alias="CreatorLastName" />
-          </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Creator" />
+    <SimpleJoin name="Creator" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="CreatorFirstName" />
+          <SimpleColumn name="LastName" alias="CreatorLastName" />
         </SimpleJoin>
       </SimpleJoin>
-      
+    </SimpleJoin>
+
     <SimpleColumn name="Product" />
     <SimpleJoin name="Product" joinType="LEFT">
-      <SimpleColumn name="Name" alias="ProductName"/>
-      <SimpleColumn name="Background" alias="ProductBackground"/>
-      <SimpleColumn name="Foreground" alias="ProductForeground"/>
+      <SimpleColumn name="Name" alias="ProductName" />
+      <SimpleColumn name="Background" alias="ProductBackground" />
+      <SimpleColumn name="Foreground" alias="ProductForeground" />
     </SimpleJoin>
   </Columns>
 </View>

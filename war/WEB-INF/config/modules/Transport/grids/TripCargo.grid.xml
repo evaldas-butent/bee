@@ -8,11 +8,11 @@
 >
   <g:columns>
     <RelColumn name="OrderNo" caption="=orderNumber" minWidth="100" editEnabled="true"
-               editWindow="new-tab" editSource="Order" readOnly="true" />
+               editSource="Order" readOnly="true" />
     <RelColumn name="Customer" renderColumns="CustomerName" minWidth="100" editEnabled="true"
                editSource="Customer" readOnly="true" />
     <RelColumn name="Cargo" renderColumns="Cargo Description" editEnabled="true" maxWidth="300"
-               editWindow="new-tab" editSource="Cargo" readOnly="true" />
+               editSource="Cargo" readOnly="true" />
     <DataColumn name="Weight" editInPlace="true" />
     <DataColumn name="Volume" editInPlace="true" />
     <DataColumn name="Quantity" editInPlace="true" />

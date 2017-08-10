@@ -3,7 +3,7 @@
 
       name="Drivers" source="Drivers"
       editForm="Driver" newRowForm="Driver"
-      caption="=drivers" newRowCaption="=trNewDriver"
+      caption="=drivers" newRowCaption="=trNewDriver" rowCaption="TabNumber FirstName LastName"
     >
   <Relation renderColumns="FirstName LastName" />
   <Columns>

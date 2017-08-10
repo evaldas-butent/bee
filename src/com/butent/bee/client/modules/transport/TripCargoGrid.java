@@ -9,17 +9,16 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.DataReceivedEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
@@ -28,7 +27,6 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -99,28 +97,25 @@ public class TripCargoGrid extends PercentEditor {
 
     @Override
     public void onClick(ClickEvent clickEvent) {
-      RowFactory.createRow(TBL_ORDERS, Modality.ENABLED, new RowInsertCallback(TBL_ORDERS) {
+      RowFactory.createRow(TBL_ORDERS, Opener.MODAL, new RowInsertCallback(TBL_ORDERS) {
         @Override
         public void onSuccess(BeeRow result) {
           super.onSuccess(result);
           final long orderId = result.getId();
 
           Queries.getRowSet(TBL_ORDER_CARGO, Collections.singletonList(COL_ORDER),
-              Filter.equals(COL_ORDER, orderId), new Queries.RowSetCallback() {
-                @Override
-                public void onSuccess(final BeeRowSet res) {
-                  if (DataUtils.isEmpty(res)) {
-                    Queries.deleteRow(TBL_ORDERS, orderId);
-                    gridView.notifyWarning(Localized.dictionary().noData());
-                    return;
-                  }
-                  gridView.ensureRelId(tripId -> {
-                    for (BeeRow row : res) {
-                      insertCargo(tripId, row.getId());
-                    }
-                  });
-                  dialog.close();
+              Filter.equals(COL_ORDER, orderId), res -> {
+                if (DataUtils.isEmpty(res)) {
+                  Queries.deleteRow(TBL_ORDERS, orderId);
+                  gridView.notifyWarning(Localized.dictionary().noData());
+                  return;
                 }
+                gridView.ensureRelId(tripId -> {
+                  for (BeeRow row : res) {
+                    insertCargo(tripId, row.getId());
+                  }
+                });
+                dialog.close();
               });
         }
       });
@@ -140,13 +135,10 @@ public class TripCargoGrid extends PercentEditor {
           cargoIndex);
       List<String> values = Queries.asList(tripId, cargoId);
 
-      Queries.insert(gridView.getViewName(), columns, values, null, new RowCallback() {
-        @Override
-        public void onSuccess(BeeRow row) {
-          RowInsertEvent.fire(BeeKeeper.getBus(), gridView.getViewName(), row, gridView.getId());
-          gridView.getGrid().insertRow(row, false);
-          TripCostsGrid.assignTrip(tripId, BeeUtils.toString(cargoId));
-        }
+      Queries.insert(gridView.getViewName(), columns, values, null, row -> {
+        RowInsertEvent.fire(BeeKeeper.getBus(), gridView.getViewName(), row, gridView.getId());
+        gridView.getGrid().insertRow(row, false);
+        TripCostsGrid.assignTrip(tripId, BeeUtils.toString(cargoId));
       });
     }
   }

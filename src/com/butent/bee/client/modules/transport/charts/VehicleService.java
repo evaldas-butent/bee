@@ -51,7 +51,7 @@ class VehicleService implements HasDateRange {
     panel.setTitle(BeeUtils.buildLines(TimeBoardHelper.getRangeLabel(getRange()), getName(),
         getNotes()));
 
-    panel.addClickHandler(event -> TimeBoard.openDataRow(event, VIEW_VEHICLES, getVehicleId()));
+    panel.addClickHandler(event -> TimeBoard.openDataRow(VIEW_VEHICLES, getVehicleId()));
 
     Label label = new Label(getName());
     label.addStyleName(labelStyle);
