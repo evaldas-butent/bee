@@ -454,7 +454,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       popup.setKeyboardPartner(partner);
 
       popup.addCloseHandler(event -> {
-        if (event.userCaused()) {
+        if (event.mouseEvent() && isChangePending()) {
+          setSelection(null, parse(getDisplayValue()), false);
+
+        } else if (event.userCaused()) {
           getMenu().clearItems();
           exit(false, State.CANCELED);
         }
@@ -1182,9 +1185,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   @Override
   public void onCheckForUpdate() {
-    if (!isStrict() && ValueType.isString(valueType)
-        && !BeeUtils.equalsTrim(getValue(), getDisplayValue())) {
-
+    if (isChangePending()) {
       setSelection(null, parse(getDisplayValue()), false);
     }
   }
@@ -1485,6 +1486,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   protected boolean isActive() {
     return active;
+  }
+
+  protected boolean isChangePending() {
+    return !isStrict() && ValueType.isString(valueType)
+        && !BeeUtils.equalsTrim(getValue(), getDisplayValue());
   }
 
   protected boolean isStrict() {
