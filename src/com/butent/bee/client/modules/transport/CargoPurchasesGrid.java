@@ -14,7 +14,6 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.modules.trade.InvoiceBuilder;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
@@ -163,7 +162,7 @@ public class CargoPurchasesGrid extends InvoiceBuilder {
       Long assessment = Data.getLong(getViewName(), event.getRowValue(), COL_ASSESSMENT);
 
       if (DataUtils.isId(assessment)) {
-        RowEditor.open(VIEW_ASSESSMENTS, assessment, Opener.NEW_TAB);
+        RowEditor.open(VIEW_ASSESSMENTS, assessment);
         event.consume();
         return;
       }

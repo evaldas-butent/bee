@@ -135,6 +135,10 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     return dataProvider;
   }
 
+  public FormView getFormView() {
+    return formContainer.getForm();
+  }
+
   @Override
   public HeaderView getHeader() {
     return formContainer.getHeader();
@@ -358,6 +362,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   private Provider createProvider(FormContainerView view, String viewName,
       List<BeeColumn> columns, BeeRowSet rowSet, ProviderType providerType,
       CachingPolicy cachingPolicy) {
+
     if (BeeUtils.isEmpty(viewName) || providerType == null) {
       return null;
     }
@@ -388,6 +393,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private static FormContainerView createView(FormDescription formDescription,
       List<BeeColumn> columns, int rowCount, FormInterceptor interceptor) {
+
     FormContainerView view = new FormContainerImpl();
 
     view.create(formDescription, columns, rowCount, interceptor);
@@ -402,10 +408,6 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private FormInterceptor getFormInterceptor() {
     return getFormView().getFormInterceptor();
-  }
-
-  private FormView getFormView() {
-    return formContainer.getForm();
   }
 
   private boolean hasData() {

@@ -17,11 +17,8 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.trade.TradeKeeper;
@@ -48,7 +45,6 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -61,6 +57,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -173,14 +170,10 @@ class CompanyForm extends CustomCompanyForm {
 
           if (canChange) {
             Queries.update(getFormView().getViewName(), Filter.compareId(companyRow.getId()),
-                COL_DEFAULT_BANK_ACCOUNT, Value.getValue(companyBankAccount), new IntCallback() {
-
-                  @Override
-                  public void onSuccess(Integer result) {
-                    companyRow.setValue(defBankAccFieldId, companyBankAccount);
-                    companyRowOld.setValue(defBankAccFieldId, companyBankAccount);
-                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getGridView().getViewName());
-                  }
+                COL_DEFAULT_BANK_ACCOUNT, Value.getValue(companyBankAccount), result -> {
+                  companyRow.setValue(defBankAccFieldId, companyBankAccount);
+                  companyRowOld.setValue(defBankAccFieldId, companyBankAccount);
+                  DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getGridView().getViewName());
                 });
           }
         }
@@ -188,23 +181,19 @@ class CompanyForm extends CustomCompanyForm {
         private void setAsPrimaryCompanyUser(final Long companyUser, boolean checkDefault) {
           final IsRow companyRow = getFormView().getActiveRow();
           final IsRow companyRowOld = getFormView().getOldRow();
-          final int idxDefComanyUser = Data.getColumnIndex(VIEW_COMPANIES,
+          final int idxDefCompanyUser = Data.getColumnIndex(VIEW_COMPANIES,
               COL_DEFAULT_COMPANY_USER);
 
           boolean hasDefault =
-              DataUtils.isId(companyRow.getLong(idxDefComanyUser));
+              DataUtils.isId(companyRow.getLong(idxDefCompanyUser));
           boolean canChange = !hasDefault || !checkDefault;
 
           if (canChange) {
             Queries.update(getFormView().getViewName(), Filter.compareId(companyRow.getId()),
-                COL_DEFAULT_COMPANY_USER, Value.getValue(companyUser), new IntCallback() {
-
-                  @Override
-                  public void onSuccess(Integer result) {
-                    companyRow.setValue(idxDefComanyUser, companyUser);
-                    companyRowOld.setValue(idxDefComanyUser, companyUser);
-                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getGridView().getViewName());
-                  }
+                COL_DEFAULT_COMPANY_USER, Value.getValue(companyUser), result -> {
+                  companyRow.setValue(idxDefCompanyUser, companyUser);
+                  companyRowOld.setValue(idxDefCompanyUser, companyUser);
+                  DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getGridView().getViewName());
                 });
           }
         }
@@ -231,8 +220,8 @@ class CompanyForm extends CustomCompanyForm {
               Data.setValue(viewName, newRow, COL_COMPANY, id);
 
               RowFactory.createRow(dataInfo.getNewRowForm(),
-                  Localized.dictionary().newCompanyPerson(), dataInfo, newRow, Modality.ENABLED,
-                  null, new AbstractFormInterceptor() {
+                  Localized.dictionary().newCompanyPerson(), dataInfo, newRow,
+                  new AbstractFormInterceptor() {
                     @Override
                     public boolean beforeCreateWidget(String widgetName, Element description) {
                       if (BeeUtils.startsWith(widgetName, COL_COMPANY)) {
@@ -245,13 +234,7 @@ class CompanyForm extends CustomCompanyForm {
                     public FormInterceptor getInstance() {
                       return null;
                     }
-                  }, null,
-                  new RowCallback() {
-                    @Override
-                    public void onSuccess(BeeRow result) {
-                      Data.refreshLocal(viewName);
-                    }
-                  });
+                  }, result -> Data.refreshLocal(viewName));
             }
           });
           return false;
@@ -375,42 +358,39 @@ class CompanyForm extends CustomCompanyForm {
       ParameterList args = TradeKeeper.createArgs(SVC_CREDIT_INFO);
       args.addDataItem(COL_COMPANY, getActiveRow().getId());
 
-      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          response.notify(form);
+      BeeKeeper.getRpc().makePostRequest(args, response -> {
+        response.notify(form);
 
-          if (response.hasErrors()) {
-            return;
-          }
-          Map<String, String> result =
-              Codec.deserializeLinkedHashMap(response.getResponseAsString());
+        if (response.hasErrors()) {
+          return;
+        }
+        Map<String, String> result =
+            Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
-          if (!BeeUtils.isEmpty(result)) {
-            HtmlTable table = new HtmlTable();
-            table.setColumnCellStyles(1, "text-align:right; font-weight:bold;color:red;");
-            int c = 0;
+        if (!BeeUtils.isEmpty(result)) {
+          HtmlTable table = new HtmlTable();
+          table.setColumnCellStyles(1, "text-align:right; font-weight:bold;color:red;");
+          int c = 0;
 
-            String amount = result.get(VAR_DEBT);
+          String amount = result.get(VAR_DEBT);
 
-            if (BeeUtils.isPositiveDouble(amount)) {
-              table.setHtml(c, 0, Localized.dictionary().trdDebt());
-              table.setHtml(c, 1, amount);
-              double limit = BeeUtils.toDouble(result.get(COL_COMPANY_CREDIT_LIMIT));
+          if (BeeUtils.isPositiveDouble(amount)) {
+            table.setHtml(c, 0, Localized.dictionary().trdDebt());
+            table.setHtml(c, 1, amount);
+            double limit = BeeUtils.toDouble(result.get(COL_COMPANY_CREDIT_LIMIT));
 
-              if (BeeUtils.toDouble(amount) <= limit) {
-                StyleUtils.setColor(table.getCellFormatter().getElement(c, 1), "black");
-              }
-              c++;
+            if (BeeUtils.toDouble(amount) <= limit) {
+              StyleUtils.setColor(table.getCellFormatter().getElement(c, 1), "black");
             }
-            amount = result.get(VAR_OVERDUE);
-
-            if (BeeUtils.isPositiveDouble(amount)) {
-              table.setHtml(c, 0, Localized.dictionary().trdOverdue());
-              table.setHtml(c, 1, amount);
-            }
-            widget.getElement().setInnerHTML(table.getElement().getString());
+            c++;
           }
+          amount = result.get(VAR_OVERDUE);
+
+          if (BeeUtils.isPositiveDouble(amount)) {
+            table.setHtml(c, 0, Localized.dictionary().trdOverdue());
+            table.setHtml(c, 1, amount);
+          }
+          widget.getElement().setInnerHTML(table.getElement().getString());
         }
       });
     }
@@ -437,12 +417,17 @@ class CompanyForm extends CustomCompanyForm {
       IsRow oldRow = getFormView().getOldRow();
       IsRow newRow = getActiveRow();
 
-      boolean modal = UiHelper.isModal(getFormView().asWidget());
+      WindowType windowType;
+      if (UiHelper.isModal(getFormView().asWidget())) {
+        windowType = ViewHelper.normalize(WindowType.DETACHED);
+      } else {
+        windowType = WindowType.NEW_TAB;
+      }
 
       getFormView().getViewPresenter().handleAction(Action.CANCEL);
 
       Consumer<FormView> onOpen = form -> form.setOldRow(oldRow);
-      Opener opener = modal ? Opener.modal(onOpen) : Opener.newTab(onOpen);
+      Opener opener = Opener.in(windowType, onOpen);
 
       RowEditor.openForm(switchTo, viewName, newRow, opener, null);
     }

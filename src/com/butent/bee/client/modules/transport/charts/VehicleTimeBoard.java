@@ -15,7 +15,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
@@ -165,7 +164,7 @@ abstract class VehicleTimeBoard extends ChartBase {
   @Override
   public void handleAction(Action action) {
     if (Action.ADD.equals(action)) {
-      RowFactory.createRow(VIEW_VEHICLES, Modality.DISABLED);
+      RowFactory.createRow(VIEW_VEHICLES);
     } else {
       super.handleAction(action);
     }
@@ -435,7 +434,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       DataInfo dataInfo = Data.getDataInfo(VIEW_TRIPS);
       BeeRow newRow = createNewTripRow(dataInfo, row, date);
 
-      RowFactory.createRow(dataInfo, newRow, Modality.DISABLED);
+      RowFactory.createRow(dataInfo, newRow);
     }
   }
 

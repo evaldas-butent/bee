@@ -30,6 +30,7 @@
     <xs:attribute name="printHeader" type="xs:boolean" />
     <xs:attribute name="printFooter" type="xs:boolean" />
     <xs:attributeGroup ref="ui:dimension" />
+    <xs:attribute name="containerStyle" type="xs:string" />
     <xs:attribute name="options" type="xs:normalizedString" />
     <xs:attribute name="data" type="tp:dataView" />
   </xs:complexType>

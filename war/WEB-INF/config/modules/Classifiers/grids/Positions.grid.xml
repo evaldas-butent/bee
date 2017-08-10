@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="Positions" viewName="Positions" caption="=personPositions"
-  newRowWindow="modal"
-  >
+        name="Positions" viewName="Positions" caption="=personPositions"
+>
   <g:columns>
     <DataColumn name="Name" caption="=name" minWidth="100" flexGrow="3" visible="true" />
     <RelColumn name="Role" flexGrow="1" />

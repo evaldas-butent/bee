@@ -228,7 +228,7 @@ public class GridMenu {
 
       @Override
       boolean isVisible(GridPresenter presenter) {
-        return presenter.getGridView().getFormCount(GridFormKind.NEW_ROW) > 0;
+        return true;
       }
 
       @Override

@@ -5,13 +5,11 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
@@ -27,7 +25,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -95,65 +92,50 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_STAGES, stagesView.getColumnNames(false),
         Filter.equals(ProjectConstants.COL_PROJECT, prjRow.getId()),
-        new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(final BeeRowSet stages) {
+        stages -> Queries.getRowSet(TaskConstants.VIEW_TASK_TEMPLATES,
+            taskTemplatesView.getColumnNames(false),
+            Filter.equals(ProjectConstants.COL_PROJECT_TEMPLATE, tmlRow.getId()),
+            taskTemplates -> {
+              if (taskTemplates.isEmpty()) {
+                createProjectUsers(prjRow, tmlRow, callback);
+                return;
+              }
 
-            Queries.getRowSet(TaskConstants.VIEW_TASK_TEMPLATES,
-                taskTemplatesView.getColumnNames(false),
-                Filter.equals(ProjectConstants.COL_PROJECT_TEMPLATE, tmlRow.getId()),
-                new Queries.RowSetCallback() {
-                  @Override
-                  public void onSuccess(BeeRowSet taskTemplates) {
-                    if (taskTemplates.isEmpty()) {
-                      createProjectUsers(prjRow, tmlRow, callback);
-                      return;
-                    }
+              Map<Long, Long> stageCache = Maps.newConcurrentMap();
 
-                    Map<Long, Long> stageCache = Maps.newConcurrentMap();
+              for (int i = 0; i < stages.getNumberOfRows(); i++) {
+                Long tmlId = stages.getLong(i, stagesView.getColumnIndex(
+                    ProjectConstants.COL_STAGE_TEMPLATE));
+                if (DataUtils.isId(tmlId)) {
+                  stageCache.put(tmlId, stages.getRow(i).getId());
+                }
+              }
 
-                    for (int i = 0; i < stages.getNumberOfRows(); i++) {
-                      Long tmlId = stages.getLong(i, stagesView.getColumnIndex(
+              for (int i = 0; i < taskTemplates.getNumberOfRows(); i++) {
+                BeeRow row = taskCopy.addEmptyRow();
+                for (String col : copyCols) {
+                  switch (col) {
+                    case ProjectConstants.COL_PROJECT_STAGE:
+                      Long id = taskTemplates.getLong(i, taskTemplatesView.getColumnIndex(
                           ProjectConstants.COL_STAGE_TEMPLATE));
-                      if (DataUtils.isId(tmlId)) {
-                        stageCache.put(tmlId, stages.getRow(i).getId());
-                      }
-                    }
 
-                    for (int i = 0; i < taskTemplates.getNumberOfRows(); i++) {
-                      BeeRow row = taskCopy.addEmptyRow();
-                      for (String col : copyCols) {
-                        switch (col) {
-                          case ProjectConstants.COL_PROJECT_STAGE:
-                            Long id = taskTemplates.getLong(i, taskTemplatesView.getColumnIndex(
-                                ProjectConstants.COL_STAGE_TEMPLATE));
-
-                            if (DataUtils.isId(id)) {
-                              row.setValue(taskCopy.getColumnIndex(col),
-                                  stageCache.get(id));
-                            }
-                            break;
-                          case ProjectConstants.COL_PROJECT:
-                            row.setValue(taskCopy.getColumnIndex(col), prjRow.getId());
-                            break;
-                          default:
-                            row.setValue(taskCopy.getColumnIndex(col),
-                                taskTemplates.getString(i, col));
-                            break;
-                        }
+                      if (DataUtils.isId(id)) {
+                        row.setValue(taskCopy.getColumnIndex(col),
+                            stageCache.get(id));
                       }
-                    }
-                    Queries.insertRows(taskCopy, new RpcCallback<RowInfoList>() {
-                      @Override
-                      public void onSuccess(RowInfoList result) {
-                        createProjectUsers(prjRow, tmlRow, callback);
-                      }
-                    });
+                      break;
+                    case ProjectConstants.COL_PROJECT:
+                      row.setValue(taskCopy.getColumnIndex(col), prjRow.getId());
+                      break;
+                    default:
+                      row.setValue(taskCopy.getColumnIndex(col),
+                          taskTemplates.getString(i, col));
+                      break;
                   }
-                });
-
-          }
-        });
+                }
+              }
+              Queries.insertRows(taskCopy, result -> createProjectUsers(prjRow, tmlRow, callback));
+            }));
   }
 
   public static void createChildData(DataInfo sourceTemplateInfo, DataInfo targetInfo,
@@ -164,10 +146,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
 
     Queries.getRowSet(sourceTemplateInfo.getViewName(), sourceTemplateInfo.getColumnNames(false),
       Filter.equals(ProjectConstants.COL_PROJECT_TEMPLATE, BeeUtils.toString(templateRow.getId())),
-      new Queries.RowSetCallback() {
-
-        @Override
-        public void onSuccess(BeeRowSet tmlStagesRows) {
+        (BeeRowSet tmlStagesRows) -> {
           if (tmlStagesRows.isEmpty()) {
             if (afterCreate != null) {
               afterCreate.onSuccess(tmlStagesRows.getNumberOfRows());
@@ -198,16 +177,12 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
             }
             childRowSet.removeColumn(childRowSet.getColumnIndex(column.getId()));
           }
-          Queries.insertRows(childRowSet, new RpcCallback<RowInfoList>() {
-            @Override
-            public void onSuccess(RowInfoList result) {
-              if (afterCreate != null) {
-                afterCreate.onSuccess(result.size());
-              }
+          Queries.insertRows(childRowSet, result -> {
+            if (afterCreate != null) {
+              afterCreate.onSuccess(result.size());
             }
           });
-        }
-      });
+        });
   }
 
   public static void createProject(DataInfo templateData, final IsRow templateRow,
@@ -219,13 +194,8 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     RelationUtils.updateRow(prjDataInfo, ProjectConstants.COL_PROJECT_TEMPLATE, prjRow,
       templateData, templateRow, true);
     RowFactory.createRow(ProjectConstants.FORM_NEW_PROJECT_FROM_TEMPLATE,
-        prjDataInfo.getNewRowCaption(), prjDataInfo, prjRow, Modality.ENABLED, null, null, null,
-        new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            createStages(result, templateRow, callback);
-          }
-        });
+        prjDataInfo.getNewRowCaption(), prjDataInfo, prjRow, Opener.MODAL, null,
+        result -> createStages(result, templateRow, callback));
   }
 
   private static void createProjectContacts(final BeeRow prjRow, IsRow tmlRow,
@@ -264,7 +234,6 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
 
   private static void openProjectFullForm(long projectId) {
     RowEditor.openForm(ProjectConstants.FORM_PROJECT,
-        Data.getDataInfo(ProjectConstants.VIEW_PROJECTS), Filter.compareId(projectId),
-        Opener.NEW_TAB);
+        Data.getDataInfo(ProjectConstants.VIEW_PROJECTS), Filter.compareId(projectId));
   }
 }

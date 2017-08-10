@@ -3,14 +3,17 @@
         xmlns:f="http://www.butent.com/form"
 
         name="NewMailMessage" caption="=mailNewMessage"
+        width="760" widthUnit="px" height="500" heightUnit="px"
+        containerStyle="min-width: 500px; min-height: 300px;"
+        disabledActions="print"
 >
-  <FlowPanel class="flexBox-vertical"
-             style="margin:5px; position:relative; width:760px; height:500px;">
+  <FlowPanel class="flexBox-vertical">
 
-    <FlowPanel class="bee-mail-Envelope">
-      <Table kind="custom">
+    <FlowPanel class="bee-mail-Envelope" style="margin:10px 15px 0 15px;">
+      <Table kind="custom" cellStyle="padding-top:0; padding-bottom:4px;">
         <col index="0" kind="label" cellStyle="white-space:nowrap;" />
         <col index="1" width="100" widthUnit="%" />
+
         <row>
           <Label text="=mailTo" />
           <MultiSelector name="To" viewName="UserEmails" choiceColumns="Label Email"
@@ -43,6 +46,7 @@
       </FlowPanel>
     </FlowPanel>
 
-    <RichTextEditor name="Message" class="bee-mail-Content flexible" />
+    <RichTextEditor name="Message" class="bee-mail-Content flexible"
+                    style="margin:5px 15px 10px 15px;" />
   </FlowPanel>
 </f:Form>

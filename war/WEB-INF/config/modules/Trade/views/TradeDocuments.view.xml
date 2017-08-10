@@ -4,6 +4,7 @@
       name="TradeDocuments" source="TradeDocuments"
       caption="=trdDocuments" newRowCaption="=trdNewDocument"
       editForm="TradeDocument" newRowForm="TradeDocument"
+      rowCaption="Series Number"
 >
   <Columns>
     <SimpleColumn name="Date" />

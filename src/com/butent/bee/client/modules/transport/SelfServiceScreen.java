@@ -15,7 +15,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
@@ -28,6 +27,7 @@ import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -125,7 +125,7 @@ public class SelfServiceScreen extends ScreenImpl {
           DataInfo info = Data.getDataInfo(VIEW_SHIPMENT_REQUESTS);
           BeeRow row = RowFactory.createEmptyRow(info, true);
 
-          RowFactory.createRow(info, row, Modality.ENABLED, result -> {
+          RowFactory.createRow(info, row, Opener.MODAL, result -> {
             openRequests();
             showSuccessInfo(result);
           });

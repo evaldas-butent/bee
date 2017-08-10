@@ -10,7 +10,6 @@ import com.butent.bee.client.modules.orders.OrdersKeeper;
 import com.butent.bee.client.modules.trade.InvoiceERPForm;
 import com.butent.bee.client.modules.trade.TradeDocumentRenderer;
 import com.butent.bee.client.presenter.Presenter;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.DataUtils;
@@ -34,7 +33,7 @@ public class ServiceInvoiceForm extends InvoiceERPForm {
         TradeDocumentRenderer renderer = new TradeDocumentRenderer(TradeConstants.VIEW_SALE_ITEMS,
             TradeConstants.COL_SALE);
 
-        RowEditor.openForm("PrintServiceInvoice", dataInfo, row, Opener.MODAL, null, renderer);
+        RowEditor.openForm("PrintServiceInvoice", dataInfo, row, null, renderer);
       }
 
       return false;

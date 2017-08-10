@@ -3,15 +3,15 @@ package com.butent.bee.client.modules.tasks;
 import com.google.common.collect.Lists;
 
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.modules.projects.ProjectsHelper;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -31,6 +31,7 @@ import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -40,8 +41,8 @@ import java.util.Objects;
 class ChildTasksGrid extends TasksGrid {
 
   private static final List<String> COPY_COLUMNS = Lists.newArrayList(COL_SUMMARY,
-    COL_DESCRIPTION, COL_PRIORITY, COL_TASK_TYPE, COL_EXPECTED_DURATION,
-    COL_TASK_COMPANY, ClassifierConstants.COL_CONTACT, COL_REMINDER);
+      COL_DESCRIPTION, COL_PRIORITY, COL_TASK_TYPE, COL_EXPECTED_DURATION,
+      COL_TASK_COMPANY, ClassifierConstants.COL_CONTACT, COL_REMINDER);
 
   ChildTasksGrid() {
     super(TaskType.RELATED, null);
@@ -66,12 +67,12 @@ class ChildTasksGrid extends TasksGrid {
 
         if (parentFormRow != null) {
           RelationUtils.updateRow(childTaskDataInfo, relColumn, childTaskRow,
-            parentFormDataInfo, parentFormRow, true);
+              parentFormDataInfo, parentFormRow, true);
         }
         if (BeeUtils.same(parentForm.getViewName(), ProjectConstants.VIEW_PROJECTS)
             && parentFormRow != null) {
           Data.setValue(VIEW_TASKS, childTaskRow, COL_TASK_COMPANY, Data.getLong(
-            ProjectConstants.VIEW_PROJECTS, parentFormRow, ProjectConstants.COL_COMAPNY));
+              ProjectConstants.VIEW_PROJECTS, parentFormRow, ProjectConstants.COL_COMAPNY));
           RelationUtils.updateRow(childTaskDataInfo, COL_TASK_COMPANY, childTaskRow,
               parentFormDataInfo, parentFormRow, false);
         } else if (BeeUtils.same(parentForm.getViewName(), ProjectConstants.VIEW_PROJECT_STAGES)) {
@@ -83,15 +84,18 @@ class ChildTasksGrid extends TasksGrid {
                 Data.getDataInfo(ProjectConstants.VIEW_PROJECTS), prjRow, true);
 
             Data.setValue(VIEW_TASKS, childTaskRow, COL_TASK_COMPANY, Data.getLong(
-              ProjectConstants.VIEW_PROJECTS, prjRow, ProjectConstants.COL_COMAPNY));
+                ProjectConstants.VIEW_PROJECTS, prjRow, ProjectConstants.COL_COMAPNY));
             RelationUtils.updateRow(childTaskDataInfo, COL_TASK_COMPANY, childTaskRow,
                 Data.getDataInfo(ProjectConstants.VIEW_PROJECTS), prjRow, false);
           }
         }
       }
-      RowFactory.createRow(childTaskDataInfo, childTaskRow, Modality.ENABLED, new RowCallback() {
-        @Override
-        public void onSuccess(BeeRow result) {
+
+      WindowType windowType = getNewRowWindowType();
+      Opener opener = Opener.maybeCreate(windowType);
+
+      RowFactory.createRow(childTaskDataInfo, childTaskRow, opener, result -> {
+        if (isAttached()) {
           presenter.handleAction(Action.REFRESH);
         }
       });
@@ -184,12 +188,9 @@ class ChildTasksGrid extends TasksGrid {
       }
 
       Queries.deleteRow(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY, templateId,
-          new Queries.IntCallback() {
-            @Override
-            public void onSuccess(Integer result) {
-              DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getViewName());
-              presenter.handleAction(Action.REFRESH);
-            }
+          result -> {
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getViewName());
+            presenter.handleAction(Action.REFRESH);
           });
       return DeleteMode.CANCEL;
     }
@@ -275,18 +276,9 @@ class ChildTasksGrid extends TasksGrid {
             }
           }
 
-          RowFactory.createRow(viewTasks, row, Modality.ENABLED, new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow createdTask) {
+          RowFactory.createRow(viewTasks, row, Opener.MODAL, createdTask ->
               Queries.deleteRow(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY, templateId,
-                  new Queries.IntCallback() {
-                    @Override
-                    public void onSuccess(Integer templateTask) {
-                      getGridPresenter().handleAction(Action.REFRESH);
-                    }
-                  });
-            }
-          });
+                  templateTask -> getGridPresenter().handleAction(Action.REFRESH)));
         });
       }
 

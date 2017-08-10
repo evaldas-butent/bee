@@ -3,7 +3,7 @@
       xmlns:x="http://www.butent.com/expression"
 
       name="CargoInvoices" source="Sales"
-      editForm="CargoInvoice" newRowForm="NewSale" newRowCaption="=trNewCargoInvoice"
+      editForm="CargoInvoice" newRowForm="NewSale" newRowCaption="=trNewCargoInvoice" rowCaption="InvoicePrefix InvoiceNo"
     >
   <Columns>
     <SimpleColumn name="Date" />

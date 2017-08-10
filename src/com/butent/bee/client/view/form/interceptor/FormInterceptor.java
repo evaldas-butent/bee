@@ -60,6 +60,10 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
 
   FormInterceptor getInstance();
 
+  default Presenter getPresenter() {
+    return (getFormView() == null) ? null : getFormView().getViewPresenter();
+  }
+
   AbstractCellRenderer getRenderer(WidgetDescription widgetDescription);
 
   BeeRowSet getRowSet();
@@ -67,6 +71,10 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
   Widget getWidgetByName(String name);
 
   boolean hasFooter(int rowCount);
+
+  default boolean isAttached() {
+    return getFormView() != null && getFormView().asWidget().isAttached();
+  }
 
   boolean isRowEditable(IsRow row);
 
@@ -90,7 +98,7 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
 
   boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand);
 
-  void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow);
+  void onStartNewRow(FormView form, IsRow row);
 
   void onUnload(FormView form);
 

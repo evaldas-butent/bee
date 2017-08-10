@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Currencies" source="Currencies" caption="=currencies" module="Classifiers"
-  newRowCaption="=newCurrency" editForm="Currency" rowCaption="Name"
-  >
-  <Relation renderColumns="Name" />
+      name="Currencies" source="Currencies" caption="=currencies" module="Classifiers"
+      newRowCaption="=newCurrency" editForm="Currency" rowCaption="Name"
+>
+  <Relation renderColumns="Name" operator="STARTS" />
   <Columns>
     <SimpleColumn name="Name" />
     <SimpleColumn name="Caption" />

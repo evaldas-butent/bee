@@ -1313,11 +1313,21 @@ public interface Dictionary {
 
   default String crmTaskOutOfObservers() {return g("crmTaskOutOfObservers");}
 
+  default String crmTaskOwnerAddToObservers() {return g("crmTaskOwnerAddToObservers");}
+
   default String crmTaskOwnerCanNotBe(Object p0) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{0}", p0);
     return Localized.format(g("crmTaskOwnerCanNotBe"), _m);
   }
+
+  default String crmTaskOwnerChange(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("crmTaskOwnerChange"), _m);
+  }
+
+  default String crmTaskOwnerChangeCaption() {return g("crmTaskOwnerChangeCaption");}
 
   default String crmTaskParameters() {return g("crmTaskParameters");}
 
@@ -3614,6 +3624,8 @@ public interface Dictionary {
 
   default String mailNewMessage() {return g("mailNewMessage");}
 
+  default String mailNewMessageWindow() {return g("mailNewMessageWindow");}
+
   default String mailNewNewsletter() {return g("mailNewNewsletter");}
 
   default String mailNewRecipientsGroup() {return g("mailNewRecipientsGroup");}
@@ -3948,6 +3960,8 @@ public interface Dictionary {
 
   default String newPaymentTerm() {return g("newPaymentTerm");}
 
+  default String newPaymentType() {return g("newPaymentType");}
+
   default String newPerson() {return g("newPerson");}
 
   default String newPersonCompany() {return g("newPersonCompany");}
@@ -4204,7 +4218,11 @@ public interface Dictionary {
 
   default String otherCosts() {return g("otherCosts");}
 
+  default String otherEditWindows() {return g("otherEditWindows");}
+
   default String otherInfo() {return g("otherInfo");}
+
+  default String otherNewRowWindows() {return g("otherNewRowWindows");}
 
   default String outsized() {return g("outsized");}
 
@@ -5073,6 +5091,10 @@ public interface Dictionary {
 
   default String relation() {return g("relation");}
 
+  default String relationEditWindow() {return g("relationEditWindow");}
+
+  default String relationNewRowWindow() {return g("relationNewRowWindow");}
+
   default String relationStateName() {return g("relationStateName");}
 
   default String relations() {return g("relations");}
@@ -5770,6 +5792,8 @@ public interface Dictionary {
   default String timeRanges() {return g("timeRanges");}
 
   default String timeSheet() {return g("timeSheet");}
+
+  default String timeSheetInfo() {return g("timeSheetInfo");}
 
   default String timeSheetLock() {return g("timeSheetLock");}
 

@@ -61,6 +61,8 @@ public interface GridView extends DataView,
 
   void formConfirm(Consumer<IsRow> consumer);
 
+  void formUnload(FormView formView);
+
   FormView getActiveForm();
 
   DataInfo getDataInfo();
@@ -92,6 +94,8 @@ public interface GridView extends DataView,
   WindowType getNewRowWindowType();
 
   String getRelColumn();
+
+  Long getRelId();
 
   Collection<RowInfo> getSelectedRows(SelectedRows mode);
 

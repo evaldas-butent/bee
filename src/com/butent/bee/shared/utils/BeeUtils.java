@@ -1777,6 +1777,10 @@ public final class BeeUtils {
     }
   }
 
+  public static boolean isUpperCase(String s) {
+    return !isEmpty(s) && s.equals(s.toUpperCase());
+  }
+
   public static boolean isWhitespace(char ch) {
     return ch <= BeeConst.CHAR_SPACE || ch == BeeConst.CHAR_NBSP;
   }

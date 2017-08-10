@@ -7,7 +7,7 @@
   <g:columns>
     <RelColumn name="TripCargo" viewName="TripCargo" choiceColumns="Cargo Description"
                renderColumns="Cargo" editSource="Cargo"
-               newRowEnabled="false" editEnabled="true" editWindow="new-tab" />
+               newRowEnabled="false" editEnabled="true" />
 
     <DataColumn name="DepartureDate" caption="=trDepartureDate" updateMode="row">
       <carry>

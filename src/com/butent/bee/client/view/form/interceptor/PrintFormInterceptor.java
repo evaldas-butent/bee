@@ -11,7 +11,6 @@ import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
@@ -60,10 +59,10 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
                 || BeeUtils.same(viewName, getFormView().getViewName())) {
 
               RowEditor.openForm(form.getName(), Data.getDataInfo(getFormView().getViewName()),
-                  row, Opener.MODAL, null, getPrintFormInterceptor());
+                  row, null, getPrintFormInterceptor());
             } else {
               RowEditor.openForm(form.getName(), Data.getDataInfo(viewName),
-                  Filter.compareId(row.getId()), Opener.MODAL, null, getPrintFormInterceptor());
+                  Filter.compareId(row.getId()), null, getPrintFormInterceptor());
             }
           } else {
             printJasperReport();

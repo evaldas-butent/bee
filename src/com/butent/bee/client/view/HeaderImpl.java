@@ -544,6 +544,17 @@ public class HeaderImpl extends Flow implements HeaderView {
   }
 
   @Override
+  public void setRowId(Long rowId) {
+    String message = DataUtils.isId(rowId) ? BeeUtils.bracket(rowId) : null;
+    setMessage(MESSAGE_INDEX_ROW_ID, message, STYLE_ROW_ID);
+  }
+
+  @Override
+  public void setRowMessage(String message) {
+    setMessage(MESSAGE_INDEX_ROW_MESSAGE, message, STYLE_ROW_MESSAGE);
+  }
+
+  @Override
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
   }
@@ -570,8 +581,7 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   @Override
   public void showRowId(IsRow row) {
-    String message = DataUtils.hasId(row) ? BeeUtils.bracket(row.getId()) : null;
-    setMessage(MESSAGE_INDEX_ROW_ID, message, STYLE_ROW_ID);
+    setRowId(DataUtils.getId(row));
   }
 
   @Override
@@ -585,7 +595,7 @@ public class HeaderImpl extends Flow implements HeaderView {
       message = null;
     }
 
-    setMessage(MESSAGE_INDEX_ROW_MESSAGE, message, STYLE_ROW_MESSAGE);
+    setRowMessage(message);
   }
 
   @Override

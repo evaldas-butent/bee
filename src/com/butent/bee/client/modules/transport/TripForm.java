@@ -15,16 +15,13 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.Icon;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
@@ -45,7 +42,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -138,25 +134,22 @@ public class TripForm extends PrintFormInterceptor {
           ParameterList args = TransportHandler.createArgs(SVC_GET_ROUTE);
           args.addDataItem(COL_TRIP, tripId);
 
-          BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-            @Override
-            public void onResponse(ResponseObject response) {
-              if (response.hasErrors()) {
-                response.notify(getFormView());
+          BeeKeeper.getRpc().makePostRequest(args, response -> {
+            if (response.hasErrors()) {
+              response.notify(getFormView());
+              return;
+            }
+            IsRow row = getActiveRow();
+
+            if (row != null && Objects.equals(row.getId(), tripId)) {
+              String route = response.getResponseAsString();
+
+              if (BeeUtils.isEmpty(route)) {
+                getFormView().notifyWarning(Localized.dictionary().noData());
                 return;
               }
-              IsRow row = getActiveRow();
-
-              if (row != null && Objects.equals(row.getId(), tripId)) {
-                String route = response.getResponseAsString();
-
-                if (BeeUtils.isEmpty(route)) {
-                  getFormView().notifyWarning(Localized.dictionary().noData());
-                  return;
-                }
-                Data.setValue(getViewName(), row, COL_TRIP_ROUTE, route);
-                getFormView().refreshBySource(COL_TRIP_ROUTE);
-              }
+              Data.setValue(getViewName(), row, COL_TRIP_ROUTE, route);
+              getFormView().refreshBySource(COL_TRIP_ROUTE);
             }
           });
         }
@@ -171,12 +164,7 @@ public class TripForm extends PrintFormInterceptor {
     if (driver != null && DataUtils.isId(driver.getValue())) {
       Queries.insert(VIEW_TRIP_DRIVERS, Data.getColumns(VIEW_TRIP_DRIVERS,
           Arrays.asList(COL_TRIP, COL_DRIVER)), Arrays.asList(BeeUtils.toString(trip.getId()),
-          driver.getValue()), null, new RowCallback() {
-        @Override
-        public void onSuccess(BeeRow res) {
-          setMainDriver(trip, res.getId());
-        }
-      });
+          driver.getValue()), null, res -> setMainDriver(trip, res.getId()));
     }
     showDriver(false);
     super.afterInsertRow(trip, forced);
@@ -231,10 +219,10 @@ public class TripForm extends PrintFormInterceptor {
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow row) {
     form.getViewPresenter().getHeader().clearCommandPanel();
     showDriver(true);
-    getBeforeInfo(DataUtils.getStringQuietly(newRow, form.getDataIndex(COL_VEHICLE)), newRow);
+    getBeforeInfo(DataUtils.getStringQuietly(row, form.getDataIndex(COL_VEHICLE)), row);
   }
 
   @Override
@@ -250,256 +238,253 @@ public class TripForm extends PrintFormInterceptor {
       ParameterList args = TransportHandler.createArgs(SVC_GET_TRIP_INFO);
       args.addDataItem(COL_TRIP, getActiveRowId());
 
-      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          response.notify(form);
+      BeeKeeper.getRpc().makePostRequest(args, response -> {
+        response.notify(form);
 
-          if (response.hasErrors()) {
+        if (response.hasErrors()) {
+          return;
+        }
+
+        final Map<String, String> pack =
+            Codec.deserializeLinkedHashMap(response.getResponseAsString());
+
+        // DRIVERS
+        final Map<Long, String> drivers = new LinkedHashMap<>();
+        Long mainDriver = null;
+
+        for (SimpleRowSet.SimpleRow drv : SimpleRowSet.restore(pack.get(TBL_TRIP_DRIVERS))) {
+          if (!DataUtils.isId(mainDriver)) {
+            mainDriver = drv.getLong(COL_MAIN_DRIVER);
+          }
+          drivers.put(drv.getLong(COL_DRIVER),
+              BeeUtils.joinWords(drv.getValue(COL_FIRST_NAME), drv.getValue(COL_LAST_NAME)));
+        }
+        List<String> allDrivers = new ArrayList<>();
+
+        for (Long drv : drivers.keySet()) {
+          if (!Objects.equals(drv, mainDriver)) {
+            allDrivers.add(drivers.get(drv));
+          }
+        }
+
+        parameters.put(TBL_TRIP_DRIVERS, BeeUtils.joinItems(allDrivers));
+        parameters.put(TBL_TRIP_DRIVERS + 2, allDrivers.size() > 0 ? allDrivers.get(0) : "");
+        parameters.put(AdministrationConstants.COL_USER, BeeKeeper.getUser().getUserSign());
+
+        // FUEL
+        double before = BeeUtils.unbox(form.getDoubleValue("FuelBefore"));
+        double after = BeeUtils.unbox(form.getDoubleValue("FuelAfter"));
+        double fuel = before + BeeUtils.toDouble(pack.get(COL_FUEL)) - after;
+
+        before = BeeUtils.unbox(form.getDoubleValue("SpeedometerBefore"));
+        after = BeeUtils.unbox(form.getDoubleValue("SpeedometerAfter"));
+
+        parameters.put(COL_FUEL, BeeUtils.toString(BeeUtils.round(fuel, 2)));
+        parameters.put(TBL_TRIP_FUEL_CONSUMPTIONS, after == before ? ""
+            : BeeUtils.toString(BeeUtils.round(fuel / (after - before) * 100, 2)));
+        parameters.put(TBL_TRIP_FUEL_COSTS, BeeUtils.round(pack.get(TBL_TRIP_FUEL_COSTS), 2));
+
+        // COSTS
+        final Set<Long> dailyCostsItems = new HashSet<>();
+
+        for (String item : Codec.beeDeserializeCollection(pack.get(COL_DAILY_COSTS_ITEM))) {
+          dailyCostsItems.add(BeeUtils.toLong(item));
+        }
+
+        final List<BeeColumn> driverCostCols = Lists.newArrayList(
+            new BeeColumn(ValueType.TEXT, COL_NUMBER),
+            new BeeColumn(ValueType.TEXT, COL_COSTS_DATE),
+            new BeeColumn(ValueType.TEXT, COL_COSTS_ITEM),
+            new BeeColumn(ValueType.TEXT, COL_DRIVER),
+            new BeeColumn(ValueType.TEXT, COL_COSTS_QUANTITY),
+            new BeeColumn(ValueType.TEXT, COL_UNIT),
+            new BeeColumn(ValueType.TEXT, COL_COSTS_PRICE),
+            new BeeColumn(ValueType.TEXT, COL_AMOUNT));
+
+        BeeRowSet driverCosts = new BeeRowSet(driverCostCols);
+        final HashMultimap<Long, SimpleRowSet.SimpleRow> driverInfo = HashMultimap.create();
+        Map<String, Double> otherInfo = new HashMap<>();
+
+        for (SimpleRowSet.SimpleRow cost : SimpleRowSet.restore(pack.get(TBL_TRIP_COSTS))) {
+          String itemName = cost.getValue(COL_ITEM_NAME);
+          double amount = BeeUtils.round(BeeUtils.unbox(cost.getDouble(COL_AMOUNT)), 2);
+
+          if (!BeeUtils.unbox(cost.getBoolean(COL_PAYMENT_CASH))) {
+            otherInfo.put(itemName, BeeUtils.round(BeeUtils.unbox(otherInfo.get(itemName))
+                + amount, 2));
+            continue;
+          }
+          Long drv = BeeUtils.nvl(cost.getLong(COL_DRIVER), mainDriver);
+          double quantity = BeeUtils.unbox(cost.getDouble(COL_COSTS_QUANTITY));
+          driverInfo.put(drv, cost);
+
+          BeeRow driverCost = driverCosts.addEmptyRow();
+
+          driverCost.setValue(0, cost.getValue(COL_NUMBER));
+          driverCost.setValue(1, Format.renderDate(cost.getDateTime(COL_COSTS_DATE)));
+          driverCost.setValue(2, BeeUtils.joinWords(itemName,
+              dailyCostsItems.contains(cost.getLong(COL_COSTS_ITEM))
+                  ? BeeUtils.parenthesize(cost.getValue(COL_COSTS_COUNTRY)) : null));
+          driverCost.setValue(3, drivers.get(drv));
+          driverCost.setValue(4, BeeUtils.toString(quantity));
+          driverCost.setValue(5, cost.getValue(COL_UNIT));
+          driverCost.setValue(6, quantity > 0 ? BeeUtils.toString(BeeUtils
+              .round(amount / quantity, 2)) : null);
+          driverCost.setValue(7, BeeUtils.toString(amount));
+        }
+        double driverTotal = 0;
+        double otherTotal = 0;
+
+        if (driverInfo.size() > 0) {
+          for (Long drv : driverInfo.keySet()) {
+            double total = 0;
+
+            for (SimpleRowSet.SimpleRow cost : driverInfo.get(drv)) {
+              total += BeeUtils.round(BeeUtils.unbox(cost.getDouble(COL_AMOUNT)), 2);
+            }
+
+            BeeRow driverCost = driverCosts.addEmptyRow();
+            driverCost.setProperty(TradeConstants.VAR_TOTAL, TradeConstants.VAR_TOTAL);
+            driverCost.setValue(3, drivers.get(drv));
+            driverCost.setValue(7, BeeUtils.toString(BeeUtils.round(total, 2)));
+
+            driverTotal += total;
+          }
+        }
+
+        parameters.put("DriverCostsTotal", BeeUtils.toString(driverTotal));
+        parameters.put("DriverCosts", driverCosts.serialize());
+
+        BeeRowSet otherCosts = new BeeRowSet(Arrays.asList(
+            new BeeColumn(ValueType.TEXT, COL_COSTS_ITEM),
+            new BeeColumn(ValueType.TEXT, COL_AMOUNT)));
+
+        if (otherInfo.size() > 0) {
+          for (Map.Entry<String, Double> entry : otherInfo.entrySet()) {
+            double amount = entry.getValue();
+
+            BeeRow row = otherCosts.addEmptyRow();
+            row.setValue(0, entry.getKey());
+            row.setValue(1, BeeUtils.toString(amount));
+
+            otherTotal += amount;
+          }
+          otherTotal = BeeUtils.round(otherTotal, 2);
+        }
+
+        parameters.put(AdministrationConstants.COL_CURRENCY,
+            pack.get(AdministrationConstants.COL_CURRENCY));
+        parameters.put("OtherTotal", BeeUtils.toString(otherTotal));
+        parameters.put("OtherCosts", otherCosts.serialize());
+        parameters.put("CostsTotal",
+            BeeUtils.toString(BeeUtils.round(driverTotal + otherTotal, 2)));
+
+        // ADVANCES
+        BeeRowSet driverAdvances = new BeeRowSet(Arrays.asList(
+            new BeeColumn(ValueType.TEXT, COL_DRIVER),
+            new BeeColumn(ValueType.TEXT, COL_COSTS_ITEM),
+            new BeeColumn(ValueType.TEXT, COL_DATE),
+            new BeeColumn(ValueType.TEXT, COL_AMOUNT),
+            new BeeColumn(ValueType.TEXT, "Remainder")));
+
+        for (Long drv : drivers.keySet()) {
+          double total = 0;
+
+          for (SimpleRowSet.SimpleRow advance
+              : SimpleRowSet.restore(pack.get(TBL_DRIVER_ADVANCES))) {
+
+            if (!Objects.equals(advance.getLong(COL_DRIVER), drv)) {
+              continue;
+            }
+            double amount = BeeUtils.round(BeeUtils.unbox(advance.getDouble(COL_AMOUNT)), 2);
+            total -= amount;
+
+            BeeRow row = driverAdvances.addEmptyRow();
+
+            row.setValue(0, drivers.get(drv));
+            row.setProperty("Advance", "Advance");
+            row.setValue(2, Format.renderDate(advance.getDate(COL_DATE)));
+            row.setValue(3, BeeUtils.toString(amount));
+            row.setValue(4, BeeUtils.toString(BeeUtils.round(total, 2)));
+          }
+          double daily = 0;
+          double other = 0;
+
+          for (SimpleRowSet.SimpleRow cost : driverInfo.get(drv)) {
+            double amount = BeeUtils.round(BeeUtils.unbox(cost.getDouble(COL_AMOUNT)), 2);
+
+            if (dailyCostsItems.contains(cost.getLong(COL_COSTS_ITEM))) {
+              daily += amount;
+            } else {
+              other += amount;
+            }
+          }
+          total += daily;
+
+          BeeRow row1 = driverAdvances.addEmptyRow();
+          row1.setValue(0, drivers.get(drv));
+          row1.setProperty(COL_DAILY_COSTS_ITEM, COL_DAILY_COSTS_ITEM);
+          row1.setValue(3, BeeUtils.toString(BeeUtils.round(daily * (-1), 2)));
+          row1.setValue(4, BeeUtils.toString(BeeUtils.round(total, 2)));
+
+          total += other;
+
+          BeeRow row2 = driverAdvances.addEmptyRow();
+          row2.setValue(0, drivers.get(drv));
+          row2.setProperty("OtherCosts", "OtherCosts");
+          row2.setValue(3, BeeUtils.toString(BeeUtils.round(other * (-1), 2)));
+          row2.setValue(4, BeeUtils.toString(BeeUtils.round(total, 2)));
+
+          BeeRow row3 = driverAdvances.addEmptyRow();
+          row3.setProperty(TradeConstants.VAR_TOTAL, TradeConstants.VAR_TOTAL);
+          row3.setValue(0, drivers.get(drv));
+          row3.setValue(4, BeeUtils.toString(BeeUtils.round(total, 2)));
+        }
+
+        parameters.put("DriverAdvances", driverAdvances.serialize());
+
+        // DAILY COSTS
+        ChoiceCallback choice = value -> {
+          Long drv = BeeUtils.getQuietly(new ArrayList<>(drivers.keySet()), value);
+
+          if (!DataUtils.isId(drv)) {
             return;
           }
 
-          final Map<String, String> pack =
-              Codec.deserializeLinkedHashMap(response.getResponseAsString());
+          parameters.put("CurrentDriver", drivers.get(drv));
 
-          // DRIVERS
-          final Map<Long, String> drivers = new LinkedHashMap<>();
-          Long mainDriver = null;
+          double daily = 0;
+          String dailyCosts = "";
 
-          for (SimpleRowSet.SimpleRow drv : SimpleRowSet.restore(pack.get(TBL_TRIP_DRIVERS))) {
-            if (!DataUtils.isId(mainDriver)) {
-              mainDriver = drv.getLong(COL_MAIN_DRIVER);
-            }
-            drivers.put(drv.getLong(COL_DRIVER),
-                BeeUtils.joinWords(drv.getValue(COL_FIRST_NAME), drv.getValue(COL_LAST_NAME)));
-          }
-          List<String> allDrivers = new ArrayList<>();
-
-          for (Long drv : drivers.keySet()) {
-            if (!Objects.equals(drv, mainDriver)) {
-              allDrivers.add(drivers.get(drv));
+          for (SimpleRowSet.SimpleRow cost : driverInfo.get(drv)) {
+            if (dailyCostsItems.contains(cost.getLong(COL_COSTS_ITEM))) {
+              dailyCosts += BeeUtils.joinWords(cost.getValue(COL_ITEM_NAME),
+                  BeeUtils.parenthesize(cost.getValue(COL_COSTS_COUNTRY)),
+                  BeeUtils.joinWords(cost.getValue(COL_COSTS_QUANTITY), cost.getValue(COL_UNIT)))
+                  + "\n";
+              daily += BeeUtils.round(BeeUtils.unbox(cost.getDouble(COL_AMOUNT)), 2);
             }
           }
 
-          parameters.put(TBL_TRIP_DRIVERS, BeeUtils.joinItems(allDrivers));
-          parameters.put(TBL_TRIP_DRIVERS + 2, allDrivers.size() > 0 ? allDrivers.get(0) : "");
-          parameters.put(AdministrationConstants.COL_USER, BeeKeeper.getUser().getUserSign());
+          parameters.put("DailyCosts", dailyCosts);
+          parameters.put("DailyCostsTotal",
+              BeeUtils.joinWords(BeeUtils.toString(BeeUtils.round(daily, 2)),
+                  pack.get(AdministrationConstants.COL_CURRENCY)));
 
-          // FUEL
-          double before = BeeUtils.unbox(form.getDoubleValue("FuelBefore"));
-          double after = BeeUtils.unbox(form.getDoubleValue("FuelAfter"));
-          double fuel = before + BeeUtils.toDouble(pack.get(COL_FUEL)) - after;
+          getReportData(data -> ReportUtils.showReport(report, getReportCallback(), parameters,
+              data));
+        };
 
-          before = BeeUtils.unbox(form.getDoubleValue("SpeedometerBefore"));
-          after = BeeUtils.unbox(form.getDoubleValue("SpeedometerAfter"));
-
-          parameters.put(COL_FUEL, BeeUtils.toString(BeeUtils.round(fuel, 2)));
-          parameters.put(TBL_TRIP_FUEL_CONSUMPTIONS, after == before ? ""
-              : BeeUtils.toString(BeeUtils.round(fuel / (after - before) * 100, 2)));
-          parameters.put(TBL_TRIP_FUEL_COSTS, BeeUtils.round(pack.get(TBL_TRIP_FUEL_COSTS), 2));
-
-          // COSTS
-          final Set<Long> dailyCostsItems = new HashSet<>();
-
-          for (String item : Codec.beeDeserializeCollection(pack.get(COL_DAILY_COSTS_ITEM))) {
-            dailyCostsItems.add(BeeUtils.toLong(item));
-          }
-
-          final List<BeeColumn> driverCostCols = Lists.newArrayList(
-              new BeeColumn(ValueType.TEXT, COL_NUMBER),
-              new BeeColumn(ValueType.TEXT, COL_COSTS_DATE),
-              new BeeColumn(ValueType.TEXT, COL_COSTS_ITEM),
-              new BeeColumn(ValueType.TEXT, COL_DRIVER),
-              new BeeColumn(ValueType.TEXT, COL_COSTS_QUANTITY),
-              new BeeColumn(ValueType.TEXT, COL_UNIT),
-              new BeeColumn(ValueType.TEXT, COL_COSTS_PRICE),
-              new BeeColumn(ValueType.TEXT, COL_AMOUNT));
-
-          BeeRowSet driverCosts = new BeeRowSet(driverCostCols);
-          final HashMultimap<Long, SimpleRowSet.SimpleRow> driverInfo = HashMultimap.create();
-          Map<String, Double> otherInfo = new HashMap<>();
-
-          for (SimpleRowSet.SimpleRow cost : SimpleRowSet.restore(pack.get(TBL_TRIP_COSTS))) {
-            String itemName = cost.getValue(COL_ITEM_NAME);
-            double amount = BeeUtils.round(BeeUtils.unbox(cost.getDouble(COL_AMOUNT)), 2);
-
-            if (!BeeUtils.unbox(cost.getBoolean(COL_PAYMENT_CASH))) {
-              otherInfo.put(itemName, BeeUtils.round(BeeUtils.unbox(otherInfo.get(itemName))
-                  + amount, 2));
-              continue;
-            }
-            Long drv = BeeUtils.nvl(cost.getLong(COL_DRIVER), mainDriver);
-            double quantity = BeeUtils.unbox(cost.getDouble(COL_COSTS_QUANTITY));
-            driverInfo.put(drv, cost);
-
-            BeeRow driverCost = driverCosts.addEmptyRow();
-
-            driverCost.setValue(0, cost.getValue(COL_NUMBER));
-            driverCost.setValue(1, Format.renderDate(cost.getDateTime(COL_COSTS_DATE)));
-            driverCost.setValue(2, BeeUtils.joinWords(itemName,
-                dailyCostsItems.contains(cost.getLong(COL_COSTS_ITEM))
-                    ? BeeUtils.parenthesize(cost.getValue(COL_COSTS_COUNTRY)) : null));
-            driverCost.setValue(3, drivers.get(drv));
-            driverCost.setValue(4, BeeUtils.toString(quantity));
-            driverCost.setValue(5, cost.getValue(COL_UNIT));
-            driverCost.setValue(6, quantity > 0 ? BeeUtils.toString(BeeUtils
-                .round(amount / quantity, 2)) : null);
-            driverCost.setValue(7, BeeUtils.toString(amount));
-          }
-          double driverTotal = 0;
-          double otherTotal = 0;
-
-          if (driverInfo.size() > 0) {
-            for (Long drv : driverInfo.keySet()) {
-              double total = 0;
-
-              for (SimpleRowSet.SimpleRow cost : driverInfo.get(drv)) {
-                total += BeeUtils.round(BeeUtils.unbox(cost.getDouble(COL_AMOUNT)), 2);
-              }
-
-              BeeRow driverCost = driverCosts.addEmptyRow();
-              driverCost.setProperty(TradeConstants.VAR_TOTAL, TradeConstants.VAR_TOTAL);
-              driverCost.setValue(3, drivers.get(drv));
-              driverCost.setValue(7, BeeUtils.toString(BeeUtils.round(total, 2)));
-
-              driverTotal += total;
-            }
-          }
-
-          parameters.put("DriverCostsTotal", BeeUtils.toString(driverTotal));
-          parameters.put("DriverCosts", driverCosts.serialize());
-
-          BeeRowSet otherCosts = new BeeRowSet(Arrays.asList(
-              new BeeColumn(ValueType.TEXT, COL_COSTS_ITEM),
-              new BeeColumn(ValueType.TEXT, COL_AMOUNT)));
-
-          if (otherInfo.size() > 0) {
-            for (Map.Entry<String, Double> entry : otherInfo.entrySet()) {
-              double amount = entry.getValue();
-
-              BeeRow row = otherCosts.addEmptyRow();
-              row.setValue(0, entry.getKey());
-              row.setValue(1, BeeUtils.toString(amount));
-
-              otherTotal += amount;
-            }
-            otherTotal = BeeUtils.round(otherTotal, 2);
-          }
-
-          parameters.put(AdministrationConstants.COL_CURRENCY,
-              pack.get(AdministrationConstants.COL_CURRENCY));
-          parameters.put("OtherTotal", BeeUtils.toString(otherTotal));
-          parameters.put("OtherCosts", otherCosts.serialize());
-          parameters.put("CostsTotal",
-              BeeUtils.toString(BeeUtils.round(driverTotal + otherTotal, 2)));
-
-          // ADVANCES
-          BeeRowSet driverAdvances = new BeeRowSet(Arrays.asList(
-              new BeeColumn(ValueType.TEXT, COL_DRIVER),
-              new BeeColumn(ValueType.TEXT, COL_COSTS_ITEM),
-              new BeeColumn(ValueType.TEXT, COL_DATE),
-              new BeeColumn(ValueType.TEXT, COL_AMOUNT),
-              new BeeColumn(ValueType.TEXT, "Remainder")));
-
-          for (Long drv : drivers.keySet()) {
-            double total = 0;
-
-            for (SimpleRowSet.SimpleRow advance
-                : SimpleRowSet.restore(pack.get(TBL_DRIVER_ADVANCES))) {
-
-              if (!Objects.equals(advance.getLong(COL_DRIVER), drv)) {
-                continue;
-              }
-              double amount = BeeUtils.round(BeeUtils.unbox(advance.getDouble(COL_AMOUNT)), 2);
-              total -= amount;
-
-              BeeRow row = driverAdvances.addEmptyRow();
-
-              row.setValue(0, drivers.get(drv));
-              row.setProperty("Advance", "Advance");
-              row.setValue(2, Format.renderDate(advance.getDate(COL_DATE)));
-              row.setValue(3, BeeUtils.toString(amount));
-              row.setValue(4, BeeUtils.toString(BeeUtils.round(total, 2)));
-            }
-            double daily = 0;
-            double other = 0;
-
-            for (SimpleRowSet.SimpleRow cost : driverInfo.get(drv)) {
-              double amount = BeeUtils.round(BeeUtils.unbox(cost.getDouble(COL_AMOUNT)), 2);
-
-              if (dailyCostsItems.contains(cost.getLong(COL_COSTS_ITEM))) {
-                daily += amount;
-              } else {
-                other += amount;
-              }
-            }
-            total += daily;
-
-            BeeRow row1 = driverAdvances.addEmptyRow();
-            row1.setValue(0, drivers.get(drv));
-            row1.setProperty(COL_DAILY_COSTS_ITEM, COL_DAILY_COSTS_ITEM);
-            row1.setValue(3, BeeUtils.toString(BeeUtils.round(daily * (-1), 2)));
-            row1.setValue(4, BeeUtils.toString(BeeUtils.round(total, 2)));
-
-            total += other;
-
-            BeeRow row2 = driverAdvances.addEmptyRow();
-            row2.setValue(0, drivers.get(drv));
-            row2.setProperty("OtherCosts", "OtherCosts");
-            row2.setValue(3, BeeUtils.toString(BeeUtils.round(other * (-1), 2)));
-            row2.setValue(4, BeeUtils.toString(BeeUtils.round(total, 2)));
-
-            BeeRow row3 = driverAdvances.addEmptyRow();
-            row3.setProperty(TradeConstants.VAR_TOTAL, TradeConstants.VAR_TOTAL);
-            row3.setValue(0, drivers.get(drv));
-            row3.setValue(4, BeeUtils.toString(BeeUtils.round(total, 2)));
-          }
-
-          parameters.put("DriverAdvances", driverAdvances.serialize());
-
-          // DAILY COSTS
-          ChoiceCallback choice = value -> {
-            Long drv = BeeUtils.getQuietly(new ArrayList<>(drivers.keySet()), value);
-
-            if (!DataUtils.isId(drv)) {
-              return;
-            }
-
-            parameters.put("CurrentDriver", drivers.get(drv));
-
-            double daily = 0;
-            String dailyCosts = "";
-
-            for (SimpleRowSet.SimpleRow cost : driverInfo.get(drv)) {
-              if (dailyCostsItems.contains(cost.getLong(COL_COSTS_ITEM))) {
-                dailyCosts += BeeUtils.joinWords(cost.getValue(COL_ITEM_NAME),
-                    BeeUtils.parenthesize(cost.getValue(COL_COSTS_COUNTRY)),
-                    BeeUtils.joinWords(cost.getValue(COL_COSTS_QUANTITY), cost.getValue(COL_UNIT)))
-                    + "\n";
-                daily += BeeUtils.round(BeeUtils.unbox(cost.getDouble(COL_AMOUNT)), 2);
-              }
-            }
-
-            parameters.put("DailyCosts", dailyCosts);
-            parameters.put("DailyCostsTotal",
-                BeeUtils.joinWords(BeeUtils.toString(BeeUtils.round(daily, 2)),
-                    pack.get(AdministrationConstants.COL_CURRENCY)));
-
-            getReportData(data -> ReportUtils.showReport(report, getReportCallback(), parameters,
-                data));
-          };
-
-          if (BeeUtils.isPrefix(report, "TripOrder2")) {
-            if (drivers.size() > 1) {
-              Global.choice(Localized.dictionary().drivers(), null,
-                  new ArrayList<>(drivers.values()), choice);
-            } else {
-              choice.onSuccess(0);
-            }
+        if (BeeUtils.isPrefix(report, "TripOrder2")) {
+          if (drivers.size() > 1) {
+            Global.choice(Localized.dictionary().drivers(), null,
+                new ArrayList<>(drivers.values()), choice);
           } else {
-            getReportData(data -> ReportUtils.showReport(report, getReportCallback(), parameters,
-                data));
+            choice.onSuccess(0);
           }
+        } else {
+          getReportData(data -> ReportUtils.showReport(report, getReportCallback(), parameters,
+              data));
         }
       });
     });
@@ -521,31 +506,23 @@ public class TripForm extends PrintFormInterceptor {
     if (to != null) {
       args.addDataItem(COL_TRIP_DATE_TO, to.getTime());
     }
-    BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(getFormView());
+    BeeKeeper.getRpc().makeRequest(args, response -> {
+      response.notify(getFormView());
 
-        if (response.hasErrors()) {
-          return;
-        }
-        final List<String> messages = Arrays.asList(Codec.beeDeserializeCollection(response
-            .getResponseAsString()));
+      if (response.hasErrors()) {
+        return;
+      }
+      final List<String> messages = Arrays.asList(Codec.beeDeserializeCollection(response
+          .getResponseAsString()));
 
-        if (BeeUtils.isEmpty(messages)) {
-          listener.fireEvent(event);
-        } else {
-          Queries.getRow(TBL_DRIVERS, Filter.compareId(driverId),
-              Arrays.asList(ClassifierConstants.COL_FIRST_NAME, ClassifierConstants.COL_LAST_NAME),
-              new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
-              Global.confirm(Localized.dictionary().employment()
-                      + " (" + BeeUtils.joinWords(result.getValues()) + ")", Icon.WARNING, messages,
-                  () -> listener.fireEvent(event));
-            }
-          });
-        }
+      if (BeeUtils.isEmpty(messages)) {
+        listener.fireEvent(event);
+      } else {
+        Queries.getRow(TBL_DRIVERS, Filter.compareId(driverId),
+            Arrays.asList(ClassifierConstants.COL_FIRST_NAME, ClassifierConstants.COL_LAST_NAME),
+            result -> Global.confirm(Localized.dictionary().employment()
+                    + " (" + BeeUtils.joinWords(result.getValues()) + ")", Icon.WARNING, messages,
+                () -> listener.fireEvent(event)));
       }
     });
   }
@@ -598,23 +575,20 @@ public class TripForm extends PrintFormInterceptor {
       if (to != null) {
         args.addDataItem(COL_TRIP_DATE_TO, to.getTime());
       }
-      BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          response.notify(getFormView());
+      BeeKeeper.getRpc().makeRequest(args, response -> {
+        response.notify(getFormView());
 
-          if (response.hasErrors()) {
-            return;
-          }
-          final List<String> messages = Arrays.asList(Codec.beeDeserializeCollection(response
-              .getResponseAsString()));
+        if (response.hasErrors()) {
+          return;
+        }
+        final List<String> messages = Arrays.asList(Codec.beeDeserializeCollection(response
+            .getResponseAsString()));
 
-          if (BeeUtils.isEmpty(messages)) {
-            checkDriver(listener, event, driverId);
-          } else {
-            Global.confirm(Localized.dictionary().employment(), Icon.WARNING, messages,
-                () -> checkDriver(listener, event, driverId));
-          }
+        if (BeeUtils.isEmpty(messages)) {
+          checkDriver(listener, event, driverId);
+        } else {
+          Global.confirm(Localized.dictionary().employment(), Icon.WARNING, messages,
+              () -> checkDriver(listener, event, driverId));
         }
       });
     } else if (DataUtils.isId(driverId)) {
@@ -631,19 +605,16 @@ public class TripForm extends PrintFormInterceptor {
       args.addDataItem(COL_VEHICLE, vehicleId);
       args.addNotEmptyData(COL_DATE, row.getString(getDataIndex(COL_DATE)));
 
-      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          response.notify(getFormView());
+      BeeKeeper.getRpc().makePostRequest(args, response -> {
+        response.notify(getFormView());
 
-          if (response.hasErrors()) {
-            return;
-          }
-          Pair<String, String> pair = Pair.restore(response.getResponseAsString());
-          row.setValue(getDataIndex(COL_SPEEDOMETER_BEFORE), pair.getA());
-          row.setValue(getDataIndex(COL_FUEL_BEFORE), pair.getB());
-          getFormView().refresh(false, false);
+        if (response.hasErrors()) {
+          return;
         }
+        Pair<String, String> pair = Pair.restore(response.getResponseAsString());
+        row.setValue(getDataIndex(COL_SPEEDOMETER_BEFORE), pair.getA());
+        row.setValue(getDataIndex(COL_FUEL_BEFORE), pair.getB());
+        getFormView().refresh(false, false);
       });
     }
   }
@@ -671,7 +642,7 @@ public class TripForm extends PrintFormInterceptor {
         interceptor.defaultDriver = getLongValue(COL_DRIVER);
 
         RowFactory.createRow(info.getNewRowForm(), info.getNewRowCaption(), info, newRow,
-            Modality.ENABLED, null, interceptor, null, null);
+            interceptor, null);
       });
     }
     return copyAction;

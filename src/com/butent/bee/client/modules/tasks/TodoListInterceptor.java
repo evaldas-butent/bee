@@ -1,8 +1,6 @@
 package com.butent.bee.client.modules.tasks;
 
 import com.google.common.collect.Sets;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
@@ -11,9 +9,9 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -52,13 +50,10 @@ class TodoListInterceptor extends AbstractGridInterceptor {
 
       if (BeeKeeper.getUser().canCreateData(VIEW_TASKS)) {
         Button taskCommand = new Button(Localized.dictionary().crmTodoCreateTask(),
-            new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent event) {
-                IsRow row = getGridView().getActiveRow();
-                if (row != null) {
-                  createTask(row);
-                }
+            event -> {
+              IsRow row = getGridView().getActiveRow();
+              if (row != null) {
+                createTask(row);
               }
             });
 
@@ -69,13 +64,10 @@ class TodoListInterceptor extends AbstractGridInterceptor {
           && BeeKeeper.getUser().canCreateData(CalendarConstants.VIEW_APPOINTMENTS)) {
 
         Button appointmentCommand = new Button(Localized.dictionary().crmTodoCreateAppointment(),
-            new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent event) {
-                IsRow row = getGridView().getActiveRow();
-                if (row != null) {
-                  createAppointment(row);
-                }
+            event -> {
+              IsRow row = getGridView().getActiveRow();
+              if (row != null) {
+                createAppointment(row);
               }
             });
 
@@ -90,54 +82,46 @@ class TodoListInterceptor extends AbstractGridInterceptor {
   }
 
   private void createAppointment(final IsRow item) {
-    Consumer<BeeRow> initializer = new Consumer<BeeRow>() {
-      @Override
-      public void accept(BeeRow appointment) {
-        DataInfo srcInfo = Data.getDataInfo(getViewName());
-        DataInfo dstInfo = Data.getDataInfo(CalendarConstants.VIEW_APPOINTMENTS);
-        if (srcInfo == null || dstInfo == null) {
-          return;
-        }
+    Consumer<BeeRow> initializer = appointment -> {
+      DataInfo srcInfo = Data.getDataInfo(getViewName());
+      DataInfo dstInfo = Data.getDataInfo(CalendarConstants.VIEW_APPOINTMENTS);
+      if (srcInfo == null || dstInfo == null) {
+        return;
+      }
 
-        Map<String, String> colNames = new HashMap<>();
+      Map<String, String> colNames = new HashMap<>();
 
-        colNames.put(COL_SUMMARY, CalendarConstants.COL_SUMMARY);
-        colNames.put(COL_DESCRIPTION, CalendarConstants.COL_DESCRIPTION);
-        colNames.put(COL_START_TIME, CalendarConstants.COL_START_DATE_TIME);
-        colNames.put(COL_FINISH_TIME, CalendarConstants.COL_END_DATE_TIME);
+      colNames.put(COL_SUMMARY, CalendarConstants.COL_SUMMARY);
+      colNames.put(COL_DESCRIPTION, CalendarConstants.COL_DESCRIPTION);
+      colNames.put(COL_START_TIME, CalendarConstants.COL_START_DATE_TIME);
+      colNames.put(COL_FINISH_TIME, CalendarConstants.COL_END_DATE_TIME);
 
-        for (Map.Entry<String, String> entry : colNames.entrySet()) {
-          int srcIndex = srcInfo.getColumnIndex(entry.getKey());
-          String value = BeeConst.isUndef(srcIndex) ? null : item.getString(srcIndex);
+      for (Map.Entry<String, String> entry : colNames.entrySet()) {
+        int srcIndex = srcInfo.getColumnIndex(entry.getKey());
+        String value = BeeConst.isUndef(srcIndex) ? null : item.getString(srcIndex);
 
-          if (!BeeUtils.isEmpty(value)) {
-            int dstIndex = dstInfo.getColumnIndex(entry.getValue());
-            if (!BeeConst.isUndef(dstIndex)) {
-              appointment.setValue(dstIndex, value);
-            }
+        if (!BeeUtils.isEmpty(value)) {
+          int dstIndex = dstInfo.getColumnIndex(entry.getValue());
+          if (!BeeConst.isUndef(dstIndex)) {
+            appointment.setValue(dstIndex, value);
           }
         }
+      }
 
-        Long company = item.getLong(srcInfo.getColumnIndex(ClassifierConstants.COL_COMPANY));
-        if (DataUtils.isId(company)) {
-          RelationUtils.copyWithDescendants(srcInfo, ClassifierConstants.COL_COMPANY, item,
-              dstInfo, ClassifierConstants.COL_COMPANY, appointment);
-        }
+      Long company = item.getLong(srcInfo.getColumnIndex(ClassifierConstants.COL_COMPANY));
+      if (DataUtils.isId(company)) {
+        RelationUtils.copyWithDescendants(srcInfo, ClassifierConstants.COL_COMPANY, item,
+            dstInfo, ClassifierConstants.COL_COMPANY, appointment);
+      }
 
-        Long contact = item.getLong(srcInfo.getColumnIndex(ClassifierConstants.COL_CONTACT));
-        if (DataUtils.isId(contact)) {
-          RelationUtils.copyWithDescendants(srcInfo, ClassifierConstants.COL_CONTACT, item,
-              dstInfo, ClassifierConstants.COL_COMPANY_PERSON, appointment);
-        }
+      Long contact = item.getLong(srcInfo.getColumnIndex(ClassifierConstants.COL_CONTACT));
+      if (DataUtils.isId(contact)) {
+        RelationUtils.copyWithDescendants(srcInfo, ClassifierConstants.COL_CONTACT, item,
+            dstInfo, ClassifierConstants.COL_COMPANY_PERSON, appointment);
       }
     };
 
-    RowCallback callback = new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow result) {
-        Queries.deleteRowAndFire(getViewName(), item.getId());
-      }
-    };
+    RowCallback callback = result -> Queries.deleteRowAndFire(getViewName(), item.getId());
 
     CalendarKeeper.createAppointment(initializer,
         item.getString(getDataIndex(COL_EXPECTED_DURATION)), callback);
@@ -178,11 +162,7 @@ class TodoListInterceptor extends AbstractGridInterceptor {
           dstInfo, ClassifierConstants.COL_CONTACT, task);
     }
 
-    RowFactory.createRow(dstInfo, task, Modality.ENABLED, new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow result) {
-        Queries.deleteRowAndFire(getViewName(), item.getId());
-      }
-    });
+    RowFactory.createRow(dstInfo, task, Opener.MODAL,
+        result -> Queries.deleteRowAndFire(getViewName(), item.getId()));
   }
 }

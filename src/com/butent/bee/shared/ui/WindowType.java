@@ -10,12 +10,32 @@ public enum WindowType implements HasLocalizedCaption {
     public String getCaption(Dictionary dictionary) {
       return dictionary.windowNewTab();
     }
+
+    @Override
+    public boolean isAutonomous() {
+      return true;
+    }
+
+    @Override
+    public boolean isPopup() {
+      return false;
+    }
   },
 
   ON_TOP("on-top") {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.windowOnTop();
+    }
+
+    @Override
+    public boolean isAutonomous() {
+      return false;
+    }
+
+    @Override
+    public boolean isPopup() {
+      return false;
     }
   },
 
@@ -24,12 +44,32 @@ public enum WindowType implements HasLocalizedCaption {
     public String getCaption(Dictionary dictionary) {
       return dictionary.windowDetached();
     }
+
+    @Override
+    public boolean isAutonomous() {
+      return true;
+    }
+
+    @Override
+    public boolean isPopup() {
+      return true;
+    }
   },
 
   MODAL("modal") {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.windowModal();
+    }
+
+    @Override
+    public boolean isAutonomous() {
+      return false;
+    }
+
+    @Override
+    public boolean isPopup() {
+      return true;
     }
   };
 
@@ -44,6 +84,14 @@ public enum WindowType implements HasLocalizedCaption {
 
   public static final WindowType DEFAULT_CHILD_EDIT = MODAL;
   public static final WindowType DEFAULT_CHILD_NEW_ROW = MODAL;
+
+  public static final WindowType DEFAULT_RELATION_EDIT = NEW_TAB;
+  public static final WindowType DEFAULT_RELATION_NEW_ROW = MODAL;
+
+  public static final WindowType DEFAULT_OTHER_EDIT = NEW_TAB;
+  public static final WindowType DEFAULT_OTHER_NEW_ROW = MODAL;
+
+  public static final WindowType DEFAULT_NEW_MAIL_MESSAGE = DETACHED;
 
   public static WindowType parse(String input) {
     if (BeeUtils.isEmpty(input)) {
@@ -63,4 +111,8 @@ public enum WindowType implements HasLocalizedCaption {
   public String getCode() {
     return code;
   }
+
+  public abstract boolean isAutonomous();
+
+  public abstract boolean isPopup();
 }

@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
         name="PersonFamily" viewName="PersonFamily" caption="=contactFamily"
-        newRowWindow="modal" flexGrow="1" flexShrink="1"
+        flexGrow="1" flexShrink="1"
 >
   <g:columns>
     <DataColumn name="FirstName" visible="true" />

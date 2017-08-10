@@ -9,9 +9,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.UserInfo;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -32,7 +30,6 @@ import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -105,8 +102,7 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
       BeeRow emptyRow = RowFactory.createEmptyRow(data, true);
 
       RowFactory.createRow(FORM_NEW_ANNOUNCEMENT, Localized.dictionary().announcementNew(),
-          data, emptyRow, Modality.ENABLED, null,
-          new CreateDiscussionInterceptor(), null, null);
+          data, emptyRow, new CreateDiscussionInterceptor(), null);
       return false;
     }
     return super.beforeAddRow(presenter, copy);
@@ -235,12 +231,9 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
     Filter activeFilter = Filter.equals(COL_STATUS, DiscussionStatus.ACTIVE.ordinal());
     Filter filter = Filter.and(activeFilter, timeFilter);
     Queries.getRowSet(viewName, Lists.newArrayList(COL_STATUS, COL_VISIBLE_TO), filter,
-        new RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            for (BeeRow rs : result.getRows()) {
-              Queries.update(viewName, rs.getId(), COL_STATUS, new TextValue("1"));
-            }
+        result -> {
+          for (BeeRow rs : result.getRows()) {
+            Queries.update(viewName, rs.getId(), COL_STATUS, new TextValue("1"));
           }
         });
   }
@@ -261,14 +254,8 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
         Filter.equals(AdministrationConstants.COL_USER, currentUser.getUserId()));
 
     Queries.update(VIEW_DISCUSSIONS_USERS, filter, COL_STAR, new IntegerValue(value),
-        new Queries.IntCallback() {
-
-          @Override
-          public void onSuccess(Integer result) {
-            CellUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS, rowId,
-                event.getRowValue().getVersion(), source,
-                (value == null) ? null : BeeUtils.toString(value));
-          }
-        });
+        result -> CellUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS, rowId,
+            event.getRowValue().getVersion(), source,
+            (value == null) ? null : BeeUtils.toString(value)));
   }
 }

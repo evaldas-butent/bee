@@ -66,6 +66,7 @@ import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
+import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewHelper;
@@ -326,9 +327,9 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     public int compareTo(TabEntry o) {
       Assert.notNull(o);
 
-      int res = Integer.valueOf(getTabIndex()).compareTo(o.getTabIndex());
+      int res = Integer.compare(getTabIndex(), o.getTabIndex());
       if (res == BeeConst.COMPARE_EQUAL) {
-        res = Integer.valueOf(getOrder()).compareTo(o.getOrder());
+        res = Integer.compare(getOrder(), o.getOrder());
       }
       return res;
     }
@@ -409,6 +410,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private int activeEditableIndex = BeeConst.UNDEF;
 
   private Dimensions dimensions;
+  private String containerStyle;
 
   private State state;
 
@@ -421,6 +423,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private final List<DynamicStyler> dynamicStylers = new ArrayList<>();
   private final List<String> rowConsumers = new ArrayList<>();
+
+  private String backingGridId;
 
   public FormImpl(String formName) {
     super(Position.RELATIVE, Overflow.AUTO);
@@ -618,6 +622,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     setPrintFooter(formDescription.printFooter());
 
     setDimensions(formDescription.getDimensions());
+    setContainerStyle(formDescription.getContainerStyle());
 
     setOptions(formDescription.getOptions());
     setProperties(formDescription.getProperties());
@@ -749,6 +754,23 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public GridView getBackingGrid() {
+    if (getViewPresenter() instanceof HasGridView) {
+      return ((HasGridView) getViewPresenter()).getGridView();
+
+    } else if (!BeeUtils.isEmpty(getBackingGridId())) {
+      return ViewHelper.findGridById(getBackingGridId());
+
+    } else {
+      return null;
+    }
+  }
+
+  private String getBackingGridId() {
+    return backingGridId;
+  }
+
+  @Override
   public Boolean getBooleanValue(String source) {
     int index = getDataIndex(source);
     if (getActiveRow() != null && index >= 0) {
@@ -804,6 +826,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     return result;
+  }
+
+  @Override
+  public String getContainerStyle() {
+    return containerStyle;
   }
 
   @Override
@@ -1792,6 +1819,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public void setBackingGridId(String backingGridId) {
+    this.backingGridId = backingGridId;
+  }
+
+  @Override
   public void setCaption(String caption) {
     this.caption = caption;
   }
@@ -1993,7 +2025,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     if (getFormInterceptor() != null) {
-      getFormInterceptor().onStartNewRow(this, row, newRow);
+      getFormInterceptor().onStartNewRow(this, newRow);
     }
 
     setActiveRow(newRow);
@@ -2095,6 +2127,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     Previewer.ensureUnregistered(this);
     if (getDataObserver() != null) {
       getDataObserver().stop();
+    }
+
+    GridView gridView = getBackingGrid();
+    if (gridView != null) {
+      gridView.formUnload(this);
     }
 
     super.onUnload();
@@ -2514,6 +2551,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       view.setStyleName(STYLE_HAS_ROW_ID, hasId);
       view.setStyleName(STYLE_NO_ROW_ID, !hasId);
     }
+  }
+
+  private void setContainerStyle(String containerStyle) {
+    this.containerStyle = containerStyle;
   }
 
   private void setDataColumns(List<BeeColumn> dataColumns) {
