@@ -514,7 +514,20 @@ public enum FormWidget {
       scale = BeeConst.UNDEF;
     }
 
-    int columnScale = (column == null) ? BeeConst.UNDEF : column.getScale();
+    int columnScale;
+    if (column == null) {
+      columnScale = BeeConst.UNDEF;
+    } else {
+      switch (column.getType()) {
+        case INTEGER:
+        case LONG:
+          columnScale = 0;
+          break;
+        default:
+          columnScale = column.getScale();
+      }
+    }
+
     if (scale > 0 && columnScale >= 0) {
       scale = Math.min(scale, columnScale);
     }
@@ -537,6 +550,8 @@ public enum FormWidget {
         format = Format.getDecimalFormat(Math.max(scale, 0), columnScale);
       } else if (scale >= 0) {
         format = Format.getDecimalFormat(scale);
+      } else if (columnScale >= 0) {
+        format = Format.getDecimalFormat(columnScale);
       } else {
         format = null;
       }
