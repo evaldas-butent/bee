@@ -4,8 +4,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -17,14 +15,12 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.CustomAction;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
@@ -50,12 +46,9 @@ public class AssessmentRequestsGrid extends AbstractGridInterceptor {
       args.addDataItem(EcConstants.VAR_FILTER,
           Codec.beeSerialize(presenter.getDataProvider().getFilter()));
 
-      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          response.notify(presenter.getGridView());
-          button.get().idle();
-        }
+      BeeKeeper.getRpc().makePostRequest(args, response -> {
+        response.notify(presenter.getGridView());
+        button.get().idle();
       });
     });
     button.set(summary);
@@ -93,36 +86,36 @@ public class AssessmentRequestsGrid extends AbstractGridInterceptor {
             int cargoIndex = getDataIndex(COL_CARGO);
             TransportUtils.getCargoPlaces(Filter.equals(COL_CARGO, oldRow.getLong(cargoIndex)),
                 (loading, unloading) -> {
-              List<BeeRowSet> placesRowSets = Arrays.asList(loading, unloading);
-              Runnable onCloneChildren = new Runnable() {
-                int copiedGrids;
+                  List<BeeRowSet> placesRowSets = Arrays.asList(loading, unloading);
+                  Runnable onCloneChildren = new Runnable() {
+                    int copiedGrids;
 
-                @Override
-                public void run() {
-                  if (Objects.equals(placesRowSets.size(), ++copiedGrids)) {
-                    RowEditor.open(getViewName(), assessmentRow.getId());
+                    @Override
+                    public void run() {
+                      if (Objects.equals(placesRowSets.size(), ++copiedGrids)) {
+                        RowEditor.open(getViewName(), assessmentRow.getId());
+                      }
+                    }
+                  };
+
+                  for (BeeRowSet placesRowSet : placesRowSets) {
+                    BeeRowSet newPlaces = Data.createRowSet(placesRowSet.getViewName());
+                    int cargoIdx = newPlaces.getColumnIndex(COL_CARGO);
+
+                    for (BeeRow row : placesRowSet) {
+                      BeeRow clonned = newPlaces.addEmptyRow();
+                      clonned.setValues(row.getValues());
+                      clonned.setValue(cargoIdx, assessmentRow.getValue(cargoIndex));
+                    }
+
+                    if (!newPlaces.isEmpty()) {
+                      newPlaces = DataUtils.createRowSetForInsert(newPlaces);
+                      Queries.insertRows(newPlaces, result -> onCloneChildren.run());
+                    } else {
+                      onCloneChildren.run();
+                    }
                   }
-                }
-              };
-
-              for (BeeRowSet placesRowSet : placesRowSets) {
-                BeeRowSet newPlaces = Data.createRowSet(placesRowSet.getViewName());
-                int cargoIdx = newPlaces.getColumnIndex(COL_CARGO);
-
-                for (BeeRow row : placesRowSet) {
-                  BeeRow clonned = newPlaces.addEmptyRow();
-                  clonned.setValues(row.getValues());
-                  clonned.setValue(cargoIdx, assessmentRow.getValue(cargoIndex));
-                }
-
-                if (!newPlaces.isEmpty()) {
-                  newPlaces = DataUtils.createRowSetForInsert(newPlaces);
-                  Queries.insertRows(newPlaces, result -> onCloneChildren.run());
-                } else {
-                  onCloneChildren.run();
-                }
-              }
-            });
+                });
           });
       return false;
     } else {

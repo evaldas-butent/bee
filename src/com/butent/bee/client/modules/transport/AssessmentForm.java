@@ -321,12 +321,12 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
             Filter.and(Filter.equals(COL_ASSESSMENT, form.getActiveRowId()),
                 request ? Filter.isNotEqual(COL_ASSESSMENT_STATUS, IntegerValue.of(status))
                     : Filter.isNotEqual(ALS_ORDER_STATUS, IntegerValue.of(orderStatus))),
-             result-> {
-                if (BeeUtils.isPositive(result)) {
-                  Global.showError(Localized.dictionary().trAssessmentInvalidStatusError(result,
-                      request ? status.getCaption() : orderStatus.getCaption()));
-                } else {
-                  checkInvoices();
+            result -> {
+              if (BeeUtils.isPositive(result)) {
+                Global.showError(Localized.dictionary().trAssessmentInvalidStatusError(result,
+                    request ? status.getCaption() : orderStatus.getCaption()));
+              } else {
+                checkInvoices();
 
               }
             });
@@ -339,15 +339,11 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       if (Objects.equals(orderStatus, OrderStatus.COMPLETED)) {
         Queries.getRowCount(TBL_CARGO_INCOMES,
             Filter.and(Filter.equals(COL_CARGO, form.getLongValue(COL_CARGO)),
-                Filter.isNull(COL_SALE)),
-            new IntCallback() {
-              @Override
-              public void onSuccess(Integer res) {
-                if (BeeUtils.isPositive(res)) {
-                  form.notifySevere("Yra neišrašytų sąskaitų", BeeUtils.toString(res));
-                } else {
-                  confirm();
-                }
+                Filter.isNull(COL_SALE)), res -> {
+              if (BeeUtils.isPositive(res)) {
+                form.notifySevere("Yra neišrašytų sąskaitų", BeeUtils.toString(res));
+              } else {
+                confirm();
               }
             });
       } else {
@@ -750,32 +746,28 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     Queries.getRowSet(TBL_CARGO_EXPENSES,
         Lists.newArrayList(COL_AMOUNT, COL_CURRENCY, COL_SERVICE_PERCENT,
             ALS_CARGO_INCOME_CURRENCY), Filter.and(Filter.equals(COL_CARGO, cargoId),
-            Filter.isNull(COL_PURCHASE), Filter.notNull(COL_SERVICE_PERCENT)),
-        new RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet expenses) {
-            if (expenses.isEmpty()) {
-              return;
-            }
-            BeeRowSet updExpenses = new BeeRowSet(TBL_CARGO_EXPENSES,
-                Data.getColumns(TBL_CARGO_EXPENSES, Lists.newArrayList(COL_AMOUNT, COL_CURRENCY)));
-
-            for (IsRow expense : expenses) {
-              Long incomeCurrency = expense.getLong(expenses.getColumnIndex(
-                  ALS_CARGO_INCOME_CURRENCY));
-
-              Long currency = BeeUtils.nvl(valueCurrency, incomeCurrency);
-
-              double percent = BeeUtils.unbox(
-                  expense.getDouble(expenses.getColumnIndex(COL_SERVICE_PERCENT)));
-
-              double amount = getExpenseSum(cargoValue, percent);
-
-              updExpenses.addRow(expense.getId(), expense.getVersion(),
-                  new String[] {BeeUtils.toString(amount), BeeUtils.toString(currency)});
-            }
-            Queries.updateRows(updExpenses);
+            Filter.isNull(COL_PURCHASE), Filter.notNull(COL_SERVICE_PERCENT)), expenses -> {
+          if (expenses.isEmpty()) {
+            return;
           }
+          BeeRowSet updExpenses = new BeeRowSet(TBL_CARGO_EXPENSES,
+              Data.getColumns(TBL_CARGO_EXPENSES, Lists.newArrayList(COL_AMOUNT, COL_CURRENCY)));
+
+          for (IsRow expense : expenses) {
+            Long incomeCurrency = expense.getLong(expenses.getColumnIndex(
+                ALS_CARGO_INCOME_CURRENCY));
+
+            Long currency = BeeUtils.nvl(valueCurrency, incomeCurrency);
+
+            double percent = BeeUtils.unbox(
+                expense.getDouble(expenses.getColumnIndex(COL_SERVICE_PERCENT)));
+
+            double amount = getExpenseSum(cargoValue, percent);
+
+            updExpenses.addRow(expense.getId(), expense.getVersion(),
+                new String[] {BeeUtils.toString(amount), BeeUtils.toString(currency)});
+          }
+          Queries.updateRows(updExpenses);
         });
   }
 
@@ -826,30 +818,30 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   @Override
   public void onLoad(final FormView formView) {
     Queries.getRowSet(TBL_DEPARTMENT_EMPLOYEES, Lists.newArrayList(COL_DEPARTMENT,
-        COL_COMPANY_PERSON, COL_DEPARTMENT_HEAD, COL_DEPARTMENT_NAME, "Heads"), null,  result-> {
-        for (BeeRow row : result) {
-          Long department = row.getLong(0);
-          Long employer = row.getLong(1);
-          Long headDepartment = row.getLong(2);
-          String departmentName = row.getString(3);
+        COL_COMPANY_PERSON, COL_DEPARTMENT_HEAD, COL_DEPARTMENT_NAME, "Heads"), null, result -> {
+          for (BeeRow row : result) {
+            Long department = row.getLong(0);
+            Long employer = row.getLong(1);
+            Long headDepartment = row.getLong(2);
+            String departmentName = row.getString(3);
 
-          employees.put(employer, department);
-          departments.put(department, departmentName);
+            employees.put(employer, department);
+            departments.put(department, departmentName);
 
-          if (DataUtils.isId(headDepartment)) {
-            departmentHeads.put(employer, headDepartment);
+            if (DataUtils.isId(headDepartment)) {
+              departmentHeads.put(employer, headDepartment);
 
-        }else if (BeeUtils.unbox(row.getBoolean(4))) {
-                gods.add(employer);
-              }
+            } else if (BeeUtils.unbox(row.getBoolean(4))) {
+              gods.add(employer);
             }
-            if (BeeKeeper.getUser().isAdministrator()) {
-              gods.add(userPerson);
-            }
-        form = formView;
-        updateDepartment(form, form.getActiveRow(), null);
-        form.refresh();
-      }
+          }
+          if (BeeKeeper.getUser().isAdministrator()) {
+            gods.add(userPerson);
+          }
+          form = formView;
+          updateDepartment(form, form.getActiveRow(), null);
+          form.refresh();
+        }
     );
   }
 

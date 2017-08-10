@@ -10,19 +10,16 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.modules.trade.InvoiceForm;
 import com.butent.bee.client.modules.trade.InvoicesGrid;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -82,74 +79,58 @@ public class CargoPurchaseInvoicesGrid extends InvoicesGrid {
           COL_TRADE_SUPPLIER + "Name", COL_TRADE_CURRENCY, COL_TRADE_CURRENCY + "Name",
           COL_OPERATION_WAREHOUSE_TO, COL_OPERATION_WAREHOUSE_TO + "Code", COL_TRADE_NOTES);
 
-      Queries.getRowSet(getViewName(), cols, Filter.idIn(ids), new Queries.RowSetCallback() {
-        @Override
-        public void onSuccess(BeeRowSet result) {
-          joinAction.setVisible(true);
+      Queries.getRowSet(getViewName(), cols, Filter.idIn(ids), result -> {
+        joinAction.setVisible(true);
 
-          for (String col : new String[] {
-              COL_TRADE_SUPPLIER, COL_OPERATION_WAREHOUSE_TO, COL_TRADE_CURRENCY}) {
-            int idx = result.getColumnIndex(col);
+        for (String col : new String[] {
+            COL_TRADE_SUPPLIER, COL_OPERATION_WAREHOUSE_TO, COL_TRADE_CURRENCY}) {
+          int idx = result.getColumnIndex(col);
 
-            if (result.getDistinctStrings(idx).size() > 1) {
-              view.notifyWarning("Daugiau negu viena reikšmė:",
-                  Localized.getLabel(result.getColumn(idx)));
-              return;
-            }
+          if (result.getDistinctStrings(idx).size() > 1) {
+            view.notifyWarning("Daugiau negu viena reikšmė:",
+                Localized.getLabel(result.getColumn(idx)));
+            return;
           }
-          for (Long op : result.getDistinctLongs(result.getColumnIndex(COL_TRADE_OPERATION))) {
-            if (!Objects.equals(op, operationId)) {
-              view.notifyWarning("Apjungti leidžiama tik dokumentus su operacija", operation);
-              return;
-            }
-          }
-          DataInfo dataInfo = Data.getDataInfo(getViewName());
-          BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
-
-          newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER),
-              BeeKeeper.getUser().getUserId());
-          newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER + COL_PERSON),
-              BeeKeeper.getUser().getUserData().getCompanyPerson());
-          newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER + COL_FIRST_NAME),
-              BeeKeeper.getUser().getFirstName());
-          newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER + COL_LAST_NAME),
-              BeeKeeper.getUser().getLastName());
-
-          for (String col : cols) {
-            if (!Objects.equals(col, COL_TRADE_OPERATION)) {
-              newRow.setValue(dataInfo.getColumnIndex(col),
-                  BeeUtils.joinItems(result.getDistinctStrings(result.getColumnIndex(col))));
-            }
-          }
-          if (DataUtils.isId(operation2Id)) {
-            newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_OPERATION), operation2Id);
-            newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_OPERATION + "Name"), operation2);
-          }
-          RowFactory.createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo,
-              newRow, Modality.ENABLED, null, new InvoiceForm(null), null, new RowCallback() {
-                @Override
-                public void onSuccess(BeeRow newInvoice) {
-                  Queries.update(VIEW_PURCHASE_ITEMS, Filter.any(COL_PURCHASE, ids), COL_PURCHASE,
-                      BeeUtils.toString(newInvoice.getId()), new Queries.IntCallback() {
-                        @Override
-                        public void onSuccess(Integer res1) {
-                          Data.onViewChange(getViewName(), DataChangeEvent.RESET_REFRESH);
-                          Data.onViewChange(VIEW_PURCHASE_ITEMS, DataChangeEvent.RESET_REFRESH);
-
-                          Queries.update(TBL_CARGO_EXPENSES,
-                              Filter.any(COL_PURCHASE, ids), COL_PURCHASE,
-                              BeeUtils.toString(newInvoice.getId()), new Queries.IntCallback() {
-                                @Override
-                                public void onSuccess(Integer res2) {
-                                  Data.onViewChange(TBL_CARGO_EXPENSES,
-                                      DataChangeEvent.RESET_REFRESH);
-                                }
-                              });
-                        }
-                      });
-                }
-              });
         }
+        for (Long op : result.getDistinctLongs(result.getColumnIndex(COL_TRADE_OPERATION))) {
+          if (!Objects.equals(op, operationId)) {
+            view.notifyWarning("Apjungti leidžiama tik dokumentus su operacija", operation);
+            return;
+          }
+        }
+        DataInfo dataInfo = Data.getDataInfo(getViewName());
+        BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
+
+        newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER),
+            BeeKeeper.getUser().getUserId());
+        newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER + COL_PERSON),
+            BeeKeeper.getUser().getUserData().getCompanyPerson());
+        newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER + COL_FIRST_NAME),
+            BeeKeeper.getUser().getFirstName());
+        newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER + COL_LAST_NAME),
+            BeeKeeper.getUser().getLastName());
+
+        for (String col : cols) {
+          if (!Objects.equals(col, COL_TRADE_OPERATION)) {
+            newRow.setValue(dataInfo.getColumnIndex(col),
+                BeeUtils.joinItems(result.getDistinctStrings(result.getColumnIndex(col))));
+          }
+        }
+        if (DataUtils.isId(operation2Id)) {
+          newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_OPERATION), operation2Id);
+          newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_OPERATION + "Name"), operation2);
+        }
+        RowFactory.createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo,
+            newRow, Opener.MODAL, new InvoiceForm(null),
+            newInvoice -> Queries.update(VIEW_PURCHASE_ITEMS, Filter.any(COL_PURCHASE, ids),
+                COL_PURCHASE, BeeUtils.toString(newInvoice.getId()), res1 -> {
+                  Data.resetLocal(getViewName());
+                  Data.resetLocal(VIEW_PURCHASE_ITEMS);
+
+                  Queries.update(TBL_CARGO_EXPENSES, Filter.any(COL_PURCHASE, ids), COL_PURCHASE,
+                      BeeUtils.toString(newInvoice.getId()),
+                      res2 -> Data.resetLocal(TBL_CARGO_EXPENSES));
+                }));
       });
     } else {
       super.onClick(event);

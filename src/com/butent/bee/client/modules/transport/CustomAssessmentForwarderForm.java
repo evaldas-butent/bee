@@ -71,16 +71,16 @@ public class CustomAssessmentForwarderForm extends PrintFormInterceptor {
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow row) {
     Global.getParameterRelation(PRM_FORWARDER_EXPEDITION_TYPE, (aLong, s) -> {
       if (DataUtils.isId(aLong)) {
-        newRow.setValue(getDataIndex(COL_EXPEDITION), aLong);
-        newRow.setValue(Data.getColumnIndex(TBL_ASSESSMENT_FORWARDERS, ALS_EXPEDITION_TYPE), s);
+        row.setValue(getDataIndex(COL_EXPEDITION), aLong);
+        row.setValue(Data.getColumnIndex(TBL_ASSESSMENT_FORWARDERS, ALS_EXPEDITION_TYPE), s);
         getFormView().refreshBySource(COL_EXPEDITION);
       }
     });
 
-    super.onStartNewRow(form, oldRow, newRow);
+    super.onStartNewRow(form, row);
   }
 
   private void styleRequiredField(String name, boolean value) {
