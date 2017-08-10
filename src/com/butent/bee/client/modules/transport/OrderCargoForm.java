@@ -257,34 +257,31 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
         Lists.newArrayList(COL_AMOUNT, COL_CURRENCY, COL_SERVICE_PERCENT,
             ALS_CARGO_INCOME_CURRENCY), Filter.and(Filter.equals(COL_CARGO, row.getId()),
             Filter.isNull(COL_PURCHASE), Filter.notNull(COL_SERVICE_PERCENT)),
-        new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet expenses) {
-            if (expenses.isEmpty()) {
-              return;
-            }
-
-            BeeRowSet updExpenses =
-                new BeeRowSet(TBL_CARGO_EXPENSES, Data.getColumns(TBL_CARGO_EXPENSES,
-                    Lists.newArrayList(COL_AMOUNT, COL_CURRENCY)));
-
-            for (IsRow expense : expenses) {
-              double percent = BeeUtils.unbox(
-                  expense.getDouble(expenses.getColumnIndex(COL_SERVICE_PERCENT)));
-
-              double amount = getExpenseSum(cargoValue, percent);
-
-              Long incomeCurrency = expense.getLong(expenses.getColumnIndex(
-                  ALS_CARGO_INCOME_CURRENCY));
-
-              Long currency = BeeUtils.nvl(valueCurrency, incomeCurrency);
-
-              updExpenses.addRow(expense.getId(), expense.getVersion(),
-                  new String[] {BeeUtils.toString(amount), BeeUtils.toString(currency)});
-            }
-
-            Queries.updateRows(updExpenses);
+        expenses -> {
+          if (expenses.isEmpty()) {
+            return;
           }
+
+          BeeRowSet updExpenses =
+              new BeeRowSet(TBL_CARGO_EXPENSES, Data.getColumns(TBL_CARGO_EXPENSES,
+                  Lists.newArrayList(COL_AMOUNT, COL_CURRENCY)));
+
+          for (IsRow expense : expenses) {
+            double percent = BeeUtils.unbox(
+                expense.getDouble(expenses.getColumnIndex(COL_SERVICE_PERCENT)));
+
+            double amount = getExpenseSum(cargoValue, percent);
+
+            Long incomeCurrency = expense.getLong(expenses.getColumnIndex(
+                ALS_CARGO_INCOME_CURRENCY));
+
+            Long currency = BeeUtils.nvl(valueCurrency, incomeCurrency);
+
+            updExpenses.addRow(expense.getId(), expense.getVersion(),
+                new String[] {BeeUtils.toString(amount), BeeUtils.toString(currency)});
+          }
+
+          Queries.updateRows(updExpenses);
         });
   }
 
@@ -375,7 +372,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
       FormView parentForm = ViewHelper.getForm(gridView.asWidget());
 
       if (parentForm != null && BeeUtils.same(parentForm.getFormName(), FORM_ORDER)
-          && Data.isNull(form.getViewName(), newRow, COL_ORDER)) {
+          && Data.isNull(form.getViewName(), row, COL_ORDER)) {
         IsRow parentRow = parentForm.getActiveRow();
 
         if (parentRow != null) {
@@ -384,11 +381,9 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
           int idxParCmpTypeName = parentForm.getDataIndex(ALS_CUSTOMER_TYPE_NAME);
 
           if (!BeeConst.isUndef(idxParCmp) && !BeeConst.isUndef(idxParCmpName)) {
-            newRow.setValue(
-                Data.getColumnIndex(form.getViewName(), COL_CUSTOMER),
+            row.setValue(Data.getColumnIndex(form.getViewName(), COL_CUSTOMER),
                 parentRow.getLong(idxParCmp));
-            newRow.setValue(
-                Data.getColumnIndex(form.getViewName(), COL_CUSTOMER_NAME),
+            row.setValue(Data.getColumnIndex(form.getViewName(), COL_CUSTOMER_NAME),
                 BeeConst.isUndef(idxParCmpTypeName)
                     ? parentRow.getString(idxParCmpName)
                     : BeeUtils.joinWords(parentRow.getString(idxParCmpName),
@@ -415,7 +410,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
           Global.confirm(Localized.dictionary().trCopyOrder(), () ->
               TransportUtils.copyOrderWithCargos(orderId, Filter.compareId(getActiveRowId()),
                   (newOrderId, newCargos) ->
-                  RowEditor.open(getViewName(), BeeUtils.peek(newCargos).getId())));
+                      RowEditor.open(getViewName(), BeeUtils.peek(newCargos).getId())));
         }
       });
     }
