@@ -24,7 +24,7 @@
 
     <DataColumn name="WarehouseCode" label="=warehouse" editEnabled="true" />
 
-    <DataColumn name="Quantity" scale="0" visible="true" />
+    <DataColumn name="Quantity" visible="true" />
     <DataColumn name="UnitName" label="=unitShort" />
 
     <DataColumn name="Cost" scale="2" />

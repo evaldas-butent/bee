@@ -19,7 +19,7 @@
       <footer text="=totalOf" horizontalAlignment="right" />
     </DataColumn>
 
-    <DataColumn name="Quantity" scale="0" visible="true">
+    <DataColumn name="Quantity" visible="true">
       <footer aggregate="sum" />
     </DataColumn>
 
