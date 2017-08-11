@@ -35,5 +35,8 @@
         <ui:expression>row.Quantity * row.Cost</ui:expression>
       </render>
     </CalcColumn>
+
+    <DataColumn name="AccountCode" label="=account" horizontalAlignment="center"
+                backgroundSource="AccountBackground" foregroundSource="AccountForeground" />
   </g:columns>
 </g:Grid>

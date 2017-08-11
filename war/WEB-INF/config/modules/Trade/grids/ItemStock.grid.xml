@@ -33,6 +33,9 @@
       <footer aggregate="sum" scale="2" />
     </CalcColumn>
 
+    <DataColumn name="AccountCode" label="=account" horizontalAlignment="center"
+                backgroundSource="AccountBackground" foregroundSource="AccountForeground" />
+
     <DataColumn name="PrimaryDocumentItem" visible="false" />
     <DataColumn name="PrimaryDocument" editSource="PrimaryDocument" editViewName="TradeDocuments"
                 visible="false" />
