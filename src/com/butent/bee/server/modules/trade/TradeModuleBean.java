@@ -103,6 +103,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.PrepaymentKind;
 import com.butent.bee.shared.modules.finance.TradeAccounts;
+import com.butent.bee.shared.modules.finance.TradeAccountsPrecedence;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.modules.trade.DebtKind;
@@ -2493,7 +2494,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_DOCUMENT_ITEMS, idName, COL_TRADE_ITEM_PARENT,
-            COL_TRADE_ITEM_WAREHOUSE_TO, COL_TRADE_ITEM_QUANTITY)
+            COL_TRADE_ITEM_WAREHOUSE_TO, COL_TRADE_ITEM_QUANTITY,
+            COL_TRADE_DOCUMENT, COL_ITEM)
+        .addFields(TBL_ITEMS, COL_ITEM_TYPE, COL_ITEM_GROUP)
         .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
         .setWhere(SqlUtils.and(itemCondition, SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE)));
@@ -2501,6 +2504,11 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     SimpleRowSet data = qs.getData(query);
 
     if (!DataUtils.isEmpty(data)) {
+      List<TradeAccountsPrecedence> precedence = fin.getAccountsPrecedence();
+      Long defAccount = fin.getDefaultAccount(COL_COST_OF_MERCHANDISE);
+
+      EnumMap<TradeAccountsPrecedence, Long> values = new EnumMap<>(TradeAccountsPrecedence.class);
+
       for (SimpleRow row : data) {
         Long id = row.getLong(idName);
 
@@ -2510,11 +2518,19 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         Long warehouse = BeeUtils.nvl(row.getLong(COL_TRADE_ITEM_WAREHOUSE_TO), warehouseTo);
         Double qty = row.getDouble(COL_TRADE_ITEM_QUANTITY);
 
+        values.put(TradeAccountsPrecedence.ITEM, row.getLong(COL_ITEM));
+        values.put(TradeAccountsPrecedence.ITEM_TYPE, row.getLong(COL_ITEM_TYPE));
+        values.put(TradeAccountsPrecedence.ITEM_GROUP, row.getLong(COL_ITEM_GROUP));
+
+        Long account = getCostAccount(row.getLong(COL_TRADE_DOCUMENT), id, precedence, warehouse,
+            values, defAccount);
+
         SqlInsert insert = new SqlInsert(TBL_TRADE_STOCK)
             .addConstant(COL_PRIMARY_DOCUMENT_ITEM, primary)
             .addConstant(COL_TRADE_DOCUMENT_ITEM, id)
             .addConstant(COL_STOCK_WAREHOUSE, warehouse)
-            .addConstant(COL_STOCK_QUANTITY, qty);
+            .addConstant(COL_STOCK_QUANTITY, qty)
+            .addNotNull(COL_STOCK_ACCOUNT, account);
 
         ResponseObject response = qs.insertDataWithResponse(insert);
         if (response.hasErrors()) {
@@ -2959,11 +2975,17 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       Long primary = DataUtils.isId(parent) ? getPrimary(parent) : itemId;
       Long warehouse = getWarehouseReceiver(docId, warehouseTo);
 
+      List<TradeAccountsPrecedence> precedence = fin.getAccountsPrecedence();
+      Long defAccount = fin.getDefaultAccount(COL_COST_OF_MERCHANDISE);
+
+      Long account = getCostAccount(docId, itemId, precedence, warehouse, null, defAccount);
+
       SqlInsert insert = new SqlInsert(TBL_TRADE_STOCK)
           .addConstant(COL_PRIMARY_DOCUMENT_ITEM, primary)
           .addConstant(COL_TRADE_DOCUMENT_ITEM, itemId)
           .addConstant(COL_STOCK_WAREHOUSE, warehouse)
-          .addConstant(COL_STOCK_QUANTITY, quantity);
+          .addConstant(COL_STOCK_QUANTITY, quantity)
+          .addNotNull(COL_STOCK_ACCOUNT, account);
 
       ResponseObject response = qs.insertDataWithResponse(insert);
       if (response.hasErrors()) {
@@ -3343,6 +3365,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     SimpleRowSet newData = qs.getData(newQuery);
 
     if (!DataUtils.isEmpty(newData)) {
+      List<TradeAccountsPrecedence> precedence = fin.getAccountsPrecedence();
+      Long defAccount = fin.getDefaultAccount(COL_COST_OF_MERCHANDISE);
+
       for (SimpleRow row : newData) {
         Long primary = row.getLong(COL_PRIMARY_DOCUMENT_ITEM);
         Long tdItem = row.getLong(COL_TRADE_DOCUMENT_ITEM);
@@ -3360,11 +3385,15 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           quantity = BeeConst.DOUBLE_ZERO;
         }
 
+        Long docId = qs.getLongById(TBL_TRADE_DOCUMENT_ITEMS, tdItem, COL_TRADE_DOCUMENT);
+        Long account = getCostAccount(docId, tdItem, precedence, warehouse, null, defAccount);
+
         SqlInsert insert = new SqlInsert(TBL_TRADE_STOCK)
             .addConstant(COL_PRIMARY_DOCUMENT_ITEM, primary)
             .addConstant(COL_TRADE_DOCUMENT_ITEM, tdItem)
             .addConstant(COL_STOCK_WAREHOUSE, warehouse)
-            .addConstant(COL_STOCK_QUANTITY, quantity);
+            .addConstant(COL_STOCK_QUANTITY, quantity)
+            .addNotNull(COL_STOCK_ACCOUNT, account);
 
         ResponseObject insResponse = qs.insertDataWithResponse(insert);
         if (insResponse.hasErrors()) {
@@ -4600,5 +4629,109 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
 
     return discharges;
+  }
+
+  private Long getCostAccount(Long docId, Long itemId, List<TradeAccountsPrecedence> precedence,
+      Long warehouse, Map<TradeAccountsPrecedence, Long> values, Long defAccount) {
+
+    if (!BeeUtils.isEmpty(precedence)) {
+      for (TradeAccountsPrecedence tap : precedence) {
+        Long value = null;
+
+        if (values != null && values.containsKey(tap)) {
+          value = values.get(tap);
+
+        } else {
+          switch (tap) {
+            case DOCUMENT_LINE:
+              value = itemId;
+              break;
+
+            case ITEM:
+              if (DataUtils.isId(itemId)) {
+                value = qs.getLongById(TBL_TRADE_DOCUMENT_ITEMS, itemId, COL_ITEM);
+              }
+              break;
+
+            case ITEM_GROUP:
+              if (DataUtils.isId(itemId)) {
+                SqlSelect query = new SqlSelect()
+                    .addFields(TBL_ITEMS, COL_ITEM_GROUP)
+                    .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+                    .addFromInner(TBL_ITEMS,
+                        sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
+                    .setWhere(sys.idEquals(TBL_TRADE_DOCUMENT_ITEMS, itemId));
+
+                value = qs.getLong(query);
+              }
+              break;
+
+            case ITEM_TYPE:
+              if (DataUtils.isId(itemId)) {
+                SqlSelect query = new SqlSelect()
+                    .addFields(TBL_ITEMS, COL_ITEM_TYPE)
+                    .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+                    .addFromInner(TBL_ITEMS,
+                        sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
+                    .setWhere(sys.idEquals(TBL_TRADE_DOCUMENT_ITEMS, itemId));
+
+                value = qs.getLong(query);
+              }
+              break;
+
+            case ITEM_CATEGORY:
+              break;
+
+            case DOCUMENT:
+              value = docId;
+              break;
+
+            case COMPANY:
+              if (DataUtils.isId(docId)) {
+                SqlSelect query = new SqlSelect()
+                    .addFields(TBL_TRADE_DOCUMENTS, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
+                    .addFrom(TBL_TRADE_DOCUMENTS)
+                    .setWhere(sys.idEquals(TBL_TRADE_DOCUMENTS, docId));
+
+                SimpleRow row = qs.getRow(query);
+                if (row != null) {
+                  value = BeeUtils.nvl(row.getLong(COL_TRADE_SUPPLIER),
+                      row.getLong(COL_TRADE_CUSTOMER));
+                }
+              }
+              break;
+
+            case OPERATION:
+              if (DataUtils.isId(docId)) {
+                value = qs.getLongById(TBL_TRADE_DOCUMENTS, docId, COL_TRADE_OPERATION);
+              }
+              break;
+
+            case WAREHOUSE:
+              value = warehouse;
+              break;
+          }
+        }
+
+        if (DataUtils.isId(value)) {
+          SqlSelect query = new SqlSelect()
+              .addFields(TradeAccounts.TBL_TRADE_ACCOUNTS, TradeAccounts.COL_COST_ACCOUNT)
+              .addFrom(tap.getTableName())
+              .addFromInner(TradeAccounts.TBL_TRADE_ACCOUNTS,
+                  sys.joinTables(TradeAccounts.TBL_TRADE_ACCOUNTS, tap.getTableName(),
+                      TradeAccounts.COL_TRADE_ACCOUNTS))
+              .setWhere(SqlUtils.and(sys.idEquals(tap.getTableName(), value),
+                  SqlUtils.notNull(TradeAccounts.TBL_TRADE_ACCOUNTS,
+                      TradeAccounts.COL_COST_ACCOUNT)));
+
+          Set<Long> accounts = qs.getLongSet(query);
+          if (!BeeUtils.isEmpty(accounts)) {
+            return accounts.stream().findAny().get();
+          }
+        }
+      }
+    }
+
+    return defAccount;
   }
 }

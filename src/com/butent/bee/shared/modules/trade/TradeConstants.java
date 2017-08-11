@@ -232,6 +232,7 @@ public final class TradeConstants {
   public static final String COL_PRIMARY_DOCUMENT_ITEM = "PrimaryDocumentItem";
   public static final String COL_STOCK_QUANTITY = "Quantity";
   public static final String COL_STOCK_WAREHOUSE = "Warehouse";
+  public static final String COL_STOCK_ACCOUNT = "CostAccount";
 
   public static final String COL_TRADE_PAYMENT_DATE = "PaymentDate";
   public static final String COL_TRADE_PAYMENT_AMOUNT = "PaymentAmount";
