@@ -4636,20 +4636,20 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     if (!BeeUtils.isEmpty(precedence)) {
       for (TradeAccountsPrecedence tap : precedence) {
-        Long value = null;
+        Long id = null;
 
         if (values != null && values.containsKey(tap)) {
-          value = values.get(tap);
+          id = values.get(tap);
 
         } else {
           switch (tap) {
             case DOCUMENT_LINE:
-              value = itemId;
+              id = itemId;
               break;
 
             case ITEM:
               if (DataUtils.isId(itemId)) {
-                value = qs.getLongById(TBL_TRADE_DOCUMENT_ITEMS, itemId, COL_ITEM);
+                id = qs.getLongById(TBL_TRADE_DOCUMENT_ITEMS, itemId, COL_ITEM);
               }
               break;
 
@@ -4662,7 +4662,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                         sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
                     .setWhere(sys.idEquals(TBL_TRADE_DOCUMENT_ITEMS, itemId));
 
-                value = qs.getLong(query);
+                id = qs.getLong(query);
               }
               break;
 
@@ -4675,15 +4675,21 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                         sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
                     .setWhere(sys.idEquals(TBL_TRADE_DOCUMENT_ITEMS, itemId));
 
-                value = qs.getLong(query);
+                id = qs.getLong(query);
               }
               break;
 
             case ITEM_CATEGORY:
+              if (DataUtils.isId(itemId)) {
+                Long account = getItemCategoryAccount(itemId, TradeAccounts.COL_COST_ACCOUNT);
+                if (DataUtils.isId(account)) {
+                  return account;
+                }
+              }
               break;
 
             case DOCUMENT:
-              value = docId;
+              id = docId;
               break;
 
             case COMPANY:
@@ -4695,7 +4701,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
                 SimpleRow row = qs.getRow(query);
                 if (row != null) {
-                  value = BeeUtils.nvl(row.getLong(COL_TRADE_SUPPLIER),
+                  id = BeeUtils.nvl(row.getLong(COL_TRADE_SUPPLIER),
                       row.getLong(COL_TRADE_CUSTOMER));
                 }
               }
@@ -4703,35 +4709,74 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
             case OPERATION:
               if (DataUtils.isId(docId)) {
-                value = qs.getLongById(TBL_TRADE_DOCUMENTS, docId, COL_TRADE_OPERATION);
+                id = qs.getLongById(TBL_TRADE_DOCUMENTS, docId, COL_TRADE_OPERATION);
               }
               break;
 
             case WAREHOUSE:
-              value = warehouse;
+              id = warehouse;
               break;
           }
         }
 
-        if (DataUtils.isId(value)) {
-          SqlSelect query = new SqlSelect()
-              .addFields(TradeAccounts.TBL_TRADE_ACCOUNTS, TradeAccounts.COL_COST_ACCOUNT)
-              .addFrom(tap.getTableName())
-              .addFromInner(TradeAccounts.TBL_TRADE_ACCOUNTS,
-                  sys.joinTables(TradeAccounts.TBL_TRADE_ACCOUNTS, tap.getTableName(),
-                      TradeAccounts.COL_TRADE_ACCOUNTS))
-              .setWhere(SqlUtils.and(sys.idEquals(tap.getTableName(), value),
-                  SqlUtils.notNull(TradeAccounts.TBL_TRADE_ACCOUNTS,
-                      TradeAccounts.COL_COST_ACCOUNT)));
-
-          Set<Long> accounts = qs.getLongSet(query);
-          if (!BeeUtils.isEmpty(accounts)) {
-            return accounts.stream().findAny().get();
+        if (DataUtils.isId(id)) {
+          Long account = getTradeAccount(tap.getTableName(), id, TradeAccounts.COL_COST_ACCOUNT);
+          if (DataUtils.isId(account)) {
+            return account;
           }
         }
       }
     }
 
     return defAccount;
+  }
+
+  private Long getItemCategoryAccount(long tdItem, String accountColumn) {
+    SqlSelect icQuery = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_ITEM_CATEGORIES, COL_CATEGORY)
+        .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+        .addFromInner(TBL_ITEM_CATEGORIES,
+            SqlUtils.join(TBL_ITEM_CATEGORIES, COL_ITEM, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
+        .setWhere(sys.idEquals(TBL_TRADE_DOCUMENT_ITEMS, tdItem));
+
+    Set<Long> categories = qs.getLongSet(icQuery);
+
+    if (!BeeUtils.isEmpty(categories)) {
+      Set<Long> parents = new HashSet<>();
+
+      for (Long category : categories) {
+        Long parent = category;
+
+        while (DataUtils.isId(parent) && !parents.contains(parent)) {
+          Long account = getTradeAccount(TBL_ITEM_CATEGORY_TREE, parent, accountColumn);
+          if (DataUtils.isId(account)) {
+            return account;
+          }
+
+          parents.add(parent);
+          parent = qs.getLongById(TBL_ITEM_CATEGORY_TREE, parent, COL_CATEGORY_PARENT);
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private Long getTradeAccount(String tableName, long id, String accountColumn) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TradeAccounts.TBL_TRADE_ACCOUNTS, accountColumn)
+        .addFrom(tableName)
+        .addFromInner(TradeAccounts.TBL_TRADE_ACCOUNTS,
+            sys.joinTables(TradeAccounts.TBL_TRADE_ACCOUNTS, tableName,
+                TradeAccounts.COL_TRADE_ACCOUNTS))
+        .setWhere(SqlUtils.and(sys.idEquals(tableName, id),
+            SqlUtils.notNull(TradeAccounts.TBL_TRADE_ACCOUNTS, accountColumn)));
+
+    Set<Long> accounts = qs.getLongSet(query);
+    if (BeeUtils.isEmpty(accounts)) {
+      return null;
+    } else {
+      return accounts.stream().findAny().get();
+    }
   }
 }
