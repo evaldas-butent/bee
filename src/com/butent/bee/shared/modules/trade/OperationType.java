@@ -32,6 +32,11 @@ public enum OperationType implements HasLocalizedCaption {
     }
 
     @Override
+    public Long getParentCostDebit(TradeAccounts tradeAccounts) {
+      return null;
+    }
+
+    @Override
     public Long getVatDebit(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getVatReceivable();
     }
@@ -69,6 +74,11 @@ public enum OperationType implements HasLocalizedCaption {
     }
 
     @Override
+    public Long getParentCostDebit(TradeAccounts tradeAccounts) {
+      return (tradeAccounts == null) ? null : tradeAccounts.getCostOfGoodsSold();
+    }
+
+    @Override
     public Long getVatDebit(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getTradeReceivables();
     }
@@ -102,6 +112,11 @@ public enum OperationType implements HasLocalizedCaption {
 
     @Override
     public Long getDebtAccount(TradeAccounts tradeAccounts) {
+      return null;
+    }
+
+    @Override
+    public Long getParentCostDebit(TradeAccounts tradeAccounts) {
       return null;
     }
 
@@ -143,6 +158,11 @@ public enum OperationType implements HasLocalizedCaption {
     }
 
     @Override
+    public Long getParentCostDebit(TradeAccounts tradeAccounts) {
+      return (tradeAccounts == null) ? null : tradeAccounts.getWriteOffAccount();
+    }
+
+    @Override
     public Long getVatDebit(TradeAccounts tradeAccounts) {
       return null;
     }
@@ -177,6 +197,11 @@ public enum OperationType implements HasLocalizedCaption {
     @Override
     public Long getDebtAccount(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getTradeReceivables();
+    }
+
+    @Override
+    public Long getParentCostDebit(TradeAccounts tradeAccounts) {
+      return (tradeAccounts == null) ? null : tradeAccounts.getCostOfGoodsSold();
     }
 
     @Override
@@ -217,6 +242,11 @@ public enum OperationType implements HasLocalizedCaption {
     }
 
     @Override
+    public Long getParentCostDebit(TradeAccounts tradeAccounts) {
+      return null;
+    }
+
+    @Override
     public Long getVatDebit(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getVatPayable();
     }
@@ -251,6 +281,11 @@ public enum OperationType implements HasLocalizedCaption {
     @Override
     public Long getDebtAccount(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getTradePayables();
+    }
+
+    @Override
+    public Long getParentCostDebit(TradeAccounts tradeAccounts) {
+      return null;
     }
 
     @Override
@@ -344,6 +379,8 @@ public enum OperationType implements HasLocalizedCaption {
   public abstract Long getAmountCredit(TradeAccounts tradeAccounts);
 
   public abstract Long getDebtAccount(TradeAccounts tradeAccounts);
+
+  public abstract Long getParentCostDebit(TradeAccounts tradeAccounts);
 
   public abstract Long getVatDebit(TradeAccounts tradeAccounts);
 

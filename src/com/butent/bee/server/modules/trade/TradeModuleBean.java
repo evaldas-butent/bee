@@ -4662,7 +4662,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                         sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
                     .setWhere(sys.idEquals(TBL_TRADE_DOCUMENT_ITEMS, itemId));
 
-                id = qs.getLong(query);
+                Long group = qs.getLong(query);
+                if (DataUtils.isId(group)) {
+                  Long account = getItemCategoryCostAccount(Collections.singleton(group));
+                  if (DataUtils.isId(account)) {
+                    return account;
+                  }
+                }
               }
               break;
 
@@ -4675,13 +4681,19 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                         sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
                     .setWhere(sys.idEquals(TBL_TRADE_DOCUMENT_ITEMS, itemId));
 
-                id = qs.getLong(query);
+                Long type = qs.getLong(query);
+                if (DataUtils.isId(type)) {
+                  Long account = getItemCategoryCostAccount(Collections.singleton(type));
+                  if (DataUtils.isId(account)) {
+                    return account;
+                  }
+                }
               }
               break;
 
             case ITEM_CATEGORY:
               if (DataUtils.isId(itemId)) {
-                Long account = getItemCategoryAccount(itemId, TradeAccounts.COL_COST_ACCOUNT);
+                Long account = getItemCategoryCostAccount(getItemCategories(itemId));
                 if (DataUtils.isId(account)) {
                   return account;
                 }
@@ -4731,16 +4743,18 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return defAccount;
   }
 
-  private Long getItemCategoryAccount(long tdItem, String accountColumn) {
-    SqlSelect icQuery = new SqlSelect().setDistinctMode(true)
+  private Collection<Long> getItemCategories(long tdItem) {
+    SqlSelect query = new SqlSelect()
         .addFields(TBL_ITEM_CATEGORIES, COL_CATEGORY)
         .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
         .addFromInner(TBL_ITEM_CATEGORIES,
             SqlUtils.join(TBL_ITEM_CATEGORIES, COL_ITEM, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
         .setWhere(sys.idEquals(TBL_TRADE_DOCUMENT_ITEMS, tdItem));
 
-    Set<Long> categories = qs.getLongSet(icQuery);
+    return qs.getLongSet(query);
+  }
 
+  private Long getItemCategoryCostAccount(Collection<Long> categories) {
     if (!BeeUtils.isEmpty(categories)) {
       Set<Long> parents = new HashSet<>();
 
@@ -4748,7 +4762,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         Long parent = category;
 
         while (DataUtils.isId(parent) && !parents.contains(parent)) {
-          Long account = getTradeAccount(TBL_ITEM_CATEGORY_TREE, parent, accountColumn);
+          Long account = getTradeAccount(TBL_ITEM_CATEGORY_TREE, parent,
+              TradeAccounts.COL_COST_ACCOUNT);
           if (DataUtils.isId(account)) {
             return account;
           }

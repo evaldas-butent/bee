@@ -99,7 +99,7 @@ public class FinancePostingBean {
     TradeAccounts defaultAccounts = TradeAccounts.createAvailable(config, config.getRow(rowIndex));
 
     Long defaultJournal = config.getLong(rowIndex, COL_DEFAULT_JOURNAL);
-    Long costOfMerchandise = config.getLong(rowIndex, COL_COST_OF_MERCHANDISE);
+    Long transitoryAccount = config.getLong(rowIndex, COL_TRANSITORY_ACCOUNT);
 
     List<TradeDimensionsPrecedence> dimensionsPrecedence = TradeDimensionsPrecedence
         .parse(config.getString(rowIndex, COL_TRADE_DIMENSIONS_PRECEDENCE));
@@ -202,7 +202,7 @@ public class FinancePostingBean {
 
     for (BeeRow row : docLines) {
       Long item = row.getLong(itemIndex);
-      boolean isService = BeeUtils.isTrue(row.getBoolean(isServiceIndex));
+      boolean isService = row.isTrue(isServiceIndex);
 
       Double quantity = row.getDouble(quantityIndex);
 
@@ -276,19 +276,21 @@ public class FinancePostingBean {
         BeeUtils.addNotNull(lineRows,
             post(columns, date,
                 operationType.getAmountDebit(acc), operationType.getAmountCredit(acc),
-                lineTotal - lineVat, currency, quantity, employee, dim));
-      }
-
-      if (BeeUtils.nonZero(parentCostAmount)) {
-        BeeUtils.addNotNull(lineRows,
-            post(columns, date, acc.getCostOfGoodsSold(), costOfMerchandise,
-                parentCostAmount, parentCostCurrency, quantity, employee, dim));
+                lineTotal - lineVat, currency, quantity, company, employee, dim));
       }
 
       if (BeeUtils.nonZero(lineVat)) {
         BeeUtils.addNotNull(lineRows,
             post(columns, date, operationType.getVatDebit(acc), operationType.getVatCredit(acc),
-                lineVat, currency, quantity, employee, dim));
+                lineVat, currency, quantity, company, employee, dim));
+      }
+
+      if (BeeUtils.nonZero(parentCostAmount)) {
+        Long credit = getParentCostAccount(parent);
+
+        BeeUtils.addNotNull(lineRows,
+            post(columns, date, operationType.getParentCostDebit(acc), credit,
+                parentCostAmount, parentCostCurrency, quantity, company, employee, dim));
       }
 
       if (!DataUtils.isEmpty(docPayments)
@@ -296,7 +298,7 @@ public class FinancePostingBean {
 
         lineRows.addAll(postPayments(columns, docPayments, operationType.consumesStock(),
             operationType.getDebtAccount(acc), lineTotal, docTotal, currency, quantity,
-            employee, dim));
+            company, employee, dim));
       }
 
       if (!lineRows.isEmpty()) {
@@ -438,22 +440,30 @@ public class FinancePostingBean {
     }
   }
 
+  private Long getParentCostAccount(Long parent) {
+    if (DataUtils.isId(parent)) {
+      return qs.getLong(TBL_TRADE_STOCK, COL_STOCK_ACCOUNT, COL_TRADE_DOCUMENT_ITEM, parent);
+    } else {
+      return null;
+    }
+  }
+
   private Dimensions getWarehouseDimensions(OperationType operationType,
       Long warehouseFrom, Dimensions warehouseFromDimensions, Long itemWarehouseFrom,
       Long warehouseTo, Dimensions warehouseToDimensions, Long itemWarehouseTo) {
 
-    if (operationType.consumesStock()) {
-      if (!DataUtils.isId(itemWarehouseFrom) || Objects.equals(itemWarehouseFrom, warehouseFrom)) {
-        return warehouseFromDimensions;
-      } else {
-        return getDimensions(VIEW_WAREHOUSES, itemWarehouseFrom);
-      }
-
-    } else {
+    if (operationType.producesStock()) {
       if (!DataUtils.isId(itemWarehouseTo) || Objects.equals(itemWarehouseTo, warehouseTo)) {
         return warehouseToDimensions;
       } else {
         return getDimensions(VIEW_WAREHOUSES, itemWarehouseTo);
+      }
+
+    } else {
+      if (!DataUtils.isId(itemWarehouseFrom) || Objects.equals(itemWarehouseFrom, warehouseFrom)) {
+        return warehouseFromDimensions;
+      } else {
+        return getDimensions(VIEW_WAREHOUSES, itemWarehouseFrom);
       }
     }
   }
@@ -462,18 +472,18 @@ public class FinancePostingBean {
       Long warehouseFrom, TradeAccounts warehouseFromAccounts, Long itemWarehouseFrom,
       Long warehouseTo, TradeAccounts warehouseToAccounts, Long itemWarehouseTo) {
 
-    if (operationType.consumesStock()) {
-      if (!DataUtils.isId(itemWarehouseFrom) || Objects.equals(itemWarehouseFrom, warehouseFrom)) {
-        return warehouseFromAccounts;
-      } else {
-        return getTradeAccounts(VIEW_WAREHOUSES, itemWarehouseFrom);
-      }
-
-    } else {
+    if (operationType.producesStock()) {
       if (!DataUtils.isId(itemWarehouseTo) || Objects.equals(itemWarehouseTo, warehouseTo)) {
         return warehouseToAccounts;
       } else {
         return getTradeAccounts(VIEW_WAREHOUSES, itemWarehouseTo);
+      }
+
+    } else {
+      if (!DataUtils.isId(itemWarehouseFrom) || Objects.equals(itemWarehouseFrom, warehouseFrom)) {
+        return warehouseFromAccounts;
+      } else {
+        return getTradeAccounts(VIEW_WAREHOUSES, itemWarehouseFrom);
       }
     }
   }
@@ -495,7 +505,7 @@ public class FinancePostingBean {
 
   private static List<BeeRow> postPayments(List<BeeColumn> columns, BeeRowSet payments,
       boolean asDebit, Long debtAccount, double lineTotal, double docTotal,
-      Long currency, Double quantity, Long employee, Dimensions dimensions) {
+      Long currency, Double quantity, Long company, Long employee, Dimensions dimensions) {
 
     List<BeeRow> result = new ArrayList<>();
 
@@ -546,7 +556,7 @@ public class FinancePostingBean {
       Long credit = asDebit ? debtAccount : account;
 
       BeeRow output = post(columns, date, debit, credit, amount, currency, qty,
-          employee, dimensions);
+          company, employee, dimensions);
 
       if (output != null) {
         output.setValue(outputPaymentIndex, row.getId());
@@ -946,7 +956,7 @@ public class FinancePostingBean {
 
   private static BeeRow post(List<BeeColumn> columns, DateTime date,
       Long debit, Long credit, Double amount, Long currency, Double quantity,
-      Long employee, Dimensions dimensions) {
+      Long company, Long employee, Dimensions dimensions) {
 
     if (FinanceUtils.isValidEntry(date, debit, credit, amount, currency)) {
       BeeRow row = DataUtils.createEmptyRow(columns.size());
@@ -961,6 +971,10 @@ public class FinancePostingBean {
 
       if (BeeUtils.nonZero(quantity)) {
         row.setValue(DataUtils.getColumnIndex(COL_FIN_QUANTITY, columns), quantity);
+      }
+
+      if (DataUtils.isId(company)) {
+        row.setValue(DataUtils.getColumnIndex(COL_FIN_COMPANY, columns), company);
       }
 
       if (DataUtils.isId(employee)) {
