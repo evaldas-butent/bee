@@ -190,6 +190,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   @Resource
   TimerService timerService;
 
+  @EJB CustomTradeModuleBean custom;
+
   public static String buildMessage(Stopwatch stopwatch, Object... args) {
     List<Object> words = Lists.newArrayList(args);
     words.add(BeeUtils.bracket(stopwatch.toString()));
@@ -1924,7 +1926,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       String idName = sys.getIdName(table);
 
       SimpleRowSet debts = qs.getData(new SqlSelect()
-          .addFields(table, idName, COL_TRADE_PAID)
+          .addFields(table, idName, COL_TRADE_PAID, COL_TRADE_AMOUNT)
           .addFrom(table)
           .setWhere(SqlUtils.and(SqlUtils.notNull(table, COL_TRADE_EXPORTED),
               SqlUtils.notEqual(table, COL_TRADE_OPERATION,
@@ -1957,7 +1959,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
           for (SimpleRow payment : payments) {
             Long id = TradeModuleBean.decodeId(table, payment.getLong("id"));
-            Double paid = payment.getDouble("suma");
+            Double paid = custom.calculateErpPayment(payment, table, debts, idName, id);
 
             if (!Objects.equals(paid, BeeUtils.toDoubleOrNull(debts.getValueByKey(idName,
                 BeeUtils.toString(id), COL_TRADE_PAID)))) {
