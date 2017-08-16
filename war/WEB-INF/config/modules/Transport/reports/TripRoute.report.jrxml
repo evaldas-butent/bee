@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-04-05T13:54:55 -->
+<!-- 2017-08-11T10:24:40 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TripRoute" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="3ad2372d-bb52-4e1f-9dfe-aaf5bdceb74c">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.i18n.Localizations"/>
@@ -666,7 +666,7 @@
 					<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
 						<font fontName="DejaVu Sans" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{arrived}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{left}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
 					<reportElement key="" style="Cell" positionType="Float" stretchType="ContainerBottom" x="127" y="16" width="56" height="16" uuid="c6dfb8ed-8bff-4608-a397-fd2cc04ba586">
@@ -698,7 +698,7 @@
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="DejaVu Sans" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{left}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{arrived}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="Cell" positionType="Float" stretchType="ContainerBottom" x="310" y="16" width="56" height="16" uuid="fadce04a-bf5b-4bbd-be14-f9456e4324b5">
