@@ -453,7 +453,8 @@ public enum Report implements HasWidgetSupplier {
           new ReportTextItem(VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_NO, "Sąnaudų sąsk.Nr."),
           new ReportTextItem(VAR_EXPENSE + TradeConstants.COL_TRADE_OPERATION, "Sąnaudų operacija"),
           new ReportNumericItem(VAR_INCOME, loc.income()).setPrecision(2),
-          new ReportNumericItem(VAR_EXPENSE, "Sąnaudos").setPrecision(2));
+          new ReportNumericItem(VAR_EXPENSE, "Sąnaudos").setPrecision(2),
+          new ReportTextItem(VAR_EXPENSE + COL_TRADE_SUPPLIER, "Sąnaudų tiekėjas"));
     }
 
     @Override
@@ -495,6 +496,8 @@ public enum Report implements HasWidgetSupplier {
           .append(" ", items.get(VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_NO)));
 
       report.addColItem(items.get(VAR_EXPENSE + TradeConstants.COL_TRADE_OPERATION));
+
+      report.addColItem(items.get(VAR_EXPENSE + COL_TRADE_SUPPLIER));
 
       report.addColItem(items.get(VAR_INCOME));
       report.addColItem(items.get(VAR_EXPENSE));

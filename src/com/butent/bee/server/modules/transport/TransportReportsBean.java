@@ -574,6 +574,9 @@ public class TransportReportsBean {
         .addField(TBL_PURCHASES, COL_TRADE_INVOICE_PREFIX, VAR_EXPENSE + COL_TRADE_INVOICE_PREFIX)
         .addField(TBL_PURCHASES, COL_TRADE_INVOICE_NO, VAR_EXPENSE + COL_TRADE_INVOICE_NO)
         .addField(TBL_TRADE_OPERATIONS, COL_OPERATION_NAME, VAR_EXPENSE + COL_TRADE_OPERATION)
+        .addExpr(SqlUtils.concat(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME), "' '",
+            SqlUtils.nvl(SqlUtils.field(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME), "''")),
+            VAR_EXPENSE + COL_TRADE_SUPPLIER)
         .addFrom(TBL_CARGO_EXPENSES)
         .addFromInner(tmpIncomes, SqlUtils.join(TBL_CARGO_EXPENSES, VAR_INCOME, tmpIncomes, id))
         .addFromInner(TBL_ORDER_CARGO,
@@ -583,7 +586,11 @@ public class TransportReportsBean {
         .addFromLeft(TBL_PURCHASES,
             sys.joinTables(TBL_PURCHASES, TBL_CARGO_EXPENSES, COL_PURCHASE))
         .addFromLeft(TBL_TRADE_OPERATIONS,
-            sys.joinTables(TBL_TRADE_OPERATIONS, TBL_PURCHASES, COL_TRADE_OPERATION));
+            sys.joinTables(TBL_TRADE_OPERATIONS, TBL_PURCHASES, COL_TRADE_OPERATION))
+        .addFromLeft(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, TBL_CARGO_EXPENSES, COL_TRADE_SUPPLIER))
+        .addFromLeft(TBL_COMPANY_TYPES,
+            sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE));
 
     dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_CARGO_EXPENSES, COL_DATE),
         SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE));
@@ -623,7 +630,7 @@ public class TransportReportsBean {
             COL_TRADE_INVOICE_NO, COL_TRADE_CUSTOMER, COL_SALE + COL_ORDER_MANAGER)
         .addFields(tmpExpenses, VAR_EXPENSE + COL_SERVICE_NAME, VAR_EXPENSE + COL_TRADE_DATE,
             VAR_EXPENSE + COL_TRADE_INVOICE_PREFIX, VAR_EXPENSE + COL_TRADE_INVOICE_NO,
-            VAR_EXPENSE + COL_TRADE_OPERATION, VAR_EXPENSE)
+            VAR_EXPENSE + COL_TRADE_OPERATION, VAR_EXPENSE, VAR_EXPENSE + COL_TRADE_SUPPLIER)
         .addExpr(SqlUtils.sqlIf(SqlUtils.isNull(tmpExpenses, fldTotalExpense),
             SqlUtils.field(tmpIncomes, VAR_INCOME),
             SqlUtils.multiply(SqlUtils.field(tmpIncomes, VAR_INCOME),
@@ -646,6 +653,7 @@ public class TransportReportsBean {
     clause.add(report.getCondition(tmp, VAR_EXPENSE + COL_TRADE_INVOICE_PREFIX));
     clause.add(report.getCondition(tmp, VAR_EXPENSE + COL_TRADE_INVOICE_NO));
     clause.add(report.getCondition(tmp, VAR_EXPENSE + COL_TRADE_OPERATION));
+    clause.add(report.getCondition(tmp, VAR_EXPENSE + COL_TRADE_SUPPLIER));
 
     return report.getResultResponse(qs, tmp,
         Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)), clause);
