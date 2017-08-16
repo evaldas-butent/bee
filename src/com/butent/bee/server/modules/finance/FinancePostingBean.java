@@ -250,14 +250,18 @@ public class FinancePostingBean {
       accounts.put(TradeAccountsPrecedence.ITEM_CATEGORY,
           getItemCategoriesTradeAccounts(itemCategories, itemCategoryTree));
 
-      dimensions.put(TradeDimensionsPrecedence.WAREHOUSE,
-          getWarehouseDimensions(operationType,
-              warehouseFrom, warehouseFromDimensions, itemWarehouseFrom,
-              warehouseTo, warehouseToDimensions, itemWarehouseTo));
-      accounts.put(TradeAccountsPrecedence.WAREHOUSE,
-          getWarehouseTradeAccounts(operationType,
-              warehouseFrom, warehouseFromAccounts, itemWarehouseFrom,
-              warehouseTo, warehouseToAccounts, itemWarehouseTo));
+      if (operationType.consumesStock()) {
+        dimensions.put(TradeDimensionsPrecedence.WAREHOUSE,
+            getWarehouseDimensions(warehouseFrom, warehouseFromDimensions, itemWarehouseFrom));
+        accounts.put(TradeAccountsPrecedence.WAREHOUSE,
+            getWarehouseTradeAccounts(warehouseFrom, warehouseFromAccounts, itemWarehouseFrom));
+
+      } else {
+        dimensions.put(TradeDimensionsPrecedence.WAREHOUSE,
+            getWarehouseDimensions(warehouseTo, warehouseToDimensions, itemWarehouseTo));
+        accounts.put(TradeAccountsPrecedence.WAREHOUSE,
+            getWarehouseTradeAccounts(warehouseTo, warehouseToAccounts, itemWarehouseTo));
+      }
 
       Dimensions dim = computeTradeDimensions(dimensionsPrecedence, dimensions);
       TradeAccounts acc = computeTradeAccounts(accountsPrecedence, accounts, defaultAccounts);
@@ -285,12 +289,63 @@ public class FinancePostingBean {
                 lineVat, currency, quantity, company, employee, dim));
       }
 
-      if (BeeUtils.nonZero(parentCostAmount)) {
+      if (operationType.consumesStock() && BeeUtils.nonZero(parentCostAmount)) {
         Long credit = getParentCostAccount(parent);
 
-        BeeUtils.addNotNull(lineRows,
-            post(columns, date, operationType.getParentCostDebit(acc), credit,
-                parentCostAmount, parentCostCurrency, quantity, company, employee, dim));
+        if (operationType.producesStock()) {
+          Long cFr = BeeUtils.nvl(payer, supplier, customer);
+          Long cTo = BeeUtils.nvl(payer, customer, supplier);
+
+          Long wFr = BeeUtils.nvl(itemWarehouseFrom, warehouseFrom);
+          Long wTo = BeeUtils.nvl(itemWarehouseTo, warehouseTo);
+
+          Dimensions dimFr = dim;
+          Dimensions dimTo = dim;
+
+          TradeAccounts accTo = acc;
+
+          if (DataUtils.isId(cFr) && !Objects.equals(cFr, cTo)) {
+            EnumMap<TradeDimensionsPrecedence, Dimensions> dFr = new EnumMap<>(dimensions);
+            dFr.put(TradeDimensionsPrecedence.COMPANY, getDimensions(VIEW_COMPANIES, cFr));
+
+            dimFr = computeTradeDimensions(dimensionsPrecedence, dFr);
+          }
+
+          if (DataUtils.isId(wTo) && !Objects.equals(wFr, wTo)) {
+            EnumMap<TradeDimensionsPrecedence, Dimensions> dTo = new EnumMap<>(dimensions);
+            EnumMap<TradeAccountsPrecedence, TradeAccounts> aTo = new EnumMap<>(accounts);
+
+            dTo.put(TradeDimensionsPrecedence.WAREHOUSE,
+                getWarehouseDimensions(warehouseTo, warehouseToDimensions, itemWarehouseTo));
+            aTo.put(TradeAccountsPrecedence.WAREHOUSE,
+                getWarehouseTradeAccounts(warehouseTo, warehouseToAccounts, itemWarehouseTo));
+
+            dimTo = computeTradeDimensions(dimensionsPrecedence, dTo);
+            accTo = computeTradeAccounts(accountsPrecedence, aTo, defaultAccounts);
+          }
+
+          Long debit = accTo.getCostAccount();
+
+          if (DataUtils.isId(transitoryAccount)) {
+            BeeUtils.addNotNull(lineRows,
+                post(columns, date, transitoryAccount, credit,
+                    parentCostAmount, parentCostCurrency, quantity, cFr, employee, dimFr));
+
+            BeeUtils.addNotNull(lineRows,
+                post(columns, date, debit, transitoryAccount,
+                    parentCostAmount, parentCostCurrency, quantity, cTo, employee, dimTo));
+
+          } else {
+            BeeUtils.addNotNull(lineRows,
+                post(columns, date, debit, credit,
+                    parentCostAmount, parentCostCurrency, quantity, company, employee, dim));
+          }
+
+        } else {
+          BeeUtils.addNotNull(lineRows,
+              post(columns, date, operationType.getParentCostDebit(acc), credit,
+                  parentCostAmount, parentCostCurrency, quantity, company, employee, dim));
+        }
       }
 
       if (!DataUtils.isEmpty(docPayments)
@@ -448,43 +503,23 @@ public class FinancePostingBean {
     }
   }
 
-  private Dimensions getWarehouseDimensions(OperationType operationType,
-      Long warehouseFrom, Dimensions warehouseFromDimensions, Long itemWarehouseFrom,
-      Long warehouseTo, Dimensions warehouseToDimensions, Long itemWarehouseTo) {
+  private Dimensions getWarehouseDimensions(Long docWarehouse, Dimensions docWarehouseDimensions,
+      Long itemWarehouse) {
 
-    if (operationType.producesStock()) {
-      if (!DataUtils.isId(itemWarehouseTo) || Objects.equals(itemWarehouseTo, warehouseTo)) {
-        return warehouseToDimensions;
-      } else {
-        return getDimensions(VIEW_WAREHOUSES, itemWarehouseTo);
-      }
-
+    if (!DataUtils.isId(itemWarehouse) || Objects.equals(docWarehouse, itemWarehouse)) {
+      return docWarehouseDimensions;
     } else {
-      if (!DataUtils.isId(itemWarehouseFrom) || Objects.equals(itemWarehouseFrom, warehouseFrom)) {
-        return warehouseFromDimensions;
-      } else {
-        return getDimensions(VIEW_WAREHOUSES, itemWarehouseFrom);
-      }
+      return getDimensions(VIEW_WAREHOUSES, itemWarehouse);
     }
   }
 
-  private TradeAccounts getWarehouseTradeAccounts(OperationType operationType,
-      Long warehouseFrom, TradeAccounts warehouseFromAccounts, Long itemWarehouseFrom,
-      Long warehouseTo, TradeAccounts warehouseToAccounts, Long itemWarehouseTo) {
+  private TradeAccounts getWarehouseTradeAccounts(Long docWarehouse,
+      TradeAccounts docWarehouseAccounts, Long itemWarehouse) {
 
-    if (operationType.producesStock()) {
-      if (!DataUtils.isId(itemWarehouseTo) || Objects.equals(itemWarehouseTo, warehouseTo)) {
-        return warehouseToAccounts;
-      } else {
-        return getTradeAccounts(VIEW_WAREHOUSES, itemWarehouseTo);
-      }
-
+    if (!DataUtils.isId(itemWarehouse) || Objects.equals(docWarehouse, itemWarehouse)) {
+      return docWarehouseAccounts;
     } else {
-      if (!DataUtils.isId(itemWarehouseFrom) || Objects.equals(itemWarehouseFrom, warehouseFrom)) {
-        return warehouseFromAccounts;
-      } else {
-        return getTradeAccounts(VIEW_WAREHOUSES, itemWarehouseFrom);
-      }
+      return getTradeAccounts(VIEW_WAREHOUSES, itemWarehouse);
     }
   }
 
