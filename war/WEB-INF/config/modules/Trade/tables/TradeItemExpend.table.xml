@@ -5,7 +5,7 @@
        idName="TradeItemExpendID"
 >
   <Fields>
-    <Relation name="TradeDocumentItem" relation="TradeDocumentItems" notNull="true" unique="true"
+    <Relation name="TradeDocumentItem" relation="TradeDocumentItems" notNull="true"
               cascade="DELETE" label="=trdDocumentItem" />
 
     <Relation name="ExpenditureType" notNull="true" relation="ExpenditureTypes"

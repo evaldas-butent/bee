@@ -3494,7 +3494,22 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       return ResponseObject.error(PRM_CURRENCY, Objects.toString(costCurrency));
     }
 
+    int scale = sys.getFieldScale(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST);
+
     String docItemIdName = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
+
+    Set<Long> itemIds = qs.getDistinctLongs(TBL_TRADE_DOCUMENT_ITEMS, docItemIdName,
+        SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT, docId));
+
+    if (!BeeUtils.isEmpty(itemIds)) {
+      SqlDelete delete = new SqlDelete(TBL_TRADE_ITEM_EXPENDITURES)
+          .setWhere(SqlUtils.inList(TBL_TRADE_ITEM_EXPENDITURES, COL_TRADE_DOCUMENT_ITEM, itemIds));
+
+      ResponseObject deleteResponse = qs.updateDataWithResponse(delete);
+      if (deleteResponse.hasErrors()) {
+        return deleteResponse;
+      }
+    }
 
     SqlSelect itemQuery = new SqlSelect()
         .addFields(TBL_TRADE_DOCUMENT_ITEMS, docItemIdName,
@@ -3568,7 +3583,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     SqlSelect expenditureQuery = new SqlSelect()
         .addFields(TBL_TRADE_EXPENDITURES, COL_EXPENDITURE_DATE, COL_EXPENDITURE_AMOUNT,
-            COL_EXPENDITURE_CURRENCY, COL_EXPENDITURE_VAT, COL_EXPENDITURE_VAT_IS_PERCENT)
+            COL_EXPENDITURE_CURRENCY, COL_EXPENDITURE_VAT, COL_EXPENDITURE_VAT_IS_PERCENT,
+            COL_EXPENDITURE_TYPE, COL_EXPENDITURE_SUPPLIER)
         .addFields(TBL_EXPENDITURE_TYPES, COL_EXPENDITURE_TYPE_COST_BASIS)
         .addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_VAT_MODE)
         .addFrom(TBL_TRADE_EXPENDITURES)
@@ -3586,12 +3602,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     SimpleRowSet expenditures = qs.getData(expenditureQuery);
 
     if (!DataUtils.isEmpty(expenditures)) {
-      EnumMap<TradeCostBasis, Double> expenditureByCostBasis = new EnumMap<>(TradeCostBasis.class);
+      Map<TradeExpenditure, Double> expenditureAmounts = new HashMap<>();
 
       for (SimpleRow expenditure : expenditures) {
-        TradeCostBasis costBasis = expenditure.getEnum(COL_EXPENDITURE_TYPE_COST_BASIS,
-            TradeCostBasis.class);
-
         double amount = Localized.normalizeMoney(expenditure.getDouble(COL_EXPENDITURE_AMOUNT));
 
         TradeVatMode vatMode = expenditure.getEnum(COL_OPERATION_VAT_MODE, TradeVatMode.class);
@@ -3612,42 +3625,72 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             expenditure.getLong(COL_EXPENDITURE_CURRENCY), costCurrency,
             amount, expenditure.getDateTime(COL_EXPENDITURE_DATE)));
 
-        if (BeeUtils.nonZero(amount) && costBasis != null) {
-          expenditureByCostBasis.merge(costBasis, amount, Double::sum);
+        if (BeeUtils.nonZero(amount)) {
+          TradeCostBasis costBasis = expenditure.getEnum(COL_EXPENDITURE_TYPE_COST_BASIS,
+              TradeCostBasis.class);
+
+          Long expenditureType = expenditure.getLong(COL_EXPENDITURE_TYPE);
+          Long supplier = expenditure.getLong(COL_EXPENDITURE_SUPPLIER);
+
+          if (costBasis != null && DataUtils.isId(expenditureType)) {
+            TradeExpenditure te = new TradeExpenditure(costBasis, expenditureType, supplier);
+            expenditureAmounts.merge(te, amount, Double::sum);
+          }
         }
       }
 
       Map<Long, Double> costIncrement = new HashMap<>();
 
-      expenditureByCostBasis.forEach((costBasis, amount) -> {
-        double total;
+      for (Map.Entry<TradeExpenditure, Double> entry : expenditureAmounts.entrySet()) {
+        TradeCostBasis costBasis = entry.getKey().getCostBasis();
+        Long expenditureType = entry.getKey().getExpenditureType();
+        Long supplier = entry.getKey().getSupplier();
+
+        Double amount = entry.getValue();
+
+        double total = BeeConst.DOUBLE_ZERO;
+        Map<Long, Double> basisByItem = null;
 
         switch (costBasis) {
           case AMOUNT:
             total = BeeUtils.sum(costs.values());
-            if (BeeUtils.isPositive(total)) {
-              costs.forEach((itemId, cost) ->
-                  costIncrement.merge(itemId, cost * amount / total, Double::sum));
-            }
+            basisByItem = costs;
             break;
 
           case QUANTITY:
             total = BeeUtils.sum(itemQuantities.values());
-            if (BeeUtils.isPositive(total)) {
-              itemQuantities.forEach((itemId, quantity) ->
-                  costIncrement.merge(itemId, quantity * amount / total, Double::sum));
-            }
+            basisByItem = itemQuantities;
             break;
 
           case WEIGHT:
             total = BeeUtils.sum(itemWeights.values());
-            if (BeeUtils.isPositive(total)) {
-              itemWeights.forEach((itemId, weight) ->
-                  costIncrement.merge(itemId, weight * amount / total, Double::sum));
-            }
+            basisByItem = itemWeights;
             break;
         }
-      });
+
+        if (BeeUtils.isPositive(total) && !BeeUtils.isEmpty(basisByItem)) {
+          for (Map.Entry<Long, Double> e : basisByItem.entrySet()) {
+            Double value = BeeUtils.round(e.getValue() * amount / total, scale);
+
+            if (BeeUtils.nonZero(value)) {
+              Long itemId = e.getKey();
+              costIncrement.merge(itemId, value, Double::sum);
+
+              SqlInsert insert = new SqlInsert(TBL_TRADE_ITEM_EXPENDITURES)
+                  .addConstant(COL_TRADE_DOCUMENT_ITEM, itemId)
+                  .addConstant(COL_EXPENDITURE_TYPE, expenditureType)
+                  .addConstant(COL_EXPENDITURE_AMOUNT, value)
+                  .addConstant(COL_EXPENDITURE_CURRENCY, costCurrency)
+                  .addNotNull(COL_EXPENDITURE_SUPPLIER, supplier);
+
+              ResponseObject insertResponse = qs.insertDataWithResponse(insert);
+              if (insertResponse.hasErrors()) {
+                return insertResponse;
+              }
+            }
+          }
+        }
+      }
 
       if (!costIncrement.isEmpty()) {
         totalExpenditure = BeeUtils.sum(costIncrement.values());
@@ -3665,8 +3708,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         costs.computeIfPresent(itemId, (k, v) -> v / quantity));
 
     costs.replaceAll((k, v) -> Math.max(v, BeeConst.DOUBLE_ZERO));
-
-    int scale = sys.getFieldScale(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST);
     costs.replaceAll((k, v) -> BeeUtils.round(v, scale));
 
     ResponseObject saveResponse = saveCost(docId, costs, costCurrency);
