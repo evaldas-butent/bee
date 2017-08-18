@@ -15,6 +15,9 @@
     <Relation name="Currency" relation="Currencies" notNull="true" defExpr="MAIN_CURRENCY"
               label="=currency" />
 
+    <String name="Series" precision="10" label="=trdSeries" />
+    <String name="Number" precision="50" label="=trdNumber" />
+
     <Relation name="Supplier" relation="Companies" label="=trdSupplier" />
   </Fields>
 </Table>

@@ -3584,7 +3584,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     SqlSelect expenditureQuery = new SqlSelect()
         .addFields(TBL_TRADE_EXPENDITURES, COL_EXPENDITURE_DATE, COL_EXPENDITURE_AMOUNT,
             COL_EXPENDITURE_CURRENCY, COL_EXPENDITURE_VAT, COL_EXPENDITURE_VAT_IS_PERCENT,
-            COL_EXPENDITURE_TYPE, COL_EXPENDITURE_SUPPLIER)
+            COL_EXPENDITURE_TYPE, COL_EXPENDITURE_SUPPLIER,
+            COL_EXPENDITURE_SERIES, COL_EXPENDITURE_NUMBER)
         .addFields(TBL_EXPENDITURE_TYPES, COL_EXPENDITURE_TYPE_COST_BASIS)
         .addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_VAT_MODE)
         .addFrom(TBL_TRADE_EXPENDITURES)
@@ -3630,10 +3631,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               TradeCostBasis.class);
 
           Long expenditureType = expenditure.getLong(COL_EXPENDITURE_TYPE);
-          Long supplier = expenditure.getLong(COL_EXPENDITURE_SUPPLIER);
 
           if (costBasis != null && DataUtils.isId(expenditureType)) {
-            TradeExpenditure te = new TradeExpenditure(costBasis, expenditureType, supplier);
+            TradeExpenditure te = new TradeExpenditure(costBasis, expenditureType,
+                expenditure.getLong(COL_EXPENDITURE_SUPPLIER),
+                expenditure.getValue(COL_EXPENDITURE_SERIES),
+                expenditure.getValue(COL_EXPENDITURE_NUMBER));
+
             expenditureAmounts.merge(te, amount, Double::sum);
           }
         }
@@ -3642,9 +3646,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       Map<Long, Double> costIncrement = new HashMap<>();
 
       for (Map.Entry<TradeExpenditure, Double> entry : expenditureAmounts.entrySet()) {
-        TradeCostBasis costBasis = entry.getKey().getCostBasis();
-        Long expenditureType = entry.getKey().getExpenditureType();
-        Long supplier = entry.getKey().getSupplier();
+        TradeExpenditure te = entry.getKey();
+
+        TradeCostBasis costBasis = te.getCostBasis();
+        Long expenditureType = te.getExpenditureType();
+        Long supplier = te.getSupplier();
+        String series = te.getSeries();
+        String number = te.getNumber();
 
         Double amount = entry.getValue();
 
@@ -3681,7 +3689,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                   .addConstant(COL_EXPENDITURE_TYPE, expenditureType)
                   .addConstant(COL_EXPENDITURE_AMOUNT, value)
                   .addConstant(COL_EXPENDITURE_CURRENCY, costCurrency)
-                  .addNotNull(COL_EXPENDITURE_SUPPLIER, supplier);
+                  .addNotNull(COL_EXPENDITURE_SUPPLIER, supplier)
+                  .addNotEmpty(COL_EXPENDITURE_SERIES, series)
+                  .addNotEmpty(COL_EXPENDITURE_NUMBER, number);
 
               ResponseObject insertResponse = qs.insertDataWithResponse(insert);
               if (insertResponse.hasErrors()) {
