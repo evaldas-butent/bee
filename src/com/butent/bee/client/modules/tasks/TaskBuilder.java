@@ -170,6 +170,14 @@ class TaskBuilder extends ProductSupportInterceptor {
     } else if (BeeUtils.same(editableWidget.getColumnId(), ProjectConstants.COL_PROJECT_STAGE)
         && widget instanceof DataSelector) {
       stagesSelector = (DataSelector) widget;
+
+      editableWidget.addCellValidationHandler(event -> {
+        if (!DataUtils.isId(Data.getLong(VIEW_TASKS, event.getCellValidation().getRow(),
+            ProjectConstants.COL_PROJECT))) {
+          event.cancel();
+        }
+        return true;
+      });
     }
     super.afterCreateEditableWidget(editableWidget, widget);
   }
