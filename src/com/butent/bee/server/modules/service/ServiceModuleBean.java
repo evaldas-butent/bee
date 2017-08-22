@@ -145,8 +145,9 @@ public class ServiceModuleBean implements BeeModule {
             AdministrationConstants.ALS_FILE_NAME), query)));
 
     result.addAll(qs.getSearchResults(TBL_SERVICE_MAINTENANCE,
-        src.buildSearchFilter(TBL_SERVICE_MAINTENANCE, Sets.newHashSet(COL_MAINTENANCE_NUMBER,
-            ALS_COMPANY_NAME, ALS_CONTACT_FIRST_NAME, ALS_CONTACT_LAST_NAME), query)));
+        src.buildSearchFilter(TBL_SERVICE_MAINTENANCE, Sets.newHashSet(DataUtils.ID_TAG,
+            ALS_COMPANY_NAME, ALS_CONTACT_FIRST_NAME, ALS_CONTACT_LAST_NAME,
+            COL_MAINTENANCE_NUMBER), query)));
 
     return result;
   }
@@ -209,6 +210,9 @@ public class ServiceModuleBean implements BeeModule {
     if (!BeeUtils.isEmpty(articleSourceColumn)
         && !BeeUtils.same(articleSourceColumn, COL_ITEM_ARTICLE)) {
       switch (articleSourceColumn) {
+        case COL_SERVICE_MAINTENANCE_ID:
+          value = itemRow.getValue(sys.getIdName(TBL_SERVICE_MAINTENANCE));
+          break;
         case COL_MAINTENANCE_NUMBER:
           value = itemRow.getValue(COL_MAINTENANCE_NUMBER);
           break;
@@ -226,7 +230,7 @@ public class ServiceModuleBean implements BeeModule {
 
     if (!BeeUtils.isEmpty(notes)) {
       for (String column : Arrays.asList(COL_TYPE, COL_SERVICE_MAINTENANCE_ID, COL_MODEL,
-          COL_WARRANTY_TYPE, COL_WARRANTY_VALID_TO, COL_DEPARTMENT)) {
+          COL_WARRANTY_TYPE, COL_WARRANTY_VALID_TO, COL_DEPARTMENT, COL_MAINTENANCE_NUMBER)) {
         String prmColumnValue = BeeUtils.join(BeeConst.STRING_EMPTY, BeeConst.STRING_LEFT_BRACKET,
             column, BeeConst.STRING_RIGHT_BRACKET);
 
@@ -252,8 +256,8 @@ public class ServiceModuleBean implements BeeModule {
   }
 
   public void formatInvoiceItemsQuery(SqlSelect query) {
-    query.addFields(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_NUMBER,
-        COL_WARRANTY_VALID_TO);
+    query.addFields(TBL_SERVICE_MAINTENANCE, sys.getIdName(TBL_SERVICE_MAINTENANCE),
+        COL_WARRANTY_VALID_TO, COL_MAINTENANCE_NUMBER);
 
     String noteSourceColumns = prm.getText(PRM_ITEM_NOTE_SOURCE_COLUMNS);
 
