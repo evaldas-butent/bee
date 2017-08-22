@@ -29,7 +29,6 @@ import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.GridView;
@@ -314,28 +313,28 @@ class ItemsGrid extends TreeGridInterceptor {
       }
     }
 
-    table.addClickHandler(event -> {
+  table.addClickHandler(event -> {
       Element target = EventUtils.getEventTargetElement(event);
       TableCellElement cell = DomUtils.getParentCell(target, true);
 
       if (cell != null) {
-        String id = cell.getInnerText();
+          String id = cell.getInnerText();
 
-        if (cell.hasClassName(STYLE_RES_ORDER_ID_PREFIX + STYLE_CELL_SUFFIX)
-            && DataUtils.isId(id)) {
-            RowEditor.openForm(COL_ORDER, Data.getDataInfo(VIEW_ORDERS),
-                Filter.compareId(Long.valueOf(id)), Opener.MODAL, null, new OrderForm());
+          if (cell.hasClassName(STYLE_RES_ORDER_ID_PREFIX + STYLE_CELL_SUFFIX)
+                  && DataUtils.isId(id)) {
+              RowEditor.openForm(COL_ORDER, Data.getDataInfo(VIEW_ORDERS),
+                      Filter.compareId(Long.valueOf(id)),null, new OrderForm());
 
-        } else if (cell.hasClassName(STYLE_RES_REPAIR_ID_PREFIX + STYLE_CELL_SUFFIX)
-            && !BeeUtils.isEmpty(id)) {
-            RowEditor.openForm(COL_SERVICE_MAINTENANCE, Data.getDataInfo(TBL_SERVICE_MAINTENANCE),
-                Filter.equals(COL_MAINTENANCE_NUMBER, id), Opener.MODAL, null,
-                new ServiceMaintenanceForm());
-        }
+          } else if (cell.hasClassName(STYLE_RES_REPAIR_ID_PREFIX + STYLE_CELL_SUFFIX)
+                  && !BeeUtils.isEmpty(id)) {
+              RowEditor.openForm(COL_SERVICE_MAINTENANCE, Data.getDataInfo(TBL_SERVICE_MAINTENANCE),
+                      Filter.equals(COL_MAINTENANCE_NUMBER, id), null,
+                      new ServiceMaintenanceForm());
+          }
       }
-    });
+  });
 
-    return table;
+  return table;
   }
 
   private void showStock() {

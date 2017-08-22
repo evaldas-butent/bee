@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="WorkScheduleInfo" source="WorkScheduleInfo"
+      caption="=timeSheetInfo"
+>
+  <Columns>
+    <SimpleColumn name="Employee" />
+    <SimpleColumn name="Object" />
+    <SimpleColumn name="Date"/>
+
+    <SimpleColumn name="Fund" />
+  </Columns>
+</View>

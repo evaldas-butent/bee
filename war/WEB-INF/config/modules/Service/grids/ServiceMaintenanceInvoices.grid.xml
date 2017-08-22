@@ -3,12 +3,8 @@
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="ServiceMaintenanceInvoices" viewName="OrderChildInvoices" flexGrow="1" disabledActions="add"
-  caption="=trdInvoices" filter="!(Proforma) AND (Kind 1 OR ServiceMaintenance)" >
+  caption="=trdInvoices" filter="!(Proforma) AND (Kind 1 OR ServiceMaintenanceCount > 0)" >
   <xi:include href="../../Orders/grids/columns/Invoices.columns.xml" />
-  <g:columns>
-    <RelColumn name="ServiceMaintenance" viewName="ServiceMaintenance" renderColumns="MaintenanceNumber" filterSupplier="value"
-               editPopup="true" label="=svcRepair"/>
-  </g:columns>
 
   <g:rowStyle>
     <ui:inline>="color:red"</ui:inline>

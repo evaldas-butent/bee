@@ -65,6 +65,7 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -256,6 +257,10 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
+    if (row == null) {
+      return;
+    }
+
     drawComments(row);
 
     updateStateDataSelector(false);
@@ -636,8 +641,8 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-    super.onStartNewRow(form, oldRow, newRow);
+  public void onStartNewRow(FormView form, IsRow row) {
+    super.onStartNewRow(form, row);
 
     if (otherInfo != null) {
       otherInfo.setOpen(true);
@@ -651,7 +656,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       if (!response.isEmpty() && !response.hasErrors()) {
         Map<String, String> columnsData = Codec
             .deserializeLinkedHashMap(response.getResponseAsString());
-        columnsData.forEach((column, value) -> newRow.setValue(getDataIndex(column), value));
+        columnsData.forEach((column, value) -> row.setValue(getDataIndex(column), value));
       }
       form.removeStyleName(STYLE_PROGRESS_CONTAINER);
       form.removeStyleName(STYLE_PROGRESS_BAR);
@@ -902,24 +907,38 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     });
   }
 
-  private void updateStateDataSelector(boolean clearValue) {
+  private void updateStateDataSelector(boolean updateValue) {
     Widget stateWidget = getFormView().getWidgetByName(AdministrationConstants.COL_STATE);
 
     if (stateWidget instanceof DataSelector) {
-      Filter stateFilter = DataUtils.isNewRow(getActiveRow())
-          ? Filter.isPositive(COL_INITIAL) : Filter.isNull(COL_INITIAL);
       Long maintenanceTypeId = getActiveRow().getLong(getDataIndex(COL_TYPE));
+      Filter stateFilter = Filter.in(Data.getIdColumn(VIEW_MAINTENANCE_STATES), TBL_STATE_PROCESS,
+          COL_MAINTENANCE_STATE, ServiceUtils.getStateFilter(null, maintenanceTypeId,
+              DataUtils.isNewRow(getActiveRow())
+                  ? Filter.isPositive(COL_INITIAL) : Filter.isNull(COL_INITIAL)));
 
-      ((DataSelector) stateWidget).setAdditionalFilter(
-          Filter.in(Data.getIdColumn(VIEW_MAINTENANCE_STATES), TBL_STATE_PROCESS,
-              COL_MAINTENANCE_STATE,
-              ServiceUtils.getStateFilter(null, maintenanceTypeId, stateFilter)));
+      ((DataSelector) stateWidget).setAdditionalFilter(stateFilter);
 
-      if (clearValue) {
-        ((DataSelector) stateWidget).clearValue();
-        getFormView().getActiveRow().clearCell(getDataIndex(AdministrationConstants.COL_STATE));
-        getFormView().getActiveRow().clearCell(getDataIndex(ALS_STATE_NAME));
-        getFormView().refreshBySource(AdministrationConstants.COL_STATE);
+      if (updateValue) {
+        Queries.getRowSet(VIEW_MAINTENANCE_STATES, Collections.singletonList(COL_STATE_NAME),
+            stateFilter, stateRowSet -> {
+              if (!stateRowSet.isEmpty()) {
+                IsRow stateRow = stateRowSet.getRow(0);
+                String stateName = stateRow.getString(stateRowSet.getColumnIndex(COL_STATE_NAME));
+
+                ((DataSelector) stateWidget).setDisplayValue(stateName);
+                getFormView().getActiveRow().setValue(
+                    getDataIndex(AdministrationConstants.COL_STATE), stateRow.getId());
+                getFormView().getActiveRow().setValue(getDataIndex(ALS_STATE_NAME), stateName);
+
+              } else {
+                ((DataSelector) stateWidget).clearValue();
+                getFormView().getActiveRow().clearCell(
+                    getDataIndex(AdministrationConstants.COL_STATE));
+                getFormView().getActiveRow().clearCell(getDataIndex(ALS_STATE_NAME));
+              }
+              getFormView().refreshBySource(AdministrationConstants.COL_STATE);
+        });
       }
     }
   }

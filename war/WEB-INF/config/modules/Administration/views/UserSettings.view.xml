@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="UserSettings" source="UserSettings" module="*"
-  caption="=userSettings" editForm="UserSettings"
-  >
+      name="UserSettings" source="UserSettings" module="*"
+      caption="=userSettings" editForm="UserSettings"
+      rowCaption="Login FirstName LastName"
+>
   <Columns>
     <SimpleColumn name="User" />
-    
+
     <SimpleJoin name="User" joinType="LEFT">
       <SimpleColumn name="Login" />
       <SimpleColumn name="Password" />
-      
+
       <SimpleColumn name="CompanyPerson" />
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
         <SimpleColumn name="Person" />
@@ -50,7 +51,7 @@
     <SimpleColumn name="LoadingStateDelayMillis" />
 
     <SimpleColumn name="CommentsLayout" />
-    
+
     <SimpleColumn name="UiTheme" />
     <SimpleJoin name="UiTheme" joinType="LEFT">
       <SimpleColumn name="Name" alias="UiThemeName" />
@@ -62,8 +63,22 @@
     <SimpleColumn name="Assistant" />
 
     <SimpleColumn name="ShowGridFilterCommand" />
+
+    <SimpleColumn name="GridEditWindow" />
+    <SimpleColumn name="GridNewRowWindow" />
+
+    <SimpleColumn name="ChildEditWindow" />
+    <SimpleColumn name="ChildNewRowWindow" />
+
+    <SimpleColumn name="RelationEditWindow" />
+    <SimpleColumn name="RelationNewRowWindow" />
+
+    <SimpleColumn name="OtherEditWindows" />
+    <SimpleColumn name="OtherNewRowWindows" />
+
+    <SimpleColumn name="NewMailMessageWindow" />
   </Columns>
-  
+
   <Order>
     <OrderBy column="LastName" />
     <OrderBy column="FirstName" />

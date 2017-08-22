@@ -316,6 +316,9 @@ class EmployeeSchedule extends WorkScheduleWidget {
     viewNames.add(VIEW_WORK_SCHEDULE_LOCKS);
     filters.put(VIEW_WORK_SCHEDULE_LOCKS, wsFilter);
 
+    viewNames.add(VIEW_WORK_SCHEDULE_INFO);
+    filters.put(VIEW_WORK_SCHEDULE_INFO, getWorkScheduleRelationFilter());
+
     Queries.getData(viewNames, filters, CachingPolicy.NONE, new Queries.DataCallback() {
       @Override
       public void onSuccess(Collection<BeeRowSet> result) {
@@ -348,6 +351,9 @@ class EmployeeSchedule extends WorkScheduleWidget {
               break;
             case VIEW_WORK_SCHEDULE_LOCKS:
               setTableLocks(rowSet);
+              break;
+            case VIEW_WORK_SCHEDULE_INFO:
+              setTableInfo(rowSet);
               break;
           }
         }

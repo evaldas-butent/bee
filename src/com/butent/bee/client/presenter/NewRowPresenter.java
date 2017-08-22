@@ -7,6 +7,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
@@ -16,13 +17,14 @@ import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormAndHeader;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -33,13 +35,12 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
 public class NewRowPresenter extends AbstractPresenter implements ParentRowCreator,
-    ReadyForInsertEvent.Handler {
+    ReadyForInsertEvent.Handler, HasViewName {
 
   public static final String STYLE_CONTAINER = BeeConst.CSS_CLASS_PREFIX + "NewRowContainer";
   public static final String STYLE_HEADER = BeeConst.CSS_CLASS_PREFIX + "NewRowHeader";
@@ -89,6 +90,11 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
       final Callback<IsRow> callback) {
 
     if (!formView.validate(notificationListener, false)) {
+      return;
+    }
+
+    GridView gridView = formView.getBackingGrid();
+    if (gridView != null && !gridView.validateFormData(formView, notificationListener, false)) {
       return;
     }
 
@@ -143,6 +149,11 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
   }
 
   @Override
+  public String getViewName() {
+    return dataInfo.getViewName();
+  }
+
+  @Override
   public void handleAction(Action action) {
     if (getActionDelegate() != null) {
       getActionDelegate().handleAction(action);
@@ -151,8 +162,8 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
 
   @Override
   public void onReadyForInsert(final ReadyForInsertEvent event) {
-    Queries.insert(dataInfo.getViewName(), event.getColumns(), event.getValues(),
-        event.getChildren(), new RowCallback() {
+    Queries.insert(getViewName(), event.getColumns(), event.getValues(), event.getChildren(),
+        new RowCallback() {
           @Override
           public void onFailure(String... reason) {
             if (event.getCallback() == null) {
@@ -164,8 +175,7 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
 
           @Override
           public void onSuccess(BeeRow result) {
-            RowInsertEvent.fire(BeeKeeper.getBus(), dataInfo.getViewName(), result,
-                event.getSourceId());
+            RowInsertEvent.fire(BeeKeeper.getBus(), getViewName(), result, event.getSourceId());
 
             if (formView.getFormInterceptor() != null) {
               formView.getFormInterceptor().afterInsertRow(result, event.isForced());
@@ -182,6 +192,24 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     if (!formView.validate(formView, true)) {
       return;
     }
+
+    final GridView gridView = formView.getBackingGrid();
+    if (gridView != null) {
+      if (!gridView.validateFormData(formView, formView, true)) {
+        return;
+      }
+
+      if (gridView.likeAMotherlessChild()) {
+        gridView.ensureRelId(result -> {
+          if (!gridView.likeAMotherlessChild()) {
+            save(callback);
+          }
+        });
+
+        return;
+      }
+    }
+
     IsRow row = formView.getActiveRow();
 
     if (DataUtils.isNewRow(row)) {
@@ -200,7 +228,7 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
       });
 
     } else {
-      int upd = Queries.update(dataInfo.getViewName(), dataInfo.getColumns(), formView.getOldRow(),
+      int upd = Queries.update(getViewName(), dataInfo.getColumns(), formView.getOldRow(),
           row, formView.getChildrenForUpdate(), new RowCallback() {
             @Override
             public void onFailure(String... reason) {
@@ -209,7 +237,16 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
 
             @Override
             public void onSuccess(BeeRow result) {
-              RowUpdateEvent.fire(BeeKeeper.getBus(), dataInfo.getViewName(), result);
+              RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
+
+              if (formView.getFormInterceptor() != null) {
+                formView.getFormInterceptor().afterUpdateRow(result);
+              }
+
+              if (gridView != null && gridView.getGridInterceptor() != null) {
+                gridView.getGridInterceptor().afterUpdateRow(result);
+              }
+
               if (callback != null) {
                 callback.onSuccess(result);
               }
@@ -230,7 +267,9 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     FormAndHeader formContainer = new FormAndHeader();
     formContainer.addStyleName(STYLE_CONTAINER);
     formContainer.addStyleName(UiOption.getStyleName(uiOptions));
-    formContainer.addStyleName(formView.getContainerStyleName());
+
+    StyleUtils.updateAppearance(formContainer,
+        formView.getContainerClassName(), formView.getContainerStyle());
 
     formContainer.addTopHeightFillHorizontal(headerView.asWidget(), 0, headerView.getHeight());
     formContainer.addTopBottomFillHorizontal(formView.asWidget(), headerView.getHeight(), 0);
@@ -246,31 +285,53 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     List<BeeColumn> columns = new ArrayList<>();
     List<String> values = new ArrayList<>();
 
+    GridView gridView = formView.getBackingGrid();
+    String relColumn = (gridView == null) ? null : gridView.getRelColumn();
+
     for (int i = 0; i < dataInfo.getColumnCount(); i++) {
       BeeColumn column = dataInfo.getColumns().get(i);
       String value = row.getString(i);
 
-      if (column.isInsertable(value)) {
+      if (!BeeUtils.isEmpty(relColumn) && BeeUtils.same(relColumn, column.getId())) {
+        Long relId = gridView.getRelId();
+
+        if (DataUtils.isId(relId)) {
+          columns.add(column);
+          values.add(BeeUtils.toString(relId));
+
+        } else {
+          callback.onFailure(BeeUtils.joinWords(getViewName(), relColumn,
+              Localized.dictionary().invalidIdValue(relId)));
+          return;
+        }
+
+      } else if (column.isInsertable(value)) {
         columns.add(column);
         values.add(value);
       }
     }
 
     if (columns.isEmpty()) {
-      callback.onFailure(Localized.dictionary().newRow(),
+      callback.onFailure(getViewName(), Localized.dictionary().newRow(),
           Localized.dictionary().allValuesCannotBeEmpty());
       return;
     }
 
     AutocompleteProvider.retainValues(formView);
 
-    Collection<RowChildren> children = formView.getChildrenForInsert();
-    ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, children, callback,
-        formView.getId());
+    ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values,
+        formView.getChildrenForInsert(), callback, formView.getId());
     event.setForced(forced);
 
     if (formView.getFormInterceptor() != null) {
       formView.getFormInterceptor().onReadyForInsert(formView, event);
+      if (event.isConsumed()) {
+        return;
+      }
+    }
+
+    if (gridView != null && gridView.getGridInterceptor() != null) {
+      gridView.getGridInterceptor().onReadyForInsert(gridView, event);
       if (event.isConsumed()) {
         return;
       }

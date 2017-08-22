@@ -280,14 +280,16 @@
 
 .bee-payroll-ws-wd-label,
 .bee-payroll-ws-wh-label,
-.bee-payroll-ws-wapproved-label {
+.bee-payroll-ws-wapproved-label,
+.bee-payroll-ws-wpayroll-fund-label {
   font-weight: bolder;
   text-align: center;
 }
 .bee-payroll-ws-wd-sum,
 .bee-payroll-ws-wh-sum,
 .bee-payroll-ws-wd-total,
-.bee-payroll-ws-wh-total {
+.bee-payroll-ws-wh-total,
+.bee-payroll-ws-wp-total{
   padding-right: 5px;
   text-align: right;
   font-weight: bolder;
@@ -482,4 +484,7 @@
 .bee-payroll-earn-total-row {
   font-weight: bolder;
   font-size: larger;
+}
+.bee-payroll-ws-wpayroll-fund-number {
+  max-width: 100px;
 }

@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
-      xmlns:x="http://www.butent.com/expression"
       xmlns:xi="http://www.w3.org/2001/XInclude"
 
       name="Assessments" source="Assessments" module="Transport.Logistics"
       caption="=assessments"
       newRowForm="Assessment"
-      editForm="Assessment"
+      editForm="Assessment" rowCaption="ID OrderNo"
 >
   <Relation renderColumns="OrderNo Date CustomerName" />
   <Columns>
@@ -102,49 +101,14 @@
         </SimpleJoin>
       </SimpleJoin>
 
-      <ExternalJoin name="Cargo" source="CargoUnloading" joinType="LEFT">
-        <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-          <AggregateColumn name="Date" alias="MinUnloadingDate" aggregate="MIN"
-                           label="=taMinTermShort+=trUnloadingDateShort" />
-        </SimpleJoin>
-      </ExternalJoin>
-
       <xi:include href="viewcolumns/CargoInfo.viewcolumns.xml" />
 
       <SimpleColumn name="Number" label="=refNumber" />
       <SimpleColumn name="Directions" alias="Shipper" label="=shipper" />
-
-      <ExternalJoin name="Cargo" source="CargoIncomes" joinType="LEFT">
-        <HiddenColumn name="Sale" alias="Incomes" />
-        <AggregateColumn name="Sale" alias="IncomesCommited" aggregate="MIN">
-          <x:nvl type="LONG">
-            <x:number>"Incomes"</x:number>
-            <x:number>0</x:number>
-          </x:nvl>
-        </AggregateColumn>
-      </ExternalJoin>
-      <ExternalJoin name="Cargo" source="CargoExpenses" joinType="LEFT">
-        <HiddenColumn name="Purchase" alias="Expenses" />
-        <AggregateColumn name="Purchase" alias="ExpensesCommited" aggregate="MIN">
-          <x:nvl type="LONG">
-            <x:number>"Expenses"</x:number>
-            <x:number>0</x:number>
-          </x:nvl>
-        </AggregateColumn>
-        <AggregateColumn name="Cargo" alias="ExpensesCount" aggregate="COUNT_DISTINCT" />
-      </ExternalJoin>
     </SimpleJoin>
 
-    <ExternalJoin name="Assessment" source="AssessmentObservers" joinType="LEFT">
+    <ExternalJoin name="Assessment" source="AssessmentObservers" joinType="LEFT" filter="User={u}">
       <HiddenColumn name="User" />
-    </ExternalJoin>
-
-    <ExternalJoin name="Assessment" source="AssessmentOGroups" joinType="LEFT">
-      <SimpleJoin name="Group" joinType="LEFT">
-        <ExternalJoin name="Group" source="UserGroups" joinType="LEFT">
-          <HiddenColumn name="User" alias="Group" />
-        </ExternalJoin>
-      </SimpleJoin>
     </ExternalJoin>
   </Columns>
 </View>

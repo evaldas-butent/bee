@@ -20,5 +20,7 @@
     <Relation name="Currency" relation="Currencies" label="=currency" defExpr="MAIN_CURRENCY" />
 
     <String name="Note" precision="100" label="=note" />
+
+    <Relation name="Lock" relation="WorkScheduleLocks" label="=timeSheetLock" cascade="DELETE"/>
   </Fields>
 </Table>

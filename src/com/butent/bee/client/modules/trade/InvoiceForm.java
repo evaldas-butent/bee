@@ -80,7 +80,6 @@ public class InvoiceForm extends InvoiceERPForm implements SelectorEvent.Handler
               listener.fireEvent(event);
             }
           });
-      return;
     }
   }
 
@@ -146,9 +145,9 @@ public class InvoiceForm extends InvoiceERPForm implements SelectorEvent.Handler
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-    calculateTerm(newRow, COL_TRADE_DATE, newRow.getString(getDataIndex(COL_TRADE_DATE)));
-    super.onStartNewRow(form, oldRow, newRow);
+  public void onStartNewRow(FormView form, IsRow row) {
+    calculateTerm(row, COL_TRADE_DATE, row.getString(getDataIndex(COL_TRADE_DATE)));
+    super.onStartNewRow(form, row);
   }
 
   private void calculateTerm(final IsRow row, final String column, final String value) {
@@ -177,21 +176,18 @@ public class InvoiceForm extends InvoiceERPForm implements SelectorEvent.Handler
       default:
         return;
     }
-    RpcCallback<String> callback = new RpcCallback<String>() {
-      @Override
-      public void onSuccess(String days) {
-        JustDate term = null;
+    RpcCallback<String> callback = days -> {
+      JustDate term = null;
 
-        if (BeeUtils.isPositiveInt(days)) {
-          Long millis = getValue(COL_TRADE_DATE, row, column, value);
+      if (BeeUtils.isPositiveInt(days)) {
+        Long millis = getValue(COL_TRADE_DATE, row, column, value);
 
-          if (millis != null) {
-            term = TimeUtils.nextDay(new DateTime(millis), BeeUtils.toInt(days));
-          }
+        if (millis != null) {
+          term = TimeUtils.nextDay(new DateTime(millis), BeeUtils.toInt(days));
         }
-        row.setValue(termIdx, term);
-        getFormView().refreshBySource(COL_TRADE_TERM);
       }
+      row.setValue(termIdx, term);
+      getFormView().refreshBySource(COL_TRADE_TERM);
     };
     if (DataUtils.isId(companyId)) {
       Queries.getValue(TBL_COMPANIES, companyId, creditColumn, callback);

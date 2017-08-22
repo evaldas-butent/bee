@@ -53,7 +53,8 @@
     </CalcColumn>
   </g:columns>
 
-  <g:predefinedFilter name="new_answered" label="Nauji ir atsakyti" initial="true">
+  <g:predefinedFilter name="new_answered"
+                      label="=trAssessmentStatusNew+, +=trAssessmentStatusAnswered" initial="true">
     <g:column name="Status" value="0,1" />
   </g:predefinedFilter>
 </g:Grid>

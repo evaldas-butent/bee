@@ -11,7 +11,7 @@
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="TradeOperation" viewName="TradeOperations" caption="=trdOperation"
-        width="750" widthUnit="px" height="70" heightUnit="vh"
+        width="70" widthUnit="vw" height="70" heightUnit="vh"
 >
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls" style="margin: 1ex 1em;">

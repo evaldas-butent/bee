@@ -133,8 +133,10 @@
 
     <Details open="true">
       <Summary text="=cargoInformation" style="&summary;" />
-      <ChildGrid name="CargoLoadingUnbound" relColumn="Cargo" source="Cargo" style="min-height: 170px;"/>
-      <ChildGrid name="CargoUnloadingUnbound" relColumn="Cargo" source="Cargo" style="min-height: 170px;"/>
+      <ChildGrid name="CargoLoadingUnbound" relColumn="Cargo" source="Cargo"
+                 style="min-height: 170px;" />
+      <ChildGrid name="CargoUnloadingUnbound" relColumn="Cargo" source="Cargo"
+                 style="min-height: 170px;" />
     </Details>
     &separator;
 
@@ -163,7 +165,7 @@
             <DataSelector source="ShippingTerm" required="true" filter="SelfService"
                           order="SelfService, Name" newRowEnabled="false" />
             <FaLabel name="Incoterms" char="question_circle" disablable="false"
-              style="display: inline-block; margin-left: 5px;"/>
+                     style="display: inline-block; margin-left: 5px;" />
           </FlowPanel>
         </row>
 
@@ -184,13 +186,38 @@
           </cell>
           <Label for="Value" name="ValueLabel" />
           <FlowPanel>
-            <InputMoney source="Value" style="&decimal;" currencySource="ValueCurrency"/>
+            <InputMoney source="Value" style="&decimal;" currencySource="ValueCurrency" />
             <DataSelector source="ValueCurrency" newRowEnabled="false" editEnabled="false"
                           placeholder="=currencyShort" style="&unit;" filter="SelfService" />
           </FlowPanel>
         </row>
       </Table>
     </Details>
+    &separator;
+
+    <Table kind="custom" style="&table;" cellStyle="&cells;">
+      <col index="0" cellStyle="&colLabel; font-weight:bold;" />
+
+      <row>
+        <Label for="Manager" />
+        <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
+                      newRowEnabled="false" editSource="ManagerPerson" style="width:15em;" />
+      </row>
+      <row>
+        <Label for="ManagerEmail" />
+        <TextLabel source="ManagerEmail" />
+      </row>
+      <row>
+        <Label for="ManagerPhone" />
+        <TextLabel source="ManagerPhone">
+          <render>
+            <ui:expression>(row.ManagerMobile||'')
+              + (row.ManagerMobile &amp;&amp; row.ManagerPhone ? ', ' : '') + (row.ManagerPhone||'')
+            </ui:expression>
+          </render>
+        </TextLabel>
+      </row>
+    </Table>
     &separator;
 
     <Details open="true">
@@ -262,12 +289,6 @@
         &cols;
 
         <row>
-          <Label for="Manager" />
-          <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
-                        newRowEnabled="false" editSource="ManagerPerson" style="width:15em;" />
-        </row>
-
-        <row>
           <Label for="Vehicle" />
           <InputText source="Vehicle" />
           <cell rowSpan="2">
@@ -300,7 +321,7 @@
       </dynStyle>
       <page>
         <text>=files</text>
-        <ChildGrid name="CargoFiles" relColumn="Cargo" source="Cargo" disablable="false"/>
+        <ChildGrid name="CargoFiles" relColumn="Cargo" source="Cargo" disablable="false" />
       </page>
       <page>
         <text>=mails</text>

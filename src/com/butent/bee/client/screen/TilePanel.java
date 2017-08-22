@@ -22,7 +22,6 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.event.logical.CaptionChangeEvent;
 import com.butent.bee.client.event.logical.HasActiveWidgetChangeHandlers;
-import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
@@ -451,34 +450,28 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
       final String tileId = tileIds.get(getPosition());
       final String contentSupplier = contentByTile.get(tileId);
 
-      ViewFactory.create(contentSupplier, new ViewCallback() {
-        @Override
-        public void onSuccess(View result) {
-          HandlerRegistration registration = result.addReadyHandler(new ReadyEvent.Handler() {
-            @Override
-            public void onReady(ReadyEvent event) {
-              HandlerRegistration hr = readyHandlerRegistry.remove(tileId);
-              if (hr != null) {
-                hr.removeHandler();
-              }
-
-              logger.info("restored tile", BeeUtils.progress(tileIds.indexOf(tileId) + 1,
-                  tileIds.size()), contentSupplier);
-              accept(true);
-            }
-          });
-
-          if (registration != null) {
-            readyHandlerRegistry.put(tileId, registration);
+      ViewFactory.create(contentSupplier, result -> {
+        HandlerRegistration registration = result.addReadyHandler(event -> {
+          HandlerRegistration hr = readyHandlerRegistry.remove(tileId);
+          if (hr != null) {
+            hr.removeHandler();
           }
 
-          Tile tile = getTileById(tileId);
-          if (tile == null) {
-            onComplete(false);
-          } else {
-            tile.addContentSupplier(contentSupplier);
-            tile.setWidget(result);
-          }
+          logger.info("restored tile", BeeUtils.progress(tileIds.indexOf(tileId) + 1,
+              tileIds.size()), contentSupplier);
+          accept(true);
+        });
+
+        if (registration != null) {
+          readyHandlerRegistry.put(tileId, registration);
+        }
+
+        Tile tile = getTileById(tileId);
+        if (tile == null) {
+          onComplete(false);
+        } else {
+          tile.addContentSupplier(contentSupplier);
+          tile.setWidget(result);
         }
       });
     }

@@ -692,21 +692,18 @@ public final class DataUtils {
       Function<HasDateValue, String> dateRenderer,
       Function<HasDateValue, String> dateTimeRenderer) {
 
-    Assert.notNull(dataInfo);
-    if (row == null) {
+    if (dataInfo == null || row == null) {
       return null;
     }
 
-    List<String> colNames = new ArrayList<>();
     if (!BeeUtils.isEmpty(dataInfo.getRowCaption())) {
-      colNames.addAll(dataInfo.parseColumns(dataInfo.getRowCaption()));
+      return parseRowCaption(dataInfo, row, dateRenderer, dateTimeRenderer);
     }
 
-    if (colNames.isEmpty()) {
-      for (BeeColumn column : dataInfo.getColumns()) {
-        if (column.isCharacter() && column.isEditable() && !column.isNullable()) {
-          colNames.add(column.getId());
-        }
+    List<String> colNames = new ArrayList<>();
+    for (BeeColumn column : dataInfo.getColumns()) {
+      if (column.isCharacter() && column.isEditable() && !column.isNullable()) {
+        colNames.add(column.getId());
       }
     }
 
@@ -966,16 +963,9 @@ public final class DataUtils {
     String sep = BeeUtils.nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
 
     for (String colName : colNames) {
-      int i = dataInfo.getColumnIndex(colName);
-      if (BeeConst.isUndef(i)) {
-        logger.warning(dataInfo.getViewName(), "column not found", colName);
-        continue;
-      }
+      String value = render(dataInfo, row, colName, dateRenderer, dateTimeRenderer);
 
-      String value = render((i >= 0) ? dataInfo.getColumns().get(i) : null, row, i,
-          dateRenderer, dateTimeRenderer);
-
-      if (!BeeUtils.isEmpty(value)) {
+      if (!BeeUtils.isEmpty(value) && sb.indexOf(value) < 0) {
         if (sb.length() > 0) {
           sb.append(sep);
         }
@@ -1002,7 +992,7 @@ public final class DataUtils {
       }
 
       String value = render(column, row, i, dateRenderer, dateTimeRenderer);
-      if (!BeeUtils.isEmpty(value)) {
+      if (!BeeUtils.isEmpty(value) && sb.indexOf(value) < 0) {
         if (sb.length() > 0) {
           sb.append(sep);
         }
@@ -1034,7 +1024,7 @@ public final class DataUtils {
       String value = render(BeeUtils.getQuietly(columns, index), row,
           index, dateRenderer, dateTimeRenderer);
 
-      if (!BeeUtils.isEmpty(value)) {
+      if (!BeeUtils.isEmpty(value) && sb.indexOf(value) < 0) {
         if (sb.length() > 0) {
           sb.append(sep);
         }
@@ -1389,6 +1379,72 @@ public final class DataUtils {
 
     for (int i = 0; i < target.getNumberOfCells(); i++) {
       target.setValue(i, source.getString(i));
+    }
+  }
+
+  private static String parseRowCaption(DataInfo dataInfo, IsRow row,
+      Function<HasDateValue, String> dateRenderer,
+      Function<HasDateValue, String> dateTimeRenderer) {
+
+    String input = BeeUtils.trim(dataInfo.getRowCaption());
+    StringBuilder sb = new StringBuilder();
+
+    int nameIndex = -1;
+
+    for (int i = 0; i < input.length(); i++) {
+      char c = input.charAt(i);
+
+      if (Character.isLetter(c)) {
+        if (nameIndex < 0) {
+          nameIndex = i;
+        }
+
+      } else if (Character.isDigit(c)) {
+        if (nameIndex < 0) {
+          sb.append(c);
+        }
+
+      } else {
+        if (nameIndex >= 0) {
+          String colName = input.substring(nameIndex, i);
+          String value = render(dataInfo, row, colName, dateRenderer, dateTimeRenderer);
+
+          if (!BeeUtils.isEmpty(value) && sb.indexOf(value) < 0) {
+            sb.append(value);
+          }
+
+          nameIndex = -1;
+        }
+
+        sb.append(c);
+      }
+    }
+
+    if (nameIndex >= 0) {
+      String colName = input.substring(nameIndex);
+      String value = render(dataInfo, row, colName, dateRenderer, dateTimeRenderer);
+
+      if (!BeeUtils.isEmpty(value) && sb.indexOf(value) < 0) {
+        sb.append(value);
+      }
+    }
+
+    return sb.toString();
+  }
+
+  private static String render(DataInfo dataInfo, IsRow row, String colName,
+      Function<HasDateValue, String> dateRenderer,
+      Function<HasDateValue, String> dateTimeRenderer) {
+
+    int i = dataInfo.getColumnIndex(colName);
+
+    if (BeeConst.isUndef(i)) {
+      logger.warning(dataInfo.getViewName(), "column not found", colName);
+      return null;
+
+    } else {
+      return render((i >= 0) ? dataInfo.getColumns().get(i) : null, row, i,
+          dateRenderer, dateTimeRenderer);
     }
   }
 

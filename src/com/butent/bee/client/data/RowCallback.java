@@ -27,4 +27,6 @@ public interface RowCallback extends RpcCallback<BeeRow> {
 
   default void onCancel() {
   }
+  default void onDeny() {
+  }
 }

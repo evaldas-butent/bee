@@ -1,49 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
- xmlns:ui="http://www.butent.com/ui" xmlns:w="http://www.butent.com/widget"
+        xmlns:ui="http://www.butent.com/ui"
 
- name="AdsTopics" viewName="AdsTopics" caption="=adsTopics" newRowPopup="true"
- disabledActions="delete">
- <g:columns>
-  <DataColumn name="Ordinal" visible="true" />
-  <DataColumn name="Name" visible="true" />
-  <DataColumn name="Visible" visible="true" />
+        name="AdsTopics" viewName="AdsTopics" caption="=adsTopics"
+        disabledActions="delete">
+  <g:columns>
+    <DataColumn name="Ordinal" visible="true" />
+    <DataColumn name="Name" visible="true" />
+    <DataColumn name="Visible" visible="true" />
 
-  <DataColumn name="BackgroundColor" visible="true"
-   updateMode="row">
-   <dynStyle>
-    <ui:inline>background-color: [row.BackgroundColor];
-     color:[row.Color];</ui:inline>
-    <ui:expression>row.BackgroundColor &amp;&amp; row.Color</ui:expression>
-   </dynStyle>
-   <dynStyle>
-    <ui:inline>color: [row.Color];</ui:inline>
-    <ui:expression>row.Color &amp;&amp; row.BackgroundColor == null</ui:expression>
-   </dynStyle>
-   <dynStyle>
-    <ui:inline>background-color: [row.BackgroundColor];</ui:inline>
-    <ui:expression>row.Color == null &amp;&amp; row.BackgroundColor</ui:expression>
-   </dynStyle>
-   <editor type="color" />
-  </DataColumn>
+    <DataColumn name="BackgroundColor" visible="true"
+                updateMode="row">
+      <dynStyle>
+        <ui:inline>background-color: [row.BackgroundColor];
+          color:[row.Color];
+        </ui:inline>
+        <ui:expression>row.BackgroundColor &amp;&amp; row.Color</ui:expression>
+      </dynStyle>
+      <dynStyle>
+        <ui:inline>color: [row.Color];</ui:inline>
+        <ui:expression>row.Color &amp;&amp; row.BackgroundColor == null</ui:expression>
+      </dynStyle>
+      <dynStyle>
+        <ui:inline>background-color: [row.BackgroundColor];</ui:inline>
+        <ui:expression>row.Color == null &amp;&amp; row.BackgroundColor</ui:expression>
+      </dynStyle>
+      <editor type="color" />
+    </DataColumn>
 
-  <DataColumn name="Color" visible="true" updateMode="row">
-   <dynStyle>
-    <ui:inline>background-color: [row.BackgroundColor];
-     color:[row.Color];</ui:inline>
-    <ui:expression>row.BackgroundColor &amp;&amp; row.Color</ui:expression>
-   </dynStyle>
-   <dynStyle>
-    <ui:inline>color: [row.Color];</ui:inline>
-    <ui:expression>row.Color &amp;&amp; row.BackgroundColor == null</ui:expression>
-   </dynStyle>
-   <dynStyle>
-    <ui:inline>background-color: [row.BackgroundColor];</ui:inline>
-    <ui:expression>row.Color == null &amp;&amp; row.BackgroundColor</ui:expression>
-   </dynStyle>
-   <editor type="color" />
-  </DataColumn>
+    <DataColumn name="Color" visible="true" updateMode="row">
+      <dynStyle>
+        <ui:inline>background-color: [row.BackgroundColor];
+          color:[row.Color];
+        </ui:inline>
+        <ui:expression>row.BackgroundColor &amp;&amp; row.Color</ui:expression>
+      </dynStyle>
+      <dynStyle>
+        <ui:inline>color: [row.Color];</ui:inline>
+        <ui:expression>row.Color &amp;&amp; row.BackgroundColor == null</ui:expression>
+      </dynStyle>
+      <dynStyle>
+        <ui:inline>background-color: [row.BackgroundColor];</ui:inline>
+        <ui:expression>row.Color == null &amp;&amp; row.BackgroundColor</ui:expression>
+      </dynStyle>
+      <editor type="color" />
+    </DataColumn>
 
- </g:columns>
+  </g:columns>
 
 </g:Grid>

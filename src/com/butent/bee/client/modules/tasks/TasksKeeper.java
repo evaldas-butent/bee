@@ -8,12 +8,9 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.NewsAggregator.HeadlineAccessor;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
@@ -25,7 +22,6 @@ import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -33,14 +29,12 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
@@ -50,7 +44,6 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -99,78 +92,72 @@ public final class TasksKeeper {
   }
 
   public static void extendTask(final long taskId, final DateTime finish) {
-    Queries.getRow(VIEW_TASKS, taskId, new RowCallback() {
-      @Override
-      public void onSuccess(final BeeRow row) {
-        final TaskDialog dialog = new TaskDialog(Localized.dictionary().crmTaskTermChange());
-        final String endId = dialog.addDateTime(Localized.dictionary().crmFinishDate(), true,
-            finish);
+    Queries.getRow(VIEW_TASKS, taskId, row -> {
+      final TaskDialog dialog = new TaskDialog(Localized.dictionary().crmTaskTermChange());
+      final String endId = dialog.addDateTime(Localized.dictionary().crmFinishDate(), true,
+          finish);
 
-        final String cid = dialog.addComment(false);
+      final String cid = dialog.addComment(false);
 
-        dialog.addAction(Localized.dictionary().crmTaskChangeTerm(), () -> {
-          DateTime newStart = Data.getDateTime(VIEW_TASKS, row, COL_START_TIME);
-          DateTime oldEnd = Data.getDateTime(VIEW_TASKS, row, COL_FINISH_TIME);
-          DateTime newEnd = dialog.getDateTime(endId);
+      dialog.addAction(Localized.dictionary().crmTaskChangeTerm(), () -> {
+        DateTime newStart = Data.getDateTime(VIEW_TASKS, row, COL_START_TIME);
+        DateTime oldEnd = Data.getDateTime(VIEW_TASKS, row, COL_FINISH_TIME);
+        DateTime newEnd = dialog.getDateTime(endId);
 
-          if (newEnd == null) {
-            Global.showError(Localized.dictionary().crmEnterFinishDate());
-            return;
+        if (newEnd == null) {
+          Global.showError(Localized.dictionary().crmEnterFinishDate());
+          return;
+        }
+
+        if (Objects.equals(newEnd, oldEnd)) {
+          Global.showError(Localized.dictionary().crmTermNotChanged());
+          return;
+        }
+
+        if (TimeUtils.isLeq(newEnd, newStart)) {
+          Global.showError(Localized.dictionary().crmFinishDateMustBeGreaterThanStart());
+          return;
+        }
+
+        DateTime now = TimeUtils.nowMinutes();
+        if (TimeUtils.isLess(newEnd, TimeUtils.nowMinutes())) {
+          Global.showError("Time travel not supported",
+              Lists.newArrayList(Localized.dictionary().crmFinishDateMustBeGreaterThan()
+                  + " " + Format.renderDateTime(now)));
+          return;
+        }
+
+        List<String> notes = new ArrayList<>();
+
+        ParameterList params = createArgs(SVC_EXTEND_TASK);
+        params.addQueryItem(VAR_TASK_ID, taskId);
+
+        if (!Objects.equals(newEnd, oldEnd)) {
+          params.addQueryItem(COL_FINISH_TIME, newEnd.getTime());
+          notes.add(TaskUtils.getUpdateNote(Localized.dictionary().crmFinishDate(),
+              Format.renderDateTime(oldEnd), Format.renderDateTime(newEnd)));
+        }
+
+        String comment = dialog.getComment(cid);
+        if (!BeeUtils.isEmpty(comment)) {
+          params.addDataItem(VAR_TASK_COMMENT, comment);
+        }
+
+        if (!notes.isEmpty()) {
+          params.addDataItem(VAR_TASK_NOTES, Codec.beeSerialize(notes));
+        }
+
+        BeeKeeper.getRpc().makeRequest(params, response -> {
+          if (Queries.checkRowResponse(SVC_EXTEND_TASK, VIEW_TASKS, response)) {
+            BeeRow updatedRow = BeeRow.restore(response.getResponseAsString());
+            RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, updatedRow);
           }
-
-          if (Objects.equals(newEnd, oldEnd)) {
-            Global.showError(Localized.dictionary().crmTermNotChanged());
-            return;
-          }
-
-          if (TimeUtils.isLeq(newEnd, newStart)) {
-            Global.showError(Localized.dictionary().crmFinishDateMustBeGreaterThanStart());
-            return;
-          }
-
-          DateTime now = TimeUtils.nowMinutes();
-          if (TimeUtils.isLess(newEnd, TimeUtils.nowMinutes())) {
-            Global.showError("Time travel not supported",
-                Lists.newArrayList(Localized.dictionary().crmFinishDateMustBeGreaterThan()
-                    + " " + Format.renderDateTime(now)));
-            return;
-          }
-
-          List<String> notes = new ArrayList<>();
-
-          ParameterList params = createArgs(SVC_EXTEND_TASK);
-          params.addQueryItem(VAR_TASK_ID, taskId);
-
-          if (!Objects.equals(newEnd, oldEnd)) {
-            params.addQueryItem(COL_FINISH_TIME, newEnd.getTime());
-            notes.add(TaskUtils.getUpdateNote(Localized.dictionary().crmFinishDate(),
-                Format.renderDateTime(oldEnd), Format.renderDateTime(newEnd)));
-          }
-
-          String comment = dialog.getComment(cid);
-          if (!BeeUtils.isEmpty(comment)) {
-            params.addDataItem(VAR_TASK_COMMENT, comment);
-          }
-
-          if (!notes.isEmpty()) {
-            params.addDataItem(VAR_TASK_NOTES, Codec.beeSerialize(notes));
-          }
-
-          BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-            @Override
-            public void onResponse(ResponseObject response) {
-              if (Queries.checkRowResponse(SVC_EXTEND_TASK, VIEW_TASKS, response)) {
-                BeeRow updatedRow = BeeRow.restore(response.getResponseAsString());
-                RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, updatedRow);
-              }
-            }
-          });
-
-          dialog.close();
         });
 
-        dialog.display(endId);
-      }
+        dialog.close();
+      });
+
+      dialog.display(endId);
     });
   }
 
@@ -228,57 +215,17 @@ public final class TasksKeeper {
           Long taskId = Data.getLong(event.getViewName(), event.getRow(), COL_TASK);
           RowEditor.open(VIEW_TASKS, taskId, event.getOpener());
         }
+
       } else if (event.isEditRow() && event.hasView(VIEW_TASKS)) {
-
-        int ownerIdx = Data.getColumnIndex(VIEW_TASKS, COL_OWNER);
-        int executorIdx = Data.getColumnIndex(VIEW_TASKS, COL_EXECUTOR);
-        int privateTaskIdx = Data.getColumnIndex(VIEW_TASKS, COL_PRIVATE_TASK);
-        Long userId = BeeKeeper.getUser().getUserId();
         IsRow row = event.getRow();
-        TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class, row.getInteger(
-            Data.getColumnIndex(VIEW_TASKS, COL_STATUS)));
+        TaskStatus status = row.getEnum(Data.getColumnIndex(VIEW_TASKS, COL_STATUS),
+            TaskStatus.class);
 
-        if (BeeUtils.unbox(row.getBoolean(privateTaskIdx))
-            && !BeeUtils.same(row.getProperty(COL_PRIVATE_TASK), COL_PRIVATE_TASK)) {
-
-          event.consume();
-
-          Filter filter =
-              Filter.and(Filter.equals(COL_TASK, row.getId()), Filter.equals(
-                  AdministrationConstants.COL_USER, userId));
-
-          Queries.getRowCount(VIEW_TASK_USERS, filter, new IntCallback() {
-
-            @Override
-            public void onSuccess(Integer result) {
-              boolean hasUser = false;
-
-              if (BeeUtils.isPositive(result)) {
-                hasUser = true;
-              }
-
-              if (Objects.equals(userId, row.getLong(ownerIdx))
-                  || Objects.equals(userId, row.getLong(executorIdx))) {
-                hasUser = true;
-              }
-
-              if (!hasUser) {
-                BeeKeeper.getScreen().notifySevere(Localized.dictionary().crmTaskPrivate());
-              } else {
-                row.setProperty(COL_PRIVATE_TASK, COL_PRIVATE_TASK);
-
-                String formName = status == TaskStatus.NOT_SCHEDULED
-                    ? FORM_NEW_TASK : event.getOptions();
-                RowEditor.openForm(formName, VIEW_TASKS, row, event.getOpener(), null);
-              }
-            }
-          });
-        } else if (status == TaskStatus.NOT_SCHEDULED && Objects.equals(event.getOptions(),
-            FORM_TASK)) {
-
+        if (status == TaskStatus.NOT_SCHEDULED && Objects.equals(event.getOptions(), FORM_TASK)) {
           event.consume();
           RowEditor.openForm(FORM_NEW_TASK, VIEW_TASKS, row, event.getOpener(), null);
         }
+
       } else if (event.isEditRow() && event.hasView(VIEW_TASK_FILES)) {
         event.consume();
 
@@ -288,6 +235,12 @@ public final class TasksKeeper {
         }
       }
     });
+
+    Long userId = BeeKeeper.getUser().getUserId();
+    if (DataUtils.isId(userId)) {
+      RowEditor.registerVisibilityFilter(VIEW_TASKS, TaskUtils.getTaskPrivacyFilter(userId),
+          Localized.dictionary().crmTaskPrivate());
+    }
 
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ASSIGNED,
         TasksGrid.getFeedFilterHandler(Feed.TASKS_ASSIGNED));
@@ -344,17 +297,14 @@ public final class TasksKeeper {
       params.addQueryItem(COL_RT_SCHEDULE_UNTIL, range.getMaxDays());
     }
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasResponse() && BeeUtils.isPositiveInt(response.getResponseAsString())) {
-          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
-          BeeKeeper.getScreen().notifyInfo(BeeUtils.joinWords(range, "scheduled",
-              response.getResponseAsString(), "tasks"));
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      if (response.hasResponse() && BeeUtils.isPositiveInt(response.getResponseAsString())) {
+        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
+        BeeKeeper.getScreen().notifyInfo(BeeUtils.joinWords(range, "scheduled",
+            response.getResponseAsString(), "tasks"));
 
-        } else {
-          BeeKeeper.getScreen().notifyWarning(range.toString(), "no tasks scheduled");
-        }
+      } else {
+        BeeKeeper.getScreen().notifyWarning(range.toString(), "no tasks scheduled");
       }
     });
   }
@@ -406,12 +356,8 @@ public final class TasksKeeper {
       return;
     }
 
-    Queries.getRow(viewName, id, new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow result) {
-        RowUpdateEvent.fire(BeeKeeper.getBus(), viewName, result);
-      }
-    });
+    Queries.getRow(viewName, id,
+        result -> RowUpdateEvent.fire(BeeKeeper.getBus(), viewName, result));
   }
 
   private TasksKeeper() {

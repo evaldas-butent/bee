@@ -17,7 +17,6 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.DataView;
-import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
 import com.butent.bee.client.view.add.HasAddStartHandlers;
 import com.butent.bee.client.view.add.HasReadyForInsertHandlers;
@@ -43,10 +42,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Contains necessary methods for form implementing classes.
- */
-
 public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEvent.Handler,
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers,
     HasDimensions, HasState, DndWidget, EditEndEvent.Handler, RequiresResize, Printable,
@@ -67,27 +62,13 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void editRow(IsRow rowValue, Scheduler.ScheduledCommand focusCommand);
 
-  /**
-   * Focus the first widget on this form view. If there some widgets where handling keyboard events,
-   * the first widget usually is first element of DOM or having lower tab index.
-   * 
-   * 
-   */
   void focus();
 
-  /**
-   * Focus the widget on this form view.
-   * 
-   * @param source name of source where related focusable widget.
-   */
   boolean focus(String source);
 
   int flush();
 
-  default GridView getBackingGrid() {
-    return (getViewPresenter() instanceof HasGridView)
-        ? ((HasGridView) getViewPresenter()).getGridView() : null;
-  }
+  GridView getBackingGrid();
 
   Boolean getBooleanValue(String source);
 
@@ -95,9 +76,11 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   Collection<RowChildren> getChildrenForUpdate();
 
-  default String getContainerStyleName() {
+  default String getContainerClassName() {
     return BeeConst.CSS_CLASS_PREFIX + "form-" + BeeUtils.trim(getFormName()) + "-container";
   }
+
+  String getContainerStyle();
 
   DateTime getDateTimeValue(String source);
 
@@ -174,6 +157,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   void saveChanges(RowCallback callback);
 
   void setAdding(boolean adding);
+
+  void setBackingGridId(String backingGridId);
 
   void setCaption(String caption);
 

@@ -11,13 +11,11 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -26,7 +24,6 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -94,22 +91,19 @@ class TransportationOrderForm extends PrintFormInterceptor implements ClickHandl
     ParameterList args = TransportHandler.createArgs(SVC_GET_UNASSIGNED_CARGOS);
     args.addDataItem(COL_ORDER, orderId);
 
-    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasErrors()) {
-          response.notify(form);
-          return;
-        }
-        String[] cargos = Codec.beeDeserializeCollection(response.getResponseAsString());
-
-        if (ArrayUtils.isEmpty(cargos)) {
-          form.notifyWarning(Localized.dictionary()
-              .dataNotAvailable(Localized.dictionary().cargos()));
-          return;
-        }
-        TripSelector.select(cargos, null, form.getElement());
+    BeeKeeper.getRpc().makePostRequest(args, response -> {
+      if (response.hasErrors()) {
+        response.notify(form);
+        return;
       }
+      String[] cargos = Codec.beeDeserializeCollection(response.getResponseAsString());
+
+      if (ArrayUtils.isEmpty(cargos)) {
+        form.notifyWarning(Localized.dictionary()
+            .dataNotAvailable(Localized.dictionary().cargos()));
+        return;
+      }
+      TripSelector.select(cargos, null, form.getElement());
     });
   }
 
@@ -184,7 +178,7 @@ class TransportationOrderForm extends PrintFormInterceptor implements ClickHandl
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow row) {
     form.getViewPresenter().getHeader().clearCommandPanel();
   }
 
@@ -192,40 +186,37 @@ class TransportationOrderForm extends PrintFormInterceptor implements ClickHandl
     ParameterList args = TransportHandler.createArgs(SVC_GET_CREDIT_INFO);
     args.addDataItem(ClassifierConstants.COL_COMPANY, customer);
 
-    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(getFormView());
+    BeeKeeper.getRpc().makePostRequest(args, response -> {
+      response.notify(getFormView());
 
-        if (response.hasErrors()) {
-          return;
+      if (response.hasErrors()) {
+        return;
+      }
+      Map<String, String> result = Codec.deserializeLinkedHashMap(response.getResponseAsString());
+
+      double limit = BeeUtils.toDouble(result.get(ClassifierConstants.COL_COMPANY_CREDIT_LIMIT));
+      double debt = BeeUtils.toDouble(result.get(TradeConstants.VAR_DEBT));
+      double overdue = BeeUtils.toDouble(result.get(TradeConstants.VAR_OVERDUE));
+      double income = BeeUtils.toDouble(result.get(VAR_INCOME));
+
+      if (overdue > 0 || (debt + income) > limit) {
+        String cap = result.get(ClassifierConstants.COL_COMPANY_NAME);
+        List<String> msgs = new ArrayList<>();
+
+        msgs.add(BeeUtils.join(": ", Localized.dictionary().creditLimit(),
+            BeeUtils.joinWords(limit, result.get(AdministrationConstants.COL_CURRENCY))));
+        msgs.add(BeeUtils.join(": ", Localized.dictionary().trdDebt(), debt));
+
+        if (overdue > 0) {
+          msgs.add(BeeUtils.join(": ", Localized.dictionary().trdOverdue(), overdue));
         }
-        Map<String, String> result = Codec.deserializeLinkedHashMap(response.getResponseAsString());
-
-        double limit = BeeUtils.toDouble(result.get(ClassifierConstants.COL_COMPANY_CREDIT_LIMIT));
-        double debt = BeeUtils.toDouble(result.get(TradeConstants.VAR_DEBT));
-        double overdue = BeeUtils.toDouble(result.get(TradeConstants.VAR_OVERDUE));
-        double income = BeeUtils.toDouble(result.get(VAR_INCOME));
-
-        if (overdue > 0 || (debt + income) > limit) {
-          String cap = result.get(ClassifierConstants.COL_COMPANY_NAME);
-          List<String> msgs = new ArrayList<>();
-
-          msgs.add(BeeUtils.join(": ", Localized.dictionary().creditLimit(),
-              BeeUtils.joinWords(limit, result.get(AdministrationConstants.COL_CURRENCY))));
-          msgs.add(BeeUtils.join(": ", Localized.dictionary().trdDebt(), debt));
-
-          if (overdue > 0) {
-            msgs.add(BeeUtils.join(": ", Localized.dictionary().trdOverdue(), overdue));
-          }
-          if (income > 0) {
-            msgs.add(BeeUtils.join(": ", Localized.dictionary().trOrders(), income));
-          }
-          Global.confirm(cap, null, msgs, Localized.dictionary().ok(),
-              Localized.dictionary().cancel(), () -> listener.fireEvent(event));
-        } else {
-          listener.fireEvent(event);
+        if (income > 0) {
+          msgs.add(BeeUtils.join(": ", Localized.dictionary().trOrders(), income));
         }
+        Global.confirm(cap, null, msgs, Localized.dictionary().ok(),
+            Localized.dictionary().cancel(), () -> listener.fireEvent(event));
+      } else {
+        listener.fireEvent(event);
       }
     });
   }
@@ -238,7 +229,7 @@ class TransportationOrderForm extends PrintFormInterceptor implements ClickHandl
           Global.confirm(Localized.dictionary().trCopyOrder(), () ->
               TransportUtils.copyOrderWithCargos(getActiveRowId(), Filter.equals(COL_ORDER,
                   getActiveRowId()), (newOrderId, newCargos) ->
-                  RowEditor.open(getViewName(), newOrderId, Opener.MODAL)))
+                  RowEditor.open(getViewName(), newOrderId)))
       );
     }
 

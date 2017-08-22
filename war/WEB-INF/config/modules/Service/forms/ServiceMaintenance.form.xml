@@ -25,7 +25,7 @@
         <TabbedPages class="flexible" resizable="false">
           <page>
             <text>=svcComments</text>
-            <FlowPanel name="MaintenanceComments" class="flex-horizontal"/>
+            <FlowPanel name="MaintenanceComments" class="flex-horizontal" data="MaintenanceComments"/>
           </page>
           <page>
             <text>=goods</text>
@@ -270,7 +270,4 @@
       </FlowPanel>
     </center>
   </SplitPanel>
-  <f:rowMessage>
-    <ui:expression>row.MaintenanceNumber</ui:expression>
-  </f:rowMessage>
 </f:Form>

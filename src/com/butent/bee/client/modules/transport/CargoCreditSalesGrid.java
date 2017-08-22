@@ -12,7 +12,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -20,7 +19,6 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.Opener;
@@ -36,7 +34,6 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -146,7 +143,7 @@ public class CargoCreditSalesGrid extends AbstractGridInterceptor implements Cli
           }
         }
         RowFactory.createRow(FORM_NEW_CARGO_CREDIT_INVOICE, null, purchaseInfo, newRow,
-            Modality.ENABLED, null,
+            Opener.MODAL,
             new AbstractFormInterceptor() {
               @Override
               public FormInterceptor getInstance() {
@@ -199,8 +196,7 @@ public class CargoCreditSalesGrid extends AbstractGridInterceptor implements Cli
                   creditAmount = (InputNumber) w;
                 }
               }
-            }, null,
-            new RowCallback() {
+            }, new RowCallback() {
               @Override
               public void onCancel() {
                 mainItem = null;
@@ -221,17 +217,14 @@ public class CargoCreditSalesGrid extends AbstractGridInterceptor implements Cli
                 if (creditAmount != null && BeeUtils.isPositive(creditAmount.getNumber())) {
                   args.addDataItem(COL_TRADE_AMOUNT, creditAmount.getNumber());
                 }
-                BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-                  @Override
-                  public void onResponse(ResponseObject response) {
-                    response.notify(presenter.getGridView());
+                BeeKeeper.getRpc().makePostRequest(args, response -> {
+                  response.notify(presenter.getGridView());
 
-                    if (!response.hasErrors()) {
-                      Data.onViewChange(presenter.getViewName(),
-                          DataChangeEvent.CANCEL_RESET_REFRESH);
-                      RowEditor.openForm(FORM_CARGO_PURCHASE_INVOICE, purchaseInfo,
-                          Filter.compareId(row.getId()), Opener.MODAL);
-                    }
+                  if (!response.hasErrors()) {
+                    Data.onViewChange(presenter.getViewName(),
+                        DataChangeEvent.CANCEL_RESET_REFRESH);
+                    RowEditor.openForm(FORM_CARGO_PURCHASE_INVOICE, purchaseInfo,
+                        Filter.compareId(row.getId()));
                   }
                 });
                 onCancel();

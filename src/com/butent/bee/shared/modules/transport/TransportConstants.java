@@ -432,6 +432,7 @@ public final class TransportConstants {
   public static final String PRM_CARGO_SERVICE = "CargoService";
   public static final String PRM_EXCLUDE_VAT = "ExcludeVAT";
   public static final String PRM_SELF_SERVICE_ROLE = "SelfServiceRole";
+  public static final String PRM_SELF_SERVICE_RESPONSIBILITY = "SelfServiceResponsibility";
 
   public static final String PRM_CHART_FILTER = "ChartFilter";
 
@@ -1019,6 +1020,10 @@ public final class TransportConstants {
   public static final String PROP_TRANSPORT_GROUPS = "TransportGroups";
   public static final String PROP_VEHICLE_GROUPS = "VehicleGroups";
   public static final String PROP_VEHICLE_MANAGER = "VehicleManager";
+
+  public static final String PROP_MIN_UNLOADING_DATE = "MinUnloadingDate";
+  public static final String PROP_INCOMES_COMMITED = "IncomesCommited";
+  public static final String PROP_EXPENSES_COMMITED = "ExpensesCommited";
 
   public static final String ALS_TRIP_DATE = "TripDate";
   public static final String ALS_ORDER_DATE = "OrderDate";

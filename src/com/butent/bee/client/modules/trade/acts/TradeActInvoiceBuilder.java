@@ -9,12 +9,6 @@ import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -26,7 +20,6 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.ClientDefaults;
@@ -45,7 +38,6 @@ import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
@@ -57,7 +49,6 @@ import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -90,7 +81,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
 
 public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     SelectorEvent.Handler {
@@ -539,17 +529,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     if (header != null && !header.hasCommands()) {
       if (commandCompose == null) {
         commandCompose =
-            new Button(Localized.dictionary().taInvoiceCompose(), new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent event) {
-                ClassifierKeeper.getHolidays(new Consumer<Set<Integer>>() {
-                  @Override
-                  public void accept(Set<Integer> input) {
-                    doCompose(input);
-                  }
-                });
-              }
-            });
+            new Button(Localized.dictionary().taInvoiceCompose(),
+                event -> ClassifierKeeper.getHolidays(this::doCompose));
 
         commandCompose.addStyleName(STYLE_COMMAND_COMPOSE);
         commandCompose.addStyleName(STYLE_COMMAND_DISABLED);
@@ -558,12 +539,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       header.addCommandItem(commandCompose);
 
       if (commandSave == null) {
-        commandSave = new Button(Localized.dictionary().taInvoiceSave(), new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            doSave();
-          }
-        });
+        commandSave = new Button(Localized.dictionary().taInvoiceSave(), event -> doSave());
 
         commandSave.addStyleName(STYLE_COMMAND_SAVE);
         commandSave.addStyleName(STYLE_COMMAND_DISABLED);
@@ -600,173 +576,170 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     ParameterList params = TradeActKeeper.createArgs(SVC_GET_SERVICES_FOR_INVOICE);
     params.addQueryItem(COL_TRADE_ACT, DataUtils.buildIdList(actIds));
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        services.clear();
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      services.clear();
 
-        if (response.hasResponse(BeeRowSet.class)) {
-          BeeRowSet result = BeeRowSet.restore(response.getResponseAsString());
-          int actIndex = result.getColumnIndex(COL_TRADE_ACT);
+      if (response.hasResponse(BeeRowSet.class)) {
+        BeeRowSet result = BeeRowSet.restore(response.getResponseAsString());
+        int actIndex = result.getColumnIndex(COL_TRADE_ACT);
 
-          int dateFromIndex = result.getColumnIndex(COL_TA_SERVICE_FROM);
-          int dateToIndex = result.getColumnIndex(COL_TA_SERVICE_TO);
+        int dateFromIndex = result.getColumnIndex(COL_TA_SERVICE_FROM);
+        int dateToIndex = result.getColumnIndex(COL_TA_SERVICE_TO);
 
-          int timeUnitIndex = result.getColumnIndex(COL_TIME_UNIT);
-          int qtyIndex = result.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+        int timeUnitIndex = result.getColumnIndex(COL_TIME_UNIT);
+        int qtyIndex = result.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
 
-          int tariffIndex = result.getColumnIndex(COL_TA_SERVICE_TARIFF);
-          int priceIndex = result.getColumnIndex(COL_TRADE_ITEM_PRICE);
-          int priceScale = result.getColumn(COL_TRADE_ITEM_PRICE).getScale();
+        int tariffIndex = result.getColumnIndex(COL_TA_SERVICE_TARIFF);
+        int priceIndex = result.getColumnIndex(COL_TRADE_ITEM_PRICE);
+        int priceScale = result.getColumn(COL_TRADE_ITEM_PRICE).getScale();
 
-          int factorIndex = result.getColumnIndex(COL_TA_SERVICE_FACTOR);
-          int factorScale = result.getColumn(COL_TA_SERVICE_FACTOR).getScale();
+        int factorIndex = result.getColumnIndex(COL_TA_SERVICE_FACTOR);
+        int factorScale = result.getColumn(COL_TA_SERVICE_FACTOR).getScale();
 
-          int dpwIndex = result.getColumnIndex(COL_TA_SERVICE_DAYS);
-          int minTermIndex = result.getColumnIndex(COL_TA_SERVICE_MIN);
+        int dpwIndex = result.getColumnIndex(COL_TA_SERVICE_DAYS);
+        int minTermIndex = result.getColumnIndex(COL_TA_SERVICE_MIN);
 
-          int discountIndex = result.getColumnIndex(COL_TRADE_DISCOUNT);
+        int discountIndex = result.getColumnIndex(COL_TRADE_DISCOUNT);
 
-          int itemVatIndex = result.getColumnIndex(ALS_ITEM_VAT);
-          int itemVatPercentIndex = result.getColumnIndex(ALS_ITEM_VAT_PERCENT);
+        int itemVatIndex = result.getColumnIndex(ALS_ITEM_VAT);
+        int itemVatPercentIndex = result.getColumnIndex(ALS_ITEM_VAT_PERCENT);
 
-          int vatIndex = result.getColumnIndex(COL_TRADE_VAT);
-          int vatIsPercentIndex = result.getColumnIndex(COL_TRADE_VAT_PERC);
+        int vatIndex = result.getColumnIndex(COL_TRADE_VAT);
+        int vatIsPercentIndex = result.getColumnIndex(COL_TRADE_VAT_PERC);
 
-          Act act = null;
+        Act act = null;
 
-          for (BeeRow row : result) {
-            long actId = row.getLong(actIndex);
-            if (act == null || act.id() != actId) {
-              act = findAct(actId);
-              if (act == null) {
-                continue;
-              }
-            }
-
-            TradeActTimeUnit tu = EnumUtils.getEnumByIndex(TradeActTimeUnit.class,
-                row.getInteger(timeUnitIndex));
-
-            JustDate dateFrom = row.getDate(dateFromIndex);
-            JustDate dateTo = row.getDate(dateToIndex);
-
-            Range<DateTime> serviceRange = TradeActUtils.createServiceRange(dateFrom, dateTo, tu,
-                builderRange, act.range);
-
-            if (serviceRange == null) {
+        for (BeeRow row : result) {
+          long actId = row.getLong(actIndex);
+          if (act == null || act.id() != actId) {
+            act = findAct(actId);
+            if (act == null) {
               continue;
             }
-
-            List<Range<DateTime>> invoiceRanges = new ArrayList<>();
-
-            List<Integer> periods = BeeUtils.toInts(row.getProperty(PRP_INVOICE_PERIODS));
-            if (periods.size() >= 2) {
-              for (int i = 0; i < periods.size() - 1; i += 2) {
-                JustDate from = new JustDate(periods.get(i));
-                JustDate to = new JustDate(periods.get(i + 1));
-
-                invoiceRanges.add(TradeActUtils.createRange(from, to));
-              }
-            }
-
-            List<Range<DateTime>> ranges = buildRanges(serviceRange, invoiceRanges, tu);
-            if (ranges.isEmpty()) {
-              continue;
-            }
-
-            Service svc = new Service(row, tu);
-
-            svc.quantity = row.getDouble(qtyIndex);
-
-            svc.tariff = row.getDouble(tariffIndex);
-            svc.price = row.getDouble(priceIndex);
-
-            if (BeeUtils.isPositive(svc.tariff)) {
-              Double p = TradeActUtils.calculateServicePrice(svc.price, dateTo, act.itemTotal(),
-                  svc.tariff, priceScale);
-              if (BeeUtils.isPositive(p)) {
-                svc.price = p;
-              }
-            }
-
-            Double factor = row.getDouble(factorIndex);
-            Integer dpw = row.getInteger(dpwIndex);
-
-            svc.minTerm = row.getInteger(minTermIndex);
-
-            if (tu == TradeActTimeUnit.DAY && BeeUtils.isPositive(svc.minTerm)) {
-              if (dateFrom == null) {
-                svc.minTermStart = TradeActUtils.getLower(act.range);
-              } else {
-                svc.minTermStart = TimeUtils.startOfDay(dateFrom);
-              }
-            }
-
-            Double discount = row.getDouble(discountIndex);
-
-            for (Range<DateTime> r : ranges) {
-              if (tu == null) {
-                svc.add(r, factor, dpw, discount);
-
-              } else {
-                switch (tu) {
-                  case DAY:
-                    if (TradeActUtils.validDpw(dpw)) {
-                      int days = TradeActUtils.countServiceDays(r, holidays, dpw);
-
-                      if (days > 0) {
-                        double df = days;
-                        if (BeeUtils.isPositive(factor)) {
-                          df *= factor;
-                          df = BeeUtils.round(df, factorScale);
-                        }
-
-                        svc.add(r, df, dpw, discount);
-                      }
-
-                    } else {
-                      svc.add(r, factor, dpw, discount);
-                    }
-                    break;
-
-                  case MONTH:
-                    double mf = TradeActUtils.getMonthFactor(r, holidays);
-
-                    if (BeeUtils.isPositive(mf)) {
-                      if (BeeUtils.isPositive(factor)) {
-                        mf *= factor;
-                      }
-                      mf = BeeUtils.round(mf, factorScale);
-
-                      svc.add(r, mf, dpw, discount);
-                    }
-                    break;
-                }
-              }
-            }
-
-            if (svc.ranges.isEmpty()) {
-              continue;
-            }
-
-            Double vat = row.getDouble(vatIndex);
-            if (BeeUtils.isPositive(vat) && !row.isNull(vatIsPercentIndex)) {
-              svc.vatPercent = vat;
-            } else if (!row.isNull(itemVatIndex)) {
-              svc.vatPercent = BeeUtils.positive(row.getDouble(itemVatPercentIndex), defVatPercent);
-            }
-
-            svc.currency = act.currency;
-
-            services.add(svc);
           }
 
-          renderServices(holidays);
+          TradeActTimeUnit tu = EnumUtils.getEnumByIndex(TradeActTimeUnit.class,
+              row.getInteger(timeUnitIndex));
 
-        } else {
-          getServiceContainer().clear();
-          getFormView().notifyWarning(Localized.dictionary().noData());
+          JustDate dateFrom = row.getDate(dateFromIndex);
+          JustDate dateTo = row.getDate(dateToIndex);
+
+          Range<DateTime> serviceRange = TradeActUtils.createServiceRange(dateFrom, dateTo, tu,
+              builderRange, act.range);
+
+          if (serviceRange == null) {
+            continue;
+          }
+
+          List<Range<DateTime>> invoiceRanges = new ArrayList<>();
+
+          List<Integer> periods = BeeUtils.toInts(row.getProperty(PRP_INVOICE_PERIODS));
+          if (periods.size() >= 2) {
+            for (int i = 0; i < periods.size() - 1; i += 2) {
+              JustDate from = new JustDate(periods.get(i));
+              JustDate to = new JustDate(periods.get(i + 1));
+
+              invoiceRanges.add(TradeActUtils.createRange(from, to));
+            }
+          }
+
+          List<Range<DateTime>> ranges = buildRanges(serviceRange, invoiceRanges, tu);
+          if (ranges.isEmpty()) {
+            continue;
+          }
+
+          Service svc = new Service(row, tu);
+
+          svc.quantity = row.getDouble(qtyIndex);
+
+          svc.tariff = row.getDouble(tariffIndex);
+          svc.price = row.getDouble(priceIndex);
+
+          if (BeeUtils.isPositive(svc.tariff)) {
+            Double p = TradeActUtils.calculateServicePrice(svc.price, dateTo, act.itemTotal(),
+                svc.tariff, priceScale);
+            if (BeeUtils.isPositive(p)) {
+              svc.price = p;
+            }
+          }
+
+          Double factor = row.getDouble(factorIndex);
+          Integer dpw = row.getInteger(dpwIndex);
+
+          svc.minTerm = row.getInteger(minTermIndex);
+
+          if (tu == TradeActTimeUnit.DAY && BeeUtils.isPositive(svc.minTerm)) {
+            if (dateFrom == null) {
+              svc.minTermStart = TradeActUtils.getLower(act.range);
+            } else {
+              svc.minTermStart = TimeUtils.startOfDay(dateFrom);
+            }
+          }
+
+          Double discount = row.getDouble(discountIndex);
+
+          for (Range<DateTime> r : ranges) {
+            if (tu == null) {
+              svc.add(r, factor, dpw, discount);
+
+            } else {
+              switch (tu) {
+                case DAY:
+                  if (TradeActUtils.validDpw(dpw)) {
+                    int days = TradeActUtils.countServiceDays(r, holidays, dpw);
+
+                    if (days > 0) {
+                      double df = days;
+                      if (BeeUtils.isPositive(factor)) {
+                        df *= factor;
+                        df = BeeUtils.round(df, factorScale);
+                      }
+
+                      svc.add(r, df, dpw, discount);
+                    }
+
+                  } else {
+                    svc.add(r, factor, dpw, discount);
+                  }
+                  break;
+
+                case MONTH:
+                  double mf = TradeActUtils.getMonthFactor(r, holidays);
+
+                  if (BeeUtils.isPositive(mf)) {
+                    if (BeeUtils.isPositive(factor)) {
+                      mf *= factor;
+                    }
+                    mf = BeeUtils.round(mf, factorScale);
+
+                    svc.add(r, mf, dpw, discount);
+                  }
+                  break;
+              }
+            }
+          }
+
+          if (svc.ranges.isEmpty()) {
+            continue;
+          }
+
+          Double vat = row.getDouble(vatIndex);
+          if (BeeUtils.isPositive(vat) && !row.isNull(vatIsPercentIndex)) {
+            svc.vatPercent = vat;
+          } else if (!row.isNull(itemVatIndex)) {
+            svc.vatPercent = BeeUtils.positive(row.getDouble(itemVatPercentIndex), defVatPercent);
+          }
+
+          svc.currency = act.currency;
+
+          services.add(svc);
         }
+
+        renderServices(holidays);
+
+      } else {
+        getServiceContainer().clear();
+        getFormView().notifyWarning(Localized.dictionary().noData());
       }
     });
   }
@@ -863,18 +836,15 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     params.addDataItem(sales.getViewName(), sales.serialize());
     params.addDataItem(saleItems.getViewName(), saleItems.serialize());
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasResponse(BeeRow.class)) {
-          BeeRow result = BeeRow.restore(response.getResponseAsString());
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      if (response.hasResponse(BeeRow.class)) {
+        BeeRow result = BeeRow.restore(response.getResponseAsString());
 
-          RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_SALES, result, null);
-          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_INVOICES);
+        RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_SALES, result, null);
+        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_INVOICES);
 
-          refresh(false);
-          RowEditor.open(VIEW_SALES, result, Opener.MODAL);
-        }
+        refresh(false);
+        RowEditor.open(VIEW_SALES, result);
       }
     });
   }
@@ -1161,40 +1131,37 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     params.addQueryItem(COL_TA_COMPANY, company);
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasResponse(BeeRowSet.class)) {
-          BeeRowSet rowSet = BeeRowSet.restore(response.getResponseAsString());
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      if (response.hasResponse(BeeRowSet.class)) {
+        BeeRowSet rowSet = BeeRowSet.restore(response.getResponseAsString());
 
-          int dateIndex = rowSet.getColumnIndex(COL_TA_DATE);
-          int untilIndex = rowSet.getColumnIndex(COL_TA_UNTIL);
+        int dateIndex = rowSet.getColumnIndex(COL_TA_DATE);
+        int untilIndex = rowSet.getColumnIndex(COL_TA_UNTIL);
 
-          int currencyIndex = rowSet.getColumnIndex(COL_TA_CURRENCY);
-          int currencyNameIndex = rowSet.getColumnIndex(ALS_CURRENCY_NAME);
+        int currencyIndex = rowSet.getColumnIndex(COL_TA_CURRENCY);
+        int currencyNameIndex = rowSet.getColumnIndex(ALS_CURRENCY_NAME);
 
-          acts.clear();
-          for (BeeRow row : rowSet) {
-            Range<DateTime> range = TradeActUtils.createRange(row.getDateTime(dateIndex),
-                row.getDateTime(untilIndex));
+        acts.clear();
+        for (BeeRow row : rowSet) {
+          Range<DateTime> range = TradeActUtils.createRange(row.getDateTime(dateIndex),
+              row.getDateTime(untilIndex));
 
-            Long currency = row.getLong(currencyIndex);
-            String currencyName = row.getString(currencyNameIndex);
+          Long currency = row.getLong(currencyIndex);
+          String currencyName = row.getString(currencyNameIndex);
 
-            Act act = new Act(row, range, currency, currencyName);
-            acts.add(act);
-          }
-
-          String vatPerc = rowSet.getTableProperty(PRM_VAT_PERCENT);
-          if (!BeeUtils.isEmpty(vatPerc)) {
-            defVatPercent = BeeUtils.toDoubleOrNull(vatPerc);
-          }
-
-          renderActs();
-
-        } else if (notify) {
-          getFormView().notifyWarning(Localized.dictionary().noData());
+          Act act = new Act(row, range, currency, currencyName);
+          acts.add(act);
         }
+
+        String vatPerc = rowSet.getTableProperty(PRM_VAT_PERCENT);
+        if (!BeeUtils.isEmpty(vatPerc)) {
+          defVatPercent = BeeUtils.toDoubleOrNull(vatPerc);
+        }
+
+        renderActs();
+
+      } else if (notify) {
+        getFormView().notifyWarning(Localized.dictionary().noData());
       }
     });
   }
@@ -1233,22 +1200,19 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       Toggle toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
           STYLE_ACT_TOGGLE_WIDGET, false);
 
-      toggle.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          if (event.getSource() instanceof Toggle) {
-            boolean checked = ((Toggle) event.getSource()).isChecked();
+      toggle.addClickHandler(event -> {
+        if (event.getSource() instanceof Toggle) {
+          boolean checked = ((Toggle) event.getSource()).isChecked();
 
-            Collection<Toggle> toggles = UiHelper.getChildren(table, Toggle.class);
-            for (Toggle t : toggles) {
-              if (t.isChecked() != checked) {
-                t.setChecked(checked);
-                onToggle(t, STYLE_ACT_SELECTED);
-              }
+          Collection<Toggle> toggles = UiHelper.getChildren(table, Toggle.class);
+          for (Toggle t : toggles) {
+            if (t.isChecked() != checked) {
+              t.setChecked(checked);
+              onToggle(t, STYLE_ACT_SELECTED);
             }
-
-            commandCompose.setStyleName(STYLE_COMMAND_DISABLED, !checked);
           }
+
+          commandCompose.setStyleName(STYLE_COMMAND_DISABLED, !checked);
         }
       });
 
@@ -1296,16 +1260,13 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         Toggle toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
             STYLE_ACT_TOGGLE_WIDGET, false);
 
-        toggle.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            if (event.getSource() instanceof Toggle) {
-              onToggle((Toggle) event.getSource(), STYLE_ACT_SELECTED);
+        toggle.addClickHandler(event -> {
+          if (event.getSource() instanceof Toggle) {
+            onToggle((Toggle) event.getSource(), STYLE_ACT_SELECTED);
 
-              commandCompose.setStyleName(STYLE_COMMAND_DISABLED,
-                  !Selectors.contains(table.getElement(),
-                      Selectors.classSelector(STYLE_ACT_SELECTED)));
-            }
+            commandCompose.setStyleName(STYLE_COMMAND_DISABLED,
+                !Selectors.contains(table.getElement(),
+                    Selectors.classSelector(STYLE_ACT_SELECTED)));
           }
         });
 
@@ -1349,20 +1310,17 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       r++;
     }
 
-    table.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Element target = EventUtils.getEventTargetElement(event);
-        TableCellElement cell = DomUtils.getParentCell(target, true);
+    table.addClickHandler(event -> {
+      Element target = EventUtils.getEventTargetElement(event);
+      TableCellElement cell = DomUtils.getParentCell(target, true);
 
-        if (cell != null
-            && (cell.hasClassName(STYLE_ACT_ID_PREFIX + STYLE_CELL_SUFFIX)
-            || cell.hasClassName(STYLE_ACT_NUMBER_PREFIX + STYLE_CELL_SUFFIX))) {
+      if (cell != null
+          && (cell.hasClassName(STYLE_ACT_ID_PREFIX + STYLE_CELL_SUFFIX)
+          || cell.hasClassName(STYLE_ACT_NUMBER_PREFIX + STYLE_CELL_SUFFIX))) {
 
-          long id = DomUtils.getDataIndexLong(DomUtils.getParentRow(cell, false));
-          if (DataUtils.isId(id)) {
-            RowEditor.open(VIEW_TRADE_ACTS, id, Opener.MODAL);
-          }
+        long id = DomUtils.getDataIndexLong(DomUtils.getParentRow(cell, false));
+        if (DataUtils.isId(id)) {
+          RowEditor.open(VIEW_TRADE_ACTS, id);
         }
       }
     });
@@ -1395,22 +1353,19 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     Toggle toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
         STYLE_SVC_TOGGLE_WIDGET, false);
 
-    toggle.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (event.getSource() instanceof Toggle) {
-          boolean checked = ((Toggle) event.getSource()).isChecked();
+    toggle.addClickHandler(event -> {
+      if (event.getSource() instanceof Toggle) {
+        boolean checked = ((Toggle) event.getSource()).isChecked();
 
-          Collection<Toggle> toggles = UiHelper.getChildren(table, Toggle.class);
-          for (Toggle t : toggles) {
-            if (t.isChecked() != checked) {
-              t.setChecked(checked);
-              onToggle(t, STYLE_SVC_SELECTED);
-            }
+        Collection<Toggle> toggles = UiHelper.getChildren(table, Toggle.class);
+        for (Toggle t : toggles) {
+          if (t.isChecked() != checked) {
+            t.setChecked(checked);
+            onToggle(t, STYLE_SVC_SELECTED);
           }
-
-          commandSave.setStyleName(STYLE_COMMAND_DISABLED, !checked);
         }
+
+        commandSave.setStyleName(STYLE_COMMAND_DISABLED, !checked);
       }
     });
 
@@ -1480,16 +1435,13 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
             STYLE_SVC_TOGGLE_WIDGET, false);
 
-        toggle.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            if (event.getSource() instanceof Toggle) {
-              onToggle((Toggle) event.getSource(), STYLE_SVC_SELECTED);
+        toggle.addClickHandler(event -> {
+          if (event.getSource() instanceof Toggle) {
+            onToggle((Toggle) event.getSource(), STYLE_SVC_SELECTED);
 
-              commandSave.setStyleName(STYLE_COMMAND_DISABLED,
-                  !Selectors.contains(table.getElement(),
-                      Selectors.classSelector(STYLE_SVC_SELECTED)));
-            }
+            commandSave.setStyleName(STYLE_COMMAND_DISABLED,
+                !Selectors.contains(table.getElement(),
+                    Selectors.classSelector(STYLE_SVC_SELECTED)));
           }
         });
 
@@ -1572,32 +1524,29 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     table.getRowFormatter().addStyleName(r, STYLE_SVC_FOOTER);
 
-    table.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Element target = EventUtils.getEventTargetElement(event);
-        TableCellElement cell = DomUtils.getParentCell(target, true);
+    table.addClickHandler(event -> {
+      Element target = EventUtils.getEventTargetElement(event);
+      TableCellElement cell = DomUtils.getParentCell(target, true);
 
-        if (cell != null
-            && (cell.hasClassName(STYLE_SVC_ACT_PREFIX + STYLE_CELL_SUFFIX)
-            || cell.hasClassName(STYLE_SVC_ITEM_PREFIX + STYLE_CELL_SUFFIX))) {
+      if (cell != null
+          && (cell.hasClassName(STYLE_SVC_ACT_PREFIX + STYLE_CELL_SUFFIX)
+          || cell.hasClassName(STYLE_SVC_ITEM_PREFIX + STYLE_CELL_SUFFIX))) {
 
-          Service svc = findService(cell);
+        Service svc = findService(cell);
 
-          if (svc != null) {
-            String viewName;
-            int index;
+        if (svc != null) {
+          String viewName;
+          int index;
 
-            if (cell.hasClassName(STYLE_SVC_ITEM_PREFIX + STYLE_CELL_SUFFIX)) {
-              viewName = VIEW_ITEMS;
-              index = itemIndex;
-            } else {
-              viewName = VIEW_TRADE_ACTS;
-              index = actIndex;
-            }
-
-            RowEditor.open(viewName, svc.row.getLong(index), Opener.MODAL);
+          if (cell.hasClassName(STYLE_SVC_ITEM_PREFIX + STYLE_CELL_SUFFIX)) {
+            viewName = VIEW_ITEMS;
+            index = itemIndex;
+          } else {
+            viewName = VIEW_TRADE_ACTS;
+            index = actIndex;
           }
+
+          RowEditor.open(viewName, svc.row.getLong(index));
         }
       }
     });
@@ -1618,26 +1567,23 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       widget.setValue(initialValue);
     }
 
-    widget.addValueChangeHandler(new ValueChangeHandler<String>() {
-      @Override
-      public void onValueChange(ValueChangeEvent<String> event) {
-        if (event.getSource() instanceof InputNumber) {
-          InputNumber source = (InputNumber) event.getSource();
-          Double value = source.getNumber();
+    widget.addValueChangeHandler(event -> {
+      if (event.getSource() instanceof InputNumber) {
+        InputNumber source = (InputNumber) event.getSource();
+        Double value = source.getNumber();
 
-          TableRowElement rowElement = DomUtils.getParentRow(source.getElement(), false);
-          Long svcId = DomUtils.getDataPropertyLong(rowElement, KEY_SERVICE_ID);
-          Integer idx = DomUtils.getDataPropertyInt(rowElement, KEY_RANGE_INDEX);
+        TableRowElement rowElement = DomUtils.getParentRow(source.getElement(), false);
+        Long svcId = DomUtils.getDataPropertyLong(rowElement, KEY_SERVICE_ID);
+        Integer idx = DomUtils.getDataPropertyInt(rowElement, KEY_RANGE_INDEX);
 
-          if (DataUtils.isId(svcId) && idx != null) {
-            Service service = findService(svcId);
+        if (DataUtils.isId(svcId) && idx != null) {
+          Service service = findService(svcId);
 
-            if (service != null && !Objects.equals(service.discounts.get(idx), value)) {
-              service.discounts.set(idx, value);
+          if (service != null && !Objects.equals(service.discounts.get(idx), value)) {
+            service.discounts.set(idx, value);
 
-              updateAmountCell(rowElement, service, idx);
-              refreshTotals();
-            }
+            updateAmountCell(rowElement, service, idx);
+            refreshTotals();
           }
         }
       }
@@ -1660,57 +1606,54 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       widget.deselect();
     }
 
-    widget.addChangeHandler(new ChangeHandler() {
-      @Override
-      public void onChange(ChangeEvent event) {
-        if (event.getSource() instanceof ListBox) {
-          ListBox source = (ListBox) event.getSource();
+    widget.addChangeHandler(event -> {
+      if (event.getSource() instanceof ListBox) {
+        ListBox source = (ListBox) event.getSource();
 
-          int index = source.getSelectedIndex();
-          if (index < 0) {
-            return;
-          }
-
-          TableRowElement rowElement = DomUtils.getParentRow(source.getElement(), false);
-          Long svcId = DomUtils.getDataPropertyLong(rowElement, KEY_SERVICE_ID);
-          Integer idx = DomUtils.getDataPropertyInt(rowElement, KEY_RANGE_INDEX);
-
-          if (!DataUtils.isId(svcId) || idx == null) {
-            return;
-          }
-
-          Service service = findService(svcId);
-          if (service == null) {
-            return;
-          }
-
-          int dpw = DPW_MIN + index;
-          if (Objects.equals(service.dpws.get(idx), dpw)) {
-            return;
-          }
-
-          double df = TradeActUtils.countServiceDays(service.ranges.get(idx), holidays, dpw);
-
-          service.dpws.set(idx, dpw);
-          service.factors.set(idx, df);
-
-          Element mtc = Selectors.getElementByClassName(rowElement, STYLE_SVC_MIN_TERM_CELL);
-          if (mtc != null) {
-            if (service.minTermWarn(idx, holidays)) {
-              mtc.addClassName(STYLE_SVC_MIN_TERM_WARN);
-            } else {
-              mtc.removeClassName(STYLE_SVC_MIN_TERM_WARN);
-            }
-          }
-
-          Element input = Selectors.getElementByClassName(rowElement, STYLE_SVC_FACTOR_WIDGET);
-          if (InputElement.is(input)) {
-            InputElement.as(input).setValue(BeeUtils.toString(df));
-          }
-
-          updateAmountCell(rowElement, service, idx);
-          refreshTotals();
+        int index = source.getSelectedIndex();
+        if (index < 0) {
+          return;
         }
+
+        TableRowElement rowElement = DomUtils.getParentRow(source.getElement(), false);
+        Long svcId = DomUtils.getDataPropertyLong(rowElement, KEY_SERVICE_ID);
+        Integer idx = DomUtils.getDataPropertyInt(rowElement, KEY_RANGE_INDEX);
+
+        if (!DataUtils.isId(svcId) || idx == null) {
+          return;
+        }
+
+        Service service = findService(svcId);
+        if (service == null) {
+          return;
+        }
+
+        int dpw = DPW_MIN + index;
+        if (Objects.equals(service.dpws.get(idx), dpw)) {
+          return;
+        }
+
+        double df = TradeActUtils.countServiceDays(service.ranges.get(idx), holidays, dpw);
+
+        service.dpws.set(idx, dpw);
+        service.factors.set(idx, df);
+
+        Element mtc = Selectors.getElementByClassName(rowElement, STYLE_SVC_MIN_TERM_CELL);
+        if (mtc != null) {
+          if (service.minTermWarn(idx, holidays)) {
+            mtc.addClassName(STYLE_SVC_MIN_TERM_WARN);
+          } else {
+            mtc.removeClassName(STYLE_SVC_MIN_TERM_WARN);
+          }
+        }
+
+        Element input = Selectors.getElementByClassName(rowElement, STYLE_SVC_FACTOR_WIDGET);
+        if (InputElement.is(input)) {
+          InputElement.as(input).setValue(BeeUtils.toString(df));
+        }
+
+        updateAmountCell(rowElement, service, idx);
+        refreshTotals();
       }
     });
 
@@ -1725,26 +1668,23 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       widget.setValue(initialValue);
     }
 
-    widget.addValueChangeHandler(new ValueChangeHandler<String>() {
-      @Override
-      public void onValueChange(ValueChangeEvent<String> event) {
-        if (event.getSource() instanceof InputNumber) {
-          InputNumber source = (InputNumber) event.getSource();
-          Double value = source.getNumber();
+    widget.addValueChangeHandler(event -> {
+      if (event.getSource() instanceof InputNumber) {
+        InputNumber source = (InputNumber) event.getSource();
+        Double value = source.getNumber();
 
-          TableRowElement rowElement = DomUtils.getParentRow(source.getElement(), false);
-          Long svcId = DomUtils.getDataPropertyLong(rowElement, KEY_SERVICE_ID);
-          Integer idx = DomUtils.getDataPropertyInt(rowElement, KEY_RANGE_INDEX);
+        TableRowElement rowElement = DomUtils.getParentRow(source.getElement(), false);
+        Long svcId = DomUtils.getDataPropertyLong(rowElement, KEY_SERVICE_ID);
+        Integer idx = DomUtils.getDataPropertyInt(rowElement, KEY_RANGE_INDEX);
 
-          if (DataUtils.isId(svcId) && idx != null) {
-            Service service = findService(svcId);
+        if (DataUtils.isId(svcId) && idx != null) {
+          Service service = findService(svcId);
 
-            if (service != null && !Objects.equals(service.factors.get(idx), value)) {
-              service.factors.set(idx, value);
+          if (service != null && !Objects.equals(service.factors.get(idx), value)) {
+            service.factors.set(idx, value);
 
-              updateAmountCell(rowElement, service, idx);
-              refreshTotals();
-            }
+            updateAmountCell(rowElement, service, idx);
+            refreshTotals();
           }
         }
       }

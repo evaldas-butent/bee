@@ -11,9 +11,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Popup;
@@ -35,7 +33,6 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -197,7 +194,7 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
     if (validItemForInvoice(row)) {
       return qty;
     }
-    return Double.valueOf(0);
+    return BeeConst.DOUBLE_ZERO;
   }
 
   private void additionalQtyCalculation(IsRow row, int comQtyIdx, Double qty,
@@ -294,46 +291,39 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
       mainItem = null;
     }
     RowFactory.createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo,
-        newRow, null, null, null, null, new RowCallback() {
-          @Override
-          public void onSuccess(final BeeRow row) {
-            ParameterList args = getRequestArgs();
+        newRow, Opener.MODAL, null, row -> {
+          ParameterList args = getRequestArgs();
 
-            if (args != null) {
-              Map<String, String> params = new HashMap<>();
+          if (args != null) {
+            Map<String, String> params = new HashMap<>();
 
-              params.put(Service.VAR_TABLE, Data.getViewTable(getViewName()));
-              params.put(COL_SALE, String.valueOf(row.getId()));
-              params.put(Service.VAR_DATA, Codec.beeSerialize(idsQty));
-              params.put(COL_CURRENCY, row.getString(dataInfo.getColumnIndex(COL_CURRENCY)));
+            params.put(Service.VAR_TABLE, Data.getViewTable(getViewName()));
+            params.put(COL_SALE, String.valueOf(row.getId()));
+            params.put(Service.VAR_DATA, Codec.beeSerialize(idsQty));
+            params.put(COL_CURRENCY, row.getString(dataInfo.getColumnIndex(COL_CURRENCY)));
 
-              if (mainItem != null && DataUtils.isId(mainItem.get())) {
-                params.put(ClassifierConstants.COL_ITEM, BeeUtils.toString(mainItem.get()));
-              }
-              for (String prm : params.keySet()) {
-                if (!args.hasParameter(prm)) {
-                  args.addDataItem(prm, params.get(prm));
-                }
-              }
-              BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-                @Override
-                public void onResponse(ResponseObject response) {
-                  response.notify(getGridView());
-
-                  if (!response.hasErrors()) {
-                    Popup popup = UiHelper.getParentPopup(getGridView().getGrid());
-
-                    if (popup != null) {
-                      popup.close();
-                    }
-                    Data.onViewChange(getViewName(), DataChangeEvent.RESET_REFRESH);
-                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDER_CHILD_INVOICES);
-                    RowEditor.openForm(dataInfo.getEditForm(), dataInfo, Filter.compareId(row
-                        .getId()), Opener.MODAL);
-                  }
-                }
-              });
+            if (mainItem != null && DataUtils.isId(mainItem.get())) {
+              params.put(ClassifierConstants.COL_ITEM, BeeUtils.toString(mainItem.get()));
             }
+            for (String prm : params.keySet()) {
+              if (!args.hasParameter(prm)) {
+                args.addDataItem(prm, params.get(prm));
+              }
+            }
+            BeeKeeper.getRpc().makePostRequest(args, response -> {
+              response.notify(getGridView());
+
+              if (!response.hasErrors()) {
+                Popup popup = UiHelper.getParentPopup(getGridView().getGrid());
+
+                if (popup != null) {
+                  popup.close();
+                }
+                Data.onViewChange(getViewName(), DataChangeEvent.RESET_REFRESH);
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDER_CHILD_INVOICES);
+                RowEditor.openForm(dataInfo.getEditForm(), dataInfo, Filter.compareId(row.getId()));
+              }
+            });
           }
         });
   }
