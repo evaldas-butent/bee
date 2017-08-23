@@ -227,6 +227,11 @@ public enum OperationType implements HasLocalizedCaption {
     }
 
     @Override
+    public boolean isReturn() {
+      return true;
+    }
+
+    @Override
     public Long getAmountDebit(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getSalesRevenue();
     }
@@ -266,6 +271,11 @@ public enum OperationType implements HasLocalizedCaption {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.trdTypeReturnToSupplier();
+    }
+
+    @Override
+    public boolean isReturn() {
+      return true;
     }
 
     @Override
@@ -372,6 +382,10 @@ public enum OperationType implements HasLocalizedCaption {
 
   public boolean hasDebt() {
     return debtKind != null;
+  }
+
+  public boolean isReturn() {
+    return false;
   }
 
   public abstract Long getAmountDebit(TradeAccounts tradeAccounts);

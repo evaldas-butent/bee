@@ -18,6 +18,7 @@ import com.butent.bee.client.dialog.ModalGrid;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.DataReceivedEvent;
+import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.i18n.Money;
@@ -212,6 +213,10 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       TradeKeeper.STYLE_PREFIX + "show-related-documents";
   private static final String STYLE_PRICE_CALCULATION_COMMAND =
       TradeKeeper.STYLE_PREFIX + "price-calculation";
+  private static final String STYLE_RETURN_COMMAND =
+      TradeKeeper.STYLE_PREFIX + "return-command";
+
+  private static final int COMMAND_DURATION = TimeUtils.MILLIS_PER_SECOND * 10;
 
   private Supplier<TradeDocumentSums> tdsSupplier;
   private Consumer<Boolean> tdsListener;
@@ -241,15 +246,14 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       stockCommand.addStyleName(STYLE_SHOW_ITEM_STOCK_COMMAND);
       stockCommand.setEnabled(false);
 
-      presenter.getHeader().addCommandItem(stockCommand, TimeUtils.MILLIS_PER_SECOND * 10);
+      presenter.getHeader().addCommandItem(stockCommand, COMMAND_DURATION);
 
       Button relatedDocumentsCommand = new Button(Localized.dictionary().trdRelatedDocuments(),
           event -> getRelatedDocuments());
       relatedDocumentsCommand.addStyleName(STYLE_SHOW_RELATED_DOCUMENTS_COMMAND);
       relatedDocumentsCommand.setEnabled(false);
 
-      presenter.getHeader().addCommandItem(relatedDocumentsCommand,
-          TimeUtils.MILLIS_PER_SECOND * 10);
+      presenter.getHeader().addCommandItem(relatedDocumentsCommand, COMMAND_DURATION);
 
       if (BeeKeeper.getUser().canEditData(getViewName())) {
         Button priceCommand = new Button(Localized.dictionary().recalculateTradeItemPriceCaption(),
@@ -257,6 +261,15 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
         priceCommand.addStyleName(STYLE_PRICE_CALCULATION_COMMAND);
 
         presenter.getHeader().addCommandItem(priceCommand);
+      }
+
+      if (BeeKeeper.getUser().canCreateData(getViewName())) {
+        Button returnCommand = new Button(Localized.dictionary().trdCommandReturn(),
+            event -> onReturn());
+        returnCommand.addStyleName(STYLE_RETURN_COMMAND);
+        returnCommand.setEnabled(false);
+
+        presenter.getHeader().addCommandItem(returnCommand, COMMAND_DURATION);
       }
     }
 
@@ -364,9 +377,15 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       fireTdsChange(event.isInsert());
     }
 
-    TradeUtils.configureCostCalculation(getGridView());
-
     super.onDataReceived(event);
+  }
+
+  @Override
+  public void onParentRow(ParentRowEvent event) {
+    TradeUtils.configureCostCalculation(getGridView());
+    checkReturnCommand(getGridView());
+
+    super.onParentRow(event);
   }
 
   @Override
@@ -1001,5 +1020,21 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     GridFactory.openGrid(GRID_TRADE_RELATED_ITEMS, interceptor,
         GridFactory.GridOptions.forCaption(caption),
         ModalGrid.opener(75, CssUnit.PCT, height, CssUnit.PCT, false));
+  }
+
+  private void checkReturnCommand(GridView gridView) {
+    HeaderView header = getHeaderView();
+
+    if (gridView != null && header != null) {
+
+      OperationType operationType = TradeUtils.getDocumentOperationType(getParentRow(gridView));
+      boolean enable = operationType != null && operationType.isReturn()
+          && !gridView.isReadOnly() && BeeKeeper.getUser().canCreateData(getViewName());
+
+      header.enableCommandByStyleName(STYLE_RETURN_COMMAND, enable);
+    }
+  }
+
+  private void onReturn() {
   }
 }
