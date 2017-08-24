@@ -68,7 +68,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-class CompanyForm extends CustomCompanyForm {
+class CompanyForm extends AbstractFormInterceptor {
 
   private FaLabel switchAction;
 
@@ -347,7 +347,7 @@ class CompanyForm extends CustomCompanyForm {
     return FORM_NEW_COMPANY.equals(getFormView().getFormName());
   }
 
-  private void refreshCreditInfo() {
+  protected void refreshCreditInfo() {
     final FormView form = getFormView();
     final Widget widget = form.getWidgetByName(SVC_CREDIT_INFO, false);
 

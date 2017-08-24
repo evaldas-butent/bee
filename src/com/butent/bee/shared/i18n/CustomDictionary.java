@@ -7,4 +7,12 @@ public interface CustomDictionary {
   default String expensesEnteredPerson() {
     return g("expensesEnteredPerson");
   }
+
+  default String trOrdersSumWithProforma() {
+    return g("trOrdersSumWithProforma");
+  }
+
+  default String trTotalLiabilities() {
+    return g("trTotalLiabilities");
+  }
 }
