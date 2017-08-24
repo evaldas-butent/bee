@@ -599,23 +599,23 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   public void onLoad(final FormView formView) {
     Queries.getRowSet(TBL_DEPARTMENT_EMPLOYEES, Lists.newArrayList(COL_DEPARTMENT,
         COL_COMPANY_PERSON, COL_DEPARTMENT_HEAD, COL_DEPARTMENT_NAME), null, result -> {
-          for (BeeRow row : result) {
-            Long department = row.getLong(0);
-            Long employer = row.getLong(1);
-            Long headDepartment = row.getLong(2);
-            String departmentName = row.getString(3);
+      for (BeeRow row : result) {
+        Long department = row.getLong(0);
+        Long employer = row.getLong(1);
+        Long headDepartment = row.getLong(2);
+        String departmentName = row.getString(3);
 
-            employees.put(employer, department);
-            departments.put(department, departmentName);
+        employees.put(employer, department);
+        departments.put(department, departmentName);
 
-            if (DataUtils.isId(headDepartment)) {
-              departmentHeads.put(employer, headDepartment);
-            }
-          }
-          form = formView;
-          updateDepartment(form, form.getActiveRow(), null);
-          form.refresh();
-        });
+        if (DataUtils.isId(headDepartment)) {
+          departmentHeads.put(employer, headDepartment);
+        }
+      }
+      form = formView;
+      updateDepartment(form, form.getActiveRow(), null);
+      form.refresh();
+    });
   }
 
   @Override
@@ -632,8 +632,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
   @Override
   public void onStartNewRow(FormView formView, IsRow row) {
-    row.setValue(formView.getDataIndex(COL_ASSESSMENT_STATUS), AssessmentStatus.NEW.ordinal());
-    row.setValue(formView.getDataIndex(ALS_ORDER_STATUS), OrderStatus.REQUEST.ordinal());
     updateDepartment(formView, row, null);
   }
 
