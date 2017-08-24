@@ -29,9 +29,12 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -63,11 +66,13 @@ import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.CustomAction;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -98,6 +103,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -398,6 +404,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   private FormView form;
   private final Dictionary loc = Localized.dictionary();
 
+  private CustomAction copyAction = new CustomAction(FontAwesome.COPY, clickEvent -> copy());
+
   private final Button reqNew = new Button(loc.trAssessmentToRequests(),
       new StatusUpdater(AssessmentStatus.NEW, loc.trAssessmentAskRequest()));
 
@@ -574,6 +582,10 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     if (manager != null && manager.isEnabled() && !departmentHeads.containsKey(userPerson)) {
       manager.setEnabled(false);
     }
+    if (!newRecord) {
+      copyAction.setTitle(loc.actionCopy());
+      header.addCommandItem(copyAction);
+    }
     onValueChange(null);
   }
 
@@ -685,6 +697,80 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   private static String buildLog(String caption, String value, String oldLog) {
     return BeeUtils.join("\n\n",
         Format.renderDateTime(TimeUtils.nowMinutes()) + " " + caption + "\n" + value, oldLog);
+  }
+
+  private void copy() {
+    String cap = getHeaderView().getCaption();
+    Global.confirm(cap, Icon.QUESTION, Collections.singletonList(loc.actionCopy()), () -> {
+      copyAction.running();
+      IsRow oldRow = getActiveRow();
+      DataInfo info = Data.getDataInfo(getViewName());
+      BeeRow row = RowFactory.createEmptyRow(info, true);
+
+      for (String col : info.getColumnNames(false)) {
+        int idx = info.getColumnIndex(col);
+
+        if (!BeeUtils.contains(Arrays.asList(COL_ASSESSMENT, COL_ORDER_NO, COL_CARGO, COL_STATUS,
+            COL_DATE, COL_NUMBER, COL_ORDER_MANAGER, COL_ASSESSMENT_EXPENSES, COL_ASSESSMENT_LOG),
+            col)) {
+          row.setValue(idx, oldRow.getString(idx));
+        }
+      }
+      if (isRequest()) {
+        row.setValue(info.getColumnIndex(COL_ASSESSMENT_STATUS), AssessmentStatus.NEW.ordinal());
+        row.setValue(info.getColumnIndex(ALS_ORDER_STATUS), OrderStatus.REQUEST.ordinal());
+      } else {
+        row.setValue(info.getColumnIndex(ALS_ORDER_STATUS), OrderStatus.ACTIVE.ordinal());
+      }
+      Queries.insertRow(DataUtils.createRowSetForInsert(info.getViewName(), info.getColumns(), row),
+          (RowCallback) assessmentRow -> {
+            Long assessment = assessmentRow.getId();
+            Long cargo = assessmentRow.getLong(info.getColumnIndex(COL_CARGO));
+
+            Runnable onCloneChildren = new Runnable() {
+              Latch copiedGrids = new Latch(5);
+
+              @Override
+              public void run() {
+                copiedGrids.decrement();
+
+                if (copiedGrids.isOpen()) {
+                  copyAction.idle();
+                  RowEditor.open(info.getViewName(), assessment);
+                }
+              }
+            };
+            Filter fwFilter = Filter.equals(COL_ASSESSMENT, oldRow.getId());
+            Filter flt = Filter.equals(COL_CARGO, oldRow.getLong(info.getColumnIndex(COL_CARGO)));
+            Map<String, Filter> filters = new HashMap<>();
+            filters.put(TBL_CARGO_LOADING, flt);
+            filters.put(TBL_CARGO_UNLOADING, flt);
+            filters.put(TBL_CARGO_INCOMES, flt);
+            filters.put(TBL_CARGO_EXPENSES, Filter.and(flt,
+                Filter.isNot(Filter.idIn(TBL_ASSESSMENT_FORWARDERS, "CargoExpense", fwFilter))));
+
+            Queries.getData(filters.keySet(), filters, result -> {
+              for (BeeRowSet rSet : result) {
+                int cargoIdx = rSet.getColumnIndex(COL_CARGO);
+                rSet.getRows().forEach(beeRow -> beeRow.setValue(cargoIdx, cargo));
+                TransportUtils.insertRows(rSet, onCloneChildren);
+              }
+            });
+            Queries.getRowSet(TBL_ASSESSMENT_FORWARDERS, null, fwFilter, result -> {
+              result.removeColumn(result.getColumnIndex(COL_CARGO_TRIP));
+              int assessmentIdx = result.getColumnIndex(COL_ASSESSMENT);
+              int cargoIdx = result.getColumnIndex(COL_CARGO);
+              int serviceCargoIdx = result.getColumnIndex("ServiceCargo");
+
+              result.getRows().forEach(beeRow -> {
+                beeRow.setValue(assessmentIdx, assessment);
+                beeRow.setValue(cargoIdx, cargo);
+                beeRow.setValue(serviceCargoIdx, cargo);
+              });
+              TransportUtils.insertRows(result, onCloneChildren);
+            });
+          });
+    });
   }
 
   private void createLetter() {
