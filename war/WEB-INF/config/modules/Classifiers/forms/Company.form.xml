@@ -40,7 +40,7 @@
       </row>
 
       <row for="Address">
-        <Label for="Address" style="&lbl;" class="bee-required" />
+        <Label for="Address" style="&lbl;" />
         <cell colSpan="4">
           <InputText source="Address" style="width: 525px;" />
         </cell>
@@ -51,7 +51,7 @@
       </row>
 
       <row for="City">
-        <Label text="=city" style="&lbl;" for="City" class="bee-required" />
+        <Label text="=city" style="&lbl;" for="City" />
         <DataSelector source="City" style="width: 140px;">
           <selectorColumn source="Name" />
           <selectorColumn source="CountryName" />
@@ -60,7 +60,7 @@
           </selectorColumn>
         </DataSelector>
 
-        <Label text="=country" style="&lbl;" for="Country" class="bee-required" />
+        <Label text="=country" style="&lbl;" for="Country" />
         <DataSelector source="Country" style="width: 140px;">
           <renderToken source="CountryName" />
           <renderToken source="CountryCode" prefix=" (" suffix=")" />
@@ -86,9 +86,9 @@
             <InputText source="SocialContacts" style="width: 280px;" />
           </row>
           <row>
-            <Label text="=code" style="&lbl;" for="Code" class="bee-required" />
+            <Label text="=code" style="&lbl;" for="Code" />
             <InputText source="Code" style="width: 280px;"/>
-            <Label text="=companyVATCode" style="&lbl;" for="VATCode" class="bee-required" />
+            <Label text="=companyVATCode" style="&lbl;" for="VATCode" />
             <InputText source="VATCode" style="width: 280px;" upperCase="true" />
           </row>
         </Table>

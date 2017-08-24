@@ -44,12 +44,12 @@
       </row>
 
       <row for="Code">
-        <Label for="Code" class="bee-required" />
+        <Label for="Code" />
         <InputText source="Code" visible="true"/>
       </row>
 
       <row for="VATCode">
-        <Label text="=companyVATCode" for="VATCode" class="bee-required" />
+        <Label text="=companyVATCode" for="VATCode" />
         <InputText source="VATCode" upperCase="true" />
       </row>
 
@@ -95,7 +95,7 @@
       </row>
 
       <row for="City">
-        <Label for="City" class="bee-required" />
+        <Label for="City" />
         <DataSelector source="City" >
           <selectorColumn source="Name" />
           <selectorColumn source="CountryName" />
@@ -106,7 +106,7 @@
       </row>
 
       <row for="Country">
-        <Label for="Country" class="bee-required" />
+        <Label for="Country" />
         <DataSelector source="Country">
           <renderToken source="CountryName" />
           <renderToken source="CountryCode" prefix=" (" suffix=")" />
