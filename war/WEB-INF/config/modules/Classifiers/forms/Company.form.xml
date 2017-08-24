@@ -86,9 +86,9 @@
             <InputText source="SocialContacts" style="width: 280px;" />
           </row>
           <row>
-            <Label text="=code" style="&lbl;" for="Code" class="bee-required" />
+            <Label text="=code" style="&lbl;" for="Code" />
             <InputText source="Code" style="width: 280px;"/>
-            <Label text="=companyVATCode" style="&lbl;" for="VATCode" class="bee-required" />
+            <Label text="=companyVATCode" style="&lbl;" for="VATCode" />
             <InputText source="VATCode" style="width: 280px;" upperCase="true" />
           </row>
         </Table>
