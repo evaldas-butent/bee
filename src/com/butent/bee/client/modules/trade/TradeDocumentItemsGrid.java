@@ -240,7 +240,6 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
     if (presenter != null && presenter.getHeader() != null) {
-
       Button stockCommand = new Button(Localized.dictionary().trdItemStock(),
           event -> showItemStock(EventUtils.getEventTargetElement(event)));
       stockCommand.addStyleName(STYLE_SHOW_ITEM_STOCK_COMMAND);
@@ -271,6 +270,8 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
         presenter.getHeader().addCommandItem(returnCommand, COMMAND_DURATION);
       }
+
+      refreshCommands();
     }
 
     super.afterCreatePresenter(presenter);
@@ -382,8 +383,9 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
   @Override
   public void onParentRow(ParentRowEvent event) {
-    TradeUtils.configureCostCalculation(getGridView());
-    checkReturnCommand(getGridView());
+    if (getHeaderView() != null) {
+      refreshCommands();
+    }
 
     super.onParentRow(event);
   }
@@ -487,6 +489,11 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
 
     return super.previewRowUpdate(event);
+  }
+
+  void refreshCommands() {
+    TradeUtils.configureCostCalculation(getGridView());
+    checkReturnCommand(getGridView());
   }
 
   private void fireTdsChange(boolean update) {
