@@ -249,18 +249,18 @@
 .bee-grid-TradeDocumentItems.bee-GridContainer-no-data .bee-trade-price-calculation,
 .bee-grid-TradeDocumentItems.bee-GridContainer-no-data .bee-trade-cost-calculation,
 .bee-grid-TradeExpenditures.bee-GridContainer-no-data .bee-trade-cost-calculation {
-  visibility: hidden;
+  display: none;
 }
 .bee-form-TradeDocument .bee-disabled .bee-trade-price-calculation,
 .bee-form-TradeDocument .bee-disabled .bee-trade-return-command,
 .bee-form-TradeDocument .bee-disabled .bee-trade-cost-calculation,
 .bee-form-TradeDocument .bee-disabled .bee-trade-fin-post {
-  visibility: hidden;
+  display: none;
 }
 .bee-trade-show-item-stock[disabled],
 .bee-trade-show-related-documents[disabled],
 .bee-trade-return-command[disabled] {
-  visibility: hidden;
+  display: none;
 }
 
 .bee-trade-item-picker-new-item,
