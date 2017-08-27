@@ -72,6 +72,8 @@ public final class TradeConstants {
   public static final String TBL_TRADE_EXPENDITURES = "TradeExpenditures";
   public static final String TBL_TRADE_ITEM_EXPENDITURES = "TradeItemExpend";
 
+  public static final String TBL_TRADE_ITEM_RETURNS = "TradeItemReturns";
+
   public static final String TBL_TRADE_PAYMENTS = "TradePayments";
   public static final String TBL_TRADE_PAYMENT_TERMS = "TradePaymentTerms";
 
@@ -234,6 +236,8 @@ public final class TradeConstants {
   public static final String COL_STOCK_QUANTITY = "Quantity";
   public static final String COL_STOCK_WAREHOUSE = "Warehouse";
   public static final String COL_STOCK_ACCOUNT = "CostAccount";
+
+  public static final String COL_RELATED_DOCUMENT_ITEM = "RelatedDocumentItem";
 
   public static final String COL_TRADE_PAYMENT_DATE = "PaymentDate";
   public static final String COL_TRADE_PAYMENT_AMOUNT = "PaymentAmount";

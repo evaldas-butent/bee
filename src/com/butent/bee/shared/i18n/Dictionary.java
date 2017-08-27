@@ -7035,6 +7035,8 @@ public interface Dictionary {
 
   default String trdReceivedDate() {return g("trdReceivedDate");}
 
+  default String trdRelatedDocumentItem() {return g("trdRelatedDocumentItem");}
+
   default String trdRelatedDocuments() {return g("trdRelatedDocuments");}
 
   default String trdRemindTemplateFirstParagraph() {return g("trdRemindTemplateFirstParagraph");}
