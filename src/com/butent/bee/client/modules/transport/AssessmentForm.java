@@ -726,48 +726,78 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           (RowCallback) assessmentRow -> {
             Long assessment = assessmentRow.getId();
             Long cargo = assessmentRow.getLong(info.getColumnIndex(COL_CARGO));
-
-            Runnable onCloneChildren = new Runnable() {
-              Latch copiedGrids = new Latch(5);
-
-              @Override
-              public void run() {
-                copiedGrids.decrement();
-
-                if (copiedGrids.isOpen()) {
-                  copyAction.idle();
-                  RowEditor.open(info.getViewName(), assessment);
-                }
-              }
-            };
             Filter fwFilter = Filter.equals(COL_ASSESSMENT, oldRow.getId());
-            Filter flt = Filter.equals(COL_CARGO, oldRow.getLong(info.getColumnIndex(COL_CARGO)));
-            Map<String, Filter> filters = new HashMap<>();
-            filters.put(TBL_CARGO_LOADING, flt);
-            filters.put(TBL_CARGO_UNLOADING, flt);
-            filters.put(TBL_CARGO_INCOMES, flt);
-            filters.put(TBL_CARGO_EXPENSES, Filter.and(flt,
-                Filter.isNot(Filter.idIn(TBL_ASSESSMENT_FORWARDERS, "CargoExpense", fwFilter))));
 
-            Queries.getData(filters.keySet(), filters, result -> {
-              for (BeeRowSet rSet : result) {
-                int cargoIdx = rSet.getColumnIndex(COL_CARGO);
-                rSet.getRows().forEach(beeRow -> beeRow.setValue(cargoIdx, cargo));
-                TransportUtils.insertRows(rSet, onCloneChildren);
-              }
-            });
-            Queries.getRowSet(TBL_ASSESSMENT_FORWARDERS, null, fwFilter, result -> {
-              result.removeColumn(result.getColumnIndex(COL_CARGO_TRIP));
-              int assessmentIdx = result.getColumnIndex(COL_ASSESSMENT);
-              int cargoIdx = result.getColumnIndex(COL_CARGO);
-              int serviceCargoIdx = result.getColumnIndex("ServiceCargo");
+            Queries.getRowSet(TBL_ASSESSMENT_FORWARDERS, null, fwFilter, forwarders -> {
+              Filter flt = Filter.equals(COL_CARGO, oldRow.getLong(info.getColumnIndex(COL_CARGO)));
+              Map<String, Filter> filters = new HashMap<>();
+              filters.put(TBL_CARGO_LOADING, flt);
+              filters.put(TBL_CARGO_UNLOADING, flt);
+              filters.put(TBL_CARGO_INCOMES, flt);
+              filters.put(TBL_CARGO_EXPENSES, Filter.and(flt,
+                  Filter.isNot(Filter.idIn(TBL_ASSESSMENT_FORWARDERS, "CargoExpense", fwFilter))));
 
-              result.getRows().forEach(beeRow -> {
-                beeRow.setValue(assessmentIdx, assessment);
-                beeRow.setValue(cargoIdx, cargo);
-                beeRow.setValue(serviceCargoIdx, cargo);
+              Runnable onCloneChildren = new Runnable() {
+                Latch copiedGrids = new Latch(forwarders.getNumberOfRows() * 2 + filters.size());
+
+                @Override
+                public void run() {
+                  copiedGrids.decrement();
+
+                  if (copiedGrids.isOpen()) {
+                    copyAction.idle();
+                    RowEditor.open(info.getViewName(), assessment);
+                  }
+                }
+              };
+              Queries.getData(filters.keySet(), filters, result -> {
+                for (BeeRowSet rSet : result) {
+                  int cargoIdx = rSet.getColumnIndex(COL_CARGO);
+                  rSet.getRows().forEach(beeRow -> beeRow.setValue(cargoIdx, cargo));
+                  TransportUtils.insertRows(rSet, onCloneChildren);
+                }
               });
-              TransportUtils.insertRows(result, onCloneChildren);
+              if (DataUtils.isEmpty(forwarders)) {
+                return;
+              }
+              int cargoTripIdx = forwarders.getColumnIndex(COL_CARGO_TRIP);
+
+              TransportUtils.getCargoPlaces(Filter.any(COL_CARGO_TRIP,
+                  forwarders.getDistinctLongs(cargoTripIdx)), (loading, unloading) -> {
+                int assessmentIdx = forwarders.getColumnIndex(COL_ASSESSMENT);
+                int cargoIdx = forwarders.getColumnIndex(COL_CARGO);
+                int serviceCargoIdx = forwarders.getColumnIndex("ServiceCargo");
+
+                for (BeeRow beeRow : forwarders) {
+                  Long cargoTrip = beeRow.getLong(cargoTripIdx);
+                  BeeRowSet rs = new BeeRowSet(forwarders.getViewName(), forwarders.getColumns());
+
+                  BeeRow cloned = DataUtils.cloneRow(beeRow);
+                  cloned.setValue(assessmentIdx, assessment);
+                  cloned.setValue(cargoIdx, cargo);
+                  cloned.setValue(serviceCargoIdx, cargo);
+                  rs.addRow(cloned);
+                  rs.removeColumn(cargoTripIdx);
+
+                  Queries.insertRow(DataUtils.createRowSetForInsert(rs), (RowCallback) fw -> {
+                    for (BeeRowSet places : new BeeRowSet[] {loading, unloading}) {
+                      BeeRowSet plRs = new BeeRowSet(places.getViewName(), places.getColumns());
+
+                      for (BeeRow r : DataUtils.filterRows(places, COL_CARGO_TRIP, cargoTrip)) {
+                        BeeRow cl = DataUtils.cloneRow(r);
+                        cl.setValue(places.getColumnIndex(COL_CARGO_TRIP),
+                            fw.getLong(cargoTripIdx));
+                        plRs.addRow(cl);
+                      }
+                      if (DataUtils.isEmpty(plRs)) {
+                        onCloneChildren.run();
+                      } else {
+                        TransportUtils.insertRows(plRs, onCloneChildren);
+                      }
+                    }
+                  });
+                }
+              });
             });
           });
     });
