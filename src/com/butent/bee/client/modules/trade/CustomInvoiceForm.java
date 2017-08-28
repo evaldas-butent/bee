@@ -8,9 +8,10 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.view.DataInfo;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.stream.Stream;
 
 public abstract class CustomInvoiceForm extends InvoiceERPForm {
 
@@ -18,14 +19,17 @@ public abstract class CustomInvoiceForm extends InvoiceERPForm {
   public void onStartNewRow(FormView form, IsRow row) {
     if (Data.containsColumn(form.getViewName(), COL_TRADE_CUSTOMER)) {
       Long customerId = row.getLong(form.getDataIndex(COL_TRADE_CUSTOMER));
-      List<String> operationColumns = Arrays.asList(COL_TRADE_OPERATION, COL_OPERATION_NAME);
 
       if (DataUtils.isId(customerId)) {
         Queries.getRow(VIEW_COMPANIES, customerId, result -> {
           if (result != null) {
-            operationColumns.forEach(column -> row.setValue(form.getDataIndex(column),
-                result.getString(Data.getColumnIndex(VIEW_COMPANIES, column))));
-            form.refreshBySource(COL_TRADE_OPERATION);
+            DataInfo targetInfo = Data.getDataInfo(form.getViewName());
+            DataInfo sourceInfo = Data.getDataInfo(VIEW_COMPANIES);
+
+            Stream.of(COL_TRADE_OPERATION, COL_TRADE_WAREHOUSE_FROM).forEach(col ->
+                RelationUtils.copyWithDescendants(sourceInfo, col, result, targetInfo, col, row));
+
+            form.refresh();
           }
         });
       }

@@ -146,6 +146,11 @@
     <SimpleColumn name="Operation" />
     <SimpleJoin name="Operation" joinType="LEFT" >
       <SimpleColumn name="OperationName" />
+
+      <SimpleColumn name="WarehouseFrom" />
+      <SimpleJoin joinType="LEFT" name="WarehouseFrom">
+        <SimpleColumn alias="WarehouseFromCode" name="Code" />
+      </SimpleJoin>
     </SimpleJoin>
   </Columns>
   <Order>
