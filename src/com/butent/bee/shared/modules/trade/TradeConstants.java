@@ -319,6 +319,9 @@ public final class TradeConstants {
   public static final String PROP_TD_PAID = "TdPaid";
   public static final String PROP_TD_DEBT = "TdDebt";
 
+  public static final String PROP_ORIGINAL_QTY = "OriginalQty";
+  public static final String PROP_RETURNED_QTY = "ReturnedQty";
+
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";
   public static final String VAR_OVERDUE = "Overdue";
@@ -351,6 +354,7 @@ public final class TradeConstants {
 
   public static final String GRID_ITEM_MOVEMENT = "ItemMovement";
   public static final String GRID_TRADE_RELATED_ITEMS = "TradeRelatedItems";
+  public static final String GRID_TRADE_ITEMS_FOR_RETURN = "TradeItemsForReturn";
 
   public static final String GRID_TRADE_PAYABLES = "TradePayables";
   public static final String GRID_TRADE_RECEIVABLES = "TradeReceivables";

@@ -4893,12 +4893,116 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     EnumSet<OperationType> operationTypes = EnumSet.of(OperationType.SALE, OperationType.POS);
     filter.add(Filter.any(COL_OPERATION_TYPE, operationTypes));
 
-    BeeRowSet result = qs.getViewData(VIEW_TRADE_MOVEMENT, filter);
+    filter.add(Filter.isPositive(COL_TRADE_ITEM_QUANTITY));
+
+    BeeRowSet result = prepareTradeItemsForReturn(qs.getViewData(VIEW_TRADE_MOVEMENT, filter));
 
     if (DataUtils.isEmpty(result)) {
       return ResponseObject.emptyResponse();
     } else {
       return ResponseObject.response(result);
     }
+  }
+
+  private BeeRowSet prepareTradeItemsForReturn(BeeRowSet input) {
+    if (DataUtils.isEmpty(input)) {
+      return null;
+    }
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_ITEM_RETURNS, COL_RELATED_DOCUMENT_ITEM)
+        .addSum(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(TBL_TRADE_ITEM_RETURNS)
+        .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
+            TBL_TRADE_ITEM_RETURNS, COL_TRADE_DOCUMENT_ITEM))
+        .setWhere(SqlUtils.inList(TBL_TRADE_ITEM_RETURNS, COL_RELATED_DOCUMENT_ITEM,
+            input.getRowIds()))
+        .addGroup(TBL_TRADE_ITEM_RETURNS, COL_RELATED_DOCUMENT_ITEM);
+
+    SimpleRowSet data = qs.getData(query);
+
+    Map<Long, Double> returnedQuantities = new HashMap<>();
+    if (!DataUtils.isEmpty(data)) {
+      data.forEach(row -> returnedQuantities.put(row.getLong(0), row.getDouble(1)));
+    }
+
+    Set<Long> docIds = new HashSet<>();
+
+    BeeRowSet result = new BeeRowSet(input.getViewName(), input.getColumns());
+
+    int docIdIndex = input.getColumnIndex(COL_TRADE_DOCUMENT);
+    int qtyIndex = input.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+
+    input.forEach(row -> {
+      Double original = row.getDouble(qtyIndex);
+      Double returned = returnedQuantities.get(row.getId());
+
+      if (BeeUtils.isPositive(original) && BeeUtils.isMore(original, returned)) {
+        row.setProperty(PROP_ORIGINAL_QTY, original);
+        if (BeeUtils.isPositive(returned)) {
+          row.setProperty(PROP_RETURNED_QTY, returned);
+        }
+
+        row.clearCell(qtyIndex);
+
+        docIds.add(row.getLong(docIdIndex));
+        result.addRow(row);
+      }
+    });
+
+    if (!docIds.isEmpty()) {
+      String docIdName = sys.getIdName(TBL_TRADE_DOCUMENTS);
+
+      SqlSelect docQuery = new SqlSelect()
+          .addFields(TBL_TRADE_DOCUMENTS, docIdName)
+          .addFields(TBL_TRADE_DOCUMENTS, TradeDocumentSums.DOCUMENT_COLUMNS)
+          .addFrom(TBL_TRADE_DOCUMENTS)
+          .setWhere(SqlUtils.inList(TBL_TRADE_DOCUMENTS, docIdName, docIds));
+
+      SimpleRowSet docData = qs.getData(docQuery);
+
+      if (!DataUtils.isEmpty(docData)) {
+        Map<Long, Double> docTotals = new HashMap<>();
+        Map<Long, Double> docPaid = new HashMap<>();
+        Map<Long, Double> docDebts = new HashMap<>();
+
+        for (SimpleRow docRow : docData) {
+          long docId = docRow.getLong(docIdName);
+
+          TradeVatMode vatMode = docRow.getEnum(COL_TRADE_DOCUMENT_VAT_MODE, TradeVatMode.class);
+          TradeDiscountMode discountMode = docRow.getEnum(COL_TRADE_DOCUMENT_DISCOUNT_MODE,
+              TradeDiscountMode.class);
+          Double docDiscount = docRow.getDouble(COL_TRADE_DOCUMENT_DISCOUNT);
+
+          BeeRowSet itemData = qs.getViewData(VIEW_TRADE_DOCUMENT_ITEMS,
+              Filter.equals(COL_TRADE_DOCUMENT, docId), null, TradeDocumentSums.ITEM_COLUMNS);
+          BeeRowSet paymentData = qs.getViewData(VIEW_TRADE_PAYMENTS,
+              Filter.equals(COL_TRADE_DOCUMENT, docId), null, TradeDocumentSums.PAYMENT_COLUMNS);
+
+          TradeDocumentSums tds = new TradeDocumentSums(vatMode, discountMode, docDiscount);
+
+          if (!DataUtils.isEmpty(itemData)) {
+            tds.addItems(itemData);
+          }
+          if (!DataUtils.isEmpty(paymentData)) {
+            tds.addPayments(paymentData);
+          }
+
+          docTotals.put(docId, tds.getTotal());
+          docPaid.put(docId, tds.getPaid());
+          docDebts.put(docId, tds.getDebt());
+        }
+
+        result.forEach(row -> {
+          Long docId = row.getLong(docIdIndex);
+
+          row.setNonZero(PROP_TD_TOTAL, docTotals.get(docId));
+          row.setNonZero(PROP_TD_PAID, docPaid.get(docId));
+          row.setNonZero(PROP_TD_DEBT, docDebts.get(docId));
+        });
+      }
+    }
+
+    return result;
   }
 }

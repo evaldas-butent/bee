@@ -1120,20 +1120,34 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
 
     BeeKeeper.getRpc().makeRequest(parameters, response -> {
+      String caption = BeeUtils.joinWords(customerName, n1, n2, date);
+
       if (response.hasResponse()) {
         BeeRowSet rowSet = BeeRowSet.restore(response.getResponseAsString());
-        Global.showTable(customerName, rowSet);
+        openCustomerReturns(caption, rowSet);
 
       } else if (getGridView().isInteractive()) {
-        String s1 = BeeUtils.joinWords(customerName, n1, n2, date);
-        String s2 = Localized.dictionary().trdTypeSale()
+        getGridView().notifyInfo(caption, Localized.dictionary().trdTypeSale()
             + BeeConst.STRING_COLON + BeeConst.STRING_SPACE
-            + Localized.dictionary().nothingFound();
-
-        getGridView().notifyInfo(s1, s2);
+            + Localized.dictionary().nothingFound());
       }
 
       endReturnCommand();
     });
+  }
+
+  private void openCustomerReturns(String caption, final BeeRowSet rowSet) {
+    GridInterceptor interceptor = new AbstractGridInterceptor() {
+      @Override
+      public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
+        return rowSet;
+      }
+    };
+
+    int height = BeeUtils.resize(rowSet.getNumberOfRows(), 1, 12, 20, 80);
+
+    GridFactory.openGrid(GRID_TRADE_ITEMS_FOR_RETURN, interceptor,
+        GridFactory.GridOptions.forCaption(caption),
+        ModalGrid.opener(75, CssUnit.PCT, height, CssUnit.PCT, false));
   }
 }
