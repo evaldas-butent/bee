@@ -1561,6 +1561,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public boolean isInteractive() {
+    return isAttached() && DomUtils.isVisible(getElement());
+  }
+
+  @Override
   public boolean isReadOnly() {
     return getGrid().isReadOnly();
   }

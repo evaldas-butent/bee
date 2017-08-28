@@ -72,6 +72,7 @@ import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
@@ -127,6 +128,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.StringList;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
@@ -136,6 +138,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -318,6 +321,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       case SVC_GET_RELATED_TRADE_ITEMS:
         response = getRelatedTradeItems(reqInfo);
+        break;
+
+      case SVC_GET_TRADE_ITEMS_FOR_RETURN:
+        response = getTradeItemsForReturn(reqInfo);
         break;
 
       case SVC_TRADE_STOCK_REPORT:
@@ -4843,6 +4850,55 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       return null;
     } else {
       return accounts.stream().findAny().get();
+    }
+  }
+
+  private ResponseObject getTradeItemsForReturn(RequestInfo reqInfo) {
+    Long customer = reqInfo.getParameterLong(COL_TRADE_CUSTOMER);
+    if (!DataUtils.isId(customer)) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), COL_TRADE_CUSTOMER);
+    }
+
+    DateTime date = reqInfo.getParameterDateTime(COL_TRADE_DATE);
+
+    String n1 = reqInfo.getParameter(COL_TRADE_DOCUMENT_NUMBER_1);
+    String n2 = reqInfo.getParameter(COL_TRADE_DOCUMENT_NUMBER_2);
+
+    CompoundFilter filter = Filter.and();
+
+    filter.add(Filter.equals(COL_TRADE_CUSTOMER, customer));
+
+    if (date != null) {
+      filter.add(Filter.isLess(COL_TRADE_DATE, new DateTimeValue(TimeUtils.startOfNextDay(date))));
+    }
+
+    if (!BeeUtils.isEmpty(n1) || !BeeUtils.isEmpty(n2)) {
+      StringList numberColumns = StringList.of(COL_TRADE_NUMBER,
+          COL_TRADE_DOCUMENT_NUMBER_1, COL_TRADE_DOCUMENT_NUMBER_2);
+
+      Filter f1 = BeeUtils.isEmpty(n1) ? null : Filter.anyContains(numberColumns, n1);
+      Filter f2 = (BeeUtils.isEmpty(n2) || Objects.equals(n1, n2))
+          ? null : Filter.anyContains(numberColumns, n2);
+
+      filter.add(Filter.or(f1, f2));
+    }
+
+    EnumSet<TradeDocumentPhase> phases = EnumSet.noneOf(TradeDocumentPhase.class);
+    phases.addAll(Arrays.stream(TradeDocumentPhase.values())
+        .filter(TradeDocumentPhase::modifyStock)
+        .collect(Collectors.toSet()));
+
+    filter.add(Filter.any(COL_TRADE_DOCUMENT_PHASE, phases));
+
+    EnumSet<OperationType> operationTypes = EnumSet.of(OperationType.SALE, OperationType.POS);
+    filter.add(Filter.any(COL_OPERATION_TYPE, operationTypes));
+
+    BeeRowSet result = qs.getViewData(VIEW_TRADE_MOVEMENT, filter);
+
+    if (DataUtils.isEmpty(result)) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(result);
     }
   }
 }

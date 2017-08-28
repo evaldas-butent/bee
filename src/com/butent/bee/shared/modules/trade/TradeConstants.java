@@ -39,6 +39,7 @@ public final class TradeConstants {
   public static final String SVC_GET_RESERVATIONS_INFO = "GetReservationsInfo";
   public static final String SVC_CREATE_DOCUMENT = "CreateDocument";
   public static final String SVC_GET_RELATED_TRADE_ITEMS = "GetRelatedTradeItems";
+  public static final String SVC_GET_TRADE_ITEMS_FOR_RETURN = "GetTradeItemsForReturn";
 
   public static final String SVC_TRADE_STOCK_REPORT = "GetTradeStockReport";
   public static final String SVC_TRADE_MOVEMENT_OF_GOODS_REPORT = "GetTradeMovementOfGoodsReport";

@@ -27,6 +27,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -998,7 +999,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
             BeeRowSet rowSet = BeeRowSet.restore(response.getResponseAsString());
             showRelatedDocuments(rowSet);
 
-          } else {
+          } else if (getGridView().isInteractive()) {
             getGridView().notifyInfo(Localized.dictionary().noData());
           }
         }
@@ -1033,7 +1034,6 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     HeaderView header = getHeaderView();
 
     if (gridView != null && header != null) {
-
       OperationType operationType = TradeUtils.getDocumentOperationType(getParentRow(gridView));
       boolean enable = operationType != null && operationType.isReturn()
           && !gridView.isReadOnly() && BeeKeeper.getUser().canCreateData(getViewName());
@@ -1043,5 +1043,97 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   }
 
   private void onReturn() {
+    IsRow parentRow = getParentRow(getGridView());
+    OperationType operationType = TradeUtils.getDocumentOperationType(parentRow);
+
+    if (operationType != null && operationType.isReturn()) {
+      if (operationType.consumesStock()) {
+        onReturnToSupplier(parentRow);
+      } else {
+        onCustomerReturn(parentRow);
+      }
+
+    } else {
+      endReturnCommand();
+    }
+  }
+
+  private void endReturnCommand() {
+    endCommand(STYLE_RETURN_COMMAND, true);
+  }
+
+  private void onReturnToSupplier(IsRow documentRow) {
+    Long supplier = TradeUtils.getDocumentRelation(documentRow, COL_TRADE_CUSTOMER);
+
+    if (!DataUtils.isId(supplier)) {
+      FormView form = ViewHelper.getForm(getGridView());
+      if (form != null) {
+        String label = Data.getColumnLabel(form.getViewName(), COL_TRADE_CUSTOMER);
+        form.notifyWarning(Localized.dictionary().fieldRequired(label));
+      }
+
+      endReturnCommand();
+      return;
+    }
+
+    DateTime date = TradeUtils.getDocumentDate(documentRow);
+    Long currency = TradeUtils.getDocumentRelation(documentRow, COL_TRADE_CURRENCY);
+
+    String n1 = TradeUtils.getDocumentString(documentRow, COL_TRADE_DOCUMENT_NUMBER_1);
+    String n2 = TradeUtils.getDocumentString(documentRow, COL_TRADE_DOCUMENT_NUMBER_2);
+  }
+
+  private void onCustomerReturn(IsRow documentRow) {
+    Long customer = TradeUtils.getDocumentRelation(documentRow, COL_TRADE_SUPPLIER);
+
+    if (!DataUtils.isId(customer)) {
+      FormView form = ViewHelper.getForm(getGridView());
+      if (form != null) {
+        String label = Data.getColumnLabel(form.getViewName(), COL_TRADE_SUPPLIER);
+        form.notifyWarning(Localized.dictionary().fieldRequired(label));
+      }
+
+      endReturnCommand();
+      return;
+    }
+
+    DateTime date = TradeUtils.getDocumentDate(documentRow);
+    Long currency = TradeUtils.getDocumentRelation(documentRow, COL_TRADE_CURRENCY);
+
+    String n1 = TradeUtils.getDocumentString(documentRow, COL_TRADE_DOCUMENT_NUMBER_1);
+    String n2 = TradeUtils.getDocumentString(documentRow, COL_TRADE_DOCUMENT_NUMBER_2);
+
+    String customerName = TradeUtils.getDocumentString(documentRow, ALS_SUPPLIER_NAME);
+
+    ParameterList parameters = TradeKeeper.createArgs(SVC_GET_TRADE_ITEMS_FOR_RETURN);
+
+    parameters.addDataItem(COL_TRADE_CUSTOMER, customer);
+    if (date != null) {
+      parameters.addDataItem(COL_TRADE_DATE, date.getTime());
+    }
+
+    if (!BeeUtils.isEmpty(n1)) {
+      parameters.addDataItem(COL_TRADE_DOCUMENT_NUMBER_1, n1);
+    }
+    if (!BeeUtils.isEmpty(n2)) {
+      parameters.addDataItem(COL_TRADE_DOCUMENT_NUMBER_2, n2);
+    }
+
+    BeeKeeper.getRpc().makeRequest(parameters, response -> {
+      if (response.hasResponse()) {
+        BeeRowSet rowSet = BeeRowSet.restore(response.getResponseAsString());
+        Global.showTable(customerName, rowSet);
+
+      } else if (getGridView().isInteractive()) {
+        String s1 = BeeUtils.joinWords(customerName, n1, n2, date);
+        String s2 = Localized.dictionary().trdTypeSale()
+            + BeeConst.STRING_COLON + BeeConst.STRING_SPACE
+            + Localized.dictionary().nothingFound();
+
+        getGridView().notifyInfo(s1, s2);
+      }
+
+      endReturnCommand();
+    });
   }
 }
