@@ -746,6 +746,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
                   if (copiedGrids.isOpen()) {
                     copyAction.idle();
+                    Data.refreshLocal(info.getViewName());
                     RowEditor.open(info.getViewName(), assessment);
                   }
                 }
@@ -757,7 +758,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                   TransportUtils.insertRows(rSet, onCloneChildren);
                 }
               });
-              if (DataUtils.isEmpty(forwarders)) {
+              if (forwarders.isEmpty()) {
                 return;
               }
               int cargoTripIdx = forwarders.getColumnIndex(COL_CARGO_TRIP);
@@ -767,10 +768,17 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                 int assessmentIdx = forwarders.getColumnIndex(COL_ASSESSMENT);
                 int cargoIdx = forwarders.getColumnIndex(COL_CARGO);
                 int serviceCargoIdx = forwarders.getColumnIndex("ServiceCargo");
+                Holder<Runnable> trigger = Holder.absent();
 
-                for (BeeRow beeRow : forwarders) {
+                Runnable go = () -> {
+                  if (forwarders.isEmpty()) {
+                    return;
+                  }
+                  BeeRow beeRow = forwarders.getRow(0);
+                  forwarders.removeRow(0);
                   Long cargoTrip = beeRow.getLong(cargoTripIdx);
-                  BeeRowSet rs = new BeeRowSet(forwarders.getViewName(), forwarders.getColumns());
+                  BeeRowSet rs = new BeeRowSet(forwarders.getViewName(),
+                      new ArrayList<>(forwarders.getColumns()));
 
                   BeeRow cloned = DataUtils.cloneRow(beeRow);
                   cloned.setValue(assessmentIdx, assessment);
@@ -780,6 +788,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                   rs.removeColumn(cargoTripIdx);
 
                   Queries.insertRow(DataUtils.createRowSetForInsert(rs), (RowCallback) fw -> {
+                    trigger.get().run();
                     for (BeeRowSet places : new BeeRowSet[] {loading, unloading}) {
                       BeeRowSet plRs = new BeeRowSet(places.getViewName(), places.getColumns());
 
@@ -796,7 +805,9 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                       }
                     }
                   });
-                }
+                };
+                trigger.set(go);
+                go.run();
               });
             });
           });
