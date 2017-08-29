@@ -39,6 +39,7 @@ public final class TradeConstants {
   public static final String SVC_GET_RESERVATIONS_INFO = "GetReservationsInfo";
   public static final String SVC_CREATE_DOCUMENT = "CreateDocument";
   public static final String SVC_GET_RELATED_TRADE_ITEMS = "GetRelatedTradeItems";
+  public static final String SVC_GET_TRADE_ITEMS_FOR_RETURN = "GetTradeItemsForReturn";
 
   public static final String SVC_TRADE_STOCK_REPORT = "GetTradeStockReport";
   public static final String SVC_TRADE_MOVEMENT_OF_GOODS_REPORT = "GetTradeMovementOfGoodsReport";
@@ -70,6 +71,9 @@ public final class TradeConstants {
 
   public static final String TBL_EXPENDITURE_TYPES = "ExpenditureTypes";
   public static final String TBL_TRADE_EXPENDITURES = "TradeExpenditures";
+  public static final String TBL_TRADE_ITEM_EXPENDITURES = "TradeItemExpend";
+
+  public static final String TBL_TRADE_ITEM_RETURNS = "TradeItemReturns";
 
   public static final String TBL_TRADE_PAYMENTS = "TradePayments";
   public static final String TBL_TRADE_PAYMENT_TERMS = "TradePaymentTerms";
@@ -232,6 +236,9 @@ public final class TradeConstants {
   public static final String COL_PRIMARY_DOCUMENT_ITEM = "PrimaryDocumentItem";
   public static final String COL_STOCK_QUANTITY = "Quantity";
   public static final String COL_STOCK_WAREHOUSE = "Warehouse";
+  public static final String COL_STOCK_ACCOUNT = "CostAccount";
+
+  public static final String COL_RELATED_DOCUMENT_ITEM = "RelatedDocumentItem";
 
   public static final String COL_TRADE_PAYMENT_DATE = "PaymentDate";
   public static final String COL_TRADE_PAYMENT_AMOUNT = "PaymentAmount";
@@ -312,6 +319,9 @@ public final class TradeConstants {
   public static final String PROP_TD_PAID = "TdPaid";
   public static final String PROP_TD_DEBT = "TdDebt";
 
+  public static final String PROP_ORIGINAL_QTY = "OriginalQty";
+  public static final String PROP_RETURNED_QTY = "ReturnedQty";
+
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";
   public static final String VAR_OVERDUE = "Overdue";
@@ -344,6 +354,7 @@ public final class TradeConstants {
 
   public static final String GRID_ITEM_MOVEMENT = "ItemMovement";
   public static final String GRID_TRADE_RELATED_ITEMS = "TradeRelatedItems";
+  public static final String GRID_TRADE_ITEMS_FOR_RETURN = "TradeItemsForReturn";
 
   public static final String GRID_TRADE_PAYABLES = "TradePayables";
   public static final String GRID_TRADE_RECEIVABLES = "TradeReceivables";

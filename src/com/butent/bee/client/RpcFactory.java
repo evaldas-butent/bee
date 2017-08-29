@@ -57,7 +57,7 @@ public class RpcFactory {
       logger.info("request", id, "canceled");
       logger.addSeparator();
     } else {
-      logger.warning("request", id, "is not pendind");
+      logger.warning("request", id, "is not pending");
       if (states != null) {
         logger.debug("States:", states);
       }
@@ -243,8 +243,8 @@ public class RpcFactory {
   }
 
   public int makeRequest(ParameterList params, ResponseCallback callback) {
-    RequestBuilder.Method meth = params.hasData() ? RequestBuilder.POST : RequestBuilder.GET;
-    return makeRequest(meth, params, null, null, callback, BeeConst.UNDEF);
+    RequestBuilder.Method method = params.hasData() ? RequestBuilder.POST : RequestBuilder.GET;
+    return makeRequest(method, params, null, null, callback, BeeConst.UNDEF);
   }
 
   public int makeRequest(String svc, ResponseCallback callback) {
@@ -255,10 +255,10 @@ public class RpcFactory {
     return makePostRequest(params, ContentType.TEXT, data, callback);
   }
 
-  private int makeRequest(RequestBuilder.Method meth, ParameterList params,
+  private int makeRequest(RequestBuilder.Method method, ParameterList params,
       ContentType type, String reqData, ResponseCallback callback, int timeout) {
 
-    Assert.notNull(meth);
+    Assert.notNull(method);
     Assert.notNull(params);
 
     String svc = params.getService();
@@ -281,13 +281,13 @@ public class RpcFactory {
       ctp = CommUtils.normalizeRequest(params.getContentType());
     }
 
-    RpcInfo info = new RpcInfo(meth, svc, params, ctp, data, callback);
+    RpcInfo info = new RpcInfo(method, svc, params, ctp, data, callback);
     int id = info.getId();
 
     String qs = params.getQuery();
     String url = CommUtils.addQueryString(rpcUrl, qs);
 
-    RequestBuilder bld = new RequestBuilder(meth, url);
+    RequestBuilder bld = new RequestBuilder(method, url);
     if (timeout > 0) {
       bld.setTimeoutMillis(timeout);
       info.setTimeout(timeout);
@@ -317,7 +317,7 @@ public class RpcFactory {
         Service.RPC_VAR_CTP, CommUtils.CONTENT_TYPE_HEADER);
 
     if (debug) {
-      logger.info("request", id, meth.toString(), url);
+      logger.info("request", id, method.toString(), url);
     } else {
       logger.info(">", id, svc, params.getSubService(), params.getSummary());
     }
@@ -333,8 +333,8 @@ public class RpcFactory {
         logger.info("sending", ctp, cth, BeeUtils.bracket(size));
         logger.info(BeeUtils.clip(data, 1024));
       }
-      if (meth.equals(RequestBuilder.GET)) {
-        logger.severe(meth, "data is ignored");
+      if (method.equals(RequestBuilder.GET)) {
+        logger.severe(method, "data is ignored");
         if (!debug) {
           logger.debug(BeeUtils.clip(data, 1024));
         }

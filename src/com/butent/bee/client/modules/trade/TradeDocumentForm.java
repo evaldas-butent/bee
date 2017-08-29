@@ -498,6 +498,11 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
           getFormView().refreshBySource(COL_TRADE_WAREHOUSE_TO);
         }
       }
+
+      GridView itemsGrid = ViewHelper.getChildGrid(getFormView(), GRID_TRADE_DOCUMENT_ITEMS);
+      if (itemsGrid != null && itemsGrid.getGridInterceptor() instanceof TradeDocumentItemsGrid) {
+        ((TradeDocumentItemsGrid) itemsGrid.getGridInterceptor()).refreshCommands();
+      }
     }
   }
 

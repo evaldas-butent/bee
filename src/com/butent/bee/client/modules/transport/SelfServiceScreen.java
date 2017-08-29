@@ -75,6 +75,8 @@ public class SelfServiceScreen extends ScreenImpl {
   }
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "tr-SelfService-";
+  private static final String STYLE_COMMAND_ITEM = "CommandItem";
+  private static final String STYLE_NEW_COMMAND_ITEM = "New" + STYLE_COMMAND_ITEM;
 
   private final Map<String, String> activeViews = new HashMap<>();
 
@@ -110,11 +112,12 @@ public class SelfServiceScreen extends ScreenImpl {
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, "AdditionalInfo");
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, "RelatedMessages");
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, VIEW_CARGO_INCOMES);
+    FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, COL_CUSTOMER);
 
     if (getCommandPanel() != null) {
       getCommandPanel().clear();
     }
-    addCommandItem(new Button(Localized.dictionary().createNew(),
+    Button commandNewRequest = new Button(Localized.dictionary().createNew(),
         event -> {
           DataInfo info = Data.getDataInfo(VIEW_SHIPMENT_REQUESTS);
           BeeRow row = RowFactory.createEmptyRow(info, true);
@@ -123,11 +126,18 @@ public class SelfServiceScreen extends ScreenImpl {
             openRequests();
             showSuccessInfo(result);
           });
-        }));
-    addCommandItem(new Button(Localized.dictionary().trSelfServiceCommandRequests(),
-        event -> openRequests()));
+        });
 
-    addCommandItem(new Button(Localized.dictionary().ecInvoices(),
+    commandNewRequest.addStyleName(STYLE_PREFIX + STYLE_COMMAND_ITEM);
+    commandNewRequest.addStyleName(STYLE_PREFIX + STYLE_NEW_COMMAND_ITEM);
+    addCommandItem(commandNewRequest);
+
+    Button commandRequests = new Button(Localized.dictionary().trSelfServiceCommandRequests(),
+        event -> openRequests());
+    commandRequests.addStyleName(STYLE_PREFIX + STYLE_COMMAND_ITEM);
+    addCommandItem(commandRequests);
+
+    Button commandInvoices = new Button(Localized.dictionary().ecInvoices(),
         event -> openGrid(VIEW_CARGO_INVOICES, Filter.or(
             Filter.equals(TradeConstants.COL_TRADE_CUSTOMER, BeeKeeper.getUser().getCompany()),
             Filter.equals(TradeConstants.COL_SALE_PAYER, BeeKeeper.getUser().getCompany())),
@@ -157,7 +167,9 @@ public class SelfServiceScreen extends ScreenImpl {
                       }
                     });
               }
-            })));
+            }));
+    commandInvoices.addStyleName(STYLE_PREFIX + STYLE_COMMAND_ITEM);
+    addCommandItem(commandInvoices);
   }
 
   @Override

@@ -3460,6 +3460,8 @@ public interface Dictionary {
 
   default String list() {return g("list");}
 
+  default String lists() {return g("lists");}
+
   default String liters() {return g("liters");}
 
   default String loading() {return g("loading");}
@@ -4075,6 +4077,8 @@ public interface Dictionary {
   default String objectData() {return g("objectData");}
 
   default String objectField() {return g("objectField");}
+
+  default String objectList() {return g("objectList");}
 
   default String objectLocation() {return g("objectLocation");}
 
@@ -5994,6 +5998,8 @@ public interface Dictionary {
 
   default String trCopyOrder() {return g("trCopyOrder");}
 
+  default String trCopyRequest() {return g("trCopyRequest");}
+
   default String trCountryNorm() {return g("trCountryNorm");}
 
   default String trCountryNorms() {return g("trCountryNorms");}
@@ -6836,6 +6842,8 @@ public interface Dictionary {
 
   default String trdCashRegisterNo() {return g("trdCashRegisterNo");}
 
+  default String trdCommandReturn() {return g("trdCommandReturn");}
+
   default String trdCustomer() {return g("trdCustomer");}
 
   default String trdDate() {return g("trdDate");}
@@ -7028,6 +7036,8 @@ public interface Dictionary {
   default String trdQuantityStock() {return g("trdQuantityStock");}
 
   default String trdReceivedDate() {return g("trdReceivedDate");}
+
+  default String trdRelatedDocumentItem() {return g("trdRelatedDocumentItem");}
 
   default String trdRelatedDocuments() {return g("trdRelatedDocuments");}
 

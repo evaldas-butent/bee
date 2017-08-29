@@ -1,57 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Form [
-  <!ENTITY MARGIN "margin-right: 1em;">
-  <!ENTITY ROW_STYLE "margin-bottom: 1ex;">
-  <!ENTITY lbl1 "width: 110px; padding-right: 9px; text-align: right;">
-  <!ENTITY lbl2 "width: 75px; padding-right: 9px; text-align: right;">
-  <!ENTITY inp1 "width: 100px;">
-]>
+<!DOCTYPE FlowPanel [
+    <!ENTITY MARGIN "margin-right: 1em;">
+    <!ENTITY ROW_STYLE "margin-bottom: 1ex;">
+    <!ENTITY lbl1 "width: 110px; padding-right: 9px; text-align: right;">
+    <!ENTITY lbl2 "width: 75px; padding-right: 9px; text-align: right;">
+    <!ENTITY inp1 "width: 100px;">
+    ]>
 <FlowPanel xmlns="http://www.butent.com/widget"
-					 xmlns:d="http://www.butent.com/decorator"
-					 style="padding-top: 5px;"
-					 class="flexBox-vertical">
+           xmlns:d="http://www.butent.com/decorator"
+           style="padding-top: 5px;"
+           class="flexBox-vertical">
   <Table kind="controls" style="border-spacing: 5px;">
     <row>
-	  <Label text="=vehicleNumber" class="bee-required" horizontalAlignment="right" style="&lbl1;"/>
-	  <InputText source="Number"  upperCase="true" d:size="70" d:unit="px" d:align="right" d:rootStyle="&MARGIN;" />
-	  <Label text="=vehicleModel" class="bee-required" horizontalAlignment="right" style="&lbl1; "/>
-	  <DataSelector source="Model" class="flexible"
-		renderColumns="BrandName ModelName" decorator="flex-left" d:size="50" d:rootStyle="&MARGIN;"
-		style="&inp1;"/>
-	  <Label text="=vehicleType" class="bee-required" horizontalAlignment="right" style="&lbl2;"/>
-	  <DataSelector source="Type" renderColumns="TypeName" class="flexible" decorator="flex-left" d:size="40" d:rootStyle="&MARGIN;" />
-	  <Label module="Transport" for="Group" text="=groups" horizontalAlignment="right" style="&lbl2;"/>
-	  <ChildSelector module="Transport" viewName="TransportGroups" childTable="VehicleGroups"
-        label="=groups" renderColumns="Name" style="width: 155px;"
-        targetRelColumn="Vehicle" sourceRelColumn="Group" newRowEnabled="false" />
-	</row>
-	<row>
-	  <Label for="Owner" horizontalAlignment="right" style="&lbl1;"/>
-	  <DataSelector source="Owner" decorator="flex-left" d:size="70" d:rootStyle="&MARGIN;" />
-	  <Label for="ProductionDate" horizontalAlignment="right" style="&lbl1;"/>
-	  <InputDate source="ProductionDate" style="&inp1;" />
-	  <Label for="Notes" horizontalAlignment="right" style="&lbl2;"/>
+      <Label text="=vehicleNumber" class="bee-required" horizontalAlignment="right"
+             style="&lbl1;" />
+      <InputText source="Number" upperCase="true" d:size="70" d:unit="px" d:align="right"
+                 d:rootStyle="&MARGIN;" />
+      <Label text="=vehicleModel" class="bee-required" horizontalAlignment="right"
+             style="&lbl1; " />
+      <DataSelector source="Model" class="flexible"
+                    renderColumns="BrandName ModelName" decorator="flex-left" d:size="50"
+                    d:rootStyle="&MARGIN;"
+                    style="&inp1;" />
+      <Label text="=vehicleType" class="bee-required" horizontalAlignment="right" style="&lbl2;" />
+      <DataSelector source="Type" renderColumns="TypeName" class="flexible" decorator="flex-left"
+                    d:size="40" d:rootStyle="&MARGIN;" />
+      <Label module="Transport" listName="VehicleGroups" text="=groups" horizontalAlignment="right"
+             style="&lbl2;" />
+      <ChildSelector module="Transport" viewName="TransportGroups" childTable="VehicleGroups"
+                     label="=groups" renderColumns="Name" style="width: 155px;"
+                     targetRelColumn="Vehicle" sourceRelColumn="Group" newRowEnabled="false" />
+    </row>
+    <row>
+      <Label for="Owner" horizontalAlignment="right" style="&lbl1;" />
+      <DataSelector source="Owner" decorator="flex-left" d:size="70" d:rootStyle="&MARGIN;" />
+      <Label for="ProductionDate" horizontalAlignment="right" style="&lbl1;" />
+      <InputDate source="ProductionDate" style="&inp1;" />
+      <Label for="Notes" horizontalAlignment="right" style="&lbl2;" />
       <SimplePanel style="position: relative; min-width: 5em;" class="flexible">
-        <InputArea source="Notes" class="occupy-1" style="width: 155px; height: 95px;"/>
+        <InputArea source="Notes" class="occupy-1" style="width: 155px; height: 95px;" />
       </SimplePanel>
-	</row>
-	<row>
-      <Label for="BodyNumber" horizontalAlignment="right" style="&lbl1;"/>
-	  <InputText source="BodyNumber" decorator="flex-left" d:size="70" d:rootStyle="&MARGIN;" style="width: 155px;"/>
-	  <Label for="Netto" horizontalAlignment="right" style="&lbl1;"/>
+    </row>
+    <row>
+      <Label for="BodyNumber" horizontalAlignment="right" style="&lbl1;" />
+      <InputText source="BodyNumber" decorator="flex-left" d:size="70" d:rootStyle="&MARGIN;"
+                 style="width: 155px;" />
+      <Label for="Netto" horizontalAlignment="right" style="&lbl1;" />
       <InputInteger source="Netto" style="&inp1;" d:rootStyle="&MARGIN;" />
-	</row>
-	<row>
-	  <Label for="Brutto" horizontalAlignment="right" style="&lbl1;"/>
-	  <InputInteger source="Brutto" style="width: 155px" />
-	  <Label for="EngineNumber" horizontalAlignment="right" style="&lbl1;"/>
-	  <InputInteger source="EngineNumber" decorator="flex-left" d:size="70" d:rootStyle="&MARGIN;" style="&inp1;"/>
-	</row>
-	<row>
-	  <Label for="Power" horizontalAlignment="right" style="&lbl1;"/>
-	  <InputText source="Power" style="width: 155px" d:rootStyle="&MARGIN;" />
-	  <Label for="EngineVolume" horizontalAlignment="right" style="&lbl1;"/>
-	  <InputInteger source="EngineVolume" style="&inp1;" />
-	</row>
-</Table>
+    </row>
+    <row>
+      <Label for="Brutto" horizontalAlignment="right" style="&lbl1;" />
+      <InputInteger source="Brutto" style="width: 155px" />
+      <Label for="EngineNumber" horizontalAlignment="right" style="&lbl1;" />
+      <InputInteger source="EngineNumber" decorator="flex-left" d:size="70" d:rootStyle="&MARGIN;"
+                    style="&inp1;" />
+    </row>
+    <row>
+      <Label for="Power" horizontalAlignment="right" style="&lbl1;" />
+      <InputText source="Power" style="width: 155px" d:rootStyle="&MARGIN;" />
+      <Label for="EngineVolume" horizontalAlignment="right" style="&lbl1;" />
+      <InputInteger source="EngineVolume" style="&inp1;" />
+    </row>
+  </Table>
 </FlowPanel>

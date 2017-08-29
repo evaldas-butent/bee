@@ -119,18 +119,21 @@ public class InvoiceForm extends InvoiceERPForm implements SelectorEvent.Handler
       }
 
       for (String field : fields) {
-        Long warehouse = Data.getLong(viewName, relatedRow, field);
+        int idx = getDataIndex(field);
+        int codeIdx = getDataIndex(field + "Code");
 
-        if (DataUtils.isId(warehouse)) {
-          int idx = getDataIndex(field);
-          int codeIdx = getDataIndex(field + "Code");
+        if (!BeeConst.isUndef(idx) && !BeeConst.isUndef(codeIdx)) {
+          Long warehouse = Data.getLong(viewName, relatedRow, field);
 
-          if (!BeeConst.isUndef(idx) && !BeeConst.isUndef(codeIdx)) {
+          if (DataUtils.isId(warehouse)) {
             getActiveRow().setValue(idx, warehouse);
             getActiveRow().setValue(codeIdx, Data.getString(viewName, relatedRow, field + "Code"));
 
-            getFormView().refreshBySource(field);
+          } else {
+            getActiveRow().clearCell(idx);
+            getActiveRow().clearCell(codeIdx);
           }
+          getFormView().refreshBySource(field);
         }
       }
     }

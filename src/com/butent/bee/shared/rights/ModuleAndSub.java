@@ -5,13 +5,14 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public final class ModuleAndSub implements Comparable<ModuleAndSub>, BeeSerializable {
+public final class ModuleAndSub implements Comparable<ModuleAndSub>, BeeSerializable, HasCaption {
 
   public static ModuleAndSub of(Module module) {
     return of(module, null);
@@ -104,6 +105,14 @@ public final class ModuleAndSub implements Comparable<ModuleAndSub>, BeeSerializ
     } else {
       return false;
     }
+  }
+
+  @Override
+  public String getCaption() {
+    String mc = (module == null) ? null : module.getCaption();
+    String sc = (subModule == null) ? null : subModule.getCaption();
+
+    return BeeUtils.joinWords(mc, sc);
   }
 
   public Module getModule() {

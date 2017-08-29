@@ -20,6 +20,7 @@
     <xs:attribute name="module" type="tp:modules" />
     <xs:attribute name="data" type="tp:dataView" />
     <xs:attribute name="for" type="tp:fieldNameType" />
+    <xs:attribute name="listName" type="tp:nameType" />
   </xs:attributeGroup>
 
   <xs:complexType name="widgetBase">

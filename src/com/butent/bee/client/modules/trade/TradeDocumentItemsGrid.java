@@ -18,6 +18,7 @@ import com.butent.bee.client.dialog.ModalGrid;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.DataReceivedEvent;
+import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.i18n.Money;
@@ -26,6 +27,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -212,6 +214,10 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       TradeKeeper.STYLE_PREFIX + "show-related-documents";
   private static final String STYLE_PRICE_CALCULATION_COMMAND =
       TradeKeeper.STYLE_PREFIX + "price-calculation";
+  private static final String STYLE_RETURN_COMMAND =
+      TradeKeeper.STYLE_PREFIX + "return-command";
+
+  private static final int COMMAND_DURATION = TimeUtils.MILLIS_PER_SECOND * 10;
 
   private Supplier<TradeDocumentSums> tdsSupplier;
   private Consumer<Boolean> tdsListener;
@@ -235,21 +241,19 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
     if (presenter != null && presenter.getHeader() != null) {
-
       Button stockCommand = new Button(Localized.dictionary().trdItemStock(),
           event -> showItemStock(EventUtils.getEventTargetElement(event)));
       stockCommand.addStyleName(STYLE_SHOW_ITEM_STOCK_COMMAND);
       stockCommand.setEnabled(false);
 
-      presenter.getHeader().addCommandItem(stockCommand, TimeUtils.MILLIS_PER_SECOND * 10);
+      presenter.getHeader().addCommandItem(stockCommand, COMMAND_DURATION);
 
       Button relatedDocumentsCommand = new Button(Localized.dictionary().trdRelatedDocuments(),
           event -> getRelatedDocuments());
       relatedDocumentsCommand.addStyleName(STYLE_SHOW_RELATED_DOCUMENTS_COMMAND);
       relatedDocumentsCommand.setEnabled(false);
 
-      presenter.getHeader().addCommandItem(relatedDocumentsCommand,
-          TimeUtils.MILLIS_PER_SECOND * 10);
+      presenter.getHeader().addCommandItem(relatedDocumentsCommand, COMMAND_DURATION);
 
       if (BeeKeeper.getUser().canEditData(getViewName())) {
         Button priceCommand = new Button(Localized.dictionary().recalculateTradeItemPriceCaption(),
@@ -258,6 +262,17 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
         presenter.getHeader().addCommandItem(priceCommand);
       }
+
+      if (BeeKeeper.getUser().canCreateData(getViewName())) {
+        Button returnCommand = new Button(Localized.dictionary().trdCommandReturn(),
+            event -> onReturn());
+        returnCommand.addStyleName(STYLE_RETURN_COMMAND);
+        returnCommand.setEnabled(false);
+
+        presenter.getHeader().addCommandItem(returnCommand, COMMAND_DURATION);
+      }
+
+      refreshCommands();
     }
 
     super.afterCreatePresenter(presenter);
@@ -364,9 +379,16 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       fireTdsChange(event.isInsert());
     }
 
-    TradeUtils.configureCostCalculation(getGridView());
-
     super.onDataReceived(event);
+  }
+
+  @Override
+  public void onParentRow(ParentRowEvent event) {
+    if (getHeaderView() != null) {
+      refreshCommands();
+    }
+
+    super.onParentRow(event);
   }
 
   @Override
@@ -468,6 +490,11 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
 
     return super.previewRowUpdate(event);
+  }
+
+  void refreshCommands() {
+    TradeUtils.configureCostCalculation(getGridView());
+    checkReturnCommand(getGridView());
   }
 
   private void fireTdsChange(boolean update) {
@@ -972,7 +999,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
             BeeRowSet rowSet = BeeRowSet.restore(response.getResponseAsString());
             showRelatedDocuments(rowSet);
 
-          } else {
+          } else if (getGridView().isInteractive()) {
             getGridView().notifyInfo(Localized.dictionary().noData());
           }
         }
@@ -999,6 +1026,127 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     };
 
     GridFactory.openGrid(GRID_TRADE_RELATED_ITEMS, interceptor,
+        GridFactory.GridOptions.forCaption(caption),
+        ModalGrid.opener(75, CssUnit.PCT, height, CssUnit.PCT, false));
+  }
+
+  private void checkReturnCommand(GridView gridView) {
+    HeaderView header = getHeaderView();
+
+    if (gridView != null && header != null) {
+      OperationType operationType = TradeUtils.getDocumentOperationType(getParentRow(gridView));
+      boolean enable = operationType != null && operationType.isReturn()
+          && !gridView.isReadOnly() && BeeKeeper.getUser().canCreateData(getViewName());
+
+      header.enableCommandByStyleName(STYLE_RETURN_COMMAND, enable);
+    }
+  }
+
+  private void onReturn() {
+    IsRow parentRow = getParentRow(getGridView());
+    OperationType operationType = TradeUtils.getDocumentOperationType(parentRow);
+
+    if (operationType != null && operationType.isReturn()) {
+      if (operationType.consumesStock()) {
+        onReturnToSupplier(parentRow);
+      } else {
+        onCustomerReturn(parentRow);
+      }
+
+    } else {
+      endReturnCommand();
+    }
+  }
+
+  private void endReturnCommand() {
+    endCommand(STYLE_RETURN_COMMAND, true);
+  }
+
+  private void onReturnToSupplier(IsRow documentRow) {
+    Long supplier = TradeUtils.getDocumentRelation(documentRow, COL_TRADE_CUSTOMER);
+
+    if (!DataUtils.isId(supplier)) {
+      FormView form = ViewHelper.getForm(getGridView());
+      if (form != null) {
+        String label = Data.getColumnLabel(form.getViewName(), COL_TRADE_CUSTOMER);
+        form.notifyWarning(Localized.dictionary().fieldRequired(label));
+      }
+
+      endReturnCommand();
+      return;
+    }
+
+    DateTime date = TradeUtils.getDocumentDate(documentRow);
+    Long currency = TradeUtils.getDocumentRelation(documentRow, COL_TRADE_CURRENCY);
+
+    String n1 = TradeUtils.getDocumentString(documentRow, COL_TRADE_DOCUMENT_NUMBER_1);
+    String n2 = TradeUtils.getDocumentString(documentRow, COL_TRADE_DOCUMENT_NUMBER_2);
+  }
+
+  private void onCustomerReturn(IsRow documentRow) {
+    Long customer = TradeUtils.getDocumentRelation(documentRow, COL_TRADE_SUPPLIER);
+
+    if (!DataUtils.isId(customer)) {
+      FormView form = ViewHelper.getForm(getGridView());
+      if (form != null) {
+        String label = Data.getColumnLabel(form.getViewName(), COL_TRADE_SUPPLIER);
+        form.notifyWarning(Localized.dictionary().fieldRequired(label));
+      }
+
+      endReturnCommand();
+      return;
+    }
+
+    DateTime date = TradeUtils.getDocumentDate(documentRow);
+    Long currency = TradeUtils.getDocumentRelation(documentRow, COL_TRADE_CURRENCY);
+
+    String n1 = TradeUtils.getDocumentString(documentRow, COL_TRADE_DOCUMENT_NUMBER_1);
+    String n2 = TradeUtils.getDocumentString(documentRow, COL_TRADE_DOCUMENT_NUMBER_2);
+
+    String customerName = TradeUtils.getDocumentString(documentRow, ALS_SUPPLIER_NAME);
+
+    ParameterList parameters = TradeKeeper.createArgs(SVC_GET_TRADE_ITEMS_FOR_RETURN);
+
+    parameters.addDataItem(COL_TRADE_CUSTOMER, customer);
+    if (date != null) {
+      parameters.addDataItem(COL_TRADE_DATE, date.getTime());
+    }
+
+    if (!BeeUtils.isEmpty(n1)) {
+      parameters.addDataItem(COL_TRADE_DOCUMENT_NUMBER_1, n1);
+    }
+    if (!BeeUtils.isEmpty(n2)) {
+      parameters.addDataItem(COL_TRADE_DOCUMENT_NUMBER_2, n2);
+    }
+
+    BeeKeeper.getRpc().makeRequest(parameters, response -> {
+      String caption = BeeUtils.joinWords(customerName, n1, n2, date);
+
+      if (response.hasResponse()) {
+        BeeRowSet rowSet = BeeRowSet.restore(response.getResponseAsString());
+        openCustomerReturns(caption, rowSet);
+
+      } else if (getGridView().isInteractive()) {
+        getGridView().notifyInfo(caption, Localized.dictionary().trdTypeSale()
+            + BeeConst.STRING_COLON + BeeConst.STRING_SPACE
+            + Localized.dictionary().nothingFound());
+      }
+
+      endReturnCommand();
+    });
+  }
+
+  private void openCustomerReturns(String caption, final BeeRowSet rowSet) {
+    GridInterceptor interceptor = new AbstractGridInterceptor() {
+      @Override
+      public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
+        return rowSet;
+      }
+    };
+
+    int height = BeeUtils.resize(rowSet.getNumberOfRows(), 1, 12, 20, 80);
+
+    GridFactory.openGrid(GRID_TRADE_ITEMS_FOR_RETURN, interceptor,
         GridFactory.GridOptions.forCaption(caption),
         ModalGrid.opener(75, CssUnit.PCT, height, CssUnit.PCT, false));
   }

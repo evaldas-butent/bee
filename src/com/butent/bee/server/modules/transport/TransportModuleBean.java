@@ -2480,10 +2480,12 @@ public class TransportModuleBean implements BeeModule {
           .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
           .addFromInner(TBL_CARGO_INCOMES,
               sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
+          .addFromLeft(TBL_SALES, sys.joinTables(TBL_SALES, TBL_CARGO_INCOMES, COL_SALE))
           .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_ORDERS, COL_PAYER, company),
               SqlUtils.and(SqlUtils.isNull(TBL_ORDERS, COL_PAYER),
                   SqlUtils.equals(TBL_ORDERS, COL_CUSTOMER, company))),
-              SqlUtils.isNull(TBL_CARGO_INCOMES, COL_SALE)));
+              SqlUtils.or(SqlUtils.isNull(TBL_CARGO_INCOMES, COL_SALE),
+                  SqlUtils.notNull(TBL_SALES, COL_SALE_PROFORMA))));
 
       IsExpression cargoIncome;
       IsExpression dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_CARGO_INCOMES, COL_DATE),

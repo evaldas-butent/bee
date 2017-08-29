@@ -4,7 +4,7 @@
         xmlns:ui="http://www.butent.com/ui"
 
         name="Account" viewName="Accounts" caption="=mailAccount" width="700" height="700"
-    >
+>
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-vertical-center">
       <Table kind="controls">
@@ -25,8 +25,8 @@
                         currentUserFilter="User" />
           <ListBox source="SyncMode" />
         </row>
-        <row>
-          <Label text="=users" />
+        <row data="AccountUsers" listName="AccountUsers">
+          <Label text="=users" listName="AccountUsers" />
           <cell colSpan="2">
             <ChildSelector name="AccountUsers" childTable="AccountUsers" viewName="Users"
                            targetRelColumn="Account" sourceRelColumn="User"

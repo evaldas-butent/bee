@@ -239,6 +239,24 @@ public final class Dimensions implements BeeSerializable {
     return new Dimensions(values);
   }
 
+  public static Dimensions mergeNotEmpty(Dimensions... input) {
+    if (input != null) {
+      List<Dimensions> list = new ArrayList<>();
+
+      for (Dimensions dim : input) {
+        if (dim != null && !dim.isEmpty()) {
+          list.add(dim);
+        }
+      }
+
+      if (!list.isEmpty()) {
+        return merge(list);
+      }
+    }
+
+    return null;
+  }
+
   public static Dimensions restore(String s) {
     Dimensions dimensions = new Dimensions(new Long[observed]);
     dimensions.deserialize(s);
