@@ -6937,6 +6937,8 @@ public interface Dictionary {
 
   default String trdItemWarehouseTo() {return g("trdItemWarehouseTo");}
 
+  default String trdItemsForReturn() {return g("trdItemsForReturn");}
+
   default String trdManager() {return g("trdManager");}
 
   default String trdMovement() {return g("trdMovement");}

@@ -4895,7 +4895,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     filter.add(Filter.isPositive(COL_TRADE_ITEM_QUANTITY));
 
-    BeeRowSet result = prepareTradeItemsForReturn(qs.getViewData(VIEW_TRADE_MOVEMENT, filter));
+    BeeRowSet result = prepareTradeItemsForReturn(
+        qs.getViewData(VIEW_TRADE_ITEMS_FOR_RETURN, filter));
 
     if (DataUtils.isEmpty(result)) {
       return ResponseObject.emptyResponse();
@@ -4909,42 +4910,20 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       return null;
     }
 
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_TRADE_ITEM_RETURNS, COL_RELATED_DOCUMENT_ITEM)
-        .addSum(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY)
-        .addFrom(TBL_TRADE_ITEM_RETURNS)
-        .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
-            TBL_TRADE_ITEM_RETURNS, COL_TRADE_DOCUMENT_ITEM))
-        .setWhere(SqlUtils.inList(TBL_TRADE_ITEM_RETURNS, COL_RELATED_DOCUMENT_ITEM,
-            input.getRowIds()))
-        .addGroup(TBL_TRADE_ITEM_RETURNS, COL_RELATED_DOCUMENT_ITEM);
-
-    SimpleRowSet data = qs.getData(query);
-
-    Map<Long, Double> returnedQuantities = new HashMap<>();
-    if (!DataUtils.isEmpty(data)) {
-      data.forEach(row -> returnedQuantities.put(row.getLong(0), row.getDouble(1)));
-    }
-
     Set<Long> docIds = new HashSet<>();
 
     BeeRowSet result = new BeeRowSet(input.getViewName(), input.getColumns());
 
     int docIdIndex = input.getColumnIndex(COL_TRADE_DOCUMENT);
+
     int qtyIndex = input.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+    int returnedQtyIndex = input.getColumnIndex(ALS_RETURNED_QTY);
 
     input.forEach(row -> {
-      Double original = row.getDouble(qtyIndex);
-      Double returned = returnedQuantities.get(row.getId());
+      Double quantity = row.getDouble(qtyIndex);
+      Double returned = row.getDouble(returnedQtyIndex);
 
-      if (BeeUtils.isPositive(original) && BeeUtils.isMore(original, returned)) {
-        row.setProperty(PROP_ORIGINAL_QTY, original);
-        if (BeeUtils.isPositive(returned)) {
-          row.setProperty(PROP_RETURNED_QTY, returned);
-        }
-
-        row.clearCell(qtyIndex);
-
+      if (BeeUtils.isPositive(quantity) && BeeUtils.isMore(quantity, returned)) {
         docIds.add(row.getLong(docIdIndex));
         result.addRow(row);
       }

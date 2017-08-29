@@ -116,6 +116,7 @@ public final class TradeConstants {
 
   public static final String VIEW_TRADE_MOVEMENT = "TradeMovement";
   public static final String VIEW_ITEM_SELECTION = "ItemSelection";
+  public static final String VIEW_TRADE_ITEMS_FOR_RETURN = "TradeItemsForReturn";
 
   public static final String COL_PURCHASE = "Purchase";
 
@@ -302,6 +303,8 @@ public final class TradeConstants {
   public static final String ALS_PARENT_COST = "ParentCost";
   public static final String ALS_PARENT_COST_CURRENCY = "ParentCostCurrency";
 
+  public static final String ALS_RETURNED_QTY = "ReturnedQty";
+
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
 
   public static final String PROP_STOCK = "Stock";
@@ -318,9 +321,6 @@ public final class TradeConstants {
 
   public static final String PROP_TD_PAID = "TdPaid";
   public static final String PROP_TD_DEBT = "TdDebt";
-
-  public static final String PROP_ORIGINAL_QTY = "OriginalQty";
-  public static final String PROP_RETURNED_QTY = "ReturnedQty";
 
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";

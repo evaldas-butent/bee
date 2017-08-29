@@ -19,6 +19,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
@@ -71,7 +72,7 @@ public class TradeActItemsByCompanyReport extends ReportInterceptor {
       COL_TA_ITEM, COL_TA_COMPANY, COL_TA_OBJECT, COL_TA_MANAGER, COL_WAREHOUSE);
 
   private static final List<String> TOTAL_COLUMNS = Arrays.asList(COL_TRADE_ITEM_QUANTITY,
-      ALS_RETURNED_QTY, ALS_REMAINING_QTY, ALS_BASE_AMOUNT, ALS_DISCOUNT_AMOUNT,
+      TradeActConstants.ALS_RETURNED_QTY, ALS_REMAINING_QTY, ALS_BASE_AMOUNT, ALS_DISCOUNT_AMOUNT,
       ALS_TOTAL_AMOUNT);
 
   private static final List<String> MONEY_COLUMNS = Arrays.asList(COL_TRADE_ITEM_PRICE,

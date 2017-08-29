@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="TradeItemsForReturn" source="TradeDocumentItems" caption="=trdItemsForReturn"
+>
+  <Columns>
+    <SimpleColumn name="TradeDocument" />
+    <SimpleJoin name="TradeDocument" joinType="LEFT">
+      <SimpleColumn name="Date" />
+
+      <SimpleColumn name="Series" />
+      <SimpleColumn name="Number" />
+
+      <SimpleColumn name="Number1" />
+      <SimpleColumn name="Number2" />
+
+      <SimpleColumn name="Operation" />
+      <SimpleJoin name="Operation" joinType="LEFT">
+        <SimpleColumn name="OperationName" />
+        <SimpleColumn name="OperationType" />
+        <SimpleColumn name="Background" alias="OperationBackground" />
+        <SimpleColumn name="Foreground" alias="OperationForeground" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Phase" />
+
+      <SimpleColumn name="Status" />
+      <SimpleJoin joinType="LEFT" name="Status">
+        <SimpleColumn name="StatusName" />
+        <SimpleColumn name="Background" alias="StatusBackground" />
+        <SimpleColumn name="Foreground" alias="StatusForeground" />
+      </SimpleJoin>
+
+      <SimpleColumn name="WarehouseFrom" />
+      <SimpleJoin joinType="LEFT" name="WarehouseFrom">
+        <SimpleColumn name="Code" alias="WarehouseFromCode" />
+        <SimpleColumn name="Name" alias="WarehouseFromName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Currency" />
+      <SimpleJoin joinType="LEFT" name="Currency">
+        <SimpleColumn name="Name" alias="CurrencyName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Customer" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Item" />
+    <SimpleJoin joinType="LEFT" name="Item">
+      <SimpleColumn name="Name" alias="ItemName" />
+      <SimpleJoin joinType="LEFT" name="Unit">
+        <SimpleColumn name="Name" alias="UnitName" />
+      </SimpleJoin>
+      <SimpleColumn name="IsService" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Article" />
+    <ExternalJoin joinType="LEFT" targetName="Parent" source="TradeStock"
+                  name="TradeDocumentItem">
+      <SimpleJoin joinType="LEFT" name="PrimaryDocumentItem">
+        <SimpleColumn name="Article" alias="PrimaryArticle" />
+      </SimpleJoin>
+    </ExternalJoin>
+
+    <SimpleColumn name="Quantity" />
+    <SimpleColumn name="Price" />
+
+    <SimpleColumn name="Discount" />
+    <SimpleColumn name="DiscountIsPercent" />
+
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatIsPercent" />
+
+    <SimpleColumn name="ItemWarehouseFrom" />
+    <SimpleJoin joinType="LEFT" name="ItemWarehouseFrom">
+      <SimpleColumn name="Code" alias="ItemWarehouseFromCode" />
+      <SimpleColumn name="Name" alias="ItemWarehouseFromName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Note" />
+
+    <SimpleColumn name="Parent" />
+
+    <ExternalJoin joinType="LEFT" source="TradeItemReturns" name="RelatedDocumentItem">
+      <SimpleJoin joinType="LEFT" name="TradeDocumentItem">
+        <AggregateColumn name="Quantity" alias="ReturnedQty" aggregate="SUM" />
+      </SimpleJoin>
+    </ExternalJoin>
+  </Columns>
+
+  <Order>
+    <OrderBy column="Date" />
+    <OrderBy column="TradeDocument" />
+  </Order>
+</View>
