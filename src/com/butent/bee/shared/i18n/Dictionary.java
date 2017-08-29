@@ -5998,6 +5998,8 @@ public interface Dictionary {
 
   default String trCopyOrder() {return g("trCopyOrder");}
 
+  default String trCopyRequest() {return g("trCopyRequest");}
+
   default String trCountryNorm() {return g("trCountryNorm");}
 
   default String trCountryNorms() {return g("trCountryNorms");}

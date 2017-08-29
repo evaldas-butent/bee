@@ -34,7 +34,6 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -103,7 +102,6 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -700,8 +698,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   private void copy() {
-    String cap = getHeaderView().getCaption();
-    Global.confirm(cap, Icon.QUESTION, Collections.singletonList(loc.actionCopy()), () -> {
+    Global.confirm(isRequest() ? loc.trCopyRequest() : loc.trCopyOrder(), () -> {
       copyAction.running();
       IsRow oldRow = getActiveRow();
       DataInfo info = Data.getDataInfo(getViewName());
