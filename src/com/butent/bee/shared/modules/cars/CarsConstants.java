@@ -69,6 +69,7 @@ public final class CarsConstants {
   public static final String COL_TYPE = "Type";
   public static final String COL_GROUP = "Group";
   public static final String COL_GROUP_NAME = "GroupName";
+  public static final String COL_GROUP_NAME2 = "GroupName2";
   public static final String COL_BLOCKED = "Blocked";
   public static final String COL_ORDINAL = "Ordinal";
   public static final String COL_REQUIRED = "Required";

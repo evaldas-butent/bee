@@ -14,6 +14,7 @@ import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
@@ -673,15 +674,17 @@ public class SpecificationBuilder implements InputCallback {
         }
       }
     }
-    Flow descriptionBox = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
+    Flow descriptionBox = new Disclosure(false, new Label(Localized.dictionary().equipment()));
+    Flow content = new Flow();
+    descriptionBox.add(content);
 
     CustomDiv descr = new CustomDiv(STYLE_DESCRIPTION);
     descr.setHtml(specification.getDescription());
-    descriptionBox.add(descr);
+    content.add(descr);
 
     CustomDiv crit = new CustomDiv();
     crit.setHtml(renderCriteria(collectCriteria(configuration)));
-    descriptionBox.add(crit);
+    content.add(crit);
 
     subContainer.add(descriptionBox);
     subContainer.add(optionBox);
@@ -727,9 +730,6 @@ public class SpecificationBuilder implements InputCallback {
                         configuration.getOptionDescription(option), option.getDescription()),
                 BeeUtils.joinWords(option.getCode(), option.getName())));
           }
-        }
-        if (!defaults.isEmpty()) {
-          defaults.add(0, "<b>" + Localized.dictionary().equipment() + "</b>");
         }
       }
     }

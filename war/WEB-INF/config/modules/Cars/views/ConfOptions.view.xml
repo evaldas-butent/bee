@@ -14,6 +14,7 @@
         <SimpleColumn name="TypeName" />
       </SimpleJoin>
       <SimpleColumn name="GroupName" />
+      <SimpleColumn name="GroupName2" />
     </SimpleJoin>
     <SimpleColumn name="OptionName" />
     <SimpleColumn name="OptionName2" />

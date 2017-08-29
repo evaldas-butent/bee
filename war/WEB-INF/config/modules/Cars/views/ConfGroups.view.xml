@@ -4,13 +4,14 @@
       name="ConfGroups" source="ConfGroups"
       caption="=optionGroups"
 >
-  <Relation renderColumns="TypeName GroupName" />
+  <Relation renderColumns="TypeName GroupName2 GroupName" />
   <Columns>
     <SimpleColumn name="Type" />
     <SimpleJoin name="Type" joinType="INNER">
       <SimpleColumn name="TypeName" />
     </SimpleJoin>
     <SimpleColumn name="GroupName" />
+    <SimpleColumn name="GroupName2" />
     <SimpleColumn name="Required" />
   </Columns>
   <Order>
