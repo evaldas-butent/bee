@@ -7035,6 +7035,10 @@ public interface Dictionary {
 
   default String trdQuantityReserved() {return g("trdQuantityReserved");}
 
+  default String trdQuantityReturn() {return g("trdQuantityReturn");}
+
+  default String trdQuantityReturned() {return g("trdQuantityReturned");}
+
   default String trdQuantityStock() {return g("trdQuantityStock");}
 
   default String trdReceivedDate() {return g("trdReceivedDate");}

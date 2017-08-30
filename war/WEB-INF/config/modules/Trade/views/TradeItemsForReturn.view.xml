@@ -83,7 +83,8 @@
 
     <ExternalJoin joinType="LEFT" source="TradeItemReturns" name="RelatedDocumentItem">
       <SimpleJoin joinType="LEFT" name="TradeDocumentItem">
-        <AggregateColumn name="Quantity" alias="ReturnedQty" aggregate="SUM" />
+        <AggregateColumn name="Quantity" alias="ReturnedQty" aggregate="SUM"
+                         label="=trdQuantityReturned" />
       </SimpleJoin>
     </ExternalJoin>
   </Columns>

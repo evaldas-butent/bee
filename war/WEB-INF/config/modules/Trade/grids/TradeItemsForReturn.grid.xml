@@ -18,7 +18,7 @@
     <DataColumn name="Number2" visible="false" />
 
     <RelColumn name="Operation" renderColumns="OperationName" visible="false" />
-    <DataColumn name="Phase" />
+    <DataColumn name="Phase" visible="false" />
     <RelColumn name="Status" renderColumns="StatusName" visible="false" />
 
     <RelColumn name="WarehouseFrom" caption="=trdWarehouseFromShort"
@@ -51,12 +51,11 @@
     <DataColumn name="VatIsPercent" width="20" sortable="false" format="%" visible="false" />
 
     <DataColumn name="Quantity" visible="true" />
-    <DataColumn name="UnitName" label="=unitShort" visible="false" />
-
     <DataColumn name="ReturnedQty" />
 
-    <DataColumn name="Note" maxWidth="300" visible="false" />
+    <DataColumn name="UnitName" label="=unitShort" />
 
+    <DataColumn name="Note" maxWidth="300" visible="false" />
     <DataColumn name="Parent" visible="false" />
   </g:columns>
 </g:Grid>
