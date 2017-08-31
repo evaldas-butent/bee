@@ -2,8 +2,8 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
         xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
 
-        name="TradeItemsForReturn" viewName="TradeItemsForReturn" caption="=trdItemsForReturn"
-        paging="false"
+        name="TradeItemsForReturn" viewName="TradeItemsForReturn"
+        caption="=trdItemsForReturn" readOnly="true"
 >
   <g:columns>
     <IdColumn name="Id" visible="false" />
@@ -57,5 +57,7 @@
 
     <DataColumn name="Note" maxWidth="300" visible="false" />
     <DataColumn name="Parent" visible="false" />
+
+    <PropColumn name="SelectedQty" type="double" label="=trdQuantityReturn" visible="true" />
   </g:columns>
 </g:Grid>

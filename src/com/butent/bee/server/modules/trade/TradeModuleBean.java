@@ -72,7 +72,6 @@ import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
-import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
@@ -128,7 +127,6 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.StringList;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
@@ -138,7 +136,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -321,10 +318,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       case SVC_GET_RELATED_TRADE_ITEMS:
         response = getRelatedTradeItems(reqInfo);
-        break;
-
-      case SVC_GET_TRADE_ITEMS_FOR_RETURN:
-        response = getTradeItemsForReturn(reqInfo);
         break;
 
       case SVC_TRADE_STOCK_REPORT:
@@ -1246,6 +1239,70 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                 docRow.setNonZero(PROP_TD_PAID, paid);
                 docRow.setNonZero(PROP_TD_DEBT, total - paid);
               }
+            }
+          }
+
+        } else if (event.isAfter(VIEW_TRADE_ITEMS_FOR_RETURN)
+            && !DataUtils.isEmpty(event.getRowset())) {
+
+          BeeRowSet data = event.getRowset();
+
+          int docIdIndex = data.getColumnIndex(COL_TRADE_DOCUMENT);
+          Set<Long> docIds = data.getDistinctLongs(docIdIndex);
+
+          if (!docIds.isEmpty()) {
+            String docIdName = sys.getIdName(TBL_TRADE_DOCUMENTS);
+
+            SqlSelect docQuery = new SqlSelect()
+                .addFields(TBL_TRADE_DOCUMENTS, docIdName)
+                .addFields(TBL_TRADE_DOCUMENTS, TradeDocumentSums.DOCUMENT_COLUMNS)
+                .addFrom(TBL_TRADE_DOCUMENTS)
+                .setWhere(SqlUtils.inList(TBL_TRADE_DOCUMENTS, docIdName, docIds));
+
+            SimpleRowSet docData = qs.getData(docQuery);
+
+            if (!DataUtils.isEmpty(docData)) {
+              Map<Long, Double> docTotals = new HashMap<>();
+              Map<Long, Double> docPaid = new HashMap<>();
+              Map<Long, Double> docDebts = new HashMap<>();
+
+              for (SimpleRow docRow : docData) {
+                long docId = docRow.getLong(docIdName);
+
+                TradeVatMode vatMode = docRow.getEnum(COL_TRADE_DOCUMENT_VAT_MODE,
+                    TradeVatMode.class);
+                TradeDiscountMode discountMode = docRow.getEnum(COL_TRADE_DOCUMENT_DISCOUNT_MODE,
+                    TradeDiscountMode.class);
+                Double docDiscount = docRow.getDouble(COL_TRADE_DOCUMENT_DISCOUNT);
+
+                BeeRowSet itemData = qs.getViewData(VIEW_TRADE_DOCUMENT_ITEMS,
+                    Filter.equals(COL_TRADE_DOCUMENT, docId), null,
+                    TradeDocumentSums.ITEM_COLUMNS);
+                BeeRowSet paymentData = qs.getViewData(VIEW_TRADE_PAYMENTS,
+                    Filter.equals(COL_TRADE_DOCUMENT, docId), null,
+                    TradeDocumentSums.PAYMENT_COLUMNS);
+
+                TradeDocumentSums tds = new TradeDocumentSums(vatMode, discountMode, docDiscount);
+
+                if (!DataUtils.isEmpty(itemData)) {
+                  tds.addItems(itemData);
+                }
+                if (!DataUtils.isEmpty(paymentData)) {
+                  tds.addPayments(paymentData);
+                }
+
+                docTotals.put(docId, tds.getTotal());
+                docPaid.put(docId, tds.getPaid());
+                docDebts.put(docId, tds.getDebt());
+              }
+
+              data.forEach(row -> {
+                Long docId = row.getLong(docIdIndex);
+
+                row.setNonZero(PROP_TD_TOTAL, docTotals.get(docId));
+                row.setNonZero(PROP_TD_PAID, docPaid.get(docId));
+                row.setNonZero(PROP_TD_DEBT, docDebts.get(docId));
+              });
             }
           }
         }
@@ -4851,137 +4908,5 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     } else {
       return accounts.stream().findAny().get();
     }
-  }
-
-  private ResponseObject getTradeItemsForReturn(RequestInfo reqInfo) {
-    Long customer = reqInfo.getParameterLong(COL_TRADE_CUSTOMER);
-    if (!DataUtils.isId(customer)) {
-      return ResponseObject.parameterNotFound(reqInfo.getLabel(), COL_TRADE_CUSTOMER);
-    }
-
-    DateTime date = reqInfo.getParameterDateTime(COL_TRADE_DATE);
-
-    String n1 = reqInfo.getParameter(COL_TRADE_DOCUMENT_NUMBER_1);
-    String n2 = reqInfo.getParameter(COL_TRADE_DOCUMENT_NUMBER_2);
-
-    CompoundFilter filter = Filter.and();
-
-    filter.add(Filter.equals(COL_TRADE_CUSTOMER, customer));
-
-    if (date != null) {
-      filter.add(Filter.isLess(COL_TRADE_DATE, new DateTimeValue(TimeUtils.startOfNextDay(date))));
-    }
-
-    if (!BeeUtils.isEmpty(n1) || !BeeUtils.isEmpty(n2)) {
-      StringList numberColumns = StringList.of(COL_TRADE_NUMBER,
-          COL_TRADE_DOCUMENT_NUMBER_1, COL_TRADE_DOCUMENT_NUMBER_2);
-
-      Filter f1 = BeeUtils.isEmpty(n1) ? null : Filter.anyContains(numberColumns, n1);
-      Filter f2 = (BeeUtils.isEmpty(n2) || Objects.equals(n1, n2))
-          ? null : Filter.anyContains(numberColumns, n2);
-
-      filter.add(Filter.or(f1, f2));
-    }
-
-    EnumSet<TradeDocumentPhase> phases = EnumSet.noneOf(TradeDocumentPhase.class);
-    phases.addAll(Arrays.stream(TradeDocumentPhase.values())
-        .filter(TradeDocumentPhase::modifyStock)
-        .collect(Collectors.toSet()));
-
-    filter.add(Filter.any(COL_TRADE_DOCUMENT_PHASE, phases));
-
-    EnumSet<OperationType> operationTypes = EnumSet.of(OperationType.SALE, OperationType.POS);
-    filter.add(Filter.any(COL_OPERATION_TYPE, operationTypes));
-
-    filter.add(Filter.isPositive(COL_TRADE_ITEM_QUANTITY));
-
-    BeeRowSet result = prepareTradeItemsForReturn(
-        qs.getViewData(VIEW_TRADE_ITEMS_FOR_RETURN, filter));
-
-    if (DataUtils.isEmpty(result)) {
-      return ResponseObject.emptyResponse();
-    } else {
-      return ResponseObject.response(result);
-    }
-  }
-
-  private BeeRowSet prepareTradeItemsForReturn(BeeRowSet input) {
-    if (DataUtils.isEmpty(input)) {
-      return null;
-    }
-
-    Set<Long> docIds = new HashSet<>();
-
-    BeeRowSet result = new BeeRowSet(input.getViewName(), input.getColumns());
-
-    int docIdIndex = input.getColumnIndex(COL_TRADE_DOCUMENT);
-
-    int qtyIndex = input.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
-    int returnedQtyIndex = input.getColumnIndex(ALS_RETURNED_QTY);
-
-    input.forEach(row -> {
-      Double quantity = row.getDouble(qtyIndex);
-      Double returned = row.getDouble(returnedQtyIndex);
-
-      if (BeeUtils.isPositive(quantity) && BeeUtils.isMore(quantity, returned)) {
-        docIds.add(row.getLong(docIdIndex));
-        result.addRow(row);
-      }
-    });
-
-    if (!docIds.isEmpty()) {
-      String docIdName = sys.getIdName(TBL_TRADE_DOCUMENTS);
-
-      SqlSelect docQuery = new SqlSelect()
-          .addFields(TBL_TRADE_DOCUMENTS, docIdName)
-          .addFields(TBL_TRADE_DOCUMENTS, TradeDocumentSums.DOCUMENT_COLUMNS)
-          .addFrom(TBL_TRADE_DOCUMENTS)
-          .setWhere(SqlUtils.inList(TBL_TRADE_DOCUMENTS, docIdName, docIds));
-
-      SimpleRowSet docData = qs.getData(docQuery);
-
-      if (!DataUtils.isEmpty(docData)) {
-        Map<Long, Double> docTotals = new HashMap<>();
-        Map<Long, Double> docPaid = new HashMap<>();
-        Map<Long, Double> docDebts = new HashMap<>();
-
-        for (SimpleRow docRow : docData) {
-          long docId = docRow.getLong(docIdName);
-
-          TradeVatMode vatMode = docRow.getEnum(COL_TRADE_DOCUMENT_VAT_MODE, TradeVatMode.class);
-          TradeDiscountMode discountMode = docRow.getEnum(COL_TRADE_DOCUMENT_DISCOUNT_MODE,
-              TradeDiscountMode.class);
-          Double docDiscount = docRow.getDouble(COL_TRADE_DOCUMENT_DISCOUNT);
-
-          BeeRowSet itemData = qs.getViewData(VIEW_TRADE_DOCUMENT_ITEMS,
-              Filter.equals(COL_TRADE_DOCUMENT, docId), null, TradeDocumentSums.ITEM_COLUMNS);
-          BeeRowSet paymentData = qs.getViewData(VIEW_TRADE_PAYMENTS,
-              Filter.equals(COL_TRADE_DOCUMENT, docId), null, TradeDocumentSums.PAYMENT_COLUMNS);
-
-          TradeDocumentSums tds = new TradeDocumentSums(vatMode, discountMode, docDiscount);
-
-          if (!DataUtils.isEmpty(itemData)) {
-            tds.addItems(itemData);
-          }
-          if (!DataUtils.isEmpty(paymentData)) {
-            tds.addPayments(paymentData);
-          }
-
-          docTotals.put(docId, tds.getTotal());
-          docPaid.put(docId, tds.getPaid());
-          docDebts.put(docId, tds.getDebt());
-        }
-
-        result.forEach(row -> {
-          Long docId = row.getLong(docIdIndex);
-
-          row.setNonZero(PROP_TD_TOTAL, docTotals.get(docId));
-          row.setNonZero(PROP_TD_PAID, docPaid.get(docId));
-          row.setNonZero(PROP_TD_DEBT, docDebts.get(docId));
-        });
-      }
-    }
-
-    return result;
   }
 }

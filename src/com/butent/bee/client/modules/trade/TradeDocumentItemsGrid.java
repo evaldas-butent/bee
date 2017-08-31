@@ -21,6 +21,7 @@ import com.butent.bee.client.event.logical.DataReceivedEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -1104,50 +1105,33 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     String n2 = TradeUtils.getDocumentString(documentRow, COL_TRADE_DOCUMENT_NUMBER_2);
 
     String customerName = TradeUtils.getDocumentString(documentRow, ALS_SUPPLIER_NAME);
+    String caption = BeeUtils.joinWords(customerName, n1, n2, Format.renderDate(date));
 
-    ParameterList parameters = TradeKeeper.createArgs(SVC_GET_TRADE_ITEMS_FOR_RETURN);
+    Filter filter = TradeUtils.getFilterForCustomerReturn(customer, date, n1, n2);
 
-    parameters.addDataItem(COL_TRADE_CUSTOMER, customer);
-    if (date != null) {
-      parameters.addDataItem(COL_TRADE_DATE, date.getTime());
-    }
+    Queries.getRowCount(VIEW_TRADE_ITEMS_FOR_RETURN, filter, rowCount -> {
+      if (getGridView().isInteractive()) {
+        if (BeeUtils.isPositive(rowCount)) {
+          openCustomerReturns(caption, filter, rowCount);
 
-    if (!BeeUtils.isEmpty(n1)) {
-      parameters.addDataItem(COL_TRADE_DOCUMENT_NUMBER_1, n1);
-    }
-    if (!BeeUtils.isEmpty(n2)) {
-      parameters.addDataItem(COL_TRADE_DOCUMENT_NUMBER_2, n2);
-    }
-
-    BeeKeeper.getRpc().makeRequest(parameters, response -> {
-      String caption = BeeUtils.joinWords(customerName, n1, n2, date);
-
-      if (response.hasResponse()) {
-        BeeRowSet rowSet = BeeRowSet.restore(response.getResponseAsString());
-        openCustomerReturns(caption, rowSet);
-
-      } else if (getGridView().isInteractive()) {
-        getGridView().notifyInfo(caption, Localized.dictionary().trdTypeSale()
-            + BeeConst.STRING_COLON + BeeConst.STRING_SPACE
-            + Localized.dictionary().nothingFound());
+        } else {
+          getGridView().notifyInfo(Localized.dictionary().trdItemsForReturn(), caption,
+              Localized.dictionary().nothingFound());
+          endReturnCommand();
+        }
       }
-
-      endReturnCommand();
     });
   }
 
-  private void openCustomerReturns(String caption, final BeeRowSet rowSet) {
-    GridInterceptor interceptor = new AbstractGridInterceptor() {
-      @Override
-      public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
-        return rowSet;
-      }
-    };
+  private void openCustomerReturns(String caption, Filter filter, int rowCount) {
+    GridInterceptor interceptor = null;
 
-    int height = BeeUtils.resize(rowSet.getNumberOfRows(), 1, 12, 20, 80);
+    int height = BeeUtils.resize(rowCount, 1, 12, 20, 80);
 
     GridFactory.openGrid(GRID_TRADE_ITEMS_FOR_RETURN, interceptor,
-        GridFactory.GridOptions.forCaption(caption),
+        GridFactory.GridOptions.forCaptionAndFilter(caption, filter),
         ModalGrid.opener(75, CssUnit.PCT, height, CssUnit.PCT, false));
+
+    endReturnCommand();
   }
 }
