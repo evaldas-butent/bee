@@ -1098,8 +1098,9 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       return;
     }
 
+    long docId = documentRow.getId();
+
     DateTime date = TradeUtils.getDocumentDate(documentRow);
-    Long currency = TradeUtils.getDocumentRelation(documentRow, COL_TRADE_CURRENCY);
 
     String n1 = TradeUtils.getDocumentString(documentRow, COL_TRADE_DOCUMENT_NUMBER_1);
     String n2 = TradeUtils.getDocumentString(documentRow, COL_TRADE_DOCUMENT_NUMBER_2);
@@ -1110,9 +1111,9 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     Filter filter = TradeUtils.getFilterForCustomerReturn(customer, date, n1, n2);
 
     Queries.getRowCount(VIEW_TRADE_ITEMS_FOR_RETURN, filter, rowCount -> {
-      if (getGridView().isInteractive()) {
+      if (getGridView().isInteractive() && Objects.equals(getGridView().getRelId(), docId)) {
         if (BeeUtils.isPositive(rowCount)) {
-          openCustomerReturns(caption, filter, rowCount);
+          openCustomerReturns(docId, caption, filter, rowCount);
 
         } else {
           getGridView().notifyInfo(Localized.dictionary().trdItemsForReturn(), caption,
@@ -1123,8 +1124,8 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     });
   }
 
-  private void openCustomerReturns(String caption, Filter filter, int rowCount) {
-    GridInterceptor interceptor = null;
+  private void openCustomerReturns(long docId, String caption, Filter filter, int rowCount) {
+    GridInterceptor interceptor = new TradeItemsForReturnGrid();
 
     int height = BeeUtils.resize(rowCount, 1, 12, 20, 80);
 
