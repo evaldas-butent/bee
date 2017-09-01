@@ -5264,6 +5264,8 @@ public interface Dictionary {
 
   default String salePriceShort() {return g("salePriceShort");}
 
+  default String save() {return g("save");}
+
   default String saveAndPrintAction() {return g("saveAndPrintAction");}
 
   default String saveAndPrintQuestion() {return g("saveAndPrintQuestion");}
@@ -6937,6 +6939,8 @@ public interface Dictionary {
 
   default String trdItemWarehouseTo() {return g("trdItemWarehouseTo");}
 
+  default String trdItemsForReturn() {return g("trdItemsForReturn");}
+
   default String trdManager() {return g("trdManager");}
 
   default String trdMovement() {return g("trdMovement");}
@@ -7032,6 +7036,10 @@ public interface Dictionary {
   default String trdQuantityAvailable() {return g("trdQuantityAvailable");}
 
   default String trdQuantityReserved() {return g("trdQuantityReserved");}
+
+  default String trdQuantityReturn() {return g("trdQuantityReturn");}
+
+  default String trdQuantityReturned() {return g("trdQuantityReturned");}
 
   default String trdQuantityStock() {return g("trdQuantityStock");}
 

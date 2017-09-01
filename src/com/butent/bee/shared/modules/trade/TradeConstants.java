@@ -39,7 +39,6 @@ public final class TradeConstants {
   public static final String SVC_GET_RESERVATIONS_INFO = "GetReservationsInfo";
   public static final String SVC_CREATE_DOCUMENT = "CreateDocument";
   public static final String SVC_GET_RELATED_TRADE_ITEMS = "GetRelatedTradeItems";
-  public static final String SVC_GET_TRADE_ITEMS_FOR_RETURN = "GetTradeItemsForReturn";
 
   public static final String SVC_TRADE_STOCK_REPORT = "GetTradeStockReport";
   public static final String SVC_TRADE_MOVEMENT_OF_GOODS_REPORT = "GetTradeMovementOfGoodsReport";
@@ -116,6 +115,7 @@ public final class TradeConstants {
 
   public static final String VIEW_TRADE_MOVEMENT = "TradeMovement";
   public static final String VIEW_ITEM_SELECTION = "ItemSelection";
+  public static final String VIEW_TRADE_ITEMS_FOR_RETURN = "TradeItemsForReturn";
 
   public static final String COL_PURCHASE = "Purchase";
 
@@ -302,6 +302,8 @@ public final class TradeConstants {
   public static final String ALS_PARENT_COST = "ParentCost";
   public static final String ALS_PARENT_COST_CURRENCY = "ParentCostCurrency";
 
+  public static final String ALS_RETURNED_QTY = "ReturnedQty";
+
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
 
   public static final String PROP_STOCK = "Stock";
@@ -318,9 +320,6 @@ public final class TradeConstants {
 
   public static final String PROP_TD_PAID = "TdPaid";
   public static final String PROP_TD_DEBT = "TdDebt";
-
-  public static final String PROP_ORIGINAL_QTY = "OriginalQty";
-  public static final String PROP_RETURNED_QTY = "ReturnedQty";
 
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";

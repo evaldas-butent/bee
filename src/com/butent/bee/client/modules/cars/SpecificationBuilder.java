@@ -14,6 +14,7 @@ import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
@@ -141,6 +142,9 @@ public class SpecificationBuilder implements InputCallback {
   public static final String STYLE_BLOCKED = STYLE_PREFIX + "-blocked";
   public static final String STYLE_DESCRIPTION = STYLE_PREFIX + "-description";
   public static final String STYLE_SUMMARY = STYLE_PREFIX + "-summary";
+
+  private static final String DATA_GRP = "grp";
+  private static final String DATA_PKG = "pkg";
 
   private Specification template;
   private final Consumer<Specification> callback;
@@ -371,45 +375,53 @@ public class SpecificationBuilder implements InputCallback {
   }
 
   private void filter(HtmlTable table, String value) {
-    int nameIdx = 2;
+    int nameCol = 2;
 
     for (int i = 0; i < table.getRowCount(); i++) {
       List<TableCellElement> cells = table.getRowCells(i);
+      boolean show = BeeUtils.isEmpty(value);
 
       if (cells.size() > 2) {
-        boolean show = BeeUtils.isEmpty(value)
+        show = show
             || BeeUtils.containsSame(cells.get(1).getInnerText(), value)
-            || BeeUtils.containsSame(cells.get(nameIdx).getInnerText(), value);
+            || BeeUtils.containsSame(cells.get(nameCol).getInnerText(), value);
 
-        Widget packetWidget = table.getWidget(i, nameIdx);
-        int packetIdx = DomUtils.getDataIndexInt(table.getRow(i));
+        Widget packetWidget = table.getWidget(i, nameCol);
+        Integer groupIdx = BeeUtils.nvl(DomUtils.getDataPropertyInt(table.getRow(i), DATA_GRP),
+            BeeConst.UNDEF);
+        Integer packetIdx = BeeUtils.nvl(DomUtils.getDataPropertyInt(table.getRow(i), DATA_PKG),
+            BeeConst.UNDEF);
 
         if (Objects.nonNull(packetWidget)) {
-          table.setText(i, nameIdx, packetWidget.getElement().getInnerText());
+          table.setText(i, nameCol, packetWidget.getElement().getInnerText());
 
         } else if (!BeeConst.isUndef(packetIdx)) {
           if (show) {
             table.getRowFormatter().setVisible(packetIdx, true);
 
-          } else if (Objects.isNull(table.getWidget(packetIdx, nameIdx))) {
-            Label name = new Label(table.getCellFormatter().getElement(packetIdx, nameIdx)
+          } else if (Objects.isNull(table.getWidget(packetIdx, nameCol))) {
+            Label name = new Label(table.getCellFormatter().getElement(packetIdx, nameCol)
                 .getInnerText());
             name.setStyleName(STYLE_PACKET_COLLAPSED);
 
             name.addClickHandler(clickEvent -> {
               for (int j = packetIdx + 1; j < table.getRowCount(); j++) {
-                if (!Objects.equals(DomUtils.getDataIndexInt(table.getRow(j)), packetIdx)) {
+                if (!Objects.equals(DomUtils.getDataPropertyInt(table.getRow(j), DATA_PKG),
+                    packetIdx)) {
                   break;
                 }
                 table.getRowFormatter().setVisible(j, true);
               }
-              table.setText(packetIdx, nameIdx, name.getText());
+              table.setText(packetIdx, nameCol, name.getText());
             });
-            table.setWidget(packetIdx, nameIdx, name);
+            table.setWidget(packetIdx, nameCol, name);
           }
         }
-        table.getRowFormatter().setVisible(i, show);
+        if (!BeeConst.isUndef(groupIdx) && show) {
+          table.getRowFormatter().setVisible(groupIdx, true);
+        }
       }
+      table.getRowFormatter().setVisible(i, show);
     }
     searchTag = value;
   }
@@ -464,12 +476,16 @@ public class SpecificationBuilder implements InputCallback {
   private void refresh() {
     renderDescription();
     Configuration configuration = currentBranch.getConfiguration();
-    int scroll = 0;
 
-    for (Widget widget : container) {
-      if (widget.getElement().hasClassName(STYLE_OPTIONS)) {
-        scroll = widget.getElement().getScrollTop();
-      }
+    int scroll = 0;
+    Widget w = UiHelper.getChildByStyleName(container, STYLE_OPTIONS);
+    if (Objects.nonNull(w)) {
+      scroll = w.getElement().getScrollTop();
+    }
+    boolean disclosureOpen = false;
+    Disclosure d = UiHelper.getChild(container, Disclosure.class);
+    if (Objects.nonNull(d)) {
+      disclosureOpen = d.isOpen();
     }
     container.clear();
     Flow header = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
@@ -636,6 +652,7 @@ public class SpecificationBuilder implements InputCallback {
                 new Label(option.toString())}));
       } else {
         int rowSelectable = BeeConst.UNDEF;
+        int groupIdx = BeeConst.UNDEF;
 
         for (Option option : opts) {
           if (!configuration.isDefault(option, specification.getBundle())) {
@@ -648,12 +665,14 @@ public class SpecificationBuilder implements InputCallback {
               rowSelectable = selectable.getRowCount();
               selectable.setText(rowSelectable, 0, dimension.getName(), STYLE_GROUP);
               selectable.getCellFormatter().setColSpan(rowSelectable, 0, 4);
+              groupIdx = rowSelectable;
             }
             rowSelectable++;
             selectable.setWidget(rowSelectable, 0, check);
             selectable.setText(rowSelectable, 1, option.getCode());
             selectable.setText(rowSelectable, 2, option.getName());
             selectable.setText(rowSelectable, 3, BeeUtils.toString(normPrice(option)));
+            DomUtils.setDataProperty(selectable.getRow(rowSelectable), DATA_GRP, groupIdx);
 
             Set<Long> packets = DataUtils.parseIdSet(configuration.getRelationPackets(option,
                 specification.getBundle()));
@@ -666,22 +685,26 @@ public class SpecificationBuilder implements InputCallback {
                 selectable.setText(rowSelectable, 1, opt.getCode(), STYLE_PACKET);
                 selectable.setText(rowSelectable, 2, opt.getName(), STYLE_PACKET);
                 selectable.getCellFormatter().setStyleName(rowSelectable, 3, STYLE_PACKET);
-                DomUtils.setDataIndex(selectable.getRow(rowSelectable), packetIdx);
+                DomUtils.setDataProperty(selectable.getRow(rowSelectable), DATA_PKG, packetIdx);
+                DomUtils.setDataProperty(selectable.getRow(rowSelectable), DATA_GRP, groupIdx);
               }
             }
           }
         }
       }
     }
-    Flow descriptionBox = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
+    Disclosure descriptionBox = new Disclosure(disclosureOpen,
+        new Label(Localized.dictionary().equipment()));
+    Flow content = new Flow();
+    descriptionBox.add(content);
 
     CustomDiv descr = new CustomDiv(STYLE_DESCRIPTION);
     descr.setHtml(specification.getDescription());
-    descriptionBox.add(descr);
+    content.add(descr);
 
     CustomDiv crit = new CustomDiv();
     crit.setHtml(renderCriteria(collectCriteria(configuration)));
-    descriptionBox.add(crit);
+    content.add(crit);
 
     subContainer.add(descriptionBox);
     subContainer.add(optionBox);
@@ -694,7 +717,7 @@ public class SpecificationBuilder implements InputCallback {
         filter(selectable, searchTag);
       }
       search.addInputHandler(inputEvent -> filter(selectable, search.getValue()));
-      subContainer.add(search);
+      container.insert(search, container.getWidgetCount() - 1);
       subContainer.add(selectable);
     }
     subContainer.getElement().setScrollTop(scroll);
@@ -727,9 +750,6 @@ public class SpecificationBuilder implements InputCallback {
                         configuration.getOptionDescription(option), option.getDescription()),
                 BeeUtils.joinWords(option.getCode(), option.getName())));
           }
-        }
-        if (!defaults.isEmpty()) {
-          defaults.add(0, "<b>" + Localized.dictionary().equipment() + "</b>");
         }
       }
     }

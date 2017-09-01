@@ -29,9 +29,11 @@ public class Option implements BeeSerializable, Comparable<Option> {
 
   public Option(IsRow isRow) {
     this(isRow.getId(),
-        Data.getString(TBL_CONF_OPTIONS, isRow, COL_OPTION_NAME),
+        BeeUtils.notEmpty(Data.getString(TBL_CONF_OPTIONS, isRow, COL_OPTION_NAME2),
+            Data.getString(TBL_CONF_OPTIONS, isRow, COL_OPTION_NAME)),
         new Dimension(Data.getLong(TBL_CONF_OPTIONS, isRow, COL_GROUP),
-            Data.getString(TBL_CONF_OPTIONS, isRow, COL_GROUP_NAME)));
+            BeeUtils.notEmpty(Data.getString(TBL_CONF_OPTIONS, isRow, COL_GROUP_NAME2),
+                Data.getString(TBL_CONF_OPTIONS, isRow, COL_GROUP_NAME))));
 
     setCode(BeeUtils.join("", Data.getString(TBL_CONF_OPTIONS, isRow, COL_CODE),
         BeeUtils.parenthesize(Data.getString(TBL_CONF_OPTIONS, isRow, COL_CODE2))));
@@ -42,7 +44,10 @@ public class Option implements BeeSerializable, Comparable<Option> {
             ? BeeUtils.notEmpty(simpleRow.getValue(COL_OPTION_NAME2),
         simpleRow.getValue(COL_OPTION_NAME)) : simpleRow.getValue(COL_OPTION_NAME),
         new Dimension(simpleRow.getLong(CarsConstants.COL_GROUP),
-            simpleRow.getValue(CarsConstants.COL_GROUP_NAME)));
+            simpleRow.hasColumn(COL_GROUP_NAME2)
+                ? BeeUtils.notEmpty(simpleRow.getValue(COL_GROUP_NAME2),
+                simpleRow.getValue(CarsConstants.COL_GROUP_NAME))
+                : simpleRow.getValue(CarsConstants.COL_GROUP_NAME)));
 
     if (simpleRow.hasColumn(COL_REQUIRED)) {
       getDimension().setRequired(simpleRow.getBoolean(COL_REQUIRED));

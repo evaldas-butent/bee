@@ -15,15 +15,18 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.ModalGrid;
+import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.DataReceivedEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
@@ -1097,57 +1100,46 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       return;
     }
 
+    long docId = documentRow.getId();
+
     DateTime date = TradeUtils.getDocumentDate(documentRow);
-    Long currency = TradeUtils.getDocumentRelation(documentRow, COL_TRADE_CURRENCY);
 
     String n1 = TradeUtils.getDocumentString(documentRow, COL_TRADE_DOCUMENT_NUMBER_1);
     String n2 = TradeUtils.getDocumentString(documentRow, COL_TRADE_DOCUMENT_NUMBER_2);
 
     String customerName = TradeUtils.getDocumentString(documentRow, ALS_SUPPLIER_NAME);
+    String caption = BeeUtils.joinWords(customerName, n1, n2, Format.renderDate(date));
 
-    ParameterList parameters = TradeKeeper.createArgs(SVC_GET_TRADE_ITEMS_FOR_RETURN);
+    Filter filter = TradeUtils.getFilterForCustomerReturn(customer, date, n1, n2);
 
-    parameters.addDataItem(COL_TRADE_CUSTOMER, customer);
-    if (date != null) {
-      parameters.addDataItem(COL_TRADE_DATE, date.getTime());
-    }
+    Queries.getRowCount(VIEW_TRADE_ITEMS_FOR_RETURN, filter, rowCount -> {
+      if (getGridView().isInteractive() && Objects.equals(getGridView().getRelId(), docId)) {
+        if (BeeUtils.isPositive(rowCount)) {
+          openCustomerReturns(docId, caption, filter, rowCount);
 
-    if (!BeeUtils.isEmpty(n1)) {
-      parameters.addDataItem(COL_TRADE_DOCUMENT_NUMBER_1, n1);
-    }
-    if (!BeeUtils.isEmpty(n2)) {
-      parameters.addDataItem(COL_TRADE_DOCUMENT_NUMBER_2, n2);
-    }
-
-    BeeKeeper.getRpc().makeRequest(parameters, response -> {
-      String caption = BeeUtils.joinWords(customerName, n1, n2, date);
-
-      if (response.hasResponse()) {
-        BeeRowSet rowSet = BeeRowSet.restore(response.getResponseAsString());
-        openCustomerReturns(caption, rowSet);
-
-      } else if (getGridView().isInteractive()) {
-        getGridView().notifyInfo(caption, Localized.dictionary().trdTypeSale()
-            + BeeConst.STRING_COLON + BeeConst.STRING_SPACE
-            + Localized.dictionary().nothingFound());
+        } else {
+          getGridView().notifyInfo(Localized.dictionary().trdItemsForReturn(), caption,
+              Localized.dictionary().nothingFound());
+          endReturnCommand();
+        }
       }
-
-      endReturnCommand();
     });
   }
 
-  private void openCustomerReturns(String caption, final BeeRowSet rowSet) {
-    GridInterceptor interceptor = new AbstractGridInterceptor() {
-      @Override
-      public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
-        return rowSet;
-      }
+  private void openCustomerReturns(long docId, String caption, Filter filter, int rowCount) {
+    GridInterceptor interceptor = new TradeItemsForReturnGrid();
+
+    PresenterCallback opener = presenter -> {
+      double height = BeeUtils.rescale(rowCount, 1, 12, 20, 80);
+      Dimensions dimensions = new Dimensions(75.0, CssUnit.PCT, height, CssUnit.PCT);
+
+      ModalGrid modalGrid = new ModalGrid(presenter, dimensions, false);
+      modalGrid.center();
     };
 
-    int height = BeeUtils.resize(rowSet.getNumberOfRows(), 1, 12, 20, 80);
-
     GridFactory.openGrid(GRID_TRADE_ITEMS_FOR_RETURN, interceptor,
-        GridFactory.GridOptions.forCaption(caption),
-        ModalGrid.opener(75, CssUnit.PCT, height, CssUnit.PCT, false));
+        GridFactory.GridOptions.forCaptionAndFilter(caption, filter), opener);
+
+    endReturnCommand();
   }
 }
