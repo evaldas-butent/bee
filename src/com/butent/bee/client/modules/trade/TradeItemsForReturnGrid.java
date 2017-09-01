@@ -8,13 +8,17 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.logical.DataReceivedEvent;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashMap;
@@ -23,8 +27,11 @@ import java.util.Objects;
 
 class TradeItemsForReturnGrid extends AbstractGridInterceptor {
 
-  private static final String STYLE_POPUP = TradeKeeper.STYLE_PREFIX + "customer-return-popup";
-  private static final String STYLE_INPUT = TradeKeeper.STYLE_PREFIX + "customer-return-input";
+  private static final String STYLE_PREFIX = TradeKeeper.STYLE_PREFIX + "customer-return-";
+
+  private static final String STYLE_SAVE = STYLE_PREFIX + "save";
+  private static final String STYLE_POPUP = STYLE_PREFIX + "popup";
+  private static final String STYLE_INPUT = STYLE_PREFIX + "input";
 
   private static final String PROP_SELECTED_QTY = "SelectedQty";
 
@@ -35,6 +42,19 @@ class TradeItemsForReturnGrid extends AbstractGridInterceptor {
 
   Map<Long, Double> getSelection() {
     return selection;
+  }
+
+  @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    if (presenter != null && presenter.getHeader() != null) {
+      Button save = new Button(Localized.dictionary().save());
+      save.addStyleName(STYLE_SAVE);
+      save.setEnabled(false);
+
+      presenter.getHeader().addCommandItem(save);
+    }
+
+    super.afterCreatePresenter(presenter);
   }
 
   @Override
@@ -52,7 +72,7 @@ class TradeItemsForReturnGrid extends AbstractGridInterceptor {
       event.consume();
 
       IsRow row = event.getRowValue();
-      int charCode = event.getCharCode();
+      char charCode = BeeUtils.toChar(event.getCharCode());
 
       switch (charCode) {
         case EditStartEvent.DELETE:
@@ -78,14 +98,14 @@ class TradeItemsForReturnGrid extends AbstractGridInterceptor {
     super.onEditStart(event);
   }
 
-  private void openEditor(IsRow row, Element sourceElement, int charCode) {
+  private void openEditor(IsRow row, Element sourceElement, char charCode) {
     InputNumber input = new InputNumber();
     input.addStyleName(STYLE_INPUT);
 
     input.setScale(Data.getColumnScale(VIEW_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY));
 
-    if (charCode >= BeeConst.CHAR_ONE && charCode <= BeeConst.CHAR_NINE) {
-      input.setValue(BeeUtils.toString(BeeUtils.toChar(charCode)));
+    if (BeeUtils.isDigit(charCode)) {
+      input.setValue(BeeUtils.toString(charCode));
       input.setCursorPos(1);
 
     } else if (selection.containsKey(row.getId())) {
@@ -161,7 +181,13 @@ class TradeItemsForReturnGrid extends AbstractGridInterceptor {
         row.setProperty(PROP_SELECTED_QTY, newValue);
       }
 
-      getGridView().getGrid().refreshCell(row.getId(), PROP_SELECTED_QTY);
+      getGridView().getGrid().refreshRowById(row.getId());
+
+      HeaderView header = getHeaderView();
+      if (header != null) {
+        header.enableCommandByStyleName(STYLE_SAVE, !selection.isEmpty());
+      }
+
       return true;
     }
   }

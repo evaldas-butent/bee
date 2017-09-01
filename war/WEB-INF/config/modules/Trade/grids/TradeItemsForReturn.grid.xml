@@ -58,6 +58,21 @@
     <DataColumn name="Note" maxWidth="300" visible="false" />
     <DataColumn name="Parent" visible="false" />
 
-    <PropColumn name="SelectedQty" type="double" label="=trdQuantityReturn" visible="true" />
+    <PropColumn name="SelectedQty" type="double" label="=trdQuantityReturn" visible="true">
+      <style>
+        <bodyStyle><ui:font>larger bolder</ui:font></bodyStyle>
+      </style>
+      <dynStyle>
+        <ui:inline>color: red;</ui:inline>
+        <ui:expression>
+          row.SelectedQty &amp;&amp; (Number(row.SelectedQty) > (row.Quantity - (row.ReturnedQty || 0)))
+        </ui:expression>
+      </dynStyle>
+    </PropColumn>
   </g:columns>
+
+  <g:rowStyle>
+    <ui:inline>background-color: aquamarine;</ui:inline>
+    <ui:expression>row.SelectedQty</ui:expression>
+  </g:rowStyle>
 </g:Grid>

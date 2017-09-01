@@ -5264,6 +5264,8 @@ public interface Dictionary {
 
   default String salePriceShort() {return g("salePriceShort");}
 
+  default String save() {return g("save");}
+
   default String saveAndPrintAction() {return g("saveAndPrintAction");}
 
   default String saveAndPrintQuestion() {return g("saveAndPrintQuestion");}

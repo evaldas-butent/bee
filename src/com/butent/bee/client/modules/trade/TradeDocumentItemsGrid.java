@@ -15,6 +15,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.ModalGrid;
+import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.DataReceivedEvent;
@@ -25,6 +26,7 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
@@ -1127,11 +1129,16 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   private void openCustomerReturns(long docId, String caption, Filter filter, int rowCount) {
     GridInterceptor interceptor = new TradeItemsForReturnGrid();
 
-    int height = BeeUtils.resize(rowCount, 1, 12, 20, 80);
+    PresenterCallback opener = presenter -> {
+      double height = BeeUtils.rescale(rowCount, 1, 12, 20, 80);
+      Dimensions dimensions = new Dimensions(75.0, CssUnit.PCT, height, CssUnit.PCT);
+
+      ModalGrid modalGrid = new ModalGrid(presenter, dimensions, false);
+      modalGrid.center();
+    };
 
     GridFactory.openGrid(GRID_TRADE_ITEMS_FOR_RETURN, interceptor,
-        GridFactory.GridOptions.forCaptionAndFilter(caption, filter),
-        ModalGrid.opener(75, CssUnit.PCT, height, CssUnit.PCT, false));
+        GridFactory.GridOptions.forCaptionAndFilter(caption, filter), opener);
 
     endReturnCommand();
   }
