@@ -2185,6 +2185,20 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
+  public boolean refreshRowById(long rowId) {
+    int rowIndex = getRowIndex(rowId);
+
+    if (isRowWithinBounds(rowIndex)) {
+      refreshRow(rowIndex);
+      MutationEvent.fire(this);
+
+      return true;
+
+    } else {
+      return false;
+    }
+  }
+
   public boolean removeColumn(String columnId) {
     int predefIndex = getPredefinedIndex(columnId);
 
