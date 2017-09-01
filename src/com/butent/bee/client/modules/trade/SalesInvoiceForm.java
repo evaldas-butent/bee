@@ -1,17 +1,17 @@
 package com.butent.bee.client.modules.trade;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT_DATE;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.COL_CUSTOMER;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowInsertCallback;
@@ -29,9 +29,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.cache.CachingPolicy;
-import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -50,8 +48,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class SalesInvoiceForm extends PrintFormInterceptor {
@@ -111,44 +111,40 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
             ? Localized.dictionary().trdInvoice()
             : Localized.dictionary().tradeAct();
 
-        Queries.getValue(VIEW_COMPANIES, BeeUtils.unbox(companyId),
-            COL_EMAIL, new RpcCallback<String>() {
-              @Override
-              public void onSuccess(String email) {
-                NewMailMessage.create(email, invoice, content,
-                    Collections.singleton(fileInfo), (messageId, saveMode) -> {
-                      if (!BeeUtils.same(form.getViewName(), VIEW_SALES)) {
-                        return;
+        Filter flt = Filter.and(Filter.notNull(COL_EMAIL_ADDRESS),
+            Filter.notNull(COL_EMAIL_INVOICES));
+
+        Map<String, Filter> filters = ImmutableMap.of(
+            TBL_COMPANIES, Filter.and(Filter.compareId(companyId), flt),
+            TBL_COMPANY_CONTACTS, Filter.and(Filter.equals(COL_COMPANY, companyId), flt));
+
+        Queries.getData(filters.keySet(), filters, data -> {
+          Set<String> emails = new HashSet<>();
+          data.forEach(rs ->
+              emails.addAll(rs.getDistinctStrings(rs.getColumnIndex(COL_EMAIL_ADDRESS))));
+
+          NewMailMessage.create(emails, null, null, invoice, content,
+              Collections.singleton(fileInfo), null, false, (messageId, saveMode) -> {
+                if (!BeeUtils.same(form.getViewName(), VIEW_SALES)) {
+                  return;
+                }
+                Queries.insert(VIEW_SALE_FILES,
+                    Data.getColumns(VIEW_SALE_FILES, Arrays.asList(COL_SALE,
+                        AdministrationConstants.COL_FILE, COL_NOTES, MailConstants.COL_MESSAGE)),
+                    Queries.asList(id, fileInfo.getId(),
+                        Format.renderDateTime(TimeUtils.nowMinutes()), messageId),
+                    null, new RowInsertCallback(VIEW_SALE_FILES) {
+                      @Override
+                      public void onSuccess(BeeRow result) {
+                        Data.refreshLocal(VIEW_SALE_FILES);
+                        form.updateCell("IsSentToEmail", BeeConst.STRING_TRUE);
+                        form.refreshBySource("IsSentToEmail");
+                        form.getViewPresenter().handleAction(Action.SAVE);
+                        super.onSuccess(result);
                       }
-
-                      DataInfo info = Data.getDataInfo(VIEW_SALE_FILES);
-
-                      Queries.insert(info.getViewName(),
-                          Arrays.asList(
-                              info.getColumn(COL_SALE),
-                              info.getColumn(AdministrationConstants.COL_FILE),
-                              info.getColumn(COL_NOTES),
-                              info.getColumn(MailConstants.COL_MESSAGE)),
-                          Arrays.asList(
-                              BeeUtils.toString(id),
-                              BeeUtils.toString(fileInfo.getId()),
-                              Format.renderDateTime(TimeUtils.nowMinutes()),
-                              BeeUtils.toString(messageId)),
-                          null,
-                          new RowInsertCallback(info.getViewName()) {
-                            @Override
-                            public void onSuccess(BeeRow result) {
-                              Data.onTableChange(info.getTableName(),
-                                  DataChangeEvent.RESET_REFRESH);
-                              form.updateCell("IsSentToEmail", BeeConst.STRING_TRUE);
-                              form.refreshBySource("IsSentToEmail");
-                              form.getViewPresenter().handleAction(Action.SAVE);
-                              super.onSuccess(result);
-                            }
-                          });
                     });
-              }
-            });
+              });
+        });
       }
     };
   }
@@ -213,7 +209,6 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
           defaultParameters.putAll(companiesInfo);
           Long saleId = getActiveRowId();
 
-
           DateTime t = new DateTime();
           t.setMillis(0);
           t.setSecond(0);
@@ -226,23 +221,23 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
           }
 
           Queries.getRowSet(VIEW_TRADE_ACT_INVOICES, Collections.singletonList("ContractNumber"),
-            Filter.equals(COL_SALE, saleId), new Order(COL_DOCUMENT_DATE, false),
-            new Queries.RowSetCallback() {
-              @Override
-              public void onSuccess(BeeRowSet contracts) {
-                String contractNumber = BeeConst.STRING_EMPTY;
+              Filter.equals(COL_SALE, saleId), new Order(COL_DOCUMENT_DATE, false),
+              new Queries.RowSetCallback() {
+                @Override
+                public void onSuccess(BeeRowSet contracts) {
+                  String contractNumber = BeeConst.STRING_EMPTY;
 
-                for (BeeRow contract : contracts) {
-                  contractNumber = contract.getString(contracts.getColumnIndex("ContractNumber"));
+                  for (BeeRow contract : contracts) {
+                    contractNumber = contract.getString(contracts.getColumnIndex("ContractNumber"));
 
-                  if (!BeeUtils.isEmpty(contractNumber)) {
-                    break;
+                    if (!BeeUtils.isEmpty(contractNumber)) {
+                      break;
+                    }
                   }
-                }
 
-                defaultParameters.put(TradeActConstants.WIDGET_TA_CONTRACT, contractNumber);
-              }
-            });
+                  defaultParameters.put(TradeActConstants.WIDGET_TA_CONTRACT, contractNumber);
+                }
+              });
         }));
   }
 
@@ -288,7 +283,7 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
 
         if (row.getDouble(rowSet.getColumnIndex(COL_TA_SERVICE_FACTOR)) != null) {
           saleItem.setProperty(COL_TA_SERVICE_FACTOR,
-            BeeUtils.toString(row.getDouble(rowSet.getColumnIndex(COL_TA_SERVICE_FACTOR)), 3));
+              BeeUtils.toString(row.getDouble(rowSet.getColumnIndex(COL_TA_SERVICE_FACTOR)), 3));
         }
       }
     } else {

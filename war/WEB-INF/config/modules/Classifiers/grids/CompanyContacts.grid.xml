@@ -14,13 +14,13 @@
       caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
       filterOptions="-" visible="false">
       <renderer type="flag" />
-    </CalcColumn>  
+    </CalcColumn>
     <DataColumn name="Phone" minWidth="100" maxWidth="200"/>
     <DataColumn name="Fax" minWidth="50" maxWidth="200" visible="false" />
     <RelColumn name="EmailId" />
     <DataColumn name="Website" minWidth="100" maxWidth="200" visible="false" />
     <DataColumn name="SocialContacts" minWidth="100" maxWidth="200" visible="false" />
-    <DataColumn name="RemindEmail" maxWidth="30" editInPlace="true" >
+    <DataColumn name="RemindEmail" maxWidth="30" editInPlace="true">
       <validation>
         <ui:function>
             var emailId = row.EmailId;
@@ -38,7 +38,7 @@
       </validation>
     </DataColumn>
     <!-- Transrifus { -->
-    <DataColumn name="EmailInvoices" maxWidth="30">
+    <DataColumn name="EmailInvoices" maxWidth="30" editInPlace="true">
       <validation>
         <ui:function>
           var emailId = row.EmailId;
