@@ -5,7 +5,11 @@ import com.google.gwt.event.dom.client.KeyCodes;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.dialog.DecisionCallback;
+import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.logical.DataReceivedEvent;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -21,9 +25,11 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 class TradeItemsForReturnGrid extends AbstractGridInterceptor {
 
@@ -35,19 +41,23 @@ class TradeItemsForReturnGrid extends AbstractGridInterceptor {
 
   private static final String PROP_SELECTED_QTY = "SelectedQty";
 
+  private final Consumer<Map<Long, Double>> consumer;
   private final Map<Long, Double> selection = new HashMap<>();
 
-  TradeItemsForReturnGrid() {
-  }
-
-  Map<Long, Double> getSelection() {
-    return selection;
+  TradeItemsForReturnGrid(Consumer<Map<Long, Double>> consumer) {
+    this.consumer = consumer;
   }
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
     if (presenter != null && presenter.getHeader() != null) {
-      Button save = new Button(Localized.dictionary().save());
+      Button save = new Button(Localized.dictionary().save(), event -> {
+        if (!selection.isEmpty()) {
+          close();
+          save();
+        }
+      });
+
       save.addStyleName(STYLE_SAVE);
       save.setEnabled(false);
 
@@ -55,6 +65,31 @@ class TradeItemsForReturnGrid extends AbstractGridInterceptor {
     }
 
     super.afterCreatePresenter(presenter);
+  }
+
+  @Override
+  public boolean onClose(GridPresenter presenter) {
+    if (selection.isEmpty()) {
+      return super.onClose(presenter);
+
+    } else {
+      Global.decide(Localized.dictionary().trdTypeCustomerReturn(),
+          Collections.singletonList(Localized.dictionary().saveSelectedItems()),
+          new DecisionCallback() {
+            @Override
+            public void onConfirm() {
+              close();
+              save();
+            }
+
+            @Override
+            public void onDeny() {
+              close();
+            }
+          }, DialogConstants.DECISION_YES);
+
+      return false;
+    }
   }
 
   @Override
@@ -189,6 +224,19 @@ class TradeItemsForReturnGrid extends AbstractGridInterceptor {
       }
 
       return true;
+    }
+  }
+
+  private void close() {
+    GridPresenter presenter = getGridPresenter();
+    if (presenter != null) {
+      BeeKeeper.getScreen().closeWidget(presenter.getMainView());
+    }
+  }
+
+  private void save() {
+    if (consumer != null) {
+      consumer.accept(selection);
     }
   }
 }

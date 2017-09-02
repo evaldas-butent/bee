@@ -82,6 +82,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import elemental.js.JsBrowser;
+
 public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
   private enum SumColumn {
@@ -1127,7 +1129,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   }
 
   private void openCustomerReturns(long docId, String caption, Filter filter, int rowCount) {
-    GridInterceptor interceptor = new TradeItemsForReturnGrid();
+    GridInterceptor interceptor = new TradeItemsForReturnGrid(this::acceptCustomerReturns);
 
     PresenterCallback opener = presenter -> {
       double height = BeeUtils.rescale(rowCount, 1, 12, 20, 80);
@@ -1135,11 +1137,15 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
       ModalGrid modalGrid = new ModalGrid(presenter, dimensions, false);
       modalGrid.center();
+
+      endReturnCommand();
     };
 
     GridFactory.openGrid(GRID_TRADE_ITEMS_FOR_RETURN, interceptor,
         GridFactory.GridOptions.forCaptionAndFilter(caption, filter), opener);
+  }
 
-    endReturnCommand();
+  private void acceptCustomerReturns(Map<Long, Double> returns) {
+    JsBrowser.getWindow().getConsole().debug(returns.toString());
   }
 }
