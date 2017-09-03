@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
-  
+
   name="CompanyPersons" viewName="CompanyPersons" caption="=companyPersons"
   favorite="FirstName LastName"
   >
@@ -16,7 +16,25 @@
     <DataColumn name="Mobile" />
     <DataColumn name="Fax" visible="false" />
     <RelColumn name="EmailId" editEnabled="true" filterSupplier="value" flexGrow="1" />
+    <!-- Transrifus { -->
+    <DataColumn name="EmailInvoices" maxWidth="30" editInPlace="true">
+      <validation>
+        <ui:function>
+          var emailId = row.EmailId;
 
+          if (cell.oldValue != null &#38;&#38; cell.newValue == null) {
+          return null;
+          }
+
+          if (emailId == null  &#38;&#38; cell.newValue != null) {
+          return $wnd.Bee_maybeTranslate("=email") + ". " + $wnd.Bee_maybeTranslate("=valueRequired");
+          } else {
+          return null;
+          }
+        </ui:function>
+      </validation>
+    </DataColumn>
+    <!-- } Transrifus -->
     <DataColumn name="DateOfDismissal" searchBy="DateOfDismissal" filterOptions="empty">
       <style><bodyStyle><ui:inline>color:red</ui:inline></bodyStyle></style>
     </DataColumn>

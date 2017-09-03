@@ -111,18 +111,28 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
             ? Localized.dictionary().trdInvoice()
             : Localized.dictionary().tradeAct();
 
-        Filter flt = Filter.and(Filter.notNull(COL_EMAIL_ADDRESS),
-            Filter.notNull(COL_EMAIL_INVOICES));
+        Filter flt = Filter.notNull(COL_EMAIL_ADDRESS);
 
         Map<String, Filter> filters = ImmutableMap.of(
             TBL_COMPANIES, Filter.and(Filter.compareId(companyId), flt),
-            TBL_COMPANY_CONTACTS, Filter.and(Filter.equals(COL_COMPANY, companyId), flt));
+            TBL_COMPANY_CONTACTS, Filter.and(Filter.equals(COL_COMPANY, companyId), flt),
+            TBL_COMPANY_PERSONS, Filter.and(Filter.equals(COL_COMPANY, companyId), flt));
 
         Queries.getData(filters.keySet(), filters, data -> {
           Set<String> emails = new HashSet<>();
-          data.forEach(rs ->
-              emails.addAll(rs.getDistinctStrings(rs.getColumnIndex(COL_EMAIL_ADDRESS))));
 
+          data.forEach(rs -> {
+            int invoiceIdx = rs.getColumnIndex(COL_EMAIL_INVOICES);
+            int emailIdx = rs.getColumnIndex(COL_EMAIL_ADDRESS);
+
+            rs.getRows().stream().filter(beeRow -> beeRow.isTrue(invoiceIdx))
+                .forEach(beeRow -> emails.add(beeRow.getString(emailIdx)));
+          });
+          if (emails.isEmpty()) {
+            data.stream().filter(rs -> Objects.equals(rs.getViewName(), TBL_COMPANIES))
+                .findFirst().ifPresent(rs -> rs.forEach(beeRow ->
+                emails.add(beeRow.getString(rs.getColumnIndex(COL_EMAIL_ADDRESS)))));
+          }
           NewMailMessage.create(emails, null, null, invoice, content,
               Collections.singleton(fileInfo), null, false, (messageId, saveMode) -> {
                 if (!BeeUtils.same(form.getViewName(), VIEW_SALES)) {
