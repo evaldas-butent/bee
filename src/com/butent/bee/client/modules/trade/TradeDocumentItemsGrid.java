@@ -82,8 +82,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import elemental.js.JsBrowser;
-
 public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
   private enum SumColumn {
@@ -1129,7 +1127,8 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   }
 
   private void openCustomerReturns(long docId, String caption, Filter filter, int rowCount) {
-    GridInterceptor interceptor = new TradeItemsForReturnGrid(this::acceptCustomerReturns);
+    GridInterceptor interceptor =
+        new TradeItemsForReturnGrid(selection -> acceptCustomerReturns(docId, selection));
 
     PresenterCallback opener = presenter -> {
       double height = BeeUtils.rescale(rowCount, 1, 12, 20, 80);
@@ -1145,7 +1144,98 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
         GridFactory.GridOptions.forCaptionAndFilter(caption, filter), opener);
   }
 
-  private void acceptCustomerReturns(Map<Long, Double> returns) {
-    JsBrowser.getWindow().getConsole().debug(returns.toString());
+  private void acceptCustomerReturns(long docId, Map<Long, Double> selection) {
+    if (!BeeUtils.isEmpty(selection)) {
+      Queries.getRowSet(VIEW_TRADE_MOVEMENT, null, Filter.idIn(selection.keySet()), rowSet -> {
+        if (!DataUtils.isEmpty(rowSet) && getGridView().isInteractive()) {
+          IsRow documentRow = getParentRow(getGridView());
+
+          if (DataUtils.idEquals(documentRow, docId)) {
+            int index = rowSet.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+            rowSet.forEach(row -> row.setValue(index, selection.get(row.getId())));
+
+            addCustomerReturns(documentRow, rowSet);
+          }
+        }
+      });
+    }
+  }
+
+  private void addCustomerReturns(IsRow documentRow, BeeRowSet data) {
+    DateTime date = TradeUtils.getDocumentDate(documentRow);
+    Long documentCurrency = TradeUtils.getDocumentRelation(documentRow, COL_TRADE_CURRENCY);
+
+    int currencyIndex = data.getColumnIndex(COL_TRADE_CURRENCY);
+
+    int itemIndex = data.getColumnIndex(COL_ITEM);
+    int articleIndex = data.getColumnIndex(COL_ITEM_ARTICLE);
+    int primaryArticleIndex = data.getColumnIndex(ALS_PRIMARY_ARTICLE);
+
+    int qtyIndex = data.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+    int priceIndex = data.getColumnIndex(COL_TRADE_ITEM_PRICE);
+
+    int discountIndex = data.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT);
+    int dipIndex = data.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT);
+
+    int vatIndex = data.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_VAT);
+    int vipIndex = data.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT);
+
+    List<BeeColumn> columns = DataUtils.getColumns(getDataColumns(),
+        Arrays.asList(COL_TRADE_DOCUMENT, COL_ITEM, COL_TRADE_ITEM_ARTICLE,
+            COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
+            COL_TRADE_DOCUMENT_ITEM_DISCOUNT, COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT,
+            COL_TRADE_DOCUMENT_ITEM_VAT, COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT));
+
+    BeeRowSet rowSet = new BeeRowSet(getViewName(), columns);
+
+    for (BeeRow row : data) {
+      String article = BeeUtils.notEmpty(row.getString(articleIndex),
+          row.getString(primaryArticleIndex));
+
+      Double price = row.getDouble(priceIndex);
+      Long currency = row.getLong(currencyIndex);
+
+      if (BeeUtils.isPositive(price)) {
+        if (!Objects.equals(currency, documentCurrency)) {
+          price = Localized.normalizeMoney(
+              Money.maybeExchange(currency, documentCurrency, price, date));
+        }
+      } else {
+        price = null;
+      }
+
+      rowSet.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
+          Queries.asList(documentRow.getId(),
+              row.getLong(itemIndex), article,
+              row.getDouble(qtyIndex), price,
+              row.getDouble(discountIndex), row.getBoolean(dipIndex),
+              row.getDouble(vatIndex), row.getBoolean(vipIndex)));
+    }
+
+    Queries.insertRows(rowSet, result -> {
+      if (result != null && result.size() == rowSet.getNumberOfRows()) {
+        BeeRowSet returns = new BeeRowSet(VIEW_TRADE_ITEM_RETURNS,
+            Data.getColumns(VIEW_TRADE_ITEM_RETURNS,
+                COL_TRADE_DOCUMENT_ITEM, COL_RELATED_DOCUMENT_ITEM));
+
+        for (int i = 0; i < result.size(); i++) {
+          BeeRow row = rowSet.getRow(i);
+          RowInfo rowInfo = result.get(i);
+
+          row.setId(rowInfo.getId());
+          row.setVersion(rowInfo.getVersion());
+
+          returns.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
+              Queries.asList(rowInfo.getId(), data.getRow(i).getId()));
+        }
+
+        tdsSupplier.get().addItems(rowSet);
+        fireTdsChange(true);
+
+        Queries.insertRows(returns);
+      }
+
+      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getViewName(), documentRow.getId());
+    });
   }
 }

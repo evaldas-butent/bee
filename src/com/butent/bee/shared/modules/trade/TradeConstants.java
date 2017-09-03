@@ -116,6 +116,7 @@ public final class TradeConstants {
   public static final String VIEW_TRADE_MOVEMENT = "TradeMovement";
   public static final String VIEW_ITEM_SELECTION = "ItemSelection";
   public static final String VIEW_TRADE_ITEMS_FOR_RETURN = "TradeItemsForReturn";
+  public static final String VIEW_TRADE_ITEM_RETURNS = "TradeItemReturns";
 
   public static final String COL_PURCHASE = "Purchase";
 
@@ -297,6 +298,7 @@ public final class TradeConstants {
   public static final String ALS_WAREHOUSE_TO_NAME = "WarehouseToName";
 
   public static final String ALS_STOCK_PRIMARY_DATE = "PrimaryDate";
+  public static final String ALS_PRIMARY_ARTICLE = "PrimaryArticle";
 
   public static final String ALS_COST_CURRENCY = "CostCurrency";
   public static final String ALS_PARENT_COST = "ParentCost";

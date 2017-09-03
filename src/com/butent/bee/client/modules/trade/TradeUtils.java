@@ -920,7 +920,7 @@ public final class TradeUtils {
 
     filter.add(Filter.isPositive(COL_TRADE_ITEM_QUANTITY));
     filter.add(Filter.or(Filter.isNull(ALS_RETURNED_QTY),
-        Filter.compareWithColumn(COL_TRADE_ITEM_QUANTITY, Operator.GE, ALS_RETURNED_QTY)));
+        Filter.compareWithColumn(COL_TRADE_ITEM_QUANTITY, Operator.GT, ALS_RETURNED_QTY)));
 
     return filter;
   }
