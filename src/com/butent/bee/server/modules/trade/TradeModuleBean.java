@@ -337,6 +337,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         response = dischargePrepayment(reqInfo);
         break;
 
+      case SVC_SAVE_CUSTOMER_RETURNS:
+        response = saveCustomerReturns(reqInfo);
+        break;
+
       default:
         if (reqInfo.getSubModule() == SubModule.ACTS) {
           response = act.doService(svc, reqInfo);
@@ -4908,5 +4912,51 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     } else {
       return accounts.stream().findAny().get();
     }
+  }
+
+  private ResponseObject saveCustomerReturns(RequestInfo reqInfo) {
+    Map<String, String> idMap =
+        Codec.deserializeHashMap(reqInfo.getParameter(TBL_TRADE_ITEM_RETURNS));
+    if (BeeUtils.isEmpty(idMap)) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), TBL_TRADE_ITEM_RETURNS);
+    }
+
+    int count = 0;
+
+    for (Map.Entry<String, String> entry : idMap.entrySet()) {
+      Long id = BeeUtils.toLongOrNull(entry.getKey());
+      Long relId = BeeUtils.toLongOrNull(entry.getValue());
+
+      if (DataUtils.isId(id) && DataUtils.isId(relId) && !Objects.equals(id, relId)) {
+        Long parent = qs.getLongById(TBL_TRADE_DOCUMENT_ITEMS, relId, COL_TRADE_ITEM_PARENT);
+        Long primary;
+
+        if (DataUtils.isId(parent)) {
+          primary = qs.getLong(TBL_TRADE_ITEM_RETURNS, COL_PRIMARY_DOCUMENT_ITEM,
+              COL_TRADE_DOCUMENT_ITEM, parent);
+          if (!DataUtils.isId(primary)) {
+            primary = qs.getLong(TBL_TRADE_STOCK, COL_PRIMARY_DOCUMENT_ITEM,
+                COL_TRADE_DOCUMENT_ITEM, parent);
+          }
+
+        } else {
+          primary = null;
+        }
+
+        SqlInsert insert = new SqlInsert(TBL_TRADE_ITEM_RETURNS)
+            .addConstant(COL_TRADE_DOCUMENT_ITEM, id)
+            .addConstant(COL_RELATED_DOCUMENT_ITEM, relId)
+            .addNotNull(COL_PRIMARY_DOCUMENT_ITEM, primary);
+
+        ResponseObject insertResponse = qs.insertDataWithResponse(insert);
+        if (insertResponse.hasErrors()) {
+          return insertResponse;
+        }
+
+        count++;
+      }
+    }
+
+    return ResponseObject.response(count);
   }
 }

@@ -176,7 +176,12 @@ class TradeItemsForReturnGrid extends AbstractGridInterceptor {
     popup.setHideOnEscape(true);
 
     popup.focusOnOpen(input);
-    popup.addCloseHandler(event -> sourceElement.focus());
+    popup.addCloseHandler(event -> {
+      if (event.mouseEvent()) {
+        update(row, input.getNumber());
+      }
+      sourceElement.focus();
+    });
 
     popup.showAt(sourceElement.getAbsoluteLeft(), sourceElement.getAbsoluteTop());
   }

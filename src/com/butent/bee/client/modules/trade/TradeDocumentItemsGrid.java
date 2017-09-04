@@ -71,11 +71,13 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -1049,11 +1051,12 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     IsRow parentRow = getParentRow(getGridView());
     OperationType operationType = TradeUtils.getDocumentOperationType(parentRow);
 
-    if (operationType != null && operationType.isReturn()) {
+    if (checkParentOnAdd(parentRow) && operationType != null && operationType.isReturn()) {
       if (operationType.consumesStock()) {
         onReturnToSupplier(parentRow);
+
       } else {
-        onCustomerReturn(parentRow);
+        getGridView().ensureRelId(docId -> onCustomerReturn(getParentRow(getGridView())));
       }
 
     } else {
@@ -1214,9 +1217,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
     Queries.insertRows(rowSet, result -> {
       if (result != null && result.size() == rowSet.getNumberOfRows()) {
-        BeeRowSet returns = new BeeRowSet(VIEW_TRADE_ITEM_RETURNS,
-            Data.getColumns(VIEW_TRADE_ITEM_RETURNS,
-                COL_TRADE_DOCUMENT_ITEM, COL_RELATED_DOCUMENT_ITEM));
+        Map<Long, Long> returns = new HashMap<>();
 
         for (int i = 0; i < result.size(); i++) {
           BeeRow row = rowSet.getRow(i);
@@ -1225,14 +1226,16 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
           row.setId(rowInfo.getId());
           row.setVersion(rowInfo.getVersion());
 
-          returns.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
-              Queries.asList(rowInfo.getId(), data.getRow(i).getId()));
+          returns.put(rowInfo.getId(), data.getRow(i).getId());
         }
 
         tdsSupplier.get().addItems(rowSet);
         fireTdsChange(true);
 
-        Queries.insertRows(returns);
+        ParameterList parameters = TradeKeeper.createArgs(SVC_SAVE_CUSTOMER_RETURNS);
+        parameters.addDataItem(TBL_TRADE_ITEM_RETURNS, Codec.beeSerialize(returns));
+
+        BeeKeeper.getRpc().makeRequest(parameters);
       }
 
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getViewName(), documentRow.getId());

@@ -9,5 +9,7 @@
               cascade="DELETE" label="=trdDocumentItem" />
     <Relation name="RelatedDocumentItem" relation="TradeDocumentItems" notNull="true"
               cascade="DELETE" label="=trdRelatedDocumentItem" />
+    <Relation name="PrimaryDocumentItem" relation="TradeDocumentItems"
+              cascade="DELETE" label="=trdPrimaryDocumentItem" />
   </Fields>
 </Table>
