@@ -85,6 +85,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
     FormFactory.registerFormInterceptor("DataRights", new DataRightsHandler());
     FormFactory.registerFormInterceptor("FieldRights", new FieldRightsHandler());
+    FormFactory.registerFormInterceptor("ListRights", new ListRightsHandler());
 
     FormFactory.registerFormInterceptor("WidgetRights", new WidgetRightsHandler());
   }
@@ -234,6 +235,16 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     if (table == null) {
       this.table = new RightsTable() {
         @Override
+        public String formatModule(ModuleAndSub moduleAndSub) {
+          String s = RightsForm.this.formatModule(moduleAndSub);
+          if (s == null) {
+            s = super.formatModule(moduleAndSub);
+          }
+
+          return s;
+        }
+
+        @Override
         public int getValueStartCol() {
           return RightsForm.this.getValueStartCol();
         }
@@ -270,6 +281,10 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     }
 
     logger.severe("object", objectName, "not found");
+    return null;
+  }
+
+  protected String formatModule(ModuleAndSub moduleAndSub) {
     return null;
   }
 

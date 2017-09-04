@@ -20,6 +20,7 @@ public final class UiConstants {
 
   public static final String ATTR_VALUE = "value";
   public static final String ATTR_READ_ONLY = "readOnly";
+  public static final String ATTR_REQUIRED = "required";
 
   public static final String ATTR_CLASS = "class";
   public static final String ATTR_STYLE = "style";
@@ -71,6 +72,9 @@ public final class UiConstants {
 
   public static final String ATTR_KEY = "key";
 
+  public static final String ATTR_LIST_NAME = "listName";
+  public static final String ATTR_CHILD_TABLE = "childTable";
+
   public static final String TAG_ROW = "row";
   public static final String TAG_COL = "col";
   public static final String TAG_CELL = "cell";
@@ -80,6 +84,7 @@ public final class UiConstants {
 
   public static final String TAG_DATA_TREE = "DataTree";
   public static final String TAG_MULTI_SELECTOR = "MultiSelector";
+  public static final String TAG_CHILD_SELECTOR = "ChildSelector";
 
   public static final int MAX_PASSWORD_LENGTH = 30;
 

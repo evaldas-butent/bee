@@ -3240,6 +3240,10 @@ input[type="text"].bee-FilterSupplier-range-to-input {
 .bee-Rights-sub-module {
   padding-left: 1em;
 }
+.bee-form-ListRights .bee-Rights-sub-module {
+  padding-left: 0;
+}
+
 .bee-Rights-module,
 .bee-Rights-sub-module,
 .bee-Rights-mso-branch {

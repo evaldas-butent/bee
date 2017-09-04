@@ -4,7 +4,6 @@
 
         name="AssessmentRequests" viewName="Assessments" caption="=trAssessmentRequests"
         flexGrow="1" order="AssessmentID desc"
-        enableCopy="- Assessment OrderNo Cargo *Status *Date Number Manager ExpensesRegistered, Log"
         filter="Status"
 >
   <g:columns>
@@ -51,6 +50,8 @@
         </ui:expression>
       </render>
     </CalcColumn>
+
+    <RelColumn name="Customer" renderColumns="CustomerName CustomerTypeName" />
   </g:columns>
 
   <g:predefinedFilter name="new_answered"

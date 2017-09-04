@@ -20,7 +20,7 @@ public final class TradeAccounts implements BeeSerializable {
   public static final String TBL_TRADE_ACCOUNTS = "TradeAccounts";
   public static final String COL_TRADE_ACCOUNTS = "TradeAccounts";
 
-  private static final String COL_COST_ACCOUNT = "CostAccount";
+  public static final String COL_COST_ACCOUNT = "CostAccount";
 
   private static final String COL_TRADE_PAYABLES = "TradePayables";
   private static final String COL_TRADE_RECEIVABLES = "TradeReceivables";

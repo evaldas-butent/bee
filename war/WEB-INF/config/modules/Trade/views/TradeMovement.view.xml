@@ -203,5 +203,6 @@
 
   <Order>
     <OrderBy column="Date" />
+    <OrderBy column="TradeDocument" />
   </Order>
 </View>

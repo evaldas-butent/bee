@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY w1 "width: 18em;">
-  <!ENTITY w2 "width: 8em;">
-]>
-<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" 
+    <!ENTITY w1 "width: 18em;">
+    <!ENTITY w2 "width: 8em;">
+    ]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
 
-  name="Employee" viewName="Employees" caption="=employee"
-  width="70" widthUnit="%" height="80" heightUnit="%"
-  >
+        name="Employee" viewName="Employees" caption="=employee"
+        width="70" widthUnit="%" height="80" heightUnit="%"
+>
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls" cellStyle="vertical-align: top;">
       <col index="0" kind="label" />
@@ -16,7 +16,7 @@
       <row>
         <Label text="=personFullName" class="bee-required" />
         <DataSelector source="CompanyPerson" style="&w1;" renderColumns="FirstName LastName"
-          choiceColumns="FirstName LastName CompanyName" />
+                      choiceColumns="FirstName LastName CompanyName" />
 
         <Label for="TabNumber" />
         <InputInteger source="TabNumber" style="&w2;" />
@@ -27,10 +27,10 @@
         <TextLabel source="CompanyName" class="bee-output" style="&w1;" />
 
         <Label for="Salary" module="Payroll" />
-        <InputDecimal source="Salary" currencySource="Currency" style="&w2;" module="Payroll" />
+        <InputMoney source="Salary" currencySource="Currency" style="&w2;" module="Payroll" />
         <cell style="padding-left: 6px;" module="Payroll">
           <DataSelector source="Currency" for="Salary" newRowEnabled="false" editEnabled="false"
-            style="width: 5em;" />
+                        style="width: 5em;" />
         </cell>
       </row>
 
@@ -76,7 +76,7 @@
         <InputText source="PassportNo" style="&w1;" />
       </row>
     </Table>
-    <br/>
+    <br />
 
     <TabbedPages class="flexible">
       <page module="Payroll">

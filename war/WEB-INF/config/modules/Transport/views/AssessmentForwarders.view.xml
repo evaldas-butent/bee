@@ -64,6 +64,7 @@
       </SimpleJoin>
     </SimpleJoin>
 
+    <HiddenColumn name="CargoExpense" />
     <SimpleJoin joinType="INNER" name="CargoExpense">
       <SimpleColumn name="Cargo" alias="ServiceCargo" />
 

@@ -3460,6 +3460,8 @@ public interface Dictionary {
 
   default String list() {return g("list");}
 
+  default String lists() {return g("lists");}
+
   default String liters() {return g("liters");}
 
   default String loading() {return g("loading");}
@@ -4075,6 +4077,8 @@ public interface Dictionary {
   default String objectData() {return g("objectData");}
 
   default String objectField() {return g("objectField");}
+
+  default String objectList() {return g("objectList");}
 
   default String objectLocation() {return g("objectLocation");}
 
@@ -5260,6 +5264,8 @@ public interface Dictionary {
 
   default String salePriceShort() {return g("salePriceShort");}
 
+  default String save() {return g("save");}
+
   default String saveAndPrintAction() {return g("saveAndPrintAction");}
 
   default String saveAndPrintQuestion() {return g("saveAndPrintQuestion");}
@@ -5993,6 +5999,8 @@ public interface Dictionary {
   default String trContractPrinting() {return g("trContractPrinting");}
 
   default String trCopyOrder() {return g("trCopyOrder");}
+
+  default String trCopyRequest() {return g("trCopyRequest");}
 
   default String trCountryNorm() {return g("trCountryNorm");}
 
@@ -6836,6 +6844,8 @@ public interface Dictionary {
 
   default String trdCashRegisterNo() {return g("trdCashRegisterNo");}
 
+  default String trdCommandReturn() {return g("trdCommandReturn");}
+
   default String trdCustomer() {return g("trdCustomer");}
 
   default String trdDate() {return g("trdDate");}
@@ -6928,6 +6938,8 @@ public interface Dictionary {
   default String trdItemWarehouseFrom() {return g("trdItemWarehouseFrom");}
 
   default String trdItemWarehouseTo() {return g("trdItemWarehouseTo");}
+
+  default String trdItemsForReturn() {return g("trdItemsForReturn");}
 
   default String trdManager() {return g("trdManager");}
 
@@ -7025,9 +7037,15 @@ public interface Dictionary {
 
   default String trdQuantityReserved() {return g("trdQuantityReserved");}
 
+  default String trdQuantityReturn() {return g("trdQuantityReturn");}
+
+  default String trdQuantityReturned() {return g("trdQuantityReturned");}
+
   default String trdQuantityStock() {return g("trdQuantityStock");}
 
   default String trdReceivedDate() {return g("trdReceivedDate");}
+
+  default String trdRelatedDocumentItem() {return g("trdRelatedDocumentItem");}
 
   default String trdRelatedDocuments() {return g("trdRelatedDocuments");}
 

@@ -7,11 +7,11 @@
 >
   <g:columns>
     <DataColumn name="Description" />
-    <DataColumn name="Weight" />
+    <DataColumn name="Weight" scale="0" />
     <DataColumn name="WeightUnit" />
-    <DataColumn name="Quantity" />
+    <DataColumn name="Quantity" scale="0" />
     <DataColumn name="QuantityUnit" />
-    <DataColumn name="Volume" />
+    <DataColumn name="Volume" scale="0" />
     <DataColumn name="VolumeUnit" />
   </g:columns>
 

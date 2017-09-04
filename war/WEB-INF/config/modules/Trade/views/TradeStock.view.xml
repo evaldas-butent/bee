@@ -40,6 +40,14 @@
       <SimpleColumn name="Name" alias="WarehouseName" />
     </SimpleJoin>
 
+    <SimpleColumn name="CostAccount" />
+    <SimpleJoin joinType="LEFT" name="CostAccount">
+      <SimpleColumn name="AccountCode" />
+      <SimpleColumn name="AccountName" />
+      <SimpleColumn name="Background" alias="AccountBackground" />
+      <SimpleColumn name="Foreground" alias="AccountForeground" />
+    </SimpleJoin>
+
     <SimpleColumn name="Quantity" />
 
     <ExternalJoin joinType="LEFT" targetName="PrimaryDocumentItem" source="TradeItemCost"

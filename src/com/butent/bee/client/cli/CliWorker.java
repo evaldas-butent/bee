@@ -3488,11 +3488,11 @@ public final class CliWorker {
     BeeKeeper.getScreen().show(table);
   }
 
-  private static boolean showModal(int rowCount) {
+  private static boolean showModal(int rowCount, int columnCount) {
     if (rowCount <= 1) {
       return true;
     }
-    if (rowCount > 50) {
+    if (rowCount > 50 || columnCount > 10) {
       return false;
     }
 
@@ -4161,7 +4161,7 @@ public final class CliWorker {
   }
 
   private static void showTable(String caption, IsTable<?, ?> table) {
-    if (showModal(table.getNumberOfRows())) {
+    if (showModal(table.getNumberOfRows(), table.getNumberOfColumns())) {
       Global.showModalGrid(caption, table);
     } else {
       Global.showTable(caption, table);

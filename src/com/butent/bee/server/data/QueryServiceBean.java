@@ -759,6 +759,17 @@ public class QueryServiceBean {
     return results;
   }
 
+  public Set<String> getSet(IsQuery query) {
+    Set<String> result = new HashSet<>();
+
+    String[] arr = getColumn(query);
+    if (arr != null && arr.length > 0) {
+      Collections.addAll(result, arr);
+    }
+
+    return result;
+  }
+
   public String getValue(IsQuery query) {
     return getSingleValue(query).getValue(0, 0);
   }

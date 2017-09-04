@@ -544,12 +544,18 @@ public class Configuration implements BeeSerializable {
   }
 
   public void setRestriction(Option option, Option relatedOption, boolean denied) {
-    Boolean oldValue = getRestrictions(option).put(relatedOption, denied);
+    Map<Option, Boolean> optionRestrictions = getRestrictions(option);
+    Map<Option, Boolean> relatedOptionRestrictions = getRestrictions(relatedOption);
+
+    if (BeeUtils.anyNull(optionRestrictions, relatedOptionRestrictions)) {
+      return;
+    }
+    Boolean oldValue = optionRestrictions.put(relatedOption, denied);
 
     if (denied) {
-      getRestrictions(relatedOption).put(option, denied);
+      relatedOptionRestrictions.put(option, denied);
     } else if (BeeUtils.unbox(oldValue)) {
-      getRestrictions(relatedOption).remove(option);
+      relatedOptionRestrictions.remove(option);
     }
   }
 

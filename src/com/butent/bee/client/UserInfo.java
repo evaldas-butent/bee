@@ -86,6 +86,10 @@ public class UserInfo implements HasInfo {
     return isLoggedIn() && userData.canEditData(object);
   }
 
+  public boolean canEditList(String viewName, String listName) {
+    return isLoggedIn() && userData.canEditList(viewName, listName);
+  }
+
   public boolean canMergeData(String object) {
     return isLoggedIn() && userData.canMergeData(object);
   }
@@ -315,6 +319,14 @@ public class UserInfo implements HasInfo {
 
   public boolean isDataVisible(String object) {
     return isLoggedIn() && userData.isDataVisible(object);
+  }
+
+  public boolean isListRequired(String viewName, String listName) {
+    return isLoggedIn() && userData.isListRequired(viewName, listName);
+  }
+
+  public boolean isListVisible(String viewName, String listName) {
+    return isLoggedIn() && userData.isListVisible(viewName, listName);
   }
 
   public boolean isLoggedIn() {

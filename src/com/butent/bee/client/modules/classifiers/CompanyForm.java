@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.classifiers;
 
 import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
@@ -17,6 +18,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -340,23 +342,24 @@ class CompanyForm extends AbstractFormInterceptor {
           table.setColumnCellStyles(1, "text-align:right; font-weight:bold;color:red;");
           int c = 0;
 
-          String amount = result.get(VAR_DEBT);
+          NumberFormat numberFormat = Format.getDecimalFormat(2);
+          Double amount = BeeUtils.toDouble(result.get(VAR_DEBT));
 
-          if (BeeUtils.isPositiveDouble(amount)) {
+          if (BeeUtils.isPositive(amount)) {
             table.setHtml(c, 0, Localized.dictionary().trdDebt());
-            table.setHtml(c, 1, amount);
+            table.setHtml(c, 1, numberFormat.format(amount));
             double limit = BeeUtils.toDouble(result.get(COL_COMPANY_CREDIT_LIMIT));
 
-            if (BeeUtils.toDouble(amount) <= limit) {
+            if (amount <= limit) {
               StyleUtils.setColor(table.getCellFormatter().getElement(c, 1), "black");
             }
             c++;
           }
-          amount = result.get(VAR_OVERDUE);
+          amount = BeeUtils.toDouble(result.get(VAR_OVERDUE));
 
-          if (BeeUtils.isPositiveDouble(amount)) {
+          if (BeeUtils.isPositive(amount)) {
             table.setHtml(c, 0, Localized.dictionary().trdOverdue());
-            table.setHtml(c, 1, amount);
+            table.setHtml(c, 1, numberFormat.format(amount));
           }
           widget.getElement().setInnerHTML(table.getElement().getString());
         }
