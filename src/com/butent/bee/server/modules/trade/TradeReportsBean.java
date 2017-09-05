@@ -224,12 +224,17 @@ public class TradeReportsBean {
     IsCondition stockCondition = getStockCondition(aliasStock, warehouses);
 
     String aliasPrimaryDocumentItems = SqlUtils.uniqueName("pdi");
+    String aliasPrimaryReturnDocumentItems = SqlUtils.uniqueName("rdi");
+
     IsCondition primaryDocumentItemCondition = getPrimaryDocumentItemCondition(
         aliasPrimaryDocumentItems, items, itemCategories, manufacturers);
 
     String aliasPrimaryDocuments = SqlUtils.uniqueName("pdo");
+    String aliasPrimaryReturnDocuments = SqlUtils.uniqueName("rdo");
+
     IsCondition primaryDocumentCondition =
-        getPrimaryDocumentCondition(aliasPrimaryDocuments, suppliers, receivedFrom, receivedTo);
+        getPrimaryDocumentCondition(aliasPrimaryDocuments, aliasPrimaryReturnDocuments,
+            suppliers, receivedFrom, receivedTo);
 
     String aliasDocumentItems = SqlUtils.uniqueName("dit");
     IsCondition documentItemCondition = getDocumentItemCondition(aliasDocumentItems, documents);
@@ -296,24 +301,26 @@ public class TradeReportsBean {
     List<String> quantityColumns = new ArrayList<>();
     List<String> amountColumns = new ArrayList<>();
 
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM);
+    SqlSelect query = new SqlSelect().addFields(aliasStock, COL_TRADE_DOCUMENT_ITEM);
 
     groupValueAliases.forEach((tgr, alias) -> {
-      String source;
-
       switch (tgr.valueSource()) {
         case TBL_TRADE_DOCUMENTS:
-          source = aliasPrimaryDocuments;
+          query.addExpr(
+              SqlUtils.nvl(
+                  SqlUtils.field(aliasPrimaryReturnDocuments, tgr.valueColumn()),
+                  SqlUtils.field(aliasPrimaryDocuments, tgr.valueColumn())),
+              alias);
           break;
-        case TBL_TRADE_DOCUMENT_ITEMS:
-          source = tgr.primaryDocument() ? aliasPrimaryDocumentItems : aliasDocumentItems;
-          break;
-        default:
-          source = tgr.valueSource();
-      }
 
-      query.addField(source, tgr.valueColumn(), alias);
+        case TBL_TRADE_DOCUMENT_ITEMS:
+          String source = tgr.primaryDocument() ? aliasPrimaryDocumentItems : aliasDocumentItems;
+          query.addField(source, tgr.valueColumn(), alias);
+          break;
+
+        default:
+          query.addField(tgr.valueSource(), tgr.valueColumn(), alias);
+      }
     });
 
     if (needsYear || needsMonth) {
@@ -326,7 +333,7 @@ public class TradeReportsBean {
       query.addExpr(zero(quantityPrecision, quantityScale), aliasEndQuantity);
 
     } else if (endDate == null) {
-      query.addField(TBL_TRADE_STOCK, COL_STOCK_QUANTITY, aliasQuantity);
+      query.addField(aliasStock, COL_STOCK_QUANTITY, aliasQuantity);
     } else {
       query.addExpr(zero(quantityPrecision, quantityScale), aliasQuantity);
     }
@@ -348,17 +355,28 @@ public class TradeReportsBean {
       }
     }
 
-    query.addFrom(TBL_TRADE_STOCK);
+    query.addFrom(TBL_TRADE_STOCK, aliasStock);
 
     if (needsPrimaryDocumentItems) {
       query.addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, aliasPrimaryDocumentItems,
           SqlUtils.join(aliasPrimaryDocumentItems, documentItemId,
               aliasStock, COL_PRIMARY_DOCUMENT_ITEM));
     }
+
     if (needsPrimaryDocuments) {
       query.addFromLeft(TBL_TRADE_DOCUMENTS, aliasPrimaryDocuments,
           SqlUtils.join(aliasPrimaryDocuments, documentId,
               aliasPrimaryDocumentItems, COL_TRADE_DOCUMENT));
+
+      query.addFromLeft(TBL_TRADE_ITEM_RETURNS,
+          SqlUtils.join(TBL_TRADE_ITEM_RETURNS, COL_TRADE_DOCUMENT_ITEM,
+              aliasStock, COL_TRADE_DOCUMENT_ITEM));
+      query.addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, aliasPrimaryReturnDocumentItems,
+          SqlUtils.join(aliasPrimaryReturnDocumentItems, documentItemId,
+              TBL_TRADE_ITEM_RETURNS, COL_PRIMARY_DOCUMENT_ITEM));
+      query.addFromLeft(TBL_TRADE_DOCUMENTS, aliasPrimaryReturnDocuments,
+          SqlUtils.join(aliasPrimaryReturnDocuments, documentId,
+              aliasPrimaryReturnDocumentItems, COL_TRADE_DOCUMENT));
     }
 
     if (documentItemCondition != null) {
@@ -374,7 +392,7 @@ public class TradeReportsBean {
     if (needsCost) {
       query.addFromLeft(TBL_TRADE_ITEM_COST,
           SqlUtils.join(TBL_TRADE_ITEM_COST, COL_TRADE_DOCUMENT_ITEM,
-              TBL_TRADE_STOCK, COL_PRIMARY_DOCUMENT_ITEM));
+              aliasStock, COL_PRIMARY_DOCUMENT_ITEM));
     }
 
     HasConditions where = SqlUtils.and(stockCondition, primaryDocumentItemCondition,
@@ -382,7 +400,7 @@ public class TradeReportsBean {
         itemCondition);
 
     if (endDate == null && !movement) {
-      where.add(SqlUtils.nonZero(TBL_TRADE_STOCK, COL_STOCK_QUANTITY));
+      where.add(SqlUtils.nonZero(aliasStock, COL_STOCK_QUANTITY));
     }
 
     query.setWhere(normalize(where));
@@ -876,20 +894,36 @@ public class TradeReportsBean {
     return normalize(conditions);
   }
 
-  private static IsCondition getPrimaryDocumentCondition(String alias, Collection<Long> suppliers,
-      DateTime receivedFrom, DateTime receivedTo) {
+  private static IsCondition getPrimaryDocumentCondition(String aliasDoc, String aliasRet,
+      Collection<Long> suppliers, DateTime receivedFrom, DateTime receivedTo) {
 
     HasConditions conditions = SqlUtils.and();
 
     if (!BeeUtils.isEmpty(suppliers)) {
-      conditions.add(SqlUtils.inList(alias, COL_TRADE_SUPPLIER, suppliers));
+      conditions.add(
+          SqlUtils.or(
+              SqlUtils.and(SqlUtils.isNull(aliasRet, COL_TRADE_SUPPLIER),
+                  SqlUtils.inList(aliasDoc, COL_TRADE_SUPPLIER, suppliers)),
+              SqlUtils.and(SqlUtils.notNull(aliasRet, COL_TRADE_SUPPLIER),
+                  SqlUtils.inList(aliasRet, COL_TRADE_SUPPLIER, suppliers))));
     }
 
     if (receivedFrom != null) {
-      conditions.add(SqlUtils.moreEqual(alias, COL_TRADE_DATE, receivedFrom));
+      conditions.add(
+          SqlUtils.or(
+              SqlUtils.and(SqlUtils.isNull(aliasRet, COL_TRADE_DATE),
+                  SqlUtils.moreEqual(aliasDoc, COL_TRADE_DATE, receivedFrom)),
+              SqlUtils.and(SqlUtils.notNull(aliasRet, COL_TRADE_DATE),
+                  SqlUtils.moreEqual(aliasRet, COL_TRADE_DATE, receivedFrom))));
     }
+
     if (receivedTo != null) {
-      conditions.add(SqlUtils.less(alias, COL_TRADE_DATE, receivedTo));
+      conditions.add(
+          SqlUtils.or(
+              SqlUtils.and(SqlUtils.isNull(aliasRet, COL_TRADE_DATE),
+                  SqlUtils.less(aliasDoc, COL_TRADE_DATE, receivedTo)),
+              SqlUtils.and(SqlUtils.notNull(aliasRet, COL_TRADE_DATE),
+                  SqlUtils.less(aliasRet, COL_TRADE_DATE, receivedTo))));
     }
 
     return normalize(conditions);
