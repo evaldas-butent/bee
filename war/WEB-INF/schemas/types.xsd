@@ -619,6 +619,11 @@
       <xs:enumeration value="TimeRanges" />
       <xs:enumeration value="TimeZones" />
       <xs:enumeration value="TodoList" />
+      <xs:enumeration value="TTExecutors" />
+      <xs:enumeration value="TTExecutorGroups" />
+      <xs:enumeration value="TTFiles" />
+      <xs:enumeration value="TTObservers" />
+      <xs:enumeration value="TTObserverGroups" />
       <xs:enumeration value="TradeAccounts" />
       <xs:enumeration value="TradeActInvoices" />
       <xs:enumeration value="TradeActItems" />

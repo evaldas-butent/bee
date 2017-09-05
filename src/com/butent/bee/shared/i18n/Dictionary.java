@@ -1361,6 +1361,8 @@ public interface Dictionary {
 
   default String crmTaskReturningForExecution() {return g("crmTaskReturningForExecution");}
 
+  default String crmTaskRiskRating() {return g("crmTaskRiskRating");}
+
   default String crmTaskShowCommentsBelow() {return g("crmTaskShowCommentsBelow");}
 
   default String crmTaskShowCommentsRight() {return g("crmTaskShowCommentsRight");}
@@ -1402,6 +1404,8 @@ public interface Dictionary {
   default String crmTaskSuspension() {return g("crmTaskSuspension");}
 
   default String crmTaskTemplate() {return g("crmTaskTemplate");}
+
+  default String crmTaskTemplateFiles() {return g("crmTaskTemplateFiles");}
 
   default String crmTaskTemplateName() {return g("crmTaskTemplateName");}
 
@@ -7264,6 +7268,8 @@ public interface Dictionary {
   default String userSettings() {return g("userSettings");}
 
   default String users() {return g("users");}
+
+  default String validFrom() {return g("validFrom");}
 
   default String validUntil() {return g("validUntil");}
 

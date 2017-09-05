@@ -812,6 +812,12 @@ public final class TaskConstants {
 
   public static final String VIEW_TODO_LIST = "TodoList";
 
+  public static final String VIEW_TT_EXECUTORS = "TTExecutors";
+  public static final String VIEW_TT_EXECUTOR_GROUPS = "TTExecutorGroups";
+  public static final String VIEW_TT_OBSERVERS = "TTObservers";
+  public static final String VIEW_TT_OBSERVER_GROUPS = "TTObserverGroups";
+  public static final String VIEW_TT_FILES = "TTFiles";
+
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";
 
@@ -896,6 +902,7 @@ public final class TaskConstants {
   public static final String COL_REQUEST_TYPE = "RequestType";
 
   public static final String COL_RECURRING_TASK = "RecurringTask";
+  public static final String COL_TASK_TEMPLATE = "TaskTemplate";
 
   public static final String COL_RT_SCHEDULE_FROM = "ScheduleFrom";
   public static final String COL_RT_SCHEDULE_UNTIL = "ScheduleUntil";
@@ -994,6 +1001,7 @@ public final class TaskConstants {
   public static final String GRID_RECURRING_TASKS = "RecurringTasks";
   public static final String GRID_CHILD_RECURRING_TASKS = "ChildRecurringTasks";
   public static final String GRID_RT_FILES = "RTFiles";
+  public static final String GRID_TT_FILES = "TTFiles";
 
   public static final String GRID_RELATED_TASKS = "RelatedTasks";
   public static final String GRID_CHILD_TASKS = "ChildTasks";
@@ -1013,6 +1021,7 @@ public final class TaskConstants {
   public static final String FORM_TASK_PREVIEW = "TaskPreview";
 
   public static final String FORM_RECURRING_TASK = "RecurringTask";
+  public static final String FORM_TASK_TEMPLATE = "TaskTemplate";
 
   public static final String FORM_NEW_REQUEST = "NewRequest";
   public static final String FORM_REQUEST = "Request";
