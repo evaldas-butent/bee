@@ -118,7 +118,6 @@ public final class TradeConstants {
   public static final String VIEW_TRADE_MOVEMENT = "TradeMovement";
   public static final String VIEW_ITEM_SELECTION = "ItemSelection";
   public static final String VIEW_TRADE_ITEMS_FOR_RETURN = "TradeItemsForReturn";
-  public static final String VIEW_TRADE_ITEM_RETURNS = "TradeItemReturns";
 
   public static final String COL_PURCHASE = "Purchase";
 
