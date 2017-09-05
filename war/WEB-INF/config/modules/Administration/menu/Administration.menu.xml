@@ -14,6 +14,11 @@ name="Administration" label="=administration" order="1000" module="Administratio
   <Item name="ReminderTypes" label="=reminderTypes" service="grid" parameters="ReminderTypes"
         separator="true" />
 
+  <Item name="Substitutions" label="=substitutions" service="grid" parameters="Substitutions"
+        separator="true"/>
+  <Item name="SubstitutionReasons" label="=substitutionReasons" service="grid"
+        parameters="SubstitutionReasons" />
+
   <Item name="Imports" label="=dataImport" service="grid" parameters="ImportOptions" separator="true" />
 
   <Item name="GridSettings" label="=gridSettings" service="grid" parameters="GridSettings"

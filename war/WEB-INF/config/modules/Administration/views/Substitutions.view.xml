@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="Substitutions" source="Substitutions" caption="=substitutions"
+      newRowForm="Substitution" editForm="Substitution"
+>
+  <Columns>
+    <SimpleColumn name="User" />
+    <SimpleJoin name="User" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleColumn name="Person" />
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" />
+          <SimpleColumn name="LastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Substitute" />
+    <SimpleJoin name="Substitute" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleColumn name="Person" alias="SubstitutePerson" />
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="SubstituteFirstName" />
+          <SimpleColumn name="LastName" alias="SubstituteLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="SubstitutionReason" />
+    <SimpleJoin name="SubstitutionReason" joinType="INNER">
+      <SimpleColumn name="SubstitutionReasonName" />
+      <SimpleColumn name="Background" />
+      <SimpleColumn name="Foreground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="SubstituteFrom" />
+    <SimpleColumn name="Note" />
+
+    <SimpleColumn name="Executed" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="SubstituteFrom" descending="true" />
+  </Order>
+</View>

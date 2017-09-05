@@ -5312,6 +5312,8 @@ public interface Dictionary {
 
   default String searchTips() {return g("searchTips");}
 
+  default String selectActiveRow() {return g("selectActiveRow");}
+
   default String selectAll() {return g("selectAll");}
 
   default String selectAtLeastOneRow() {return g("selectAtLeastOneRow");}
@@ -5427,6 +5429,14 @@ public interface Dictionary {
   default String statuses() {return g("statuses");}
 
   default String style() {return g("style");}
+
+  default String substitute() {return g("substitute");}
+
+  default String substitution() {return g("substitution");}
+
+  default String substitutionReasons() {return g("substitutionReasons");}
+
+  default String substitutions() {return g("substitutions");}
 
   default String summary() {return g("summary");}
 
@@ -7438,6 +7448,8 @@ public interface Dictionary {
   default String vehicles() {return g("vehicles");}
 
   default String vehiclesShort() {return g("vehiclesShort");}
+
+  default String visible() {return g("visible");}
 
   default String volume() {return g("volume");}
 

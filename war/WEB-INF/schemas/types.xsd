@@ -583,6 +583,9 @@
       <xs:enumeration value="Stages" />
       <xs:enumeration value="StageTriggers" />
       <xs:enumeration value="StateProcess" />
+      <xs:enumeration value="SubstitutionObjects" />
+      <xs:enumeration value="SubstitutionReasons" />
+      <xs:enumeration value="Substitutions" />
       <xs:enumeration value="TaskDurations" />
       <xs:enumeration value="TaskEvents" />
       <xs:enumeration value="TaskFiles" />

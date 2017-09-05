@@ -411,7 +411,8 @@ public final class TaskConstants {
         null,
         TaskWorkflowAction.hidden()),
     CREATE_SCHEDULED(Localized.dictionary().crmTaskForwardedForExecution(),
-        Localized.dictionary().crmTaskStatusScheduled(), null, TaskWorkflowAction.hidden());
+        Localized.dictionary().crmTaskStatusScheduled(), null, TaskWorkflowAction.hidden()),
+    SUBSTITUTE(Localized.dictionary().substitution(), null, null, TaskWorkflowAction.hidden());
 
     private final String caption;
     private final String commandLabel;
