@@ -1457,6 +1457,8 @@ public interface Dictionary {
 
   default String crmTodoList() {return g("crmTodoList");}
 
+  default String crmValidTaskTemplates() {return g("crmValidTaskTemplates");}
+
   default String currencies() {return g("currencies");}
 
   default String currency() {return g("currency");}

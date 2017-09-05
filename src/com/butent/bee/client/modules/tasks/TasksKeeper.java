@@ -180,6 +180,10 @@ public final class TasksKeeper {
         new FileGridInterceptor(COL_RTF_RECURRING_TASK, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
+    GridFactory.registerGridInterceptor(GRID_TT_FILES, new FileGridInterceptor(COL_TASK_TEMPLATE,
+        AdministrationConstants.COL_FILE, AdministrationConstants.COL_FILE_CAPTION,
+        AdministrationConstants.ALS_FILE_NAME));
+
     GridFactory.registerGridInterceptor(GRID_RELATED_TASKS, new RelatedTasksGrid());
     GridFactory.registerGridInterceptor(GRID_RELATED_RECURRING_TASKS,
         new RelatedRecurringTasksGrid());
@@ -187,6 +191,7 @@ public final class TasksKeeper {
     GridFactory.registerGridInterceptor(GRID_CHILD_TASKS, new ChildTasksGrid());
     GridFactory.registerGridInterceptor(GRID_CHILD_RECURRING_TASKS, new ChildRecurringTasksGrid());
     GridFactory.registerGridInterceptor(GRID_CHILD_TASK_TEMPLATES, new ChildTaskTemplatesGrid());
+    GridFactory.registerGridInterceptor(GRID_TASK_TEMPLATES, new TaskTemplatesGrid());
 
     for (TaskType tt : TaskType.values()) {
       GridFactory.registerGridSupplier(tt.getSupplierKey(), GRID_TASKS,

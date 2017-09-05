@@ -17,6 +17,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -53,7 +54,9 @@ import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
@@ -64,6 +67,7 @@ import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -290,6 +294,16 @@ class TaskBuilder extends ProductSupportInterceptor {
           setTaskRow(row);
           super.onDataSelector(event);
         }
+      });
+    } else if (BeeUtils.same(name, COL_TASK_TEMPLATE) && widget instanceof UnboundSelector) {
+      ((UnboundSelector) widget).addSelectorHandler(event -> {
+        JustDate now = TimeUtils.today();
+        Filter filter = Filter.and(Filter.or(Filter.isNull(COL_START_TIME),
+            Filter.compareWithValue(COL_START_TIME, Operator.LE, new DateValue(now))),
+            Filter.or(Filter.isNull(COL_FINISH_TIME), Filter.compareWithValue(COL_FINISH_TIME,
+                Operator.GE, new DateValue(now))));
+
+        event.getSelector().setAdditionalFilter(filter);
       });
     }
 

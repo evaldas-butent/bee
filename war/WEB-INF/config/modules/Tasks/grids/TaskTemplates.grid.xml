@@ -19,4 +19,9 @@
     <DataColumn name="StartTime" />
     <DataColumn name="FinishTime" />
   </g:columns>
+
+  <g:predefinedFilter name="task_templates_valid" label="=crmValidTaskTemplates" initial="true" >
+    <g:column name="StartTime" value=",d" emptyValues="true" />
+    <g:column name="FinishTime" value="d," emptyValues="true" />
+  </g:predefinedFilter>
 </g:Grid>

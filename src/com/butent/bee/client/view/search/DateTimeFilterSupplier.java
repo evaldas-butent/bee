@@ -208,8 +208,12 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
       DateTime start = r.hasLowerBound() ? r.lowerEndpoint() : null;
       DateTime end = r.hasUpperBound() ? r.upperEndpoint() : null;
 
-      return buildFilter(start, end);
-
+      if (input.getEmptyValues()) {
+        return Filter.or(buildFilter(start, end), getEmptinessFilter(getColumnId(),
+            input.getEmptyValues()));
+      } else {
+        return buildFilter(start, end);
+      }
     } else {
       return getEmptinessFilter(getColumnId(), input.getEmptyValues());
     }
