@@ -1217,6 +1217,8 @@ public interface Dictionary {
 
   default String crmTaskDurations() {return g("crmTaskDurations");}
 
+  default String crmTaskEndResult() {return g("crmTaskEndResult");}
+
   default String crmTaskEvent() {return g("crmTaskEvent");}
 
   default String crmTaskEventApproved() {return g("crmTaskEventApproved");}

@@ -34,5 +34,7 @@
     <Boolean name="PrivateTask" label="=crmTaskPrivate" />
     <Boolean name="Mail" label="=mailNotify" />
     <Boolean name="NotScheduledTask" label="=crmTasksNotScheduledTask" />
+
+    <Text name="EndResult" label="=crmTaskEndResult" />
   </Fields>
 </Table>

@@ -39,6 +39,7 @@
     <SimpleColumn name="FinishTime" />
 
     <SimpleColumn name="RiskRating" />
+    <SimpleColumn name="EndResult" />
   </Columns>
 
   <Order>

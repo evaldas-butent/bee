@@ -147,6 +147,11 @@
             <CheckBox source="PrivateTask" />
             <CheckBox source="NotScheduledTask" />
           </row>
+
+          <row>
+            <Label />
+            <Button name="EndResult" text="=crmTaskEndResult" />
+          </row>
         </Table>
 
         <Label text="=relatedTo" style="font-style: italic; margin-top: 20px; margin-bottom: 2px;" data="Relations" />

@@ -119,8 +119,12 @@
     <row>
       <Label />
       <CheckBox source="CopyByMail" text="=mailNotify" />
-      <Label />
-      <CheckBox source="PrivateTask" text="=crmTaskPrivate" />
+      <cell colSpan="4">
+        <FlowPanel>
+          <CheckBox source="PrivateTask" text="=crmTaskPrivate" />
+          <Button name="EndResult" text="=crmTaskEndResult" style="margin-left: 30px;" />
+        </FlowPanel>
+      </cell>
     </row>
   </Table>
 

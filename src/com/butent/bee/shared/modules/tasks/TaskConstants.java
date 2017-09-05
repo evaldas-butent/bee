@@ -842,6 +842,7 @@ public final class TaskConstants {
   public static final String COL_CAPTION = "Caption";
   public static final String COL_TASK_COMPANY = "Company";
   public static final String COL_PRIVATE_TASK = "PrivateTask";
+  public static final String COL_END_RESULT = "EndResult";
 
   public static final String COL_PARENT = "Parent";
   public static final String COL_ORDER = "Order";
