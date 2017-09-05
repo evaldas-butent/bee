@@ -835,6 +835,7 @@ public final class TaskConstants {
 
   public static final String COL_TASK_TEMPLATE_NAME = "Name";
   public static final String COL_TASK_TYPE_NAME = "Name";
+  public static final String COL_NOT_SCHEDULED_TASK = "NotScheduledTask";
 
   public static final String COL_SUMMARY = "Summary";
   public static final String COL_DESCRIPTION = "Description";
