@@ -2954,6 +2954,12 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       values.add(BeeUtils.toString(privateTask));
     }
 
+    String endResult = DataUtils.getString(rtColumns, rtRow, COL_END_RESULT);
+    if (!BeeUtils.isEmpty(endResult)) {
+      columns.add(DataUtils.getColumn(COL_END_RESULT, taskColumns));
+      values.add(endResult);
+    }
+
     BeeRowSet taskData = new BeeRowSet(VIEW_TASKS, columns);
     BeeRow taskRow = new BeeRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, values);
 

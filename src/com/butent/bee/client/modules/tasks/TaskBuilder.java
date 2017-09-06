@@ -36,6 +36,7 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
@@ -293,6 +294,12 @@ class TaskBuilder extends ProductSupportInterceptor {
 
           setTaskRow(row);
           super.onDataSelector(event);
+        }
+      });
+    } else if (BeeUtils.same(name, COL_END_RESULT) && widget instanceof Button) {
+      ((Button) widget).addClickHandler(clickEvent -> {
+        if (relations != null) {
+          TaskUtils.renderEndResult(relations.getWidgetMap(true), getFormView(), true, null);
         }
       });
     } else if (BeeUtils.same(name, COL_TASK_TEMPLATE) && widget instanceof UnboundSelector) {
@@ -767,6 +774,17 @@ class TaskBuilder extends ProductSupportInterceptor {
       }
 
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
+
+      String endResult = Data.getString(getViewName(), tasks.getRow(0), COL_END_RESULT);
+      if (!BeeUtils.isEmpty(endResult)) {
+        List<String> translations = new ArrayList<>();
+
+        for (String viewName : Codec.deserializeList(endResult)) {
+          translations.add(Data.getViewCaption(viewName));
+        }
+
+        TaskUtils.insertEndResultNote(tasks.getRowIds(), null, translations, null);
+      }
 
     } else {
       callback.onFailure("Unknown response");
