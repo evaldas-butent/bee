@@ -721,6 +721,13 @@ public final class TaskConstants {
 
   public static final String SVC_CONFIRM_TASKS = "confirm_tasks";
 
+  public static final String SVC_TASKS_REPORTS_PREFIX = "get_tasks_reports_";
+  public static final String SVC_TASKS_REPORTS_COMPANY_TIMES = SVC_TASKS_REPORTS_PREFIX
+      + "company_times";
+  public static final String SVC_TASKS_REPORTS_TYPE_HOURS = SVC_TASKS_REPORTS_PREFIX + "type_hours";
+  public static final String SVC_TASKS_REPORTS_USERS_HOURS = SVC_TASKS_REPORTS_PREFIX
+      + "users_hours";
+
   public static final String SVC_GET_REQUEST_FILES = "get_request_files";
   public static final String SVC_FINISH_REQUEST_WITH_TASK = "finish_request_with_task";
 
@@ -749,6 +756,10 @@ public final class TaskConstants {
   public static final String VAR_TASK_DURATION_DATE = Service.RPC_VAR_PREFIX + "task_duration_date";
   public static final String VAR_TASK_DURATION_TIME = Service.RPC_VAR_PREFIX + "task_duration_time";
   public static final String VAR_TASK_DURATION_TYPE = Service.RPC_VAR_PREFIX + "task_duration_type";
+  public static final String VAR_TASK_DURATION_DATE_FROM = VAR_TASK_DURATION_DATE + "_from";
+  public static final String VAR_TASK_DURATION_DATE_TO = VAR_TASK_DURATION_DATE + "_to";
+  public static final String VAR_TASK_DURATION_HIDE_ZEROS = Service.RPC_VAR_PREFIX
+      + "task_duration_hide_zeros";
 
   public static final String VAR_TASK_RELATIONS = Service.RPC_VAR_PREFIX + "task_relations";
   public static final String VAR_COPY_RELATIONS = Service.RPC_VAR_PREFIX + "copy_task_relations";
@@ -1014,6 +1025,8 @@ public final class TaskConstants {
 
   public static final String FORM_RECURRING_TASK = "RecurringTask";
 
+  public static final String FORM_TASKS_REPORT = "TasksReport";
+
   public static final String FORM_NEW_REQUEST = "NewRequest";
   public static final String FORM_REQUEST = "Request";
 
@@ -1039,6 +1052,14 @@ public final class TaskConstants {
   public static final String TASK_STATUS_STYLE_WITH_BORDER = "_with_border";
   public static final String DEFAULT_TASK_PROPERTIES =
       BeeUtils.join(BeeConst.STRING_COMMA, PROP_OBSERVERS, PROP_FILES, PROP_EVENTS);
+
+  // Verslo Aljansas TID 25505
+  public static final String COL_VA_MILEAGE = "VAMileage";
+  public static final String VAR_VA_TASK_DURATION_MILEAGE = Service.RPC_VAR_PREFIX
+    + "task_duration_mileage";
+  public static final int VAR_VA_MILEAGE_PREC = 3;
+  // Verslo Aljansas TID 25515
+  public static final String COL_VA_MILEAGE_REQUIRED = "VAMileageRequired";
 
   private TaskConstants() {
   }

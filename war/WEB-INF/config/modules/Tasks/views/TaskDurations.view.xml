@@ -13,7 +13,7 @@
       <SimpleColumn name="Approved" />
       <SimpleColumn name="ExpectedDuration" />
       <SimpleColumn name="Status" />
-  
+
       <SimpleColumn name="Company" />
       <SimpleJoin name="Company" joinType="LEFT">
         <SimpleColumn alias="CompanyName" name="Name" />
@@ -22,12 +22,12 @@
             <SimpleColumn alias="CompanyTypeName" name="Name" />
          </SimpleJoin>
       </SimpleJoin>
-      
+
       <SimpleColumn name="Type" />
       <SimpleJoin name="Type" joinType="LEFT">
         <SimpleColumn alias="TypeName" name="Name" />
       </SimpleJoin>
-      
+
       <SimpleColumn name="Project" />
       <SimpleJoin name="Project" joinType="LEFT">
         <SimpleColumn alias="ProjectName" name="Name" />
@@ -67,6 +67,11 @@
       <SimpleJoin name="DurationType" joinType="LEFT">
         <SimpleColumn alias="DurationType" name="Name" />
       </SimpleJoin>
+
+      <!-- Verslo Aljansas TID 25505 {-->
+      <SimpleColumn name="VAMileage" />
+      <!-- } Verslo Aljansas TID 25505 -->
+
     </SimpleJoin>
   </Columns>
 
@@ -75,4 +80,3 @@
     <OrderBy column="PublishTime" />
   </Order>
 </View>
- 

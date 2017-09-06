@@ -253,6 +253,18 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_CHANGED_TASKS)) {
       response = getChangedTasks();
 
+      //Verslo aljansas
+    } else if (BeeUtils.same(svc, SVC_TASKS_REPORTS_COMPANY_TIMES)) {
+      response = getCompanyTimesReport(reqInfo);
+
+      // Verslo aljansas
+    } else if (BeeUtils.same(svc, SVC_TASKS_REPORTS_TYPE_HOURS)) {
+      response = getTypeHoursReport(reqInfo);
+
+      //Verslo aljansas
+    } else if (BeeUtils.same(svc, SVC_TASKS_REPORTS_USERS_HOURS)) {
+      response = getUsersHoursReport(reqInfo);
+
     } else if (BeeUtils.same(svc, SVC_GET_REQUEST_FILES)) {
       response = getRequestFiles(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_REQUEST)));
 
@@ -1678,6 +1690,148 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     return ResponseObject.response(Joiner.on(BeeConst.CHAR_COMMA).join(result));
   }
 
+//  verslo aljansas
+  private ResponseObject getCompanyTimesReport(RequestInfo reqInfo) {
+    Dictionary constants = usr.getDictionary();
+    boolean hideZeroTimes = false;
+
+    SqlSelect companiesListQuery =
+        new SqlSelect()
+            .addFields(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES))
+            .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
+            .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, ALS_COMPANY_TYPE)
+            .addFrom(TBL_COMPANIES)
+            .addFromLeft(TBL_COMPANY_TYPES,
+                sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
+            .setWhere(SqlUtils.sqlTrue())
+            .addOrder(TBL_COMPANIES, COL_COMPANY_NAME);
+
+    if (reqInfo.hasParameter(VAR_TASK_COMPANY)) {
+      companiesListQuery.setWhere(SqlUtils.and(companiesListQuery.getWhere(), SqlUtils.inList(
+          TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), DataUtils
+              .parseIdList(reqInfo.getParameter(VAR_TASK_COMPANY)))));
+    }
+
+    if (reqInfo.hasParameter(VAR_TASK_DURATION_HIDE_ZEROS)) {
+      hideZeroTimes = true;
+    }
+
+    SimpleRowSet companiesListSet = qs.getData(companiesListQuery);
+
+    // Verslo Aljansas TID 25505
+    SimpleRowSet result = new SimpleRowSet(new String[] {COL_COMPANY_NAME, COL_DURATION,
+      COL_VA_MILEAGE});
+
+    long totalTimeMls = 0;
+
+    // Verslo Aljansas TID 25505
+    double totalMileage = 0;
+    result.addRow(new String[] {constants.client(), constants.crmSpentTime(), constants.mileage()});
+
+    /* Register times in tasks without company */
+    companiesListSet.addRow(new String[] {null, "—", null});
+
+    for (int i = 0; i < companiesListSet.getNumberOfRows(); i++) {
+      String compFullName =
+          companiesListSet.getValue(i, COL_COMPANY_NAME)
+              + (!BeeUtils.isEmpty(companiesListSet.getValue(i, ALS_COMPANY_TYPE))
+              ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
+
+      SqlSelect companyTimesQuery = new SqlSelect()
+          // Verslo Aljansas TID 25505
+          .addFields(TBL_EVENT_DURATIONS, COL_VA_MILEAGE)
+
+          .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
+          .addFrom(TBL_TASK_EVENTS)
+          .addFromRight(TBL_EVENT_DURATIONS,
+              sys.joinTables(TBL_EVENT_DURATIONS, TBL_TASK_EVENTS, COL_EVENT_DURATION))
+          .addFromLeft(TBL_DURATION_TYPES,
+              sys.joinTables(TBL_DURATION_TYPES, TBL_EVENT_DURATIONS, COL_DURATION_TYPE))
+          .addFromLeft(TBL_TASKS,
+              sys.joinTables(TBL_TASKS, TBL_TASK_EVENTS, COL_TASK))
+          .addFromLeft(TBL_COMPANIES,
+              sys.joinTables(TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
+          .addFromLeft(TBL_USERS,
+              sys.joinTables(TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
+          .setWhere(
+              SqlUtils.equals(TBL_COMPANIES, sys
+                  .getIdName(TBL_COMPANIES), companiesListSet.getValue(i, sys
+                  .getIdName(TBL_COMPANIES))));
+
+      if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {
+          companyTimesQuery.setWhere(SqlUtils.and(companyTimesQuery.getWhere(), SqlUtils
+              .moreEqual(TBL_EVENT_DURATIONS, COL_DURATION_DATE, reqInfo
+                  .getParameter(VAR_TASK_DURATION_DATE_FROM))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_TO)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_TO))) {
+          companyTimesQuery.setWhere(SqlUtils.and(companyTimesQuery.getWhere(), SqlUtils
+              .lessEqual(TBL_EVENT_DURATIONS, COL_DURATION_DATE, reqInfo
+                  .getParameter(VAR_TASK_DURATION_DATE_TO))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_PUBLISHER)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PUBLISHER))) {
+          companyTimesQuery.setWhere(SqlUtils.and(companyTimesQuery.getWhere(), SqlUtils.inList(
+              TBL_USERS, sys.getIdName(TBL_USERS), DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_PUBLISHER)))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_DURATION_TYPE)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_TYPE))) {
+          companyTimesQuery.setWhere(SqlUtils.and(companyTimesQuery.getWhere(), SqlUtils.inList(
+              TBL_DURATION_TYPES, sys.getIdName(TBL_DURATION_TYPES), DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_DURATION_TYPE)))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_PROJECT)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PROJECT))) {
+          companyTimesQuery.setWhere(SqlUtils.and(companyTimesQuery.getWhere(), SqlUtils.inList(
+              TBL_TASKS, ProjectConstants.COL_PROJECT, DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_PROJECT)))));
+        }
+      }
+
+      SimpleRowSet companyTimes = qs.getData(companyTimesQuery);
+      long dTimeMls = 0;
+
+      // Verslo Aljansas TID 25505
+      double mileage = 0D;
+
+      for (int j = 0; j < companyTimes.getNumberOfRows(); j++) {
+        Long timeMls = TimeUtils.parseTime(companyTimes.getValue(j, companyTimes
+            .getColumnIndex(COL_DURATION)));
+        dTimeMls += timeMls;
+
+        // Verslo Aljansas TID 25505
+         mileage += BeeUtils.nvl(companyTimes.getDouble(j, COL_VA_MILEAGE), 0D);
+         totalMileage += BeeUtils.nvl(companyTimes.getDouble(j, COL_VA_MILEAGE), 0D);
+      }
+
+      totalTimeMls += dTimeMls;
+
+      if (!(hideZeroTimes && dTimeMls <= 0)) {
+        // Verslo Aljansas TID 25505
+        result.addRow(new String[] {compFullName, TimeUtils.renderTime(dTimeMls, false),
+        BeeUtils.toString(mileage, VAR_VA_MILEAGE_PREC)});
+      }
+    }
+
+    // Verslo Aljansas TID 25505
+    result.addRow(new String[] {
+        constants.totalOf() + ":", TimeUtils.renderTime(totalTimeMls, false),
+      BeeUtils.toString(totalMileage, VAR_VA_MILEAGE_PREC)});
+
+    ResponseObject resp = ResponseObject.response(result);
+    return resp;
+  }
+
   private Set<Long> getRecurringTaskExecutors(long rtId) {
     Set<Long> result = new HashSet<>();
 
@@ -1830,6 +1984,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         COL_EXPECTED_DURATION, COL_EXPECTED_EXPENSES, COL_STATUS)
         .forEach(col -> clause.add(report.getCondition(TBL_TASKS, col)));
 
+    // Verslo Aljansas TID 25505
+    clause.add(report.getCondition(TBL_EVENT_DURATIONS, COL_VA_MILEAGE));
+
     clause.add(report.getCondition(owner, COL_OWNER));
     clause.add(report.getCondition(executor, COL_EXECUTOR));
     clause.add(report.getCondition(publisher, COL_PUBLISHER));
@@ -1872,7 +2029,8 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         .addFields(TBL_TASK_EVENTS, COL_COMMENT, TaskConstants.COL_EVENT, COL_EVENT_NOTE)
 
         .addField(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME, ALS_DURATION_TYPE_NAME)
-        .addFields(TBL_EVENT_DURATIONS, COL_DURATION_DATE, COL_DURATION)
+//      Verslo aljansas
+        .addFields(TBL_EVENT_DURATIONS, COL_DURATION_DATE, COL_DURATION, COL_VA_MILEAGE)
 
         .addFrom(TBL_TASKS)
         .addFromLeft(VIEW_TASK_TYPES, sys.joinTables(VIEW_TASK_TYPES, TBL_TASKS, COL_TASK_TYPE))
@@ -2089,6 +2247,291 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     return users;
   }
 
+//   Verslo aljansas
+  private ResponseObject getTypeHoursReport(RequestInfo reqInfo) {
+    Dictionary constants = usr.getDictionary();
+    SqlSelect durationTypes = new SqlSelect()
+      .addFrom(TBL_DURATION_TYPES)
+      .addFields(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME)
+      .setWhere(SqlUtils.sqlTrue())
+      .addOrder(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME);
+
+    boolean hideTimeZeros = false;
+
+    if (reqInfo.hasParameter(VAR_TASK_DURATION_TYPE)) {
+      durationTypes.setWhere(SqlUtils.and(durationTypes.getWhere(), SqlUtils.inList(
+          TBL_DURATION_TYPES, sys.getIdName(TBL_DURATION_TYPES), DataUtils.parseIdList(reqInfo
+              .getParameter(VAR_TASK_DURATION_TYPE)))));
+    }
+
+    if (reqInfo.hasParameter(VAR_TASK_DURATION_HIDE_ZEROS)) {
+      hideTimeZeros = true;
+    }
+
+    SimpleRowSet dTypesList = qs.getData(durationTypes);
+
+    // Verslo Aljansas TID 25505
+    SimpleRowSet result = new SimpleRowSet(new String[] {COL_DURATION_TYPE_NAME, COL_DURATION,
+    COL_VA_MILEAGE});
+
+    // Verslo Aljansas TID 25505
+    result.addRow(new String[] {constants.crmDurationType(), constants.crmSpentTime(),
+    constants.mileage()});
+    double totalMileage = 0;
+
+    Assert.notNull(dTypesList);
+
+    long totalTimeMls = 0;
+
+    for (int i = 0; i < dTypesList.getNumberOfRows(); i++) {
+      String dType = dTypesList.getValue(i, dTypesList.getColumnIndex(COL_DURATION_TYPE_NAME));
+
+      SqlSelect dTypeTime = new SqlSelect()
+          .addFrom(TBL_TASK_EVENTS)
+          .addFromRight(TBL_EVENT_DURATIONS,
+              sys.joinTables(TBL_EVENT_DURATIONS, TBL_TASK_EVENTS, COL_EVENT_DURATION))
+          .addFromLeft(TBL_DURATION_TYPES,
+              sys.joinTables(TBL_DURATION_TYPES, TBL_EVENT_DURATIONS, COL_DURATION_TYPE))
+          .addFromLeft(TBL_TASKS,
+              sys.joinTables(TBL_TASKS, TBL_TASK_EVENTS, COL_TASK))
+          .addFromLeft(TBL_COMPANIES,
+              sys.joinTables(TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
+          .addFromLeft(TBL_USERS,
+              sys.joinTables(TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
+          .addFields(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME)
+          .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
+
+          // Verslo Aljansas TID 25505
+          .addFields(TBL_EVENT_DURATIONS, COL_VA_MILEAGE)
+
+          .setWhere(SqlUtils.equals(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME, dType));
+
+      if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {
+          dTypeTime.setWhere(SqlUtils.and(dTypeTime.getWhere(), SqlUtils
+              .moreEqual(TBL_EVENT_DURATIONS, COL_DURATION_DATE, reqInfo
+                  .getParameter(VAR_TASK_DURATION_DATE_FROM))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_TO)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_TO))) {
+          dTypeTime.setWhere(SqlUtils.and(dTypeTime.getWhere(), SqlUtils
+              .lessEqual(TBL_EVENT_DURATIONS, COL_DURATION_DATE, reqInfo
+                  .getParameter(VAR_TASK_DURATION_DATE_TO))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_COMPANY)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_COMPANY))) {
+          dTypeTime.setWhere(SqlUtils.and(dTypeTime.getWhere(), SqlUtils.inList(
+              TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
+              DataUtils.parseIdList(reqInfo.getParameter(VAR_TASK_COMPANY)))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_PUBLISHER)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PUBLISHER))) {
+          dTypeTime.setWhere(SqlUtils.and(dTypeTime.getWhere(), SqlUtils.inList(
+              TBL_USERS, sys.getIdName(TBL_USERS), DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_PUBLISHER)))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_PROJECT)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PROJECT))) {
+          dTypeTime.setWhere(SqlUtils.and(dTypeTime.getWhere(), SqlUtils.inList(
+              TBL_TASKS, ProjectConstants.COL_PROJECT, DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_PROJECT)))));
+        }
+      }
+
+      SimpleRowSet dTypeTimes = qs.getData(dTypeTime);
+      Assert.notNull(dTypeTimes);
+
+      long dTimeMls = 0;
+
+      // Verslo Aljansas TID 25505
+      double mileage = 0D;
+
+      for (int j = 0; j < dTypeTimes.getNumberOfRows(); j++) {
+        Long timeMls = TimeUtils.parseTime(dTypeTimes.getValue(j, COL_DURATION));
+        dTimeMls += timeMls;
+
+        // Verslo Aljansas TID 25505
+        mileage += BeeUtils.nvl(dTypeTimes.getDouble(j, COL_VA_MILEAGE), 0D);
+        totalMileage += BeeUtils.nvl(dTypeTimes.getDouble(j, COL_VA_MILEAGE), 0D);
+      }
+
+      totalTimeMls += dTimeMls;
+
+      if (!(hideTimeZeros && dTimeMls <= 0)) {
+
+        // Verslo Aljansas TID 25505
+        result.addRow(new String[] {dType, TimeUtils.renderTime(dTimeMls, false),
+        BeeUtils.toString(mileage, VAR_VA_MILEAGE_PREC)});
+      }
+    }
+
+    // Verslo Aljansas TID 25505
+    result.addRow(new String[] {
+        constants.totalOf() + ":", TimeUtils.renderTime(totalTimeMls, false),
+    BeeUtils.toString(totalMileage, VAR_VA_MILEAGE_PREC)});
+
+    ResponseObject resp = ResponseObject.response(result);
+    return resp;
+  }
+
+  // Verslo aljansas
+  private ResponseObject getUsersHoursReport(RequestInfo reqInfo) {
+    Dictionary constants = usr.getDictionary();
+    SqlSelect userListQuery =
+        new SqlSelect()
+            .addFields(TBL_USERS, sys.getIdName(TBL_USERS))
+            .addFields(TBL_PERSONS,
+                COL_FIRST_NAME,
+                COL_LAST_NAME)
+            .addFrom(TBL_USERS)
+            .addFromLeft(
+                TBL_COMPANY_PERSONS,
+                sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS,
+                    COL_COMPANY_PERSON))
+            .addFromLeft(
+                TBL_PERSONS,
+                sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS,
+                    COL_PERSON)).setWhere(SqlUtils.sqlTrue())
+            .setWhere(SqlUtils.sqlTrue())
+            .addOrder(TBL_PERSONS, COL_FIRST_NAME,
+                COL_LAST_NAME);
+
+    boolean hideTimeZeros = false;
+
+    if (reqInfo.hasParameter(VAR_TASK_PUBLISHER)) {
+      userListQuery.setWhere(SqlUtils.and(userListQuery.getWhere(), SqlUtils.inList(
+          TBL_USERS, sys.getIdName(TBL_USERS), DataUtils
+              .parseIdList(reqInfo.getParameter(VAR_TASK_PUBLISHER)))));
+    }
+
+    if (reqInfo.hasParameter(VAR_TASK_DURATION_HIDE_ZEROS)) {
+      hideTimeZeros = true;
+    }
+
+    SimpleRowSet usersListSet = qs.getData(userListQuery);
+
+    // Verslo Aljansas TID 25505
+    SimpleRowSet result = new SimpleRowSet(new String[] {COL_USER, COL_DURATION, COL_VA_MILEAGE});
+    double totalMileage = 0D;
+
+    long totalTimeMls = 0;
+
+    // Verslo Aljansas TID 25505
+    result.addRow(new String[] {
+        constants.executorFullName(), constants.crmSpentTime(), constants.mileage()});
+
+    for (int i = 0; i < usersListSet.getNumberOfRows(); i++) {
+      String userFullName =
+          (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_FIRST_NAME))
+              ? usersListSet.getValue(i, COL_FIRST_NAME) : "") + " "
+              + (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_LAST_NAME))
+              ? usersListSet.getValue(i, COL_LAST_NAME) : "");
+
+      userFullName = BeeUtils.isEmpty(userFullName) ? "—" : userFullName;
+
+      SqlSelect userTimesQuery = new SqlSelect()
+          // Verslo Aljansas TID 25505
+          .addFields(TBL_EVENT_DURATIONS, COL_VA_MILEAGE)
+
+          .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
+          .addFrom(TBL_TASK_EVENTS)
+          .addFromRight(TBL_EVENT_DURATIONS,
+              sys.joinTables(TBL_EVENT_DURATIONS, TBL_TASK_EVENTS, COL_EVENT_DURATION))
+          .addFromLeft(TBL_DURATION_TYPES,
+              sys.joinTables(TBL_DURATION_TYPES, TBL_EVENT_DURATIONS, COL_DURATION_TYPE))
+          .addFromLeft(TBL_TASKS,
+              sys.joinTables(TBL_TASKS, TBL_TASK_EVENTS, COL_TASK))
+          .addFromLeft(TBL_COMPANIES,
+              sys.joinTables(TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
+          .addFromLeft(TBL_USERS,
+              sys.joinTables(TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
+          .setWhere(
+              SqlUtils.equals(TBL_USERS, sys
+                  .getIdName(TBL_USERS), usersListSet.getValue(i, sys
+                  .getIdName(TBL_USERS))));
+
+      if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {
+          userTimesQuery.setWhere(SqlUtils.and(userTimesQuery.getWhere(), SqlUtils
+              .moreEqual(TBL_EVENT_DURATIONS, COL_DURATION_DATE, reqInfo
+                  .getParameter(VAR_TASK_DURATION_DATE_FROM))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_TO)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_TO))) {
+          userTimesQuery.setWhere(SqlUtils.and(userTimesQuery.getWhere(), SqlUtils
+              .lessEqual(TBL_EVENT_DURATIONS, COL_DURATION_DATE, reqInfo
+                  .getParameter(VAR_TASK_DURATION_DATE_TO))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_COMPANY)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_COMPANY))) {
+          userTimesQuery.setWhere(SqlUtils.and(userTimesQuery.getWhere(), SqlUtils.inList(
+              TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
+              DataUtils.parseIdList(reqInfo.getParameter(VAR_TASK_COMPANY)))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_DURATION_TYPE)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_TYPE))) {
+          userTimesQuery.setWhere(SqlUtils.and(userTimesQuery.getWhere(), SqlUtils.inList(
+              TBL_DURATION_TYPES, sys.getIdName(TBL_DURATION_TYPES), DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_DURATION_TYPE)))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_PROJECT)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PROJECT))) {
+          userTimesQuery.setWhere(SqlUtils.and(userTimesQuery.getWhere(), SqlUtils.inList(
+              TBL_TASKS, ProjectConstants.COL_PROJECT, DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_PROJECT)))));
+        }
+      }
+
+      SimpleRowSet companyTimes = qs.getData(userTimesQuery);
+      long dTimeMls = 0;
+
+      // Verslo Aljansas TID 25505
+      double mileage = 0D;
+
+      for (int j = 0; j < companyTimes.getNumberOfRows(); j++) {
+        Long timeMls = TimeUtils.parseTime(companyTimes.getValue(j, companyTimes
+            .getColumnIndex(COL_DURATION)));
+        dTimeMls += timeMls;
+
+        // Verslo Aljansas TID 25505
+        mileage += BeeUtils.nvl(companyTimes.getDouble(j, COL_VA_MILEAGE), 0D);
+        totalMileage += BeeUtils.nvl(companyTimes.getDouble(j, COL_VA_MILEAGE), 0D);
+      }
+
+      totalTimeMls += dTimeMls;
+
+      if (!(hideTimeZeros && dTimeMls <= 0)) {
+        // Verslo Aljansas TID 25505
+        result.addRow(new String[] {userFullName, TimeUtils.renderTime(dTimeMls, false),
+        BeeUtils.toString(mileage, VAR_VA_MILEAGE_PREC)});
+      }
+    }
+
+    // Verslo Aljansas TID 25505
+    result.addRow(new String[] {
+        constants.totalOf() + ":", TimeUtils.renderTime(totalTimeMls, false),
+    BeeUtils.toString(totalMileage, VAR_VA_MILEAGE_PREC)});
+
+    ResponseObject resp = ResponseObject.response(result);
+    return resp;
+  }
+
   private ResponseObject mailNewTask(Long senderAccountId, long taskId,
       boolean ownerPreference, boolean automatic) {
     return mailNewTask(senderAccountId, taskId, ownerPreference, automatic, null, null);
@@ -2272,10 +2715,17 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       return ResponseObject.error("task duration time not specified");
     }
 
+    // Verslo Aljansas TID 25505
+    String vaMileage = reqInfo.get(VAR_VA_TASK_DURATION_MILEAGE);
+
     return qs.insertDataWithResponse(new SqlInsert(TBL_EVENT_DURATIONS)
         .addConstant(COL_DURATION_TYPE, durationType)
         .addConstant(COL_DURATION_DATE, date)
-        .addConstant(COL_DURATION, time));
+        .addConstant(COL_DURATION, time)
+
+        // Verslo Aljansas TID 25505
+        .addConstant(COL_VA_MILEAGE, vaMileage)
+    );
   }
 
   private ResponseObject registerTaskEvent(long taskId, long userId, TaskEvent event, long millis) {

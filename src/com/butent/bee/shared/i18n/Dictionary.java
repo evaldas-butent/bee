@@ -1005,6 +1005,8 @@ public interface Dictionary {
 
   default String crmEnterDuration() {return g("crmEnterDuration");}
 
+  default String crmEnterDurationAndType() {return g("crmEnterDurationAndType");}
+
   default String crmEnterDurationType() {return g("crmEnterDurationType");}
 
   default String crmEnterExecutor() {return g("crmEnterExecutor");}
@@ -1012,6 +1014,8 @@ public interface Dictionary {
   default String crmEnterFinishDate() {return g("crmEnterFinishDate");}
 
   default String crmEnterFinishDateOrEstimatedTime() {return g("crmEnterFinishDateOrEstimatedTime");}
+
+  default String crmEnterMileage() {return g("crmEnterMileage");}
 
   default String crmEnterStartDate() {return g("crmEnterStartDate");}
 
@@ -3767,6 +3771,10 @@ public interface Dictionary {
   default String message() {return g("message");}
 
   default String messageSent() {return g("messageSent");}
+
+  default String mileage() {return g("mileage");}
+
+  default String mileageRequired() {return g("mileageRequired");}
 
   default String minValue() {return g("minValue");}
 

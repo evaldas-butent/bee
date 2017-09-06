@@ -593,7 +593,10 @@ public enum Report implements HasWidgetSupplier {
           new ReportDateTimeItem(COL_DURATION_DATE,
               Data.getColumnLabel(TBL_EVENT_DURATIONS, COL_DURATION_DATE)),
           new ReportTimeDurationItem(COL_DURATION,
-              Data.getColumnLabel(TBL_EVENT_DURATIONS, COL_DURATION))
+              Data.getColumnLabel(TBL_EVENT_DURATIONS, COL_DURATION)),
+
+          // Verslo Aljansas TID 25505
+          new ReportNumericItem(COL_VA_MILEAGE, loc.mileage()).setPrecision(VAR_VA_MILEAGE_PREC)
       );
     }
 
@@ -705,7 +708,11 @@ public enum Report implements HasWidgetSupplier {
 
       Stream.of(COL_REPAIRER, COL_DATE, COL_PAYROLL_DATE, COL_PAYROLL_BASIC_AMOUNT,
           COL_PAYROLL_TARIFF, COL_PAYROLL_SALARY, ALS_CURRENCY_NAME, COL_PAYROLL_CONFIRMED,
-          COL_PAYROLL_CONFIRMATION_DATE, COL_PAYROLL_CONFIRMED + COL_USER, COL_NOTES)
+          COL_PAYROLL_CONFIRMATION_DATE, COL_PAYROLL_CONFIRMED + COL_USER, COL_NOTES,
+
+        // Verslo Aljansas TID 25505
+        COL_VA_MILEAGE
+        )
           .forEach(item -> report.addColItem(items.get(item)));
       return Collections.singletonList(report);
     }

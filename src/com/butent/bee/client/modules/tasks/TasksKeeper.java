@@ -18,6 +18,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.modules.tasks.TasksReportsInterceptor.ReportType;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
@@ -59,6 +60,12 @@ import java.util.Map;
 import java.util.Objects;
 
 public final class TasksKeeper {
+
+  /* Verslo aljansas { */
+  private static final String COMPANY_TIMES_REPORT = "companytimes";
+  private static final String TYPE_HOURS_REPORT = "typehours";
+  private static final String USERS_HOURS_REPORT = "usershours";
+  /* } Verslo aljansas */
 
   private static class RowTransformHandler implements RowTransformEvent.Handler {
 
@@ -215,6 +222,27 @@ public final class TasksKeeper {
         ViewFactory.createAndShow(type.getSupplierKey());
       }
     });
+
+    // Verslo aljansas
+    MenuService.TASK_REPORTS.setHandler(parameters -> {
+      if (BeeUtils.startsSame(parameters, COMPANY_TIMES_REPORT)) {
+        FormFactory.openForm(FORM_TASKS_REPORT,
+            new TasksReportsInterceptor(ReportType.COMPANY_TIMES));
+      } else if (BeeUtils.startsSame(parameters, TYPE_HOURS_REPORT)) {
+        FormFactory.openForm(FORM_TASKS_REPORT,
+            new TasksReportsInterceptor(ReportType.TYPE_HOURS));
+      } else if (BeeUtils.startsSame(parameters, USERS_HOURS_REPORT)) {
+        FormFactory.openForm(FORM_TASKS_REPORT,
+            new TasksReportsInterceptor(ReportType.USERS_HOURS));
+      } else {
+        Global.showError("Service type '" + parameters + "' not found");
+      }
+    });
+
+    // Verslo aljansas
+    for (ReportType reportType : ReportType.values()) {
+      reportType.register();
+    }
 
     SelectorEvent.register(new TaskSelectorHandler());
 

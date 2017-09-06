@@ -773,3 +773,49 @@
   width: 250px;
   text-align: center;
 }
+
+
+/* Verslo Aljansas TID 25505 */
+.bee-crm-taskDialog-va-mileageInput {
+  width: 60px;
+}
+
+.bee-crm-taskDialog-va-mileageLabel{
+  float:right;
+}
+
+.bee-crm-taskEvent-VAMileage {
+  font-weight: bolder;
+  padding-right: 10px;
+}
+
+.bee-crm-taskDuration-display-pair {
+  width: 100%;
+}
+
+.bee-crm-taskDuration-valueCell.bee-crm-taskDuration-valueCell,
+.bee-crm-taskDuration-mileageCell.bee-crm-taskDuration-mileageCell,
+.bee-crm-taskDuration-rowTotalCell.bee-crm-taskDuration-rowTotalCell,
+.bee-crm-taskDuration-rowTotalMileageCell.bee-crm-taskDuration-rowTotalMileageCell,
+.bee-crm-taskDuration-colTotalCell.bee-crm-taskDuration-colTotalCell,
+.bee-crm-taskDuration-colTotalMileageCell.bee-crm-taskDuration-colTotalMileageCell {
+  border: none;
+}
+
+.bee-crm-taskDuration-mileageCell,
+.bee-crm-taskDuration-rowTotalCell,
+.bee-crm-taskDuration-colTotalCell,
+.bee-crm-taskDuration-colTotalMileageCell,
+.bee-crm-taskDuration-valueCell,
+.bee-crm-taskDuration-value {
+ width:50%;
+}
+
+.bee-crm-taskDuration-mileage,
+.bee-crm-taskDuration-rowTotalMileage {
+  text-align: right;
+}
+
+.bee-crm-taskDuration-rowTotalMileage {
+  font-weight: bolder;
+}

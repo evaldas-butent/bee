@@ -7,6 +7,8 @@
   <SimpleColumn name="DurationType" />
     <SimpleColumn name="DurationDate" />
     <SimpleColumn name="Duration" />
+    <!-- Verslo Aljansas TID 25505 {-->
+    <SimpleColumn name="VAMileage" />
+    <!-- } Verslo Aljansas TID 25505 -->
   </Columns>
 </View>
- 

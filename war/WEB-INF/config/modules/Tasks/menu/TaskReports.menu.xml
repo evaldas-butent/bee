@@ -5,4 +5,7 @@ name="TaskReports" label="=reports" order="10" parent="Tasks" data="Tasks" separ
 >
   <Item name="TaskDurations" label="=crmTaskDurations" service="grid" parameters="TaskDurations" />
   <Item name="TaskReports" label="=crmTaskReports" service="report"  parameters="TaskReport" />
+  <Item name="TypeHoursReport" label="=hoursByTypes" service="task_reports" parameters="typehours" />
+  <Item name="CompanyTimesReport" label="=hoursByCompanies" service="task_reports" parameters="companytimes" />
+  <Item name="UsersHoursReport" label="=hoursByExecutors" service="task_reports" parameters="usershours" />
 </Entry>

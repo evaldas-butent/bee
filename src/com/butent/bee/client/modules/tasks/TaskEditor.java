@@ -285,6 +285,9 @@ class TaskEditor extends ProductSupportInterceptor {
       ParameterList params) {
     String time = dialog.getTime(ids.get(COL_DURATION));
 
+    // Verslo Aljansas TID 25505
+    Double vaMileage = BeeUtils.toDoubleOrNull(dialog.getMileage(ids.get(COL_VA_MILEAGE)));
+
     if (!BeeUtils.isEmpty(time)) {
       BeeRow durType = dialog.getSelector(ids.get(COL_DURATION_TYPE)).getRelatedRow();
       Long type = durType.getLong(Data.getColumnIndex(VIEW_TASK_DURATION_TYPES, COL_DURATION_TYPE));
@@ -298,14 +301,31 @@ class TaskEditor extends ProductSupportInterceptor {
         date = TimeUtils.nowMinutes();
       }
 
+      // Verslo Aljansas TID 25515, TID 25505
+      boolean required = BeeUtils.unbox(Data.getBoolean(VIEW_TASK_DURATION_TYPES, durType,
+        COL_VA_MILEAGE_REQUIRED));
+      if (BeeUtils.isPositive(vaMileage)) {
+        params.addDataItem(VAR_VA_TASK_DURATION_MILEAGE, vaMileage);
+      } else if (required) {
+        showError(Localized.dictionary().crmEnterMileage());
+        return false;
+      }
+
       params.addDataItem(VAR_TASK_DURATION_DATE, date.serialize());
       params.addDataItem(VAR_TASK_DURATION_TIME, time);
       params.addDataItem(VAR_TASK_DURATION_TYPE, type);
+
+      // Verslo Aljansas TID 25505
+    } else if (BeeUtils.isEmpty(time) && BeeUtils.isPositive(vaMileage)) {
+      showError(Localized.dictionary().crmEnterDurationAndType());
+      return false;
     }
     return true;
   }
 
-  private static void showDurations(FormView form, Table<String, String, Long> durations) {
+  // Verslo Aljansas TID 25505
+  private static void showDurations(FormView form, Table<String, String, Long> durations,
+                                    Table<String, String, Double> mileage) {
     Widget widget = form.getWidgetByName(VIEW_TASK_DURATIONS);
     if (!(widget instanceof Flow)) {
       return;
@@ -318,8 +338,16 @@ class TaskEditor extends ProductSupportInterceptor {
       return;
     }
 
-    Set<String> rows = durations.rowKeySet();
-    Set<String> columns = durations.columnKeySet();
+    // Verslo Aljansas TID 25505
+    Set<String> rows = new HashSet<>(durations.rowKeySet());
+    Set<String> columns = new HashSet<>(durations.columnKeySet());
+
+    // Verslo Aljansas TID 25505
+    rows.addAll(mileage.rowKeySet());
+    columns.addAll(mileage.columnKeySet());
+    String caption = BeeUtils.joinItems(Localized.dictionary().crmSpentTime(),
+      Localized.dictionary().mileage());
+    long totMileage = 0;
 
     HtmlTable display = new HtmlTable();
     display.addStyleName(STYLE_DURATION + "display");
@@ -327,7 +355,8 @@ class TaskEditor extends ProductSupportInterceptor {
     int r = 0;
     int c = 0;
 
-    addDurationCell(display, r, c++, Localized.dictionary().crmSpentTime(), "caption");
+    // Verslo Aljansas TID 25505
+    addDurationCell(display, r, c++, caption, "caption");
     for (String column : columns) {
       addDurationCell(display, r, c++, column, "colLabel");
     }
@@ -338,21 +367,44 @@ class TaskEditor extends ProductSupportInterceptor {
       c = 0;
       addDurationCell(display, r, c++, row, "rowLabel");
 
+      // Verslo Aljansas TID 25505
+      Double rowMileage = 0D;
+
       long rowMillis = 0;
       for (String column : columns) {
         Long millis = durations.get(row, column);
 
+        // Verslo Aljansas TID 25505
+        Double m = mileage.get(row, column);
+        HtmlTable pair = new HtmlTable(STYLE_DURATION + "display-pair");
+        addDurationCell(pair, 0, 0, millis != null ? renderDuration(millis) : "", "value");
+        addDurationCell(pair, 0, 1, m != null ? BeeUtils.toString(m, VAR_VA_MILEAGE_PREC) : "",
+          "mileage");
+
         if (BeeUtils.isPositive(millis)) {
-          addDurationCell(display, r, c, renderDuration(millis), "value");
+          // Verslo Aljansas TID 25505
+          // addDurationCell(display, r, c, renderDuration(millis), "value");
+          display.setWidget(r, c, pair, STYLE_DURATION + "pair" + STYLE_DURATION_CELL);
 
           rowMillis += millis;
           totMillis += millis;
+
+          // Verslo Aljansas TID 25505
+          rowMileage += BeeUtils.unbox(m);
+          totMileage += BeeUtils.unbox(m);
         }
         c++;
       }
 
       if (columns.size() > 1) {
-        addDurationCell(display, r, c, renderDuration(rowMillis), "rowTotal");
+        // Verslo Aljansas TID 25505
+        HtmlTable pair = new HtmlTable(STYLE_DURATION + "display-pair");
+        addDurationCell(pair, 0, 0, renderDuration(rowMillis), "rowTotal");
+        addDurationCell(pair, 0, 1, BeeUtils.toString(rowMileage, VAR_VA_MILEAGE_PREC),
+          "rowTotalMileage");
+        display.setWidget(r, c, pair, STYLE_DURATION + "pairTotal" + STYLE_DURATION_CELL);
+
+//        addDurationCell(display, r, c, renderDuration(rowMillis), "rowTotal");
       }
       r++;
     }
@@ -363,15 +415,35 @@ class TaskEditor extends ProductSupportInterceptor {
       for (String column : columns) {
         Collection<Long> values = durations.column(column).values();
 
+        // Verslo Aljansas TID 25505
+        Collection<Double> mileageValues = mileage.column(column).values();
+        double colMileage = 0D;
+        for (Double value : mileageValues) {
+          colMileage += BeeUtils.unbox(value);
+        }
+
         long colMillis = 0;
         for (Long value : values) {
           colMillis += BeeUtils.unbox(value);
         }
-        addDurationCell(display, r, c++, renderDuration(colMillis), "rowTotal");
+
+        // Verslo Aljansas TID 25505
+        //addDurationCell(display, r, c++, renderDuration(colMillis), "rowTotal");
+        HtmlTable pair = new HtmlTable(STYLE_DURATION + "display-pair");
+        addDurationCell(pair, 0, 0, renderDuration(colMillis), "rowTotal");
+        addDurationCell(pair, 0, 1, BeeUtils.toString(colMileage, VAR_VA_MILEAGE_PREC),
+          "rowTotalMileage");
+        display.setWidget(r, c, pair, STYLE_DURATION + "pairTotal" + STYLE_DURATION_CELL);
       }
 
       if (columns.size() > 1) {
-        addDurationCell(display, r, c, renderDuration(totMillis), "colTotal");
+        // Verslo Aljansas TID 25505
+        //addDurationCell(display, r, c, renderDuration(totMillis), "colTotal");
+        HtmlTable pair = new HtmlTable(STYLE_DURATION + "display-pair");
+        addDurationCell(pair, 0, 0, renderDuration(totMillis), "colTotal");
+        addDurationCell(pair, 0, 1, BeeUtils.toString(totMileage, VAR_VA_MILEAGE_PREC),
+          "colTotalMileage");
+        display.setWidget(r, c, pair, STYLE_DURATION + "pairTotal" + STYLE_DURATION_CELL);
       }
     }
 
@@ -507,6 +579,18 @@ class TaskEditor extends ProductSupportInterceptor {
 
       body.add(row4);
 
+      // Verslo Aljansas TID 25505
+      Double vaMileage = DataUtils.getDouble(columns, row, COL_VA_MILEAGE);
+      if (BeeUtils.isPositive(vaMileage)) {
+        Flow row5 = new Flow();
+        row5.addStyleName(STYLE_EVENT_COL_ROW);
+        row5.addStyleName(STYLE_EVENT_FLEX);
+
+        row5.add(createEventCell(COL_VA_MILEAGE, BeeUtils.joinWords(Localized.dictionary()
+          .mileage(), BeeUtils.round(vaMileage, VAR_VA_MILEAGE_PREC))));
+        body.add(row5);
+      }
+
       Long millis = TimeUtils.parseTime(duration);
       if (BeeUtils.isPositive(millis)
           && !BeeUtils.isEmpty(publisher) && !BeeUtils.isEmpty(durType)) {
@@ -533,13 +617,21 @@ class TaskEditor extends ProductSupportInterceptor {
 
     Table<String, String, Long> durations = TreeBasedTable.create();
 
+    // Verslo Aljansas TID 25505
+    Table<String, String, Double> mileage = TreeBasedTable.create();
+
     for (BeeRow row : rowSet.getRows()) {
       showEvent(panel, row, rowSet.getColumns(), filterEventFiles(files, row.getId()), durations,
           lastAccess, taskRow);
+
+      // Verslo Aljansas TID 25505
+      TaskUtils.vaSummarizeMileage(mileage, row, rowSet.getColumns());
     }
 
     showExtensions(form, rowSet);
-    showDurations(form, durations);
+
+    // Verslo Aljansas TID 25505
+    showDurations(form, durations, mileage);
 
     if (panel.getWidgetCount() > 1 && DomUtils.isVisible(form.getElement())
         && !TaskHelper.getBooleanValueFromStorage(TaskHelper.NAME_ORDER)) {
@@ -2025,6 +2117,10 @@ class TaskEditor extends ProductSupportInterceptor {
 
   private Map<String, String> setDurations(TaskDialog dialog) {
     final String durId = dialog.addTime(Localized.dictionary().crmSpentTime(), false);
+
+    // Verslo Aljansas TID 25505
+    final String vaMileageId = dialog.addMileage();
+
     String durTypeId = dialog.addSelector(Localized.dictionary().crmDurationType(),
         VIEW_TASK_DURATION_TYPES, Lists.newArrayList(ALS_DURATION_TYPE_NAME), false, null, null,
         COL_DURATION_TYPE);
@@ -2037,6 +2133,19 @@ class TaskEditor extends ProductSupportInterceptor {
     final Map<String, String> durIds = new HashMap<>();
     durIds.put(COL_DURATION, durId);
     durIds.put(COL_DURATION_TYPE, durTypeId);
+
+    // Verslo Aljansas TID 25505
+    durIds.put(COL_VA_MILEAGE, vaMileageId);
+
+    //Verslo Aljansas TID 25515
+    dialog.getSelector(durTypeId).addSelectorHandler(e -> {
+      BeeRow r = e.getRelatedRow();
+      if (r == null) {
+        return;
+      }
+      dialog.setRequiredMileage(vaMileageId, BeeUtils.isTrue(
+        Data.getBoolean(VIEW_TASK_DURATION_TYPES, r, COL_VA_MILEAGE_REQUIRED)));
+    });
 
     return durIds;
   }
