@@ -4,7 +4,7 @@
 
   name="TaskTemplates" source="TaskTemplates"
   caption="=crmTaskTemplates" newRowCaption="=crmNewTaskTemplate"
-  newRowForm="TaskTemplate"
+  newRowForm="TaskTemplate" editForm="TaskTemplate"
   >
   <Columns>
     <SimpleColumn name="Name" />
@@ -12,12 +12,34 @@
     <xi:include href="viewcolumns/TaskTemplate.viewcolumns.xml" />
 
     <SimpleColumn name="ExpectedDuration" />
+    <SimpleColumn name="ExpectedExpenses" />
+    <SimpleColumn name="Currency"/>
+    <SimpleJoin name="Currency" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
 
     <SimpleColumn name="ProjectTemplate" />
     <SimpleColumn name="StageTemplate" />
     <SimpleJoin name="StageTemplate" joinType="LEFT">
       <SimpleColumn name="Name" alias="TMLStageName" />
     </SimpleJoin>
+
+    <SimpleColumn name="Product" />
+    <SimpleJoin name="Product" joinType="LEFT">
+      <SimpleColumn name="Name" alias="ProductName"/>
+      <SimpleColumn name="Background" alias="ProductBackground"/>
+      <SimpleColumn name="Foreground" alias="ProductForeground"/>
+    </SimpleJoin>
+
+    <SimpleColumn name="PrivateTask" />
+    <SimpleColumn name="Mail" />
+    <SimpleColumn name="NotScheduledTask" />
+
+    <SimpleColumn name="StartTime" />
+    <SimpleColumn name="FinishTime" />
+
+    <SimpleColumn name="RiskRating" />
+    <SimpleColumn name="EndResult" />
   </Columns>
 
   <Order>

@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY separator '<div style="height: 1ex;"></div>'>
-  <!ENTITY lbl "width: 140px; margin-right: 10px; text-align: right;">
-  <!ENTITY inp "width: 200px;">
-  <!ENTITY toggle "display: block; margin-top: 1ex;">
-]>
-<f:Form xmlns="http://www.butent.com/widget" 
-    xmlns:f="http://www.butent.com/form"
-    xmlns:xi="http://www.w3.org/2001/XInclude"
-    
-    name="EcClient" viewName="EcClients" caption="=ecClient"
-    width="700" height="80" heightUnit="vh"
-    >
+    <!ENTITY separator '<div style="height: 1ex;"></div>'>
+    <!ENTITY lbl "width: 140px; margin-right: 10px; text-align: right;">
+    <!ENTITY inp "width: 200px;">
+    <!ENTITY toggle "display: block; margin-top: 1ex;">
+    ]>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="EcClient" viewName="EcClients" caption="=ecClient"
+        width="700" height="80" heightUnit="vh"
+>
 
   <FlowPanel class="flexBox-vertical">
     <FlowPanel style="margin-top: 2ex; margin-bottom: 2ex; min-height: 140px;">
       <FlowPanel class="flexBox-horizontal">
         <Label for="User" style="&lbl;" />
         <DataSelector source="User" editSource="CompanyPerson"
-          style="width: 550px;" visible="true">
+                      style="width: 550px;" visible="true">
           <renderToken source="FirstName" />
           <renderToken source="LastName" />
           <renderToken source="CompanyName" prefix=", " />
@@ -36,17 +36,17 @@
       </FlowPanel>
       &separator;
 
-      <xi:include href="../../Classifiers/forms/widgets/ContactInfoClosed.widget.xml" />  
+      <xi:include href="../../Classifiers/forms/widgets/ContactInfoClosed.widget.xml" />
       &separator;
       &separator;
 
       <FlowPanel class="flexBox-horizontal">
         <Label for="Manager" style="&lbl;" />
         <DataSelector source="Manager" newRowEnabled="false" style="&inp;"
-          renderColumns="ManagerFirstName ManagerLastName" />
+                      renderColumns="ManagerFirstName ManagerLastName" />
 
         <CheckBox text="=ecClientCreditLimitWarning" source="CreditLimitWarning"
-          style="margin-left: 150px;" />
+                  style="margin-left: 150px;" />
       </FlowPanel>
       &separator;
       &separator;
@@ -61,15 +61,15 @@
       &separator;
 
       <FlowPanel class="flexBox-horizontal">
-        <Label text="=ecWarehousesPrimary" style="&lbl;" data="Warehouses" />
+        <Label text="=ecWarehousesPrimary" style="&lbl;" listName="PrimaryWarehouses" />
         <ChildSelector viewName="Warehouses" childTable="PrimaryWarehouses" renderColumns="Code"
-          targetRelColumn="Client" sourceRelColumn="Warehouse"
-          newRowEnabled="false" label="=ecWarehousesPrimary" style="&inp;" />
+                       targetRelColumn="Client" sourceRelColumn="Warehouse"
+                       newRowEnabled="false" label="=ecWarehousesPrimary" style="&inp;" />
 
-        <Label text="=ecWarehousesSecondary" style="&lbl;" data="Warehouses" />
+        <Label text="=ecWarehousesSecondary" style="&lbl;" listName="SecondaryWarehouses" />
         <ChildSelector viewName="Warehouses" childTable="SecondaryWarehouses" renderColumns="Code"
-          targetRelColumn="Client" sourceRelColumn="Warehouse"
-          newRowEnabled="false" label="=ecWarehousesSecondary" style="&inp;" />
+                       targetRelColumn="Client" sourceRelColumn="Warehouse"
+                       newRowEnabled="false" label="=ecWarehousesSecondary" style="&inp;" />
       </FlowPanel>
       &separator;
     </FlowPanel>
@@ -88,14 +88,14 @@
               <ListBox source="DisplayedPrice" summarize="true" />
             </row>
             &separator;
-    
+
             <row>
               <Label for="BasePriceList0" />
               <DataSelector source="BasePriceList0" newRowEnabled="false" summarize="true" />
               <Label for="BasePriceList1" />
               <DataSelector source="BasePriceList1" newRowEnabled="false" summarize="true" />
             </row>
-    
+
             <row>
               <Label for="ClientPriceList0" />
               <DataSelector source="ClientPriceList0" newRowEnabled="false" summarize="true" />
@@ -115,8 +115,8 @@
             <InputDecimal source="DiscountPercent" style="width: 80px;" summarize="true" />
 
             <Label for="DiscountParent" style="margin-left: 2em; margin-right: 10px;" />
-            <DataSelector source="DiscountParent" newRowEnabled="false" class="flexible" 
-              style="min-width: 100px; max-width: 400px;" summarize="true">
+            <DataSelector source="DiscountParent" newRowEnabled="false" class="flexible"
+                          style="min-width: 100px; max-width: 400px;" summarize="true">
               <renderToken source="ParentFirstName" />
               <renderToken source="ParentLastName" />
               <renderToken source="ParentCompanyName" prefix=", " />
@@ -144,19 +144,22 @@
             <Label for="Activity" style="&lbl;" />
             <InputArea source="Activity" style="&inp; height: 40px;" summarize="true" />
           </FlowPanel>
-      
+
           <FlowPanel style="margin-left: 2em;">
             <Label text="=ecKeyboardShortcuts" />
-  
-            <CheckBox text="=ecToggleListPrice" source="ToggleListPrice" style="&toggle;" summarize="true" />
-            <CheckBox text="=ecTogglePrice" source="TogglePrice" style="&toggle;" summarize="true" />
-            <CheckBox text="=ecToggleStockLimit" source="ToggleStockLimit" style="&toggle;" summarize="true" />
+
+            <CheckBox text="=ecToggleListPrice" source="ToggleListPrice" style="&toggle;"
+                      summarize="true" />
+            <CheckBox text="=ecTogglePrice" source="TogglePrice" style="&toggle;"
+                      summarize="true" />
+            <CheckBox text="=ecToggleStockLimit" source="ToggleStockLimit" style="&toggle;"
+                      summarize="true" />
           </FlowPanel>
 
           <FlowPanel class="flexBox-horizontal" style="margin-left: 2em; margin-top: 2ex;">
             <Label for="CarTypeHistorySize" style="margin-right: 10px;" />
-            <InputSpinner source="CarTypeHistorySize" style="width: 5em;" 
-              minValue="-1" maxValue="100" summarize="true" />
+            <InputSpinner source="CarTypeHistorySize" style="width: 5em;"
+                          minValue="-1" maxValue="100" summarize="true" />
           </FlowPanel>
         </FlowPanel>
       </page>

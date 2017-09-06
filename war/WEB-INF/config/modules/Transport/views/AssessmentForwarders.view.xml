@@ -2,6 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
       name="AssessmentForwarders" source="AssessmentForwarders" caption="=carriers"
+      rowCaption="ForwarderName ForwarderTypeName OrderNo"
 >
   <Columns>
     <SimpleColumn name="Assessment" />
@@ -63,6 +64,7 @@
       </SimpleJoin>
     </SimpleJoin>
 
+    <HiddenColumn name="CargoExpense" />
     <SimpleJoin joinType="INNER" name="CargoExpense">
       <SimpleColumn name="Cargo" alias="ServiceCargo" />
 

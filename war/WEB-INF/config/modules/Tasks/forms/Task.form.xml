@@ -8,7 +8,7 @@
   <!ENTITY col3 "text-align: right; padding-left: 8px; padding-right: 8px; width: 128px;">
 
   <!ENTITY top1 "float: left; width: 100px; padding-top: 1px;">
-  
+
   <!ENTITY inp2 "width: 160px;">
   <!ENTITY inp2x "&inline; width: 500px;">
   <!ENTITY inp3 "width: 70px;margin-left: -75px">
@@ -61,7 +61,7 @@
 
                 <row>
                   <Label for="Executor" />
-                  <DataSelector source="Executor" editSource="ExecutorPerson" style="&inp2x;" 
+                  <DataSelector source="Executor" editSource="ExecutorPerson" style="&inp2x;"
                     readOnly="true" />
                 </row>
 
@@ -72,7 +72,7 @@
                     label="=crmTaskObservers" />
                 </row>
                 <row>
-                  <Label text="=project">
+                  <Label for="Project">
                     &forProject;
                   </Label>
                   <DataSelector source="Project" renderColumns="ProjectName"
@@ -81,10 +81,10 @@
                   </DataSelector>
                 </row>
                 <row>
-                  <Label text="=prjStage">
+                  <Label for="ProjectStage">
                     &forProject;
                   </Label>
-                  <DataSelector source="ProjectStage" renderColumns="StageName" 
+                  <DataSelector source="ProjectStage" renderColumns="StageName"
                     style="&inp2x;">
                     &forProject;
                   </DataSelector>
@@ -118,13 +118,13 @@
 
                 <row>
                  <Label for="Company" />
-                  <DataSelector source="Company" editPopup="true" newRowEnabled="true" choiceColumns="Name TypeName"
+                  <DataSelector source="Company" newRowEnabled="true" choiceColumns="Name TypeName"
                       renderColumns="CompanyName CompanyTypeName" style="&inp2x;" />
                 </row>
 
                 <row>
                   <Label for="Contact" />
-                  <DataSelector source="Contact" editPopup="true" newRowEnabled="true" style="&inp2x;"
+                  <DataSelector source="Contact" newRowEnabled="true" style="&inp2x;"
                     renderColumns="ContactFirstName ContactLastName"
                     choiceColumns="FirstName LastName CompanyName" options="Company" />
                 </row>
@@ -141,21 +141,7 @@
                   <Label for="FinishTime" />
                   <FlowPanel class="flexBox-horizontal">
                       <InputDateTime source="FinishTime" style="&inp2;" readOnly="true" />
-                      <TextLabel name="LateIndicator" style="&inp2; margin-left: -160px" >
-                        <dynStyle>
-                          <ui:class>bee-crm-task-break</ui:class>
-                          <ui:expression>
-                            row.Status == 3 || row.Status == 4 || row.Status == 5 || row.Status == 6
-                          </ui:expression>
-                        </dynStyle>
-
-                        <dynStyle>
-                          <ui:class>bee-crm-task-progress</ui:class>
-                          <ui:expression>
-                            !(row.Status == 3 || row.Status == 4 || row.Status == 5 || row.Status == 6)
-                          </ui:expression>
-                        </dynStyle>
-                      </TextLabel>
+                      <TextLabel name="LateIndicator" style="&inp2; margin-left: -160px" />
                   </FlowPanel>
                 </row>
 
@@ -179,13 +165,18 @@
 
                 <row>
                   <Label />
-                  <CheckBox name="Mail" text="=mailNotify" />
-                  <Label />
-                  <CheckBox source="PrivateTask" />
+                  <cell colSpan="3">
+                    <FlowPanel>
+                      <CheckBox name="Mail" text="=mailNotify" />
+                      <CheckBox source="PrivateTask" style="margin-left: 30px;" />
+                      <Button name="EndResult" text="=crmTaskEndResult" style="margin-left: 30px;"
+                              disablable="false" />
+                    </FlowPanel>
+                  </cell>
                 </row>
               </Table>
 
-              <FlowPanel name="TaskDurations" data="TaskDurations" 
+              <FlowPanel name="TaskDurations" data="TaskDurations"
                 style="overflow: auto; width: 524px; margin-top: 10px;" />
             </FlowPanel>
           </FlowPanel>
@@ -198,26 +189,26 @@
                      defaultRelations="Companies Persons Documents Appointments Discussions
                        Projects Tasks Requests Messages">
             <Relation viewName="Companies" renderColumns="Name TypeName"
-                      newRowEnabled="false" editPopup="true"/>
+                      newRowEnabled="false" />
             <Relation viewName="Persons" renderColumns="FirstName LastName"
-                      newRowEnabled="false" editPopup="true"/>
+                      newRowEnabled="false" />
             <Relation viewName="Documents"
                       renderColumns="Name Number RegistrationNumber DocumentDate"
-                      newRowEnabled="false" editPopup="true"/>
+                      newRowEnabled="false" />
             <Relation viewName="Discussions" renderColumns="Subject"
-                      newRowEnabled="false" editPopup="true"/>
+                      newRowEnabled="false" />
             <Relation viewName="ServiceObjects" renderColumns="Model CategoryName ArticleNo"
-                      newRowEnabled="false" editPopup="true" choiceColumns="Model CategoryName ArticleNo"/>
+                      newRowEnabled="false" choiceColumns="Model CategoryName ArticleNo"/>
             <Relation viewName="Tasks"
                       renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
-                      newRowEnabled="false" editPopup="true"
+                      newRowEnabled="false"
                       choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime
                          FinishTime"/>
             <Relation viewName="OrderCargo"
-                      renderColumns="Description" newRowEnabled="false" editPopup="true" />
+                      renderColumns="Description" newRowEnabled="false" />
             <Relation viewName="ServiceMaintenance"
                       renderColumns="ID" choiceColumns="ID TypeName StateName"
-                      newRowEnabled="false" editPopup="true" />
+                      newRowEnabled="false" />
           </Relations>
         </page>
       </TabbedPages>

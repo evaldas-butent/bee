@@ -8,7 +8,6 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
@@ -25,12 +24,9 @@ import com.butent.bee.client.modules.finance.analysis.SimpleAnalysisForm;
 import com.butent.bee.client.modules.finance.analysis.SimpleBudgetForm;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -71,21 +67,18 @@ public final class FinanceKeeper {
       ParameterList parameters = createArgs(SVC_POST_TRADE_DOCUMENTS);
       parameters.addDataItem(Service.VAR_LIST, DataUtils.buildIdList(docIds));
 
-      BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          if (response.hasErrors()) {
-            if (callback != null) {
-              callback.accept(false);
-            }
+      BeeKeeper.getRpc().makeRequest(parameters, response -> {
+        if (response.hasErrors()) {
+          if (callback != null) {
+            callback.accept(false);
+          }
 
-          } else {
-            if (response.hasResponse()) {
-              logger.debug(SVC_POST_TRADE_DOCUMENTS, response.getResponse());
-            }
-            if (callback != null) {
-              callback.accept(true);
-            }
+        } else {
+          if (response.hasResponse()) {
+            logger.debug(SVC_POST_TRADE_DOCUMENTS, response.getResponse());
+          }
+          if (callback != null) {
+            callback.accept(true);
           }
         }
       });
@@ -244,15 +237,11 @@ public final class FinanceKeeper {
   }
 
   private static void openConfiguration(final String formName) {
-    Queries.getRowSet(VIEW_FINANCE_CONFIGURATION, null, new Queries.RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        if (DataUtils.isEmpty(result)) {
-          RowFactory.createRowUsingForm(VIEW_FINANCE_CONFIGURATION, formName, null);
-        } else {
-          RowEditor.openForm(formName, VIEW_FINANCE_CONFIGURATION, result.getRow(0),
-              Opener.modeless(), null);
-        }
+    Queries.getRowSet(VIEW_FINANCE_CONFIGURATION, null, result -> {
+      if (DataUtils.isEmpty(result)) {
+        RowFactory.createRowUsingForm(VIEW_FINANCE_CONFIGURATION, formName, null);
+      } else {
+        RowEditor.openForm(formName, VIEW_FINANCE_CONFIGURATION, result.getRow(0));
       }
     });
   }

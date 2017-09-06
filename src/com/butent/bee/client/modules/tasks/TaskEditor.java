@@ -22,7 +22,6 @@ import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
@@ -32,13 +31,11 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
-import com.butent.bee.client.data.Queries.RowSetCallback;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.DecisionCallback;
+import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputCallback;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dialog.ReminderDialog;
@@ -102,6 +99,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.html.builder.Factory;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -152,6 +150,7 @@ class TaskEditor extends ProductSupportInterceptor {
   private static final String STYLE_PHOTO = "Photo";
   private static final String STYLE_TASK = CRM_STYLE_PREFIX + "task-";
   private static final String STYLE_TASK_LATE_KIND = STYLE_TASK + "lateKind-";
+  private static final String STYLE_TASK_BREAK = STYLE_TASK + "break";
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
   private static final String NAME_OBSERVERS = "Observers";
 
@@ -171,6 +170,8 @@ class TaskEditor extends ProductSupportInterceptor {
 
   private TextLabel lateIndicator;
   private Relations relations;
+
+  private Button endResult;
 
   private List<Long> projectUsers;
   private Map<String, Pair<Long, String>> dbaParameters = Maps.newConcurrentMap();
@@ -214,7 +215,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
       for (final Long extTaskId : extTasks) {
         InternalLink url = new InternalLink(BeeUtils.toString(extTaskId));
-        url.addClickHandler(arg0 -> RowEditor.open(VIEW_TASKS, extTaskId, Opener.NEW_TAB));
+        url.addClickHandler(arg0 -> RowEditor.open(VIEW_TASKS, extTaskId));
 
         ((Flow) widget).add(url);
       }
@@ -257,23 +258,20 @@ class TaskEditor extends ProductSupportInterceptor {
   private static void sendRequest(ParameterList params,
       final RpcCallback<ResponseObject> callback) {
 
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasErrors()) {
-          if (callback != null) {
-            callback.onFailure(response.getErrors());
-          }
-        } else {
-          if (callback != null) {
-            callback.onSuccess(response);
+    BeeKeeper.getRpc().makePostRequest(params, response -> {
+      if (response.hasErrors()) {
+        if (callback != null) {
+          callback.onFailure(response.getErrors());
+        }
+      } else {
+        if (callback != null) {
+          callback.onSuccess(response);
 
-            if (response.hasResponse(BeeRow.class)) {
-              BeeRow row = BeeRow.restore((String) response.getResponse());
+          if (response.hasResponse(BeeRow.class)) {
+            BeeRow row = BeeRow.restore((String) response.getResponse());
 
-              if (row != null) {
-                RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, row);
-              }
+            if (row != null) {
+              RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, row);
             }
           }
         }
@@ -718,11 +716,30 @@ class TaskEditor extends ProductSupportInterceptor {
       });
     } else if (BeeUtils.same(name, NAME_LATE_INDICATOR) && widget instanceof TextLabel) {
       lateIndicator = (TextLabel) widget;
+    } else if (BeeUtils.same(name, COL_END_RESULT) && widget instanceof Button) {
+      endResult = (Button) widget;
+      endResult.addClickHandler(clickEvent -> {
+        if (relations != null && !BeeUtils.inList(getStatus(), TaskStatus.COMPLETED.ordinal(),
+            TaskStatus.APPROVED.ordinal())) {
+
+          TaskUtils.renderEndResult(relations.getWidgetMap(true), getFormView(), isOwner()
+                  || BeeKeeper.getUser().is(getActiveRow().getLong(
+                      getDataIndex(ALS_PROJECT_OWNER))), () -> doEvent(TaskEvent.REFRESH));
+        }
+      });
     }
 
     if (BeeUtils.same(name,
         AdministrationConstants.TBL_RELATIONS) && widget instanceof Relations) {
       relations = (Relations) widget;
+      relations.setSelectorHandler(new TaskHelper.TaskRelationsHandler() {
+
+        @Override
+        public void onDataSelector(SelectorEvent event) {
+          setTaskRow(getActiveRow());
+          super.onDataSelector(event);
+        }
+      });
     }
 
     super.afterCreateWidget(name, widget, callback);
@@ -814,6 +831,11 @@ class TaskEditor extends ProductSupportInterceptor {
     Pair<AbstractSlackRenderer.SlackKind, Long> data = renderer.getMinutes(row);
     setLateIndicatorHtml(data);
     setTaskStatusStyle(header, form, row, data);
+
+    if (endResult != null) {
+      endResult.setVisible(!BeeUtils.inList(getStatus(), TaskStatus.COMPLETED.ordinal(),
+          TaskStatus.APPROVED.ordinal()));
+    }
   }
 
   @Override
@@ -891,34 +913,6 @@ class TaskEditor extends ProductSupportInterceptor {
         || BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_EXECUTOR)))
         || BeeKeeper.getUser().is(row.getLong(getDataIndex(ALS_PROJECT_OWNER)))
         || BeeKeeper.getUser().isAdministrator());
-  }
-
-  @Override
-  public void onSetActiveRow(IsRow row) {
-
-    boolean privateTask =
-        BeeUtils.unbox(row.getBoolean(Data.getColumnIndex(TaskConstants.VIEW_TASKS,
-            COL_PRIVATE_TASK)));
-
-    if (privateTask) {
-      Filter filter =
-          Filter.and(Filter.notNull(COL_PRIVATE_TASK), Filter.or(Filter.equals(COL_OWNER,
-              userId), Filter.equals(COL_EXECUTOR, userId), Filter.in("TaskID",
-              VIEW_TASK_USERS, COL_TASK, Filter.equals(AdministrationConstants.COL_USER,
-                  userId))));
-      Queries.getRowSet(TaskConstants.VIEW_TASKS, null, filter, new RowSetCallback() {
-
-        @Override
-        public void onSuccess(BeeRowSet result) {
-          if (!result.getRowIds().contains(row.getId())) {
-            getFormView().getViewPresenter().handleAction(Action.CLOSE);
-            getFormView().notifySevere(Localized.dictionary().crmTaskPrivate());
-          }
-        }
-      });
-    } else {
-      super.onSetActiveRow(row);
-    }
   }
 
   @Override
@@ -1104,49 +1098,46 @@ class TaskEditor extends ProductSupportInterceptor {
         docRow.setProperty(PRM_DEFAULT_DBA_TEMPLATE,
           BeeUtils.toString(defaultDBATemplate.getA()));
       }
-      RowFactory.createRow(documentViewInfo, docRow, Modality.ENABLED, new RowCallback() {
 
-        @Override
-        public void onSuccess(final BeeRow createdDocument) {
-          Collection<RowChildren> relatedRows = relations != null
-            ? relations.getRowChildren(true) : new ArrayList<>();
-          Collection<RowChildren> updatedRelations = relations != null
-            ? relations.getChildrenForUpdate() : new ArrayList<>();
-          RowChildren relDocuments = null;
-          RowInsertEvent.fire(BeeKeeper.getBus(), DocumentConstants.VIEW_DOCUMENTS,
-            createdDocument, null);
+      RowFactory.createRow(documentViewInfo, docRow, Opener.MODAL, createdDocument -> {
+        Collection<RowChildren> relatedRows = relations != null
+          ? relations.getRowChildren(true) : new ArrayList<>();
+        Collection<RowChildren> updatedRelations = relations != null
+          ? relations.getChildrenForUpdate() : new ArrayList<>();
+        RowChildren relDocuments = null;
+        RowInsertEvent.fire(BeeKeeper.getBus(), DocumentConstants.VIEW_DOCUMENTS,
+          createdDocument, null);
 
-          for (RowChildren rel : relatedRows) {
-            relDocuments = BeeUtils.same(rel.getChildColumn(), DocumentConstants.COL_DOCUMENT)
-              ? rel : null;
+        for (RowChildren rel : relatedRows) {
+          relDocuments = BeeUtils.same(rel.getChildColumn(), DocumentConstants.COL_DOCUMENT)
+            ? rel : null;
 
-            if (relDocuments != null) {
+          if (relDocuments != null) {
+            break;
+          }
+        }
+        if (relDocuments != null) {
+          for (RowChildren rel : updatedRelations) {
+            if (BeeUtils.same(rel.getChildColumn(), DocumentConstants.COL_DOCUMENT)) {
+              updatedRelations.remove(rel);
               break;
             }
           }
-          if (relDocuments != null) {
-            for (RowChildren rel : updatedRelations) {
-              if (BeeUtils.same(rel.getChildColumn(), DocumentConstants.COL_DOCUMENT)) {
-                updatedRelations.remove(rel);
-                break;
-              }
-            }
-          }
-          Set<Long> relDocumentIds = relDocuments != null
-            ? DataUtils.parseIdSet(relDocuments.getChildrenIds())
-            : new HashSet<>();
-          AbstractCellRenderer render =
-            RendererFactory.createRenderer(DocumentConstants.VIEW_DOCUMENTS,
-              Data.getRelation(DocumentConstants.VIEW_DOCUMENTS).getOriginalRenderColumns());
-          relDocumentIds.add(createdDocument.getId());
-          updatedRelations.add(RowChildren.create(TBL_RELATIONS, COL_TASK, null,
-            DocumentConstants.COL_DOCUMENT, DataUtils.buildIdList(relDocumentIds)));
-
-          ParameterList prm = createParams(TaskEvent.EDIT, getNewRow(), updatedRelations,
-            TaskUtils.getInsertNote(Localized.dictionary().document(),
-              render.render(createdDocument)));
-          sendRequest(prm, TaskEvent.EDIT);
         }
+        Set<Long> relDocumentIds = relDocuments != null
+          ? DataUtils.parseIdSet(relDocuments.getChildrenIds())
+          : new HashSet<>();
+        AbstractCellRenderer render =
+          RendererFactory.createRenderer(DocumentConstants.VIEW_DOCUMENTS,
+            Data.getRelation(DocumentConstants.VIEW_DOCUMENTS).getOriginalRenderColumns());
+        relDocumentIds.add(createdDocument.getId());
+        updatedRelations.add(RowChildren.create(TBL_RELATIONS, COL_TASK, null,
+          DocumentConstants.COL_DOCUMENT, DataUtils.buildIdList(relDocumentIds)));
+
+        ParameterList prm = createParams(TaskEvent.EDIT, getNewRow(), updatedRelations,
+          TaskUtils.getInsertNote(Localized.dictionary().document(),
+            render.render(createdDocument)));
+        sendRequest(prm, TaskEvent.EDIT);
       });
     }
   }
@@ -1290,40 +1281,30 @@ class TaskEditor extends ProductSupportInterceptor {
     };
 
     if (DataUtils.isId(eventId)) {
-      Queries.getValue(VIEW_TASK_EVENTS, eventId, COL_EVENT_DATA, new RpcCallback<String>() {
+      Queries.getValue(VIEW_TASK_EVENTS, eventId, COL_EVENT_DATA, (String result) -> {
+        Map<String, String> data;
 
-        @Override
-        public void onSuccess(String result) {
-          Map<String, String> data;
-
-          if (BeeUtils.isEmpty(result)) {
-            data = Maps.newLinkedHashMap();
-          } else {
-            data = Codec.deserializeLinkedHashMap(result);
-          }
-
-          if (data.containsKey(BeeUtils.toString(TaskEvent.CREATE.ordinal()))) {
-            List<Long> lTaskIds =
-                DataUtils.parseIdList(data.get(BeeUtils.toString(TaskEvent.CREATE.ordinal())));
-            lTaskIds.addAll(DataUtils.parseIdList(taskIds));
-
-            data.put(BeeUtils.toString(TaskEvent.CREATE.ordinal()), DataUtils
-                .buildIdList(lTaskIds));
-          } else {
-            data.put(BeeUtils.toString(TaskEvent.CREATE.ordinal()), taskIds);
-          }
-
-          Queries.update(VIEW_TASK_EVENTS, eventId, COL_EVENT_DATA, Value.getValue(Codec
-                  .beeSerialize(data)),
-              new IntCallback() {
-
-                @Override
-                public void onSuccess(Integer updateCount) {
-                  consumer.accept(null);
-                }
-              });
-
+        if (BeeUtils.isEmpty(result)) {
+          data = Maps.newLinkedHashMap();
+        } else {
+          data = Codec.deserializeLinkedHashMap(result);
         }
+
+        if (data.containsKey(BeeUtils.toString(TaskEvent.CREATE.ordinal()))) {
+          List<Long> lTaskIds =
+              DataUtils.parseIdList(data.get(BeeUtils.toString(TaskEvent.CREATE.ordinal())));
+          lTaskIds.addAll(DataUtils.parseIdList(taskIds));
+
+          data.put(BeeUtils.toString(TaskEvent.CREATE.ordinal()), DataUtils
+              .buildIdList(lTaskIds));
+        } else {
+          data.put(BeeUtils.toString(TaskEvent.CREATE.ordinal()), taskIds);
+        }
+
+        Queries.update(VIEW_TASK_EVENTS, eventId, COL_EVENT_DATA, Value.getValue(Codec
+                .beeSerialize(data)),
+            updateCount -> consumer.accept(null));
+
       });
     } else {
       consumer.accept(null);
@@ -1334,14 +1315,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
     Queries.updateChildren(VIEW_TASKS, taskRow.getId(), Lists.newArrayList(RowChildren
             .create(TBL_RELATIONS, COL_TASK, null, COL_TASK, DataUtils.buildIdList(relIds))),
-        new RowCallback() {
-
-          @Override
-          public void onSuccess(BeeRow result) {
-            consumer.accept(null);
-          }
-        });
-
+        result -> consumer.accept(null));
   }
 
   private ParameterList createParams(TaskEvent event, String comment) {
@@ -1424,8 +1398,9 @@ class TaskEditor extends ProductSupportInterceptor {
       String comment = dialog.getComment(cid);
       String time = dialog.getTime(durIds.get(COL_DURATION));
       Long type = dialog.getSelector(durIds.get(COL_DURATION_TYPE)).getRelatedId();
+      List<FileInfo> files = dialog.getFiles(fid);
 
-      if (BeeUtils.allEmpty(comment, time)) {
+      if (BeeUtils.allEmpty(comment, time) && BeeUtils.isEmpty(files)) {
         showError(Localized.dictionary().crmEnterCommentOrDuration());
         return;
       }
@@ -1438,7 +1413,7 @@ class TaskEditor extends ProductSupportInterceptor {
       ParameterList params = createParams(TaskEvent.COMMENT, comment);
 
       if (setDurationParams(dialog, durIds, params)) {
-        sendRequest(params, TaskEvent.COMMENT, dialog.getFiles(fid));
+        sendRequest(params, TaskEvent.COMMENT, files);
         dialog.close();
       }
     });
@@ -1458,6 +1433,11 @@ class TaskEditor extends ProductSupportInterceptor {
             .nowMinutes());
     durIds.put(COL_DURATION_DATE, dd);
 
+    List<String> endResults = Codec.deserializeList(Data.getString(getViewName(), getActiveRow(),
+        COL_END_RESULT));
+    Map<String, MultiSelector> widgetMap = relations.getWidgetMap(true);
+    Map<String, String> multiIds = dialog.addEndResult(widgetMap, endResults, fid);
+
     dialog.addAction(Localized.dictionary().crmActionFinish(), () -> {
 
       DateTime completed = dialog.getDateTime(dd);
@@ -1474,6 +1454,39 @@ class TaskEditor extends ProductSupportInterceptor {
         return;
       }
 
+      if (!BeeUtils.isEmpty(endResults)) {
+        if (endResults.contains(VIEW_TASK_FILES) && BeeUtils.isEmpty(dialog.getFiles(fid))) {
+          showError(Localized.dictionary().fieldRequired(Data.getViewCaption(VIEW_TASK_FILES)));
+          return;
+        }
+
+        for (String viewName : widgetMap.keySet()) {
+          if (endResults.contains(viewName) && multiIds.containsKey(viewName)) {
+
+            MultiSelector ms = dialog.getRelation(multiIds.get(viewName));
+            if (BeeUtils.isEmpty(ms.getIds())) {
+              showError(Localized.dictionary().fieldRequired(Data.getViewCaption(viewName)));
+              return;
+            }
+
+            MultiSelector relationMS = widgetMap.get(viewName);
+            String oldValue = ms.getOldValue();
+            relationMS.setIds(ms.getIds());
+            relationMS.setValues(ms.getValues());
+            relationMS.setChoices(ms.getChoices());
+            relationMS.setOldValue(oldValue);
+
+            Map<MultiSelector.Choice, String> msCache = ms.getCache();
+            Map<MultiSelector.Choice, String> relCache = relationMS.getCache();
+            for (Map.Entry<MultiSelector.Choice, String> entry : msCache.entrySet()) {
+              if (!relCache.containsKey(entry.getKey())) {
+                relCache.put(entry.getKey(), entry.getValue());
+              }
+            }
+          }
+        }
+      }
+
       String comment = dialog.getComment(cid);
 
       TaskStatus status;
@@ -1486,8 +1499,13 @@ class TaskEditor extends ProductSupportInterceptor {
         status = TaskStatus.COMPLETED;
         event = TaskEvent.COMPLETE;
       }
+
       BeeRow newRow = getNewRow(status);
       newRow.setValue(getFormView().getDataIndex(COL_COMPLETED), completed);
+
+      if (isOwner() && isExecutor()) {
+        newRow.setValue(getFormView().getDataIndex(COL_APPROVED), completed);
+      }
 
       ParameterList params = createParams(event, newRow, comment);
 
@@ -1572,15 +1590,11 @@ class TaskEditor extends ProductSupportInterceptor {
       newTaskRow.setProperty(PROP_FILES, taskRow.getProperty(PROP_FILES));
     }
     RowFactory.createRow(newTaskInfo.getNewRowForm(), newTaskInfo.getNewRowCaption(), newTaskInfo,
-        newTaskRow, Modality.ENABLED, null, new TaskBuilder(true), null,
-        new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            if (result == null || result.getNumberOfCells() < 1) {
-              return;
-            }
-            createTaskLinks(taskRow, eventId, result.getString(0));
+        newTaskRow, Opener.MODAL, new TaskBuilder(true), result -> {
+          if (result == null || result.getNumberOfCells() < 1) {
+            return;
           }
+          createTaskLinks(taskRow, eventId, result.getString(0));
         });
   }
 
@@ -1754,10 +1768,6 @@ class TaskEditor extends ProductSupportInterceptor {
     Set<Long> filter = new HashSet<>();
     if (oldUser != null) {
       exclusions.add(oldUser);
-    }
-
-    if (!BeeUtils.isEmpty(getProjectUsers())) {
-      filter.addAll(getProjectUsers());
     }
 
     final TaskDialog dialog = new TaskDialog(Localized.dictionary().crmTaskForwarding());
@@ -1986,6 +1996,27 @@ class TaskEditor extends ProductSupportInterceptor {
     return Objects.equals(userId, getOwner());
   }
 
+  private void maybeHideProjectInformation(boolean visibility) {
+    FormView form = getFormView();
+
+    if (form == null) {
+      return;
+    }
+
+    for (String name : new String[]{ProjectConstants.COL_PROJECT,
+        ProjectConstants.COL_PROJECT_STAGE, COL_PRODUCT, COL_COMPANY, COL_CONTACT}) {
+      Widget widget = getFormView().getWidgetBySource(name);
+
+      if (widget != null) {
+        Widget drill = ((DataSelector) widget).getDrill();
+
+        if (drill != null) {
+          drill.setVisible(visibility);
+        }
+      }
+    }
+  }
+
   private void onResponse(BeeRow data) {
     RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, data);
 
@@ -2066,13 +2097,10 @@ class TaskEditor extends ProductSupportInterceptor {
         List<String> values = Lists.newArrayList(BeeUtils.toString(taskId),
             BeeUtils.toString(teId), BeeUtils.toString(result.getId()), result.getCaption());
 
-        Queries.insert(VIEW_TASK_FILES, columns, values, null, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow row) {
-            counter.set(counter.get() + 1);
-            if (counter.get() == files.size()) {
-              requeryEvents(taskId);
-            }
+        Queries.insert(VIEW_TASK_FILES, columns, values, null, row -> {
+          counter.set(counter.get() + 1);
+          if (counter.get() == files.size()) {
+            requeryEvents(taskId);
           }
         });
       });
@@ -2205,6 +2233,9 @@ class TaskEditor extends ProductSupportInterceptor {
     if (kind != null) {
       lateIndicator.addStyleName(STYLE_TASK_LATE_KIND + kind.toString().toLowerCase());
     }
+
+    lateIndicator.setStyleName(STYLE_TASK_BREAK, TaskStatus.in(getStatus(), TaskStatus.SUSPENDED,
+      TaskStatus.COMPLETED, TaskStatus.APPROVED, TaskStatus.CANCELED));
   }
 
   private FaLabel createMenuLabel() {
@@ -2391,6 +2422,7 @@ class TaskEditor extends ProductSupportInterceptor {
     if (!DataUtils.isId(projectId)) {
       TaskHelper.setSelectorFilter(ownerSelector, null);
       TaskHelper.setSelectorFilter(observersSelector, null);
+      maybeHideProjectInformation(true);
       return;
     }
     TaskHelper.setWidgetEnabled(observersSelector, isOwner()
@@ -2400,32 +2432,30 @@ class TaskEditor extends ProductSupportInterceptor {
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
         .newArrayList(COL_USER), Filter.isEqual(
-        ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
+        ProjectConstants.COL_PROJECT, Value.getValue(projectId)), result -> {
+          List<Long> userIds = Lists.newArrayList(projectOwner);
+          int idxUser = result.getColumnIndex(COL_USER);
 
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        List<Long> userIds = Lists.newArrayList(projectOwner);
-        int idxUser = result.getColumnIndex(COL_USER);
-
-        if (BeeConst.isUndef(idxUser)) {
-          Assert.untouchable();
-          return;
-        }
-
-        for (IsRow userRow : result) {
-          long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
-
-          if (DataUtils.isId(projectUser)) {
-            userIds.add(projectUser);
+          if (BeeConst.isUndef(idxUser)) {
+            Assert.untouchable();
+            return;
           }
-        }
-        Filter projectTeamFilter = Filter.idIn(userIds);
 
-        TaskHelper.setSelectorFilter(observersSelector, projectTeamFilter);
-        TaskHelper.setSelectorFilter(ownerSelector, projectTeamFilter);
-        setProjectUsers(userIds);
-      }
-    });
+          for (IsRow userRow : result) {
+            long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
+
+            if (DataUtils.isId(projectUser)) {
+              userIds.add(projectUser);
+            }
+          }
+          Filter projectTeamFilter = Filter.idIn(userIds);
+
+          TaskHelper.setSelectorFilter(observersSelector, projectTeamFilter);
+          TaskHelper.setSelectorFilter(ownerSelector, projectTeamFilter);
+          setProjectUsers(userIds);
+
+          maybeHideProjectInformation(getProjectUsers().contains(getExecutor()));
+        });
   }
 
   private void updateProjectInfo(String projectId, String stageId) {
@@ -2471,11 +2501,30 @@ class TaskEditor extends ProductSupportInterceptor {
       if (oldRow != null) {
         resetField(form, oldRow, row, COL_OWNER);
       }
-    } else if (userData.canEditData(VIEW_TASKS) && BeeUtils.isTrue(taskPrivate) && oldRow != null) {
+    } else if (userData.canEditData(VIEW_TASKS) && oldRow != null) {
       Long oldOwner = oldRow.getLong(form.getDataIndex(COL_OWNER));
-      addObserver(form, row, oldOwner);
-    }
 
-    form.refresh();
+      if (BeeUtils.isTrue(taskPrivate)) {
+        addObserver(form, row, oldOwner);
+      } else {
+        Global.decide(Localized.dictionary().crmTaskOwnerChangeCaption(),
+            Arrays.asList(Localized.dictionary().crmTaskOwnerChange(Factory.b().text(
+                BeeUtils.joinWords(userData.getFirstName(), userData.getLastName())).build()),
+                Localized.dictionary().crmTaskOwnerAddToObservers()), new DecisionCallback() {
+
+              @Override
+              public void onCancel() {
+                resetField(form, oldRow, row, COL_OWNER);
+                form.refresh();
+              }
+
+              @Override
+              public void onConfirm() {
+                addObserver(form, row, oldOwner);
+                form.refresh();
+              }
+            }, DialogConstants.DECISION_YES);
+      }
+    }
   }
 }

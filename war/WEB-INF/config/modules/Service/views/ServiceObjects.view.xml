@@ -4,7 +4,7 @@
   name="ServiceObjects" source="ServiceObjects"
   caption="=svcDevices" newRowCaption="=svcNewDevice"
   editForm="ServiceObject" newRowForm="ServiceObject"
-  rowCaption="CategoryName Address CustomerName"
+  rowCaption="Model CategoryName ArticleNo"
   >
   <Relation renderColumns="Model CategoryName ArticleNo" choiceColumns="Model CategoryName ArticleNo" />
   <Columns>

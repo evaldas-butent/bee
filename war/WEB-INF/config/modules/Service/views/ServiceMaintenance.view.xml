@@ -3,7 +3,7 @@
 
   name="ServiceMaintenance" source="ServiceMaintenance" module="Service"
   caption="=svcMaintenance" newRowCaption="=svcNewMaintenance"
-  editForm="ServiceMaintenance" newRowForm="ServiceMaintenance"
+  editForm="ServiceMaintenance" newRowForm="ServiceMaintenance" rowCaption="ID"
   >
   <Relation renderColumns="ID" choiceColumns="ID TypeName StateName" />
   <Columns>

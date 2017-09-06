@@ -9,7 +9,6 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dom.DomUtils;
@@ -19,7 +18,6 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -273,38 +271,35 @@ abstract class MultiStateForm extends RightsForm {
       }
       params.addDataItem(COL_OBJECT, Codec.beeSerialize(diff));
 
-      BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          if (response.hasErrors()) {
-            response.notify(BeeKeeper.getScreen());
-            if (callback != null) {
-              callback.accept(false);
+      BeeKeeper.getRpc().makeRequest(params, response -> {
+        if (response.hasErrors()) {
+          response.notify(BeeKeeper.getScreen());
+          if (callback != null) {
+            callback.accept(false);
+          }
+
+        } else {
+          int size = changes.size();
+
+          for (Map.Entry<String, RightsState> entry : changes.entries()) {
+            if (initialValues.containsEntry(entry.getKey(), entry.getValue())) {
+              initialValues.remove(entry.getKey(), entry.getValue());
+            } else {
+              initialValues.put(entry.getKey(), entry.getValue());
             }
+          }
 
-          } else {
-            int size = changes.size();
+          changes.clear();
+          onClearChanges();
 
-            for (Map.Entry<String, RightsState> entry : changes.entries()) {
-              if (initialValues.containsEntry(entry.getKey(), entry.getValue())) {
-                initialValues.remove(entry.getKey(), entry.getValue());
-              } else {
-                initialValues.put(entry.getKey(), entry.getValue());
-              }
-            }
+          String message = Localized.dictionary().roleRightsSaved(BeeUtils.joinWords(
+              BeeUtils.bracket(getObjectType().getCaption()), Localized.dictionary().role(),
+              getRoleName()), size);
+          debug(message);
+          BeeKeeper.getScreen().notifyInfo(message);
 
-            changes.clear();
-            onClearChanges();
-
-            String message = Localized.dictionary().roleRightsSaved(BeeUtils.joinWords(
-                BeeUtils.bracket(getObjectType().getCaption()), Localized.dictionary().role(),
-                getRoleName()), size);
-            debug(message);
-            BeeKeeper.getScreen().notifyInfo(message);
-
-            if (callback != null) {
-              callback.accept(true);
-            }
+          if (callback != null) {
+            callback.accept(true);
           }
         }
       });
@@ -440,67 +435,64 @@ abstract class MultiStateForm extends RightsForm {
     params.addQueryItem(COL_OBJECT_TYPE, getObjectType().ordinal());
     params.addQueryItem(COL_ROLE, getRoleId());
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasErrors()) {
-          response.notify(BeeKeeper.getScreen());
-          callback.accept(false);
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      if (response.hasErrors()) {
+        response.notify(BeeKeeper.getScreen());
+        callback.accept(false);
+
+      } else {
+        if (!initialValues.isEmpty()) {
+          initialValues.clear();
+        }
+        if (!changes.isEmpty()) {
+          changes.clear();
+        }
+
+        if (response.hasResponse()) {
+          Map<String, String> rights =
+              Codec.deserializeLinkedHashMap(response.getResponseAsString());
+
+          Multimap<String, RightsState> values = HashMultimap.create();
+          for (Map.Entry<String, String> entry : rights.entrySet()) {
+            Set<RightsState> states = EnumUtils.parseIndexSet(RightsState.class,
+                entry.getValue());
+            states.retainAll(getRightsStates());
+
+            if (!states.isEmpty()) {
+              values.putAll(entry.getKey(), states);
+            }
+          }
+
+          for (RightsState state : getRightsStates()) {
+            if (state.isChecked()) {
+              for (RightsObject object : getObjects()) {
+                if (hasValue(object) && !values.containsEntry(object.getName(), state)) {
+                  initialValues.put(object.getName(), state);
+                }
+              }
+
+            } else if (values.containsValue(state)) {
+              for (Map.Entry<String, RightsState> entry : values.entries()) {
+                if (entry.getValue() == state) {
+                  initialValues.put(entry.getKey(), entry.getValue());
+                }
+              }
+            }
+          }
 
         } else {
-          if (!initialValues.isEmpty()) {
-            initialValues.clear();
-          }
-          if (!changes.isEmpty()) {
-            changes.clear();
-          }
-
-          if (response.hasResponse()) {
-            Map<String, String> rights =
-                Codec.deserializeLinkedHashMap(response.getResponseAsString());
-
-            Multimap<String, RightsState> values = HashMultimap.create();
-            for (Map.Entry<String, String> entry : rights.entrySet()) {
-              Set<RightsState> states = EnumUtils.parseIndexSet(RightsState.class,
-                  entry.getValue());
-              states.retainAll(getRightsStates());
-
-              if (!states.isEmpty()) {
-                values.putAll(entry.getKey(), states);
-              }
-            }
-
-            for (RightsState state : getRightsStates()) {
-              if (state.isChecked()) {
-                for (RightsObject object : getObjects()) {
-                  if (hasValue(object) && !values.containsEntry(object.getName(), state)) {
-                    initialValues.put(object.getName(), state);
-                  }
-                }
-
-              } else if (values.containsValue(state)) {
-                for (Map.Entry<String, RightsState> entry : values.entries()) {
-                  if (entry.getValue() == state) {
-                    initialValues.put(entry.getKey(), entry.getValue());
-                  }
-                }
-              }
-            }
-
-          } else {
-            for (RightsState state : getRightsStates()) {
-              if (state.isChecked()) {
-                for (RightsObject object : getObjects()) {
-                  if (hasValue(object)) {
-                    initialValues.put(object.getName(), state);
-                  }
+          for (RightsState state : getRightsStates()) {
+            if (state.isChecked()) {
+              for (RightsObject object : getObjects()) {
+                if (hasValue(object)) {
+                  initialValues.put(object.getName(), state);
                 }
               }
             }
           }
-
-          callback.accept(true);
         }
+
+        callback.accept(true);
       }
     });
   }

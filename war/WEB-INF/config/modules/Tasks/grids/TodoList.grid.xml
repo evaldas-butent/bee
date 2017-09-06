@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  
-  name="TodoList" viewName="TodoList" caption="=crmTodoList"
-  newRowPopup="true" editPopup="true"
-  filter="Creator={u} or Visibility = 0"
-  >
+
+        name="TodoList" viewName="TodoList" caption="=crmTodoList"
+        filter="Creator={u} or Visibility = 0"
+>
   <g:columns>
     <DataColumn name="Summary" minWidth="120" visible="true" />
     <DataColumn name="Description" visible="false" />

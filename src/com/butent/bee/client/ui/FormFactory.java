@@ -9,7 +9,6 @@ import com.google.gwt.xml.client.XMLParser;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
@@ -23,7 +22,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -317,9 +315,14 @@ public final class FormFactory {
   /**
    * This method should be used in sync with {@code ViewFactory.registerSupplier}.
    */
-  public static void openForm(final String formName, final FormInterceptor formInterceptor) {
-    getFormDescription(formName,
-        result -> openForm(result, formInterceptor, ViewHelper.getPresenterCallback()));
+  public static void openForm(String formName, FormInterceptor formInterceptor) {
+    openForm(formName, formInterceptor, ViewHelper.getPresenterCallback());
+  }
+
+  public static void openForm(String formName, final FormInterceptor formInterceptor,
+      final PresenterCallback presenterCallback) {
+
+    getFormDescription(formName, result -> openForm(result, formInterceptor, presenterCallback));
   }
 
   public static FormDescription parseFormDescription(String xml) {
@@ -367,15 +370,12 @@ public final class FormFactory {
     Collection<Property> options = PropertyUtils.createProperties(Service.VAR_VIEW_SIZE, true);
 
     Queries.getRowSet(viewName, null, null, null, 0, DataUtils.getMaxInitialRowSetSize(),
-        cachingPolicy, options, new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet rowSet) {
-            int rc = Math.max(rowSet.getNumberOfRows(),
-                BeeUtils.toInt(rowSet.getTableProperty(Service.VAR_VIEW_SIZE)));
+        cachingPolicy, options, (Queries.RowSetCallback) rowSet -> {
+          int rc = Math.max(rowSet.getNumberOfRows(),
+              BeeUtils.toInt(rowSet.getTableProperty(Service.VAR_VIEW_SIZE)));
 
-            showForm(formDescription, viewName, rc, rowSet, ProviderType.DEFAULT, cachingPolicy,
-                interceptor, presenterCallback);
-          }
+          showForm(formDescription, viewName, rc, rowSet, ProviderType.DEFAULT, cachingPolicy,
+              interceptor, presenterCallback);
         });
   }
 
@@ -389,28 +389,26 @@ public final class FormFactory {
     ParameterList params = new ParameterList(Service.GET_FORM);
     params.setSummary(name);
 
-    BeeKeeper.getRpc().sendText(params, BeeUtils.trim(name), new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasResponse(String.class)) {
-          FormDescription fd = parseFormDescription((String) response.getResponse());
-          if (fd == null) {
-            callback.onFailure("form", name, "description not created");
-          } else {
-            if (fd.cacheDescription()) {
-              descriptionCache.put(key, fd);
-            }
-            callback.onSuccess(fd);
-          }
+    BeeKeeper.getRpc().sendText(params, BeeUtils.trim(name), response -> {
+      if (response.hasResponse(String.class)) {
+        FormDescription fd = parseFormDescription((String) response.getResponse());
+        if (fd == null) {
+          callback.onFailure("form", name, "description not created");
         } else {
-          callback.onFailure("get form description", name, "response not a string");
+          if (fd.cacheDescription()) {
+            descriptionCache.put(key, fd);
+          }
+          callback.onSuccess(fd);
         }
+      } else {
+        callback.onFailure("get form description", name, "response not a string");
       }
     });
   }
 
   private static void showForm(FormDescription formDescription, FormInterceptor interceptor,
       PresenterCallback presenterCallback) {
+
     showForm(formDescription, null, BeeConst.UNDEF, null, ProviderType.CACHED,
         CachingPolicy.NONE, interceptor, presenterCallback);
   }

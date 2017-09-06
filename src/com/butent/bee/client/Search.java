@@ -10,7 +10,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
@@ -25,7 +24,6 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.HeaderImpl;
@@ -40,7 +38,6 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
@@ -390,7 +387,7 @@ public class Search {
     @Override
     public void onBrowserEvent(Event event) {
       if (EventUtils.isClick(event)) {
-        RowEditor.open(getViewName(), getRow(), Opener.NEW_TAB);
+        RowEditor.open(getViewName(), getRow());
       }
       super.onBrowserEvent(event);
     }
@@ -476,36 +473,33 @@ public class Search {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.SEARCH);
     params.addPositionalData(value);
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        String[] arr = Codec.beeDeserializeCollection((String) response.getResponse());
-        final List<SearchResult> results = new ArrayList<>();
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      String[] arr = Codec.beeDeserializeCollection((String) response.getResponse());
+      final List<SearchResult> results = new ArrayList<>();
 
-        if (arr != null) {
-          for (String s : arr) {
-            SearchResult result = SearchResult.restore(s);
-            if (result != null) {
-              results.add(result);
-            }
+      if (arr != null) {
+        for (String s : arr) {
+          SearchResult result = SearchResult.restore(s);
+          if (result != null) {
+            results.add(result);
           }
         }
+      }
 
-        if (results.isEmpty() && callback == null) {
-          BeeKeeper.getScreen().notifyWarning(value, Localized.dictionary().nothingFound());
+      if (results.isEmpty() && callback == null) {
+        BeeKeeper.getScreen().notifyWarning(value, Localized.dictionary().nothingFound());
 
-        } else {
-          if (inputWidget != null) {
-            AutocompleteProvider.retainValue(inputWidget);
-          }
-
-          ModuleManager.maybeInitialize(new Command() {
-            @Override
-            public void execute() {
-              processResults(value, results, callback);
-            }
-          });
+      } else {
+        if (inputWidget != null) {
+          AutocompleteProvider.retainValue(inputWidget);
         }
+
+        ModuleManager.maybeInitialize(new Command() {
+          @Override
+          public void execute() {
+            processResults(value, results, callback);
+          }
+        });
       }
     });
   }
@@ -514,7 +508,7 @@ public class Search {
       ViewCallback callback) {
 
     if (results.size() == 1 && callback == null) {
-      RowEditor.open(results.get(0).getViewName(), results.get(0).getRow(), Opener.modeless());
+      RowEditor.open(results.get(0).getViewName(), results.get(0).getRow());
     } else {
       showResults(query, results, callback);
     }

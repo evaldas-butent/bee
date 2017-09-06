@@ -182,16 +182,16 @@
               <Label style="margin-left: 8px; margin-right: 8px;" for="InformationSource" />
               <DataSelector source="InformationSource" summarize="true" />
             </row>
-            <row data="CompActStore">
-              <Label text="=companyActivities" style="&lbl;" />
+            <row data="CompActStore" listName="CompActStore">
+              <Label text="=companyActivities" listName="CompActStore" style="&lbl;" />
               <cell colSpan="3">
                 <ChildSelector viewName="CompanyActivities" childTable="CompActStore"
                                targetRelColumn="Company" sourceRelColumn="Activity"
                                label="=companyActivities" style="width: 100%;" summarize="true" />
               </cell>
             </row>
-            <row>
-              <Label text="=mailRecipientsGroups" style="&lbl;" />
+            <row data="RcpsGroupsContacts" listName="RcpsGroupsContacts">
+              <Label text="=mailRecipientsGroups" listName="RcpsGroupsContacts" style="&lbl;" />
               <cell colSpan="3">
                 <ChildSelector name="RecipientsGroup" viewName="RecipientsGroups"
                                childTable="RcpsGroupsContacts"
@@ -214,14 +214,12 @@
               <Label text="=clientGroup" style="&lbl;" for="CompanyGroup" />
               <DataSelector source="CompanyGroup" summarize="true" />
             </row>
-            <row>
-              <Label text="=companyRelation" style="&lbl;" data="CompRelTypeStore" />
+            <row data="CompRelTypeStore" listName="CompRelTypeStore">
+              <Label text="=companyRelation" style="&lbl;" listName="CompRelTypeStore" />
               <cell colSpan="2">
                 <ChildSelector viewName="CompanyRelationTypes" childTable="CompRelTypeStore"
                                targetRelColumn="Company" sourceRelColumn="RelationType"
-                               newRowEnabled="true"
-                               label="=companyRelationType" data="CompRelTypeStore"
-                               summarize="true" />
+                               newRowEnabled="true" label="=companyRelationType" summarize="true" />
               </cell>
               <Label style="&lbl;" for="CompanyRelationTypeState" />
               <DataSelector source="CompanyRelationTypeState" summarize="true" />
@@ -289,7 +287,7 @@
         <ChildGrid name="CompanyOrders" relColumn="Company" />
       </page>
 
-      <page data="Cars" module="Cars" >
+      <page data="Cars" module="Cars">
         <text>=cars</text>
         <ChildGrid name="CompanyCars" relColumn="Owner" />
       </page>
@@ -299,6 +297,11 @@
         <SimplePanel>
           <InputArea source="Notes" class="occupy-1" summarize="true" />
         </SimplePanel>
+      </page>
+
+      <page module="Service" data="ServiceMaintenance">
+        <text>=svcMaintenance</text>
+        <ChildGrid name="ServiceMaintenance" relColumn="Company" />
       </page>
     </TabbedPages>
   </FlowPanel>

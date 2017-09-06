@@ -766,6 +766,11 @@ public class TransportReportsBean {
 
     ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
     Long currency = reqInfo.getParameterLong(COL_CURRENCY);
+
+    if (!DataUtils.isId(currency)) {
+      currency = prm.getRelation(PRM_CURRENCY);
+    }
+
     boolean woVat = BeeUtils.toBoolean(reqInfo.getParameter(COL_TRADE_VAT));
 
     Function<String, IsExpression> firstLastNameJoiner = alias ->
@@ -854,7 +859,7 @@ public class TransportReportsBean {
         .addExpr(firstLastNameJoiner.apply(TBL_PERSONS), COL_DRIVER)
         .addFields(tmpTrips, COL_TRIP_NO, COL_DATE_FROM, COL_DATE_TO, COL_STATUS,
             COL_SPEEDOMETER_BEFORE, COL_SPEEDOMETER_AFTER, COL_FUEL_BEFORE, COL_FUEL_AFTER,
-            COL_NOTES, COL_TRADE_MANAGER, COL_MAIN_DRIVER)
+            COL_NOTES, COL_TRADE_MANAGER, COL_MAIN_DRIVER, ALS_TRAILER_NUMBER, ALS_VEHICLE_NUMBER)
         .addFrom(TBL_TRIP_COSTS)
         .setWhere(costsClause)
         .addFromLeft(tmpTrips, SqlUtils.join(tmpTrips, sys.getIdName(TBL_TRIPS),
@@ -882,7 +887,7 @@ public class TransportReportsBean {
         .addExpr(SqlUtils.constant(BeeConst.STRING_EMPTY), COL_DRIVER)
         .addFields(tmpTrips, COL_TRIP_NO, COL_DATE_FROM, COL_DATE_TO, COL_STATUS,
             COL_SPEEDOMETER_BEFORE, COL_SPEEDOMETER_AFTER, COL_FUEL_BEFORE, COL_FUEL_AFTER,
-            COL_NOTES, COL_TRADE_MANAGER, COL_MAIN_DRIVER)
+            COL_NOTES, COL_TRADE_MANAGER, COL_MAIN_DRIVER, ALS_TRAILER_NUMBER, ALS_VEHICLE_NUMBER)
         .addFrom(TBL_TRIP_FUEL_COSTS)
         .addFromLeft(tmpTrips, SqlUtils.join(tmpTrips, sys.getIdName(TBL_TRIPS),
             TBL_TRIP_FUEL_COSTS, COL_TRIP))
@@ -930,6 +935,11 @@ public class TransportReportsBean {
 
     selectTripCosts.addExpr(costsTotalExpr, VAR_TOTAL);
     selectFuelCosts.addExpr(fuelTotalExpr, VAR_TOTAL);
+
+    String currencyName = qs.getValue(new SqlSelect().addFields(TBL_CURRENCIES, COL_CURRENCY_NAME)
+        .addFrom(TBL_CURRENCIES).setWhere(sys.idEquals(TBL_CURRENCIES, currency)));
+    selectTripCosts.addExpr(SqlUtils.constant(currencyName), COL_CURRENCY);
+    selectFuelCosts.addExpr(SqlUtils.constant(currencyName), COL_CURRENCY);
 
     SqlSelect selectCosts = selectTripCosts
         .setUnionAllMode(true)

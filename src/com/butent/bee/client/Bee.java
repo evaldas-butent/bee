@@ -11,7 +11,6 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 
 import com.butent.bee.client.animation.RafCallback;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
@@ -33,7 +32,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
@@ -56,7 +54,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The entry point class of the application, initializes <code>BeeKeeper</code> class.
+ * The entry point class of the application.
  */
 
 public class Bee implements EntryPoint, ClosingHandler {
@@ -381,12 +379,9 @@ public class Bee implements EntryPoint, ClosingHandler {
 
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.LOGIN);
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        load(Codec.deserializeLinkedHashMap(response.getResponseAsString()));
-        onLogin();
-      }
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      load(Codec.deserializeLinkedHashMap(response.getResponseAsString()));
+      onLogin();
     });
   }
 
@@ -417,18 +412,15 @@ public class Bee implements EntryPoint, ClosingHandler {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.INIT);
     params.addQueryItem(Service.VAR_UI, BeeKeeper.getScreen().getUserInterface().getShortName());
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        load(Codec.deserializeLinkedHashMap(response.getResponseAsString()));
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      load(Codec.deserializeLinkedHashMap(response.getResponseAsString()));
 
-        BeeKeeper.getBus().registerExitHandler(Bee.this);
+      BeeKeeper.getBus().registerExitHandler(Bee.this);
 
-        start();
+      start();
 
-        setState(State.INITIALIZED);
-        Bee.readyTime = System.currentTimeMillis();
-      }
+      setState(State.INITIALIZED);
+      Bee.readyTime = System.currentTimeMillis();
     });
   }
 }

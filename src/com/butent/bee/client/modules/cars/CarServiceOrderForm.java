@@ -36,7 +36,6 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HasStages;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditableWidget;
@@ -275,15 +274,15 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow row) {
     Global.getParameterRelation(PRM_SERVICE_WAREHOUSE, (id, text) -> {
       if (DataUtils.isId(id)) {
-        newRow.setValue(getDataIndex(COL_WAREHOUSE), id);
-        newRow.setValue(Data.getColumnIndex(TBL_SERVICE_ORDERS, ALS_WAREHOUSE_CODE), text);
+        row.setValue(getDataIndex(COL_WAREHOUSE), id);
+        row.setValue(Data.getColumnIndex(TBL_SERVICE_ORDERS, ALS_WAREHOUSE_CODE), text);
         form.refreshBySource(COL_WAREHOUSE);
       }
     });
-    super.onStartNewRow(form, oldRow, newRow);
+    super.onStartNewRow(form, row);
   }
 
   @Override
@@ -317,7 +316,7 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
             Filter.equals(COL_SERVICE_ORDER, order.getId()), rowSet -> {
               Runnable finalizer = () -> {
                 copyAction.idle();
-                RowEditor.open(getViewName(), newOrder.getId(), Opener.MODAL);
+                RowEditor.open(getViewName(), newOrder.getId());
               };
               if (!DataUtils.isEmpty(rowSet)) {
                 BeeRowSet newRowSet = DataUtils.createRowSetForInsert(rowSet);
@@ -546,7 +545,7 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
 
           if (!response.hasErrors()) {
             getFormView().refresh();
-            RowEditor.open(VIEW_TRADE_DOCUMENTS, response.getResponseAsLong(), Opener.NEW_TAB);
+            RowEditor.open(VIEW_TRADE_DOCUMENTS, response.getResponseAsLong());
           }
         });
       }

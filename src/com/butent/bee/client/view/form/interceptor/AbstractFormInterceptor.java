@@ -12,7 +12,6 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetDescription;
-import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditEndEvent;
@@ -181,17 +180,12 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
 
   @Override
   public GridView getGridView() {
-    if (getFormView() != null && getFormView().getViewPresenter() instanceof HasGridView) {
-      return ((HasGridView) getFormView().getViewPresenter()).getGridView();
-    } else {
-      return null;
-    }
+    return (getFormView() == null) ? null : getFormView().getBackingGrid();
   }
 
   @Override
   public HeaderView getHeaderView() {
-    return (getFormView() == null || getFormView().getViewPresenter() == null) ? null
-        : getFormView().getViewPresenter().getHeader();
+    return (getPresenter() == null) ? null : getPresenter().getHeader();
   }
 
   @Override
@@ -294,7 +288,7 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow row) {
   }
 
   @Override

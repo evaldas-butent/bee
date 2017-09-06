@@ -583,6 +583,9 @@
       <xs:enumeration value="Stages" />
       <xs:enumeration value="StageTriggers" />
       <xs:enumeration value="StateProcess" />
+      <xs:enumeration value="SubstitutionObjects" />
+      <xs:enumeration value="SubstitutionReasons" />
+      <xs:enumeration value="Substitutions" />
       <xs:enumeration value="TaskDurations" />
       <xs:enumeration value="TaskEvents" />
       <xs:enumeration value="TaskFiles" />
@@ -619,6 +622,11 @@
       <xs:enumeration value="TimeRanges" />
       <xs:enumeration value="TimeZones" />
       <xs:enumeration value="TodoList" />
+      <xs:enumeration value="TTExecutors" />
+      <xs:enumeration value="TTExecutorGroups" />
+      <xs:enumeration value="TTFiles" />
+      <xs:enumeration value="TTObservers" />
+      <xs:enumeration value="TTObserverGroups" />
       <xs:enumeration value="TradeAccounts" />
       <xs:enumeration value="TradeActInvoices" />
       <xs:enumeration value="TradeActItems" />
@@ -637,6 +645,8 @@
       <xs:enumeration value="TradeDocuments" />
       <xs:enumeration value="TradeExpenditures" />
       <xs:enumeration value="TradeItemCost" />
+      <xs:enumeration value="TradeItemReturns" />
+      <xs:enumeration value="TradeItemsForReturn" />
       <xs:enumeration value="TradeMovement" />
       <xs:enumeration value="TradeNotes" />
       <xs:enumeration value="TradeOperations" />
@@ -690,6 +700,7 @@
       <xs:enumeration value="Warehouses" />
       <xs:enumeration value="WarrantyTypes" />
       <xs:enumeration value="WorkSchedule" />
+      <xs:enumeration value="WorkScheduleInfo" />
       <xs:enumeration value="WorkScheduleLocks" />
       <xs:enumeration value="Workspaces" />
 

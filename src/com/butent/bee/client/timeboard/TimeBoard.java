@@ -5,7 +5,6 @@ import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.HasClickHandlers;
-import com.google.gwt.event.dom.client.HasNativeEvent;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -14,7 +13,6 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rectangle;
@@ -30,7 +28,6 @@ import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
@@ -458,8 +455,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
 
         JustDate start = TimeUtils.clamp(TimeBoardHelper.getDate(min, startPos, dayWidth),
             min, max);
-        JustDate end = TimeUtils.clamp(TimeUtils.previousDay(TimeBoardHelper.getDate(min, endPos,
-            dayWidth)), start, max);
+        JustDate end = TimeUtils.clamp(TimeBoardHelper.getDate(min, endPos, dayWidth), start, max);
 
         if (!setVisibleRange(start, end)) {
           JustDate firstVisible = getVisibleRange().lowerEndpoint();
@@ -591,10 +587,8 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     }
   }
 
-  public static void openDataRow(HasNativeEvent event, String viewName, Long rowId) {
-    Opener opener = EventUtils.hasModifierKey(event.getNativeEvent())
-        ? Opener.NEW_TAB : Opener.MODAL;
-    RowEditor.open(viewName, rowId, opener);
+  public static void openDataRow(String viewName, Long rowId) {
+    RowEditor.open(viewName, rowId);
   }
 
   @Override
@@ -666,7 +660,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
 
   protected static void bindOpener(HasClickHandlers widget, final String viewName, final Long id) {
     if (widget != null && id != null) {
-      widget.addClickHandler(event -> openDataRow(event, viewName, id));
+      widget.addClickHandler(event -> openDataRow(viewName, id));
     }
   }
 
@@ -1579,13 +1573,10 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     }
 
     Queries.update(getSettings().getViewName(), row.getId(), row.getVersion(), columns, oldValues,
-        newValues, null, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            if (result != null) {
-              getSettings().clearRows();
-              getSettings().addRow(DataUtils.cloneRow(result));
-            }
+        newValues, null, result -> {
+          if (result != null) {
+            getSettings().clearRows();
+            getSettings().addRow(DataUtils.cloneRow(result));
           }
         });
 

@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
+        xmlns:ui="http://www.butent.com/ui"
 
-  name="Users" viewName="Users" caption="=users"
-  newRowPopup="true"
-  >
+        name="Users" viewName="Users" caption="=users"
+>
   <g:columns>
     <IdColumn name="Id" />
     <DataColumn name="Login" visible="true" />
 
     <RelColumn name="CompanyPerson" renderColumns="FirstName LastName"
-      label="=personFullName" sortBy="LastName FirstName" visible="true" />
+               label="=personFullName" sortBy="LastName FirstName" visible="true" />
     <DataColumn name="CompanyName" label="=company" />
 
     <DataColumn name="PositionName" label="=personPosition" visible="false" />

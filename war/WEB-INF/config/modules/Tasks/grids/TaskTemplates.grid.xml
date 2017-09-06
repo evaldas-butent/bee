@@ -1,9 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
         xmlns:xi="http://www.w3.org/2001/XInclude"
-  
-  name="TaskTemplates" viewName="TaskTemplates" caption="=crmTaskTemplates"
-  flexGrow="1" newRowPopup="true"
-  >
+        xmlns:w="http://www.butent.com/widget"
+
+        name="TaskTemplates" viewName="TaskTemplates" caption="=crmTaskTemplates"
+        flexGrow="1"
+>
+  <g:west size="160" splitterSize="2">
+    <w:Tree caption="=categories" />
+  </g:west>
+
   <xi:include href="columns/TaskTemplate.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="ProductName" />
+    <DataColumn name="RiskRating" />
+    <DataColumn name="StartTime" />
+    <DataColumn name="FinishTime" />
+  </g:columns>
+
+  <g:predefinedFilter name="task_templates_valid" label="=crmValidTaskTemplates" initial="true" >
+    <g:column name="StartTime" value=",d" emptyValues="true" />
+    <g:column name="FinishTime" value="d," emptyValues="true" />
+  </g:predefinedFilter>
 </g:Grid>

@@ -113,38 +113,38 @@
   height: 100px;
 }
 
-.bee-crm-taskDialog-commentLabel{
-  float:right;
+.bee-crm-taskDialog-commentLabel {
+  float: right;
 }
 
-.bee-crm-taskDialog-dateLabel{
-  float:right;
+.bee-crm-taskDialog-dateLabel {
+  float: right;
 }
 
-.bee-crm-taskDialog-fileCollectorCell{
+.bee-crm-taskDialog-resultLabel {
+  float: right;
+}
+
+.bee-crm-taskDialog-fileCollectorCell {
   padding: 0px !important;
 }
 
-.bee-crm-taskDialog-filesLabel{
-  float:right;
+.bee-crm-taskDialog-filesLabel {
+  float: right;
 }
 
-td.bee-crm-taskDialog-filesLabelCell{
+td.bee-crm-taskDialog-filesLabelCell {
   padding-top: 0px;
 }
 
-.bee-crm-taskDialog-timeInput {
-  width: 60px;
-}
-
-.bee-crm-taskDialog-timeLabel{
-  float:right;
+.bee-crm-taskDialog-timeLabel {
+  float: right;
 }
 .bee-crm-taskDialog-selectorInput {
   width: 200px;
 }
-.bee-crm-taskDialog-selectorLabel{
-  float:right;
+.bee-crm-taskDialog-selectorLabel {
+  float: right;
 }
 
 .bee-crm-taskDialog-dateInput {

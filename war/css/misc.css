@@ -391,6 +391,10 @@
 .bee-rep-report {
   border-collapse: collapse;
 }
+.bee-rep-report-param {
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
 .bee-rep-report .bee-rep-report-normal:hover {
   color: dodgerblue;
   cursor: pointer;
@@ -621,6 +625,7 @@
 .bee-spec-options {
   flex: 1;
   overflow: auto;
+  margin-top: 10px;
 }
 .bee-spec-box {
   overflow: auto;
@@ -645,12 +650,16 @@
   width: 150px;
   height: 150px;
   margin: 10px;
+  padding: 10px;
+  box-sizing: border-box;
   background-color: white;
   border: 1px solid silver;
+  border-radius: 5px;
   display: flex;
   justify-content: space-around;
   flex-direction: column;
   text-align: center;
+  overflow: hidden;
 }
 .bee-spec-thumbnail-active:hover {
   cursor: pointer;
@@ -672,7 +681,7 @@
   border-collapse: collapse;
   margin-top: 10px;
 }
-.bee-spec-selectable tr td:nth-child(2) {
+.bee-spec-selectable tr td:nth-child(2), .bee-spec-selectable tr td:nth-child(4) {
   text-align: right;
 }
 .bee-spec-selectable td {
@@ -757,24 +766,6 @@
   display: none;
 }
 
-.bee-Rights-object-selector {
-  width: 100%;
-}
-
-.bee-Rights-object-selector:hover {
-  cursor: pointer;
-  font-weight: bolder;
-}
-
-.bee-Rights-object-selector-cell{
-}
-
-.bee-GridMenu-addicted .bee-GridMenu-label {
-  width: 250px;
-  text-align: center;
-}
-
-
 /* Verslo Aljansas TID 25505 */
 .bee-crm-taskDialog-va-mileageInput {
   width: 60px;
@@ -818,4 +809,16 @@
 
 .bee-crm-taskDuration-rowTotalMileage {
   font-weight: bolder;
+}
+
+.bee-Rights-object-selector {
+  width: 100%;
+}
+
+.bee-Rights-object-selector:hover {
+  cursor: pointer;
+  font-weight: bolder;
+}
+
+.bee-Rights-object-selector-cell{
 }

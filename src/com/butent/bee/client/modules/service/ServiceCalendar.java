@@ -16,12 +16,9 @@ import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
@@ -155,12 +152,9 @@ final class ServiceCalendar extends TimeBoard {
 
   static void open(final ViewCallback callback) {
     BeeKeeper.getRpc().makeRequest(ServiceKeeper.createArgs(SVC_GET_CALENDAR_DATA),
-        new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            ServiceCalendar sc = new ServiceCalendar();
-            sc.onCreate(response, callback);
-          }
+        response -> {
+          ServiceCalendar sc = new ServiceCalendar();
+          sc.onCreate(response, callback);
         });
   }
 
@@ -270,7 +264,7 @@ final class ServiceCalendar extends TimeBoard {
   public void handleAction(Action action) {
     switch (action) {
       case ADD:
-        RowFactory.createRow(VIEW_SERVICE_OBJECTS, Modality.ENABLED);
+        RowFactory.createRow(VIEW_SERVICE_OBJECTS);
         break;
 
       case EXPORT:
@@ -315,15 +309,12 @@ final class ServiceCalendar extends TimeBoard {
     Assert.notNull(oldRow);
 
     RowEditor.openForm(FORM_SETTINGS, getSettings().getViewName(), oldRow, Opener.MODAL,
-        new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            if (updateSetting(result)) {
-              if (requiresRefresh(oldRow, result)) {
-                refresh();
-              } else {
-                render(false);
-              }
+        result -> {
+          if (updateSetting(result)) {
+            if (requiresRefresh(oldRow, result)) {
+              refresh();
+            } else {
+              render(false);
             }
           }
         });
@@ -409,12 +400,9 @@ final class ServiceCalendar extends TimeBoard {
   @Override
   protected void refresh() {
     BeeKeeper.getRpc().makeRequest(ServiceKeeper.createArgs(SVC_GET_CALENDAR_DATA),
-        new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            if (setData(response, false)) {
-              render(false);
-            }
+        response -> {
+          if (setData(response, false)) {
+            render(false);
           }
         });
   }
@@ -986,30 +974,27 @@ final class ServiceCalendar extends TimeBoard {
     }
 
     Queries.getRowSet(VIEW_TASK_TYPES, Lists.newArrayList(COL_TASK_TYPE_NAME),
-        new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            List<String> typeLabels = new ArrayList<>();
-            int index = result.getColumnIndex(COL_TASK_TYPE_NAME);
+        result -> {
+          List<String> typeLabels = new ArrayList<>();
+          int index = result.getColumnIndex(COL_TASK_TYPE_NAME);
 
-            for (Long tt : taskTypes) {
-              BeeRow row = result.getRowById(tt);
+          for (Long tt : taskTypes) {
+            BeeRow row = result.getRowById(tt);
 
-              if (row != null) {
-                String label = row.getString(index);
-                if (!BeeUtils.isEmpty(label) && !typeLabels.contains(label)) {
-                  typeLabels.add(label);
-                }
+            if (row != null) {
+              String label = row.getString(index);
+              if (!BeeUtils.isEmpty(label) && !typeLabels.contains(label)) {
+                typeLabels.add(label);
               }
             }
-
-            List<String> labels = new ArrayList<>();
-            if (!typeLabels.isEmpty()) {
-              labels.add(BeeUtils.joinItems(typeLabels));
-            }
-
-            consumer.accept(labels);
           }
+
+          List<String> labels = new ArrayList<>();
+          if (!typeLabels.isEmpty()) {
+            labels.add(BeeUtils.joinItems(typeLabels));
+          }
+
+          consumer.accept(labels);
         });
   }
 

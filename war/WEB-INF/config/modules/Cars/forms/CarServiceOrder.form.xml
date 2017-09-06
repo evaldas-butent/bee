@@ -150,8 +150,8 @@
       <page>
         <text>=notes</text>
         <FlowPanel class="flexBox-vertical">
-          <HorizontalPanel style="width:100%;">
-            <Label text="=symptoms" data="CarSymptoms" />
+          <HorizontalPanel style="width:100%;" listName="CarServiceSymptoms">
+            <Label text="=symptoms" listName="CarServiceSymptoms" />
             <cell style="width:100%;">
               <ChildSelector property="CarServiceSymptoms" name="CarServiceSymptoms"
                              viewName="CarSymptoms"

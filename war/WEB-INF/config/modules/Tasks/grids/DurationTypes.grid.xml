@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  
-  name="DurationTypes" viewName="DurationTypes" caption="=crmTaskDurationTypes"
-  newRowPopup="true"
-  >
-  
+
+        name="DurationTypes" viewName="DurationTypes" caption="=crmTaskDurationTypes"
+>
   <g:columns>
     <DataColumn name="Ordinal" width="20" />
     <DataColumn name="Name" flexGrow="1" flexShrink="1" visible="true" />

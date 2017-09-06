@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+
+        name="Substitution" viewName="Substitutions" caption="=substitution"
+        height="400" width="550"
+>
+  <Table kind="controls">
+    <col index="0" kind="label" />
+    <col index="2" kind="label" />
+    <row>
+      <Label for="User" />
+      <DataSelector source="User" />
+
+      <Label for="Substitute" />
+      <DataSelector source="Substitute" />
+    </row>
+    <row>
+      <Label for="SubstitutionReason" />
+      <DataSelector source="SubstitutionReason" renderColumns="SubstitutionReasonName"
+                    filter="Visible" backgroundSource="Background" foregroundSource="Foreground" />
+
+      <Label for="SubstituteFrom" />
+      <InputDate source="SubstituteFrom" />
+    </row>
+    <row>
+      <Label for="Note" />
+      <cell colSpan="3">
+        <InputArea source="Note" style="width:100%" />
+      </cell>
+    </row>
+    <row>
+      <Label for="Executed" />
+      <InputDateTime source="Executed" style="color:silver;" readOnly="true" />
+
+      <cell colSpan="2">
+        <FlowPanel name="Substitutions" style="color:blue;" />
+      </cell>
+    </row>
+  </Table>
+</f:Form>

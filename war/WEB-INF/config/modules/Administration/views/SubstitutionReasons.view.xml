@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="SubstitutionReasons" source="SubstitutionReasons" caption="=substitutionReasons"
+>
+  <Columns>
+    <SimpleColumn name="Ordinal" />
+
+    <SimpleColumn name="SubstitutionReasonName" />
+
+    <SimpleColumn name="Visible" />
+
+    <SimpleColumn name="Background" />
+    <SimpleColumn name="Foreground" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Ordinal" />
+    <OrderBy column="SubstitutionReasonName" />
+  </Order>
+</View>

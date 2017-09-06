@@ -1,12 +1,9 @@
 package com.butent.bee.client;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.grid.GridFactory;
@@ -15,7 +12,6 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
@@ -27,7 +23,6 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
@@ -97,13 +92,10 @@ public class NewsAggregator implements HandlesAllDataEvents {
         captionWidget.setTitle(headline.getSubtitle());
       }
 
-      captionWidget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          readHeadline(HeadlinePanel.this);
-          if (HeadlinePanel.this.getParent() != null) {
-            UiHelper.closeDialog(HeadlinePanel.this.getParent());
-          }
+      captionWidget.addClickHandler(event -> {
+        readHeadline(HeadlinePanel.this);
+        if (HeadlinePanel.this.getParent() != null) {
+          UiHelper.closeDialog(HeadlinePanel.this.getParent());
         }
       });
 
@@ -112,12 +104,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
       Label dismiss = new Label(String.valueOf(BeeConst.CHAR_TIMES));
       dismiss.addStyleName(STYLE_HEADLINE_PREFIX + "dismiss");
 
-      dismiss.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          dismissHeadline(HeadlinePanel.this);
-        }
-      });
+      dismiss.addClickHandler(event -> dismissHeadline(HeadlinePanel.this));
 
       add(dismiss);
     }
@@ -164,12 +151,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
       this.disclosureWidget = new FaLabel(FontAwesome.CARET_RIGHT);
       disclosureWidget.addStyleName(STYLE_PREFIX + "disclosure");
 
-      disclosureWidget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          toggleOpen();
-        }
-      });
+      disclosureWidget.addClickHandler(event -> toggleOpen());
 
       header.add(disclosureWidget);
 
@@ -177,12 +159,9 @@ public class NewsAggregator implements HandlesAllDataEvents {
       refreshWidget.setTitle(Localized.dictionary().actionRefresh());
       refreshWidget.addStyleName(STYLE_PREFIX + "refresh");
 
-      refreshWidget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          cancelRefresh();
-          refresh(Feed.ALL);
-        }
+      refreshWidget.addClickHandler(event -> {
+        cancelRefresh();
+        refresh(Feed.ALL);
       });
 
       header.add(refreshWidget);
@@ -191,12 +170,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
       dismissAllhWidget.setTitle(Localized.dictionary().clearNews());
       dismissAllhWidget.addStyleName(STYLE_PREFIX + "dismissAll");
 
-      dismissAllhWidget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          dismissAllNews();
-        }
-      });
+      dismissAllhWidget.addClickHandler(event -> dismissAllNews());
 
       header.add(dismissAllhWidget);
 
@@ -367,24 +341,14 @@ public class NewsAggregator implements HandlesAllDataEvents {
       this.disclosure = new FaLabel(open ? FontAwesome.CARET_DOWN : FontAwesome.CARET_RIGHT);
       disclosure.addStyleName(STYLE_SUBSCRIPTION_PREFIX + "disclosure");
 
-      disclosure.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          toggleOpen();
-        }
-      });
+      disclosure.addClickHandler(event -> toggleOpen());
 
       header.add(disclosure);
 
       Label feedLabel = new Label(subscription.getLabel());
       feedLabel.addStyleName(STYLE_SUBSCRIPTION_PREFIX + "label");
 
-      feedLabel.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          toggleOpen();
-        }
-      });
+      feedLabel.addClickHandler(event -> toggleOpen());
 
       header.add(feedLabel);
 
@@ -398,12 +362,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
       filter.addStyleName(STYLE_SUBSCRIPTION_PREFIX + "filter");
       filter.setTitle(Localized.dictionary().actionFilter());
 
-      filter.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          onFilter(getFeed());
-        }
-      });
+      filter.addClickHandler(event -> onFilter(getFeed()));
 
       header.add(filter);
 
@@ -691,29 +650,26 @@ public class NewsAggregator implements HandlesAllDataEvents {
 
     newsPanel.startRefresh();
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (!response.hasErrors()) {
-          Set<Feed> subscribedFeeds = getSubscribedFeeds();
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      if (!response.hasErrors()) {
+        Set<Feed> subscribedFeeds = getSubscribedFeeds();
 
-          if (!subscribedFeeds.isEmpty()) {
-            if (feeds.containsAll(subscribedFeeds)) {
-              clear();
-            } else {
-              clearFeeds(feeds);
-            }
-          }
-
-          if (response.hasResponse()) {
-            loadSubscriptions(response.getResponseAsString(), true);
+        if (!subscribedFeeds.isEmpty()) {
+          if (feeds.containsAll(subscribedFeeds)) {
+            clear();
           } else {
-            updateHeader();
+            clearFeeds(feeds);
           }
         }
 
-        newsPanel.endRefresh();
+        if (response.hasResponse()) {
+          loadSubscriptions(response.getResponseAsString(), true);
+        } else {
+          updateHeader();
+        }
       }
+
+      newsPanel.endRefresh();
     });
   }
 
@@ -882,7 +838,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
     if (feed != null && (!registeredAccessHandlers.containsKey(feed.getHeadlineView())
         || !registeredAccessHandlers.get(feed.getHeadlineView()).read(headlinePanel.getDataId()))) {
 
-      RowEditor.open(feed.getHeadlineView(), headlinePanel.getDataId(), Opener.modeless());
+      RowEditor.open(feed.getHeadlineView(), headlinePanel.getDataId());
     }
   }
 

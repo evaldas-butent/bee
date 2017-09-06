@@ -40,6 +40,9 @@ public interface Editor extends IdentifiableWidget, HasStringValue, Focusable,
 
   void normalizeDisplay(String normalizedValue);
 
+  default void onCheckForUpdate() {
+  }
+
   void render(String value);
 
   void setNullable(boolean nullable);

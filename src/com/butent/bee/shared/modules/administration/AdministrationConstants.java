@@ -164,6 +164,8 @@ public final class AdministrationConstants {
   public static final String SVC_COPY_RIGHTS = "copy_rights";
   public static final String SVC_CREATE_DATA_IMPORT_TEMPLATES = "create_data_import_templates";
 
+  public static final String SVC_DO_SUBSTITUTION = "do_substitution";
+
   public static final String VAR_IMPORT_TEST = "Test";
   public static final String VAR_IMPORT_FILE = "File";
   public static final String VAR_IMPORT_SHEET = "Sheet";
@@ -222,6 +224,10 @@ public final class AdministrationConstants {
   public static final String TBL_STAGE_CONDITIONS = "StageConditions";
   public static final String TBL_STAGE_ACTIONS = "StageActions";
   public static final String TBL_STAGE_TRIGGERS = "StageTriggers";
+
+  public static final String TBL_SUBSTITUTIONS = "Substitutions";
+  public static final String TBL_SUBSTITUTION_OBJECTS = "SubstitutionObjects";
+  public static final String TBL_SUBSTITUTION_REASONS = "SubstitutionReasons";
 
   public static final String TBL_CUSTOM_CONFIG = "CustomConfig";
 
@@ -305,6 +311,7 @@ public final class AdministrationConstants {
   public static final String COL_OBJECT = "Object";
   public static final String COL_OBJECT_NAME = "Name";
   public static final String COL_STATE = "State";
+  public static final String COL_OBJECT_ID = "ObjectID";
 
   public static final String COL_FILE = "File";
   public static final String COL_FILE_NAME = "Name";
@@ -384,9 +391,22 @@ public final class AdministrationConstants {
 
   public static final String COL_CLICK_SENSITIVITY_MILLIS = "ClickSensitivityMillis";
   public static final String COL_CLICK_SENSITIVITY_DISTANCE = "ClickSensitivityDistance";
+  public static final String COL_ACTION_SENSITIVITY_MILLIS = "ActionSensitivityMillis";
 
   public static final String COL_NEWS_REFRESH_INTERVAL_SECONDS = "NewsRefreshIntervalSeconds";
   public static final String COL_LOADING_STATE_DELAY_MILLIS = "LoadingStateDelayMillis";
+
+  public static final String COL_SHOW_GRID_FILTER_COMMAND = "showGridFilterCommand";
+
+  public static final String COL_GRID_EDIT_WINDOW = "GridEditWindow";
+  public static final String COL_GRID_NEW_ROW_WINDOW = "GridNewRowWindow";
+  public static final String COL_CHILD_EDIT_WINDOW = "ChildEditWindow";
+  public static final String COL_CHILD_NEW_ROW_WINDOW = "ChildNewRowWindow";
+  public static final String COL_RELATION_EDIT_WINDOW = "RelationEditWindow";
+  public static final String COL_RELATION_NEW_ROW_WINDOW = "RelationNewRowWindow";
+  public static final String COL_OTHER_EDIT_WINDOWS = "OtherEditWindows";
+  public static final String COL_OTHER_NEW_ROW_WINDOWS = "OtherNewRowWindows";
+  public static final String COL_NEW_MAIL_MESSAGE_WINDOW = "NewMailMessageWindow";
 
   public static final String COL_UI_THEME = "UiTheme";
   public static final String COL_USER_STYLE = "Style";
@@ -427,6 +447,13 @@ public final class AdministrationConstants {
   public static final String COL_EVENT_ENDED = "Ended";
   public static final String COL_EVENT_RESULT = "Result";
 
+  public static final String COL_SUBSTITUTE = "Substitute";
+  public static final String COL_SUBSTITUTE_FROM = "SubstituteFrom";
+  public static final String COL_SUBSTITUTION = "Substitution";
+  public static final String COL_SUBSTITUTION_REASON = "SubstitutionReason";
+  public static final String COL_SUBSTITUTION_REASON_NAME = "SubstitutionReasonName";
+  public static final String COL_SUBSTITUTION_EXECUTED = "Executed";
+
   public static final String COL_DICTIONARY_KEY = "Key";
 
   public static final String COL_USER_REMINDER_OBJECT = "Object";
@@ -466,6 +493,8 @@ public final class AdministrationConstants {
 
   public static final String FORM_DEPENDENCY_RIGHTS = "DependencyRights";
   public static final String FORM_STAGES = "StageEditor";
+
+  public static final String FORM_SUBSTITUTION = "Substitution";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
 

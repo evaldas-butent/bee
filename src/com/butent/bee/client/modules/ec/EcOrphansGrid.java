@@ -18,7 +18,6 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.InputCallback;
@@ -29,7 +28,6 @@ import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -226,7 +224,7 @@ public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandl
               RowDeleteEvent.fire(BeeKeeper.getBus(), getViewName(), orphan.getId());
             }
           });
-          RowEditor.open(TBL_TCD_ARTICLES, response.getResponseAsLong(), Opener.NEW_TAB);
+          RowEditor.open(TBL_TCD_ARTICLES, response.getResponseAsLong());
         }
       }
     });
@@ -247,44 +245,33 @@ public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandl
         values.add(Data.getString(orphans, orphan, col.getId()));
       }
     }
-    Queries.insert(TBL_TCD_ARTICLES, columns, values, null, new RowCallback() {
-      @Override
-      public void onSuccess(final BeeRow row) {
-        List<BeeColumn> cols = Data.getColumns(TBL_TCD_ARTICLE_SUPPLIERS,
-            Lists.newArrayList(COL_TCD_ARTICLE, COL_TCD_SUPPLIER, COL_TCD_SUPPLIER_ID));
+    Queries.insert(TBL_TCD_ARTICLES, columns, values, null, row -> {
+      List<BeeColumn> cols = Data.getColumns(TBL_TCD_ARTICLE_SUPPLIERS,
+          Lists.newArrayList(COL_TCD_ARTICLE, COL_TCD_SUPPLIER, COL_TCD_SUPPLIER_ID));
 
-        List<String> vals = new ArrayList<>();
+      List<String> vals = new ArrayList<>();
 
-        for (BeeColumn col : cols) {
-          if (BeeUtils.same(col.getId(), COL_TCD_ARTICLE)) {
-            vals.add(BeeUtils.toString(row.getId()));
-          } else {
-            vals.add(Data.getString(orphans, orphan, col.getId()));
-          }
+      for (BeeColumn col : cols) {
+        if (BeeUtils.same(col.getId(), COL_TCD_ARTICLE)) {
+          vals.add(BeeUtils.toString(row.getId()));
+        } else {
+          vals.add(Data.getString(orphans, orphan, col.getId()));
         }
-        Queries.insert(TBL_TCD_ARTICLE_SUPPLIERS, cols, vals);
-
-        cols = Data.getColumns(TBL_TCD_ARTICLE_CODES,
-            Lists.newArrayList(COL_TCD_ARTICLE, COL_TCD_SEARCH_NR, COL_TCD_CODE_NR, COL_TCD_BRAND));
-
-        vals = Lists.newArrayList(BeeUtils.toString(row.getId()),
-            EcUtils.normalizeCode(Data.getString(orphans, orphan, COL_TCD_ARTICLE_NR)),
-            Data.getString(orphans, orphan, COL_TCD_ARTICLE_NR),
-            Data.getString(orphans, orphan, COL_TCD_BRAND));
-
-        Queries.insert(TBL_TCD_ARTICLE_CODES, cols, vals, null, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            RowEditor.open(TBL_TCD_ARTICLES, row, Opener.NEW_TAB);
-          }
-        });
-        Queries.deleteRow(orphans, orphan.getId(), new IntCallback() {
-          @Override
-          public void onSuccess(Integer result) {
-            RowDeleteEvent.fire(BeeKeeper.getBus(), orphans, orphan.getId());
-          }
-        });
       }
+      Queries.insert(TBL_TCD_ARTICLE_SUPPLIERS, cols, vals);
+
+      cols = Data.getColumns(TBL_TCD_ARTICLE_CODES,
+          Lists.newArrayList(COL_TCD_ARTICLE, COL_TCD_SEARCH_NR, COL_TCD_CODE_NR, COL_TCD_BRAND));
+
+      vals = Lists.newArrayList(BeeUtils.toString(row.getId()),
+          EcUtils.normalizeCode(Data.getString(orphans, orphan, COL_TCD_ARTICLE_NR)),
+          Data.getString(orphans, orphan, COL_TCD_ARTICLE_NR),
+          Data.getString(orphans, orphan, COL_TCD_BRAND));
+
+      Queries.insert(TBL_TCD_ARTICLE_CODES, cols, vals, null,
+          result -> RowEditor.open(TBL_TCD_ARTICLES, row));
+      Queries.deleteRow(orphans, orphan.getId(),
+          result -> RowDeleteEvent.fire(BeeKeeper.getBus(), orphans, orphan.getId()));
     });
   }
 }

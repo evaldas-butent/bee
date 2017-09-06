@@ -3,18 +3,15 @@ package com.butent.bee.client.widget;
 import com.google.common.base.CharMatcher;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.Event;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
@@ -22,6 +19,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -282,6 +280,11 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
     return STYLE_INPUT;
   }
 
+  protected String getPlaceholder() {
+    DateTimeFormatInfo dtfInfo = BeeKeeper.getUser().getDateTimeFormatInfo();
+    return (dtfInfo == null) ? BeeConst.STRING_EMPTY : dtfInfo.timePlaceholder();
+  }
+
   protected boolean handleChar(int charCode) {
     if (charCode == BeeConst.CHAR_ASTERISK) {
       pickTime();
@@ -332,6 +335,16 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
     return true;
   }
 
+  @Override
+  protected void init() {
+    super.init();
+
+    String placeholder = getPlaceholder();
+    if (!BeeUtils.isEmpty(placeholder)) {
+      DomUtils.setPlaceholder(this, placeholder);
+    }
+  }
+
   protected void pickTime() {
     Integer minutes = getMinutes();
 
@@ -374,46 +387,35 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
 
     final Popup popup = new Popup(OutsideClick.CLOSE, STYLE_POPUP);
 
-    widget.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        onPick(popup, widget);
-      }
-    });
+    widget.addClickHandler(event -> onPick(popup, widget));
 
-    widget.addKeyDownHandler(new KeyDownHandler() {
-      @Override
-      public void onKeyDown(KeyDownEvent event) {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-          onPick(popup, widget);
-        }
+    widget.addKeyDownHandler(event -> {
+      if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+        onPick(popup, widget);
       }
     });
 
     popup.setHideOnEscape(true);
 
-    popup.addCloseHandler(new CloseEvent.Handler() {
-      @Override
-      public void onClose(CloseEvent event) {
-        if (event.mouseEvent()) {
-          if (event.isTarget(getElement())) {
-            setPickerState(State.CLOSING);
-          } else {
-            setPickerState(State.CLOSED);
-            DomEvent.fireNativeEvent(Document.get().createBlurEvent(), InputTime.this);
-          }
-
-        } else if (event.keyboardEvent()) {
+    popup.addCloseHandler(event -> {
+      if (event.mouseEvent()) {
+        if (event.isTarget(getElement())) {
           setPickerState(State.CLOSING);
-          setFocus(true);
-          selectAll();
-
         } else {
           setPickerState(State.CLOSED);
+          DomEvent.fireNativeEvent(Document.get().createBlurEvent(), InputTime.this);
         }
 
-        InputTime.this.removeStyleName(STYLE_ACTIVE);
+      } else if (event.keyboardEvent()) {
+        setPickerState(State.CLOSING);
+        setFocus(true);
+        selectAll();
+
+      } else {
+        setPickerState(State.CLOSED);
       }
+
+      InputTime.this.removeStyleName(STYLE_ACTIVE);
     });
 
     setPickerState(State.OPEN);

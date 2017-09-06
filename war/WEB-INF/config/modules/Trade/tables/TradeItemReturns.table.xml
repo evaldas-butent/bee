@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="TradeItemReturns"
+       idName="TradeItemReturnID"
+>
+  <Fields>
+    <Relation name="TradeDocumentItem" relation="TradeDocumentItems" notNull="true" unique="true"
+              cascade="DELETE" label="=trdDocumentItem" />
+    <Relation name="RelatedDocumentItem" relation="TradeDocumentItems" notNull="true"
+              cascade="DELETE" label="=trdRelatedDocumentItem" />
+    <Relation name="PrimaryDocumentItem" relation="TradeDocumentItems"
+              cascade="DELETE" label="=trdPrimaryDocumentItem" />
+  </Fields>
+</Table>

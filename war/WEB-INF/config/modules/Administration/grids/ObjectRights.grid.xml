@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
-  
-  name="ObjectRights" viewName="Rights" caption="=objectRights"
-  >
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="ObjectRights" viewName="Rights" caption="=objectRights"
+>
   <g:columns>
     <RelColumn name="Role" caption="=role" visible="true" />
     <DataColumn name="State" caption="=roleState" visible="true">
-      <style>
-        <bodyStyle><ui:inline>text-decoration: line-through;</ui:inline></bodyStyle>
-      </style>
+      <dynStyle>
+        <ui:inline>text-decoration: line-through;</ui:inline>
+        <ui:expression>!(row.State == 4 || row.State == 5)</ui:expression>
+      </dynStyle>
     </DataColumn>
   </g:columns>
 </g:Grid>

@@ -112,14 +112,14 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
     public void onClick(ClickEvent clickEvent) {
       Long type = getBranchType();
 
-      Queries.getRowSet(TBL_CONF_GROUPS, Collections.singletonList(COL_GROUP_NAME),
+      Queries.getRowSet(TBL_CONF_GROUPS, Arrays.asList(COL_GROUP_NAME, COL_GROUP_NAME2),
           DataUtils.isId(type) ? Filter.equals(COL_TYPE, type) : null,
           result -> {
             List<String> choice = new ArrayList<>();
             Map<String, Dimension> map = new HashMap<>();
 
             for (BeeRow row : result) {
-              String name = row.getString(0);
+              String name = BeeUtils.notEmpty(row.getString(1), row.getString(0));
               Dimension dimension = new Dimension(row.getId(), name);
 
               if (!configuration.getAllDimensions().contains(dimension)) {
@@ -373,15 +373,15 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
   public void onLoad(FormView form) {
     Queries.getRowCount(TBL_IMPORT_OPTIONS, Filter.equals(COL_IMPORT_TYPE,
         ImportType.CONFIGURATION.ordinal()), cnt -> {
-          if (BeeUtils.isPositive(cnt)) {
-            importAction.setTitle(Localized.dictionary().actionImport());
-            importAction.setCallback(response -> {
-              ImportCallback.showResponse(response);
-              requery();
-            });
-            getHeaderView().addCommandItem(importAction);
-          }
+      if (BeeUtils.isPositive(cnt)) {
+        importAction.setTitle(Localized.dictionary().actionImport());
+        importAction.setCallback(response -> {
+          ImportCallback.showResponse(response);
+          requery();
         });
+        getHeaderView().addCommandItem(importAction);
+      }
+    });
     super.onLoad(form);
   }
 
@@ -711,6 +711,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
     }
     ParameterList args = CarsKeeper.createSvcArgs(SVC_GET_CONFIGURATION);
     args.addDataItem(COL_BRANCH, branchId);
+    args.addDataItem(COL_BLOCKED, true);
 
     rpcId = BeeKeeper.getRpc().makePostRequest(args, new ResponseCallbackWithId() {
       @Override
@@ -1027,7 +1028,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       rows.stream().map(Option::getId).forEach(excludedOptions::add);
 
       UnboundSelector inputGroup = UnboundSelector.create(TBL_CONF_GROUPS,
-          Collections.singletonList(COL_GROUP_NAME));
+          Arrays.asList(COL_GROUP_NAME2, COL_GROUP_NAME));
 
       Long type = getBranchType();
       inputGroup.getOracle().setAdditionalFilter(Filter.and(Filter.idNotIn(excludedGroups),

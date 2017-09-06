@@ -13,6 +13,7 @@ public final class ClassifierConstants {
   public static final String SVC_GET_PRICE_AND_DISCOUNT = "GetPriceAndDiscount";
   public static final String SVC_FILTER_ORDERS = "FilterOrders";
   public static final String SVC_GET_RESERVATION = "GetReservation";
+  public static final String SVC_COMPANY_SOURCE_REPORT = "CompanySourceReport";
 
   public static final String TIMER_REMIND_COMPANY_ACTIONS = "timer_remind_company_actions";
   public static final String TIMER_REMIND_TASKS_SUMMARY = "timer_remind_tasks_summary_";
@@ -60,6 +61,8 @@ public final class ClassifierConstants {
 
   public static final String TBL_PAYMENT_TYPES = "PaymentTypes";
 
+  public static final String TBL_RESPONSIBILITIES = "Responsibilities";
+
   public static final String TBL_DISCOUNTS = "Discounts";
 
   public static final String TBL_CHART_OF_ACCOUNTS = "ChartOfAccounts";
@@ -105,6 +108,7 @@ public final class ClassifierConstants {
   public static final String VIEW_COMPANY_ACTIVITIES = "CompanyActivities";
   public static final String VIEW_COMPANY_ACTIVITY_STORE = "CompActStore";
   public static final String VIEW_COMPANY_BANK_ACCOUNTS = "CompanyBankAccounts";
+  public static final String VIEW_COMPANY_TURNOVERS = "Turnovers";
 
   public static final String VIEW_COMPANY_CONTACTS = "CompanyContacts";
   public static final String VIEW_COMPANY_DEPARTMENTS = "CompanyDepartments";
@@ -148,6 +152,7 @@ public final class ClassifierConstants {
   public static final String COL_COMPANY_DISCOUNT_PERCENT = "DiscountPercent";
   public static final String COL_COMPANY_TOLERATED_DAYS = "ToleratedDays";
   public static final String COL_COMPANY_TYPE_PERSON = "TypePerson";
+  public static final String COL_COMPANY_TURNOVER = "Turnover";
 
   public static final String COL_PERSON = "Person";
   public static final String COL_FIRST_NAME = "FirstName";
@@ -276,6 +281,7 @@ public final class ClassifierConstants {
   public static final String COL_RELATION_TYPE_NAME = "Name";
 
   public static final String COL_ACTIVITY = "Activity";
+  public static final String COL_ACTIVITY_NAME = "Name";
 
   public static final String COL_COMPANY_TYPE_NAME = "Name";
 
@@ -375,6 +381,7 @@ public final class ClassifierConstants {
 
   public static final String FILTER_COMPANY_CREATION_AND_TYPE = "company_creation_and_type";
   public static final String FILTER_COMPANY_USAGE = "company_usage";
+  public static final String FILTER_COMPANY_ACTIVITIES = "company_activities";
 
   public static final String QR_FLOW_PANEL = "qrFlowPanel";
   public static final String QR_TYPE = "qrType";

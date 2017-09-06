@@ -59,6 +59,7 @@ public final class CarsConstants {
   public static final String COL_BRANCH_NAME = "BranchName";
   public static final String COL_OPTION = "Option";
   public static final String COL_OPTION_NAME = "OptionName";
+  public static final String COL_OPTION_NAME2 = "OptionName2";
   public static final String COL_CODE = "Code";
   public static final String COL_CODE2 = "Code2";
   public static final String COL_DESCRIPTION = "Description";
@@ -68,6 +69,7 @@ public final class CarsConstants {
   public static final String COL_TYPE = "Type";
   public static final String COL_GROUP = "Group";
   public static final String COL_GROUP_NAME = "GroupName";
+  public static final String COL_GROUP_NAME2 = "GroupName2";
   public static final String COL_BLOCKED = "Blocked";
   public static final String COL_ORDINAL = "Ordinal";
   public static final String COL_REQUIRED = "Required";

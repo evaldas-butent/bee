@@ -15,11 +15,11 @@
 
     <DataColumn name="Article" flexGrow="1" />
 
-    <DataColumn name="WarehouseCode" label="=warehouse" editPopup="true">
+    <DataColumn name="WarehouseCode" label="=warehouse" editEnabled="true">
       <footer text="=totalOf" horizontalAlignment="right" />
     </DataColumn>
 
-    <DataColumn name="Quantity" scale="0" visible="true">
+    <DataColumn name="Quantity" visible="true">
       <footer aggregate="sum" />
     </DataColumn>
 
@@ -32,6 +32,9 @@
       </render>
       <footer aggregate="sum" scale="2" />
     </CalcColumn>
+
+    <DataColumn name="AccountCode" label="=account" horizontalAlignment="center"
+                backgroundSource="AccountBackground" foregroundSource="AccountForeground" />
 
     <DataColumn name="PrimaryDocumentItem" visible="false" />
     <DataColumn name="PrimaryDocument" editSource="PrimaryDocument" editViewName="TradeDocuments"

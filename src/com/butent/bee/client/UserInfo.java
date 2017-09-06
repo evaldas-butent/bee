@@ -35,10 +35,6 @@ import com.butent.bee.shared.websocket.messages.PresenceMessage;
 
 import java.util.List;
 
-/**
- * gets user login status, session ID and stores them.
- */
-
 public class UserInfo implements HasInfo {
 
   private static final BeeLogger logger = LogUtils.getLogger(UserInfo.class);
@@ -56,8 +52,12 @@ public class UserInfo implements HasInfo {
   private int clickSensitivityMillis;
   private int clickSensitivityDistance;
 
+  private int actionSensitivityMillis;
+
   private int newsRefreshIntervalSeconds;
   private int loadingStateDelayMillis;
+
+  private Boolean showGridFilterCommand;
 
   private String styleId;
 
@@ -86,6 +86,10 @@ public class UserInfo implements HasInfo {
     return isLoggedIn() && userData.canEditData(object);
   }
 
+  public boolean canEditList(String viewName, String listName) {
+    return isLoggedIn() && userData.canEditList(viewName, listName);
+  }
+
   public boolean canMergeData(String object) {
     return isLoggedIn() && userData.canMergeData(object);
   }
@@ -102,6 +106,18 @@ public class UserInfo implements HasInfo {
         maybeUpdatePresence(p);
       }
     }
+  }
+
+  public int getActionSensitivityMillis() {
+    return actionSensitivityMillis;
+  }
+
+  public String getChildEditWindow() {
+    return getSetting(COL_CHILD_EDIT_WINDOW);
+  }
+
+  public String getChildNewRowWindow() {
+    return getSetting(COL_CHILD_NEW_ROW_WINDOW);
   }
 
   public int getClickSensitivityDistance() {
@@ -136,6 +152,14 @@ public class UserInfo implements HasInfo {
     return isLoggedIn() ? userData.getFirstName() : null;
   }
 
+  public String getGridEditWindow() {
+    return getSetting(COL_GRID_EDIT_WINDOW);
+  }
+
+  public String getGridNewRowWindow() {
+    return getSetting(COL_GRID_NEW_ROW_WINDOW);
+  }
+
   @Override
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties("Is Logged In", isLoggedIn(),
@@ -167,8 +191,20 @@ public class UserInfo implements HasInfo {
     return userData.getLogin();
   }
 
+  public String getNewMailMessageWindow() {
+    return getSetting(COL_NEW_MAIL_MESSAGE_WINDOW);
+  }
+
   public int getNewsRefreshIntervalSeconds() {
     return newsRefreshIntervalSeconds;
+  }
+
+  public String getOtherEditWindows() {
+    return getSetting(COL_OTHER_EDIT_WINDOWS);
+  }
+
+  public String getOtherNewRowWindows() {
+    return getSetting(COL_OTHER_NEW_ROW_WINDOWS);
   }
 
   public Presence getPresence() {
@@ -182,6 +218,14 @@ public class UserInfo implements HasInfo {
     return userData.getProperty(property);
   }
 
+  public String getRelationEditWindow() {
+    return getSetting(COL_RELATION_EDIT_WINDOW);
+  }
+
+  public String getRelationNewRowWindow() {
+    return getSetting(COL_RELATION_NEW_ROW_WINDOW);
+  }
+
   public String getSessionId() {
     return sessionId;
   }
@@ -192,6 +236,10 @@ public class UserInfo implements HasInfo {
     } else {
       return settings.getRow(0);
     }
+  }
+
+  public Boolean getShowGridFilterCommand() {
+    return showGridFilterCommand;
   }
 
   public String getStyle() {
@@ -271,6 +319,14 @@ public class UserInfo implements HasInfo {
 
   public boolean isDataVisible(String object) {
     return isLoggedIn() && userData.isDataVisible(object);
+  }
+
+  public boolean isListRequired(String viewName, String listName) {
+    return isLoggedIn() && userData.isListRequired(viewName, listName);
+  }
+
+  public boolean isListVisible(String viewName, String listName) {
+    return isLoggedIn() && userData.isListVisible(viewName, listName);
   }
 
   public boolean isLoggedIn() {
@@ -495,6 +551,10 @@ public class UserInfo implements HasInfo {
     return showNewMessagesNotifier;
   }
 
+  private void setActionSensitivityMillis(int actionSensitivityMillis) {
+    this.actionSensitivityMillis = actionSensitivityMillis;
+  }
+
   private void setClickSensitivityDistance(int clickSensitivityDistance) {
     this.clickSensitivityDistance = clickSensitivityDistance;
   }
@@ -519,6 +579,14 @@ public class UserInfo implements HasInfo {
     this.presence = presence;
   }
 
+  private void setShowGridFilterCommand(int value) {
+    if (value < 0) {
+      this.showGridFilterCommand = null;
+    } else {
+      this.showGridFilterCommand = value > 0;
+    }
+  }
+
   private void setStyleId(String styleId) {
     this.styleId = styleId;
   }
@@ -532,8 +600,12 @@ public class UserInfo implements HasInfo {
     setClickSensitivityMillis(getIntSetting(COL_CLICK_SENSITIVITY_MILLIS, BeeConst.UNDEF));
     setClickSensitivityDistance(getIntSetting(COL_CLICK_SENSITIVITY_DISTANCE, BeeConst.UNDEF));
 
+    setActionSensitivityMillis(getIntSetting(COL_ACTION_SENSITIVITY_MILLIS, BeeConst.UNDEF));
+
     setNewsRefreshIntervalSeconds(getIntSetting(COL_NEWS_REFRESH_INTERVAL_SECONDS, BeeConst.UNDEF));
     setLoadingStateDelayMillis(getIntSetting(COL_LOADING_STATE_DELAY_MILLIS, BeeConst.UNDEF));
+
+    setShowGridFilterCommand(getIntSetting(COL_SHOW_GRID_FILTER_COMMAND, BeeConst.UNDEF));
 
     SupportedLocale dfSetting = getEnumSetting(COL_USER_DATE_FORMAT, SupportedLocale.class);
     if (dfSetting == null) {
