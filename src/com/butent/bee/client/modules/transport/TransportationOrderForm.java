@@ -211,6 +211,7 @@ class TransportationOrderForm extends PrintFormInterceptor implements ClickHandl
   private void checkCreditInfo(final HasHandlers listener, final GwtEvent<?> event, Long customer) {
     ParameterList args = TransportHandler.createArgs(SVC_GET_CREDIT_INFO);
     args.addDataItem(ClassifierConstants.COL_COMPANY, customer);
+    args.addDataItem(COL_ORDER, getActiveRowId());
 
     BeeKeeper.getRpc().makePostRequest(args, response -> {
       response.notify(getFormView());

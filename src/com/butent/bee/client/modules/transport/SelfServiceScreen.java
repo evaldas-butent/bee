@@ -123,7 +123,8 @@ public class SelfServiceScreen extends ScreenImpl {
     if (getCommandPanel() != null) {
       getCommandPanel().clear();
     }
-    Button commandNewRequest = new Button(Localized.dictionary().createNew(), event -> {
+    Button commandNewRequest = new Button(Localized.dictionary().createNew(),
+        event -> {
           DataInfo info = Data.getDataInfo(VIEW_SHIPMENT_REQUESTS);
           BeeRow row = RowFactory.createEmptyRow(info, true);
 
@@ -132,6 +133,7 @@ public class SelfServiceScreen extends ScreenImpl {
             showSuccessInfo(result);
           });
         });
+
     commandNewRequest.addStyleName(STYLE_PREFIX + STYLE_COMMAND_ITEM);
     commandNewRequest.addStyleName(STYLE_PREFIX + STYLE_NEW_COMMAND_ITEM);
     addCommandItem(commandNewRequest);

@@ -18,22 +18,22 @@
         caption="=client"
         width="700"
         height="700"
-    >
+>
 
   <FlowPanel class="flexBox-vertical">
     <css id="&form;">
       .&form;-table td:nth-child(2) > * {
-        width: 100%;
+      width: 100%;
       }
     </css>
 
     <Table class="&form;-table" kind="controls" style="margin: 0 0 25px 30px;">
-      <col index="0" cellStyle="&labelStyle;"/>
+      <col index="0" cellStyle="&labelStyle;" />
       <col index="1" cellStyle="&inputStyle;" />
 
       <Label text="=companyInfo" style="&sectionLabelStyle;" />
       <row>
-        <Label text="=name" class="bee-required"/>
+        <Label text="=name" class="bee-required" />
         <FlowPanel>
           <DataSelector source="CompanyType" style="width: 75px; margin-right: 8px;"
                         required="true" choiceColumns="Name" renderColumns="TypeName"
@@ -45,7 +45,7 @@
 
       <row for="Code">
         <Label for="Code" />
-        <InputText source="Code" visible="true"/>
+        <InputText source="Code" visible="true" />
       </row>
 
       <row for="VATCode">
@@ -86,7 +86,7 @@
 
       <row>
         <Label for="EmailId" />
-        <DataSelector source="EmailId" maxLength="50"/>
+        <DataSelector source="EmailId" maxLength="50" />
       </row>
 
       <row>
@@ -96,7 +96,7 @@
 
       <row for="City">
         <Label for="City" />
-        <DataSelector source="City" >
+        <DataSelector source="City">
           <selectorColumn source="Name" />
           <selectorColumn source="CountryName" />
           <selectorColumn source="CountryCode">
@@ -135,11 +135,11 @@
         <DataSelector source="InformationSource" />
       </row>
 
-      <row for="CompanyRelation">
-        <Label text="=companyRelation" data="CompRelTypeStore" />
+      <row data="CompRelTypeStore" listName="CompRelTypeStore">
+        <Label text="=companyRelation" listName="CompRelTypeStore" />
         <ChildSelector viewName="CompanyRelationTypes" childTable="CompRelTypeStore"
                        targetRelColumn="Company" sourceRelColumn="RelationType" newRowEnabled="true"
-                       label="=companyRelationType" data="CompRelTypeStore"/>
+                       label="=companyRelationType" />
       </row>
 
       <row for="CompanyRelationTypeState">
@@ -160,8 +160,8 @@
         <InputText source="Address2" style="width: 400px;" />
       </row>
 
-      <row data="CompActStore">
-        <Label text="=companyActivities" />
+      <row data="CompActStore" listName="CompActStore">
+        <Label text="=companyActivities" listName="CompActStore" />
         <ChildSelector viewName="CompanyActivities" childTable="CompActStore"
                        targetRelColumn="Company" sourceRelColumn="Activity"
                        label="=companyActivities" summarize="true" />
@@ -169,7 +169,7 @@
 
       <row for="Turnover">
         <Label for="Turnover" text="=trdTurnover" />
-        <DataSelector source="Turnover"/>
+        <DataSelector source="Turnover" />
       </row>
 
       <row for="CompanyGroup">

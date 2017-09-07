@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="TradeItemsForReturn" viewName="TradeItemsForReturn"
+        caption="=trdItemsForReturn" readOnly="true"
+>
+  <g:columns>
+    <IdColumn name="Id" visible="false" />
+    <DataColumn name="TradeDocument" caption="=trdDocumentShort" editEnabled="true" />
+
+    <DataColumn name="Date" />
+
+    <DataColumn name="Series" visible="false" />
+    <DataColumn name="Number" />
+
+    <DataColumn name="Number1" visible="false" />
+    <DataColumn name="Number2" visible="false" />
+
+    <RelColumn name="Operation" renderColumns="OperationName" visible="false" />
+    <DataColumn name="Phase" visible="false" />
+    <RelColumn name="Status" renderColumns="StatusName" visible="false" />
+
+    <RelColumn name="WarehouseFrom" caption="=trdWarehouseFromShort"
+               renderColumns="WarehouseFromCode" />
+  </g:columns>
+
+  <xi:include href="columns/TradeDocumentTotals.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="ItemName" editSource="Item" visible="true">
+      <dynStyle>
+        <ui:inline>color: blue;</ui:inline>
+        <ui:expression>row.IsService</ui:expression>
+      </dynStyle>
+    </DataColumn>
+
+    <DataColumn name="Article" sortBy="PrimaryArticle Article" searchBy="Article PrimaryArticle">
+      <render>
+        <ui:expression>row.Parent ? row.PrimaryArticle : row.Article</ui:expression>
+      </render>
+    </DataColumn>
+
+    <DataColumn name="Price" scale="2" />
+    <RelColumn name="Currency" renderColumns="CurrencyName" />
+
+    <DataColumn name="Discount" scale="0" visible="false" />
+    <DataColumn name="DiscountIsPercent" width="20" sortable="false" format="%" visible="false" />
+
+    <DataColumn name="Vat" scale="0" visible="false" />
+    <DataColumn name="VatIsPercent" width="20" sortable="false" format="%" visible="false" />
+
+    <DataColumn name="Quantity" visible="true" />
+    <DataColumn name="ReturnedQty" />
+
+    <DataColumn name="UnitName" label="=unitShort" />
+
+    <DataColumn name="Note" maxWidth="300" visible="false" />
+    <DataColumn name="Parent" visible="false" />
+
+    <PropColumn name="SelectedQty" type="double" label="=trdQuantityReturn" visible="true">
+      <style>
+        <bodyStyle><ui:font>larger bolder</ui:font></bodyStyle>
+      </style>
+      <dynStyle>
+        <ui:inline>color: red;</ui:inline>
+        <ui:expression>
+          row.SelectedQty &amp;&amp; (Number(row.SelectedQty) > (row.Quantity - (row.ReturnedQty || 0)))
+        </ui:expression>
+      </dynStyle>
+    </PropColumn>
+  </g:columns>
+
+  <g:rowStyle>
+    <ui:inline>background-color: aquamarine;</ui:inline>
+    <ui:expression>row.SelectedQty</ui:expression>
+  </g:rowStyle>
+</g:Grid>

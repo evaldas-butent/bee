@@ -303,6 +303,31 @@ public class ClassifiersModuleBean implements BeeModule {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       @AllowConcurrentEvents
+      public void setCompanyActivities(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_COMPANIES) && event.hasData()) {
+          SimpleRowSet data = qs.getData(new SqlSelect()
+              .addFields(VIEW_COMPANY_ACTIVITIES, COL_ACTIVITY_NAME)
+              .addFields(TBL_COMPANY_ACTIVITY_STORE, COL_COMPANY)
+              .addFrom(TBL_COMPANY_ACTIVITY_STORE)
+              .addFromLeft(VIEW_COMPANY_ACTIVITIES,
+                  sys.joinTables(VIEW_COMPANY_ACTIVITIES, TBL_COMPANY_ACTIVITY_STORE, COL_ACTIVITY))
+              .setWhere(SqlUtils.inList(TBL_COMPANY_ACTIVITY_STORE, COL_COMPANY,
+                  event.getRowset().getRowIds())));
+
+          if (!DataUtils.isEmpty(data)) {
+            Multimap<Long, String> companyActivities = ArrayListMultimap.create();
+
+            for (SimpleRow row : data) {
+              companyActivities.put(row.getLong(COL_COMPANY), row.getValue(COL_ACTIVITY_NAME));
+            }
+            event.getRowset().forEach(row -> row.setProperty(COL_ACTIVITY,
+                BeeUtils.joinItems(companyActivities.get(row.getId()))));
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
       public void setPersonCompanies(ViewQueryEvent event) {
         if (event.isAfter(VIEW_PERSONS) && event.hasData()) {
           SqlSelect query = new SqlSelect()
@@ -816,6 +841,23 @@ public class ClassifiersModuleBean implements BeeModule {
       }
 
       return conditions;
+    });
+
+    BeeView.registerConditionProvider(FILTER_COMPANY_ACTIVITIES, (view, args) -> {
+      String val = BeeUtils.getQuietly(args, 1);
+
+      if (BeeUtils.isEmpty(val)) {
+        return null;
+      }
+      IsExpression keyExpression = SqlUtils.field(view.getSourceAlias(), view.getSourceIdName());
+      SqlSelect query = new SqlSelect().setDistinctMode(true)
+          .addFields(TBL_COMPANY_ACTIVITY_STORE, COL_COMPANY)
+          .addFrom(TBL_COMPANY_ACTIVITY_STORE)
+          .addFromLeft(VIEW_COMPANY_ACTIVITIES,
+              sys.joinTables(VIEW_COMPANY_ACTIVITIES, TBL_COMPANY_ACTIVITY_STORE, COL_ACTIVITY))
+          .setWhere(SqlUtils.contains(VIEW_COMPANY_ACTIVITIES, COL_ACTIVITY_NAME, val));
+
+      return SqlUtils.in(keyExpression, query);
     });
   }
 

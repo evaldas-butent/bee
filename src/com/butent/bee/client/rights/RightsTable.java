@@ -105,6 +105,16 @@ public class RightsTable extends HtmlTable {
     }
   }
 
+  public String formatModule(ModuleAndSub moduleAndSub) {
+    if (moduleAndSub == null) {
+      return Module.NEVER_MIND;
+    } else if (moduleAndSub.hasSubModule()) {
+      return moduleAndSub.getSubModule().getCaption();
+    } else {
+      return moduleAndSub.getModule().getCaption();
+    }
+  }
+
   public ModuleSelectionHandler getModuleSelectionHandler() {
     return moduleSelectionHandler;
   }
@@ -253,16 +263,7 @@ public class RightsTable extends HtmlTable {
   }
 
   private Widget createModuleWidget(ModuleAndSub moduleAndSub) {
-    String caption;
-
-    if (moduleAndSub == null) {
-      caption = Module.NEVER_MIND;
-    } else if (moduleAndSub.hasSubModule()) {
-      caption = moduleAndSub.getSubModule().getCaption();
-    } else {
-      caption = moduleAndSub.getModule().getCaption();
-    }
-
+    String caption = formatModule(moduleAndSub);
     Label widget = new Label(caption);
 
     String name;

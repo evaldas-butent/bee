@@ -13,9 +13,9 @@
                editSource="Customer" readOnly="true" />
     <RelColumn name="Cargo" renderColumns="Cargo Description" editEnabled="true" maxWidth="300"
                editSource="Cargo" readOnly="true" />
-    <DataColumn name="Weight" editInPlace="true" />
-    <DataColumn name="Volume" editInPlace="true" />
-    <DataColumn name="Quantity" editInPlace="true" />
+    <DataColumn name="Weight" scale="0" editInPlace="true" />
+    <DataColumn name="Volume" scale="0" editInPlace="true" />
+    <DataColumn name="Quantity" scale="0" editInPlace="true" />
     <DataColumn name="Number" caption="=cargoNumber" editInPlace="true" />
     <DataColumn name="Cmr" caption="CMR" renderColumns="CmrName CmrNumber" />
     <DataColumn name="Notes" caption="=notes" whiteSpace="pre-wrap" editInPlace="true" />

@@ -12,7 +12,7 @@
       <Label for="Date" class="bee-required" />
       <InputDateTime source="Date" required="true" />
       <Label for="CargoWeight" />
-      <InputDecimal source="CargoWeight" format="0.000" style="width:70px;" />
+      <InputDecimal source="CargoWeight" style="width:70px;" />
     </row>
     <row>
       <Label for="Company" />

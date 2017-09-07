@@ -723,14 +723,25 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         Format.setFormat(column, column.getValueType(), cd.getFormat());
       }
 
-    } else if (BeeUtils.isNonNegative(cd.getScale()) && (column instanceof HasNumberFormat)) {
+    } else if (column instanceof HasNumberFormat) {
       NumberFormat nf;
-      if (cellSource != null && cellSource.getScale() > cd.getScale()) {
-        nf = Format.getDecimalFormat(cd.getScale(), cellSource.getScale());
+
+      int scale = (cd.getScale() == null) ? BeeConst.UNDEF : cd.getScale();
+      int sourceScale = (cellSource == null) ? BeeConst.UNDEF : cellSource.getScale();
+
+      if (scale >= 0 && sourceScale > scale) {
+        nf = Format.getDecimalFormat(scale, sourceScale);
+      } else if (scale >= 0) {
+        nf = Format.getDecimalFormat(scale);
+      } else if (sourceScale > 0 && sourceScale != Format.getDefaultMoneyScale()) {
+        nf = Format.getDecimalFormat(0, sourceScale);
       } else {
-        nf = Format.getDecimalFormat(cd.getScale());
+        nf = null;
       }
-      ((HasNumberFormat) column).setNumberFormat(nf);
+
+      if (nf != null) {
+        ((HasNumberFormat) column).setNumberFormat(nf);
+      }
     }
 
     if (!BeeUtils.isEmpty(cd.getHorAlign())) {
@@ -1547,6 +1558,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   @Override
   public boolean isFlushable() {
     return false;
+  }
+
+  @Override
+  public boolean isInteractive() {
+    return isAttached() && DomUtils.isVisible(getElement());
   }
 
   @Override

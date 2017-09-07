@@ -32,14 +32,14 @@
     <DataColumn name="FreightInsurance" />
 
     <DataColumn name="Description" />
-    <DataColumn name="Quantity" />
+    <DataColumn name="Quantity" scale="0" />
 
-    <DataColumn name="Weight" />
-    <DataColumn name="Volume" />
-    <DataColumn name="LDM" />
-    <DataColumn name="Length" />
-    <DataColumn name="Width" />
-    <DataColumn name="Height" />
+    <DataColumn name="Weight" scale="0" />
+    <DataColumn name="Volume" scale="0" />
+    <DataColumn name="LDM" scale="0" />
+    <DataColumn name="Length" scale="0" />
+    <DataColumn name="Width" scale="0" />
+    <DataColumn name="Height" scale="0" />
 
     <DataColumn name="Value" />
     <RelColumn name="ValueCurrency" />

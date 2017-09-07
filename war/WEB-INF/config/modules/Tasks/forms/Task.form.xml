@@ -8,7 +8,7 @@
   <!ENTITY col3 "text-align: right; padding-left: 8px; padding-right: 8px; width: 128px;">
 
   <!ENTITY top1 "float: left; width: 100px; padding-top: 1px;">
-  
+
   <!ENTITY inp2 "width: 160px;">
   <!ENTITY inp2x "&inline; width: 500px;">
   <!ENTITY inp3 "width: 70px;margin-left: -75px">
@@ -61,7 +61,7 @@
 
                 <row>
                   <Label for="Executor" />
-                  <DataSelector source="Executor" editSource="ExecutorPerson" style="&inp2x;" 
+                  <DataSelector source="Executor" editSource="ExecutorPerson" style="&inp2x;"
                     readOnly="true" />
                 </row>
 
@@ -72,7 +72,7 @@
                     label="=crmTaskObservers" />
                 </row>
                 <row>
-                  <Label text="=project">
+                  <Label for="Project">
                     &forProject;
                   </Label>
                   <DataSelector source="Project" renderColumns="ProjectName"
@@ -81,10 +81,10 @@
                   </DataSelector>
                 </row>
                 <row>
-                  <Label text="=prjStage">
+                  <Label for="ProjectStage">
                     &forProject;
                   </Label>
-                  <DataSelector source="ProjectStage" renderColumns="StageName" 
+                  <DataSelector source="ProjectStage" renderColumns="StageName"
                     style="&inp2x;">
                     &forProject;
                   </DataSelector>
@@ -171,7 +171,7 @@
                 </row>
               </Table>
 
-              <FlowPanel name="TaskDurations" data="TaskDurations" 
+              <FlowPanel name="TaskDurations" data="TaskDurations"
                 style="overflow: auto; width: 524px; margin-top: 10px;" />
             </FlowPanel>
           </FlowPanel>

@@ -283,6 +283,7 @@ public final class ClassifierConstants {
   public static final String COL_RELATION_TYPE_NAME = "Name";
 
   public static final String COL_ACTIVITY = "Activity";
+  public static final String COL_ACTIVITY_NAME = "Name";
 
   public static final String COL_COMPANY_TYPE_NAME = "Name";
 
@@ -382,6 +383,7 @@ public final class ClassifierConstants {
 
   public static final String FILTER_COMPANY_CREATION_AND_TYPE = "company_creation_and_type";
   public static final String FILTER_COMPANY_USAGE = "company_usage";
+  public static final String FILTER_COMPANY_ACTIVITIES = "company_activities";
 
   public static final String QR_FLOW_PANEL = "qrFlowPanel";
   public static final String QR_TYPE = "qrType";

@@ -27,7 +27,6 @@ import java.util.Map;
 public final class ChildSelector extends MultiSelector implements HasFosterParent,
     ParentRowEvent.Handler, HasRowChildren {
 
-  private static final String ATTR_CHILD_TABLE = "childTable";
   private static final String ATTR_TARGET_REL_COLUMN = "targetRelColumn";
   private static final String ATTR_SOURCE_REL_COLUMN = "sourceRelColumn";
 
@@ -38,7 +37,7 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
       return null;
     }
 
-    String table = attributes.get(ATTR_CHILD_TABLE);
+    String table = attributes.get(UiConstants.ATTR_CHILD_TABLE);
     if (BeeUtils.isEmpty(table)) {
       return null;
     }
@@ -159,12 +158,9 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
       setTargetRowId(null);
 
       Queries.getRelatedValues(childTable, targetRelColumn, rowId, sourceRelColumn,
-          new Queries.IdListCallback() {
-            @Override
-            public void onSuccess(String result) {
-              setTargetRowId(rowId);
-              setIds(result);
-            }
+          result -> {
+            setTargetRowId(rowId);
+            setIds(result);
           });
 
     } else {

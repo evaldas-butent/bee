@@ -10,7 +10,7 @@
 
         name="Driver" viewName="Drivers" caption="=vehicleDriver"
         width="1050" height="800"
-    >
+>
   <FlowPanel class="flexBox-vertical" style="padding: 5px 1em 45px 1em; min-width: 1000px;">
     <FlowPanel style="margin-top: 1ex;">
       <Table kind="controls" style="border-spacing: 5px;">
@@ -20,7 +20,7 @@
                         renderColumns="FirstName LastName"
                         choiceColumns="FirstName LastName CompanyName" />
 
-          <Label text="=driverGroupsShort" style="&lbl;" />
+          <Label text="=driverGroupsShort" style="&lbl;" listName="DriverGroups" />
           <ChildSelector viewName="TransportGroups" childTable="DriverGroups"
                          targetRelColumn="Driver" sourceRelColumn="Group" newRowEnabled="false"
                          label="=driverGroupsShort" renderColumns="Name" />
@@ -111,7 +111,8 @@
       <page>
         <text>=relatedInformation</text>
         <Relations relColumn="Driver" inline="true"
-                   defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
+                   defaultRelations="Companies Persons Requests Tasks"
+                   style="margin: 0px 15px 0px 15px; min-width:300px;" />
       </page>
     </TabbedPages>
   </FlowPanel>

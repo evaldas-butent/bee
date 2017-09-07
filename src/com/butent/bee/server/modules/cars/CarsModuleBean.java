@@ -453,7 +453,7 @@ public class CarsModuleBean implements BeeModule {
               .addField(TBL_CONF_OBJECTS, sys.getIdName(TBL_CONF_OBJECTS), COL_OBJECT)
               .addFields(TBL_CONF_OBJECTS, COL_BRANCH_NAME)
               .addFields(TBL_CONF_OPTIONS, COL_OPTION_NAME)
-              .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME)
+              .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_GROUP_NAME2)
               .addFrom(TBL_CONF_OBJECTS)
               .addFromLeft(TBL_CONF_OBJECT_OPTIONS, SqlUtils.and(sys.joinTables(TBL_CONF_OBJECTS,
                   TBL_CONF_OBJECT_OPTIONS, COL_OBJECT), SqlUtils.isNull(TBL_CONF_OBJECT_OPTIONS,
@@ -474,7 +474,8 @@ public class CarsModuleBean implements BeeModule {
             String opt = row.getValue(COL_OPTION_NAME);
 
             if (!BeeUtils.isEmpty(opt)) {
-              table.put(obj, row.getValue(COL_GROUP_NAME), opt);
+              table.put(obj, BeeUtils.notEmpty(row.getValue(COL_GROUP_NAME2),
+                  row.getValue(COL_GROUP_NAME)), opt);
             }
           }
           for (BeeRow beeRow : rowSet) {
@@ -822,7 +823,7 @@ public class CarsModuleBean implements BeeModule {
 
     SimpleRowSet data = qs.getData(new SqlSelect()
         .addFields(TBL_CONF_DIMENSIONS, COL_GROUP, COL_ORDINAL)
-        .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_REQUIRED)
+        .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_GROUP_NAME2, COL_REQUIRED)
         .addFrom(TBL_CONF_DIMENSIONS)
         .addFromInner(TBL_CONF_GROUPS,
             sys.joinTables(TBL_CONF_GROUPS, TBL_CONF_DIMENSIONS, COL_GROUP))
@@ -830,7 +831,8 @@ public class CarsModuleBean implements BeeModule {
 
     for (SimpleRowSet.SimpleRow row : data) {
       configuration.addDimension(new Dimension(row.getLong(COL_GROUP),
-              row.getValue(COL_GROUP_NAME)).setRequired(row.getBoolean(COL_REQUIRED)),
+              BeeUtils.notEmpty(row.getValue(COL_GROUP_NAME2), row.getValue(COL_GROUP_NAME)))
+              .setRequired(row.getBoolean(COL_REQUIRED)),
           row.getInt(COL_ORDINAL));
     }
     String alsBranchBundles = SqlUtils.uniqueName();
@@ -844,7 +846,7 @@ public class CarsModuleBean implements BeeModule {
         .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_OPTION_NAME2, COL_CODE,
             COL_CODE2, COL_DESCRIPTION)
         .addFields(TBL_FILES, COL_FILE_HASH)
-        .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_REQUIRED)
+        .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_GROUP_NAME2, COL_REQUIRED)
         .addFrom(TBL_CONF_BRANCH_BUNDLES)
         .addFromLeft(TBL_FILES, alsBranchBundles,
             sys.joinTables(TBL_FILES, alsBranchBundles, TBL_CONF_BRANCH_BUNDLES, COL_PHOTO))
@@ -891,7 +893,7 @@ public class CarsModuleBean implements BeeModule {
         .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_OPTION_NAME2, COL_CODE,
             COL_CODE2, COL_DESCRIPTION)
         .addFields(TBL_FILES, COL_FILE_HASH)
-        .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_REQUIRED)
+        .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_GROUP_NAME2, COL_REQUIRED)
         .addFields(TBL_CONF_RELATIONS, COL_PRICE, COL_PACKET)
         .addField(TBL_CONF_RELATIONS, COL_DESCRIPTION, TBL_CONF_RELATIONS + COL_DESCRIPTION)
         .addField(TBL_CONF_RELATIONS, COL_CRITERIA, TBL_CONF_RELATIONS + COL_CRITERIA)
@@ -943,7 +945,7 @@ public class CarsModuleBean implements BeeModule {
           .addFields(TBL_CONF_PACKET_OPTIONS, COL_PACKET, COL_OPTION)
           .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_OPTION_NAME2, COL_CODE,
               COL_CODE2)
-          .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME)
+          .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_GROUP_NAME2)
           .addFrom(TBL_CONF_PACKET_OPTIONS)
           .addFromInner(TBL_CONF_OPTIONS,
               SqlUtils.and(sys.joinTables(TBL_CONF_OPTIONS, TBL_CONF_PACKET_OPTIONS, COL_OPTION),
@@ -959,7 +961,7 @@ public class CarsModuleBean implements BeeModule {
           .addFields(TBL_CONF_RESTRICTIONS, COL_BRANCH_OPTION, COL_OPTION, COL_DENIED)
           .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_OPTION_NAME2, COL_CODE,
               COL_CODE2, COL_DESCRIPTION)
-          .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_REQUIRED)
+          .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_GROUP_NAME2, COL_REQUIRED)
           .addFrom(TBL_CONF_RESTRICTIONS)
           .addFromInner(TBL_CONF_OPTIONS,
               SqlUtils.and(sys.joinTables(TBL_CONF_OPTIONS, TBL_CONF_RESTRICTIONS, COL_OPTION),
@@ -984,10 +986,10 @@ public class CarsModuleBean implements BeeModule {
         .addField(TBL_CONF_OBJECTS, COL_DESCRIPTION, COL_BUNDLE + COL_DESCRIPTION)
         .addField(TBL_CONF_OBJECTS, COL_PRICE, COL_BUNDLE + COL_PRICE)
         .addFields(TBL_CONF_OBJECT_OPTIONS, COL_OPTION, COL_PRICE)
-        .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_CODE, COL_CODE2,
-            COL_DESCRIPTION, COL_PHOTO_CODE)
+        .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_OPTION_NAME2, COL_CODE,
+            COL_CODE2, COL_DESCRIPTION, COL_PHOTO_CODE)
         .addFields(TBL_FILES, COL_FILE_HASH)
-        .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_REQUIRED)
+        .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_GROUP_NAME2, COL_REQUIRED)
         .addFrom(TBL_CONF_OBJECTS)
         .addFromInner(TBL_CONF_OBJECT_OPTIONS,
             sys.joinTables(TBL_CONF_OBJECTS, TBL_CONF_OBJECT_OPTIONS, COL_OBJECT))

@@ -22,7 +22,7 @@
   flex-wrap: wrap;
   -webkit-flex-wrap: wrap;
   -ms-flex-wrap: wrap;
-  justify-content: space-between;  
+  justify-content: space-between;
   -webkit-justify-content: space-between;
   -ms-flex-pack: justify;
   align-items: center;
@@ -223,12 +223,12 @@
 
 .bee-tr-chart-filter-data-unselected.bee-tr-chart-filter-data-itemContainer {
   top: 36px;
-  bottom: 50%; 
+  bottom: 50%;
 }
 
 .bee-tr-chart-filter-data-unselected.bee-tr-chart-filter-data-controls {
   top: calc(50% + 4px);
-  bottom: 0; 
+  bottom: 0;
 }
 
 .bee-tr-chart-filter-data-search {
@@ -240,12 +240,12 @@
 
 .bee-tr-chart-filter-data-selected.bee-tr-chart-filter-data-controls {
   top: calc(50% + 48px);
-  bottom: 0; 
+  bottom: 0;
 }
 
 .bee-tr-chart-filter-data-selected.bee-tr-chart-filter-data-itemContainer {
   top: calc(50% + 70px);
-  bottom: 0; 
+  bottom: 0;
 }
 
 .bee-tr-chart-filter-data-controls {

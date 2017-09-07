@@ -26,9 +26,6 @@ import java.util.Map;
 public class WidgetDescription implements HasInfo {
 
   private static final String ATTR_PARENT = "parent";
-
-  private static final String ATTR_REQUIRED = "required";
-
   private static final String ATTR_ON_FOCUS = "onFocus";
 
   private final FormWidget widgetType;
@@ -277,7 +274,7 @@ public class WidgetDescription implements HasInfo {
       } else if (BeeUtils.same(key, UiConstants.ATTR_USER_MODE)) {
         setUserMode(BeeUtils.toBooleanOrNull(value));
 
-      } else if (BeeUtils.same(key, ATTR_REQUIRED)) {
+      } else if (BeeUtils.same(key, UiConstants.ATTR_REQUIRED)) {
         setRequired(BeeUtils.toBooleanOrNull(value));
 
       } else if (BeeUtils.same(key, RendererDescription.ATTR_RENDER_COLUMNS)) {

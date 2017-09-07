@@ -1,5 +1,8 @@
 package com.butent.bee.shared.modules.finance;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -14,12 +17,22 @@ public enum TradeAccountsPrecedence implements HasLocalizedCaption {
     public String getCaption(Dictionary dictionary) {
       return dictionary.trdDocumentLine();
     }
+
+    @Override
+    public String getTableName() {
+      return TBL_TRADE_DOCUMENT_ITEMS;
+    }
   },
 
   ITEM {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.itemOrService();
+    }
+
+    @Override
+    public String getTableName() {
+      return TBL_ITEMS;
     }
   },
 
@@ -28,12 +41,22 @@ public enum TradeAccountsPrecedence implements HasLocalizedCaption {
     public String getCaption(Dictionary dictionary) {
       return dictionary.itemGroup();
     }
+
+    @Override
+    public String getTableName() {
+      return TBL_ITEM_CATEGORY_TREE;
+    }
   },
 
   ITEM_TYPE {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.itemType();
+    }
+
+    @Override
+    public String getTableName() {
+      return TBL_ITEM_CATEGORY_TREE;
     }
   },
 
@@ -42,12 +65,22 @@ public enum TradeAccountsPrecedence implements HasLocalizedCaption {
     public String getCaption(Dictionary dictionary) {
       return dictionary.itemCategory();
     }
+
+    @Override
+    public String getTableName() {
+      return TBL_ITEM_CATEGORY_TREE;
+    }
   },
 
   DOCUMENT {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.trdDocumentLong();
+    }
+
+    @Override
+    public String getTableName() {
+      return TBL_TRADE_DOCUMENTS;
     }
   },
 
@@ -56,6 +89,11 @@ public enum TradeAccountsPrecedence implements HasLocalizedCaption {
     public String getCaption(Dictionary dictionary) {
       return dictionary.company();
     }
+
+    @Override
+    public String getTableName() {
+      return TBL_COMPANIES;
+    }
   },
 
   OPERATION {
@@ -63,12 +101,22 @@ public enum TradeAccountsPrecedence implements HasLocalizedCaption {
     public String getCaption(Dictionary dictionary) {
       return dictionary.trdOperation();
     }
+
+    @Override
+    public String getTableName() {
+      return TBL_TRADE_OPERATIONS;
+    }
   },
 
   WAREHOUSE {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.warehouse();
+    }
+
+    @Override
+    public String getTableName() {
+      return TBL_WAREHOUSES;
     }
   };
 
@@ -98,4 +146,6 @@ public enum TradeAccountsPrecedence implements HasLocalizedCaption {
 
     return result;
   }
+
+  public abstract String getTableName();
 }

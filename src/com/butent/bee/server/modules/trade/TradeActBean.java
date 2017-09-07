@@ -52,6 +52,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.Totalizer;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
@@ -728,7 +729,7 @@ public class TradeActBean {
     SqlSelect returnQuery = new SqlSelect()
         .addFields(TBL_TRADE_ACTS, COL_TA_PARENT)
         .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
-        .addSum(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY, ALS_RETURNED_QTY)
+        .addSum(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY, TradeActConstants.ALS_RETURNED_QTY)
         .addFrom(TBL_TRADE_ACTS)
         .addFromInner(TBL_TRADE_ACT_ITEMS,
             sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
@@ -831,7 +832,7 @@ public class TradeActBean {
     }
 
     query.addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY);
-    query.addFields(returnAlias, ALS_RETURNED_QTY);
+    query.addFields(returnAlias, TradeActConstants.ALS_RETURNED_QTY);
     query.addField(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY, ALS_REMAINING_QTY);
 
     query.addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_PRICE);
@@ -858,8 +859,8 @@ public class TradeActBean {
     SqlUpdate update = new SqlUpdate(tmp)
         .addExpression(ALS_REMAINING_QTY,
             SqlUtils.minus(SqlUtils.field(tmp, COL_TRADE_ITEM_QUANTITY),
-                SqlUtils.field(tmp, ALS_RETURNED_QTY)))
-        .setWhere(SqlUtils.positive(tmp, ALS_RETURNED_QTY));
+                SqlUtils.field(tmp, TradeActConstants.ALS_RETURNED_QTY)))
+        .setWhere(SqlUtils.positive(tmp, TradeActConstants.ALS_RETURNED_QTY));
 
     qs.updateData(update);
 
@@ -915,7 +916,8 @@ public class TradeActBean {
           COL_SERIES_NAME, COL_TA_NUMBER, COL_OPERATION_NAME,
           ALS_COMPANY_NAME, COL_COMPANY_OBJECT_NAME,
           itemIdName, ALS_ITEM_NAME, COL_ITEM_ARTICLE,
-          COL_TRADE_ITEM_QUANTITY, ALS_UNIT_NAME, ALS_RETURNED_QTY, ALS_REMAINING_QTY,
+          COL_TRADE_ITEM_QUANTITY, ALS_UNIT_NAME,
+          TradeActConstants.ALS_RETURNED_QTY, ALS_REMAINING_QTY,
           COL_TRADE_ITEM_PRICE, ALS_BASE_AMOUNT, COL_TRADE_DISCOUNT, ALS_DISCOUNT_AMOUNT,
           ALS_TOTAL_AMOUNT);
 
@@ -976,7 +978,7 @@ public class TradeActBean {
       }
 
       query.addSum(tmp, COL_TRADE_ITEM_QUANTITY);
-      query.addSum(tmp, ALS_RETURNED_QTY);
+      query.addSum(tmp, TradeActConstants.ALS_RETURNED_QTY);
       query.addSum(tmp, ALS_REMAINING_QTY);
       query.addSum(tmp, ALS_BASE_AMOUNT);
       query.addSum(tmp, ALS_DISCOUNT_AMOUNT);
