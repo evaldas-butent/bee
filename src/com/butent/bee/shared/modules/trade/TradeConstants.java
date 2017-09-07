@@ -299,6 +299,7 @@ public final class TradeConstants {
   public static final String ALS_WAREHOUSE_TO_NAME = "WarehouseToName";
 
   public static final String ALS_STOCK_PRIMARY_DATE = "PrimaryDate";
+  public static final String ALS_STOCK_PRIMARY_NUMBER = "PrimaryNumber";
   public static final String ALS_PRIMARY_ARTICLE = "PrimaryArticle";
 
   public static final String ALS_COST_CURRENCY = "CostCurrency";

@@ -11,6 +11,7 @@
       <HiddenColumn name="TradeDocument" alias="PrimaryDocument1" />
       <SimpleJoin joinType="LEFT" name="TradeDocument">
         <HiddenColumn name="Date" alias="PrimaryDate1" />
+        <HiddenColumn name="Number" alias="PrimaryNumber1" />
 
         <SimpleJoin joinType="LEFT" name="Supplier">
           <HiddenColumn name="Name" alias="SupplierName1" label="=trdSupplier" />
@@ -26,6 +27,7 @@
         <HiddenColumn name="TradeDocument" alias="PrimaryDocument2" />
         <SimpleJoin joinType="LEFT" name="TradeDocument">
           <HiddenColumn name="Date" alias="PrimaryDate2" />
+          <HiddenColumn name="Number" alias="PrimaryNumber2" />
 
           <SimpleJoin joinType="LEFT" name="Supplier">
             <HiddenColumn name="Name" alias="SupplierName2" label="=trdSupplier" />
@@ -45,6 +47,13 @@
       <x:nvl type="DATETIME">
         <x:datetime>"PrimaryDate2"</x:datetime>
         <x:datetime>"PrimaryDate1"</x:datetime>
+      </x:nvl>
+    </SimpleColumn>
+
+    <SimpleColumn name="PrimaryNumber" label="=trdPrimaryNumber">
+      <x:nvl type="STRING">
+        <x:string>"PrimaryNumber2"</x:string>
+        <x:string>"PrimaryNumber1"</x:string>
       </x:nvl>
     </SimpleColumn>
 
