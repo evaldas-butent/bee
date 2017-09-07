@@ -1396,15 +1396,15 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       if (isFlushable()) {
         rowValue.setValue(index, newValue);
 
-        if (getFormInterceptor() != null) {
-          getFormInterceptor().onSourceChange(rowValue, column.getId(), newValue);
-        }
-
         Collection<String> updatedColumns;
         if (source instanceof EditableWidget) {
           updatedColumns = ((EditableWidget) source).maybeUpdateRelation(getViewName(), rowValue);
         } else {
           updatedColumns = Collections.emptySet();
+        }
+
+        if (getFormInterceptor() != null) {
+          getFormInterceptor().onSourceChange(rowValue, column.getId(), newValue);
         }
 
         Set<String> refreshed = new HashSet<>();

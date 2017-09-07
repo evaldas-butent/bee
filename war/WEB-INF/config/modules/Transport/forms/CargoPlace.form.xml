@@ -71,7 +71,7 @@
         <Flag source="CountryCode" style="padding-left: 2px;" />
       </FlowPanel>
       <Label for="CargoWeight" style="visibility:hidden;" />
-      <InputDecimal source="CargoWeight" format="0.000" style="visibility:hidden; width:70px;" />
+      <InputDecimal source="CargoWeight" style="visibility:hidden; width:70px;" />
     </row>
     <row>
       <Label for="Contact" />

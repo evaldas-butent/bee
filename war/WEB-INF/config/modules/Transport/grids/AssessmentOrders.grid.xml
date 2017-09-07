@@ -3,7 +3,7 @@
         xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="AssessmentOrders" viewName="Assessments" caption="=trAssessmentOrders"
-        flexGrow="1" order="AssessmentID desc" disabledActions="add"
+        flexGrow="1" order="AssessmentID desc"
         filter="OrderStatus!=0"
 >
   <g:columns>
@@ -75,6 +75,8 @@
     <DataColumn name="FinishedCount" />
 
     <RelColumn name="Author" filterSupplier="list" />
+
+    <RelColumn name="Customer" renderColumns="CustomerName CustomerTypeName" />
   </g:columns>
 
   <g:rowStyle>

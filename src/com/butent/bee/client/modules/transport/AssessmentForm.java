@@ -29,6 +29,7 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowInsertCallback;
@@ -68,12 +69,14 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.CustomAction;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -427,6 +430,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   private FormView form;
   private final Dictionary loc = Localized.dictionary();
 
+  private CustomAction copyAction = new CustomAction(FontAwesome.COPY, clickEvent -> copy());
+
   private final Button reqNew = new Button(loc.trAssessmentToRequests(),
       new StatusUpdater(AssessmentStatus.NEW, loc.trAssessmentAskRequest()));
 
@@ -726,6 +731,10 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         && !gods.contains(userPerson) && !departmentHeads.containsKey(userPerson)) {
       manager.setEnabled(false);
     }
+    if (!newRecord) {
+      copyAction.setTitle(loc.actionCopy());
+      header.addCommandItem(copyAction);
+    }
     onValueChange(null);
   }
 
@@ -819,30 +828,29 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   public void onLoad(final FormView formView) {
     Queries.getRowSet(TBL_DEPARTMENT_EMPLOYEES, Lists.newArrayList(COL_DEPARTMENT,
         COL_COMPANY_PERSON, COL_DEPARTMENT_HEAD, COL_DEPARTMENT_NAME, "Heads"), null, result -> {
-          for (BeeRow row : result) {
-            Long department = row.getLong(0);
-            Long employer = row.getLong(1);
-            Long headDepartment = row.getLong(2);
-            String departmentName = row.getString(3);
+      for (BeeRow row : result) {
+        Long department = row.getLong(0);
+        Long employer = row.getLong(1);
+        Long headDepartment = row.getLong(2);
+        String departmentName = row.getString(3);
 
-            employees.put(employer, department);
-            departments.put(department, departmentName);
+        employees.put(employer, department);
+        departments.put(department, departmentName);
 
-            if (DataUtils.isId(headDepartment)) {
-              departmentHeads.put(employer, headDepartment);
+        if (DataUtils.isId(headDepartment)) {
+          departmentHeads.put(employer, headDepartment);
 
-            } else if (BeeUtils.unbox(row.getBoolean(4))) {
-              gods.add(employer);
-            }
-          }
-          if (BeeKeeper.getUser().isAdministrator()) {
-            gods.add(userPerson);
-          }
-          form = formView;
-          updateDepartment(form, form.getActiveRow(), null);
-          form.refresh();
+        } else if (BeeUtils.unbox(row.getBoolean(4))) {
+          gods.add(employer);
         }
-    );
+      }
+      if (BeeKeeper.getUser().isAdministrator()) {
+        gods.add(userPerson);
+      }
+      form = formView;
+      updateDepartment(form, form.getActiveRow(), null);
+      form.refresh();
+    });
   }
 
   @Override
@@ -877,8 +885,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
   @Override
   public void onStartNewRow(FormView formView, IsRow row) {
-    row.setValue(formView.getDataIndex(COL_ASSESSMENT_STATUS), AssessmentStatus.NEW.ordinal());
-    row.setValue(formView.getDataIndex(ALS_ORDER_STATUS), OrderStatus.REQUEST.ordinal());
     updateDepartment(formView, row, null);
   }
 
@@ -932,6 +938,120 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   private static String buildLog(String caption, String value, String oldLog) {
     return BeeUtils.join("\n\n",
         Format.renderDateTime(TimeUtils.nowMinutes()) + " " + caption + "\n" + value, oldLog);
+  }
+
+  private void copy() {
+    Global.confirm(isRequest() ? loc.trCopyRequest() : loc.trCopyOrder(), () -> {
+      copyAction.running();
+      IsRow oldRow = getActiveRow();
+      DataInfo info = Data.getDataInfo(getViewName());
+      BeeRow row = RowFactory.createEmptyRow(info, true);
+
+      for (String col : info.getColumnNames(false)) {
+        int idx = info.getColumnIndex(col);
+
+        if (!BeeUtils.contains(Arrays.asList(COL_ASSESSMENT, COL_ORDER_NO, COL_CARGO, COL_STATUS,
+            COL_DATE, COL_NUMBER, COL_ORDER_MANAGER, COL_ASSESSMENT_EXPENSES, COL_ASSESSMENT_LOG),
+            col)) {
+          row.setValue(idx, oldRow.getString(idx));
+        }
+      }
+      if (isRequest()) {
+        row.setValue(info.getColumnIndex(COL_ASSESSMENT_STATUS), AssessmentStatus.NEW.ordinal());
+        row.setValue(info.getColumnIndex(ALS_ORDER_STATUS), OrderStatus.REQUEST.ordinal());
+      } else {
+        row.setValue(info.getColumnIndex(ALS_ORDER_STATUS), OrderStatus.ACTIVE.ordinal());
+      }
+      Queries.insertRow(DataUtils.createRowSetForInsert(info.getViewName(), info.getColumns(), row),
+          (RowCallback) assessmentRow -> {
+            Long assessment = assessmentRow.getId();
+            Long cargo = assessmentRow.getLong(info.getColumnIndex(COL_CARGO));
+            Filter fwFilter = Filter.equals(COL_ASSESSMENT, oldRow.getId());
+
+            Queries.getRowSet(TBL_ASSESSMENT_FORWARDERS, null, fwFilter, forwarders -> {
+              Filter flt = Filter.equals(COL_CARGO, oldRow.getLong(info.getColumnIndex(COL_CARGO)));
+              Map<String, Filter> filters = new HashMap<>();
+              filters.put(TBL_CARGO_LOADING, flt);
+              filters.put(TBL_CARGO_UNLOADING, flt);
+              filters.put(TBL_CARGO_INCOMES, flt);
+              filters.put(TBL_CARGO_EXPENSES, Filter.and(flt,
+                  Filter.isNot(Filter.idIn(TBL_ASSESSMENT_FORWARDERS, "CargoExpense", fwFilter))));
+
+              Runnable onCloneChildren = new Runnable() {
+                Latch copiedGrids = new Latch(forwarders.getNumberOfRows() * 2 + filters.size());
+
+                @Override
+                public void run() {
+                  copiedGrids.decrement();
+
+                  if (copiedGrids.isOpen()) {
+                    copyAction.idle();
+                    Data.refreshLocal(info.getViewName());
+                    RowEditor.open(info.getViewName(), assessment);
+                  }
+                }
+              };
+              Queries.getData(filters.keySet(), filters, result -> {
+                for (BeeRowSet rSet : result) {
+                  int cargoIdx = rSet.getColumnIndex(COL_CARGO);
+                  rSet.getRows().forEach(beeRow -> beeRow.setValue(cargoIdx, cargo));
+                  TransportUtils.insertRows(rSet, onCloneChildren);
+                }
+              });
+              if (forwarders.isEmpty()) {
+                return;
+              }
+              int cargoTripIdx = forwarders.getColumnIndex(COL_CARGO_TRIP);
+
+              TransportUtils.getCargoPlaces(Filter.any(COL_CARGO_TRIP,
+                  forwarders.getDistinctLongs(cargoTripIdx)), (loading, unloading) -> {
+                int assessmentIdx = forwarders.getColumnIndex(COL_ASSESSMENT);
+                int cargoIdx = forwarders.getColumnIndex(COL_CARGO);
+                int serviceCargoIdx = forwarders.getColumnIndex("ServiceCargo");
+                Holder<Runnable> trigger = Holder.absent();
+
+                Runnable go = () -> {
+                  if (forwarders.isEmpty()) {
+                    return;
+                  }
+                  BeeRow beeRow = forwarders.getRow(0);
+                  forwarders.removeRow(0);
+                  Long cargoTrip = beeRow.getLong(cargoTripIdx);
+                  BeeRowSet rs = new BeeRowSet(forwarders.getViewName(),
+                      new ArrayList<>(forwarders.getColumns()));
+
+                  BeeRow cloned = DataUtils.cloneRow(beeRow);
+                  cloned.setValue(assessmentIdx, assessment);
+                  cloned.setValue(cargoIdx, cargo);
+                  cloned.setValue(serviceCargoIdx, cargo);
+                  rs.addRow(cloned);
+                  rs.removeColumn(cargoTripIdx);
+
+                  Queries.insertRow(DataUtils.createRowSetForInsert(rs), (RowCallback) fw -> {
+                    trigger.get().run();
+                    for (BeeRowSet places : new BeeRowSet[] {loading, unloading}) {
+                      BeeRowSet plRs = new BeeRowSet(places.getViewName(), places.getColumns());
+
+                      for (BeeRow r : DataUtils.filterRows(places, COL_CARGO_TRIP, cargoTrip)) {
+                        BeeRow cl = DataUtils.cloneRow(r);
+                        cl.setValue(places.getColumnIndex(COL_CARGO_TRIP),
+                            fw.getLong(cargoTripIdx));
+                        plRs.addRow(cl);
+                      }
+                      if (DataUtils.isEmpty(plRs)) {
+                        onCloneChildren.run();
+                      } else {
+                        TransportUtils.insertRows(plRs, onCloneChildren);
+                      }
+                    }
+                  });
+                };
+                trigger.set(go);
+                go.run();
+              });
+            });
+          });
+    });
   }
 
   private void createLetter() {

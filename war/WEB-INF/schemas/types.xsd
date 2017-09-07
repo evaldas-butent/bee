@@ -655,6 +655,7 @@
       <xs:enumeration value="TradeDocuments" />
       <xs:enumeration value="TradeExpenditures" />
       <xs:enumeration value="TradeItemCost" />
+      <xs:enumeration value="TradeItemsForReturn" />
       <xs:enumeration value="TradeMovement" />
       <xs:enumeration value="TradeNotes" />
       <xs:enumeration value="TradeOperations" />

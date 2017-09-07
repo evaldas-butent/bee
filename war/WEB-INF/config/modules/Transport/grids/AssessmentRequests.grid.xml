@@ -3,8 +3,7 @@
         xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="AssessmentRequests" viewName="Assessments" caption="=trAssessmentRequests"
-        flexGrow="1" order="AssessmentID desc" disabledActions="edit delete"
-        enableCopy="- Assessment OrderNo Cargo *Status *Date Number Manager ExpensesRegistered, Log"
+        flexGrow="1" order="AssessmentID desc" disabledActions="delete"
         filter="Status"
 >
   <g:columns>
@@ -22,7 +21,6 @@
   <xi:include href="columns/Places.columns.xml" />
 
   <g:columns>
-    <DataColumn name="CustomerName" />
     <DataColumn name="OrderNotes" minWidth="100" whiteSpace="nowrap" />
     <DataColumn name="Description" minWidth="100" whiteSpace="nowrap" />
 
@@ -54,6 +52,8 @@
     </CalcColumn>
 
     <RelColumn name="Author" filterSupplier="list" />
+
+    <RelColumn name="Customer" renderColumns="CustomerName CustomerTypeName" />
   </g:columns>
 
   <g:predefinedFilter name="new_answered"

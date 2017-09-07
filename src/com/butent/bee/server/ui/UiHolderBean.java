@@ -115,9 +115,8 @@ public class UiHolderBean {
 
   private static BeeLogger logger = LogUtils.getLogger(UiHolderBean.class);
 
-  private static boolean isEmbeddedGrid(Element element) {
-    return BeeUtils.inListSame(XmlUtils.getLocalName(element), UiConstants.TAG_CHILD_GRID,
-        UiConstants.TAG_GRID_PANEL);
+  private static boolean isEmbeddedGrid(String name) {
+    return BeeUtils.inListSame(name, UiConstants.TAG_CHILD_GRID, UiConstants.TAG_GRID_PANEL);
   }
 
   private static boolean isHidable(Element element) {
@@ -308,7 +307,7 @@ public class UiHolderBean {
   public void initMenu() {
     initObjects(SysObject.MENU);
 
-    Set<String> childs = new HashSet<>();
+    Set<String> children = new HashSet<>();
 
     for (String menuKey : menuCache.keySet()) {
       Menu xmlMenu = menuCache.get(menuKey);
@@ -366,10 +365,10 @@ public class UiHolderBean {
             items.add(xmlMenu);
           }
         }
-        childs.add(menuKey);
+        children.add(menuKey);
       }
     }
-    for (String child : childs) {
+    for (String child : children) {
       menuCache.remove(child);
     }
   }
@@ -641,6 +640,10 @@ public class UiHolderBean {
     return usr.isColumnVisible(view, source) && !BeeUtils.contains(hiddenColumns, source);
   }
 
+  private boolean isListVisible(BeeView view, String listName) {
+    return view != null && usr.isListVisible(view.getName(), listName);
+  }
+
   private boolean isWidgetVisible(Element element, BeeView view, Set<String> hiddenColumns) {
     if (element.hasAttribute(UiConstants.ATTR_MODULE)
         && !usr.isAnyModuleVisible(element.getAttribute(UiConstants.ATTR_MODULE))) {
@@ -650,6 +653,11 @@ public class UiHolderBean {
     if (view != null) {
       String source = element.getAttribute(UiConstants.ATTR_SOURCE);
       if (!BeeUtils.isEmpty(source) && !isSourceVisible(view, source, hiddenColumns)) {
+        return false;
+      }
+
+      String listName = element.getAttribute(UiConstants.ATTR_LIST_NAME);
+      if (!BeeUtils.isEmpty(listName) && !isListVisible(view, listName)) {
         return false;
       }
     }
@@ -673,7 +681,9 @@ public class UiHolderBean {
       }
     }
 
-    if (isEmbeddedGrid(element)) {
+    String name = XmlUtils.getLocalName(element);
+
+    if (isEmbeddedGrid(name)) {
       String gridName = BeeUtils.notEmpty(element.getAttribute(UiConstants.ATTR_GRID_NAME),
           element.getAttribute(UiConstants.ATTR_NAME));
       String gridViewName = BeeUtils.isEmpty(gridName) ? null : getGridViewName(gridName);
@@ -682,11 +692,20 @@ public class UiHolderBean {
         return false;
       }
 
-    } else if (BeeUtils.same(XmlUtils.getLocalName(element), UiConstants.TAG_DATA_TREE)) {
+    } else if (BeeUtils.same(name, UiConstants.TAG_DATA_TREE)) {
       String widgetViewName = element.getAttribute(UiConstants.ATTR_VIEW_NAME);
 
       if (!BeeUtils.isEmpty(widgetViewName) && !usr.isDataVisible(widgetViewName)) {
         return false;
+      }
+
+    } else if (BeeUtils.same(name, UiConstants.TAG_CHILD_SELECTOR)) {
+      if (view != null && BeeUtils.isEmpty(element.getAttribute(UiConstants.ATTR_LIST_NAME))) {
+        String listName = element.getAttribute(UiConstants.ATTR_CHILD_TABLE);
+
+        if (!BeeUtils.isEmpty(listName) && !isListVisible(view, listName)) {
+          return false;
+        }
       }
     }
 

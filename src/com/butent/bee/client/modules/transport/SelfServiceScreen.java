@@ -130,6 +130,7 @@ public class SelfServiceScreen extends ScreenImpl {
             showSuccessInfo(result);
           });
         });
+
     commandNewRequest.addStyleName(STYLE_PREFIX + STYLE_COMMAND_ITEM);
     commandNewRequest.addStyleName(STYLE_PREFIX + STYLE_NEW_COMMAND_ITEM);
     addCommandItem(commandNewRequest);

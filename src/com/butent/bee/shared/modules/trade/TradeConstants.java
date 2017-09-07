@@ -71,6 +71,9 @@ public final class TradeConstants {
 
   public static final String TBL_EXPENDITURE_TYPES = "ExpenditureTypes";
   public static final String TBL_TRADE_EXPENDITURES = "TradeExpenditures";
+  public static final String TBL_TRADE_ITEM_EXPENDITURES = "TradeItemExpend";
+
+  public static final String TBL_TRADE_ITEM_RETURNS = "TradeItemReturns";
 
   public static final String TBL_TRADE_PAYMENTS = "TradePayments";
   public static final String TBL_TRADE_PAYMENT_TERMS = "TradePaymentTerms";
@@ -113,6 +116,7 @@ public final class TradeConstants {
 
   public static final String VIEW_TRADE_MOVEMENT = "TradeMovement";
   public static final String VIEW_ITEM_SELECTION = "ItemSelection";
+  public static final String VIEW_TRADE_ITEMS_FOR_RETURN = "TradeItemsForReturn";
 
   public static final String COL_PURCHASE = "Purchase";
 
@@ -233,6 +237,9 @@ public final class TradeConstants {
   public static final String COL_PRIMARY_DOCUMENT_ITEM = "PrimaryDocumentItem";
   public static final String COL_STOCK_QUANTITY = "Quantity";
   public static final String COL_STOCK_WAREHOUSE = "Warehouse";
+  public static final String COL_STOCK_ACCOUNT = "CostAccount";
+
+  public static final String COL_RELATED_DOCUMENT_ITEM = "RelatedDocumentItem";
 
   public static final String COL_TRADE_PAYMENT_DATE = "PaymentDate";
   public static final String COL_TRADE_PAYMENT_AMOUNT = "PaymentAmount";
@@ -296,6 +303,8 @@ public final class TradeConstants {
   public static final String ALS_PARENT_COST = "ParentCost";
   public static final String ALS_PARENT_COST_CURRENCY = "ParentCostCurrency";
 
+  public static final String ALS_RETURNED_QTY = "ReturnedQty";
+
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
 
   public static final String PROP_STOCK = "Stock";
@@ -345,6 +354,7 @@ public final class TradeConstants {
 
   public static final String GRID_ITEM_MOVEMENT = "ItemMovement";
   public static final String GRID_TRADE_RELATED_ITEMS = "TradeRelatedItems";
+  public static final String GRID_TRADE_ITEMS_FOR_RETURN = "TradeItemsForReturn";
 
   public static final String GRID_TRADE_PAYABLES = "TradePayables";
   public static final String GRID_TRADE_RECEIVABLES = "TradeReceivables";

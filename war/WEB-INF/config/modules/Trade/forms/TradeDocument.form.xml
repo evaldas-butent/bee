@@ -297,8 +297,8 @@
               </DataSelector>
             </FlowPanel>
 
-            <FlowPanel style="&mfld; &mwn;">
-              <Label text="=tags" style="&flbl;" />
+            <FlowPanel style="&mfld; &mwn;" listName="TradeDocumentTags">
+              <Label text="=tags" style="&flbl;" listName="TradeDocumentTags" />
               <ChildSelector childTable="TradeDocumentTags" viewName="TradeTags"
                              targetRelColumn="TradeDocument" sourceRelColumn="TradeTag"
                              renderColumns="TagName"

@@ -45,7 +45,7 @@
 
     <FlowPanel name="Customer">
       <Details open="true">
-        <Summary text="=trRequestCustomerInfo" style="&summary;" />
+      <Summary text="=trRequestCustomerInfo" style="&summary;" />
 
         <Table name="Register" kind="controls" style="&table;" cellStyle="&cells;">
           &cols;
@@ -225,7 +225,6 @@
 
       <Table kind="controls" style="&table;" cellStyle="&cells;">
         &cols;
-
         <row>
           <Label for="Weight" name="WeightLabel" />
           <FlowPanel>

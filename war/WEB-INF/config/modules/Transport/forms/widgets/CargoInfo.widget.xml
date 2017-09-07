@@ -42,18 +42,18 @@
 
   <FlowPanel style="&section;">
     <Label for="Quantity" style="&labelLeft;" />
-    <InputDecimal source="Quantity" format="#.00" style="&input;" />
+    <InputDecimal source="Quantity" style="&input;" />
     <DataSelector source="QuantityUnit" style="&inline; width:5em; margin-left:5px;"
                   editEnabled="false" />
     <Label for="Weight" style="&labelRight;" />
-    <InputDecimal source="Weight" format="#.000" style="&input;" />
+    <InputDecimal source="Weight" style="&input;" />
     <DataSelector source="WeightUnit" style="&inline; width:5em; margin-left:5px;"
                   editEnabled="false" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
     <Label for="Volume" style="&labelLeft;" />
-    <InputDecimal source="Volume" format="#.000" style="&input;" />
+    <InputDecimal source="Volume" style="&input;" />
     <DataSelector source="VolumeUnit" style="&inline; width:5em; margin-left:5px;"
                   editEnabled="false" />
     <Label for="Value" style="&labelRight;" />
