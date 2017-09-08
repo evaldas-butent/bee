@@ -15,7 +15,6 @@
 
   <g:columns>
     <DataColumn name="ProductName" />
-    <DataColumn name="RiskRating" />
     <DataColumn name="StartTime" />
     <DataColumn name="FinishTime" />
   </g:columns>
