@@ -16,6 +16,7 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.StringPredicate;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -160,6 +161,23 @@ public final class SqlUtils {
       clause.add(contains(expr, value));
     }
     return clause;
+  }
+
+  public static IsCondition containsAny(String source, Collection<String> fields,
+      Collection<String> values) {
+
+    if (BeeUtils.isEmpty(fields) || BeeUtils.isEmpty(values)) {
+      return null;
+
+    } else {
+      HasConditions conditions = or();
+
+      fields.stream().filter(StringPredicate.NOT_EMPTY).forEach(field ->
+          values.stream().filter(StringPredicate.NOT_EMPTY).forEach(value ->
+              conditions.add(contains(source, field, value))));
+
+      return conditions;
+    }
   }
 
   public static IsQuery createCheck(String table, String name, String expression) {

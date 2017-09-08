@@ -129,6 +129,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.StringList;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
@@ -1422,10 +1423,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             SqlUtils.join(aliasReturnDocuments, documentId,
                 aliasReturnDocumentItems, COL_TRADE_DOCUMENT));
 
+        IsCondition pointOfNoReturn =
+            SqlUtils.isNull(TBL_TRADE_ITEM_RETURNS, COL_PRIMARY_DOCUMENT_ITEM);
+
         if (!suppliers.isEmpty()) {
           where.add(
               SqlUtils.or(
-                  SqlUtils.and(SqlUtils.isNull(aliasReturnDocuments, COL_TRADE_SUPPLIER),
+                  SqlUtils.and(pointOfNoReturn,
                       SqlUtils.inList(aliasDocuments, COL_TRADE_SUPPLIER, suppliers)),
                   SqlUtils.inList(aliasReturnDocuments, COL_TRADE_SUPPLIER, suppliers)));
         }
@@ -1433,17 +1437,21 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         if (primaryDate.isNotNull()) {
           where.add(
               SqlUtils.or(
-                  SqlUtils.and(SqlUtils.isNull(aliasReturnDocuments, COL_TRADE_DATE),
+                  SqlUtils.and(pointOfNoReturn,
                       SqlUtils.less(aliasDocuments, COL_TRADE_DATE, primaryDate.get())),
                   SqlUtils.less(aliasReturnDocuments, COL_TRADE_DATE, primaryDate.get())));
         }
 
         if (!primaryDocumentNumbers.isEmpty()) {
+          StringList numberColumns = StringList.of(COL_TRADE_NUMBER,
+              COL_TRADE_DOCUMENT_NUMBER_1, COL_TRADE_DOCUMENT_NUMBER_2);
+
           where.add(
               SqlUtils.or(
-                  SqlUtils.and(SqlUtils.isNull(aliasReturnDocuments, COL_TRADE_NUMBER),
-                      SqlUtils.inList(aliasDocuments, COL_TRADE_NUMBER, primaryDocumentNumbers)),
-                  SqlUtils.inList(aliasReturnDocuments, COL_TRADE_NUMBER, primaryDocumentNumbers)));
+                  SqlUtils.and(pointOfNoReturn,
+                      SqlUtils.containsAny(aliasDocuments, numberColumns, primaryDocumentNumbers)),
+                  SqlUtils.containsAny(aliasReturnDocuments, numberColumns,
+                      primaryDocumentNumbers)));
         }
       }
 

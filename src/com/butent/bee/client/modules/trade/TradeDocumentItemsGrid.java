@@ -1091,7 +1091,10 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     Long warehouse = TradeUtils.getDocumentRelation(documentRow, COL_TRADE_WAREHOUSE_FROM);
 
     String supplierName = TradeUtils.getDocumentString(documentRow, ALS_CUSTOMER_NAME);
-    String caption = BeeUtils.joinWords(supplierName, n1, n2, Format.renderDate(date));
+    String warehouseCode = TradeUtils.getDocumentString(documentRow, ALS_WAREHOUSE_FROM_CODE);
+
+    String caption = BeeUtils.joinWords(supplierName, n1, n2, Format.renderDate(date),
+        warehouseCode);
 
     Multimap<String, String> options = ArrayListMultimap.create();
     options.put(COL_TRADE_SUPPLIER, BeeUtils.toString(supplier));
