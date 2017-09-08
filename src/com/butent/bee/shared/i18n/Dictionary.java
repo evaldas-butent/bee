@@ -1369,6 +1369,8 @@ public interface Dictionary {
 
   default String crmTaskRiskRating() {return g("crmTaskRiskRating");}
 
+  default String crmTaskRiskRatingTotal() {return g("crmTaskRiskRatingTotal");}
+
   default String crmTaskShowCommentsBelow() {return g("crmTaskShowCommentsBelow");}
 
   default String crmTaskShowCommentsRight() {return g("crmTaskShowCommentsRight");}

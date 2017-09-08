@@ -124,6 +124,7 @@ public final class ClassifierConstants {
   public static final String GRID_COMPANIES = "Companies";
   public static final String GRID_COMPANY_BANK_ACCOUNTS = "CompanyBankAccounts";
   public static final String GRID_COMPANY_USERS = "CompanyUsers";
+  public static final String GRID_COMPANY_TASK_TEMPLATES = "CompanyTaskTemplates";
 
   public static final String GRID_ITEMS = "Items";
 
@@ -389,6 +390,8 @@ public final class ClassifierConstants {
   public static final String QR_PERSON = "qrPerson";
 
   public static final String TREE_ITEM_CATEGORIES = "ItemCategoryTree";
+
+  public static final String NAME_RISK_RATING_LABEL = "RiskRatingLabel";
 
   public static void register() {
     EnumUtils.register(ItemPrice.class);

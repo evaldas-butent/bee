@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="CompanyTaskTemplates" viewName="TaskTemplates" caption="=crmTaskTemplates"
+        flexGrow="1"
+>
+  <xi:include href="../../Tasks/grids/columns/TaskTemplate.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="ProductName" />
+    <DataColumn name="RiskRating" editInPlace="true" />
+    <DataColumn name="StartTime" />
+    <DataColumn name="FinishTime" />
+  </g:columns>
+</g:Grid>

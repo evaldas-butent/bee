@@ -272,6 +272,17 @@
         <ChildGrid name="ChildTasks" relColumn="Company" paging="true" />
       </page>
 
+      <page for="TaskTemplates">
+        <text>=crmTaskTemplates</text>
+        <FlowPanel class="flexBox-vertical" >
+          <HorizontalPanel style="margin-bottom: 1em;">
+            <Label name="RiskRatingLabel" style="font-weight:bold;" />
+          </HorizontalPanel>
+
+          <ChildGrid name="CompanyTaskTemplates" relColumn="Company" class="flexible" />
+        </FlowPanel>
+      </page>
+
       <page for="Requests">
         <text>=crmRequests</text>
         <ChildGrid name="ChildRequests" relColumn="Customer" paging="true" />
