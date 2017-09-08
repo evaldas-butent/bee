@@ -1518,7 +1518,7 @@ public class ImportBean {
           errorProcessor.accept(loc.relations() + ": " + loc.configuration(), bundle.toString());
           ok = false;
         }
-        Set<Long> packet = new HashSet<>();
+        Set<Long> deniedPacketOptions = new HashSet<>();
 
         for (String optCode : Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults()
             .splitToList(Strings.nullToEmpty(row.getValue(prfx + CarsConstants.COL_PACKET)))) {
@@ -1528,14 +1528,14 @@ public class ImportBean {
             errorProcessor.accept(loc.relations() + ": " + loc.packet(), optCode);
             ok = false;
           } else {
-            packet.add(opt.getId());
+            deniedPacketOptions.add(opt.getId());
           }
         }
         if (ok) {
           configuration.setRelationInfo(option, bundle,
               ConfInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION))
                   .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)),
-              DataUtils.buildIdList(packet));
+              DataUtils.buildIdList(deniedPacketOptions));
         }
       }
     }
@@ -1669,7 +1669,7 @@ public class ImportBean {
                 ConfInfo.of(configuration.getRelationPrice(option, bundle),
                     configuration.getRelationDescription(option, bundle))
                     .setCriteria(configuration.getRelationCriteria(option, bundle)),
-                configuration.getRelationPackets(option, bundle));
+                configuration.getDeniedPacketOptions(option, bundle));
             cnt++;
           }
         }

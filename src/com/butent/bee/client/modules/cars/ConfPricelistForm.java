@@ -994,9 +994,9 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       }
       rIdx++;
       // PACKET OPTIONS
-      for (Option pack : configuration.getPackets(option)) {
-        table.setText(rIdx, 0, pack.getCode(), STYLE_PACKET);
-        table.setText(rIdx, 1, pack.getName(), STYLE_PACKET);
+      for (Option packetOption : configuration.getPacketOptions(option)) {
+        table.setText(rIdx, 0, packetOption.getCode(), STYLE_PACKET);
+        table.setText(rIdx, 1, packetOption.getName(), STYLE_PACKET);
         table.getCellFormatter().setStyleName(rIdx, 2, STYLE_PACKET);
 
         for (int c = 0; c < cols.size(); c++) {
@@ -1007,13 +1007,13 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
           if (configuration.hasRelation(option, bundle)) {
             cell.addClassName(STYLE_CELL);
 
-            if (!DataUtils.parseIdSet(configuration.getRelationPackets(option, bundle))
-                .contains(pack.getId())) {
+            if (!DataUtils.parseIdSet(configuration.getDeniedPacketOptions(option, bundle))
+                .contains(packetOption.getId())) {
               cell.addClassName(STYLE_OPTIONAL);
             }
             DomUtils.setDataIndex(cell, r);
             DomUtils.setDataColumn(cell, c);
-            DomUtils.setDataKey(cell, BeeUtils.toString(pack.getId()));
+            DomUtils.setDataKey(cell, BeeUtils.toString(packetOption.getId()));
           }
         }
         rIdx++;
@@ -1133,10 +1133,10 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
             configuration.removeRelation(option, bundle);
             break;
           case SVC_SET_RELATION:
-            String packet = configuration.getRelationPackets(option, bundle);
-            configuration.setRelationInfo(option, bundle, info, packet);
+            String deniedPacketOptions = configuration.getDeniedPacketOptions(option, bundle);
+            configuration.setRelationInfo(option, bundle, info, deniedPacketOptions);
             args.addDataItem(Service.VAR_DATA, info.serialize());
-            args.addNotEmptyData(COL_PACKET, packet);
+            args.addNotEmptyData(COL_PACKET, deniedPacketOptions);
             break;
         }
         BeeKeeper.getRpc().makePostRequest(args, defaultResponse);
@@ -1145,12 +1145,15 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       Long packId = BeeUtils.toLongOrNull(DomUtils.getDataKey(cell));
 
       if (DataUtils.isId(packId)) {
-        Set<Long> packets = DataUtils.parseIdSet(configuration.getRelationPackets(option, bundle));
+        Set<Long> deniedPacketOptions = DataUtils.parseIdSet(configuration
+            .getDeniedPacketOptions(option, bundle));
 
-        if (!packets.remove(packId)) {
-          packets.add(packId);
+        if (!deniedPacketOptions.remove(packId)) {
+          deniedPacketOptions.add(packId);
         }
-        configuration.setRelationInfo(option, bundle, null, DataUtils.buildIdList(packets));
+        configuration.setRelationInfo(option, bundle, null,
+            DataUtils.buildIdList(deniedPacketOptions));
+
         consumer.accept(SVC_SET_RELATION, ConfInfo.of(price, description).setCriteria(criteria)
             .setPhoto(photo));
 
@@ -1221,7 +1224,8 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
             Queries.getRowSet(TBL_CONF_OPTIONS, null, Filter.idIn(packs.values()),
                 optsRs -> {
                   opts.forEach(opt -> packs.get(opt.getId()).forEach(pack ->
-                      configuration.getPackets(opt).add(new Option(optsRs.getRowById(pack)))));
+                      configuration.getPacketOptions(opt)
+                          .add(new Option(optsRs.getRowById(pack)))));
                   refresh();
                 });
           }
