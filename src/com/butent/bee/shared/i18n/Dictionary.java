@@ -989,6 +989,8 @@ public interface Dictionary {
 
   default String crmAdded() {return g("crmAdded");}
 
+  default String crmAutoCreatedTask() {return g("crmAutoCreatedTask");}
+
   default String crmCreatedNewTasks(Object p0) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{0}", p0);
