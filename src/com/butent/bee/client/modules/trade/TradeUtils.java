@@ -71,7 +71,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.StringList;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -79,7 +78,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public final class TradeUtils {
 
@@ -840,7 +838,9 @@ public final class TradeUtils {
 
     options.put(COL_DISCOUNT_COMPANY, BeeUtils.toStringOrNull(company));
 
+    options.put(COL_OPERATION_TYPE, BeeUtils.toString(operationType.ordinal()));
     options.put(COL_DISCOUNT_OPERATION, BeeUtils.toStringOrNull(operation));
+
     if (operationType.requireOperationForPriceCalculation()) {
       options.put(Service.VAR_REQUIRED, COL_DISCOUNT_OPERATION);
     }
@@ -908,12 +908,7 @@ public final class TradeUtils {
       filter.add(Filter.or(f1, f2));
     }
 
-    EnumSet<TradeDocumentPhase> phases = EnumSet.noneOf(TradeDocumentPhase.class);
-    phases.addAll(Arrays.stream(TradeDocumentPhase.values())
-        .filter(TradeDocumentPhase::modifyStock)
-        .collect(Collectors.toSet()));
-
-    filter.add(Filter.any(COL_TRADE_DOCUMENT_PHASE, phases));
+    filter.add(Filter.any(COL_TRADE_DOCUMENT_PHASE, TradeDocumentPhase.getStockPhases()));
 
     EnumSet<OperationType> operationTypes = EnumSet.of(OperationType.SALE, OperationType.POS);
     filter.add(Filter.any(COL_OPERATION_TYPE, operationTypes));

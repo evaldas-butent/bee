@@ -35,14 +35,12 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 class TradeDebtsGrid extends AbstractGridInterceptor {
 
@@ -219,10 +217,7 @@ class TradeDebtsGrid extends AbstractGridInterceptor {
     phases.clear();
 
     if (BeeUtils.isEmpty(value)) {
-      phases.addAll(Arrays.stream(TradeDocumentPhase.values())
-          .filter(TradeDocumentPhase::modifyStock)
-          .collect(Collectors.toSet()));
-
+      phases.addAll(TradeDocumentPhase.getStockPhases());
     } else if (!BeeConst.STRING_MINUS.equals(value)) {
       phases.addAll(EnumUtils.parseIndexSet(TradeDocumentPhase.class, value));
     }
