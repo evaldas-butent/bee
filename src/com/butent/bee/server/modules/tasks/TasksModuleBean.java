@@ -305,7 +305,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         BeeParameter.createRelation(module, PRM_DEFAULT_DBA_DOCUMENT_TYPE,
             DocumentConstants.VIEW_DOCUMENT_TYPES, DocumentConstants.COL_DOCUMENT_TYPE_NAME),
         BeeParameter.createBoolean(module, PRM_CREATE_PRIVATE_TASK_FIRST, true, null),
-        BeeParameter.createNumber(module, PRM_SUMMARY_EXPIRED_TASK_PERCENT, false, 10)
+        BeeParameter.createNumber(module, PRM_SUMMARY_EXPIRED_TASK_PERCENT, false, 10),
+        BeeParameter.createRelation(module, PRM_AUTO_TASK_USER, VIEW_USERS, COL_FIRST_NAME,
+            COL_LAST_NAME)
     );
 
     return params;
@@ -1521,7 +1523,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     return response;
   }
 
-  private ResponseObject createTasks(BeeRowSet data, BeeRow row, long owner) {
+  public ResponseObject createTasks(BeeRowSet data, BeeRow row, long owner) {
     ResponseObject response = null;
 
     Map<String, String> properties = row.getProperties();
