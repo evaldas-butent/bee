@@ -3170,6 +3170,8 @@ public interface Dictionary {
 
   default String finPostingPrecedence() {return g("finPostingPrecedence");}
 
+  default String finPurchaseReturns() {return g("finPurchaseReturns");}
+
   default String finReceivablesFromEmployees() {return g("finReceivablesFromEmployees");}
 
   default String finRevenueAndExpenseSummary() {return g("finRevenueAndExpenseSummary");}
