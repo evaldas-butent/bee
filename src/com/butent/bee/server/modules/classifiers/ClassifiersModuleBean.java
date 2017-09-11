@@ -1422,7 +1422,16 @@ public class ClassifiersModuleBean implements BeeModule {
 
     if (operationType != null && operationType.isReturn()) {
       Pair<Double, Double> pair = getPriceAndDiscountForReturn(
-          operationType == OperationType.CUSTOMER_RETURN, company, item, time, currency);
+          operationType.producesStock(), company, item, time, currency);
+
+      if (explain > 0) {
+        if (pair == null) {
+          explain(reqInfo.getLabel(), operationType, "no data for return");
+        } else {
+          explain(reqInfo.getLabel(), operationType, "result for return:",
+              COL_TRADE_ITEM_PRICE, pair.getA(), COL_TRADE_DOCUMENT_ITEM_DISCOUNT, pair.getB());
+        }
+      }
 
       if (pair != null) {
         return ResponseObject.response(pair);
@@ -1715,6 +1724,10 @@ public class ClassifiersModuleBean implements BeeModule {
           TimeUtils.startOfNextDay(new DateTime(time))));
     }
 
+    if (DataUtils.isId(currency)) {
+      conditions.add(SqlUtils.equals(TBL_TRADE_DOCUMENTS, COL_TRADE_CURRENCY, currency));
+    }
+
     conditions.add(SqlUtils.inList(TBL_TRADE_DOCUMENTS, COL_TRADE_DOCUMENT_PHASE,
         TradeDocumentPhase.getStockPhases()));
 
@@ -1752,7 +1765,15 @@ public class ClassifiersModuleBean implements BeeModule {
     SimpleRow row = data.getRow(0);
 
     Double price = row.getDouble(COL_TRADE_ITEM_PRICE);
-    Double discount = row.getDouble(COL_TRADE_DOCUMENT_ITEM_DISCOUNT);
+
+    Double discount;
+    if (!row.isNull(COL_TRADE_DOCUMENT_DISCOUNT_MODE)
+        && row.isTrue(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT)) {
+
+      discount = row.getDouble(COL_TRADE_DOCUMENT_ITEM_DISCOUNT);
+    } else {
+      discount = null;
+    }
 
     return Pair.of(price, discount);
   }

@@ -791,7 +791,8 @@ public final class TradeUtils {
   static boolean documentPriceIsParentCost(OperationType operationType, ItemPrice itemPrice) {
     return operationType != null && operationType.consumesStock()
         && (itemPrice == ItemPrice.COST
-        || itemPrice == null && operationType.getDefaultPrice() == ItemPrice.COST);
+        || itemPrice == null && operationType.getDefaultPrice() == ItemPrice.COST
+        && !operationType.hasDebt());
   }
 
   static Long getCompanyForPriceCalculation(IsRow row, OperationType operationType) {
