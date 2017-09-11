@@ -102,7 +102,9 @@ public class FinancePostingBean {
     TradeAccounts defaultAccounts = TradeAccounts.createAvailable(config, config.getRow(rowIndex));
 
     Long defaultJournal = config.getLong(rowIndex, COL_DEFAULT_JOURNAL);
+
     Long transitoryAccount = config.getLong(rowIndex, COL_TRANSITORY_ACCOUNT);
+    Long purchaseReturns = config.getLong(rowIndex, COL_PURCHASE_RETURNS);
 
     List<TradeDimensionsPrecedence> dimensionsPrecedence = TradeDimensionsPrecedence
         .parse(config.getString(rowIndex, COL_TRADE_DIMENSIONS_PRECEDENCE));
@@ -178,8 +180,6 @@ public class FinancePostingBean {
     TradeAccounts warehouseToAccounts = getTradeAccounts(VIEW_WAREHOUSES, warehouseTo);
 
     int itemIndex = docLines.getColumnIndex(COL_ITEM);
-    int isServiceIndex = docLines.getColumnIndex(COL_ITEM_IS_SERVICE);
-
     int quantityIndex = docLines.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
 
     int itemWarehouseFromIndex = docLines.getColumnIndex(COL_TRADE_ITEM_WAREHOUSE_FROM);
@@ -210,10 +210,11 @@ public class FinancePostingBean {
     List<BeeColumn> columns = sys.getView(VIEW_FINANCIAL_RECORDS).getRowSetColumns();
     BeeRowSet buffer = new BeeRowSet(VIEW_FINANCIAL_RECORDS, columns);
 
+    Long debit;
+    Long credit;
+
     for (BeeRow row : docLines) {
       Long item = row.getLong(itemIndex);
-      boolean isService = row.isTrue(isServiceIndex);
-
       Double quantity = row.getDouble(quantityIndex);
 
       Long employee = row.getLong(employeeIndex);
@@ -287,10 +288,18 @@ public class FinancePostingBean {
       List<BeeRow> lineRows = new ArrayList<>();
 
       if (BeeUtils.nonZero(lineTotal - lineVat)) {
+        debit = operationType.getAmountDebit(acc);
+        credit = operationType.getAmountCredit(acc);
+
+        if (operationType.isReturn() && operationType.consumesStock()
+            && DataUtils.isId(purchaseReturns)) {
+
+          credit = purchaseReturns;
+        }
+
         BeeUtils.addNotNull(lineRows,
-            post(columns, date,
-                operationType.getAmountDebit(acc), operationType.getAmountCredit(acc),
-                lineTotal - lineVat, currency, quantity, company, employee, dim));
+            post(columns, date, debit, credit, lineTotal - lineVat, currency, quantity,
+                company, employee, dim));
       }
 
       if (BeeUtils.nonZero(lineVat)) {
@@ -305,8 +314,8 @@ public class FinancePostingBean {
           expenditures.addAll(itemExpenditures.get(row.getId()));
         }
 
-        Long debit = operationType.getCostDebit(acc);
-        Long credit = operationType.getCostCredit(acc);
+        debit = operationType.getCostDebit(acc);
+        credit = operationType.getCostCredit(acc);
 
         if (BeeUtils.isDouble(costAmount) && FinanceUtils.isValidEntry(debit, credit)) {
           double amount = costAmount;
@@ -330,7 +339,7 @@ public class FinancePostingBean {
       }
 
       if (operationType.consumesStock() && BeeUtils.nonZero(parentCostAmount)) {
-        Long credit = getParentCostAccount(parent);
+        credit = getParentCostAccount(parent);
 
         if (operationType.producesStock()) {
           Long cFr = BeeUtils.nvl(payer, supplier, customer);
@@ -364,7 +373,7 @@ public class FinancePostingBean {
             accTo = computeTradeAccounts(accountsPrecedence, aTo, defaultAccounts);
           }
 
-          Long debit = accTo.getCostAccount();
+          debit = accTo.getCostAccount();
 
           if (DataUtils.isId(transitoryAccount)) {
             BeeUtils.addNotNull(lineRows,
@@ -382,8 +391,14 @@ public class FinancePostingBean {
           }
 
         } else {
+          if (operationType.isReturn() && DataUtils.isId(purchaseReturns)) {
+            debit = purchaseReturns;
+          } else {
+            debit = operationType.getCostDebit(acc);
+          }
+
           BeeUtils.addNotNull(lineRows,
-              post(columns, date, operationType.getCostDebit(acc), credit,
+              post(columns, date, debit, credit,
                   parentCostAmount, parentCostCurrency, quantity, company, employee, dim));
         }
       }
