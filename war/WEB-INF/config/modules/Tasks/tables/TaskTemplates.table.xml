@@ -29,6 +29,8 @@
 
     <Relation name="Product" relation="TaskProducts" label="=crmTaskProduct" />
 
+    <Integer name="RiskRating" label="=crmTaskRiskRating" />
+
     <Boolean name="PrivateTask" label="=crmTaskPrivate" />
     <Boolean name="Mail" label="=mailNotify" />
     <Boolean name="NotScheduledTask" label="=crmTasksNotScheduledTask" />
