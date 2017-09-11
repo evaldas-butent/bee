@@ -382,6 +382,7 @@
       <xs:enumeration value="DocumentFiles" />
       <xs:enumeration value="DocumentItems" />
       <xs:enumeration value="DocumentPlaces" />
+      <xs:enumeration value="DocumentReminders" />
       <xs:enumeration value="Documents" />
       <xs:enumeration value="DocumentStatuses" />
       <xs:enumeration value="DocumentTemplates" />
@@ -645,7 +646,6 @@
       <xs:enumeration value="TradeDocuments" />
       <xs:enumeration value="TradeExpenditures" />
       <xs:enumeration value="TradeItemCost" />
-      <xs:enumeration value="TradeItemReturns" />
       <xs:enumeration value="TradeItemsForReturn" />
       <xs:enumeration value="TradeMovement" />
       <xs:enumeration value="TradeNotes" />

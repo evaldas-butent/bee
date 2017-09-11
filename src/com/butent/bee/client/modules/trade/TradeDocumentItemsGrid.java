@@ -270,7 +270,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
       if (BeeKeeper.getUser().canCreateData(getViewName())) {
         Button returnCommand = new Button(Localized.dictionary().trdCommandReturn(),
-            event -> onReturn());
+            event -> onReturn(getGridView()));
         returnCommand.addStyleName(STYLE_RETURN_COMMAND);
         returnCommand.setEnabled(false);
 
@@ -1047,21 +1047,22 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
   }
 
-  private void onReturn() {
-    IsRow parentRow = getParentRow(getGridView());
-    OperationType operationType = TradeUtils.getDocumentOperationType(parentRow);
+  private void onReturn(GridView gridView) {
+    gridView.ensureRelId(docId -> {
+      IsRow parentRow = getParentRow(gridView);
+      OperationType operationType = TradeUtils.getDocumentOperationType(parentRow);
 
-    if (checkParentOnAdd(parentRow) && operationType != null && operationType.isReturn()) {
-      if (operationType.consumesStock()) {
-        onReturnToSupplier(parentRow);
+      if (checkParentOnAdd(parentRow) && operationType != null && operationType.isReturn()) {
+        if (operationType.consumesStock()) {
+          onReturnToSupplier(parentRow);
+        } else {
+          onCustomerReturn(parentRow);
+        }
 
       } else {
-        getGridView().ensureRelId(docId -> onCustomerReturn(getParentRow(getGridView())));
+        endReturnCommand();
       }
-
-    } else {
-      endReturnCommand();
-    }
+    });
   }
 
   private void endReturnCommand() {
@@ -1083,10 +1084,58 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
 
     DateTime date = TradeUtils.getDocumentDate(documentRow);
-    Long currency = TradeUtils.getDocumentRelation(documentRow, COL_TRADE_CURRENCY);
 
     String n1 = TradeUtils.getDocumentString(documentRow, COL_TRADE_DOCUMENT_NUMBER_1);
     String n2 = TradeUtils.getDocumentString(documentRow, COL_TRADE_DOCUMENT_NUMBER_2);
+
+    Long warehouse = TradeUtils.getDocumentRelation(documentRow, COL_TRADE_WAREHOUSE_FROM);
+
+    String supplierName = TradeUtils.getDocumentString(documentRow, ALS_CUSTOMER_NAME);
+    String warehouseCode = TradeUtils.getDocumentString(documentRow, ALS_WAREHOUSE_FROM_CODE);
+
+    String caption = BeeUtils.joinWords(supplierName, n1, n2, Format.renderDate(date),
+        warehouseCode);
+
+    Multimap<String, String> options = ArrayListMultimap.create();
+    options.put(COL_TRADE_SUPPLIER, BeeUtils.toString(supplier));
+
+    if (date != null) {
+      options.put(COL_TRADE_DATE, TimeUtils.startOfNextDay(date).serialize());
+    }
+
+    if (!BeeUtils.isEmpty(n1)) {
+      options.put(COL_TRADE_NUMBER, n1);
+    }
+    if (!BeeUtils.isEmpty(n2) && !BeeUtils.equalsTrim(n1, n2)) {
+      options.put(COL_TRADE_NUMBER, n2);
+    }
+
+    if (DataUtils.isId(warehouse)) {
+      options.put(COL_STOCK_WAREHOUSE, BeeUtils.toString(warehouse));
+    }
+
+    Filter filter = Filter.custom(FILTER_ITEM_HAS_STOCK, options);
+    long docId = documentRow.getId();
+
+    Queries.hasAnyRows(VIEW_ITEMS, filter, has -> {
+      if (getGridView().isInteractive() && Objects.equals(getGridView().getRelId(), docId)) {
+        if (has) {
+          TradeUtils.getDocumentVatPercent(documentRow, vatPercent -> {
+            TradeItemPicker picker = new TradeItemPicker(documentRow, vatPercent);
+            picker.setParentFilter(filter);
+
+            picker.open(caption, false,
+                (selectedItems, tds) -> addItems(documentRow, selectedItems, tds));
+            endReturnCommand();
+          });
+
+        } else {
+          getGridView().notifyInfo(Localized.dictionary().trdTypeReturnToSupplier(), caption,
+              Localized.dictionary().nothingFound());
+          endReturnCommand();
+        }
+      }
+    });
   }
 
   private void onCustomerReturn(IsRow documentRow) {

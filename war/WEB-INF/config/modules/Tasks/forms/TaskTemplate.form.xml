@@ -79,19 +79,11 @@
 
         <Table kind="controls" cellStyle="&cell;" >
           <col index="0" cellStyle="&col1;" />
-          <col index="2" cellStyle="&col3;" />
 
           <row>
             <Label for="Priority" />
             <Radio source="Priority" />
-
-            <Label for="RiskRating" style="&inline;" />
-            <InputInteger source="RiskRating" minValue="1" maxValue="100" style="width: 50px;" />
           </row>
-        </Table>
-
-        <Table kind="controls" cellStyle="&cell;" >
-          <col index="0" cellStyle="&col1;" />
 
           <row>
             <Label for="Type" />

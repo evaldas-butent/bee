@@ -398,17 +398,12 @@ public class TradeStockReport extends ReportInterceptor {
   }
 
   private static Filter getDocumentSelectorFilter() {
-    EnumSet<TradeDocumentPhase> phases = EnumSet.noneOf(TradeDocumentPhase.class);
-    phases.addAll(Arrays.stream(TradeDocumentPhase.values())
-        .filter(TradeDocumentPhase::modifyStock)
-        .collect(Collectors.toSet()));
-
     EnumSet<OperationType> operationTypes = EnumSet.noneOf(OperationType.class);
     operationTypes.addAll(Arrays.stream(OperationType.values())
         .filter(OperationType::producesStock)
         .collect(Collectors.toSet()));
 
-    return Filter.and(Filter.any(COL_TRADE_DOCUMENT_PHASE, phases),
+    return Filter.and(Filter.any(COL_TRADE_DOCUMENT_PHASE, TradeDocumentPhase.getStockPhases()),
         Filter.any(COL_OPERATION_TYPE, operationTypes));
   }
 

@@ -299,12 +299,34 @@ public class FinancePostingBean {
                 lineVat, currency, quantity, company, employee, dim));
       }
 
-      if (operationType.providesCost() && itemExpenditures != null
-          && itemExpenditures.containsKey(row.getId())) {
+      if (operationType.providesCost()) {
+        List<SimpleRow> expenditures = new ArrayList<>();
+        if (itemExpenditures != null && itemExpenditures.containsKey(row.getId())) {
+          expenditures.addAll(itemExpenditures.get(row.getId()));
+        }
 
-        lineRows.addAll(postExpenditures(columns, itemExpenditures.get(row.getId()), date,
-            operationType.getAmountDebit(acc), operationType.getAmountCredit(acc),
-            company, employee, dim));
+        Long debit = operationType.getCostDebit(acc);
+        Long credit = operationType.getCostCredit(acc);
+
+        if (BeeUtils.isDouble(costAmount) && FinanceUtils.isValidEntry(debit, credit)) {
+          double amount = costAmount;
+          if (!expenditures.isEmpty()) {
+            amount -= expenditures.stream()
+                .mapToDouble(er -> er.getDouble(COL_EXPENDITURE_AMOUNT)).sum();
+          }
+
+          BeeUtils.addNotNull(lineRows,
+              post(columns, date, debit, credit, amount, costCurrency, quantity,
+                  company, employee, dim));
+        }
+
+        if (!expenditures.isEmpty()) {
+          debit = BeeUtils.nvl(debit, operationType.getAmountDebit(acc));
+          credit = BeeUtils.nvl(credit, operationType.getAmountCredit(acc));
+
+          lineRows.addAll(postExpenditures(columns, expenditures, date, debit, credit,
+              company, employee, dim));
+        }
       }
 
       if (operationType.consumesStock() && BeeUtils.nonZero(parentCostAmount)) {
@@ -361,7 +383,7 @@ public class FinancePostingBean {
 
         } else {
           BeeUtils.addNotNull(lineRows,
-              post(columns, date, operationType.getParentCostDebit(acc), credit,
+              post(columns, date, operationType.getCostDebit(acc), credit,
                   parentCostAmount, parentCostCurrency, quantity, company, employee, dim));
         }
       }

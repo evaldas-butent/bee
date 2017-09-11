@@ -745,6 +745,10 @@
   color: white;
 }
 
+.bee-reminder-dialog-radioTask {
+  margin-left: 20px;
+}
+
 .bee-reminder-dialog-remindButton {
    background-color: #1eb2d8;
    color: white;

@@ -11,6 +11,7 @@
                 visible="false" />
 
     <DataColumn name="PrimaryDate" />
+    <DataColumn name="PrimaryNumber" visible="false" />
     <DataColumn name="SupplierName" flexGrow="1" />
 
     <DataColumn name="TradeDocumentItem" visible="false" />

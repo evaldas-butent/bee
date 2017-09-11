@@ -49,6 +49,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Triplet;
@@ -70,6 +71,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.CustomFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
@@ -127,6 +129,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.StringList;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
@@ -1342,30 +1345,117 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     BeeView.registerConditionProvider(FILTER_ITEM_HAS_STOCK, (view, args) -> {
       Set<Long> warehouses = new HashSet<>();
+      Set<Long> suppliers = new HashSet<>();
+
+      Holder<DateTime> primaryDate = Holder.absent();
+      Set<String> primaryDocumentNumbers = new HashSet<>();
 
       if (!BeeUtils.isEmpty(args)) {
-        for (String arg : args) {
-          Long warehouse = BeeUtils.toLongOrNull(arg);
-          if (DataUtils.isId(warehouse)) {
-            warehouses.add(warehouse);
+        Multimap<String, String> options = CustomFilter.getOptions(args);
+
+        options.entries().forEach(entry -> {
+          String value = entry.getValue();
+
+          switch (entry.getKey()) {
+            case COL_STOCK_WAREHOUSE:
+              Long warehouse = BeeUtils.toLongOrNull(value);
+              if (DataUtils.isId(warehouse)) {
+                warehouses.add(warehouse);
+              }
+              break;
+
+            case COL_TRADE_SUPPLIER:
+              Long supplier = BeeUtils.toLongOrNull(value);
+              if (DataUtils.isId(supplier)) {
+                suppliers.add(supplier);
+              }
+              break;
+
+            case COL_TRADE_DATE:
+              primaryDate.set(DateTime.restore(value));
+              break;
+
+            case COL_TRADE_NUMBER:
+              if (!BeeUtils.isEmpty(value)) {
+                primaryDocumentNumbers.add(value.trim());
+              }
+              break;
           }
-        }
+        });
+      }
+
+      String aliasStock = TBL_TRADE_STOCK;
+      String aliasDocumentItems = SqlUtils.uniqueName("pdi");
+      String documentItemId = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
+
+      HasConditions where = SqlUtils.and();
+      where.add(SqlUtils.positive(aliasStock, COL_STOCK_QUANTITY));
+
+      if (!warehouses.isEmpty()) {
+        where.add(SqlUtils.inList(aliasStock, COL_STOCK_WAREHOUSE, warehouses));
       }
 
       SqlSelect query = new SqlSelect().setDistinctMode(true)
-          .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
-          .addFrom(TBL_TRADE_STOCK)
-          .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
-              TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM));
+          .addFields(aliasDocumentItems, COL_ITEM)
+          .addFrom(TBL_TRADE_STOCK, aliasStock)
+          .addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, aliasDocumentItems,
+              SqlUtils.join(aliasDocumentItems, documentItemId,
+                  aliasStock, COL_PRIMARY_DOCUMENT_ITEM));
 
-      IsCondition qtyWhere = SqlUtils.positive(TBL_TRADE_STOCK, COL_STOCK_QUANTITY);
+      if (!suppliers.isEmpty() || primaryDate.isNotNull() || !primaryDocumentNumbers.isEmpty()) {
+        String aliasDocuments = SqlUtils.uniqueName("pdo");
+        String documentId = sys.getIdName(TBL_TRADE_DOCUMENTS);
 
-      if (warehouses.isEmpty()) {
-        query.setWhere(qtyWhere);
-      } else {
-        query.setWhere(SqlUtils.and(qtyWhere,
-            SqlUtils.inList(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE, warehouses)));
+        String aliasReturnDocumentItems = SqlUtils.uniqueName("rdi");
+        String aliasReturnDocuments = SqlUtils.uniqueName("rdo");
+
+        query.addFromLeft(TBL_TRADE_DOCUMENTS, aliasDocuments,
+            SqlUtils.join(aliasDocuments, documentId, aliasDocumentItems, COL_TRADE_DOCUMENT));
+
+        query.addFromLeft(TBL_TRADE_ITEM_RETURNS,
+            SqlUtils.join(TBL_TRADE_ITEM_RETURNS, COL_TRADE_DOCUMENT_ITEM,
+                aliasStock, COL_TRADE_DOCUMENT_ITEM));
+
+        query.addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, aliasReturnDocumentItems,
+            SqlUtils.join(aliasReturnDocumentItems, documentItemId,
+                TBL_TRADE_ITEM_RETURNS, COL_PRIMARY_DOCUMENT_ITEM));
+        query.addFromLeft(TBL_TRADE_DOCUMENTS, aliasReturnDocuments,
+            SqlUtils.join(aliasReturnDocuments, documentId,
+                aliasReturnDocumentItems, COL_TRADE_DOCUMENT));
+
+        IsCondition pointOfNoReturn =
+            SqlUtils.isNull(TBL_TRADE_ITEM_RETURNS, COL_PRIMARY_DOCUMENT_ITEM);
+
+        if (!suppliers.isEmpty()) {
+          where.add(
+              SqlUtils.or(
+                  SqlUtils.and(pointOfNoReturn,
+                      SqlUtils.inList(aliasDocuments, COL_TRADE_SUPPLIER, suppliers)),
+                  SqlUtils.inList(aliasReturnDocuments, COL_TRADE_SUPPLIER, suppliers)));
+        }
+
+        if (primaryDate.isNotNull()) {
+          where.add(
+              SqlUtils.or(
+                  SqlUtils.and(pointOfNoReturn,
+                      SqlUtils.less(aliasDocuments, COL_TRADE_DATE, primaryDate.get())),
+                  SqlUtils.less(aliasReturnDocuments, COL_TRADE_DATE, primaryDate.get())));
+        }
+
+        if (!primaryDocumentNumbers.isEmpty()) {
+          StringList numberColumns = StringList.of(COL_TRADE_NUMBER,
+              COL_TRADE_DOCUMENT_NUMBER_1, COL_TRADE_DOCUMENT_NUMBER_2);
+
+          where.add(
+              SqlUtils.or(
+                  SqlUtils.and(pointOfNoReturn,
+                      SqlUtils.containsAny(aliasDocuments, numberColumns, primaryDocumentNumbers)),
+                  SqlUtils.containsAny(aliasReturnDocuments, numberColumns,
+                      primaryDocumentNumbers)));
+        }
       }
+
+      query.setWhere(where);
 
       return SqlUtils.in(view.getSourceAlias(), view.getSourceIdName(), query);
     });

@@ -6,6 +6,7 @@
   caption="=crmTaskTemplates" newRowCaption="=crmNewTaskTemplate"
   newRowForm="TaskTemplate" editForm="TaskTemplate"
   >
+  <Relation renderColumns="Name" />
   <Columns>
     <SimpleColumn name="Name" />
 
@@ -38,7 +39,6 @@
     <SimpleColumn name="StartTime" />
     <SimpleColumn name="FinishTime" />
 
-    <SimpleColumn name="RiskRating" />
     <SimpleColumn name="EndResult" />
   </Columns>
 

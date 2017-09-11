@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.trade;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
@@ -191,6 +193,8 @@ public class TradeItemPicker extends Flow implements HasPaging {
   private Filter filter;
   private final List<TradeItemSearch> filterBy = new ArrayList<>();
 
+  private Filter parentFilter;
+
   private final SimplePager pager = new SimplePager(999);
 
   private int pageSize = BeeConst.UNDEF;
@@ -258,29 +262,34 @@ public class TradeItemPicker extends Flow implements HasPaging {
   }
 
   public void open(BiConsumer<Collection<BeeRow>, TradeDocumentSums> selectionConsumer) {
+    open(Localized.dictionary().itemSelection(), true, selectionConsumer);
+  }
+
+  public void open(String caption, boolean allowCreateNew,
+      BiConsumer<Collection<BeeRow>, TradeDocumentSums> selectionConsumer) {
+
     if (selectionConsumer == null) {
       logger.severe(NameUtils.getName(this), "selection consumer is null");
       return;
     }
 
-    final DialogBox dialog = DialogBox.withoutCloseBox(Localized.dictionary().itemSelection(),
-        STYLE_DIALOG);
+    final DialogBox dialog = DialogBox.withoutCloseBox(caption, STYLE_DIALOG);
 
-    if (!needsStock()) {
-      Button newItem = new Button(Localized.dictionary().newItem());
-      newItem.addStyleName(STYLE_NEW_ITEM);
+    if (allowCreateNew) {
+      if (!needsStock()) {
+        Button newItem = new Button(Localized.dictionary().newItem());
+        newItem.addStyleName(STYLE_NEW_ITEM);
 
-      newItem.addClickHandler(event -> createNew(false));
+        newItem.addClickHandler(event -> createNew(false));
+        dialog.addCommand(newItem);
+      }
 
-      dialog.addCommand(newItem);
+      Button newService = new Button(Localized.dictionary().newService());
+      newService.addStyleName(STYLE_NEW_SERVICE);
+
+      newService.addClickHandler(event -> createNew(true));
+      dialog.addCommand(newService);
     }
-
-    Button newService = new Button(Localized.dictionary().newService());
-    newService.addStyleName(STYLE_NEW_SERVICE);
-
-    newService.addClickHandler(event -> createNew(true));
-
-    dialog.addCommand(newService);
 
     FaLabel save = new FaLabel(FontAwesome.SAVE, STYLE_SAVE);
 
@@ -663,9 +672,18 @@ public class TradeItemPicker extends Flow implements HasPaging {
   }
 
   private Filter buildParentFilter() {
-    if (needsStock()) {
+    if (getParentFilter() != null) {
+      return getParentFilter();
+
+    } else if (needsStock()) {
+      Multimap<String, String> options = ArrayListMultimap.create();
+      if (DataUtils.isId(getWarehouse())) {
+        options.put(COL_STOCK_WAREHOUSE, BeeUtils.toString(getWarehouse()));
+      }
+
       return Filter.or(Filter.notNull(COL_ITEM_IS_SERVICE),
-          Filter.custom(FILTER_ITEM_HAS_STOCK, getWarehouse()));
+          Filter.custom(FILTER_ITEM_HAS_STOCK, options));
+
     } else {
       return null;
     }
@@ -1872,6 +1890,14 @@ public class TradeItemPicker extends Flow implements HasPaging {
 
   private void setFilter(Filter filter) {
     this.filter = filter;
+  }
+
+  private Filter getParentFilter() {
+    return parentFilter;
+  }
+
+  void setParentFilter(Filter parentFilter) {
+    this.parentFilter = parentFilter;
   }
 
   private List<TradeItemSearch> getFilterBy() {

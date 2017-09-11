@@ -41,5 +41,6 @@
                 visible="false" />
 
     <DataColumn name="PrimaryDate" visible="false" />
+    <DataColumn name="PrimaryNumber" visible="false" />
   </g:columns>
 </g:Grid>
