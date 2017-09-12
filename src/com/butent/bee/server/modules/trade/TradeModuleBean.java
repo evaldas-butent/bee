@@ -1346,6 +1346,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     BeeView.registerConditionProvider(FILTER_ITEM_HAS_STOCK, (view, args) -> {
       Set<Long> warehouses = new HashSet<>();
       Set<Long> suppliers = new HashSet<>();
+      Set<Long> customers = new HashSet<>();
 
       Holder<DateTime> primaryDate = Holder.absent();
       Set<String> primaryDocumentNumbers = new HashSet<>();
@@ -1371,6 +1372,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               }
               break;
 
+            case COL_TRADE_CUSTOMER:
+              Long customer = BeeUtils.toLongOrNull(value);
+              if (DataUtils.isId(customer)) {
+                customers.add(customer);
+              }
+              break;
+
             case COL_TRADE_DATE:
               primaryDate.set(DateTime.restore(value));
               break;
@@ -1385,8 +1393,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       }
 
       String aliasStock = TBL_TRADE_STOCK;
-      String aliasDocumentItems = SqlUtils.uniqueName("pdi");
+      String aliasPrimaryDocumentItems = SqlUtils.uniqueName("pdi");
+
       String documentItemId = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
+      String documentId = sys.getIdName(TBL_TRADE_DOCUMENTS);
 
       HasConditions where = SqlUtils.and();
       where.add(SqlUtils.positive(aliasStock, COL_STOCK_QUANTITY));
@@ -1396,21 +1406,21 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       }
 
       SqlSelect query = new SqlSelect().setDistinctMode(true)
-          .addFields(aliasDocumentItems, COL_ITEM)
+          .addFields(aliasPrimaryDocumentItems, COL_ITEM)
           .addFrom(TBL_TRADE_STOCK, aliasStock)
-          .addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, aliasDocumentItems,
-              SqlUtils.join(aliasDocumentItems, documentItemId,
+          .addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, aliasPrimaryDocumentItems,
+              SqlUtils.join(aliasPrimaryDocumentItems, documentItemId,
                   aliasStock, COL_PRIMARY_DOCUMENT_ITEM));
 
       if (!suppliers.isEmpty() || primaryDate.isNotNull() || !primaryDocumentNumbers.isEmpty()) {
-        String aliasDocuments = SqlUtils.uniqueName("pdo");
-        String documentId = sys.getIdName(TBL_TRADE_DOCUMENTS);
+        String aliasPrimaryDocuments = SqlUtils.uniqueName("pdo");
 
         String aliasReturnDocumentItems = SqlUtils.uniqueName("rdi");
         String aliasReturnDocuments = SqlUtils.uniqueName("rdo");
 
-        query.addFromLeft(TBL_TRADE_DOCUMENTS, aliasDocuments,
-            SqlUtils.join(aliasDocuments, documentId, aliasDocumentItems, COL_TRADE_DOCUMENT));
+        query.addFromLeft(TBL_TRADE_DOCUMENTS, aliasPrimaryDocuments,
+            SqlUtils.join(aliasPrimaryDocuments, documentId,
+                aliasPrimaryDocumentItems, COL_TRADE_DOCUMENT));
 
         query.addFromLeft(TBL_TRADE_ITEM_RETURNS,
             SqlUtils.join(TBL_TRADE_ITEM_RETURNS, COL_TRADE_DOCUMENT_ITEM,
@@ -1430,7 +1440,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           where.add(
               SqlUtils.or(
                   SqlUtils.and(pointOfNoReturn,
-                      SqlUtils.inList(aliasDocuments, COL_TRADE_SUPPLIER, suppliers)),
+                      SqlUtils.inList(aliasPrimaryDocuments, COL_TRADE_SUPPLIER, suppliers)),
                   SqlUtils.inList(aliasReturnDocuments, COL_TRADE_SUPPLIER, suppliers)));
         }
 
@@ -1438,7 +1448,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           where.add(
               SqlUtils.or(
                   SqlUtils.and(pointOfNoReturn,
-                      SqlUtils.less(aliasDocuments, COL_TRADE_DATE, primaryDate.get())),
+                      SqlUtils.less(aliasPrimaryDocuments, COL_TRADE_DATE, primaryDate.get())),
                   SqlUtils.less(aliasReturnDocuments, COL_TRADE_DATE, primaryDate.get())));
         }
 
@@ -1449,10 +1459,23 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           where.add(
               SqlUtils.or(
                   SqlUtils.and(pointOfNoReturn,
-                      SqlUtils.containsAny(aliasDocuments, numberColumns, primaryDocumentNumbers)),
+                      SqlUtils.containsAny(aliasPrimaryDocuments, numberColumns,
+                          primaryDocumentNumbers)),
                   SqlUtils.containsAny(aliasReturnDocuments, numberColumns,
                       primaryDocumentNumbers)));
         }
+      }
+
+      if (!customers.isEmpty()) {
+        String aliasDocumentItems = SqlUtils.uniqueName("dit");
+        String aliasDocuments = SqlUtils.uniqueName("doc");
+
+        query.addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, aliasDocumentItems,
+            SqlUtils.join(aliasDocumentItems, documentItemId, aliasStock, COL_TRADE_DOCUMENT_ITEM));
+        query.addFromLeft(TBL_TRADE_DOCUMENTS, aliasDocuments,
+            SqlUtils.join(aliasDocuments, documentId, aliasDocumentItems, COL_TRADE_DOCUMENT));
+
+        where.add(SqlUtils.inList(aliasDocuments, COL_TRADE_CUSTOMER, customers));
       }
 
       query.setWhere(where);
