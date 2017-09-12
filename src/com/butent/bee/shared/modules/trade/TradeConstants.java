@@ -406,6 +406,7 @@ public final class TradeConstants {
 
   public static final String RP_WAREHOUSES = "Warehouses";
   public static final String RP_SUPPLIERS = "Suppliers";
+  public static final String RP_CUSTOMERS = "Customers";
   public static final String RP_MANUFACTURERS = "Manufacturers";
   public static final String RP_DOCUMENTS = "Documents";
   public static final String RP_ITEM_TYPES = "ItemTypes";

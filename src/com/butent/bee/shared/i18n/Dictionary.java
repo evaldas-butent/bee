@@ -6870,6 +6870,8 @@ public interface Dictionary {
 
   default String trdCustomer() {return g("trdCustomer");}
 
+  default String trdCustomers() {return g("trdCustomers");}
+
   default String trdDate() {return g("trdDate");}
 
   default String trdDaysForPayment() {return g("trdDaysForPayment");}

@@ -64,7 +64,7 @@ public class TradeStockReport extends ReportInterceptor {
   private static BeeLogger logger = LogUtils.getLogger(TradeStockReport.class);
 
   private static final List<String> SELECTOR_NAMES = Arrays.asList(
-      RP_WAREHOUSES, RP_SUPPLIERS, RP_MANUFACTURERS, RP_DOCUMENTS,
+      RP_WAREHOUSES, RP_SUPPLIERS, RP_CUSTOMERS, RP_MANUFACTURERS, RP_DOCUMENTS,
       RP_ITEM_TYPES, RP_ITEM_GROUPS, RP_ITEM_CATEGORIES, RP_ITEMS);
 
   private static final List<String> GROUP_NAMES = reportGroupNames(5);

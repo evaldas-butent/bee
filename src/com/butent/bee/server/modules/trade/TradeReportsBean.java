@@ -149,6 +149,7 @@ public class TradeReportsBean {
 
     Set<Long> warehouses = parameters.getIds(RP_WAREHOUSES);
     Set<Long> suppliers = parameters.getIds(RP_SUPPLIERS);
+    Set<Long> customers = parameters.getIds(RP_CUSTOMERS);
     Set<Long> manufacturers = parameters.getIds(RP_MANUFACTURERS);
     Set<Long> documents = parameters.getIds(RP_DOCUMENTS);
 
@@ -239,6 +240,9 @@ public class TradeReportsBean {
     String aliasDocumentItems = SqlUtils.uniqueName("dit");
     IsCondition documentItemCondition = getDocumentItemCondition(aliasDocumentItems, documents);
 
+    String aliasDocuments = SqlUtils.uniqueName("doc");
+    IsCondition documentCondition = getDocumentCondition(aliasDocuments, customers);
+
     String aliasItems = TBL_ITEMS;
     IsCondition itemTypeCondition = getItemTypeCondition(aliasItems, itemTypes);
     IsCondition itemGroupCondition = getItemGroupCondition(aliasItems, itemGroups);
@@ -246,6 +250,11 @@ public class TradeReportsBean {
     IsCondition itemCondition = parseItemFilter(itemFilter);
 
     boolean needsCost = showAmount && itemPrice == null;
+
+    boolean needsDocuments = documentCondition != null
+        || TradeReportGroup.needsDocument(stockGroup) || TradeReportGroup.needsDocument(rowGroups);
+
+    boolean needsDocumentItems = needsDocuments || documentItemCondition != null;
 
     boolean needsItems = itemTypeCondition != null || itemGroupCondition != null
         || itemCondition != null || showAmount && itemPrice != null
@@ -306,11 +315,15 @@ public class TradeReportsBean {
     groupValueAliases.forEach((tgr, alias) -> {
       switch (tgr.valueSource()) {
         case TBL_TRADE_DOCUMENTS:
-          query.addExpr(
-              SqlUtils.nvl(
-                  SqlUtils.field(aliasPrimaryReturnDocuments, tgr.valueColumn()),
-                  SqlUtils.field(aliasPrimaryDocuments, tgr.valueColumn())),
-              alias);
+          if (tgr.needsPrimaryDocument()) {
+            query.addExpr(
+                SqlUtils.nvl(
+                    SqlUtils.field(aliasPrimaryReturnDocuments, tgr.valueColumn()),
+                    SqlUtils.field(aliasPrimaryDocuments, tgr.valueColumn())),
+                alias);
+          } else {
+            query.addField(aliasDocuments, tgr.valueColumn(), alias);
+          }
           break;
 
         case TBL_TRADE_DOCUMENT_ITEMS:
@@ -379,10 +392,13 @@ public class TradeReportsBean {
               aliasPrimaryReturnDocumentItems, COL_TRADE_DOCUMENT));
     }
 
-    if (documentItemCondition != null) {
+    if (needsDocumentItems) {
       query.addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, aliasDocumentItems,
-          SqlUtils.join(aliasDocumentItems, documentItemId,
-              aliasStock, COL_TRADE_DOCUMENT_ITEM));
+          SqlUtils.join(aliasDocumentItems, documentItemId, aliasStock, COL_TRADE_DOCUMENT_ITEM));
+    }
+    if (needsDocuments) {
+      query.addFromLeft(TBL_TRADE_DOCUMENTS, aliasDocuments,
+          SqlUtils.join(aliasDocuments, documentId, aliasDocumentItems, COL_TRADE_DOCUMENT));
     }
 
     if (needsItems) {
@@ -396,8 +412,8 @@ public class TradeReportsBean {
     }
 
     HasConditions where = SqlUtils.and(stockCondition, primaryDocumentItemCondition,
-        primaryDocumentCondition, documentItemCondition, itemTypeCondition, itemGroupCondition,
-        itemCondition);
+        primaryDocumentCondition, documentItemCondition, documentCondition,
+        itemTypeCondition, itemGroupCondition, itemCondition);
 
     if (endDate == null && !movement) {
       where.add(SqlUtils.nonZero(aliasStock, COL_STOCK_QUANTITY));
@@ -932,6 +948,11 @@ public class TradeReportsBean {
   private static IsCondition getDocumentItemCondition(String alias, Collection<Long> documents) {
     return BeeUtils.isEmpty(documents)
         ? null : SqlUtils.inList(alias, COL_TRADE_DOCUMENT, documents);
+  }
+
+  private static IsCondition getDocumentCondition(String alias, Collection<Long> customers) {
+    return BeeUtils.isEmpty(customers)
+        ? null : SqlUtils.inList(alias, COL_TRADE_CUSTOMER, customers);
   }
 
   private static IsCondition getStockCondition(String alias, Collection<Long> warehouses) {
