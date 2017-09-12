@@ -9,6 +9,7 @@ import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.server.Config;
@@ -434,7 +435,7 @@ public class SystemBean {
     }
     initDbTables();
     initDbTriggers();
-    updateVehicleModels();
+    updateTransformations();
   }
 
   @Lock(LockType.WRITE)
@@ -1544,9 +1545,75 @@ public class SystemBean {
     table.setActive(true);
   }
 
+  private void updateTransformations() {
+    updateVehicleModels();
+    updateConfOptionTypes();
+  }
+
+  private void updateConfOptionTypes() {
+    if (getTable(TBL_CONF_OPTIONS).isActive()
+        && Objects.isNull(qs.dbFields(getDbName(), getDbSchema(), TBL_CONF_OPTIONS)
+        .getRowByKey(SqlConstants.FLD_NAME, COL_TYPE))) {
+
+      String tmp = SqlUtils.uniqueName();
+
+      qs.updateData(new SqlCreate(tmp, false)
+          .setDataSource(new SqlSelect()
+              .addFields(TBL_CONF_GROUPS, COL_TYPE)
+              .addAllFields(TBL_CONF_OPTIONS)
+              .addFrom(TBL_CONF_OPTIONS)
+              .addFromInner(TBL_CONF_GROUPS,
+                  joinTables(TBL_CONF_GROUPS, TBL_CONF_OPTIONS, COL_GROUP))));
+
+      String dbl = qs.sqlCreateTemp(new SqlSelect()
+          .addFields(tmp, COL_TYPE, COL_CODE)
+          .addFrom(tmp)
+          .addGroup(tmp, COL_TYPE, COL_CODE)
+          .setHaving(SqlUtils.more(SqlUtils.aggregate(SqlConstants.SqlFunction.COUNT, null), 1)));
+
+      qs.updateData(new SqlUpdate(tmp)
+          .addConstant(COL_CODE, null)
+          .setFrom(dbl, SqlUtils.joinUsing(tmp, dbl, COL_TYPE, COL_CODE)));
+
+      qs.sqlDropTemp(dbl);
+
+      String[] dblGroups = qs.getColumn(new SqlSelect()
+          .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME)
+          .addFrom(TBL_CONF_GROUPS)
+          .addGroup(TBL_CONF_GROUPS, COL_GROUP_NAME)
+          .setHaving(SqlUtils.more(SqlUtils.aggregate(SqlConstants.SqlFunction.COUNT, null), 1)));
+
+      if (!ArrayUtils.isEmpty(dblGroups)) {
+        String subq = SqlUtils.uniqueName();
+
+        qs.updateData(new SqlUpdate(TBL_CONF_GROUPS)
+            .addExpression(COL_GROUP_NAME, SqlUtils.concat(SqlUtils.field(subq, COL_TYPE_NAME),
+                SqlUtils.constant(BeeConst.STRING_SPACE),
+                SqlUtils.field(TBL_CONF_GROUPS, COL_GROUP_NAME)))
+            .setFrom(new SqlSelect()
+                    .addField(TBL_CONF_TYPES, getIdName(TBL_CONF_TYPES), COL_TYPE)
+                    .addFields(TBL_CONF_TYPES, COL_TYPE_NAME)
+                    .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME)
+                    .addFrom(TBL_CONF_GROUPS)
+                    .addFromInner(TBL_CONF_TYPES,
+                        joinTables(TBL_CONF_TYPES, TBL_CONF_GROUPS, COL_TYPE))
+                    .setWhere(SqlUtils.inList(TBL_CONF_GROUPS, COL_GROUP_NAME,
+                        (Object[]) dblGroups)), subq,
+                SqlUtils.joinUsing(TBL_CONF_GROUPS, subq, COL_TYPE, COL_GROUP_NAME)));
+      }
+      for (SimpleRow fk : qs.dbForeignKeys(getDbName(), getDbSchema(), null, TBL_CONF_OPTIONS)) {
+        makeStructureChanges(SqlUtils.dropForeignKey(fk.getValue(SqlConstants.TBL_NAME),
+            fk.getValue(SqlConstants.KEY_NAME)));
+      }
+      makeStructureChanges(SqlUtils.dropTable(TBL_CONF_OPTIONS));
+      makeStructureChanges(SqlUtils.renameTable(tmp, TBL_CONF_OPTIONS));
+      rebuildTable(TBL_CONF_OPTIONS);
+    }
+  }
+
   private void updateVehicleModels() {
     if (!getTable(TBL_VEHICLE_BRANDS).isActive() && getTable(TBL_VEHICLE_MODELS).isActive()
-        && Objects.nonNull(qs.dbFields(dbName, dbSchema, TBL_VEHICLE_MODELS)
+        && Objects.nonNull(qs.dbFields(getDbName(), getDbSchema(), TBL_VEHICLE_MODELS)
         .getRowByKey(SqlConstants.FLD_NAME, "Parent"))) {
 
       rebuildTable(TBL_VEHICLE_BRANDS);

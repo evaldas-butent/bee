@@ -1276,7 +1276,7 @@ public class ImportBean {
 
     if (DataUtils.isId(type)) {
       query.setWhere(SqlUtils.and(query.getWhere(),
-          SqlUtils.equals(TBL_CONF_GROUPS, COL_TYPE, type)));
+          SqlUtils.equals(TBL_CONF_OPTIONS, COL_TYPE, type)));
     }
     Map<String, Option> options = new HashMap<>();
 

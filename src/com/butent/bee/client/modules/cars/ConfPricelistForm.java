@@ -110,11 +110,8 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
 
     @Override
     public void onClick(ClickEvent clickEvent) {
-      Long type = getBranchType();
-
       Queries.getRowSet(TBL_CONF_GROUPS, Arrays.asList(COL_GROUP_NAME, COL_GROUP_NAME2),
-          DataUtils.isId(type) ? Filter.equals(COL_TYPE, type) : null,
-          result -> {
+          null, result -> {
             List<String> choice = new ArrayList<>();
             Map<String, Dimension> map = new HashMap<>();
 
@@ -167,7 +164,8 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
         Relation relation = Relation.create(TBL_CONF_OPTIONS,
             Arrays.asList(COL_CODE, COL_CODE2, COL_OPTION_NAME));
 
-        relation.setFilter(Filter.equals(COL_GROUP, dimension.getId()));
+        relation.setFilter(Filter.and(getBranchFilter(),
+            Filter.equals(COL_GROUP, dimension.getId())));
 
         UnboundSelector selector = UnboundSelector.create(relation);
 
@@ -413,13 +411,15 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
     return BeeUtils.joinWords(cap);
   }
 
-  private Long getBranchType() {
+  private Filter getBranchFilter() {
     IsRow item = tree.getSelectedItem();
 
     if (item == null) {
       return null;
     }
-    return Data.getLong(tree.getViewName(), item, COL_TYPE);
+    Long type = Data.getLong(tree.getViewName(), item, COL_TYPE);
+
+    return DataUtils.isId(type) ? Filter.equals(COL_TYPE, type) : null;
   }
 
   private Long getBranchId() {
@@ -1030,9 +1030,8 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       UnboundSelector inputGroup = UnboundSelector.create(TBL_CONF_GROUPS,
           Arrays.asList(COL_GROUP_NAME2, COL_GROUP_NAME));
 
-      Long type = getBranchType();
-      inputGroup.getOracle().setAdditionalFilter(Filter.and(Filter.idNotIn(excludedGroups),
-          DataUtils.isId(type) ? Filter.equals(COL_TYPE, type) : null), true);
+      Filter typeFilter = getBranchFilter();
+      inputGroup.getOracle().setAdditionalFilter(Filter.idNotIn(excludedGroups), true);
 
       inputGroup.setWidth("100%");
 
@@ -1048,12 +1047,11 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       inputOption.addSelectorHandler(event -> {
         if (event.isOpened()) {
           if (DataUtils.isId(inputGroup.getRelatedId())) {
-            event.getSelector().getOracle()
-                .setAdditionalFilter(Filter.equals(COL_GROUP, inputGroup.getRelatedId()), true);
+            event.getSelector().getOracle().setAdditionalFilter(Filter.and(typeFilter,
+                Filter.equals(COL_GROUP, inputGroup.getRelatedId())), true);
           } else {
-            event.getSelector().getOracle()
-                .setAdditionalFilter(Filter.and(Filter.exclude(COL_GROUP, excludedGroups),
-                    DataUtils.isId(type) ? Filter.equals(COL_TYPE, type) : null), true);
+            event.getSelector().getOracle().setAdditionalFilter(Filter.and(typeFilter,
+                Filter.exclude(COL_GROUP, excludedGroups)), true);
           }
         }
       });
@@ -1075,8 +1073,9 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
         } else if (DataUtils.isId(inputGroup.getRelatedId())) {
           Global.confirm(inputGroup.getRenderedValue(),
               Icon.QUESTION, Collections.singletonList(Localized.dictionary().selectAll()),
-              () -> Queries.getRowSet(TBL_CONF_OPTIONS, null, Filter.and(Filter.equals(COL_GROUP,
-                  inputGroup.getRelatedId()), Filter.idNotIn(excludedOptions)),
+              () -> Queries.getRowSet(TBL_CONF_OPTIONS, null, Filter.and(typeFilter,
+                  Filter.equals(COL_GROUP, inputGroup.getRelatedId()),
+                  Filter.idNotIn(excludedOptions)),
                   rs -> {
                     if (DataUtils.isEmpty(rs)) {
                       getFormView().notifyWarning(Localized.dictionary().noData());
