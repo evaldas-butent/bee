@@ -36,6 +36,7 @@ import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -131,7 +132,7 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
       ((HasCellRenderer) column).setRenderer(new ModeRenderer());
 
     } else if (BeeUtils.same(columnId, NAME_SLACK) && column instanceof HasCellRenderer) {
-      ((HasCellRenderer) column).setRenderer(new TaskSlackRenderer(dataColumns));
+      ((HasCellRenderer) column).setRenderer(new TaskSlackRenderer(dataColumns, VIEW_TASKS));
 
     } else if (BeeUtils.inListSame(columnId, COL_FINISH_TIME, COL_EXECUTOR)) {
       editableColumn.addCellValidationHandler(ValidationHelper.DO_NOT_VALIDATE);

@@ -722,7 +722,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
     header.addCommandItem(createMenuLabel());
 
-    TaskSlackRenderer renderer = new TaskSlackRenderer(form.getDataColumns());
+    TaskSlackRenderer renderer = new TaskSlackRenderer(form.getDataColumns(), VIEW_TASKS);
     Pair<AbstractSlackRenderer.SlackKind, Long> data = renderer.getMinutes(row);
     setLateIndicatorHtml(data);
     setTaskStatusStyle(header, form, row, data);
