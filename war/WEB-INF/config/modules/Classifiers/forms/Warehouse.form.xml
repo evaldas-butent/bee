@@ -17,7 +17,9 @@
         <InputText source="Code" style="width: 100px;" />
 
         <Label for="Name" />
-        <InputText source="Name" style="width: 400px;" />
+        <InputText source="Name" style="width: 350px;" />
+
+        <CheckBox source="Consignment" style="margin-left: 2em;" />
       </row>
 
       <row module="Ec">

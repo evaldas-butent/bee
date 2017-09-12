@@ -12,6 +12,8 @@
     <RelColumn name="Branch" module="Ec" />
     <DataColumn name="SupplierCode" module="Ec" />
 
+    <DataColumn name="Consignment" />
+
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />
 

@@ -861,6 +861,8 @@ public interface Dictionary {
 
   default String configuration() {return g("configuration");}
 
+  default String consignment() {return g("consignment");}
+
   default String constant() {return g("constant");}
 
   default String contact() {return g("contact");}
