@@ -13,7 +13,7 @@
         <HiddenColumn name="Date" alias="PrimaryDate1" />
 
         <SimpleJoin joinType="LEFT" name="Supplier">
-          <HiddenColumn name="Name" alias="SupplierName1" label="=trdSupplier" />
+          <HiddenColumn name="Name" alias="SupplierName1" />
         </SimpleJoin>
       </SimpleJoin>
 
@@ -28,7 +28,7 @@
           <HiddenColumn name="Date" alias="PrimaryDate2" />
 
           <SimpleJoin joinType="LEFT" name="Supplier">
-            <HiddenColumn name="Name" alias="SupplierName2" label="=trdSupplier" />
+            <HiddenColumn name="Name" alias="SupplierName2" />
           </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>
@@ -60,6 +60,9 @@
       <SimpleColumn name="TradeDocument" />
       <SimpleJoin joinType="LEFT" name="TradeDocument">
         <SimpleColumn name="Date" />
+        <SimpleJoin joinType="LEFT" name="Customer">
+          <SimpleColumn name="Name" alias="CustomerName" label="=trdCustomer" />
+        </SimpleJoin>
       </SimpleJoin>
 
       <SimpleColumn name="Item" />
