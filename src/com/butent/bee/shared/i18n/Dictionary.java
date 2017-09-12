@@ -7043,8 +7043,6 @@ public interface Dictionary {
 
   default String trdPrimaryDocumentItem() {return g("trdPrimaryDocumentItem");}
 
-  default String trdPrimaryNumber() {return g("trdPrimaryNumber");}
-
   default String trdProformaInvoice() {return g("trdProformaInvoice");}
 
   default String trdPurchase() {return g("trdPurchase");}
