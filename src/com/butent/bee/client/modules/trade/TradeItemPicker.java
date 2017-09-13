@@ -57,6 +57,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
@@ -81,6 +82,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.Property;
+import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -154,6 +157,8 @@ public class TradeItemPicker extends Flow implements HasPaging {
   private static final String KEY_PRICE = "price";
   private static final String KEY_WAREHOUSE = "warehouse";
 
+  private static final CachingPolicy CACHING_POLICY = CachingPolicy.NONE;
+
   private static final int itemPriceScale = Data.getColumnScale(VIEW_ITEMS, COL_ITEM_PRICE);
   private static final int costScale = Data.getColumnScale(VIEW_TRADE_ITEM_COST,
       COL_TRADE_ITEM_COST);
@@ -172,7 +177,10 @@ public class TradeItemPicker extends Flow implements HasPaging {
 
   private TradeDocumentPhase documentPhase;
   private OperationType operationType;
+
   private Long warehouse;
+  private Long supplier;
+  private Long customer;
 
   private ItemPrice itemPrice;
 
@@ -367,7 +375,10 @@ public class TradeItemPicker extends Flow implements HasPaging {
   void setDocumentRow(IsRow row) {
     setDocumentPhase(TradeUtils.getDocumentPhase(row));
     setOperationType(TradeUtils.getDocumentOperationType(row));
+
     setWarehouse(TradeUtils.getDocumentRelation(row, COL_TRADE_WAREHOUSE_FROM));
+    setSupplier(TradeUtils.getDocumentRelation(row, COL_TRADE_SUPPLIER));
+    setCustomer(TradeUtils.getDocumentRelation(row, COL_TRADE_CUSTOMER));
 
     setItemPrice(TradeUtils.getDocumentItemPrice(row));
 
@@ -593,7 +604,7 @@ public class TradeItemPicker extends Flow implements HasPaging {
           }
 
           Queries.getRowSet(VIEW_ITEM_SELECTION, null, where, null, offset, limit,
-              new Queries.RowSetCallback() {
+              CACHING_POLICY, getQueryOptions(), new Queries.RowSetCallback() {
                 @Override
                 public void onFailure(String... reason) {
                   removeStyleName(STYLE_SEARCH_RUNNING);
@@ -635,7 +646,7 @@ public class TradeItemPicker extends Flow implements HasPaging {
     addStyleName(STYLE_SEARCH_RUNNING);
 
     Queries.getRowSet(VIEW_ITEM_SELECTION, null, getFilter(), null, getPageStart(), getPageSize(),
-        new Queries.RowSetCallback() {
+        CACHING_POLICY, getQueryOptions(), new Queries.RowSetCallback() {
           @Override
           public void onFailure(String... reason) {
             removeStyleName(STYLE_SEARCH_RUNNING);
@@ -728,6 +739,22 @@ public class TradeItemPicker extends Flow implements HasPaging {
 
   private void setWarehouse(Long warehouse) {
     this.warehouse = warehouse;
+  }
+
+  private Long getSupplier() {
+    return supplier;
+  }
+
+  private void setSupplier(Long supplier) {
+    this.supplier = supplier;
+  }
+
+  private Long getCustomer() {
+    return customer;
+  }
+
+  private void setCustomer(Long customer) {
+    this.customer = customer;
   }
 
   private ItemPrice getItemPrice() {
@@ -1926,5 +1953,29 @@ public class TradeItemPicker extends Flow implements HasPaging {
 
   private void setSavePending() {
     setState(State.PENDING);
+  }
+
+  private Collection<Property> getQueryOptions() {
+    Map<String, String> options = new HashMap<>();
+
+    if (getOperationType() != null) {
+      options.put(COL_OPERATION_TYPE, BeeUtils.toString(getOperationType().ordinal()));
+    }
+    if (DataUtils.isId(getWarehouse())) {
+      options.put(COL_STOCK_WAREHOUSE, BeeUtils.toString(getWarehouse()));
+    }
+    if (DataUtils.isId(getSupplier())) {
+      options.put(COL_TRADE_SUPPLIER, BeeUtils.toString(getSupplier()));
+    }
+    if (DataUtils.isId(getCustomer())) {
+      options.put(COL_TRADE_CUSTOMER, BeeUtils.toString(getCustomer()));
+    }
+
+    if (options.isEmpty()) {
+      return null;
+    } else {
+      return PropertyUtils.createProperties(Service.VAR_VIEW_EVENT_OPTIONS,
+          Codec.beeSerialize(options));
+    }
   }
 }
