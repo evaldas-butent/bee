@@ -103,8 +103,8 @@ public abstract class DataEvent {
     private final SqlSelect query;
     private BeeRowSet rowset;
 
-    ViewQueryEvent(String viewName, SqlSelect query) {
-      super(viewName);
+    ViewQueryEvent(String viewName, SqlSelect query, Object userObject) {
+      super(viewName, userObject);
       Assert.notNull(query);
       this.query = query;
     }
@@ -171,6 +171,11 @@ public abstract class DataEvent {
 
   private DataEvent(String targetName) {
     this.targetName = Assert.notEmpty(targetName);
+  }
+
+  private DataEvent(String targetName, Object userObject) {
+    this(targetName);
+    this.userObject = userObject;
   }
 
   public void addErrorMessage(String message) {
