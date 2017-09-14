@@ -148,6 +148,11 @@ public class TaskSlackRenderer extends AbstractSlackRenderer {
   }
 
   private DateTime getLastStatusTime(IsRow row) {
-    return row.getDateTime(DataUtils.getColumnIndex(ALS_LAST_BREAK_EVENT, dataColumns));
+    int index = DataUtils.getColumnIndex(ALS_LAST_BREAK_EVENT, dataColumns);
+    if(index >= 0) {
+      return row.getDateTime(index);
+    }
+
+    return null;
   }
 }
