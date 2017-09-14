@@ -2,15 +2,20 @@ package com.butent.bee.client.modules.service;
 
 import com.google.common.collect.ImmutableMap;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_COMPANY;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.modules.classifiers.ItemsPicker;
 import com.butent.bee.client.modules.orders.OrderItemsGrid;
 import com.butent.bee.client.modules.transport.InvoiceCreator;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -18,7 +23,11 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.DateValue;
+import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -26,6 +35,22 @@ import java.util.Map;
 public class ServiceItemsGrid extends OrderItemsGrid {
 
   private ServiceItemsPicker picker;
+
+  @Override
+  public void afterCreateEditor(String source, Editor editor, boolean embedded) {
+    if (BeeUtils.same(source, COL_REPAIRER) && editor instanceof DataSelector) {
+      Long company = Global.getParameterRelation(PRM_COMPANY);
+
+      if (DataUtils.isId(company)) {
+        ((DataSelector) editor).setAdditionalFilter(Filter.and(Filter.equals(COL_COMPANY, company),
+            Filter.or(Filter.isNull(PayrollConstants.COL_DATE_OF_DISMISSAL),
+                Filter.compareWithValue(PayrollConstants.COL_DATE_OF_DISMISSAL, Operator.GT,
+                    new DateValue(new JustDate())))));
+      }
+    }
+
+    super.afterCreateEditor(source, editor, embedded);
+  }
 
   @Override
   public ItemsPicker ensurePicker() {
