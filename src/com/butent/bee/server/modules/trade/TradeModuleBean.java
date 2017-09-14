@@ -129,6 +129,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.StringList;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
@@ -1106,9 +1107,42 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             && usr.isDataVisible(VIEW_TRADE_STOCK)
             && DataUtils.containsNull(event.getRowset(), COL_ITEM_IS_SERVICE)) {
 
+          OperationType operationType = null;
+          Long supplier = null;
+          Long customer = null;
+
+          boolean isSelection = event.isTarget(VIEW_ITEM_SELECTION);
+          Long consignor = null;
+
+          if (event.getUserObject() instanceof String) {
+            Map<String, String> options = Codec.deserializeHashMap((String) event.getUserObject());
+
+            for (Map.Entry<String, String> entry : options.entrySet()) {
+              String value = entry.getValue();
+
+              switch (entry.getKey()) {
+                case COL_OPERATION_TYPE:
+                  operationType = EnumUtils.getEnumByIndex(OperationType.class, value);
+                  break;
+                case COL_TRADE_SUPPLIER:
+                  supplier = BeeUtils.toLongOrNull(value);
+                  break;
+                case COL_TRADE_CUSTOMER:
+                  customer = BeeUtils.toLongOrNull(value);
+                  break;
+              }
+            }
+
+            if (isSelection && operationType != null && !operationType.consumesStock()) {
+              return;
+            }
+
+            consignor = getConsignor(operationType, supplier, customer);
+          }
+
           BeeRowSet rowSet = event.getRowset();
           Multimap<Long, Triplet<Long, String, Double>> stock =
-              getStockByWarehouse(rowSet.getRowIds());
+              getStockByWarehouse(rowSet.getRowIds(), consignor);
 
           if (!stock.isEmpty()) {
             for (BeeRow row : rowSet) {
@@ -1118,11 +1152,18 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               }
             }
 
-            if (event.isTarget(VIEW_ITEM_SELECTION)) {
+            if (isSelection) {
               Map<Long, String> warehouses = new HashMap<>();
               stock.values().forEach(value -> warehouses.put(value.getA(), value.getB()));
 
               rowSet.setTableProperty(PROP_WAREHOUSES, Codec.beeSerialize(warehouses));
+
+              Set<Long> consignmentWarehouses;
+              if (DataUtils.isId(consignor)) {
+                consignmentWarehouses = getConsignmentWarehouses();
+              } else {
+                consignmentWarehouses = new HashSet<>();
+              }
 
               int serviceTagIndex = rowSet.getColumnIndex(COL_ITEM_IS_SERVICE);
 
@@ -1132,7 +1173,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                   .collect(Collectors.toSet());
 
               warehouses.forEach((warehouseId, warehouseCode) -> {
-                Multimap<Long, ItemQuantities> reservations = getReservations(warehouseId, items);
+                Multimap<Long, ItemQuantities> reservations;
+                if (consignmentWarehouses.contains(warehouseId)) {
+                  reservations = HashMultimap.create();
+                } else {
+                  reservations = getReservations(warehouseId, items);
+                }
+
                 Map<Long, Double> averageCost = getAverageCost(warehouseId, items);
 
                 if (!reservations.isEmpty() || !averageCost.isEmpty()) {
@@ -4095,8 +4142,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   }
 
   private Multimap<Long, Triplet<Long, String, Double>> getStockByWarehouse(
-      Collection<Long> items) {
+      Collection<Long> items, Long consignor) {
+
     Multimap<Long, Triplet<Long, String, Double>> result = ArrayListMultimap.create();
+
+    HasConditions where = SqlUtils.and(SqlUtils.inList(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, items),
+        SqlUtils.nonZero(TBL_TRADE_STOCK, COL_STOCK_QUANTITY));
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
@@ -4104,15 +4155,23 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
         .addSum(TBL_TRADE_STOCK, COL_STOCK_QUANTITY)
         .addFrom(TBL_TRADE_STOCK)
-        .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
+        .addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
             TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM))
-        .addFromInner(TBL_WAREHOUSES, sys.joinTables(TBL_WAREHOUSES,
+        .addFromLeft(TBL_WAREHOUSES, sys.joinTables(TBL_WAREHOUSES,
             TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE))
-        .setWhere(SqlUtils.and(SqlUtils.inList(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, items),
-            SqlUtils.nonZero(TBL_TRADE_STOCK, COL_STOCK_QUANTITY)))
         .addGroup(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
         .addGroup(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE)
         .addGroup(TBL_WAREHOUSES, COL_WAREHOUSE_CODE);
+
+    if (DataUtils.isId(consignor)) {
+      query.addFromLeft(TBL_TRADE_DOCUMENTS, sys.joinTables(TBL_TRADE_DOCUMENTS,
+          TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT));
+
+      where.add(SqlUtils.or(SqlUtils.isNull(TBL_WAREHOUSES, COL_WAREHOUSE_CONSIGNMENT),
+          SqlUtils.equals(TBL_TRADE_DOCUMENTS, COL_TRADE_CUSTOMER, consignor)));
+    }
+
+    query.setWhere(where);
 
     SimpleRowSet data = qs.getData(query);
 
@@ -5071,5 +5130,33 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
 
     return ResponseObject.response(count);
+  }
+
+  private Long getConsignor(OperationType operationType, Long supplier, Long customer) {
+    if (operationType != null && !operationType.consumesStock()) {
+      return null;
+
+    } else if (DataUtils.isId(supplier)) {
+      if (DataUtils.isId(customer) && !Objects.equals(supplier, customer)
+          && operationType != null && !operationType.producesStock()
+          && Objects.equals(supplier, prm.getRelation(PRM_COMPANY))) {
+
+        return customer;
+      }
+
+      return supplier;
+
+    } else {
+      return customer;
+    }
+  }
+
+  private Set<Long> getConsignmentWarehouses() {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_WAREHOUSES, sys.getIdName(TBL_WAREHOUSES))
+        .addFrom(TBL_WAREHOUSES)
+        .setWhere(SqlUtils.notNull(TBL_WAREHOUSES, COL_WAREHOUSE_CONSIGNMENT));
+
+    return qs.getLongSet(query);
   }
 }
