@@ -38,18 +38,19 @@
         <row>
           <Label for="ArcNumber" />
           <FlowPanel>
-            <InputInteger source="ArcNumber" minValue="0" maxValue="99"
-                          style="width: 60px; &inline;" />
+            <InputInteger source="ArcNumber" minValue="0" maxValue="999999"
+                          style="width: 70px; &inline;" />
             <Label text="vnt" style="&inline; margin-left: 5px;" />
           </FlowPanel>
 
           <Label for="PageNumber" />
           <FlowPanel>
-            <InputInteger source="PageNumber" minValue="0" maxValue="99"
-                          style="width: 60px; &inline;" />
+            <InputInteger source="PageNumber" minValue="0" maxValue="999999"
+                          style="width: 70px; &inline;" />
             <Label text="vnt" style="&inline; margin-left: 5px;" />
             <Label for="Tin" style="&inline; margin-left: 70px; margin-right: 5px;" />
-            <InputInteger source="Tin" minValue="0" maxValue="99" style="width: 60px; &inline;" />
+            <InputInteger source="Tin" minValue="0" maxValue="999999"
+                          style="width: 70px; &inline;" />
             <Label text="vnt" style="&inline; margin-left: 5px;" />
           </FlowPanel>
         </row>
@@ -74,7 +75,7 @@
         <row>
           <Label for="Price" />
           <FlowPanel>
-            <InputMoney source="Price" style="width: 100px; &inline;" />
+            <InputMoney source="Price" style="width: 100px; &inline;" scale="4" />
             <Label text="EUR" style="&inline; margin-left: 5px;" />
           </FlowPanel>
 
@@ -175,7 +176,7 @@
         <row>
           <Label for="Quantity" class="bee-required" />
           <FlowPanel>
-            <InputInteger source="Quantity" minValue="0" maxValue="9999" required="true"
+            <InputInteger source="Quantity" minValue="0" maxValue="999999" required="true"
                           style="width: 80px; &inline;" />
             <Label text="vnt" style="&inline; margin-left: 5px;" />
           </FlowPanel>
@@ -183,8 +184,8 @@
           <Label for="NumberOfRuns" />
           <cell colSpan="3">
             <FlowPanel>
-              <InputInteger source="NumberOfRuns" minValue="0" maxValue="9999"
-                            style="width: 60px; &inline;" />
+              <InputInteger source="NumberOfRuns" minValue="0" maxValue="999999"
+                            style="width: 70px; &inline;" />
               <Label text="vnt" style="&inline; margin-left: 5px;" />
             </FlowPanel>
           </cell>
@@ -204,12 +205,12 @@
 
           <Label for="Waster" />
           <FlowPanel>
-            <InputInteger source="Waster" minValue="0" maxValue="99999"
-                          style="width: 60px; &inline;" />
+            <InputInteger source="Waster" minValue="0" maxValue="999999"
+                          style="width: 70px; &inline;" />
             <Label text="vnt" style="&inline; margin-left: 5px;" />
-            <Label for="Good" style="&inline; margin-left: 80px; margin-right: 5px;" />
-            <InputInteger source="Good" minValue="0" maxValue="99999"
-                          style="width: 60px; &inline;" />
+            <Label for="Good" style="&inline; margin-left: 50px; margin-right: 5px;" />
+            <InputInteger source="Good" minValue="0" maxValue="999999"
+                          style="width: 70px; &inline;" />
             <Label text="vnt" style="&inline; margin-left: 5px;" />
           </FlowPanel>
         </row>
@@ -226,13 +227,15 @@
         <row>
           <Label for="Material" />
           <FlowPanel>
-            <InputInteger source="Material" minValue="0" maxValue="9999" style="width: 200px;" />
+            <InputDecimal source="Material" minValue="0" maxValue="999999.9999"
+                          style="width: 200px;" />
             <Label text="m2" style="&inline; margin-left: 5px;" />
           </FlowPanel>
 
           <Label for="Paints" style="width: 70px;" />
           <FlowPanel>
-            <InputInteger source="Paints" minValue="0" maxValue="9999" style="width: 200px;" />
+            <InputDecimal source="Paints" minValue="0" maxValue="999999.9999"
+                          style="width: 200px;" />
             <Label text="ml" style="&inline; margin-left: 5px;" />
           </FlowPanel>
         </row>
@@ -240,14 +243,14 @@
         <row>
           <Label for="Pores" />
           <FlowPanel>
-            <InputInteger source="Pores" minValue="0" maxValue="9999" style="width: 200px;" />
+            <InputInteger source="Pores" minValue="0" maxValue="999999" style="width: 200px;" />
             <Label text="vnt." style="&inline; margin-left: 5px;" />
           </FlowPanel>
 
 
           <Label for="Rings" style="width: 70px;" />
           <FlowPanel>
-            <InputInteger source="Rings" minValue="0" maxValue="9999" style="width: 200px;" />
+            <InputInteger source="Rings" minValue="0" maxValue="999999" style="width: 200px;" />
             <Label text="vnt." style="&inline; margin-left: 5px;" />
           </FlowPanel>
         </row>
@@ -295,7 +298,7 @@
         <row>
           <Label for="DecorationPrice" />
           <FlowPanel>
-            <InputMoney source="DecorationPrice" style="width: 100px; &inline;" />
+            <InputMoney source="DecorationPrice" style="width: 100px; &inline;" scale="4" />
             <Label text="EUR" style="&inline; margin-left: 5px;" />
           </FlowPanel>
 
@@ -331,11 +334,10 @@
         </row>
 
         <row>
-          <Label for="Bending" />
-          <ListBox source="Bending" style="width: 150px;" >
-            <item>Lenkimas</item>
-            <item>Bigas</item>
-            <item>Ploteriavimas</item>
+          <Label for="Punching" />
+          <ListBox source="Punching" style="width: 150px; &inline;" >
+            <item>senas</item>
+            <item>naujas</item>
           </ListBox>
 
           <Label for="Spiral" />
@@ -347,7 +349,7 @@
                 <item>B/J</item>
               </ListBox>
 
-              <InputInteger source="OtherSpiral" minValue="0" maxValue="99"
+              <InputInteger source="OtherSpiral" minValue="0" maxValue="999999"
                             style="&inline; width: 90px; margin-left: 5px;" />
             </FlowPanel>
           </cell>
@@ -355,7 +357,7 @@
 
         <row>
           <Label for="Selection" />
-          <InputInteger source="Selection" minValue="0" maxValue="99" />
+          <InputInteger source="Selection" minValue="0" maxValue="999999" />
 
           <Label for="Holes" />
           <cell colSpan="4">
@@ -368,7 +370,7 @@
                 <item>kita</item>
               </ListBox>
 
-              <InputInteger source="OtherHoles" minValue="0" maxValue="99"
+              <InputInteger source="OtherHoles" minValue="0" maxValue="999999"
                             style="&inline; width: 90px; margin-left: 5px;" />
             </FlowPanel>
           </cell>
@@ -378,13 +380,17 @@
           <Label for="Glue" />
           <InputText source="Glue" />
 
-          <Label for="Punching" />
+          <Label for="Bending" />
           <cell colSpan="4">
             <FlowPanel>
-              <ListBox source="Punching" style="width: 165px; &inline;" >
-                <item>senas</item>
-                <item>naujas</item>
+              <ListBox source="Bending" style="width: 165px;" >
+                <item>Lenkimas</item>
+                <item>Bigas</item>
+                <item>Ploteriavimas</item>
               </ListBox>
+
+              <InputInteger source="OtherBending" minValue="0" maxValue="999999"
+                            style="&inline; width: 90px; margin-left: 5px;" />
             </FlowPanel>
           </cell>
         </row>
@@ -417,12 +423,12 @@
           <InputText source="Series" style="width: 120px;" />
 
           <Label for="From" />
-          <InputInteger source="From" minValue="0" maxValue="99999" style="width: 80px;" />
+          <InputInteger source="From" minValue="0" maxValue="999999" style="width: 80px;" />
 
           <cell colSpan="2" >
             <FlowPanel>
               <Label for="To" style="&inline; margin-right: 5px; margin-left: 55px;" />
-              <InputInteger source="To" minValue="0" maxValue="99999"
+              <InputInteger source="To" minValue="0" maxValue="999999"
                             style="&inline; width: 80px;" />
             </FlowPanel>
           </cell>
@@ -523,10 +529,10 @@
           </ListBox>
 
           <Label for="PackageQty" />
-          <InputInteger source="PackageQty" minValue="0" maxValue="999" style="width: 100px;" />
+          <InputInteger source="PackageQty" minValue="0" maxValue="999999" style="width: 100px;" />
 
           <Label for="Weight" />
-          <InputDouble source="Weight" minValue="0" maxValue="999.999" style="width: 100px;" />
+          <InputDouble source="Weight" minValue="0" maxValue="999999.999" style="width: 100px;" />
         </row>
       </Table>
       <ChildGrid name="TaskOrderItems" relColumn="Task" class="flexible" style="height: 300px;" />

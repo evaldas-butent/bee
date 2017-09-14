@@ -9,6 +9,6 @@
     <Relation name="Item" notNull="true" relation="Items" label="=service" />
     <String name="Description" precision="50" label="=description" />
     <Numeric name="Quantity" precision="12" scale="2" notNull="true" label="=quantity" />
-    <Numeric name="Price" notNull="true" precision="15" scale="2" label="=unitPrice" />
+    <Numeric name="Price" notNull="true" precision="15" scale="4" label="=unitPrice" />
   </Fields>
 </Table>

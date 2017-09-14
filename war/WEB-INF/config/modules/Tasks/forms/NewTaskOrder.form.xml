@@ -20,7 +20,7 @@
         xmlns:f="http://www.butent.com/form"
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
-        name="NewTaskOrder" viewName="Tasks" caption="=newOrder" width="700" height="700">
+        name="NewTaskOrder" viewName="TaskOrders" caption="=newOrder" width="700" height="700">
 
   <FlowPanel style="padding: 10px 2px 2px 10px;">
 
@@ -100,6 +100,8 @@
         </FlowPanel>
       </row>
     </Table>
+
+    <xi:include href="widgets/TaskOrder.widget.xml" />
 
     <Disclosure open="false" style="margin-top: 2ex;" >
       <Label text="PAPILDOMA INFORMACIJA" />
@@ -209,7 +211,5 @@
                   newRowEnabled="false" editPopup="true" />
       </Relations>
     </Disclosure>
-
-    <xi:include href="widgets/TaskOrder.widget.xml" />
   </FlowPanel>
 </f:Form>

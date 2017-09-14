@@ -23,7 +23,7 @@
         xmlns:ui="http://www.butent.com/ui"
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
-        name="TaskOrder" viewName="Tasks" caption="=crmTask" showRowId="true" printHeader="true"
+        name="TaskOrder" viewName="TaskOrders" caption="=crmTask" showRowId="true" printHeader="true"
         width="1024" height="768" favorite="Summary"
 >
   <f:properties jasperReports="Task_lt:Užsakymas, InternalTask_lt:Vidinis užsakymas" />
@@ -141,8 +141,10 @@
               <FlowPanel name="TaskDurations" data="TaskDurations"
                          style="overflow: auto; width: 524px; margin-top: 10px;" />
 
+              <xi:include href="widgets/TaskOrder.widget.xml" />
+
               <Disclosure open="false" style="margin-top: 2ex;" >
-              <Label text="PAPILDOMA INFORMACIJA" />
+                <Label text="PAPILDOMA INFORMACIJA" />
                 <FlowPanel>
                   <Table kind="controls" style="&tbl;" cellStyle="&cell;" >
                     <col index="0" cellStyle="&col1;" />
@@ -209,7 +211,7 @@
               </Disclosure>
 
               <Disclosure open="false" style="margin-top: 2ex;" >
-              <Label text="SUSIJUSI SU" />
+                <Label text="SUSIJUSI SU" />
                 <Relations name="Relations" relColumn="Task" inline="true"
                            disablable="false" style="&section; width: 500px;" summarize="true"
                            defaultRelations="Companies Persons Documents Appointments Discussions
@@ -237,7 +239,6 @@
                             newRowEnabled="false" editPopup="true" />
                 </Relations>
               </Disclosure>
-              <xi:include href="widgets/TaskOrder.widget.xml" />
             </FlowPanel>
           </FlowPanel>
         </page>

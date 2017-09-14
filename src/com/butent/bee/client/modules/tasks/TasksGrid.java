@@ -10,6 +10,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
@@ -56,6 +57,7 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
@@ -73,6 +75,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -889,12 +892,53 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
       }
     }
 
-    RowFactory.createRow(dataInfo, newRow, Modality.ENABLED, new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow result) {
-        afterCopyTask();
+    if (DataUtils.isId(Data.getLong(VIEW_TASKS, oldRow, COL_TASK_ORDER))) {
+      for (BeeColumn column : Data.getColumns(VIEW_TASK_ORDERS)) {
+        int index = dataInfo.getColumnIndex(column.getId());
+        String value = oldRow.getString(index);
+
+        if (!BeeUtils.isEmpty(value)) {
+          newRow.setValue(index, value);
+        }
       }
-    });
+
+      newRow.setValue(Data.getColumnIndex(VIEW_TASKS, COL_EXECUTOR), executor);
+
+      for (String column : new String[]{COL_START_TIME, COL_FINISH_TIME}) {
+        int index = Data.getColumnIndex(VIEW_TASKS, column);
+        newRow.setValue(index, oldRow.getDateTime(index));
+      }
+
+      Queries.insert(VIEW_TASKS, Data.getColumns(VIEW_TASKS), newRow, new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          Queries.getRowSet(VIEW_TASK_ORDER_ITEMS, null, Filter.equals(COL_TASK, oldRow.getId()),
+              new RowSetCallback() {
+                @Override
+                public void onSuccess(BeeRowSet rowSet) {
+                  if (!DataUtils.isEmpty(rowSet)) {
+                    BeeRowSet insertRows = DataUtils.createRowSetForInsert(rowSet);
+                    insertRows.forEach(row -> Data.setValue(VIEW_TASK_ORDER_ITEMS, row, COL_TASK,
+                        result.getId()));
+                    Queries.insertRows(insertRows, new RpcCallback<RowInfoList>() {
+                      @Override
+                      public void onSuccess(RowInfoList rowInfo) {
+                        RowEditor.openForm(FORM_TASK_ORDER, VIEW_TASKS, result, Opener.MODAL, null);
+                      }
+                    });
+                  }
+                }
+              });
+        }
+      });
+    } else {
+      RowFactory.createRow(dataInfo, newRow, Modality.ENABLED, new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          afterCopyTask();
+        }
+      });
+    }
   }
 
   private AbstractFormInterceptor getNewProjectFormInterceptor(final IsRow selectedRow) {

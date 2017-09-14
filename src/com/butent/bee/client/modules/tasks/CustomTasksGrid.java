@@ -12,7 +12,10 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 
-public class CustomTasksGrid {
+public final class CustomTasksGrid {
+
+  private CustomTasksGrid() {
+  }
 
   public static CustomAction getOrderAction() {
     CustomAction createOrder = new CustomAction(FontAwesome.INDENT,

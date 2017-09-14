@@ -90,6 +90,7 @@
   <SimpleColumn name="OtherHoles" />
   <SimpleColumn name="Punching" />
   <SimpleColumn name="Bending" />
+  <SimpleColumn name="OtherBending" />
   <SimpleColumn name="Selection" />
   <SimpleColumn name="Glue" />
   <SimpleColumn name="GlueNote" />

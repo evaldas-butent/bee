@@ -26,7 +26,9 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.composite.Relations;
+import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.projects.ProjectsHelper;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -39,6 +41,7 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
@@ -287,6 +290,58 @@ class TaskBuilder extends ProductSupportInterceptor {
     } else if (BeeUtils.same(name,
         AdministrationConstants.TBL_RELATIONS) && widget instanceof Relations) {
       relations = (Relations) widget;
+    } else if (BeeUtils.same(name, VIEW_TASK_ORDER_ITEMS) && widget instanceof ChildGrid) {
+      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+        @Override
+        public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
+          IsRow activeRow = getFormView().getActiveRow();
+          DateTime start = getStart();
+          DateTime end = getEnd(start, Data.getString(VIEW_TASKS, activeRow,
+              COL_EXPECTED_DURATION));
+
+          boolean noExecutors = BeeUtils.allEmpty(activeRow.getProperty(PROP_EXECUTORS),
+              activeRow.getProperty(PROP_EXECUTOR_GROUPS));
+
+          Widget widget;
+
+          if (noExecutors) {
+            getFormView().notifySevere(Localized.dictionary().fieldRequired(
+                Localized.dictionary().crmTaskExecutors()));
+
+            widget = getFormView().getWidgetByName(NAME_EXECUTORS);
+            ((MultiSelector) widget).setFocus(true);
+
+            return false;
+          }
+
+          if (start == null) {
+            getFormView().notifySevere(Localized.dictionary().fieldRequired(
+                Localized.dictionary().crmStartDate()));
+
+            widget = getFormView().getWidgetByName(NAME_START_DATE);
+            ((InputDate) widget).setFocus(true);
+            return false;
+          }
+
+          if (end == null) {
+            getFormView().notifySevere(Localized.dictionary().fieldRequired(
+                Localized.dictionary().crmFinishDate()));
+
+            widget = getFormView().getWidgetByName(NAME_END_DATE);
+            ((InputDate) widget).setFocus(true);
+            return false;
+          }
+
+          if (maybeNotifyEmptyProduct(msg -> getFormView().notifySevere(msg))) {
+
+            widget = getFormView().getWidgetBySource(COL_PRODUCT);
+            ((DataSelector) widget).setFocus(true);
+            return false;
+          }
+
+          return true;
+        }
+      });
     }
 
     super.afterCreateWidget(name, widget, callback);

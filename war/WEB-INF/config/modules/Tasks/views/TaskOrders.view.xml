@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+
+      name="TaskOrders" source="Tasks" caption="=crmTasks"
+>
+    <Columns>
+        <SimpleJoin name="TaskOrder" joinType="LEFT">
+            <xi:include href="viewcolumns/TaskOrder.viewcolumns.xml" />
+        </SimpleJoin>
+    </Columns>
+</View>

@@ -118,6 +118,7 @@
 	<parameter name="Pores" class="java.lang.String"/>
 	<parameter name="Rings" class="java.lang.String"/>
 	<parameter name="OtherMaterial" class="java.lang.String"/>
+	<parameter name="OtherBending" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -887,7 +888,7 @@
 						<textElement verticalAlignment="Middle">
 							<font fontName="DejaVu Sans" size="9" isBold="false"/>
 						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.joinWords("Apdaila:", $P{Bending})]]></textFieldExpression>
+						<textFieldExpression><![CDATA[BeeUtils.joinWords("Apdaila:", $P{Bending}, $P{OtherBending})]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 						<reportElement positionType="Float" x="20" y="68" width="260" height="12" isRemoveLineWhenBlank="true" uuid="8580258c-0ce3-4c2b-941c-06a75d9c352a">
@@ -971,7 +972,7 @@
 						<textElement verticalAlignment="Middle">
 							<font fontName="DejaVu Sans" size="9" isBold="false"/>
 						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.joinWords("Segimas:", $P{OtherStitching} == null ?BeeUtils.nvl($P{Stitching}, "") : $P{OtherStitching})]]></textFieldExpression>
+						<textFieldExpression><![CDATA[BeeUtils.joinWords("Segimas:", $P{Stitching}, $P{OtherStitching})]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 						<reportElement positionType="Float" x="0" y="52" width="275" height="12" isRemoveLineWhenBlank="true" uuid="ceae6db2-61c0-4285-b2bf-e1d9cd30ebcc">
@@ -984,7 +985,7 @@
 						<textElement verticalAlignment="Middle">
 							<font fontName="DejaVu Sans" size="9" isBold="false"/>
 						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.joinWords("Spiralės:", $P{OtherSpiral} == null ?BeeUtils.nvl($P{Spiral}, "") : $P{OtherSpiral})]]></textFieldExpression>
+						<textFieldExpression><![CDATA[BeeUtils.joinWords("Spiralės:", $P{Spiral}, $P{OtherSpiral})]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 						<reportElement positionType="Float" x="0" y="68" width="275" height="12" isRemoveLineWhenBlank="true" uuid="451ef02d-ab2f-4aae-b8da-190477ccd29c">
@@ -997,7 +998,7 @@
 						<textElement verticalAlignment="Middle">
 							<font fontName="DejaVu Sans" size="9" isBold="false"/>
 						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.joinWords("Skylės:", $P{OtherHoles} == null ?BeeUtils.nvl($P{Holes}, "") : $P{OtherHoles})]]></textFieldExpression>
+						<textFieldExpression><![CDATA[BeeUtils.joinWords("Skylės:", $P{Holes}, $P{OtherHoles})]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 						<reportElement positionType="Float" x="0" y="84" width="275" height="12" isRemoveLineWhenBlank="true" uuid="4118e5de-6f7e-43cd-ab42-7a4ecfd76b02">
@@ -1345,7 +1346,7 @@
 								<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 								<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 							</box>
-							<textField isStretchWithOverflow="true" pattern="0.00">
+							<textField isStretchWithOverflow="true" pattern="0.0000">
 								<reportElement x="0" y="0" width="70" height="12" uuid="3c29c6e7-e5fd-4463-9d4b-bce5c7f04500"/>
 								<box rightPadding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
@@ -1363,7 +1364,7 @@
 								<bottomPen lineWidth="1.0"/>
 								<rightPen lineWidth="1.0"/>
 							</box>
-							<textField isStretchWithOverflow="true" pattern="0.00">
+							<textField isStretchWithOverflow="true" pattern="0.0000">
 								<reportElement x="0" y="0" width="76" height="12" uuid="6f2ff000-583b-42e5-816e-9451737045cf"/>
 								<box rightPadding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
@@ -1401,7 +1402,7 @@
 								<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 								<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 							</box>
-							<textField isStretchWithOverflow="true" pattern="0.00">
+							<textField isStretchWithOverflow="true" pattern="0.0000">
 								<reportElement x="0" y="0" width="76" height="12" uuid="e34ab9e5-604e-4589-901c-2a85ffb0cfb4"/>
 								<box rightPadding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
