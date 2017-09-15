@@ -784,6 +784,18 @@ public final class TradeUtils {
     return false;
   }
 
+  static boolean isDocumentValueId(IsRow row, String colName) {
+    return DataUtils.isId(getDocumentRelation(row, colName));
+  }
+
+  static boolean isDocumentValueTrue(IsRow row, String colName) {
+    if (row == null) {
+      return false;
+    } else {
+      return Data.isTrue(VIEW_TRADE_DOCUMENTS, row, colName);
+    }
+  }
+
   static boolean documentPriceIsParentCost(IsRow row) {
     return documentPriceIsParentCost(getDocumentOperationType(row), getDocumentItemPrice(row));
   }

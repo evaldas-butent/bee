@@ -825,12 +825,26 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       return false;
     }
 
-    if (operationType.consumesStock()
-        && !DataUtils.isId(TradeUtils.getDocumentRelation(parentRow, COL_TRADE_WAREHOUSE_FROM))) {
+    if (operationType.consumesStock()) {
+      if (!TradeUtils.isDocumentValueId(parentRow, COL_TRADE_WAREHOUSE_FROM)) {
+        fieldRequired(Localized.dictionary().trdWarehouseFrom());
+        return false;
+      }
 
-      getGridView().notifyWarning(Localized.dictionary().fieldRequired(
-          Localized.dictionary().trdWarehouseFrom()));
-      return false;
+      if (TradeUtils.isDocumentValueTrue(parentRow, ALS_WAREHOUSE_FROM_CONSIGNMENT)) {
+        if (operationType.producesStock()) {
+          if (!TradeUtils.isDocumentValueId(parentRow, COL_TRADE_SUPPLIER)) {
+            fieldRequired(Localized.dictionary().trdSupplier());
+            return false;
+          }
+
+        } else if (!TradeUtils.isDocumentValueId(parentRow, COL_TRADE_SUPPLIER)
+            && !TradeUtils.isDocumentValueId(parentRow, COL_TRADE_CUSTOMER)) {
+
+          getGridView().notifyWarning(Localized.dictionary().trdEnterSupplierOrCustomer());
+          return false;
+        }
+      }
     }
 
     return true;
@@ -1289,5 +1303,9 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getViewName(), documentRow.getId());
     });
+  }
+
+  private void fieldRequired(String label) {
+    getGridView().notifyWarning(Localized.dictionary().fieldRequired(label));
   }
 }

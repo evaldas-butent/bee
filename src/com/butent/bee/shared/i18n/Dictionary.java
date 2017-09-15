@@ -6931,6 +6931,8 @@ public interface Dictionary {
 
   default String trdDriver() {return g("trdDriver");}
 
+  default String trdEnterSupplierOrCustomer() {return g("trdEnterSupplierOrCustomer");}
+
   default String trdExpenditureType() {return g("trdExpenditureType");}
 
   default String trdExpenditureTypes() {return g("trdExpenditureTypes");}
