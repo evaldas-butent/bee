@@ -863,6 +863,8 @@ public interface Dictionary {
 
   default String consignment() {return g("consignment");}
 
+  default String consignor() {return g("consignor");}
+
   default String constant() {return g("constant");}
 
   default String contact() {return g("contact");}
@@ -1601,12 +1603,6 @@ public interface Dictionary {
     return Localized.format(g("deleteSelectedRows"), _m);
   }
 
-  default String deletedRows(Object p0) {
-    Map<String, Object> _m = new HashMap<>();
-    _m.put("{0}", p0);
-    return Localized.format(g("deletedRows"), _m);
-  }
-
   default String department() {return g("department");}
 
   default String departmentEmployee() {return g("departmentEmployee");}
@@ -1620,6 +1616,8 @@ public interface Dictionary {
   default String departmentPositions() {return g("departmentPositions");}
 
   default String departments() {return g("departments");}
+
+  default String depth() {return g("depth");}
 
   default String description() {return g("description");}
 
@@ -3370,6 +3368,12 @@ public interface Dictionary {
     return Localized.format(g("invalidPeriod"), _m);
   }
 
+  default String invalidQuantity(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("invalidQuantity"), _m);
+  }
+
   default String invalidRange() {return g("invalidRange");}
 
   default String invalidTime() {return g("invalidTime");}
@@ -5027,6 +5031,10 @@ public interface Dictionary {
 
   default String rebuildTradeStockCaption() {return g("rebuildTradeStockCaption");}
 
+  default String rebuildTradeStockConsumers() {return g("rebuildTradeStockConsumers");}
+
+  default String rebuildTradeStockIsUpToDate() {return g("rebuildTradeStockIsUpToDate");}
+
   default String rebuildTradeStockNotification() {return g("rebuildTradeStockNotification");}
 
   default String rebuildTradeStockQuestion() {return g("rebuildTradeStockQuestion");}
@@ -5253,6 +5261,18 @@ public interface Dictionary {
   default String rowResults() {return g("rowResults");}
 
   default String rows() {return g("rows");}
+
+  default String rowsDeleted(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("rowsDeleted"), _m);
+  }
+
+  default String rowsInserted(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("rowsInserted"), _m);
+  }
 
   default String rowsRetrieved(Object p0) {
     Map<String, Object> _m = new HashMap<>();
@@ -6888,7 +6908,11 @@ public interface Dictionary {
 
   default String trdDocumentFiles() {return g("trdDocumentFiles");}
 
+  default String trdDocumentHasChildren() {return g("trdDocumentHasChildren");}
+
   default String trdDocumentItem() {return g("trdDocumentItem");}
+
+  default String trdDocumentItemHasChildren() {return g("trdDocumentItemHasChildren");}
 
   default String trdDocumentItems() {return g("trdDocumentItems");}
 
@@ -6954,6 +6978,8 @@ public interface Dictionary {
   default String trdInvoicePrefix() {return g("trdInvoicePrefix");}
 
   default String trdInvoices() {return g("trdInvoices");}
+
+  default String trdItemParent() {return g("trdItemParent");}
 
   default String trdItemStock() {return g("trdItemStock");}
 

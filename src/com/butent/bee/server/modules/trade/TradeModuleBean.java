@@ -1058,9 +1058,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                 if (!BeeUtils.isEmpty(itemIds)) {
                   if (DataUtils.isId(warehouse)) {
                     event.setUserObject(DataUtils.buildIdList(itemIds));
+
                   } else {
-                    event.addErrorMessage("warehouse-receiver required for items");
-                    event.addErrorMessage(DataUtils.buildIdList(itemIds));
+                    Dictionary dictionary = usr.getDictionary();
+
+                    event.addErrorMessage(dictionary.fieldRequired(dictionary.trdWarehouseTo()));
+                    event.addErrorMessage(BeeUtils.joinWords(dictionary.trdDocumentItems(),
+                        DataUtils.buildIdList(itemIds)));
                   }
                 }
 
@@ -1695,7 +1699,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     BeeRowSet typeData = qs.getViewData(VIEW_TRADE_DOCUMENT_TYPES, Filter.compareId(typeId));
     if (DataUtils.isEmpty(typeData)) {
-      return ResponseObject.error(reqInfo.getLabel(), typeId, "not found");
+      return ResponseObject.error(reqInfo.getLabel(), usr.getDictionary().keyNotFound(typeId));
     }
 
     BeeRow typeRow = typeData.getRow(0);
@@ -2450,7 +2454,11 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       ResponseObject response;
 
       if (!BeeUtils.isEmpty(errorMessages)) {
-        response = ResponseObject.error(reqInfo.getLabel(), docId);
+        Dictionary dictionary = usr.getDictionary();
+        response = ResponseObject.error(dictionary.trdDocument(), docId,
+            (oldPhase == null) ? BeeConst.STRING_EMPTY : oldPhase.getCaption(dictionary),
+            BeeConst.STRING_RIGHT_ARROW, newPhase.getCaption(dictionary));
+
         errorMessages.forEach(response::addError);
         return response;
       }
@@ -2595,8 +2603,11 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         }
 
         if (!DataUtils.isId(parent)) {
-          return ResponseObject.error("parent not found for id", id, "item", item, "qty", qty,
-              "warehouse", warehouseFrom, "consignor", consignor);
+          Dictionary dictionary = usr.getDictionary();
+          return ResponseObject.error(BeeUtils.joinOptions(dictionary.trdDocumentItem(), id,
+              dictionary.item(), item, dictionary.trdQuantity(), qty,
+              dictionary.warehouse(), warehouseFrom, dictionary.consignor(), consignor,
+              dictionary.trdQuantityStock(), BeeUtils.sum(parentQuantities.values())));
         }
 
         if (BeeUtils.nonZero(qty)) {
@@ -2823,27 +2834,49 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       return messages;
     }
 
+    Dictionary dictionary = usr.getDictionary();
+
     if (operationType == null) {
-      messages.add("operation type not specified");
-      return messages;
-    }
-    if (toStock && operationType.producesStock() && !DataUtils.isId(warehouseTo)) {
-      messages.add("warehouse-receiver not specified");
+      messages.add(dictionary.fieldRequired(dictionary.trdOperationType()));
       return messages;
     }
 
-    if (operationType.producesStock() && !toStock && hasChildren(itemCondition)) {
-      messages.add("document has children");
+    if (toStock && operationType.producesStock()) {
+      if (!DataUtils.isId(warehouseTo)) {
+        messages.add(dictionary.fieldRequired(dictionary.trdWarehouseTo()));
+        return messages;
+      }
+
+      if (!DataUtils.isId(customer) && isConsignmentWarehouse(warehouseTo)) {
+        messages.add(dictionary.fieldRequired(dictionary.trdCustomer()));
+        return messages;
+      }
     }
+
+    if (operationType.producesStock() && !toStock && hasChildren(itemCondition)) {
+      messages.add(dictionary.trdDocumentHasChildren());
+    }
+
     if (operationType.consumesStock() && toStock) {
-      messages.addAll(verifyStock(itemCondition, warehouseFrom, operationType, supplier, customer));
+      if (isConsignmentWarehouse(warehouseFrom)
+          && !DataUtils.isId(getConsignor(operationType, supplier, customer))) {
+
+        messages.add(dictionary.trdEnterSupplierOrCustomer());
+
+      } else if (DataUtils.isId(warehouseFrom)) {
+        messages.addAll(verifyStock(itemCondition, warehouseFrom,
+            operationType, supplier, customer, dictionary));
+
+      } else {
+        messages.add(dictionary.fieldRequired(dictionary.trdWarehouseFrom()));
+      }
     }
 
     return messages;
   }
 
   private List<String> verifyStock(IsCondition itemCondition, Long documentWarehouseFrom,
-      OperationType operationType, Long supplier, Long customer) {
+      OperationType operationType, Long supplier, Long customer, Dictionary dictionary) {
 
     List<String> messages = new ArrayList<>();
 
@@ -2890,8 +2923,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         }
 
         if (!DataUtils.isId(parent)) {
-          messages.add(BeeUtils.joinWords("parent not found for id", id, "item", item,
-              "qty", qty, "warehouse", warehouseFrom));
+          messages.add(BeeUtils.joinOptions(dictionary.trdDocumentItem(), id,
+              dictionary.item(), item, dictionary.trdQuantity(), qty,
+              dictionary.warehouse(), warehouseFrom, dictionary.consignor(), consignor,
+              dictionary.trdQuantityStock(), BeeUtils.sum(parentQuantities.values())));
         }
       }
     }
@@ -2978,7 +3013,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   private ResponseObject onTradeItemQuantityUpdate(long itemId, Double newQty) {
     if (modifyItemStock(itemId)) {
       if (!BeeUtils.isPositive(newQty)) {
-        return ResponseObject.error("invalid quantity", newQty);
+        return ResponseObject.error(usr.getDictionary().invalidQuantity(newQty));
       }
 
       String idName = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
@@ -3003,8 +3038,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           itemNewStock = BeeUtils.unbox(itemOldStock) - oldQty + newQty;
 
           if (BeeUtils.isNegative(itemNewStock)) {
-            return ResponseObject.error("item stock", itemOldStock, "-", oldQty, "+", newQty,
-                "=", itemNewStock);
+            return ResponseObject.error(usr.getDictionary().trdQuantityStock(), itemOldStock,
+                "-", oldQty, "+", newQty, "=", itemNewStock);
           }
         }
 
@@ -3020,8 +3055,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             parentNewStock = BeeUtils.unbox(parentOldStock) + oldQty - newQty;
 
             if (BeeUtils.isNegative(parentNewStock)) {
-              return ResponseObject.error("parent stock", parentOldStock, "+", oldQty, "-", newQty,
-                  "=", parentNewStock);
+              Dictionary dictionary = usr.getDictionary();
+              return ResponseObject.error(dictionary.trdItemParent(), dictionary.trdQuantityStock(),
+                  parentOldStock, "+", oldQty, "-", newQty, "=", parentNewStock);
             }
           }
         }
@@ -3145,7 +3181,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       if (!Objects.equals(oldValue, warehouse)) {
         if (!DataUtils.isId(warehouse)) {
-          return ResponseObject.error("warehouse required");
+          Dictionary dictionary = usr.getDictionary();
+          return ResponseObject.error(dictionary.fieldRequired(dictionary.trdWarehouseTo()));
         }
 
         SqlUpdate update = new SqlUpdate(TBL_TRADE_STOCK)
@@ -3176,39 +3213,43 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   }
 
   private String verifyTradeItemInsert(long docId, Double quantity, Long warehouseTo, Long parent) {
+    Dictionary dictionary = usr.getDictionary();
+
     if (!BeeUtils.isDouble(quantity)) {
-      return "item quantity not available";
+      return dictionary.fieldRequired(dictionary.trdQuantity());
     }
 
     OperationType operationType = getOperationTypeByTradeDocument(docId);
     if (operationType == null) {
-      return "operation type not available";
+      return dictionary.fieldRequired(dictionary.trdOperationType());
     }
 
     if (operationType.consumesStock()) {
       if (!DataUtils.isId(parent)) {
-        return "item parent not available";
+        return dictionary.fieldRequired(dictionary.trdItemParent());
       }
 
       Double stock = qs.getDouble(TBL_TRADE_STOCK, COL_STOCK_QUANTITY,
           COL_TRADE_DOCUMENT_ITEM, parent);
 
       if (!BeeUtils.isDouble(stock)) {
-        return "parent stock not found";
+        return BeeUtils.joinWords(dictionary.trdItemParent(), parent,
+            dictionary.trdQuantityStock(), 0);
       }
       if (stock < quantity) {
-        return BeeUtils.joinWords("parent", parent, "stock", stock, "quantity", quantity);
+        return BeeUtils.joinWords(dictionary.trdItemParent(), parent,
+            dictionary.trdQuantityStock(), stock, dictionary.trdQuantity(), quantity);
       }
     }
 
     if (operationType.producesStock()) {
       if (BeeUtils.isNegative(quantity)) {
-        return "quantity must be >= 0";
+        return dictionary.invalidQuantity(quantity);
       }
 
       Long warehouseReceiver = getWarehouseReceiver(docId, warehouseTo);
       if (!DataUtils.isId(warehouseReceiver)) {
-        return "warehouse-receiver not specified";
+        return dictionary.fieldRequired(dictionary.trdWarehouseTo());
       }
     }
 
@@ -3273,7 +3314,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     for (Long itemId : itemIds) {
       if (DataUtils.isId(itemId)) {
         if (qs.sqlExists(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT, itemId)) {
-          return ResponseObject.error("item", itemId, "has children");
+          return ResponseObject.error(itemId, usr.getDictionary().trdDocumentItemHasChildren());
         }
 
         SqlSelect query = new SqlSelect()
@@ -3318,7 +3359,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     for (Long docId : docIds) {
       if (DataUtils.isId(docId)) {
         if (hasChildren(SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT, docId))) {
-          return ResponseObject.error("document", docId, "has children");
+          return ResponseObject.error(docId, usr.getDictionary().trdDocumentHasChildren());
         }
 
         SqlSelect query = new SqlSelect()
@@ -3434,9 +3475,11 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     String parents = qs.sqlCreateTemp(rootQuery);
     int count = qs.sqlCount(parents, null);
 
+    Dictionary dictionary = usr.getDictionary();
+
     if (count <= 0) {
       qs.sqlDropTemp(parents);
-      response.addWarning("stock root items not found");
+      response.addWarning(dictionary.dataNotAvailable(dictionary.trdStock()));
 
       if (!qs.isEmpty(TBL_TRADE_STOCK)) {
         response.addWarning(BeeUtils.joinWords(TBL_TRADE_STOCK, "is not empty"));
@@ -3452,7 +3495,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     SqlSelect stockQuery = new SqlSelect().addFields(parents, stockFields).addFrom(parents);
     String stock = qs.sqlCreateTemp(stockQuery);
 
-    String message = buildMessage(stopwatch, "depth", 0, "count", count);
+    String message = buildMessage(stopwatch, dictionary.depth(), 0, dictionary.size(), count);
     logger.info(message);
     response.addInfo(message);
 
@@ -3484,7 +3527,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         return insResponse;
       }
 
-      message = buildMessage(stopwatch, "depth", depth, "count", count);
+      message = buildMessage(stopwatch, dictionary.depth(), depth, dictionary.size(), count);
       logger.info(message);
       response.addInfo(message);
 
@@ -3531,7 +3574,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         return updResponse;
       }
 
-      message = buildMessage(stopwatch, "consumers", updResponse.getResponse());
+      message = buildMessage(stopwatch, dictionary.rebuildTradeStockConsumers(),
+          updResponse.getResponse());
       logger.info(message);
       response.addInfo(message);
     }
@@ -3589,7 +3633,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         }
       }
 
-      message = buildMessage(stopwatch, "updated", diffData.getNumberOfRows());
+      message = buildMessage(stopwatch, dictionary.rowsUpdated(diffData.getNumberOfRows()));
       logger.info(message);
       response.addInfo(message);
 
@@ -3616,7 +3660,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         return delResponse;
       }
 
-      message = buildMessage(stopwatch, "deleted", delResponse.getResponse());
+      message = buildMessage(stopwatch, dictionary.rowsDeleted(delResponse.getResponse()));
       logger.info(message);
       response.addInfo(message);
 
@@ -3671,7 +3715,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         }
       }
 
-      message = buildMessage(stopwatch, "inserted", newData.getNumberOfRows());
+      message = buildMessage(stopwatch, dictionary.rowsInserted(newData.getNumberOfRows()));
       logger.info(message);
       response.addInfo(message);
 
@@ -3684,7 +3728,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       refreshStock();
 
     } else {
-      message = "trade stock is up to date";
+      message = dictionary.rebuildTradeStockIsUpToDate();
 
       logger.info(message);
       response.addInfo(message);
@@ -4736,7 +4780,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           messages.add(Localized.dictionary().parameterNotFound(COL_TRADE_CURRENCY));
         }
 
-        if (!DataUtils.isId(currency)) {
+        if (!DataUtils.isId(account)) {
           messages.add("payment account not available");
         }
 
