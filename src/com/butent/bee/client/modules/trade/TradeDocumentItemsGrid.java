@@ -55,6 +55,7 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.DecimalValue;
@@ -543,12 +544,16 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   }
 
   private static void getStock(Collection<Long> itemIds, Long warehouse,
-      final Consumer<Multimap<Long, IsRow>> consumer) {
+      Multimap<String, String> options, final Consumer<Multimap<Long, IsRow>> consumer) {
 
-    Filter filter = Filter.and(
-        Filter.equals(COL_STOCK_WAREHOUSE, warehouse),
+    CompoundFilter filter = CompoundFilter.and();
+    filter.add(Filter.equals(COL_STOCK_WAREHOUSE, warehouse),
         Filter.any(COL_ITEM, itemIds),
         Filter.isPositive(COL_STOCK_QUANTITY));
+
+    if (options != null && options.containsKey(COL_WAREHOUSE_CONSIGNMENT)) {
+      filter.add(Filter.custom(FILTER_STOCK_CONSIGNOR, options));
+    }
 
     Order order = Order.ascending(ALS_STOCK_PRIMARY_DATE, COL_TRADE_DATE);
 
@@ -852,12 +857,14 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     return true;
   }
 
-  private void addItems(IsRow parentRow, Collection<BeeRow> selectedItems, TradeDocumentSums tds) {
+  private void addItems(IsRow parentRow, Collection<BeeRow> selectedItems, TradeDocumentSums tds,
+      Multimap<String, String> options) {
+
     if (isStockRequired(parentRow)) {
       Long warehouse = Data.getLong(VIEW_TRADE_DOCUMENTS, parentRow, COL_TRADE_WAREHOUSE_FROM);
 
       if (DataUtils.isId(warehouse)) {
-        getStock(tds.getItemIds(), warehouse, stock ->
+        getStock(tds.getItemIds(), warehouse, options, stock ->
             addItems(parentRow, selectedItems, tds, true, stock));
       }
 
@@ -973,13 +980,14 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   private void openPicker(IsRow parentRow, Double defaultVatPercent) {
     TradeItemPicker picker = new TradeItemPicker(parentRow, defaultVatPercent);
 
+    Multimap<String, String> options = ArrayListMultimap.create();
+
     BiConsumer<Collection<BeeRow>, TradeDocumentSums> selectionConsumer =
-        (selectedItems, tds) -> addItems(parentRow, selectedItems, tds);
+        (selectedItems, tds) -> addItems(parentRow, selectedItems, tds, options);
 
     if (TradeUtils.isDocumentValueTrue(parentRow, ALS_WAREHOUSE_FROM_CONSIGNMENT)
         && isStockRequired(parentRow)) {
 
-      Multimap<String, String> options = ArrayListMultimap.create();
       options.put(COL_WAREHOUSE_CONSIGNMENT, Codec.pack(true));
 
       Long warehouse = TradeUtils.getDocumentRelation(parentRow, COL_TRADE_WAREHOUSE_FROM);
@@ -1186,7 +1194,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
             picker.setParentFilter(filter);
 
             picker.open(caption, false,
-                (selectedItems, tds) -> addItems(documentRow, selectedItems, tds));
+                (selectedItems, tds) -> addItems(documentRow, selectedItems, tds, options));
             endReturnCommand();
           });
 

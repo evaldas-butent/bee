@@ -1556,6 +1556,44 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       return SqlUtils.in(view.getSourceAlias(), view.getSourceIdName(), query);
     });
 
+    BeeView.registerConditionProvider(FILTER_STOCK_CONSIGNOR, (view, args) -> {
+      OperationType operationType = null;
+
+      Long supplier = null;
+      Long customer = null;
+
+      if (!BeeUtils.isEmpty(args)) {
+        Multimap<String, String> options = CustomFilter.getOptions(args);
+
+        for (Map.Entry<String, String> entry : options.entries()) {
+          String value = entry.getValue();
+
+          switch (entry.getKey()) {
+            case COL_OPERATION_TYPE:
+              operationType = Codec.unpack(OperationType.class, value);
+              break;
+
+            case COL_TRADE_SUPPLIER:
+              supplier = BeeUtils.toLongOrNull(value);
+              break;
+
+            case COL_TRADE_CUSTOMER:
+              customer = BeeUtils.toLongOrNull(value);
+              break;
+          }
+        }
+      }
+
+      Long consignor = getConsignor(operationType, supplier, customer);
+
+      if (DataUtils.isId(consignor)) {
+        return SqlUtils.equals(view.getColumnSource(COL_TRADE_CUSTOMER), COL_TRADE_CUSTOMER,
+            consignor);
+      } else {
+        return SqlUtils.sqlFalse();
+      }
+    });
+
     BeeView.registerConditionProvider(FILTER_USER_TRADE_SERIES, (view, args) -> {
       Long manager;
 
