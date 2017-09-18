@@ -72,6 +72,7 @@ import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.StringList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,6 +82,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -968,9 +970,54 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     });
   }
 
-  private void openPicker(final IsRow parentRow, Double defaultVatPercent) {
+  private void openPicker(IsRow parentRow, Double defaultVatPercent) {
     TradeItemPicker picker = new TradeItemPicker(parentRow, defaultVatPercent);
-    picker.open((selectedItems, tds) -> addItems(parentRow, selectedItems, tds));
+
+    BiConsumer<Collection<BeeRow>, TradeDocumentSums> selectionConsumer =
+        (selectedItems, tds) -> addItems(parentRow, selectedItems, tds);
+
+    if (TradeUtils.isDocumentValueTrue(parentRow, ALS_WAREHOUSE_FROM_CONSIGNMENT)
+        && isStockRequired(parentRow)) {
+
+      Multimap<String, String> options = ArrayListMultimap.create();
+      options.put(COL_WAREHOUSE_CONSIGNMENT, Codec.pack(true));
+
+      Long warehouse = TradeUtils.getDocumentRelation(parentRow, COL_TRADE_WAREHOUSE_FROM);
+      if (DataUtils.isId(warehouse)) {
+        options.put(COL_STOCK_WAREHOUSE, BeeUtils.toString(warehouse));
+      }
+
+      OperationType operationType = TradeUtils.getDocumentOperationType(parentRow);
+      options.put(COL_OPERATION_TYPE, Codec.pack(operationType));
+
+      Long supplier = TradeUtils.getDocumentRelation(parentRow, COL_TRADE_SUPPLIER);
+      if (DataUtils.isId(supplier)) {
+        options.put(COL_TRADE_SUPPLIER, BeeUtils.toString(supplier));
+      }
+
+      Long customer = TradeUtils.getDocumentRelation(parentRow, COL_TRADE_CUSTOMER);
+      if (DataUtils.isId(customer)) {
+        options.put(COL_TRADE_CUSTOMER, BeeUtils.toString(customer));
+      }
+
+      Filter filter;
+      if (operationType.producesStock()) {
+        filter = Filter.custom(FILTER_ITEM_HAS_STOCK, options);
+      } else {
+        filter = Filter.or(Filter.notNull(COL_ITEM_IS_SERVICE),
+            Filter.custom(FILTER_ITEM_HAS_STOCK, options));
+      }
+
+      picker.setParentFilter(filter);
+
+      StringList labels = StringList.of(TradeUtils.getDocumentString(parentRow, ALS_SUPPLIER_NAME),
+          TradeUtils.getDocumentString(parentRow, ALS_CUSTOMER_NAME));
+
+      picker.open(BeeUtils.joinWords(labels), !operationType.producesStock(), selectionConsumer);
+
+    } else {
+      picker.open(selectionConsumer);
+    }
   }
 
   private void showItemStock(final Element target) {

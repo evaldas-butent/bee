@@ -49,7 +49,6 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Triplet;
@@ -1404,13 +1403,16 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       Set<Long> suppliers = new HashSet<>();
       Set<Long> customers = new HashSet<>();
 
-      Holder<DateTime> primaryDate = Holder.absent();
+      DateTime primaryDate = null;
       Set<String> primaryDocumentNumbers = new HashSet<>();
+
+      OperationType operationType = null;
+      boolean consignment = false;
 
       if (!BeeUtils.isEmpty(args)) {
         Multimap<String, String> options = CustomFilter.getOptions(args);
 
-        options.entries().forEach(entry -> {
+        for (Map.Entry<String, String> entry : options.entries()) {
           String value = entry.getValue();
 
           switch (entry.getKey()) {
@@ -1436,7 +1438,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               break;
 
             case COL_TRADE_DATE:
-              primaryDate.set(DateTime.restore(value));
+              primaryDate = DateTime.restore(value);
               break;
 
             case COL_TRADE_NUMBER:
@@ -1444,8 +1446,16 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                 primaryDocumentNumbers.add(value.trim());
               }
               break;
+
+            case COL_OPERATION_TYPE:
+              operationType = Codec.unpack(OperationType.class, value);
+              break;
+
+            case COL_WAREHOUSE_CONSIGNMENT:
+              consignment = Codec.unpack(value);
+              break;
           }
-        });
+        }
       }
 
       String aliasStock = TBL_TRADE_STOCK;
@@ -1468,7 +1478,26 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               SqlUtils.join(aliasPrimaryDocumentItems, documentItemId,
                   aliasStock, COL_PRIMARY_DOCUMENT_ITEM));
 
-      if (!suppliers.isEmpty() || primaryDate.isNotNull() || !primaryDocumentNumbers.isEmpty()) {
+      if (consignment) {
+        Long supplier = suppliers.stream().findAny().orElse(null);
+        Long customer = customers.stream().findAny().orElse(null);
+
+        Long consignor = getConsignor(operationType, supplier, customer);
+
+        if (DataUtils.isId(consignor)) {
+          String aliasDocumentItems = SqlUtils.uniqueName("dit");
+          String aliasDocuments = SqlUtils.uniqueName("doc");
+
+          query.addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, aliasDocumentItems,
+              SqlUtils.join(aliasDocumentItems, documentItemId,
+                  aliasStock, COL_TRADE_DOCUMENT_ITEM));
+          query.addFromLeft(TBL_TRADE_DOCUMENTS, aliasDocuments,
+              SqlUtils.join(aliasDocuments, documentId, aliasDocumentItems, COL_TRADE_DOCUMENT));
+
+          where.add(SqlUtils.equals(aliasDocuments, COL_TRADE_CUSTOMER, consignor));
+        }
+
+      } else if (!suppliers.isEmpty() || primaryDate != null || !primaryDocumentNumbers.isEmpty()) {
         String aliasPrimaryDocuments = SqlUtils.uniqueName("pdo");
 
         String aliasReturnDocumentItems = SqlUtils.uniqueName("rdi");
@@ -1500,12 +1529,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                   SqlUtils.inList(aliasReturnDocuments, COL_TRADE_SUPPLIER, suppliers)));
         }
 
-        if (primaryDate.isNotNull()) {
+        if (primaryDate != null) {
           where.add(
               SqlUtils.or(
                   SqlUtils.and(pointOfNoReturn,
-                      SqlUtils.less(aliasPrimaryDocuments, COL_TRADE_DATE, primaryDate.get())),
-                  SqlUtils.less(aliasReturnDocuments, COL_TRADE_DATE, primaryDate.get())));
+                      SqlUtils.less(aliasPrimaryDocuments, COL_TRADE_DATE, primaryDate)),
+                  SqlUtils.less(aliasReturnDocuments, COL_TRADE_DATE, primaryDate)));
         }
 
         if (!primaryDocumentNumbers.isEmpty()) {
@@ -1520,18 +1549,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                   SqlUtils.containsAny(aliasReturnDocuments, numberColumns,
                       primaryDocumentNumbers)));
         }
-      }
-
-      if (!customers.isEmpty()) {
-        String aliasDocumentItems = SqlUtils.uniqueName("dit");
-        String aliasDocuments = SqlUtils.uniqueName("doc");
-
-        query.addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, aliasDocumentItems,
-            SqlUtils.join(aliasDocumentItems, documentItemId, aliasStock, COL_TRADE_DOCUMENT_ITEM));
-        query.addFromLeft(TBL_TRADE_DOCUMENTS, aliasDocuments,
-            SqlUtils.join(aliasDocuments, documentId, aliasDocumentItems, COL_TRADE_DOCUMENT));
-
-        where.add(SqlUtils.inList(aliasDocuments, COL_TRADE_CUSTOMER, customers));
       }
 
       query.setWhere(where);
