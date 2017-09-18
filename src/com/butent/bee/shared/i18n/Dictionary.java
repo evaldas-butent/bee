@@ -863,6 +863,10 @@ public interface Dictionary {
 
   default String consignment() {return g("consignment");}
 
+  default String consignmentCredit() {return g("consignmentCredit");}
+
+  default String consignmentDebit() {return g("consignmentDebit");}
+
   default String consignor() {return g("consignor");}
 
   default String constant() {return g("constant");}

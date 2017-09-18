@@ -202,6 +202,9 @@ public final class TradeConstants {
   public static final String COL_OPERATION_DEFAULT = "IsDefault";
   public static final String COL_OPERATION_CASH_REGISTER_NO = "CashRegisterNo";
   public static final String COL_OPERATION_ORDINAL = "Ordinal";
+  public static final String COL_OPERATION_CONSIGNMENT = "Consignment";
+  public static final String COL_OPERATION_CONSIGNMENT_DEBIT = "ConsignmentDebit";
+  public static final String COL_OPERATION_CONSIGNMENT_CREDIT = "ConsignmentCredit";
 
   public static final String COL_STATUS_NAME = "StatusName";
   public static final String COL_STATUS_ACTIVE = "StatusActive";

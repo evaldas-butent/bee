@@ -42,6 +42,18 @@
       <xi:include href="viewcolumns/TradeAccounts.viewcolumns.xml" />
     </SimpleJoin>
 
+    <SimpleColumn name="Consignment" />
+
+    <SimpleColumn name="ConsignmentDebit" />
+    <SimpleJoin joinType="LEFT" name="ConsignmentDebit">
+      <SimpleColumn name="AccountCode" alias="ConsignmentDebitCode" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ConsignmentCredit" />
+    <SimpleJoin joinType="LEFT" name="ConsignmentCredit">
+      <SimpleColumn name="AccountCode" alias="ConsignmentCreditCode" />
+    </SimpleJoin>
+
     <SimpleColumn name="Background" />
     <SimpleColumn name="Foreground" />
 
