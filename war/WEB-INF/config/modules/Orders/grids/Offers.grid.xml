@@ -18,6 +18,7 @@
     <DataColumn name="CompanyName" visible="true" />
     <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
       choiceColumns="FirstName LastName CompanyName" />
-    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName"
+               filterSupplier="list" />
   </g:columns>
 </g:Grid>
