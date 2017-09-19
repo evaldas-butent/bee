@@ -55,6 +55,11 @@ public enum OperationType implements HasLocalizedCaption {
     public ItemPrice getDefaultPrice() {
       return ItemPrice.COST;
     }
+
+    @Override
+    public boolean maybeConsignment() {
+      return true;
+    }
   },
 
   SALE(true, false, false, false, DebtKind.RECEIVABLE) {
@@ -304,11 +309,6 @@ public enum OperationType implements HasLocalizedCaption {
     }
 
     @Override
-    public boolean isReturn() {
-      return true;
-    }
-
-    @Override
     public Long getAmountDebit(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getTradePayables();
     }
@@ -346,6 +346,16 @@ public enum OperationType implements HasLocalizedCaption {
     @Override
     public ItemPrice getDefaultPrice() {
       return ItemPrice.COST;
+    }
+
+    @Override
+    public boolean isReturn() {
+      return true;
+    }
+
+    @Override
+    public boolean maybeConsignment() {
+      return true;
     }
   };
 
@@ -420,6 +430,10 @@ public enum OperationType implements HasLocalizedCaption {
   }
 
   public boolean isReturn() {
+    return false;
+  }
+
+  public boolean maybeConsignment() {
     return false;
   }
 

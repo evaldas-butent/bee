@@ -207,6 +207,26 @@ public class FinancePostingBean {
       itemExpenditures = null;
     }
 
+    int consignment = BeeConst.UNDEF;
+    Long consignmentDebit = null;
+    Long consignmentCredit = null;
+
+    if (operationType.maybeConsignment()) {
+      SimpleRow row = qs.getRow(TBL_TRADE_OPERATIONS, operation);
+
+      if (row != null) {
+        Integer mode = row.getInt(COL_OPERATION_CONSIGNMENT);
+        consignmentDebit = row.getLong(COL_OPERATION_CONSIGNMENT_DEBIT);
+        consignmentCredit = row.getLong(COL_OPERATION_CONSIGNMENT_CREDIT);
+
+        if (BeeUtils.isPositive(mode)
+            && FinanceUtils.isValidEntry(consignmentDebit, consignmentCredit)) {
+
+          consignment = mode;
+        }
+      }
+    }
+
     List<BeeColumn> columns = sys.getView(VIEW_FINANCIAL_RECORDS).getRowSetColumns();
     BeeRowSet buffer = new BeeRowSet(VIEW_FINANCIAL_RECORDS, columns);
 
@@ -288,21 +308,29 @@ public class FinancePostingBean {
       List<BeeRow> lineRows = new ArrayList<>();
 
       if (BeeUtils.nonZero(lineTotal - lineVat)) {
-        debit = operationType.getAmountDebit(acc);
-        credit = operationType.getAmountCredit(acc);
-
-        if (operationType.isReturn() && operationType.consumesStock()
-            && DataUtils.isId(purchaseReturns)) {
-
-          credit = purchaseReturns;
+        if (consignment > 0) {
+          BeeUtils.addNotNull(lineRows,
+              post(columns, date, consignmentDebit, consignmentCredit,
+                  lineTotal - lineVat, currency, quantity, company, employee, dim));
         }
 
-        BeeUtils.addNotNull(lineRows,
-            post(columns, date, debit, credit, lineTotal - lineVat, currency, quantity,
-                company, employee, dim));
+        if (proceed(consignment)) {
+          debit = operationType.getAmountDebit(acc);
+          credit = operationType.getAmountCredit(acc);
+
+          if (operationType.isReturn() && operationType.consumesStock()
+              && DataUtils.isId(purchaseReturns)) {
+
+            credit = purchaseReturns;
+          }
+
+          BeeUtils.addNotNull(lineRows,
+              post(columns, date, debit, credit, lineTotal - lineVat, currency, quantity,
+                  company, employee, dim));
+        }
       }
 
-      if (BeeUtils.nonZero(lineVat)) {
+      if (BeeUtils.nonZero(lineVat) && proceed(consignment)) {
         BeeUtils.addNotNull(lineRows,
             post(columns, date, operationType.getVatDebit(acc), operationType.getVatCredit(acc),
                 lineVat, currency, quantity, company, employee, dim));
@@ -1216,5 +1244,9 @@ public class FinancePostingBean {
     }
 
     return ResponseObject.response(insert.getNumberOfRows());
+  }
+
+  private static boolean proceed(int consignment) {
+    return consignment != 1;
   }
 }
