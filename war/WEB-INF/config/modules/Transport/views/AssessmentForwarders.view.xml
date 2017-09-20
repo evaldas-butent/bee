@@ -89,6 +89,7 @@
 
         <SimpleColumn name="ForwarderVehicle" editable="true" />
         <SimpleColumn name="Notes" label="=transportOtherDetails" editable="true" />
+        <SimpleColumn name="PaymentDays" alias="Note" editable="true" />
       </SimpleJoin>
     </SimpleJoin>
 
@@ -117,7 +118,6 @@
       </SimpleJoin>
       <SimpleColumn name="Date" />
       <SimpleColumn name="Number" />
-      <SimpleColumn name="Note" label="=transportConditions" />
       <SimpleColumn name="Income" />
     </SimpleJoin>
 

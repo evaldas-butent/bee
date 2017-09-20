@@ -59,7 +59,7 @@
 
     <FlowPanel for="Note" style="&section;">
       <Label for="Note" name="NoteLabel" style="&labelLeft;" />
-      <DataSelector source="Note" viewName="DistinctForwarderNotes" valueSource="Note"
+      <DataSelector source="Note" viewName="DistinctForwarderNotes" valueSource="PaymentDays"
         strict="false" caching="local" style="&input; width:400px;" />
 
       <CheckBox source="Consolidated" style="&inline; margin-left:5px;" />

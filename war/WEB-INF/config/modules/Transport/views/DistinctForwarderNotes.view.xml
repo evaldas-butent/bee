@@ -1,22 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-      name="DistinctForwarderNotes" source="AssessmentForwarders"
-      filter="Note AND Manager={u}"
-    >
+      name="DistinctForwarderNotes" source="Trips"
+      filter="PaymentDays"
+>
   <Columns>
-    <SimpleJoin name="CargoExpense" joinType="INNER">
-      <SimpleColumn name="Note" />
-
-      <SimpleJoin name="Cargo" joinType="INNER">
-        <SimpleJoin name="Order" joinType="INNER">
-          <HiddenColumn name="Manager" />
-        </SimpleJoin>
-      </SimpleJoin>
-    </SimpleJoin>
+    <SimpleColumn name="PaymentDays" />
   </Columns>
-  <GroupBy columns="Note" />
+  <GroupBy columns="PaymentDays" />
   <Order>
-    <OrderBy column="Note" />
+    <OrderBy column="PaymentDays" />
   </Order>
 </View>

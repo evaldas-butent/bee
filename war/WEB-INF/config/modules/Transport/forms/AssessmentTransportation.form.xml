@@ -41,7 +41,9 @@
     </FlowPanel>
     <FlowPanel style="&section;">
       <Label text="=transport" style="&labelLeft;" />
-      <InputText source="ForwarderVehicle" style="&inline; width:200px;"  />
+      <DataSelector source="ForwarderVehicle" viewName="DistinctForwarderVehicles"
+                    valueSource="ForwarderVehicle" strict="false" caching="local"
+                    style="&inline; width:200px;" />
     </FlowPanel>
     <FlowPanel style="&section;">
       <Label text="=vehicleDriver" style="&labelLeft;" />
@@ -59,8 +61,9 @@
       <CheckBox source="TransportationVatPercent" style="&inline; margin-left:5px;" text="%" />
     </FlowPanel>
     <FlowPanel style="&section;">
-      <Label text="=transportConditions" class="bee-required" style="&labelLeft;" />
-      <InputText source="PaymentDays" required="true" style="width: 200px;" />
+      <Label for="PaymentDays" style="&labelLeft;" />
+      <DataSelector source="PaymentDays" viewName="DistinctForwarderNotes" valueSource="PaymentDays"
+                    strict="false" caching="local" style="width:400px;" />
     </FlowPanel>
     <hr/>
 
