@@ -961,12 +961,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     Map<String, Object> creditInfo = Maps.newHashMap();
     ResponseObject resp = getCreditInfo(companyId);
-    Double debt = null;
+    Double totalDebt = null;
 
     if (resp.getResponse() instanceof Map) {
       creditInfo = resp.getResponse(creditInfo, logger);
       if (creditInfo.get(VAR_DEBT) instanceof Double) {
-        debt = (Double) creditInfo.get(VAR_DEBT);
+        totalDebt = (Double) creditInfo.get(VAR_DEBT);
       }
     }
 
@@ -1009,6 +1009,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     Range<Long> maybeTime = Range.closed(
         TimeUtils.startOfYear(TimeUtils.today(), -10).getTime(),
         TimeUtils.startOfYear(TimeUtils.today(), 100).getTime());
+
+    double debt = 0;
 
     for (IsRow row : rs) {
       Tr tr = tr();
@@ -1068,18 +1070,30 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       td.setTextAlign(TextAlign.RIGHT);
 
       table.append(tr);
+
+      debt += BeeUtils.unbox(row.getDouble(rs.getColumnIndex(VAR_DEBT)));
     }
 
     Tr footer = tr();
+    Tr footerTotal = tr();
+
     for (int i = 0; i < rs.getNumberOfColumns() - ignoreLast - 3; i++) {
       footer.append(td());
+      footerTotal.append(td());
     }
     footer.append(td());
-
-    footer.append(td().append(b().text(usr.getDictionary().total())));
+    footer.append(td().append(b().text(usr.getDictionary().trdOverdue())));
     footer.append(td().text(BeeUtils.notEmpty(BeeUtils.toString(debt), BeeConst.STRING_EMPTY)));
+
+    footerTotal.append(td());
+    footerTotal.append(td().append(b().text(usr.getDictionary().trdTotalDebt())));
+    footerTotal.append(td().text(BeeUtils.notEmpty(BeeUtils.toString(totalDebt), BeeConst.STRING_EMPTY)));
+
     table.append(footer);
+    table.append(footerTotal);
+
     footer.append(td());
+    footerTotal.append(td());
 
     table.setBorderWidth("1px;");
     table.setBorderStyle(BorderStyle.NONE);

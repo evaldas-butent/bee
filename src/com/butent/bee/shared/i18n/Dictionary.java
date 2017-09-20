@@ -833,8 +833,6 @@ public interface Dictionary {
 
   default String companyStructure() {return g("companyStructure");}
 
-  default String companyToleratedDays() {return g("companyToleratedDays");}
-
   default String companyVATCode() {return g("companyVATCode");}
 
   default String complect() {return g("complect");}
@@ -3954,6 +3952,10 @@ public interface Dictionary {
 
   default String price9Label() {return g("price9Label");}
 
+  default String priceEURWithVAT() {return g("priceEURWithVAT");}
+
+  default String priceEURWoVAT() {return g("priceEURWoVAT");}
+
   default String priceName() {return g("priceName");}
 
   default String priceWithVat() {return g("priceWithVat");}
@@ -3961,10 +3963,6 @@ public interface Dictionary {
   default String priceWithoutVat() {return g("priceWithoutVat");}
 
   default String prices() {return g("prices");}
-
-  default String priceEURWithVAT() {return g("priceEURWithVAT");}
-
-  default String priceEURWoVAT() {return g("priceEURWoVAT");}
 
   default String primaryWarehouse() {return g("primaryWarehouse");}
 
@@ -4732,9 +4730,9 @@ public interface Dictionary {
 
   default String supplierCreditDays() {return g("supplierCreditDays");}
 
-  default String suppliers() {return g("suppliers");}
-
   default String supplierTerm() {return g("supplierTerm");}
+
+  default String suppliers() {return g("suppliers");}
 
   default String svcCalendar() {return g("svcCalendar");}
 
@@ -6030,9 +6028,9 @@ public interface Dictionary {
 
   default String trdAmountByRate() {return g("trdAmountByRate");}
 
-  default String trdAmountWoVat() {return g("trdAmountWoVat");}
-
   default String trdAmountEURWithVat() {return g("trdAmountEURWithVat");}
+
+  default String trdAmountWoVat() {return g("trdAmountWoVat");}
 
   default String trdCashRegisterNo() {return g("trdCashRegisterNo");}
 
@@ -6236,6 +6234,8 @@ public interface Dictionary {
   default String trdTerm() {return g("trdTerm");}
 
   default String trdTotal() {return g("trdTotal");}
+
+  default String trdTotalDebt() {return g("trdTotalDebt");}
 
   default String trdTotalEURWithVat() {return g("trdTotalEURWithVat");}
 
