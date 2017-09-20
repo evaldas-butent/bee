@@ -411,7 +411,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   private WindowType editWindowType;
 
   private final Set<String> pendingResize = new HashSet<>();
-  private String options;
+  private String dataOptions;
 
   private final Map<String, String> properties = new HashMap<>();
 
@@ -948,8 +948,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       setRowValidation(Evaluator.create(gridDescription.getRowValidation(), null, dataColumns));
     }
 
-    if (!BeeUtils.isEmpty(gridDescription.getOptions())) {
-      setOptions(gridDescription.getOptions());
+    if (!BeeUtils.isEmpty(gridDescription.getDataOptions())) {
+      setDataOptions(gridDescription.getDataOptions());
     }
     if (!BeeUtils.isEmpty(gridDescription.getProperties())) {
       setProperties(gridDescription.getProperties());
@@ -1425,8 +1425,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
-  public String getOptions() {
-    return options;
+  public String getDataOptions() {
+    return dataOptions;
   }
 
   @Override
@@ -3514,8 +3514,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     this.onFormOpen = onFormOpen;
   }
 
-  private void setOptions(String options) {
-    this.options = options;
+  private void setDataOptions(String dataOptions) {
+    this.dataOptions = dataOptions;
   }
 
   private void setProperties(Map<String, String> properties) {
