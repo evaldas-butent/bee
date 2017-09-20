@@ -85,6 +85,7 @@ import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -846,7 +847,7 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
     BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
 
     Set<String> colNames = Sets.newHashSet(COL_PRIORITY, COL_SUMMARY, COL_DESCRIPTION,
-        COL_EXPECTED_DURATION);
+        COL_EXPECTED_DURATION, COL_PRODUCT);
     for (String colName : colNames) {
       int index = dataInfo.getColumnIndex(colName);
       String value = oldRow.getString(index);
@@ -893,11 +894,12 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
     }
 
     if (DataUtils.isId(Data.getLong(VIEW_TASKS, oldRow, COL_TASK_ORDER))) {
-      for (BeeColumn column : Data.getColumns(VIEW_TASK_ORDERS)) {
+      for (BeeColumn column : Data.getColumns(VIEW_TASK_ORDER_COLUMNS)) {
         int index = dataInfo.getColumnIndex(column.getId());
         String value = oldRow.getString(index);
 
-        if (!BeeUtils.isEmpty(value)) {
+        if (!BeeUtils.isEmpty(value) && !Objects.equals(column.getId(),
+            TransportConstants.COL_ORDER_NO)) {
           newRow.setValue(index, value);
         }
       }
@@ -923,7 +925,13 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
                     Queries.insertRows(insertRows, new RpcCallback<RowInfoList>() {
                       @Override
                       public void onSuccess(RowInfoList rowInfo) {
-                        RowEditor.openForm(FORM_TASK_ORDER, VIEW_TASKS, result, Opener.MODAL, null);
+                        RowEditor.openForm(FORM_TASK_ORDER, VIEW_TASKS, result, Opener.MODAL,
+                            new RowCallback() {
+                              @Override
+                              public void onSuccess(BeeRow result) {
+                                getGridPresenter().handleAction(Action.REFRESH);
+                              }
+                            });
                       }
                     });
                   }

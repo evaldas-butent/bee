@@ -1,12 +1,119 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+      xmlns:x="http://www.butent.com/expression"
       xmlns:xi="http://www.w3.org/2001/XInclude"
 
-      name="TaskOrders" source="Tasks" caption="=crmTasks"
+      name="TaskOrders" source="Tasks" caption="=orders"
+      editForm="TaskOrder" newRowForm="NewTaskOrder" rowCaption="Summary"
 >
+    <Relation renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
+              choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime" />
     <Columns>
+        <IdColumn name="Id"/>
+
+        <xi:include href="viewcolumns/TaskTemplate.viewcolumns.xml" />
+
+        <SimpleColumn name="Created" />
+        <SimpleColumn name="StartTime" />
+        <SimpleColumn name="FinishTime" />
+        <SimpleColumn name="Completed" />
+        <SimpleColumn name="Approved" />
+
+        <SimpleColumn name="ExpectedDuration" />
+        <SimpleColumn name="Status" />
+        <SimpleColumn name="RecurringTask" />
+
+        <SimpleColumn name="Owner" />
+        <SimpleJoin name="Owner" joinType="LEFT">
+            <SimpleColumn name="CompanyPerson" alias="OwnerPerson" />
+            <SimpleJoin name="CompanyPerson" joinType="LEFT">
+                <SimpleJoin name="Person" joinType="LEFT">
+                    <SimpleColumn alias="OwnerFirstName" name="FirstName" />
+                    <SimpleColumn alias="OwnerLastName" name="LastName" />
+                </SimpleJoin>
+            </SimpleJoin>
+        </SimpleJoin>
+
+        <SimpleColumn name="Executor" />
+        <SimpleJoin name="Executor" joinType="LEFT">
+            <SimpleColumn name="CompanyPerson" alias="ExecutorPerson" />
+            <SimpleJoin name="CompanyPerson" joinType="LEFT">
+                <SimpleJoin name="Person" joinType="LEFT">
+                    <SimpleColumn alias="ExecutorFirstName" name="FirstName" />
+                    <SimpleColumn alias="ExecutorLastName" name="LastName" />
+                </SimpleJoin>
+            </SimpleJoin>
+        </SimpleJoin>
+
+        <SimpleColumn name="ReminderTime" />
+        <SimpleColumn name="ReminderSent" />
+
+        <SimpleColumn name="Project" />
+        <SimpleJoin name="Project" joinType="LEFT">
+            <SimpleColumn name="Name" alias="ProjectName"/>
+            <SimpleColumn name="Owner" alias="ProjectOwner" />
+            <SimpleColumn name="Status" alias="ProjectStatus" />
+            <SimpleColumn name="ProjectTemplate"  />
+            <ExternalJoin name="Project" source="ProjectUsers" joinType="LEFT" filter="FilteredProjectUser = {u}">
+                <SimpleColumn name="User" alias="FilteredProjectUser" />
+            </ExternalJoin>
+        </SimpleJoin>
+
+        <SimpleColumn name="ProjectStage" />
+        <SimpleJoin name="ProjectStage" joinType="LEFT">
+            <SimpleColumn name="Name" alias="StageName"/>
+            <SimpleColumn name="StageTemplate" />
+        </SimpleJoin>
+
+        <SimpleColumn name="ExpectedExpenses" />
+
+        <SimpleColumn name="ActualDuration" label="=prjActualTaskDuration">
+            <x:number>0</x:number>
+            <!--
+            Data handling in system module bean
+            void com.butent.bee.server.modules.tasks.TasksModuleBean.init().new DataEventHandler()
+            {...}.fillTasksTimeData(ViewQueryEvent event)
+            -->
+        </SimpleColumn>
+
+        <SimpleColumn name="ActualExpenses" label="=prjActualExpenses">
+            <x:number>0</x:number>
+            <!--
+            Data handling in system module bean
+            void com.butent.bee.server.modules.tasks.TasksModuleBean.init().new DataEventHandler()
+            {...}.fillTasksTimeData(ViewQueryEvent event)
+            -->
+        </SimpleColumn>
+
+        <SimpleColumn name="Currency"/>
+        <SimpleJoin name="Currency" joinType="LEFT">
+            <SimpleColumn name="Name" alias="CurrencyName" />
+        </SimpleJoin>
+
+        <SimpleColumn name="PrivateTask" />
+
+        <SimpleColumn name="Product" />
+        <SimpleJoin name="Product" joinType="LEFT">
+            <SimpleColumn name="Name" alias="ProductName"/>
+            <SimpleColumn name="Background" alias="ProductBackground"/>
+            <SimpleColumn name="Foreground" alias="ProductForeground"/>
+        </SimpleJoin>
+
+        <ExternalJoin name="Task" joinType="LEFT" source="TaskEvents"
+                      filter="(Status=3 OR Status=4 OR Status=5 OR Status=6)
+                  AND (Event=5 OR Event=8 OR Event=9 OR Event=10)" >
+            <HiddenColumn name="Event"/>
+            <AggregateColumn name="PublishTime" alias="LastBreakEvent" aggregate="MAX" />
+        </ExternalJoin>
+
+        <SimpleColumn name="TaskOrder" />
         <SimpleJoin name="TaskOrder" joinType="LEFT">
             <xi:include href="viewcolumns/TaskOrder.viewcolumns.xml" />
         </SimpleJoin>
     </Columns>
+
+    <Order>
+        <OrderBy column="Status" />
+        <OrderBy column="FinishTime" />
+    </Order>
 </View>

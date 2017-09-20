@@ -357,7 +357,7 @@
 
         <row>
           <Label for="Selection" />
-          <InputInteger source="Selection" minValue="0" maxValue="999999" />
+          <InputText source="Selection" />
 
           <Label for="Holes" />
           <cell colSpan="4">

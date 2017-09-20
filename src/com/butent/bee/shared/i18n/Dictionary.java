@@ -1007,6 +1007,8 @@ public interface Dictionary {
 
   default String crmEnterExecutor() {return g("crmEnterExecutor");}
 
+  default String crmEnterOneExecutor() {return g("crmEnterOneExecutor");}
+
   default String crmEnterFinishDate() {return g("crmEnterFinishDate");}
 
   default String crmEnterFinishDateOrEstimatedTime() {return g("crmEnterFinishDateOrEstimatedTime");}

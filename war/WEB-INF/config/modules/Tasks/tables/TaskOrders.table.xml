@@ -59,7 +59,7 @@
     <String name="Punching" precision="10" label="Štancavimas" />
     <String name="Bending" precision="15" label="Apdaila" />
     <Integer name="OtherBending" />
-    <Integer name="Selection" label="Parink. / perfor." />
+    <String name="Selection" label="Parink. / perfor."  precision="100" />
     <String name="Glue" precision="30" label="Klijavimas" />
     <String name="GlueNote" precision="100" label="Pastaba" />
     <String name="Mounting" precision="100" label="Montavimas" />

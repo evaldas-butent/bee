@@ -91,6 +91,7 @@ import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
@@ -210,6 +211,11 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     List<SearchResult> rtSr = qs.getSearchResults(VIEW_RECURRING_TASKS,
         Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION, ALS_COMPANY_NAME), query));
     result.addAll(rtSr);
+
+    List<SearchResult> toSr = qs.getSearchResults(VIEW_TASK_ORDERS,
+        Filter.anyContains(Sets.newHashSet(COL_SUMMARY, ALS_COMPANY_NAME,
+            TransportConstants.COL_ORDER_NO), query));
+    result.addAll(toSr);
 
     List<SearchResult> tfSr = qs.getSearchResults(VIEW_TASK_FILES,
         Filter.anyContains(Sets.newHashSet(AdministrationConstants.COL_FILE_CAPTION,

@@ -295,48 +295,48 @@ class TaskBuilder extends ProductSupportInterceptor {
         @Override
         public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
           IsRow activeRow = getFormView().getActiveRow();
-          DateTime start = getStart();
-          DateTime end = getEnd(start, Data.getString(VIEW_TASKS, activeRow,
-              COL_EXPECTED_DURATION));
 
-          boolean noExecutors = BeeUtils.allEmpty(activeRow.getProperty(PROP_EXECUTORS),
-              activeRow.getProperty(PROP_EXECUTOR_GROUPS));
+          if (!DataUtils.hasId(activeRow)) {
+            Widget widget;
+            String executors = activeRow.getProperty(PROP_EXECUTORS);
 
-          Widget widget;
+            if (BeeUtils.isEmpty(executors) || DataUtils.parseIdList(executors).size() != 1) {
+              getFormView().notifySevere(Localized.dictionary().crmEnterOneExecutor());
 
-          if (noExecutors) {
-            getFormView().notifySevere(Localized.dictionary().fieldRequired(
-                Localized.dictionary().crmTaskExecutors()));
+              widget = getFormView().getWidgetByName(NAME_EXECUTORS);
+              ((MultiSelector) widget).setFocus(true);
 
-            widget = getFormView().getWidgetByName(NAME_EXECUTORS);
-            ((MultiSelector) widget).setFocus(true);
+              return false;
+            }
 
-            return false;
-          }
+            DateTime start = getStart();
+            DateTime end = getEnd(start, Data.getString(VIEW_TASKS, activeRow,
+                COL_EXPECTED_DURATION));
 
-          if (start == null) {
-            getFormView().notifySevere(Localized.dictionary().fieldRequired(
-                Localized.dictionary().crmStartDate()));
+            if (start == null) {
+              getFormView().notifySevere(Localized.dictionary().fieldRequired(
+                  Localized.dictionary().crmStartDate()));
 
-            widget = getFormView().getWidgetByName(NAME_START_DATE);
-            ((InputDate) widget).setFocus(true);
-            return false;
-          }
+              widget = getFormView().getWidgetByName(NAME_START_DATE);
+              ((InputDate) widget).setFocus(true);
+              return false;
+            }
 
-          if (end == null) {
-            getFormView().notifySevere(Localized.dictionary().fieldRequired(
-                Localized.dictionary().crmFinishDate()));
+            if (end == null) {
+              getFormView().notifySevere(Localized.dictionary().fieldRequired(
+                  Localized.dictionary().crmFinishDate()));
 
-            widget = getFormView().getWidgetByName(NAME_END_DATE);
-            ((InputDate) widget).setFocus(true);
-            return false;
-          }
+              widget = getFormView().getWidgetByName(NAME_END_DATE);
+              ((InputDate) widget).setFocus(true);
+              return false;
+            }
 
-          if (maybeNotifyEmptyProduct(msg -> getFormView().notifySevere(msg))) {
+            if (maybeNotifyEmptyProduct(msg -> getFormView().notifySevere(msg))) {
 
-            widget = getFormView().getWidgetBySource(COL_PRODUCT);
-            ((DataSelector) widget).setFocus(true);
-            return false;
+              widget = getFormView().getWidgetBySource(COL_PRODUCT);
+              ((DataSelector) widget).setFocus(true);
+              return false;
+            }
           }
 
           return true;

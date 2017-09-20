@@ -3,6 +3,8 @@ package com.butent.bee.client.modules.tasks;
 import com.google.common.collect.Lists;
 
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.COL_ORDER_NO;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.NewsAggregator.HeadlineAccessor;
@@ -68,7 +70,7 @@ public final class TasksKeeper {
 
     private final List<String> taskColumns = Lists.newArrayList(COL_ID, COL_SUMMARY,
         ClassifierConstants.ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME,
-        COL_FINISH_TIME, COL_STATUS);
+        COL_FINISH_TIME, COL_STATUS, COL_ORDER_NO);
 
     private DataInfo taskViewInfo;
 
