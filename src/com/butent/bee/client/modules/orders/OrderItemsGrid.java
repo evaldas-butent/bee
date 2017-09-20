@@ -190,25 +190,20 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
           event.consume();
           return;
         }
+
+        IsRow row = event.getRowValue();
+
+        if (OrdersKeeper.isComplect(row)) {
+          updateComplectItemsQuantity(BeeUtils.toDouble(event.getOldValue()),
+              BeeUtils.toDouble(newValue));
+        } else {
+          double value = BeeUtils.toDouble(newValue);
+          updateReservedRemainder(row, value);
+        }
       }
     }
 
     super.onEditEnd(event, source);
-  }
-
-  @Override
-  public void afterUpdateCell(IsColumn column, String oldValue, String newValue, IsRow result,
-      boolean rowMode) {
-    if (Objects.equals(column.getId(), COL_TRADE_ITEM_QUANTITY)) {
-      if (OrdersKeeper.isComplect(getActiveRow())) {
-        updateComplectItemsQuantity(BeeUtils.toDouble(oldValue), BeeUtils.toDouble(newValue));
-      } else {
-        double value = BeeUtils.toDouble(newValue);
-        IsRow row = getActiveRow();
-        updateReservedRemainder(row, value);
-      }
-    }
-    super.afterUpdateCell(column, oldValue, newValue, result, rowMode);
   }
 
   @Override
