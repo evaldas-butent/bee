@@ -642,11 +642,14 @@ public final class GridFactory {
     }
 
     final boolean requestSize = limit > 0;
-    Collection<Property> queryOptions;
+
+    Collection<Property> queryOptions = new ArrayList<>();
     if (requestSize) {
-      queryOptions = PropertyUtils.createProperties(Service.VAR_VIEW_SIZE, requestSize);
-    } else {
-      queryOptions = null;
+      PropertyUtils.addProperties(queryOptions, Service.VAR_VIEW_SIZE, requestSize);
+    }
+    if (!BeeUtils.isEmpty(gridDescription.getDataOptions())) {
+      PropertyUtils.addProperties(queryOptions, Service.VAR_VIEW_EVENT_OPTIONS,
+          gridDescription.getDataOptions());
     }
 
     final GridView gridView = createGridView(gridDescription, supplierKey,

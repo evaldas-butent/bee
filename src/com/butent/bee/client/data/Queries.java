@@ -1141,7 +1141,9 @@ public final class Queries {
 
     } else {
       for (Property property : options) {
-        if (property != null && VAR_RIGHTS.equals(property.getName())) {
+        if (property != null
+            && BeeUtils.inListSame(property.getName(), VAR_RIGHTS, VAR_VIEW_EVENT_OPTIONS)) {
+
           return false;
         }
       }

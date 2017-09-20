@@ -59,6 +59,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   private HasDataTable display;
   private final HasDataProvider presenter;
+
   private final ModificationPreviewer modificationPreviewer;
   private final NotificationListener notificationListener;
 
@@ -75,6 +76,8 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   private final Map<String, Filter> parentFilters = new HashMap<>();
   private Filter userFilter;
 
+  private final String dataOptions;
+
   private Order order;
 
   private final Set<RightsState> rightsStates = new HashSet<>();
@@ -82,7 +85,8 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   protected Provider(HasDataTable display, HasDataProvider presenter,
       ModificationPreviewer modificationPreviewer, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
-      Filter immutableFilter, Map<String, Filter> parentFilters, Filter userFilter) {
+      Filter immutableFilter, Map<String, Filter> parentFilters, Filter userFilter,
+      String dataOptions) {
 
     this.display = display;
     this.presenter = presenter;
@@ -108,6 +112,8 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     }
 
     this.userFilter = userFilter;
+
+    this.dataOptions = dataOptions;
 
     this.dataRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this, false));
 
@@ -301,9 +307,14 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   protected Collection<Property> getQueryOptions() {
     Collection<Property> result = new HashSet<>();
+
     if (!rightsStates.isEmpty()) {
       result.add(new Property(Service.VAR_RIGHTS, EnumUtils.joinIndexes(rightsStates)));
     }
+    if (!BeeUtils.isEmpty(dataOptions)) {
+      result.add(new Property(Service.VAR_VIEW_EVENT_OPTIONS, dataOptions));
+    }
+
     return result;
   }
 
@@ -314,6 +325,10 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   protected boolean hasPaging() {
     return getPageSize() > 0;
+  }
+
+  protected boolean hasQueryOptions() {
+    return !rightsStates.isEmpty() || !BeeUtils.isEmpty(dataOptions);
   }
 
   protected abstract void onRequest(boolean preserveActiveRow);
