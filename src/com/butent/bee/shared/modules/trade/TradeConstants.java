@@ -328,6 +328,7 @@ public final class TradeConstants {
 
   public static final String PROP_TD_PAID = "TdPaid";
   public static final String PROP_TD_DEBT = "TdDebt";
+  public static final String PROP_TD_PAYMENT_TERMS = "TdPaymentTerms";
 
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";

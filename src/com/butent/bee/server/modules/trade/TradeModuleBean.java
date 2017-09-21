@@ -1067,10 +1067,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                   }
                 }
 
-              } else if (event.isAfter() && DataUtils.isId(warehouse)
-                  && (event.getUserObject() instanceof String)) {
+              } else if (event.isAfter() && DataUtils.isId(warehouse) && event.hasOptions()) {
+                Set<Long> itemIds = DataUtils.parseIdSet(event.getOptions());
 
-                Set<Long> itemIds = DataUtils.parseIdSet((String) event.getUserObject());
                 if (!BeeUtils.isEmpty(itemIds)) {
                   SqlUpdate update = new SqlUpdate(TBL_TRADE_STOCK)
                       .addConstant(COL_STOCK_WAREHOUSE, warehouse)
@@ -1122,8 +1121,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           boolean isSelection = event.isTarget(VIEW_ITEM_SELECTION);
           Long consignor = null;
 
-          if (event.getUserObject() instanceof String) {
-            Map<String, String> options = Codec.deserializeHashMap((String) event.getUserObject());
+          if (event.hasOptions()) {
+            Map<String, String> options = Codec.deserializeHashMap(event.getOptions());
 
             for (Map.Entry<String, String> entry : options.entrySet()) {
               String value = entry.getValue();
@@ -1269,6 +1268,17 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
           int operationTypeIndex = docData.getColumnIndex(COL_OPERATION_TYPE);
 
+          SqlSelect ptQuery;
+          if (BeeUtils.containsSame(event.getOptions(), TBL_TRADE_PAYMENT_TERMS)) {
+            ptQuery = new SqlSelect()
+                .addFields(TBL_TRADE_PAYMENT_TERMS,
+                    COL_TRADE_PAYMENT_TERM_DATE, COL_TRADE_PAYMENT_TERM_AMOUNT)
+                .addFrom(TBL_TRADE_PAYMENT_TERMS)
+                .addOrder(TBL_TRADE_PAYMENT_TERMS, COL_TRADE_PAYMENT_TERM_DATE);
+          } else {
+            ptQuery = null;
+          }
+
           for (int index = 0; index < docData.getNumberOfRows(); index++) {
             BeeRow docRow = docData.getRow(index);
             long docId = docRow.getId();
@@ -1300,6 +1310,29 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               if (ok) {
                 docRow.setNonZero(PROP_TD_PAID, paid);
                 docRow.setNonZero(PROP_TD_DEBT, total - paid);
+              }
+            }
+
+            if (ptQuery != null) {
+              ptQuery.setWhere(SqlUtils.equals(TBL_TRADE_PAYMENT_TERMS, COL_TRADE_DOCUMENT, docId));
+              SimpleRowSet ptData = qs.getData(ptQuery);
+
+              if (!DataUtils.isEmpty(ptData)) {
+                List<String> ptList = new ArrayList<>();
+
+                ptData.forEach(ptRow -> {
+                  DateTime ptDate = ptRow.getDateTime(COL_TRADE_PAYMENT_TERM_DATE);
+                  Double ptAmount = ptRow.getDouble(COL_TRADE_PAYMENT_TERM_AMOUNT);
+
+                  if (ptDate != null && BeeUtils.isPositive(ptAmount)) {
+                    ptList.add(ptDate.serialize());
+                    ptList.add(BeeUtils.toString(ptAmount));
+                  }
+                });
+
+                if (!ptList.isEmpty()) {
+                  docRow.setProperty(PROP_TD_PAYMENT_TERMS, Codec.beeSerialize(ptList));
+                }
               }
             }
           }
