@@ -199,6 +199,14 @@ public abstract class DataEvent {
     return (attributes == null) ? null : attributes.get(name);
   }
 
+  public String getOptions() {
+    if (getUserObject() instanceof String) {
+      return (String) getUserObject();
+    } else {
+      return null;
+    }
+  }
+
   public String getTargetName() {
     return targetName;
   }
@@ -213,6 +221,10 @@ public abstract class DataEvent {
 
   public boolean hasErrors() {
     return !BeeUtils.isEmpty(errors);
+  }
+
+  public boolean hasOptions() {
+    return !BeeUtils.isEmpty(getOptions());
   }
 
   public boolean isAfter(String... targets) {
