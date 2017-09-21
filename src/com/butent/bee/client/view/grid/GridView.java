@@ -67,8 +67,6 @@ public interface GridView extends DataView,
 
   DataInfo getDataInfo();
 
-  String getDataOptions();
-
   List<String> getDynamicColumnGroups();
 
   Set<String> getEditInPlace();

@@ -76,7 +76,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   private final Map<String, Filter> parentFilters = new HashMap<>();
   private Filter userFilter;
 
-  private final String dataOptions;
+  private String dataOptions;
 
   private Order order;
 
@@ -257,6 +257,10 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   public abstract void refresh(boolean preserveActiveRow);
 
+  public void setDataOptions(String dataOptions) {
+    this.dataOptions = dataOptions;
+  }
+
   public boolean setDefaultParentFilter(Filter filter) {
     return setParentFilter(DEFAULT_PARENT_FILTER_KEY, filter);
   }
@@ -311,8 +315,8 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     if (!rightsStates.isEmpty()) {
       result.add(new Property(Service.VAR_RIGHTS, EnumUtils.joinIndexes(rightsStates)));
     }
-    if (!BeeUtils.isEmpty(dataOptions)) {
-      result.add(new Property(Service.VAR_VIEW_EVENT_OPTIONS, dataOptions));
+    if (!BeeUtils.isEmpty(getDataOptions())) {
+      result.add(new Property(Service.VAR_VIEW_EVENT_OPTIONS, getDataOptions()));
     }
 
     return result;
@@ -328,7 +332,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   }
 
   protected boolean hasQueryOptions() {
-    return !rightsStates.isEmpty() || !BeeUtils.isEmpty(dataOptions);
+    return !rightsStates.isEmpty() || !BeeUtils.isEmpty(getDataOptions());
   }
 
   protected abstract void onRequest(boolean preserveActiveRow);
@@ -367,6 +371,10 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     if (hr != null) {
       displayRegistry.add(hr);
     }
+  }
+
+  private String getDataOptions() {
+    return dataOptions;
   }
 
   private Map<String, Filter> getParentFilters() {
