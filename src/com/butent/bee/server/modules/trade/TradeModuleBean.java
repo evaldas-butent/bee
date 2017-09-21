@@ -1742,7 +1742,24 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               tds.addPayments(paymentData);
             }
 
-            if (BeeUtils.nonZero(tds.getDebt())) {
+            double debt = tds.getDebt();
+
+            if (termTo != null && BeeUtils.isPositive(debt) && !DataUtils.isEmpty(paymentData)) {
+              SqlSelect ptQuery = new SqlSelect()
+                  .addSum(TBL_TRADE_PAYMENT_TERMS, COL_TRADE_PAYMENT_TERM_AMOUNT)
+                  .addFrom(TBL_TRADE_PAYMENT_TERMS)
+                  .setWhere(SqlUtils.and(
+                      SqlUtils.equals(TBL_TRADE_PAYMENT_TERMS, COL_TRADE_DOCUMENT, docId),
+                      SqlUtils.less(TBL_TRADE_PAYMENT_TERMS, COL_TRADE_PAYMENT_TERM_DATE, termTo)));
+
+              Double ptAmount = qs.getDouble(ptQuery);
+
+              if (BeeUtils.isPositive(ptAmount) && BeeUtils.isMeq(tds.getPaid(), ptAmount)) {
+                debt = BeeConst.DOUBLE_ZERO;
+              }
+            }
+
+            if (BeeUtils.nonZero(debt)) {
               docIds.add(docId);
             }
           }
