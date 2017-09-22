@@ -129,6 +129,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.StringList;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
@@ -1268,15 +1269,21 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
           int operationTypeIndex = docData.getColumnIndex(COL_OPERATION_TYPE);
 
-          SqlSelect ptQuery;
+          DateTime termTo = null;
+          SqlSelect ptQuery = null;
+
           if (BeeUtils.containsSame(event.getOptions(), TBL_TRADE_PAYMENT_TERMS)) {
+            for (String s : NameUtils.toList(event.getOptions())) {
+              if (BeeUtils.isDigit(s)) {
+                termTo = DateTime.restore(s);
+              }
+            }
+
             ptQuery = new SqlSelect()
                 .addFields(TBL_TRADE_PAYMENT_TERMS,
                     COL_TRADE_PAYMENT_TERM_DATE, COL_TRADE_PAYMENT_TERM_AMOUNT)
                 .addFrom(TBL_TRADE_PAYMENT_TERMS)
                 .addOrder(TBL_TRADE_PAYMENT_TERMS, COL_TRADE_PAYMENT_TERM_DATE);
-          } else {
-            ptQuery = null;
           }
 
           for (int index = 0; index < docData.getNumberOfRows(); index++) {
@@ -1294,6 +1301,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               double vat = tds.getVat();
               double total = tds.getTotal();
               double paid = tds.getPaid();
+              double debt = tds.getDebt();
 
               docRow.setNonZero(PROP_TD_AMOUNT, tds.getAmount());
               docRow.setNonZero(PROP_TD_DISCOUNT, tds.getDiscount());
@@ -1301,37 +1309,59 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               docRow.setNonZero(PROP_TD_VAT, vat);
               docRow.setNonZero(PROP_TD_TOTAL, total);
 
-              boolean ok = BeeUtils.isPositive(paid);
-              if (!ok) {
+              boolean hasDebt = BeeUtils.isPositive(paid);
+              if (!hasDebt) {
                 OperationType opType = docRow.getEnum(operationTypeIndex, OperationType.class);
-                ok = opType != null && opType.hasDebt();
+                hasDebt = opType != null && opType.hasDebt();
               }
 
-              if (ok) {
+              if (hasDebt) {
                 docRow.setNonZero(PROP_TD_PAID, paid);
-                docRow.setNonZero(PROP_TD_DEBT, total - paid);
-              }
-            }
+                docRow.setNonZero(PROP_TD_DEBT, debt);
 
-            if (ptQuery != null) {
-              ptQuery.setWhere(SqlUtils.equals(TBL_TRADE_PAYMENT_TERMS, COL_TRADE_DOCUMENT, docId));
-              SimpleRowSet ptData = qs.getData(ptQuery);
+                if (ptQuery != null) {
+                  ptQuery.setWhere(SqlUtils.equals(TBL_TRADE_PAYMENT_TERMS, COL_TRADE_DOCUMENT,
+                      docId));
+                  SimpleRowSet ptData = qs.getData(ptQuery);
 
-              if (!DataUtils.isEmpty(ptData)) {
-                List<String> ptList = new ArrayList<>();
+                  if (!DataUtils.isEmpty(ptData)) {
+                    List<String> ptList = new ArrayList<>();
 
-                ptData.forEach(ptRow -> {
-                  DateTime ptDate = ptRow.getDateTime(COL_TRADE_PAYMENT_TERM_DATE);
-                  Double ptAmount = ptRow.getDouble(COL_TRADE_PAYMENT_TERM_AMOUNT);
+                    double ptDebt = BeeConst.DOUBLE_ZERO;
+                    double ptPaid = BeeConst.DOUBLE_ZERO;
 
-                  if (ptDate != null && BeeUtils.isPositive(ptAmount)) {
-                    ptList.add(ptDate.serialize());
-                    ptList.add(BeeUtils.toString(ptAmount));
+                    for (SimpleRow ptRow : ptData) {
+                      DateTime ptDate = ptRow.getDateTime(COL_TRADE_PAYMENT_TERM_DATE);
+                      Double ptAmount = ptRow.getDouble(COL_TRADE_PAYMENT_TERM_AMOUNT);
+
+                      if (ptDate != null && BeeUtils.isPositive(ptAmount)) {
+                        if (termTo != null && BeeUtils.isLess(ptDate, termTo)) {
+                          ptDebt += ptAmount;
+                        }
+
+                        if (BeeUtils.isPositive(paid)) {
+                          double p = Math.min(paid - ptPaid, ptAmount);
+
+                          ptAmount -= p;
+                          ptPaid += p;
+                        }
+
+                        if (BeeUtils.isPositive(ptAmount)) {
+                          ptList.add(ptDate.serialize());
+                          ptList.add(BeeUtils.toString(ptAmount));
+                        }
+                      }
+                    }
+
+                    if (!ptList.isEmpty()) {
+                      docRow.setProperty(PROP_TD_PAYMENT_TERMS, Codec.beeSerialize(ptList));
+                    }
+
+                    ptDebt -= paid;
+                    if (BeeUtils.isPositive(ptDebt) && BeeUtils.isLess(ptDebt, debt)) {
+                      docRow.setProperty(PROP_TD_DEBT, ptDebt);
+                    }
                   }
-                });
-
-                if (!ptList.isEmpty()) {
-                  docRow.setProperty(PROP_TD_PAYMENT_TERMS, Codec.beeSerialize(ptList));
                 }
               }
             }
