@@ -121,6 +121,10 @@
   float: right;
 }
 
+.bee-crm-taskDialog-resultLabel {
+  float: right;
+}
+
 .bee-crm-taskDialog-fileCollectorCell {
   padding: 0px !important;
 }

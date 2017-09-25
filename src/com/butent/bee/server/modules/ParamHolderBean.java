@@ -43,12 +43,14 @@ import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.websocket.messages.ParameterMessage;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -435,13 +437,17 @@ public class ParamHolderBean {
 
     if (DataUtils.isId(relation)) {
       Pair<String, String> relInfo = Pair.restore(param.getOptions());
-      BeeView view = sys.getView(relInfo.getA());
-      String table = view.getSourceName();
 
-      display = qs.getValue(new SqlSelect()
-          .addFields(table, view.getColumnField(relInfo.getB()))
-          .addFrom(table)
-          .setWhere(sys.idEquals(table, relation)));
+      BeeRowSet data = qs.getViewData(relInfo.getA(), Filter.compareId(relation));
+      List<String> values = new ArrayList<>();
+
+      if (!DataUtils.isEmpty(data)) {
+        for (String column : Codec.deserializeList(relInfo.getB())) {
+          values.add(data.getString(0, column));
+        }
+      }
+
+      display = BeeUtils.joinWords(values);
     }
     return Pair.of(relation, display);
   }

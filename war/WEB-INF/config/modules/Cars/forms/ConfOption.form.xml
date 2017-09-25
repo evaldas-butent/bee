@@ -9,17 +9,20 @@
     <col index="0" kind="label" />
     <col index="2" kind="label" />
     <row>
-      <Label for="Group" />
-      <DataSelector source="Group" renderColumns="TypeName GroupName" />
+      <Label for="Type" />
+      <DataSelector source="Type" />
 
-      <Label for="Description" />
-      <cell rowSpan="4">
-        <InputArea source="Description" visibleLines="10" style="width:300px;" />
-      </cell>
+      <Label for="Group" />
+      <DataSelector source="Group" renderColumns="GroupName2 GroupName" />
     </row>
     <row>
       <Label for="OptionName" />
       <InputText source="OptionName" />
+
+      <Label for="Description" />
+      <cell rowSpan="3">
+        <InputArea source="Description" visibleLines="7" style="width:300px;" />
+      </cell>
     </row>
     <row>
       <Label for="Code" />

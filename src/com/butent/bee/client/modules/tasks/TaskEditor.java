@@ -171,6 +171,8 @@ class TaskEditor extends ProductSupportInterceptor {
   private TextLabel lateIndicator;
   private Relations relations;
 
+  private Button endResult;
+
   private List<Long> projectUsers;
   private Map<String, Pair<Long, String>> dbaParameters = Maps.newConcurrentMap();
   private Long prmEndOfWorkDay;
@@ -622,6 +624,17 @@ class TaskEditor extends ProductSupportInterceptor {
       });
     } else if (BeeUtils.same(name, NAME_LATE_INDICATOR) && widget instanceof TextLabel) {
       lateIndicator = (TextLabel) widget;
+    } else if (BeeUtils.same(name, COL_END_RESULT) && widget instanceof Button) {
+      endResult = (Button) widget;
+      endResult.addClickHandler(clickEvent -> {
+        if (relations != null && !BeeUtils.inList(getStatus(), TaskStatus.COMPLETED.ordinal(),
+            TaskStatus.APPROVED.ordinal())) {
+
+          TaskUtils.renderEndResult(relations.getWidgetMap(true), getFormView(), isOwner()
+                  || BeeKeeper.getUser().is(getActiveRow().getLong(
+                      getDataIndex(ALS_PROJECT_OWNER))), () -> doEvent(TaskEvent.REFRESH));
+        }
+      });
     }
 
     if (BeeUtils.same(name,
@@ -722,10 +735,15 @@ class TaskEditor extends ProductSupportInterceptor {
 
     header.addCommandItem(createMenuLabel());
 
-    TaskSlackRenderer renderer = new TaskSlackRenderer(form.getDataColumns());
+    TaskSlackRenderer renderer = new TaskSlackRenderer(form.getDataColumns(), VIEW_TASKS);
     Pair<AbstractSlackRenderer.SlackKind, Long> data = renderer.getMinutes(row);
     setLateIndicatorHtml(data);
     setTaskStatusStyle(header, form, row, data);
+
+    if (endResult != null) {
+      endResult.setVisible(!BeeUtils.inList(getStatus(), TaskStatus.COMPLETED.ordinal(),
+          TaskStatus.APPROVED.ordinal()));
+    }
   }
 
   @Override
@@ -1323,6 +1341,11 @@ class TaskEditor extends ProductSupportInterceptor {
             .nowMinutes());
     durIds.put(COL_DURATION_DATE, dd);
 
+    List<String> endResults = Codec.deserializeList(Data.getString(getViewName(), getActiveRow(),
+        COL_END_RESULT));
+    Map<String, MultiSelector> widgetMap = relations.getWidgetMap(true);
+    Map<String, String> multiIds = dialog.addEndResult(widgetMap, endResults, fid);
+
     dialog.addAction(Localized.dictionary().crmActionFinish(), () -> {
 
       DateTime completed = dialog.getDateTime(dd);
@@ -1337,6 +1360,39 @@ class TaskEditor extends ProductSupportInterceptor {
       if (!BeeUtils.isEmpty(time) && !DataUtils.isId(type)) {
         showError(Localized.dictionary().crmEnterDurationType());
         return;
+      }
+
+      if (!BeeUtils.isEmpty(endResults)) {
+        if (endResults.contains(VIEW_TASK_FILES) && BeeUtils.isEmpty(dialog.getFiles(fid))) {
+          showError(Localized.dictionary().fieldRequired(Data.getViewCaption(VIEW_TASK_FILES)));
+          return;
+        }
+
+        for (String viewName : widgetMap.keySet()) {
+          if (endResults.contains(viewName) && multiIds.containsKey(viewName)) {
+
+            MultiSelector ms = dialog.getRelation(multiIds.get(viewName));
+            if (BeeUtils.isEmpty(ms.getIds())) {
+              showError(Localized.dictionary().fieldRequired(Data.getViewCaption(viewName)));
+              return;
+            }
+
+            MultiSelector relationMS = widgetMap.get(viewName);
+            String oldValue = ms.getOldValue();
+            relationMS.setIds(ms.getIds());
+            relationMS.setValues(ms.getValues());
+            relationMS.setChoices(ms.getChoices());
+            relationMS.setOldValue(oldValue);
+
+            Map<MultiSelector.Choice, String> msCache = ms.getCache();
+            Map<MultiSelector.Choice, String> relCache = relationMS.getCache();
+            for (Map.Entry<MultiSelector.Choice, String> entry : msCache.entrySet()) {
+              if (!relCache.containsKey(entry.getKey())) {
+                relCache.put(entry.getKey(), entry.getValue());
+              }
+            }
+          }
+        }
       }
 
       String comment = dialog.getComment(cid);

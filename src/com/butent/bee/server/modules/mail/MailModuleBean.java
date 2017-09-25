@@ -802,7 +802,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       public BeeRowSet getViewData(BeeView view, SqlSelect query, Filter filter) {
         return qs.getViewData(getQuery(filter)
             .setLimit(query.getLimit())
-            .setOffset(query.getOffset()), sys.getView(view.getName()), false);
+            .setOffset(query.getOffset()), sys.getView(view.getName()), false, null);
       }
 
       @Override

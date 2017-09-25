@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="TTObserverGroups" source="TTObserverGroups"
+      caption="=crmTaskObserverGroups"
+>
+  <Columns>
+    <SimpleColumn name="TaskTemplate" />
+    <SimpleColumn name="Group" />
+  </Columns>
+</View>

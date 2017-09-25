@@ -259,7 +259,8 @@
 }
 .bee-trade-show-item-stock[disabled],
 .bee-trade-show-related-documents[disabled],
-.bee-trade-return-command[disabled] {
+.bee-trade-return-command[disabled],
+.bee-trade-customer-return-save[disabled] {
   display: none;
 }
 

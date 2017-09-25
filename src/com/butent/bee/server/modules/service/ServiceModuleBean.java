@@ -1294,7 +1294,8 @@ public class ServiceModuleBean implements BeeModule {
     query.addExpr(priceExch, COL_ITEM_PRICE)
         .addOrder(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS));
 
-    return ResponseObject.response(qs.getViewData(query, sys.getView(TBL_ORDER_ITEMS), false));
+    return ResponseObject.response(qs.getViewData(query, sys.getView(TBL_ORDER_ITEMS),
+        false, null));
   }
 
   private ResponseObject getMaintenanceNewRowValues() {

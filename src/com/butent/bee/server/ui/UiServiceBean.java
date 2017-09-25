@@ -804,7 +804,7 @@ public class UiServiceBean {
     Filter filter = Filter.compareId(BeeUtils.toLong(rowId));
 
     BeeRowSet rowSet = qs.getViewData(viewName, filter, null, BeeConst.UNDEF, BeeConst.UNDEF,
-        Lists.newArrayList(column));
+        Collections.singletonList(column));
 
     if (DataUtils.isEmpty(rowSet)) {
       return ResponseObject.response(null, String.class).addWarning("row not found", viewName,
@@ -829,6 +829,7 @@ public class UiServiceBean {
     String rowId = reqInfo.getParameter(VAR_VIEW_ROW_ID);
 
     String rights = reqInfo.getParameter(VAR_RIGHTS);
+    String eventOptions = reqInfo.getParameter(VAR_VIEW_EVENT_OPTIONS);
 
     Filter filter = null;
     if (!BeeUtils.isEmpty(rowId)) {
@@ -847,7 +848,7 @@ public class UiServiceBean {
     if (!BeeUtils.isEmpty(getSize)) {
       cnt = qs.getViewSize(viewName, filter);
     }
-    BeeRowSet res = qs.getViewData(viewName, filter, order, limit, offset, colNames);
+    BeeRowSet res = qs.getViewData(viewName, filter, order, limit, offset, colNames, eventOptions);
 
     if (cnt >= 0 && res != null) {
       res.setTableProperty(VAR_VIEW_SIZE, BeeUtils.toString(Math.max(cnt, res.getNumberOfRows())));

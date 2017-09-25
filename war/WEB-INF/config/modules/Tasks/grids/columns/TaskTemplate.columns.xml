@@ -14,6 +14,4 @@
   <RelColumn name="Company" />
   <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName ContactCompanyName"
              choiceColumns="FirstName LastName CompanyName" />
-
-  <RelColumn name="Reminder" newRowEnabled="false" />
 </g:columns>

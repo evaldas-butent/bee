@@ -861,6 +861,14 @@ public interface Dictionary {
 
   default String configuration() {return g("configuration");}
 
+  default String consignment() {return g("consignment");}
+
+  default String consignmentCredit() {return g("consignmentCredit");}
+
+  default String consignmentDebit() {return g("consignmentDebit");}
+
+  default String consignor() {return g("consignor");}
+
   default String constant() {return g("constant");}
 
   default String contact() {return g("contact");}
@@ -988,6 +996,8 @@ public interface Dictionary {
   default String crmActionSuspend() {return g("crmActionSuspend");}
 
   default String crmAdded() {return g("crmAdded");}
+
+  default String crmAutoCreatedTask() {return g("crmAutoCreatedTask");}
 
   default String crmCreatedNewTasks(Object p0) {
     Map<String, Object> _m = new HashMap<>();
@@ -1217,6 +1227,8 @@ public interface Dictionary {
 
   default String crmTaskDurations() {return g("crmTaskDurations");}
 
+  default String crmTaskEndResult() {return g("crmTaskEndResult");}
+
   default String crmTaskEvent() {return g("crmTaskEvent");}
 
   default String crmTaskEventApproved() {return g("crmTaskEventApproved");}
@@ -1403,6 +1415,8 @@ public interface Dictionary {
 
   default String crmTaskTemplate() {return g("crmTaskTemplate");}
 
+  default String crmTaskTemplateFiles() {return g("crmTaskTemplateFiles");}
+
   default String crmTaskTemplateName() {return g("crmTaskTemplateName");}
 
   default String crmTaskTemplates() {return g("crmTaskTemplates");}
@@ -1452,6 +1466,8 @@ public interface Dictionary {
   default String crmTodoItem() {return g("crmTodoItem");}
 
   default String crmTodoList() {return g("crmTodoList");}
+
+  default String crmValidTaskTemplates() {return g("crmValidTaskTemplates");}
 
   default String currencies() {return g("currencies");}
 
@@ -1591,12 +1607,6 @@ public interface Dictionary {
     return Localized.format(g("deleteSelectedRows"), _m);
   }
 
-  default String deletedRows(Object p0) {
-    Map<String, Object> _m = new HashMap<>();
-    _m.put("{0}", p0);
-    return Localized.format(g("deletedRows"), _m);
-  }
-
   default String department() {return g("department");}
 
   default String departmentEmployee() {return g("departmentEmployee");}
@@ -1610,6 +1620,8 @@ public interface Dictionary {
   default String departmentPositions() {return g("departmentPositions");}
 
   default String departments() {return g("departments");}
+
+  default String depth() {return g("depth");}
 
   default String description() {return g("description");}
 
@@ -3162,6 +3174,8 @@ public interface Dictionary {
 
   default String finPostingPrecedence() {return g("finPostingPrecedence");}
 
+  default String finPurchaseReturns() {return g("finPurchaseReturns");}
+
   default String finReceivablesFromEmployees() {return g("finReceivablesFromEmployees");}
 
   default String finRevenueAndExpenseSummary() {return g("finRevenueAndExpenseSummary");}
@@ -3356,6 +3370,12 @@ public interface Dictionary {
     _m.put("{0}", p0);
     _m.put("{1}", p1);
     return Localized.format(g("invalidPeriod"), _m);
+  }
+
+  default String invalidQuantity(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("invalidQuantity"), _m);
   }
 
   default String invalidRange() {return g("invalidRange");}
@@ -5015,6 +5035,10 @@ public interface Dictionary {
 
   default String rebuildTradeStockCaption() {return g("rebuildTradeStockCaption");}
 
+  default String rebuildTradeStockConsumers() {return g("rebuildTradeStockConsumers");}
+
+  default String rebuildTradeStockIsUpToDate() {return g("rebuildTradeStockIsUpToDate");}
+
   default String rebuildTradeStockNotification() {return g("rebuildTradeStockNotification");}
 
   default String rebuildTradeStockQuestion() {return g("rebuildTradeStockQuestion");}
@@ -5242,6 +5266,18 @@ public interface Dictionary {
 
   default String rows() {return g("rows");}
 
+  default String rowsDeleted(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("rowsDeleted"), _m);
+  }
+
+  default String rowsInserted(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("rowsInserted"), _m);
+  }
+
   default String rowsRetrieved(Object p0) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{0}", p0);
@@ -5305,6 +5341,8 @@ public interface Dictionary {
   }
 
   default String searchTips() {return g("searchTips");}
+
+  default String selectActiveRow() {return g("selectActiveRow");}
 
   default String selectAll() {return g("selectAll");}
 
@@ -5421,6 +5459,14 @@ public interface Dictionary {
   default String statuses() {return g("statuses");}
 
   default String style() {return g("style");}
+
+  default String substitute() {return g("substitute");}
+
+  default String substitution() {return g("substitution");}
+
+  default String substitutionReasons() {return g("substitutionReasons");}
+
+  default String substitutions() {return g("substitutions");}
 
   default String summary() {return g("summary");}
 
@@ -6848,6 +6894,8 @@ public interface Dictionary {
 
   default String trdCustomer() {return g("trdCustomer");}
 
+  default String trdCustomers() {return g("trdCustomers");}
+
   default String trdDate() {return g("trdDate");}
 
   default String trdDaysForPayment() {return g("trdDaysForPayment");}
@@ -6864,7 +6912,11 @@ public interface Dictionary {
 
   default String trdDocumentFiles() {return g("trdDocumentFiles");}
 
+  default String trdDocumentHasChildren() {return g("trdDocumentHasChildren");}
+
   default String trdDocumentItem() {return g("trdDocumentItem");}
+
+  default String trdDocumentItemHasChildren() {return g("trdDocumentItemHasChildren");}
 
   default String trdDocumentItems() {return g("trdDocumentItems");}
 
@@ -6907,6 +6959,8 @@ public interface Dictionary {
 
   default String trdDriver() {return g("trdDriver");}
 
+  default String trdEnterSupplierOrCustomer() {return g("trdEnterSupplierOrCustomer");}
+
   default String trdExpenditureType() {return g("trdExpenditureType");}
 
   default String trdExpenditureTypes() {return g("trdExpenditureTypes");}
@@ -6928,6 +6982,8 @@ public interface Dictionary {
   default String trdInvoicePrefix() {return g("trdInvoicePrefix");}
 
   default String trdInvoices() {return g("trdInvoices");}
+
+  default String trdItemParent() {return g("trdItemParent");}
 
   default String trdItemStock() {return g("trdItemStock");}
 
@@ -7265,6 +7321,8 @@ public interface Dictionary {
 
   default String users() {return g("users");}
 
+  default String validFrom() {return g("validFrom");}
+
   default String validUntil() {return g("validUntil");}
 
   default String valuation() {return g("valuation");}
@@ -7430,6 +7488,8 @@ public interface Dictionary {
   default String vehicles() {return g("vehicles");}
 
   default String vehiclesShort() {return g("vehiclesShort");}
+
+  default String visible() {return g("visible");}
 
   default String volume() {return g("volume");}
 

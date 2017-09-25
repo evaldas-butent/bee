@@ -19,6 +19,7 @@ public final class CarsConstants {
   public static final String PRM_SERVICE_WAREHOUSE = "ServiceWarehouse";
   public static final String PRM_SERVICE_TRADE_OPERATION = "ServiceTradeOperation";
 
+  public static final String TBL_CONF_TYPES = "ConfTypes";
   public static final String TBL_CONF_GROUPS = "ConfGroups";
   public static final String TBL_CONF_OPTIONS = "ConfOptions";
   public static final String TBL_CONF_PACKET_OPTIONS = "ConfPacketOptions";
@@ -67,6 +68,7 @@ public final class CarsConstants {
   public static final String COL_BUNDLE = "Bundle";
   public static final String COL_KEY = "Key";
   public static final String COL_TYPE = "Type";
+  public static final String COL_TYPE_NAME = "TypeName";
   public static final String COL_GROUP = "Group";
   public static final String COL_GROUP_NAME = "GroupName";
   public static final String COL_GROUP_NAME2 = "GroupName2";

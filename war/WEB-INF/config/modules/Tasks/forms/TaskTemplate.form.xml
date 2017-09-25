@@ -1,50 +1,183 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY clbl "text-align: right;">
-  <!ENTITY inp "width: 200px;">
+    <!ENTITY inline "display: inline-block;">
+    <!ENTITY tbl "border-collapse: collapse;">
+    <!ENTITY cell "padding-bottom: 2px;">
+    <!ENTITY col1 "text-align: right; padding-right: 8px; width: 128px;">
+    <!ENTITY col3 "text-align: right; padding-left: 8px; padding-right: 8px; width: 128px;">
+
+    <!ENTITY inp2x "width: 500px;">
+    <!ENTITY inp2y "width: 500px;">
+
+    <!ENTITY dateStyle "&inline; min-width: 90px; max-width: 90px;">
+    <!ENTITY timeStyle "&inline; min-width: 60px; max-width: 60px; width: 60px; margin-left: 10px;">
+    <!ENTITY timeStep "30">
 ]>
-<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
   
-  name="TaskTemplate" viewName="TaskTemplates" caption="=crmTaskTemplate"
-  width="720" height="285"
+  name="TaskTemplate" viewName="TaskTemplates" caption="=crmTaskTemplate" width="700" height="700"
   >
-  
-  <Table kind="controls" style="border-collapse: collapse; margin-top: 1ex;" 
-      cellStyle="padding: 5px 1em; vertical-align: top;">
-    <col index="0" cellStyle="&clbl;" />
-    <col index="2" cellStyle="&clbl;" />
 
-    <row>
-      <Label for="Name" />
-      <InputText source="Name" style="&inp;" />
-    </row>
+  <TabbedPages resizable="false" >
+    <page>
+      <text>=mainInformation</text>
 
-    <row>
-      <Label for="Type" />
-      <DataSelector source="Type" renderColumns="TypeName" style="&inp;" newRowEnabled="false" />
-      <Label for="Priority" />
-      <Radio source="Priority" />
-    </row>
+      <FlowPanel style="padding: 10px 2px 2px 10px;">
+        <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+          <col index="0" cellStyle="&col1;" />
 
-    <row>
-      <Label for="Summary" />
-      <InputText source="Summary" style="&inp;" />
-      <Label for="ExpectedDuration" />
-      <InputTime source="ExpectedDuration" style="width: 80px;"/>
-    </row>
+          <row>
+            <Label for="Name" />
+            <InputText source="Name" style="&inp2x;" visible="true" maxLength="70" />
+          </row>
 
-    <row>
-      <Label for="Company" />
-      <DataSelector source="Company" style="&inp;" newRowEnabled="false" />
-      <Label for="Contact" />
-      <DataSelector source="Contact" style="&inp;" newRowEnabled="false" />
-    </row>
+          <row>
+            <Label for="Summary" />
+            <InputText source="Summary" style="&inp2x;" autocomplete="true" visible="true" maxLength="70" />
+          </row>
 
-    <row>
-      <Label for="Reminder" />
-      <DataSelector source="Reminder" style="&inp;" newRowEnabled="false" />
-      <Label for="Description" />
-      <InputArea source="Description" style="&inp;" />
-    </row>
-  </Table>
+          <row for="Description">
+            <Label for="Description" />
+            <InputArea source="Description" style="&inp2x; height: 60px;" name="InputArea" />
+          </row>
+
+          <row>
+            <Label text="=crmTaskExecutors" />
+            <ChildSelector childTable="TTExecutors" viewName="Users" property="Executors"
+                           targetRelColumn="TaskTemplate" sourceRelColumn="User"
+                           renderColumns="FirstName LastName" newRowEnabled="false"
+                           style="&inp2x;" label="=crmTaskExecutors" />
+          </row>
+
+          <row>
+            <Label text="=crmTaskExecutorGroups" />
+            <ChildSelector childTable="TTExecutorGroups" viewName="UserGroupSettings"
+                           targetRelColumn="TaskTemplate" sourceRelColumn="Group"
+                           property="ExecutorGroups" renderColumns="Name"
+                           newRowEnabled="false" style="&inp2y;" label="=crmTaskExecutorGroups"
+                           filter="Owner {u} or Visibility 1" />
+          </row>
+
+          <row>
+            <Label text="=crmTaskObservers" />
+            <ChildSelector childTable="TTObservers" viewName="Users" property="Observers"
+                           targetRelColumn="TaskTemplate" sourceRelColumn="User"
+                           renderColumns="FirstName LastName" newRowEnabled="false"
+                           style="&inp2x;" label="=crmTaskObservers" />
+          </row>
+
+          <row>
+            <Label text="=crmTaskObserverGroups" />
+            <ChildSelector childTable="TTObserverGroups" viewName="UserGroupSettings"
+                           targetRelColumn="TaskTemplate" sourceRelColumn="Group"
+                           property="ObserverGroups" renderColumns="Name"
+                           newRowEnabled="false" style="&inp2y;" label="=crmTaskObserverGroups"
+                           filter="Owner {u} or Visibility 1" />
+          </row>
+        </Table>
+
+        <Table kind="controls" cellStyle="&cell;" >
+          <col index="0" cellStyle="&col1;" />
+
+          <row>
+            <Label for="Priority" />
+            <Radio source="Priority" />
+          </row>
+
+          <row>
+            <Label for="Type" />
+            <DataSelector source="Type" name="Type" renderColumns="TypeName" newRowEnabled="true" style="&inp2x;"
+                          disablable="true" />
+          </row>
+
+          <row>
+            <Label for="Product" name="Product" />
+            <DataSelector source="Product" renderColumns="ProductName" newRowEnabled="true" style="&inp2x;" filter="Visible" />
+          </row>
+
+          <row>
+            <Label for="Company" />
+            <DataSelector source="Company" newRowEnabled="true" choiceColumns="Name TypeName"
+                          renderColumns="CompanyName CompanyTypeName" style="&inp2x;" />
+          </row>
+
+          <row>
+            <Label for="Contact" />
+            <DataSelector source="Contact" newRowEnabled="true" style="&inp2x;"
+                          renderColumns="ContactFirstName ContactLastName"
+                          choiceColumns="FirstName LastName CompanyName" options="Company" />
+          </row>
+        </Table>
+
+        <Table kind="controls" style="&tbl; margin-top: 20px;" cellStyle="&cell;">
+          <col index="0" cellStyle="&col1;" />
+          <col index="2" cellStyle="&col3;" />
+
+          <row>
+            <Label for="StartTime" />
+            <InputDate source="StartTime" style="&dateStyle;" />
+
+            <Label for="FinishTime" />
+            <InputDate source="FinishTime" style="&dateStyle;" />
+          </row>
+
+          <row>
+            <Label for="ExpectedDuration" />
+            <InputTime name="ExpectedDuration" source="ExpectedDuration" step="&timeStep;" style="width: 90px;" />
+            <Label for="ExpectedExpenses" />
+            <FlowPanel>
+              <InputDecimal source="ExpectedExpenses" style="&dateStyle;" disablable="true" scale="2"/>
+              <DataSelector source="Currency" for="ExpectedExpenses" newRowEnabled="false" editEnabled="false"
+                            style="&timeStyle;" readOnly="true" />
+            </FlowPanel>
+          </row>
+
+          <row>
+            <Label />
+            <CheckBox source="Mail" />
+            <CheckBox source="PrivateTask" />
+            <CheckBox source="NotScheduledTask" />
+          </row>
+
+          <row>
+            <Label />
+            <Button name="EndResult" text="=crmTaskEndResult" />
+          </row>
+        </Table>
+
+        <Label text="=relatedTo" style="font-style: italic; margin-top: 20px; margin-bottom: 2px;" data="Relations" />
+
+        <Relations name="Relations" relColumn="TaskTemplate" inline="true" disablable="false"
+                   defaultRelations="Companies Persons Documents Appointments Discussions
+                       Projects Tasks Requests" style="width: 628px">
+          <Relation viewName="Companies" property="RelCompanies" renderColumns="Name TypeName"
+                    newRowEnabled="false" />
+          <Relation viewName="Persons" property="RelPersons" renderColumns="FirstName LastName"
+                    newRowEnabled="false" />
+          <Relation viewName="Documents" property="RelDocuments"
+                    renderColumns="Name Number RegistrationNumber DocumentDate"
+                    newRowEnabled="false" />
+          <Relation viewName="Discussions" property="RelDiscussions" renderColumns="Subject"
+                    newRowEnabled="false" />
+          <Relation viewName="ServiceObjects" property="RelServiceObjects" renderColumns="Model CategoryName ArticleNo"
+                    newRowEnabled="false" choiceColumns="Model CategoryName ArticleNo"/>
+          <Relation viewName="Tasks" property="RelTasks"
+                    renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
+                    newRowEnabled="false" style="&inp2x;"
+                    choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"/>
+          <Relation viewName="OrderCargo" property="RelOrderCargo"
+                    renderColumns="Description" newRowEnabled="false" />
+          <Relation viewName="ServiceMaintenance" property="RelServiceMaintenance"
+                    renderColumns="ID" choiceColumns="ID TypeName StateName"
+                    newRowEnabled="false" />
+        </Relations>
+      </FlowPanel>
+    </page>
+
+    <page>
+      <text>=files</text>
+      <ChildGrid name="TTFiles" relColumn="TaskTemplate" />
+    </page>
+  </TabbedPages>
 </f:Form>

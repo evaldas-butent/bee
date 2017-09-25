@@ -94,6 +94,7 @@ public final class FinanceConstants {
   public static final String COL_ADVANCE_PAYMENTS_GIVEN = "AdvancePaymentsGiven";
   public static final String COL_ADVANCE_PAYMENTS_RECEIVED = "AdvancePaymentsReceived";
   public static final String COL_COST_OF_MERCHANDISE = "CostOfMerchandise";
+  public static final String COL_PURCHASE_RETURNS = "PurchaseReturns";
   public static final String COL_DISCHARGE_ACCOUNT = "DischargeAccount";
 
   public static final String COL_TRADE_ACCOUNTS_PRECEDENCE = "TradeAccountsPrecedence";

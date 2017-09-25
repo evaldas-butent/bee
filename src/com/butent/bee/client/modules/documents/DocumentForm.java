@@ -26,6 +26,7 @@ import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -161,13 +162,24 @@ public class DocumentForm extends DocumentDataForm {
         ((HasEnabled) category).setEnabled(newRow);
       }
     }
-    if (getHeaderView() == null) {
+
+    HeaderView header = getHeaderView();
+
+    if (header == null) {
       return;
     }
-    getHeaderView().clearCommandPanel();
+    header.clearCommandPanel();
+
+    final DocumentsReminder documentsReminder = new DocumentsReminder(row.getId(),
+        Data.getLong(VIEW_DOCUMENTS, row, COL_COMPANY));
+
+    documentsReminder.getReminderLabel().addClickHandler(event -> {
+      documentsReminder.showDialog();
+    });
+    header.addCommandItem(documentsReminder.getReminderLabel());
 
     if (!newRow && user.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
-      getHeaderView().addCommandItem(newTemplateButton);
+      header.addCommandItem(newTemplateButton);
     }
     super.afterRefresh(form, row);
   }
