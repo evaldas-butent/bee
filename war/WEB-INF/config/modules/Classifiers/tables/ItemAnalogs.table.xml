@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="ItemAnalogs" idName="ItemAnalogID"
+>
+  <Fields>
+    <Relation name="Item1" notNull="true" relation="Items" cascade="DELETE" label="=item1" />
+    <Relation name="Item2" notNull="true" relation="Items" cascade="DELETE" label="=item2" />
+  </Fields>
+</Table>

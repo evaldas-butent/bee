@@ -3396,6 +3396,18 @@ public interface Dictionary {
 
   default String item() {return g("item");}
 
+  default String item1() {return g("item1");}
+
+  default String item2() {return g("item2");}
+
+  default String itemAnalog() {return g("itemAnalog");}
+
+  default String itemAnalogs() {return g("itemAnalogs");}
+
+  default String itemAnalogsNew() {return g("itemAnalogsNew");}
+
+  default String itemAnalogsShort() {return g("itemAnalogsShort");}
+
   default String itemBarcode() {return g("itemBarcode");}
 
   default String itemCategories() {return g("itemCategories");}
