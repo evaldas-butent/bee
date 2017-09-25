@@ -8,15 +8,15 @@
     <SimpleColumn name="Item1" />
 
     <SimpleJoin joinType="LEFT" name="Item1">
-      <SimpleColumn name="Name" alias="Item1Name" />
-      <SimpleColumn name="Article" alias="Item1Article" />
+      <SimpleColumn name="Name" alias="Item1Name" label="=itemName+ 1" />
+      <SimpleColumn name="Article" alias="Item1Article" label="=article+ 1" />
     </SimpleJoin>
 
     <SimpleColumn name="Item2" />
 
     <SimpleJoin joinType="LEFT" name="Item2">
-      <SimpleColumn name="Name" alias="Item2Name" />
-      <SimpleColumn name="Article" alias="Item2Article" />
+      <SimpleColumn name="Name" alias="Item2Name" label="=itemName+ 2" />
+      <SimpleColumn name="Article" alias="Item2Article" label="=article+ 2" />
     </SimpleJoin>
   </Columns>
 
