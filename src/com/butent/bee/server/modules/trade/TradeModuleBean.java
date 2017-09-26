@@ -1803,6 +1803,27 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       return SqlUtils.sqlFalse();
     });
 
+    BeeView.registerConditionProvider(FILTER_ITEM_ANALOGS, (view, args) -> {
+      Set<Long> items = new HashSet<>();
+
+      if (!BeeUtils.isEmpty(args)) {
+        for (String s : args) {
+          Long item = BeeUtils.toLongOrNull(s);
+          if (DataUtils.isId(item)) {
+            items.add(item);
+          }
+        }
+      }
+
+      Set<Long> analogs = getItemAnalogs(items);
+
+      if (analogs.isEmpty()) {
+        return SqlUtils.sqlFalse();
+      } else {
+        return SqlUtils.inList(view.getSourceAlias(), view.getSourceIdName(), analogs);
+      }
+    });
+
     registerStockReservationsProvider(ModuleAndSub.of(getModule()),
         new StockReservationsProvider() {
           @Override
@@ -5393,5 +5414,44 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   private boolean isConsignmentWarehouse(Long warehouse) {
     return DataUtils.isId(warehouse)
         && BeeUtils.isTrue(qs.getBooleanById(TBL_WAREHOUSES, warehouse, COL_WAREHOUSE_CONSIGNMENT));
+  }
+
+  private Set<Long> getItemAnalogs(Set<Long> input) {
+    Set<Long> analogs = new HashSet<>();
+    if (BeeUtils.isEmpty(input)) {
+      return analogs;
+    }
+
+    IsCondition where = SqlUtils.and(SqlUtils.inList(TBL_ITEM_ANALOGS, COL_ITEM_ANALOG_1, input),
+        SqlUtils.not(SqlUtils.inList(TBL_ITEM_ANALOGS, COL_ITEM_ANALOG_2, input)));
+
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_ITEM_ANALOGS, COL_ITEM_ANALOG_2)
+        .addFrom(TBL_ITEM_ANALOGS)
+        .setWhere(where);
+
+    Set<Long> items = qs.getLongSet(query);
+    if (!BeeUtils.isEmpty(items)) {
+      analogs.addAll(items);
+    }
+
+    where = SqlUtils.and(SqlUtils.inList(TBL_ITEM_ANALOGS, COL_ITEM_ANALOG_2, input),
+        SqlUtils.not(SqlUtils.inList(TBL_ITEM_ANALOGS, COL_ITEM_ANALOG_1, input)));
+
+    query = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_ITEM_ANALOGS, COL_ITEM_ANALOG_1)
+        .addFrom(TBL_ITEM_ANALOGS)
+        .setWhere(where);
+
+    items = qs.getLongSet(query);
+    if (!BeeUtils.isEmpty(items)) {
+      analogs.addAll(items);
+    }
+
+    if (!analogs.isEmpty()) {
+      analogs.addAll(getItemAnalogs(BeeUtils.union(input, analogs)));
+    }
+
+    return analogs;
   }
 }
