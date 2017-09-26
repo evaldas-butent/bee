@@ -657,7 +657,6 @@ class ShipmentRequestForm extends PrintFormInterceptor {
       password = BeeUtils.randomString(6);
 
       messages.add(BeeUtils.join(": ", dic.loginUserName(), login));
-      messages.add(BeeUtils.join(": ", dic.loginPassword(), password));
     } else {
       password = null;
     }
