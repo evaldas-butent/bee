@@ -32,7 +32,10 @@
     <DataColumn name="Name2" visible="false" />
     <DataColumn name="Article" />
     <DataColumn name="Article2" visible="false" />
+    <DataColumn name="Article3" visible="false" />
+    <DataColumn name="Article4" visible="false" />
     <DataColumn name="Barcode" />
+    <DataColumn name="KPNCode" />
 
     <RelColumn name="Unit" caption="=unitShort" carry="true" />
 
@@ -43,6 +46,9 @@
 
     <DataColumn name="Weight" visible="false" />
     <DataColumn name="Area" visible="false" />
+    <DataColumn name="Height" visible="false" />
+    <DataColumn name="Width" visible="false" />
+    <DataColumn name="Length" visible="false" />
 
     <DataColumn name="Price" caption="=salePriceShort" scale="&pricescale;" />
     <RelColumn name="Currency" caption="=currencyShort" />
@@ -59,6 +65,10 @@
 
     <DataColumn name="Vat" carry="true" />
     <DataColumn name="VatPercent" carry="true" />
+
+    <DataColumn name="NotManufactured" />
+    <DataColumn name="Attribute" />
+    <DataColumn name="PackageUnits" />
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
@@ -78,7 +88,8 @@
       </dynStyle>
     </PropColumn>
 
-    <CalcColumn name="FreeRemainder" type="string" label="=ordFreeRemainder" module="Orders">
+    <CalcColumn name="FreeRemainder" type="double" format="0.000" label="=ordFreeRemainder"
+                module="Orders">
       <render>
         <ui:expression>(row.WarehouseRemainder ? row.WarehouseRemainder : 0 )
           - (row.ResRemainder ? row.ResRemainder : 0)

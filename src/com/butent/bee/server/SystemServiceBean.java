@@ -128,7 +128,7 @@ public class SystemServiceBean {
           Codec.deserializeLinkedHashMap(reqInfo.getParameter(VAR_REPORT_PARAMETERS)), dataSets);
 
     } else if (BeeUtils.same(svc, CREATE_PDF)) {
-      Long fileId = fs.createPdf(reqInfo.getParameter(VAR_REPORT_DATA));
+      Long fileId = fs.createPdf(null, reqInfo.getParameter(VAR_REPORT_DATA));
 
       try {
         response = ResponseObject.response(fs.getFile(fileId));

@@ -1,63 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view" xmlns:x="http://www.butent.com/expression" name="OrderSales" source="OrderItems"
-  module="Orders" caption="=tradeActItems">
+<View xmlns="http://www.butent.com/view"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  <Columns>
-    <SimpleColumn name="Order" />
-    <SimpleJoin joinType="INNER" name="Order">
-      <SimpleColumn name="Company" />
-      <SimpleJoin name="Company" joinType="LEFT">
-      <SimpleColumn name="CreditDays" />
-      <SimpleColumn name="CreditLimit" />
-      <SimpleColumn name="ToleratedDays" />
-        <SimpleColumn alias="CompanyName" name="Name" />
-        <SimpleJoin joinType="LEFT" name="CompanyType">
-          <SimpleColumn name="Name" alias="CompanyTypeName" />
-        </SimpleJoin>
-      </SimpleJoin>
-      <SimpleColumn name="Warehouse" />
-      <SimpleJoin name="Warehouse" joinType="LEFT">
-        <SimpleColumn alias="WarehouseCode" name="Code" />
-      </SimpleJoin>
-      <SimpleColumn name="Notes" />
-    </SimpleJoin>
+      name="OrderSales" source="OrderItems"
+      module="Orders" caption="=tradeActItems">
 
-    <SimpleColumn name="Unpacking" />
-
-    <SimpleColumn name="Item" />
-    <SimpleJoin joinType="INNER" name="Item">
-      <SimpleColumn name="Name" alias="ItemName" />
-      <SimpleColumn name="Article" />
-
-      <SimpleJoin joinType="INNER" name="Unit">
-        <SimpleColumn name="Name" alias="UnitName" />
-      </SimpleJoin>
-
-      <SimpleColumn name="Currency" alias="ItemCurrency" />
-      <SimpleJoin name="Currency" joinType="LEFT">
-        <SimpleColumn name="Name" alias="ItemCurrencyName" />
-      </SimpleJoin>
-    </SimpleJoin>
-    <SimpleColumn name="Quantity" />
-    <SimpleColumn name="CompletedQty" />
-    <SimpleColumn name="ResRemainder" />
-    <SimpleColumn name="Price" />
-    <SimpleColumn name="Discount" />
-
-    <SimpleColumn name="VatPlus" />
-    <SimpleColumn name="Vat" />
-    <SimpleColumn name="VatPercent" />
-
-    <ExternalJoin source="OrderChildInvoices" name="OrderItem" joinType="LEFT" >
-      <SimpleJoin name="SaleItem" joinType="LEFT" filter="SaleItem = Item" >
-        <HiddenColumn name="Item" alias="SaleItem" />
-        <AggregateColumn name="Quantity" alias="Completed" aggregate="SUM" />
-      </SimpleJoin>
-    </ExternalJoin>
-
-    <SimpleColumn name="Currency" />
-    <SimpleJoin name="Currency" joinType="LEFT">
-      <SimpleColumn name="Name" alias="CurrencyName" />
-    </SimpleJoin>
-  </Columns>
+  <xi:include href="columns/OrderSales.columns.xml" />
 </View>

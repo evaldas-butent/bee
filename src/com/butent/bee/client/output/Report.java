@@ -33,11 +33,13 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectPriority;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
@@ -283,6 +285,85 @@ public enum Report implements HasWidgetSupplier {
           .multiply(items.get(COL_COSTS_PRICE)).setPrecision(2));
 
       return Collections.singletonList(report);
+    }
+  },
+
+  ORDER_REPORT(ModuleAndSub.of(Module.ORDERS), OrdersConstants.SVC_ORDER_REPORTS) {
+    @Override
+    public List<ReportItem> getItems() {
+      Dictionary loc = Localized.dictionary();
+
+      return Arrays.asList(
+          new ReportTextItem(OrdersConstants.COL_ORDER_ITEM, loc.ecHistoryArticle()),
+          new ReportTextItem(COL_NUMBER, loc.number()),
+          new ReportTextItem(TransportConstants.COL_TYPE_NAME, loc.type()),
+          new ReportEnumItem(OrdersConstants.COL_ORDERS_STATUS, Data.getColumnLabel(
+              OrdersConstants.VIEW_ORDERS, OrdersConstants.COL_ORDERS_STATUS),
+              OrdersConstants.OrdersStatus.class),
+          new ReportDateTimeItem(OrdersConstants.COL_START_DATE, loc.startingDate()),
+          new ReportDateTimeItem(OrdersConstants.COL_END_DATE, loc.endingDate()),
+          new ReportTextItem(TradeConstants.COL_SERIES_NAME, loc.trdSeries()),
+          new ReportTextItem(ClassifierConstants.COL_WAREHOUSE_CODE, loc.warehouse()),
+          new ReportTextItem(ALS_COMPANY_NAME, loc.client()),
+          new ReportTextItem(TradeConstants.COL_TRADE_MANAGER, loc.manager()),
+          new ReportTextItem(COL_ITEM_NAME, loc.name()),
+          new ReportTextItem(COL_ITEM_ARTICLE, loc.article()),
+          new ReportTextItem(COL_ITEM_BARCODE, loc.itemBarcode()),
+          new ReportTextItem(ALS_ITEM_TYPE_NAME,
+              BeeUtils.joinWords(loc.ecFoundItems(), loc.type())),
+          new ReportTextItem(ALS_ITEM_GROUP_NAME, loc.group()),
+          new ReportNumericItem(TradeConstants.COL_TRADE_ITEM_QUANTITY,
+              loc.quantity()).setPrecision(2),
+          new ReportTextItem(ALS_UNIT_NAME, loc.unit()),
+          new ReportNumericItem(COL_ITEM_PRICE, loc.price()).setPrecision(2),
+          new ReportNumericItem(OrdersConstants.COL_DISCOUNT, loc.discount()).setPrecision(2),
+          new ReportDateTimeItem(OrdersConstants.COL_SUPPLIER_TERM, loc.supplierTerm()),
+          new ReportTextItem(TradeConstants.COL_TRADE_SUPPLIER, loc.supplier()),
+          new ReportTextItem(TradeConstants.COL_TRADE_ITEM_NOTE, loc.note()));
+    }
+
+    @Override
+    public Collection<ReportInfo> getReports() {
+      Map<String, ReportItem> items = new HashMap<>();
+      for (ReportItem item : getItems()) {
+        items.put(item.getExpression(), item);
+      }
+      ReportInfo report = new ReportInfo(getReportCaption());
+
+      for (String item : new String[] {
+          OrdersConstants.COL_ORDER_ITEM,
+          COL_NUMBER,
+          TransportConstants.COL_TYPE_NAME,
+          OrdersConstants.COL_ORDERS_STATUS,
+          OrdersConstants.COL_START_DATE,
+          OrdersConstants.COL_END_DATE,
+          TradeConstants.COL_SERIES_NAME,
+          ClassifierConstants.COL_WAREHOUSE_CODE,
+          ALS_COMPANY_NAME,
+          TradeConstants.COL_TRADE_MANAGER,
+          COL_ITEM_NAME,
+          COL_ITEM_ARTICLE,
+          COL_ITEM_BARCODE,
+          ALS_ITEM_TYPE_NAME,
+          ALS_ITEM_GROUP_NAME,
+          OrdersConstants.COL_DISCOUNT,
+          OrdersConstants.COL_SUPPLIER_TERM,
+          TradeConstants.COL_TRADE_SUPPLIER,
+          TradeConstants.COL_TRADE_ITEM_NOTE,
+          COL_ITEM_PRICE,
+          ALS_UNIT_NAME
+      }) {
+        report.addRowItem(items.get(item));
+      }
+
+      report.addColItem(items.get(TradeConstants.COL_TRADE_ITEM_QUANTITY));
+
+      return Collections.singletonList(report);
+    }
+
+    @Override
+    public String getReportCaption() {
+      return Localized.dictionary().ordReport();
     }
   },
 

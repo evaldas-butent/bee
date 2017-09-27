@@ -4,28 +4,39 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.SelectElement;
 import com.google.gwt.i18n.client.NumberFormat;
 
+import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.i18n.Money;
+import com.butent.bee.client.modules.orders.OrdersKeeper;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowFunction;
+import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.html.builder.elements.Option;
 import com.butent.bee.shared.html.builder.elements.Select;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
+import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class ItemPricePicker extends AbstractCellRenderer {
 
@@ -86,8 +97,38 @@ public class ItemPricePicker extends AbstractCellRenderer {
       return;
     }
 
-    Queries.updateCellAndFire(gridView.getViewName(), rowId, row.getVersion(),
-        gridView.getDataColumns().get(colIndex).getId(), row.getString(colIndex), value);
+    if (BeeUtils.inList(gridView.getViewName(), VIEW_ORDER_ITEMS, VIEW_ORDER_TMPL_ITEMS)) {
+      if (BeeUtils.isPositive(row.getPropertyInteger(ClassifierConstants.PROP_ITEM_COMPONENT))) {
+        return;
+      }
+    }
+
+    if (Objects.equals(gridView.getViewName(), VIEW_ORDER_ITEMS)) {
+      Double unpack = row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_UNPACKING));
+      Double qty = row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS,
+          TradeConstants.COL_TRADE_ITEM_QUANTITY));
+
+      if (unpack != null) {
+        value = BeeUtils.toString(Double.valueOf(value) + BeeUtils.unbox(unpack)
+            / BeeUtils.unbox(qty));
+      }
+    }
+
+    Queries.update(gridView.getViewName(), rowId, gridView.getDataColumns().get(colIndex).getId(),
+        new TextValue(value), new Queries.IntCallback() {
+          @Override
+          public void onSuccess(Integer result) {
+            String viewName = gridView.getViewName();
+            if (BeeUtils.inList(viewName, VIEW_ORDER_ITEMS, VIEW_ORDER_TMPL_ITEMS)) {
+              if (OrdersKeeper.isComponent((BeeRow) row, viewName)) {
+                String col = Objects.equals(viewName, VIEW_ORDER_ITEMS) ? COL_ORDER : COL_TEMPLATE;
+                OrdersKeeper.recalculateComplectPrice((BeeRow) row, viewName, col);
+                return;
+              }
+            }
+            gridView.getViewPresenter().handleAction(Action.REFRESH);
+          }
+        });
   }
 
   private final EnumMap<ItemPrice, Integer> priceIndexes = new EnumMap<>(ItemPrice.class);
@@ -173,6 +214,9 @@ public class ItemPricePicker extends AbstractCellRenderer {
         price = null;
       }
 
+      if (!BeeKeeper.getUser().isAdministrator()) {
+        select.disabled();
+      }
       select.appendChild(option);
     }
 

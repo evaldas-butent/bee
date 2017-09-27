@@ -961,6 +961,24 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.emptyResponse();
   }
 
+  /**
+   * Store mail message to account sent folder storage.
+   *
+   * @param account Mail account info.
+   * @param message MIME style email message.
+   * @return ResponseObject with boolean response if message store are successful. Otherwise returns
+   *         ResponseObject warning response if storing mail in server fails.
+   */
+  public ResponseObject storeSentMailMessage(MailAccount account, MimeMessage message) {
+    try {
+      storeMessage(account, message, account.getSentFolder());
+      return ResponseObject.response(Boolean.TRUE);
+    } catch (MessagingException e) {
+      logger.warning(e);
+      return ResponseObject.warning(e);
+    }
+  }
+
   private void applyRules(Message message, long placeId, MailAccount account,
       MailFolder folder, SimpleRowSet rules) throws MessagingException {
 
@@ -2009,7 +2027,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         }
       }
     }
-    for (Iterator<MailFolder> iter = localFolder.getSubFolders().iterator(); iter.hasNext(); ) {
+    for (Iterator<MailFolder> iter = localFolder.getSubFolders().iterator(); iter.hasNext();) {
       MailFolder subFolder = iter.next();
 
       if (!visitedFolders.contains(subFolder.getName())

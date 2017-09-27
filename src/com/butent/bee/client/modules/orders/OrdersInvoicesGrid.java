@@ -8,17 +8,22 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.modules.trade.InvoicesGrid;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -31,6 +36,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -126,7 +132,7 @@ public class OrdersInvoicesGrid extends InvoicesGrid {
             return;
           }
 
-          DataInfo dataInfo = Data.getDataInfo(getViewName());
+          DataInfo dataInfo = Data.getDataInfo(VIEW_ORDER_CHILD_INVOICES);
           BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
 
           newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER),
@@ -151,26 +157,31 @@ public class OrdersInvoicesGrid extends InvoicesGrid {
               newRow, Modality.ENABLED, null, new NewOrderInvoiceForm(), null, new RowCallback() {
                 @Override
                 public void onSuccess(BeeRow newInvoice) {
-                  Queries.update(VIEW_SALE_ITEMS, Filter.any(COL_SALE, ids), COL_SALE,
-                      BeeUtils.toString(newInvoice.getId()), new Queries.IntCallback() {
-                        @Override
-                        public void onSuccess(Integer res1) {
-                          Queries.delete(VIEW_SALES, Filter.idIn(ids), new Queries.IntCallback() {
-                            @Override
-                            public void onSuccess(Integer result) {
-                              Data.onViewChange(VIEW_ORDER_CHILD_INVOICES,
-                                  DataChangeEvent.RESET_REFRESH);
-                            }
-                          });
-                        }
-                      });
+                  ParameterList params = OrdersKeeper.createSvcArgs(SVC_JOIN_INVOICES);
+                  params.addDataItem(Service.VAR_DATA, Codec.beeSerialize(ids));
+                  params.addDataItem(COL_SALE, newInvoice.getId());
+
+                  BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+                    @Override
+                    public void onResponse(ResponseObject response) {
+                      if (!response.hasErrors()) {
+                        Data.onViewChange(VIEW_ORDER_CHILD_INVOICES, DataChangeEvent.RESET_REFRESH);
+                      }
+                    }
+                  });
                 }
               });
         }
       });
-
     } else {
       super.onClick(event);
     }
+  }
+
+  @Override
+  public void onEditStart(EditStartEvent event) {
+    event.consume();
+    RowEditor.openForm(FORM_ORDER_INVOICE, Data.getDataInfo(VIEW_ORDER_CHILD_INVOICES),
+        Filter.equals(COL_ORDER_SALE, getActiveRowId()), Opener.NEW_TAB);
   }
 }

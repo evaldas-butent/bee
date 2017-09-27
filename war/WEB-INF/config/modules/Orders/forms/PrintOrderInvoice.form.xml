@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY section "margin-top: 5px;">
+  <!ENTITY section1 "margin-top: 15px;">
+  <!ENTITY bold "font-weight:bold;">
+  <!ENTITY size "font-size:12px;">
+  <!ENTITY footer "position: absolute; bottom: 5px; display: inline-block;">
+  <!ENTITY form "PrintOrderInvoice">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui" name="&form;" caption="=trdInvoice"
+  disabledActions="save" height="90" heightUnit="%" width="60"
+  widthUnit="%">
+  <FlowPanel style="padding: 10px; background-color: white; font-size: 10px;"
+    contentEditable="true">
+
+    <css id="&form;">
+      .&form;-bank .BankAccount:before {content:"a.s: ";}
+      .&form;-bank .BankAccount:after {content:", ";}
+      .&form;-bank .BankCode:before {content:", ";}
+      .&form;-bank .BankCode:after {content:" ";}
+      .&form;-bank .SWIFTCode:before {content:"SWIFT: ";}
+    </css>
+
+    <FlowPanel style="position:relative; &section;">
+      <FlowPanel>
+        <Image url="file/252" style="position:absolute; right:0; height:30px;" />
+      </FlowPanel>
+      <FlowPanel style="text-align:center; font-size:medium;">
+        <Label text="PVM SĄSKAITA - FAKTŪRA" />
+        <TextLabel style="&bold;" source="InvoiceNo">
+          <renderToken source="InvoicePrefix" prefix="Serija "
+            suffix=" " />
+          <renderToken source="InvoiceNo" prefix="Nr. " />
+        </TextLabel>
+      </FlowPanel>
+    </FlowPanel>
+
+    <Table kind="controls" style="width:100%; &section; &size;">
+      <row>
+        <cell style="vertical-align: top;">
+          <Label html="Tiekėjas" />
+        </cell>
+        <FlowPanel>
+          <FlowPanel name="Supplier" />
+          <Label name="BankAccount" class="&form;-bank" />
+        </FlowPanel>
+      </row>
+      <row>
+        <cell style="vertical-align: top;">
+          <Label html="Gavėjas" />
+        </cell>
+        <FlowPanel name="Customer" />
+      </row>
+    </Table>
+
+    <FlowPanel style="position:relative;">
+      <DateTimeLabel format="DATE_LONG" source="Date"
+        style="position:absolute; bottom:0; right:0;" />
+    </FlowPanel>
+
+    <Table kind="controls" name="InvoiceDetails" style="&section1; width:100%">
+      <properties content="InvoiceItems" />
+      <row>
+        <Label text="Prekės (paslaugos) pavadinimas">
+          <properties name="Name" />
+        </Label>
+        <Label text="Artikulas">
+          <properties name="Article" />
+        </Label>
+        <Label text="Mato vien.">
+          <properties name="Unit" />
+        </Label>
+        <Label text="Kiekis">
+          <properties name="Quantity" />
+        </Label>
+        <Label text="Kaina EUR, be PVM">
+          <properties name="Price" />
+        </Label>
+        <Label text="Nuolaida">
+          <properties name="Discount" />
+        </Label>
+        <Label text="Suma">
+          <properties name="Amount" />
+        </Label>
+        <Label />
+      </row>
+      <row>
+        <cell colSpan="4" style="vertical-align: top;">
+          <Label text="Iš viso" style="text-align: right;" />
+        </cell>
+        <cell style="text-align:right; vertical-align: top;">
+          <Label name="TotalItemsQuantity" />
+        </cell>
+        <cell>
+          <FlowPanel style="text-align: right; margin-top:16px;">
+            <Label text="Apmokestinama suma 21 % PVM" />
+            <Label text="PVM 21 %" />
+            <Label text="Bendra Suma" style="&bold;" />
+          </FlowPanel>
+        </cell>
+        <FlowPanel style="text-align:right;">
+          <Label>
+            <properties name="AmountTotal" />
+          </Label>
+          <Label>
+            <properties name="AmountTotal" />
+          </Label>
+          <Label>
+            <properties name="VatTotal" />
+          </Label>
+          <Label style="&bold;">
+            <properties name="Total" />
+          </Label>
+        </FlowPanel>
+        <FlowPanel>
+          <Label>
+            <properties name="Currency" />
+          </Label>
+          <Label>
+            <properties name="Currency" />
+          </Label>
+          <Label>
+            <properties name="Currency" />
+          </Label>
+          <Label style="&bold;">
+            <properties name="Currency" />
+          </Label>
+        </FlowPanel>
+      </row>
+    </Table>
+
+    <FlowPanel style="&section;">
+      <TextLabel source="Notes" style="margin-top:5px;">
+        <renderToken source="Notes" prefix="Pastabos: " />
+      </TextLabel>
+    </FlowPanel>
+
+    <Table kind="controls">
+      <row>
+        <HorizontalPanel style="&section;">
+          <Label html="Suma žodžiais:" />
+          <Label name="TotalInWords"
+            style="text-decoration: underline; font-style: italic;" />
+        </HorizontalPanel>
+      </row>
+    </Table>
+
+    <TextLabel source="Term" style="&section; &bold; white-space:pre-wrap;">
+      <render>
+        <ui:function>
+          if (row.Term) {
+          var dt = new Date(row.Term);
+
+          return "Sąskaitą apmokėti iki: " + dt.getFullYear()
+          + "." + (dt.getMonth() &lt; 9 ? "0" : "") + (dt.getMonth() + 1)
+          + "." + (dt.getDate() &lt; 10 ? "0" : "") + dt.getDate()
+          + " (per " + Math.ceil((dt.getTime() - new Date(row.Date).getTime())
+          / 86400000) + " dien.)";
+          }
+          return null;
+        </ui:function>
+      </render>
+    </TextLabel>
+
+    <Table kind="output" style="width:100%; margin-top:10px;">
+      <row style="verticalAlign:top;" >
+        <FlowPanel>
+          <Label text="Sąskaitą išrašė:" />
+          <TextLabel source="Manager" style="margin-top:5px;">
+            <renderToken source="ManagerFirstName" prefix=" " />
+            <renderToken source="ManagerLastName" />
+            <renderToken source="PositionName" prefix=", " />
+          </TextLabel>
+          <TextLabel source="Manager">
+            <renderToken source="ManagerPhone" prefix="Tel: " />
+          </TextLabel>
+          <TextLabel source="Manager">
+            <renderToken source="ManagerMobile" prefix="Mob: " />
+          </TextLabel>
+          <TextLabel source="Manager">
+            <renderToken source="ManagerEmail" prefix="El. paštas: " />
+          </TextLabel>
+        </FlowPanel>
+        <Label html="Priėmė" />
+      </row>
+      <row style="font-size:xx-small;">
+        <Label html="(vardas, pavardė, pareigos ir parašas)" />
+        <Label html="(vardas, pavardė, pareigos ir parašas)" style="text-decoration:overline;" />
+      </row>
+      <row>
+        <TextLabel source="CashRegisterNo" style="&section1; white-space:pre-wrap;">
+          <render>
+            <ui:function>
+              if (row.CashRegisterNo) {
+              var dt = new Date(row.Date);
+              var checkNo = "";
+              if (row.CheckNo) {
+                checkNo = " Kvito Nr.: " + row.CheckNo;
+              }
+              return "Kasos kvito išdavimo data: " + dt.getFullYear()
+              + "." + (dt.getMonth() &lt; 9 ? "0" : "") + (dt.getMonth() + 1)
+              + "." + (dt.getDate() &lt; 10 ? "0" : "") + dt.getDate()
+              + "   Kasos aparato Nr.: " + row.CashRegisterNo + checkNo;
+              }
+              return null;
+            </ui:function>
+          </render>
+        </TextLabel>
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

@@ -6,6 +6,7 @@ import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -544,7 +545,12 @@ public final class Global {
   }
 
   public static void showModalGrid(String caption, IsTable<?, ?> table, String... styles) {
-    MessageBoxes.showTable(caption, table, styles);
+    MessageBoxes.showTable(caption, table, null, null, styles);
+  }
+
+  public static void showModalGrid(String caption, IsTable<?, ?> table, Action action,
+      ClickHandler clickHandler, String... styles) {
+    MessageBoxes.showTable(caption, table, action, clickHandler, styles);
   }
 
   public static void showModalWidget(String caption, Widget widget) {
@@ -552,7 +558,7 @@ public final class Global {
   }
 
   public static void showModalWidget(String caption, Widget widget, Element target) {
-    MessageBoxes.showWidget(caption, widget, target);
+    MessageBoxes.showWidget(caption, widget, target, null, null);
   }
 
   public static void showModalWidget(Widget widget) {
@@ -561,6 +567,11 @@ public final class Global {
 
   public static void showModalWidget(Widget widget, Element target) {
     showModalWidget(null, widget, target);
+  }
+
+  public static void showModalWidget(String caption, Widget widget, Element target, Action action,
+      ClickHandler clickHandler) {
+    MessageBoxes.showWidget(caption, widget, target, action, clickHandler);
   }
 
   public static void showTable(String caption, IsTable<?, ?> table) {

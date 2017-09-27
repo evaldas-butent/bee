@@ -32,8 +32,23 @@ class OrderItemsPicker extends ItemsPicker {
       params.addDataItem(ClassifierConstants.COL_WAREHOUSE, getWarehouseFrom());
     }
 
+    if (getRemainderValue()) {
+      params.addDataItem(ClassifierConstants.COL_WAREHOUSE_REMAINDER, String
+          .valueOf(getRemainderValue()));
+    }
+
+    Filter defFilter = getDefaultItemFilter();
+
     if (filter != null) {
-      params.addDataItem(Service.VAR_VIEW_WHERE, filter.serialize());
+      if (defFilter != null) {
+        defFilter = Filter.and(defFilter, filter);
+      } else {
+        defFilter = filter;
+      }
+    }
+
+    if (defFilter != null) {
+      params.addDataItem(Service.VAR_VIEW_WHERE, defFilter.serialize());
     }
 
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
@@ -67,5 +82,15 @@ class OrderItemsPicker extends ItemsPicker {
     }
 
     return Objects.equals(row.getInteger(statusIdx), OrdersStatus.APPROVED.ordinal());
+  }
+
+
+  @Override
+  public boolean showNewUpdateToggle() {
+    return true;
+  }
+
+  private static Filter getDefaultItemFilter() {
+    return Filter.isNull(ClassifierConstants.COL_ITEM_IS_SERVICE);
   }
 }

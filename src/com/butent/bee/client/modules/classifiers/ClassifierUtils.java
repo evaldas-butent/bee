@@ -119,6 +119,7 @@ public final class ClassifierUtils {
   public static void getCompanyInfo(Long companyId, final Widget target) {
     Assert.notNull(target);
     if (!DataUtils.isId(companyId)) {
+
       return;
     }
     ParameterList args = ClassifierKeeper.createArgs(SVC_COMPANY_INFO);

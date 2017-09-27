@@ -5,6 +5,9 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.COL_NOTE;
+import static com.butent.bee.shared.modules.transport.TransportConstants.COL_NUMBER;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -18,6 +21,7 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.layout.TabbedPages;
+import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
@@ -48,16 +52,22 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class OrderForm extends PrintFormInterceptor {
 
@@ -112,6 +122,8 @@ public class OrderForm extends PrintFormInterceptor {
             public void onResponse(ResponseObject response) {
               if (!response.hasErrors()) {
                 updateStatus(form, OrdersStatus.APPROVED);
+                int dateIdx = Data.getColumnIndex(VIEW_ORDERS, COL_START_DATE);
+                getActiveRow().setValue(dateIdx, TimeUtils.nowMinutes());
                 save(form);
               }
             }
@@ -234,6 +246,76 @@ public class OrderForm extends PrintFormInterceptor {
   }
 
   @Override
+  protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
+    Queries.getRowSet(VIEW_ORDER_ITEMS, null, Filter.and(Filter.equals(COL_ORDER, getActiveRowId()),
+        Filter.isNull(TradeConstants.COL_TRADE_ITEM_PARENT)), new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            if (result.getNumberOfRows() > 0) {
+              int dateIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_SUPPLIER_TERM);
+              int noteIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_NOTE);
+              int reservedIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_RESERVED_REMAINDER);
+              int qtyIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS,
+                  TradeConstants.COL_TRADE_ITEM_QUANTITY);
+
+              for (BeeRow row : result) {
+                String term;
+                if (BeeUtils.isEmpty(row.getString(noteIdx))) {
+                  double qty = BeeUtils.unbox(row.getDouble(qtyIdx));
+                  double reserved = BeeUtils.unbox(row.getDouble(reservedIdx));
+                  double free = BeeUtils.unbox(row.getPropertyDouble(PRP_FREE_REMAINDER));
+                  double invoices = BeeUtils.unbox(row.getPropertyDouble(PRP_COMPLETED_INVOICES));
+
+                  if (row.getDate(dateIdx) == null) {
+                    if (reserved + free < qty - invoices) {
+                      DateTime date = row.getDateTime(Data.getColumnIndex(VIEW_ORDER_ITEMS,
+                          ProjectConstants.COL_DATES_START_DATE));
+                      int weekDay = date.getDow();
+
+                      if (weekDay < 3) {
+                        term = new JustDate(date.getDate().getDays() + 9 - weekDay).toString();
+                      } else {
+                        term = new JustDate(date.getDate().getDays() + 16 - weekDay).toString();
+                      }
+                    } else {
+                      term = "t";
+                    }
+                  } else {
+                    term = row.getDate(dateIdx).toString();
+                  }
+                } else {
+                  term = row.getString(noteIdx);
+                }
+
+                row.setProperty(COL_SUPPLIER_TERM, term);
+              }
+            }
+            dataConsumer.accept(new BeeRowSet[] {result});
+          }
+        });
+  }
+
+  @Override
+  protected void getReportParameters(Consumer<Map<String, String>> parametersConsumer) {
+    Map<String, Long> companies = new HashMap<>();
+    companies.put(TransportConstants.COL_CUSTOMER, getLongValue(COL_COMPANY));
+    companies.put(TradeConstants.COL_TRADE_SUPPLIER, BeeKeeper.getUser().getCompany());
+
+    super.getReportParameters(defaultParameters ->
+        ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
+          defaultParameters.putAll(companiesInfo);
+          Queries.getRowCount(VIEW_ORDER_ITEMS, Filter.and(Filter.equals(COL_ORDER,
+              getActiveRowId()), Filter.notNull(COL_TRADE_DISCOUNT)), new IntCallback() {
+            @Override
+            public void onSuccess(Integer result) {
+              defaultParameters.put("DiscountCount", BeeUtils.toString(result));
+              parametersConsumer.accept(defaultParameters);
+            }
+          });
+        }));
+  }
+
+  @Override
   public void onLoad(FormView form) {
     form.addCellValidationHandler(COL_WAREHOUSE, event -> {
       CellValidation cv = event.getCellValidation();
@@ -342,6 +424,24 @@ public class OrderForm extends PrintFormInterceptor {
     return super.beforeAction(action, presenter);
   }
 
+  private String getFileName() {
+    IsRow row = getActiveRow();
+
+    String invoicePrefix =
+        row.getString(Data.getColumnIndex(VIEW_ORDERS, TradeConstants.COL_SERIES_NAME));
+    String number =
+        row.getString(Data.getColumnIndex(VIEW_ORDERS, COL_NUMBER));
+
+    String name;
+    if (!BeeUtils.isEmpty(invoicePrefix)) {
+      name = BeeUtils.join("_", invoicePrefix, number);
+    } else {
+      name = "bee_order";
+    }
+
+    return name + ".pdf";
+  }
+
   private static void updateStatus(FormView form, OrdersStatus status) {
     form.getActiveRow().setValue(Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS),
         status.ordinal());
@@ -372,6 +472,7 @@ public class OrderForm extends PrintFormInterceptor {
 
   private void sendMail(FileInfo fileInfo) {
     FormView form = getFormView();
+    fileInfo.setCaption(getFileName());
 
     List<FileInfo> attach = new ArrayList<>();
     attach.add(fileInfo);
@@ -386,8 +487,8 @@ public class OrderForm extends PrintFormInterceptor {
   }
 
   private static void checkIsFinish(final FormView form) {
-
     Filter filter = Filter.equals(COL_ORDER, form.getActiveRowId());
+
     Queries.getRowSet(VIEW_ORDER_ITEMS, null, filter, new RowSetCallback() {
 
       @Override

@@ -60,5 +60,6 @@
     
     <SimpleColumn name="Discount" />
     <SimpleColumn name="InvisibleDiscount" />
+    <SimpleColumn name="Parent" />
   </Columns>
 </View>

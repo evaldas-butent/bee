@@ -45,7 +45,10 @@
         </cell>
         <Label for="EmailId" style="&lbl;" />
         <cell colSpan="1" for="EmailId">
-          <DataSelector style="width: 180px;" source="EmailId" maxLength="50" />
+          <FlowPanel>
+            <DataSelector style="width: 180px;" source="EmailId" maxLength="50" />
+            <CheckBox html="-" name="RemindEmail" source="RemindEmail" title="=sendReminder"/>
+          </FlowPanel>
         </cell>
       </row>
 
@@ -169,6 +172,42 @@
       <page module="Finance" data="TradeAccounts">
         <text>=finAccounts</text>
         <xi:include href="widgets/TradeAccounts.widget.xml" />
+      </page>
+
+      <page>
+        <text>=companyReport</text>
+        <FlowPanel style="margin:5px;">
+          <Table kind="controls">
+            <row>
+              <Label style="&lbl;" for="HingeType" />
+              <InputText source="HingeType" style="width: 170px;" summarize="true"/>
+              <Label style="&lbl;" for="HingeQuantity" />
+              <InputText source="HingeQuantity" style="width: 170px;" summarize="true"/>
+              <Label style="&lbl;" for="HingeSupply" />
+              <InputText source="HingeSupply" style="width: 170px;" summarize="true"/>
+            </row>
+            <row>
+              <Label style="&lbl;" for="DrawerType" />
+              <InputText source="DrawerType" style="width: 170px;" summarize="true"/>
+              <Label style="&lbl;" for="DrawerQuantity" />
+              <InputText source="DrawerQuantity" style="width: 170px;" summarize="true"/>
+              <Label style="&lbl;" for="DrawerSupply" />
+              <InputText source="DrawerSupply" style="width: 170px;" summarize="true"/>
+            </row>
+            <row>
+              <Label style="&lbl;" for="RunnerType" />
+              <InputText source="RunnerType" style="width: 170px;" summarize="true"/>
+              <Label style="&lbl;" for="RunnerQuantity" />
+              <InputText source="RunnerQuantity" style="width: 170px;" summarize="true"/>
+              <Label style="&lbl;" for="RunnerSupply" />
+              <InputText source="RunnerSupply" style="width: 170px;" summarize="true"/>
+            </row>
+            <row>
+              <Label style="&lbl;" for="Catalog" />
+              <InputText source="Catalog" style="width: 170px;" summarize="true"/>
+            </row>
+          </Table>
+        </FlowPanel>
       </page>
 
       <page>

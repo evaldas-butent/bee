@@ -52,6 +52,17 @@
   <xi:include href="columns/HiddenTradeAccounts.columns.xml" />
 
   <g:columns>
+    <DataColumn name="HingeType" visible="false" />
+    <DataColumn name="HingeQuantity" visible="false" />
+    <DataColumn name="HingeSupply" visible="false" />
+    <DataColumn name="DrawerType" visible="false" />
+    <DataColumn name="DrawerQuantity" visible="false" />
+    <DataColumn name="DrawerSupply" visible="false" />
+    <DataColumn name="RunnerType" visible="false" />
+    <DataColumn name="RunnerQuantity" visible="false" />
+    <DataColumn name="RunnerSupply" visible="false" />
+    <DataColumn name="Catalog" visible="false" />
+
     <DataColumn name="Notes" visible="false" />
   </g:columns>
 </g:Grid>

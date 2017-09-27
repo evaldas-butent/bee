@@ -121,6 +121,23 @@
       <xi:include href="viewcolumns/TradeAccounts.viewcolumns.xml" />
     </SimpleJoin>
 
+    <SimpleJoin name="Raport" joinType="LEFT">
+      <SimpleColumn name="HingeType" />
+      <SimpleColumn name="HingeQuantity" />
+      <SimpleColumn name="HingeSupply" />
+
+      <SimpleColumn name="DrawerType" />
+      <SimpleColumn name="DrawerQuantity" />
+      <SimpleColumn name="DrawerSupply" />
+
+      <SimpleColumn name="RunnerType" />
+      <SimpleColumn name="RunnerQuantity" />
+      <SimpleColumn name="RunnerSupply" />
+
+      <SimpleColumn name="Catalog" />
+    </SimpleJoin>
+
+    <SimpleColumn name="RemindEmail" />
     <SimpleColumn name="Notes" />
   </Columns>
   <Order>

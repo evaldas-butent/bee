@@ -165,8 +165,7 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
     DomUtils.setDataProperty(customerDetails.getElement(), "locale", Localized.dictionary()
         .languageTag());
 
-    ClassifierUtils.getCompanyInfo(row.getLong(form.getDataIndex(COL_FORWARDER)),
-        forwarderDetails);
+    ClassifierUtils.getCompanyInfo(row.getLong(form.getDataIndex(COL_FORWARDER)), forwarderDetails);
     ClassifierUtils.getCompanyInfo(BeeKeeper.getUser().getCompany(), customerDetails);
 
     super.beforeRefresh(form, row);

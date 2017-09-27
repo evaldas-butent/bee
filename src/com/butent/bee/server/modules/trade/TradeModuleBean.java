@@ -295,6 +295,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     Multimap<Long, String> emails = HashMultimap.create();
 
     SqlSelect select = new SqlSelect()
+        .setUnionAllMode(true)
+        .setDistinctMode(true)
         .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
         .addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS)
         .addFrom(TBL_COMPANIES)
@@ -304,7 +306,23 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         .addFromInner(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
         .setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
             companyIds), SqlUtils.notNull(TBL_COMPANY_CONTACTS, COL_REMIND_EMAIL)))
-        .setDistinctMode(true);
+        .addUnion(new SqlSelect()
+            .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
+            .addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS)
+            .addFrom(TBL_COMPANIES)
+            .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+            .addFromInner(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+            .setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
+                companyIds), SqlUtils.notNull(TBL_COMPANIES, COL_REMIND_EMAIL))))
+        .addUnion(new SqlSelect()
+            .addFields(TBL_COMPANY_PERSONS, COL_COMPANY)
+            .addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS)
+            .addFrom(TBL_COMPANY_PERSONS)
+            .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS,
+                COL_CONTACT))
+            .addFromInner(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+            .setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANY_PERSONS, COL_COMPANY, companyIds),
+                SqlUtils.notNull(TBL_COMPANY_PERSONS, COL_REMIND_EMAIL))));
 
     SimpleRowSet companiesEmails = qs.getData(select);
 
@@ -943,12 +961,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     Map<String, Object> creditInfo = Maps.newHashMap();
     ResponseObject resp = getCreditInfo(companyId);
-    Double debt = null;
+    Double totalDebt = null;
 
     if (resp.getResponse() instanceof Map) {
       creditInfo = resp.getResponse(creditInfo, logger);
       if (creditInfo.get(VAR_DEBT) instanceof Double) {
-        debt = (Double) creditInfo.get(VAR_DEBT);
+        totalDebt = (Double) creditInfo.get(VAR_DEBT);
       }
     }
 
@@ -991,6 +1009,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     Range<Long> maybeTime = Range.closed(
         TimeUtils.startOfYear(TimeUtils.today(), -10).getTime(),
         TimeUtils.startOfYear(TimeUtils.today(), 100).getTime());
+
+    double debt = 0;
 
     for (IsRow row : rs) {
       Tr tr = tr();
@@ -1050,18 +1070,30 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       td.setTextAlign(TextAlign.RIGHT);
 
       table.append(tr);
+
+      debt += BeeUtils.unbox(row.getDouble(rs.getColumnIndex(VAR_DEBT)));
     }
 
     Tr footer = tr();
+    Tr footerTotal = tr();
+
     for (int i = 0; i < rs.getNumberOfColumns() - ignoreLast - 3; i++) {
       footer.append(td());
+      footerTotal.append(td());
     }
     footer.append(td());
-
-    footer.append(td().append(b().text(usr.getDictionary().total())));
+    footer.append(td().append(b().text(usr.getDictionary().trdOverdue())));
     footer.append(td().text(BeeUtils.notEmpty(BeeUtils.toString(debt), BeeConst.STRING_EMPTY)));
+
+    footerTotal.append(td());
+    footerTotal.append(td().append(b().text(usr.getDictionary().trdTotalDebt())));
+    footerTotal.append(td().text(BeeUtils.notEmpty(BeeUtils.toString(totalDebt), BeeConst.STRING_EMPTY)));
+
     table.append(footer);
+    table.append(footerTotal);
+
     footer.append(td());
+    footerTotal.append(td());
 
     table.setBorderWidth("1px;");
     table.setBorderStyle(BorderStyle.NONE);
@@ -1221,7 +1253,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     SqlSelect query = new SqlSelect()
         .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_NO,
-            COL_TRADE_NUMBER, COL_TRADE_TERM, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
+            COL_TRADE_NUMBER, COL_TRADE_TERM, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER,
+            COL_TRADE_CHECK_NO)
         .addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_NAME)
         .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
         .addField(COL_TRADE_WAREHOUSE_FROM, COL_WAREHOUSE_CODE, COL_TRADE_WAREHOUSE_FROM)
@@ -1337,10 +1370,15 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       doc.setCurrency(invoice.getValue(COL_CURRENCY));
       doc.setManager(invoice.getValue(PayrollConstants.COL_TAB_NUMBER));
 
+      if (invoices.hasColumn(COL_TRADE_CHECK_NO)) {
+        doc.setCheckNo(invoice.getValue(COL_TRADE_CHECK_NO));
+      }
+
       SimpleRowSet items = qs.getData(new SqlSelect()
           .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE)
           .addFields(tradeItems, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_VAT_PLUS,
-              COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_ITEM_ARTICLE, COL_TRADE_ITEM_NOTE)
+              COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_ITEM_ARTICLE, COL_TRADE_ITEM_NOTE,
+              COL_TRADE_DISCOUNT)
           .addFrom(tradeItems)
           .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, tradeItems, COL_ITEM))
           .setWhere(SqlUtils.equals(tradeItems, itemsRelation, invoice.getLong(itemsRelation))));
@@ -1355,6 +1393,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             item.getValue(COL_TRADE_ITEM_QUANTITY));
 
         wsItem.setPrice(item.getValue(COL_TRADE_ITEM_PRICE));
+        wsItem.setDiscount(item.getValue(COL_TRADE_DISCOUNT));
         wsItem.setVat(item.getValue(COL_TRADE_VAT), item.getBoolean(COL_TRADE_VAT_PERC),
             item.getBoolean(COL_TRADE_VAT_PLUS));
         wsItem.setArticle(item.getValue(COL_TRADE_ITEM_ARTICLE));
@@ -1367,10 +1406,15 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .importDoc(doc);
       } catch (BeeException e) {
-        response.addError(e);
-        break;
+        if (e.getMessage().contains("already exists")) {
+          logger.warning(e.getMessage());
+        } else {
+          response.addError(e);
+          logger.error(e, "ImportDoc error");
+          break;
+        }
       }
-      qs.updateData(new SqlUpdate(trade)
+      response = qs.updateDataWithResponse(new SqlUpdate(trade)
           .addConstant(COL_TRADE_EXPORTED, System.currentTimeMillis())
           .setWhere(sys.idEquals(trade, invoice.getLong(itemsRelation))));
     }

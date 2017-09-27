@@ -53,6 +53,21 @@
         </FlowPanel>
       </row>
 
+      <row>
+        <Label for="Attribute" >
+          &foritem;
+        </Label>
+        <InputText source="Attribute" >
+          &foritem;
+        </InputText>
+
+        <Label />
+
+        <CheckBox source="NotManufactured" >
+          &foritem;
+        </CheckBox>
+      </row>
+
       <row data="ItemCategories">
         <Label text="=itemCategories" />
         <cell colSpan="5">
@@ -198,11 +213,33 @@
             <Label for="Article2" />
             <InputText source="Article2" summarize="true" />
 
+            <Label for="Article3" />
+            <InputText source="Article3" summarize="true" />
+
+            <Label for="Article4" />
+            <InputText source="Article4" summarize="true" />
+          </row>
+
+          <row>
             <Label for="Ordinal" />
             <InputInteger source="Ordinal" style="width: 80px;" summarize="true" />
 
             <Label for="ExternalCode" />
             <InputText source="ExternalCode" summarize="true" />
+
+            <Label for="KPNCode" />
+            <InputText source="KPNCode" summarize="true" />
+          </row>
+
+          <row>
+            <Label for="Height" />
+            <InputDecimal source="Height" style="width: 80px;" summarize="true" />
+
+            <Label for="Width" />
+            <InputDecimal source="Width" style="width: 80px;" summarize="true" />
+
+            <Label for="Length" />
+            <InputDecimal source="Length" style="width: 80px;" summarize="true" />
           </row>
 
           <row>
@@ -217,6 +254,13 @@
               &foritem;
             </Label>
             <InputDecimal source="Area" style="width: 80px;" summarize="true">
+              &foritem;
+            </InputDecimal>
+
+            <Label for="PackageUnits" >
+              &foritem;
+            </Label>
+            <InputDecimal source="PackageUnits" style="width: 80px;" summarize="true" >
               &foritem;
             </InputDecimal>
           </row>
@@ -269,7 +313,7 @@
       <page>
         <text>=pictures</text>
         <Gallery viewName="ItemGraphics" relColumn="Item" pictureColumn="Picture"
-                 orderColumn="Ordinal" summarize="true" />
+          orderColumn="Ordinal" summarize="true" />
       </page>
 
       <page for="Description">
@@ -289,32 +333,14 @@
         <ChildGrid name="ItemManufacturers" relColumn="Item" />
       </page>
 
-      <page module="Orders" data="Orders" predicate="!row.IsService">
-        <text>=orders</text>
-        <FlowPanel class="flexBox-vertical">
-          <Table kind="controls" style="margin-top: 1ex; margin-bottom: 2em;">
-            <col index="0" kind="label" />
-            <col index="2" kind="label" />
-            <col index="4" kind="label" />
-
-            <row>
-              <Label for="Attribute" />
-              <InputText source="Attribute" summarize="true" />
-
-              <Label for="PackageUnits" />
-              <InputDecimal source="PackageUnits" style="width: 80px;" summarize="true" />
-
-              <CheckBox source="NotManufactured" text="=notManufactured" summarize="true" />
-            </row>
-          </Table>
-
-          <ChildGrid name="ItemRemainders" relColumn="Item" class="flexible" />
-        </FlowPanel>
+      <page>
+        <text>=trdStock</text>
+        <ChildGrid name="ItemRemainders" relColumn="Item" />
       </page>
 
-      <page module="Trade" predicate="!row.IsService &amp;&amp; rowId > 0">
-        <text>=trdStock</text>
-        <ChildGrid name="ItemStock" relColumn="Item" />
+      <page>
+        <text>=components</text>
+        <ChildGrid name="ItemComponents" relColumn="Item" class="occupy-1" summarize="true" />
       </page>
 
       <page module="Trade" predicate="rowId > 0">

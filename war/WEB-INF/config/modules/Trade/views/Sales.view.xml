@@ -12,6 +12,8 @@
     <SimpleColumn name="Operation" />
     <SimpleJoin name="Operation" joinType="LEFT">
       <SimpleColumn name="OperationName" />
+      <SimpleColumn name="CashRegisterNo" />
+      <SimpleColumn name="Join" />
     </SimpleJoin>
 
     <SimpleColumn name="SaleSeries" label="=trdInvoicePrefix" />
@@ -22,6 +24,7 @@
 
     <SimpleColumn name="Term" />
     <SimpleColumn name="Proforma" />
+    <SimpleColumn name="CheckNo" />
 
     <SimpleColumn name="Notes" />
     <SimpleColumn name="Exported" />

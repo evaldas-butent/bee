@@ -400,6 +400,7 @@
       <xs:enumeration value="IpFilters" />
       <xs:enumeration value="ItemSuppliers" />
       <xs:enumeration value="ItemCategories" />
+      <xs:enumeration value="ItemComponents" />
       <xs:enumeration value="ItemGraphics" />
       <xs:enumeration value="ItemManufacturers" />
       <xs:enumeration value="ItemRemainders" />
@@ -422,9 +423,9 @@
       <xs:enumeration value="ObjectSalaryFund" />
       <xs:enumeration value="Orders" />
       <xs:enumeration value="OrderChildInvoices" />
-      <xs:enumeration value="OrdersInvoices" />
       <xs:enumeration value="OrderItems" />
       <xs:enumeration value="OrderSales" />
+      <xs:enumeration value="OrderSalesFiltered" />
       <xs:enumeration value="OrderSeries" />
       <xs:enumeration value="OrdersTemplates" />
       <xs:enumeration value="OrderTypes" />

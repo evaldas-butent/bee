@@ -3,10 +3,10 @@
 
        name="TradeOperations"
        idName="TradeOperationID"
->
+    >
   <Fields>
     <String name="OperationName" precision="100" notNull="true" unique="true"
-            label="=trdOperation" translatable="true" />
+            label="=trdOperation" />
 
     <Enum name="OperationType" key="OperationType" notNull="true" label="=trdOperationType" />
 

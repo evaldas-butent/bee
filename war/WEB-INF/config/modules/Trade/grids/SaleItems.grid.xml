@@ -13,7 +13,7 @@
     </RelColumn>
     <DataColumn name="Article" />
 
-    <DataColumn name="Quantity" visible="true">
+    <DataColumn name="Quantity" visible="true" format="0.###">
       <footer aggregate="sum" />
     </DataColumn>
     <DataColumn name="UnitName" flexGrow="0" caption="=unitShort" />
@@ -23,7 +23,7 @@
     </DataColumn>
 
     <DataColumn name="Discount" flexGrow="0">
-      <footer evaluator="discount" scale="2" />
+      <footer evaluator="discount" format="0.00" />
     </DataColumn>
 
     <DataColumn name="VatPlus" width="20" sortable="false" caption="+" format="+" carry="true" />

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table
+    xmlns="http://www.butent.com/table"
+    name="ItemComponents" idName="ItemComponentID"
+>
+  <Fields>
+    <Relation name="Item" relation="Items" notNull="true" label="=complect" cascade="DELETE" />
+    <Relation name="Component" relation="Items" notNull="true" label="=item" />
+    <Numeric name="Quantity" precision="12" scale="5" notNull="true" label="=quantity" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="Item Component" />
+  </Constraints>
+</Table>

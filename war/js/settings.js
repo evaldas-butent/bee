@@ -1,9 +1,9 @@
 var BeeSettings = {
   "appName": "B-NOVO",
-  "version": "1.50",
-  "licence": "",
+  "version": "2.120",
+  "licence": "B-1.0/2015042401/1945",
   "build": "",
-  "releaseDate": "",
+  "releaseDate": "2017.05.09",
   "logoImage": "images/logo_white.png",
   "logoOpen": "http://www.b-novo.lt",
   "providerSensitivityMillis": 300,
@@ -31,8 +31,8 @@ var BeeSettings = {
   "exporterOutputStepRows": 1000,
   "exporterSplitRowsThreshold": 1000,
   "dataSelectorInputDelayMillis": "500, 500, 400, 300, 200",
-  "dataSelectorInstantSearchMaxRows": 1000,
-  "dataSelectorCachingMaxRows": 1000,
+  "dataSelectorInstantSearchMaxRows": 100000,
+  "dataSelectorCachingMaxRows": 100000,
   "theme" : {
     "WorkspaceMarginRight": 25,
     "ViewHeaderHeight": "600, 30, 1200, 52",

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Raports"
+  idName="RaportID"
+  >
+  <Fields>
+    <String name="HingeType" precision="50" label="=hingeType" />
+    <String name="HingeQuantity" precision="20" label="=hingeQuantity" />
+    <String name="HingeSupply" precision="50" label="=hingeSupply" />
+    <String name="DrawerType" precision="50" label="=drawerType" />
+    <String name="DrawerQuantity" precision="20" label="=drawerQuantity" />
+    <String name="DrawerSupply" precision="50" label="=drawerSupply" />
+    <String name="RunnerType" precision="50" label="=runnerType" />
+    <String name="RunnerQuantity" precision="20" label="=runnerQuantity" />
+    <String name="RunnerSupply" precision="50" label="=runnerSupply" />
+    <String name="Catalog" precision="50" label="=catalog" />
+  </Fields>
+</Table>

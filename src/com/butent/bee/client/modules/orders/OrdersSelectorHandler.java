@@ -14,12 +14,14 @@ import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -130,8 +132,7 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
     }
   }
 
-  private static void addTemplateChildren(String viewName, IsRow ordRow,
-      BeeRowSet templChildren) {
+  private static void addTemplateChildren(String viewName, IsRow ordRow, BeeRowSet templChildren) {
 
     List<BeeColumn> columns = new ArrayList<>();
     Map<Integer, Integer> indexes = new HashMap<>();
@@ -151,6 +152,10 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
     }
 
     BeeRowSet orderItems = new BeeRowSet(viewName, columns);
+    BeeRowSet items = new BeeRowSet(viewName, columns);
+
+    List<BeeRowSet> orderComplects = new ArrayList<>();
+    List<BeeRowSet> complects = new ArrayList<>();
 
     int ordIndex = orderItems.getColumnIndex(COL_ORDER);
     int qtyIndex = orderItems.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
@@ -158,6 +163,18 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
     boolean qtyNullable = BeeConst.isUndef(qtyIndex) || orderItems.getColumn(qtyIndex).isNullable();
 
     for (BeeRow templItem : templChildren) {
+      if (OrdersKeeper.isComplect(templItem)) {
+        BeeRowSet complect = new BeeRowSet(viewName, columns);
+        complect.addRow(templItem);
+        complect.addRows(DataUtils.filterRows(templChildren, COL_TRADE_ITEM_PARENT,
+            templItem.getId()));
+        complects.add(complect);
+      } else if (!OrdersKeeper.isComponent(templItem, VIEW_ORDER_TMPL_ITEMS)) {
+        items.addRow(templItem);
+      }
+    }
+
+    for (BeeRow templItem : items) {
       BeeRow ordItem = DataUtils.createEmptyRow(orderItems.getNumberOfColumns());
       ordItem.setValue(ordIndex, ordRow.getId());
 
@@ -174,8 +191,49 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
       orderItems.addRow(ordItem);
     }
 
-    if (!orderItems.isEmpty()) {
-      Queries.insertRows(orderItems);
+    for (BeeRowSet rowSet : complects) {
+      BeeRowSet complect = new BeeRowSet(viewName, columns);
+
+      for (BeeRow row : rowSet) {
+        BeeRow ordItem = DataUtils.createEmptyRow(orderItems.getNumberOfColumns());
+        ordItem.setValue(ordIndex, ordRow.getId());
+
+        for (Map.Entry<Integer, Integer> indexEntry : indexes.entrySet()) {
+          if (!row.isNull(indexEntry.getKey())) {
+            ordItem.setValue(indexEntry.getValue(), row.getString(indexEntry.getKey()));
+          }
+        }
+
+        if (!qtyNullable && ordItem.isNull(qtyIndex)) {
+          ordItem.setValue(qtyIndex, 0);
+        }
+
+        complect.addRow(ordItem);
+      }
+
+      orderComplects.add(complect);
+    }
+
+    if (orderComplects.isEmpty()) {
+      if (!orderItems.isEmpty()) {
+        Queries.insertRows(orderItems);
+      }
+    } else {
+      ParameterList params = OrdersKeeper.createSvcArgs(SVC_INSERT_COMPLECTS);
+      params.addHeaderItem(Service.VAR_DATA, Codec.beeSerialize(orderComplects));
+
+      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (!response.hasErrors()) {
+            if (!orderItems.isEmpty()) {
+              Queries.insertRows(orderItems);
+            }
+
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDER_ITEMS);
+          }
+        }
+      });
     }
   }
 

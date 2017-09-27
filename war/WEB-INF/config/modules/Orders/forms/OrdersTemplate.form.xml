@@ -7,7 +7,7 @@
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
 
   name="OrdersTemplate" viewName="OrdersTemplates" caption="=template" width="800" height="600">
-  <FlowPanel>
+  <FlowPanel class="flexBox-vertical">
     <Table kind="controls">
       <row>
         <Label for="Template" visible="true" style="&lbl;" />
@@ -42,7 +42,7 @@
     </Table>
 
     <br />
-    <TabbedPages style="height: 400px;">
+    <TabbedPages class="flexible">
       <page>
         <text>=goods</text>
         <ChildGrid name="OrderTmplItems" relColumn="Template" />

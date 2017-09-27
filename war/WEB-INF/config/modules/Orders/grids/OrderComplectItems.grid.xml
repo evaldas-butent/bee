@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Grid[
+    ]>
+<g:Grid
+    xmlns="http://www.butent.com/column"
+    xmlns:g="http://www.butent.com/grid"
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+
+    name="OrderComplectItems" viewName="OrderItems"
+    flexGrow="1" renderMode="full" disabledActions="filter add delete"
+    paging="false" initialRowSetSize="-1" >
+  <g:columns>
+    <SelectionColumn name="Select" width="20" />
+  </g:columns>
+
+  <xi:include href="columns/OrderItems.columns.xml" />
+
+</g:Grid>

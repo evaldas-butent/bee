@@ -852,8 +852,8 @@ public class DiscussionsModuleBean implements BeeModule {
                     SqlUtils.equals(TBL_DISCUSSIONS, COL_OWNER, usr.getCurrentUserId())),
                     SqlUtils.notNull(TBL_DISCUSSIONS, COL_ACCESSIBILITY))))
             .addOrder(TBL_DISCUSSIONS, COL_IMPORTANT)
-            .addOrderDesc(TBL_DISCUSSIONS, COL_CREATED)
             .addOrder(TBL_ADS_TOPICS, COL_ORDINAL)
+            .addOrderDesc(TBL_DISCUSSIONS, COL_CREATED)
             .addGroup(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS))
             .addGroup(TBL_ADS_TOPICS, COL_NAME, COL_ORDINAL, COL_BACKGROUND_COLOR, COL_TEXT_COLOR)
             .addGroup(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION)

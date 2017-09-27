@@ -7,6 +7,9 @@
     <IdColumn name="ID"/>
 
     <SimpleColumn name="Order" />
+    <SimpleJoin joinType="LEFT" name="Order">
+      <SimpleColumn name="StartDate" />
+    </SimpleJoin>
 
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="LEFT" name="Item">
@@ -49,6 +52,8 @@
 
       <SimpleColumn name="PackageUnits" />
       <SimpleColumn name="Attribute" />
+
+      <SimpleColumn name="Link" />
     </SimpleJoin>
 
     <SimpleColumn name="ResRemainder" />
@@ -78,6 +83,7 @@
     <SimpleColumn name="SupplierTerm" />
     <SimpleColumn name="Discount" />
     <SimpleColumn name="InvisibleDiscount" />
+    <SimpleColumn name="Parent" />
     <SimpleColumn name="Note" />
   </Columns>
 </View>

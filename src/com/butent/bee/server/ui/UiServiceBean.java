@@ -1074,7 +1074,6 @@ public class UiServiceBean {
         }
       });
       response.addInfo("OK");
-
     } else if (BeeUtils.same(cmd, "tables")) {
       sys.initTables();
       response.addInfo("Tables OK");

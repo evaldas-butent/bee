@@ -14,6 +14,7 @@
     <String name="Article3" precision="30" label="=article3" />
     <String name="Article4" precision="30" label="=article4" />
     <String name="Barcode" precision="30" unique="true" label="=itemBarcode" />
+    <String name="KPNCode" precision="30" unique="true" label="=kpnCode" />
 
     <Relation name="Unit" notNull="true" relation="Units" label="=unit" />
     <Numeric name="PackageUnits" label="=packageUnits" precision="10" scale="2" />
@@ -21,6 +22,9 @@
 
     <Numeric name="Weight" precision="10" scale="3" label="=weight" />
     <Numeric name="Area" precision="10" scale="3" label="=area" />
+    <Numeric name="Height" precision="10" scale="3" label="=height" />
+    <Numeric name="Width" precision="10" scale="3" label="=width" />
+    <Numeric name="Length" precision="10" scale="3" label="=length" />
 
     <Numeric name="Price" precision="15" scale="5" label="=salePrice" />
     <Relation name="Currency" relation="Currencies" label="=currency" />

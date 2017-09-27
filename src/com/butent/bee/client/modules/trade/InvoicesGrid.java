@@ -66,6 +66,7 @@ public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandle
       view.notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
+
     Global.confirm(Localized.dictionary().trSendToERPConfirm(), new ConfirmationCallback() {
       @Override
       public void onConfirm() {

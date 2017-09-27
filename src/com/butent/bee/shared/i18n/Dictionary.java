@@ -191,7 +191,11 @@ public interface Dictionary {
 
   default String article4() {return g("article4");}
 
-  default String askDeleteAll() {return g("askDeleteAll");}
+  default String askDelete(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("askDelete"), _m);
+  }
 
   default String assessments() {return g("assessments");}
 
@@ -643,6 +647,8 @@ public interface Dictionary {
 
   default String cash() {return g("cash");}
 
+  default String catalog() {return g("catalog");}
+
   default String categories() {return g("categories");}
 
   default String category() {return g("category");}
@@ -813,6 +819,8 @@ public interface Dictionary {
 
   default String companyRelationTypes() {return g("companyRelationTypes");}
 
+  default String companyReport() {return g("companyReport");}
+
   default String companyResponsibleUser() {return g("companyResponsibleUser");}
 
   default String companyResponsibleUsers() {return g("companyResponsibleUsers");}
@@ -825,9 +833,15 @@ public interface Dictionary {
 
   default String companyStructure() {return g("companyStructure");}
 
-  default String companyToleratedDays() {return g("companyToleratedDays");}
-
   default String companyVATCode() {return g("companyVATCode");}
+
+  default String complect() {return g("complect");}
+
+  default String complects() {return g("complects");}
+
+  default String component() {return g("component");}
+
+  default String components() {return g("components");}
 
   default String configuration() {return g("configuration");}
 
@@ -1885,6 +1899,12 @@ public interface Dictionary {
 
   default String domainOnline() {return g("domainOnline");}
 
+  default String drawerQuantity() {return g("drawerQuantity");}
+
+  default String drawerSupply() {return g("drawerSupply");}
+
+  default String drawerType() {return g("drawerType");}
+
   default String driverAbsence() {return g("driverAbsence");}
 
   default String driverGroups() {return g("driverGroups");}
@@ -2857,6 +2877,12 @@ public interface Dictionary {
 
   default String highPriority() {return g("highPriority");}
 
+  default String hingeQuantity() {return g("hingeQuantity");}
+
+  default String hingeSupply() {return g("hingeSupply");}
+
+  default String hingeType() {return g("hingeType");}
+
   default String history() {return g("history");}
 
   default String historyField() {return g("historyField");}
@@ -3007,6 +3033,8 @@ public interface Dictionary {
   default String kilometersShort() {return g("kilometersShort");}
 
   default String kind() {return g("kind");}
+
+  default String kpnCode() {return g("kpnCode");}
 
   default String language() {return g("language");}
 
@@ -3678,11 +3706,15 @@ public interface Dictionary {
 
   default String ordAskNotChangeWarehouse() {return g("ordAskNotChangeWarehouse");}
 
+  default String ordAskSearchValue() {return g("ordAskSearchValue");}
+
   default String ordCancel() {return g("ordCancel");}
 
   default String ordCanceled() {return g("ordCanceled");}
 
   default String ordCompleted() {return g("ordCompleted");}
+
+  default String ordComponentsImport() {return g("ordComponentsImport");}
 
   default String ordCreditLimitEmpty() {return g("ordCreditLimitEmpty");}
 
@@ -3694,7 +3726,15 @@ public interface Dictionary {
 
   default String ordFreeRemainder() {return g("ordFreeRemainder");}
 
+  default String ordInvoiceQty() {return g("ordInvoiceQty");}
+
+  default String ordItemList() {return g("ordItemList");}
+
+  default String ordLack() {return g("ordLack");}
+
   default String ordMaxDiscount() {return g("ordMaxDiscount");}
+
+  default String ordOrderConfirmation() {return g("ordOrderConfirmation");}
 
   default String ordOverdueInvoices() {return g("ordOverdueInvoices");}
 
@@ -3704,7 +3744,11 @@ public interface Dictionary {
 
   default String ordQtyIsTooBig() {return g("ordQtyIsTooBig");}
 
+  default String ordReport() {return g("ordReport");}
+
   default String ordResNotIncrease() {return g("ordResNotIncrease");}
+
+  default String ordResQty() {return g("ordResQty");}
 
   default String ordResQtyIsTooBig() {return g("ordResQtyIsTooBig");}
 
@@ -3907,6 +3951,10 @@ public interface Dictionary {
   default String price9() {return g("price9");}
 
   default String price9Label() {return g("price9Label");}
+
+  default String priceEURWithVAT() {return g("priceEURWithVAT");}
+
+  default String priceEURWoVAT() {return g("priceEURWoVAT");}
 
   default String priceName() {return g("priceName");}
 
@@ -4275,6 +4323,8 @@ public interface Dictionary {
 
   default String prmManagerWarehouse() {return g("prmManagerWarehouse");}
 
+  default String prmMaxUploadFileSize() {return g("prmMaxUploadFileSize");}
+
   default String prmNotifyAboutDebts() {return g("prmNotifyAboutDebts");}
 
   default String prmOverdueInvoices() {return g("prmOverdueInvoices");}
@@ -4467,6 +4517,8 @@ public interface Dictionary {
 
   default String result() {return g("result");}
 
+  default String returnDate() {return g("returnDate");}
+
   default String rightStateCreate() {return g("rightStateCreate");}
 
   default String rightStateDelete() {return g("rightStateDelete");}
@@ -4527,6 +4579,12 @@ public interface Dictionary {
     _m.put("{0}", p0);
     return Localized.format(g("rowsUpdated"), _m);
   }
+
+  default String runnerQuantity() {return g("runnerQuantity");}
+
+  default String runnerSupply() {return g("runnerSupply");}
+
+  default String runnerType() {return g("runnerType");}
 
   default String salary() {return g("salary");}
 
@@ -4671,6 +4729,8 @@ public interface Dictionary {
   default String supplier() {return g("supplier");}
 
   default String supplierCreditDays() {return g("supplierCreditDays");}
+
+  default String supplierTerm() {return g("supplierTerm");}
 
   default String suppliers() {return g("suppliers");}
 
@@ -5968,6 +6028,8 @@ public interface Dictionary {
 
   default String trdAmountByRate() {return g("trdAmountByRate");}
 
+  default String trdAmountEURWithVat() {return g("trdAmountEURWithVat");}
+
   default String trdAmountWoVat() {return g("trdAmountWoVat");}
 
   default String trdCashRegisterNo() {return g("trdCashRegisterNo");}
@@ -6038,6 +6100,8 @@ public interface Dictionary {
   default String trdGenerateDocument() {return g("trdGenerateDocument");}
 
   default String trdGeneratedDocument() {return g("trdGeneratedDocument");}
+
+  default String trdInWarehouse() {return g("trdInWarehouse");}
 
   default String trdInvoice() {return g("trdInvoice");}
 
@@ -6171,6 +6235,10 @@ public interface Dictionary {
 
   default String trdTotal() {return g("trdTotal");}
 
+  default String trdTotalDebt() {return g("trdTotalDebt");}
+
+  default String trdTotalEURWithVat() {return g("trdTotalEURWithVat");}
+
   default String trdTurnover() {return g("trdTurnover");}
 
   default String trdTurnovers() {return g("trdTurnovers");}
@@ -6248,6 +6316,8 @@ public interface Dictionary {
   default String units() {return g("units");}
 
   default String unloading() {return g("unloading");}
+
+  default String unpack() {return g("unpack");}
 
   default String unpacking() {return g("unpacking");}
 
@@ -6476,6 +6546,8 @@ public interface Dictionary {
   default String width() {return g("width");}
 
   default String winter() {return g("winter");}
+
+  default String withoutRemainder() {return g("withoutRemainder");}
 
   default String withoutVat() {return g("withoutVat");}
 

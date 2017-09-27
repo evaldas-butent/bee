@@ -15,5 +15,6 @@
     <Boolean name="VatPercent" label="=vatPercent" />
     <Numeric name="Discount" precision="7" scale="3" label="=discountPercent" />
     <Numeric name="InvisibleDiscount" precision="7" scale="3" label="=discountPercent" />
+    <Relation name="Parent" relation="OrderTmplItems" label="=taParent" cascade="SET_NULL" />
   </Fields>
 </Table>

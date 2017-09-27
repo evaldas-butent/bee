@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY section "margin-top: 5px;">
+  <!ENTITY section1 "margin-top: 15px;">
+  <!ENTITY bold "font-weight:bold;">
+  <!ENTITY size "font-size:12px;">
+  <!ENTITY footer "position: absolute; bottom: 5px; display: inline-block;">
+  <!ENTITY form "PrintOrder">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui" name="&form;" disabledActions="save"
+  height="80" heightUnit="%" caption="=order" width="80" widthUnit="%">
+   <FlowPanel style="padding: 10px; background-color: white; font-size:10px;"
+    contentEditable="true">
+
+    <css id="&form;">
+      .&form;-bank .BankAccount:before {content:"a.s: ";}
+      .&form;-bank .BankAccount:after {content:", ";}
+      .&form;-bank .BankCode:before {content:", ";}
+      .&form;-bank .BankCode:after {content:" ";}
+      .&form;-bank .SWIFTCode:before {content:"SWIFT: ";}
+    </css>
+
+    <FlowPanel
+      style="height:80px; background-color:#d6d6d6; position:relative;">
+      <FlowPanel>
+        <Image url="file/251" style="height:80px; float:right;" />
+      </FlowPanel>
+      <Label
+        style="font-size:large; font-weight:bold; position:absolute; bottom:0;"
+        text="Užsakymas" />
+    </FlowPanel>
+    <FlowPanel style="height:40px; position:relative; &section;">
+      <DateTimeLabel format="DATE_FULL" source="StartDate"
+        style="position:absolute; bottom:0; right:0;" />
+      <Image url="file/252" style="height:30px;" />
+    </FlowPanel>
+
+    <FlowPanel
+      style="&section; background-color:#d6d6d6; border-top: 2px solid black;">
+      <FlowPanel style="text-align:right;">
+        <Label text="Dok.Nr. " style="display:inline;" />
+        <TextLabel style="display:inline;" source="Series">
+          <renderToken source="SeriesName" prefix=" "
+            suffix=" " />
+          <renderToken source="Number" />
+        </TextLabel>
+      </FlowPanel>
+      <Label text="Rekvizitai:" />
+    </FlowPanel>
+
+    <Table kind="controls" style="width:100%; &section; &size;">
+      <row>
+        <cell>
+          <Label html="PARDAVĖJAS:" style="font-weight: bold; margin-left:10px;" />
+        </cell>
+        <cell style="vertical-align:top;">
+          <Label html="PIRKĖJAS:" style="font-weight: bold;" />
+        </cell>
+      </row>
+      <row>
+        <FlowPanel style="vertical-align:top;margin-left:10px;" >
+          <FlowPanel name="Supplier" />
+          <Label name="BankAccount" class="&form;-bank" />
+        </FlowPanel>
+        <FlowPanel name="Company" style="vertical-align:top;" />
+      </row>
+      <row>
+        <Label />
+        <FlowPanel>
+          <Label text="Kontaktinis asmuo:" />
+          <TextLabel source="Contact">
+            <renderToken source="ContactPosition" />
+            <renderToken source="ContactFirstName" />
+            <renderToken source="ContactLastName" />
+          </TextLabel>
+          <TextLabel source="Contact">
+            <renderToken source="ContactPhone" prefix="Tel: " />
+          </TextLabel>
+          <TextLabel source="Contact">
+            <renderToken source="ContactEmail" prefix="El. paštas: " />
+          </TextLabel>
+        </FlowPanel>
+      </row>
+    </Table>
+
+    <Label style="background-color:#d6d6d6; border-top: 2px solid black;"
+      text="Prekių sąrašas:" />
+
+    <Label text="KISS Nr."
+      style="&section1; margin-right:35px; &bold; text-align:right;" />
+
+    <Table kind="controls" name="InvoiceDetails" style="width:100%">
+      <properties content="OrderItems" />
+      <row>
+        <Label text="Kodas">
+          <properties name="Article" />
+        </Label>
+        <Label text="Pavadinimas">
+          <properties name="Name" />
+        </Label>
+        <Label text="Vnt.">
+          <properties name="Unit" />
+        </Label>
+        <Label text="Kiekis">
+          <properties name="Quantity" />
+        </Label>
+        <Label text="Kaina EUR, be PVM">
+          <properties name="Price" />
+        </Label>
+        <Label text="Kaina EUR, su PVM">
+          <properties name="PriceWithVat" />
+        </Label>
+        <Label text="Suma EUR, su PVM" style="text-align:right;">
+          <properties name="AmountWithVat" />
+        </Label>
+        <Label text="Tiekimo terminas">
+          <properties name="SupplierTerm" />
+        </Label>
+        <Label text="U">
+          <properties name="U" />
+        </Label>
+        <Label text="R">
+          <properties name="ResRemainder" />
+        </Label>
+        <Label text="+">
+          <properties name="+" />
+        </Label>
+        <Label text="Atidavimo data">
+          <properties name="Atidavimo data" />
+        </Label>
+        <Label text="Pastabos">
+          <properties name="Note" />
+        </Label>
+      </row>
+      <row>
+        <cell colSpan="6">
+          <FlowPanel style="text-align: right; &bold;">
+            <Label text="Viso EUR, su PVM:" />
+            <Label text="Avansas EUR:" />
+            <Label text="Likutis EUR:" />
+          </FlowPanel>
+        </cell>
+        <FlowPanel style="text-align:right; &bold;">
+          <Label style="text-decoration: underline;">
+            <properties name="Total" />
+          </Label>
+          <Label text="__________" />
+          <Label text="__________" />
+        </FlowPanel>
+
+        <FlowPanel style="&bold;">
+          <Label>
+            <properties name="Currency" />
+          </Label>
+          <Label>
+            <properties name="Currency" />
+          </Label>
+          <Label>
+            <properties name="Currency" />
+          </Label>
+        </FlowPanel>
+      </row>
+    </Table>
+
+    <HtmlPanel style="&section;">
+      <span style="font-size:xx-small;">
+        Už užsakomas prekes užsakovas sumoka išankstinį mokėjimą (avansą) lygų
+        50 procentų užsakomų prekių kainos. Likusieji pinigai mokami
+        atsiimant užsakomas prekes. Prekių priėmimas pažymimas PVM
+        sąskaitoje – faktūroje. Užsakovas prekes privalo atsiimti per 30
+        kalendorinių dienų
+        nuo prekių tiekimo termino dienos. Jei užsakovas atsisako priimti
+        prekes, užsakovo sumokėtas avansas negrąžinamas. Nekokybiškos
+        prekės keičiamos kokybiškomis arba yra grąžinami užsakovo
+        pinigai. Kokybiškos užsakomos prekės yra negrąžintinos.
+      </span>
+    </HtmlPanel>
+
+    <Table kind="output" style="width:100%; margin-top:10px; &bold;">
+      <row style="verticalAlign: bottom;">
+        <FlowPanel>
+          <Label text="Užsakymą priėmė:" />
+          <TextLabel source="Manager" style="margin-top:5px;">
+            <renderToken source="ManagerFirstName" prefix=" " />
+            <renderToken source="ManagerLastName" />
+            <renderToken source="ManagerPosition" prefix=", " />
+          </TextLabel>
+          <TextLabel source="Manager">
+            <renderToken source="ManagerPhone" prefix="Tel: " />
+          </TextLabel>
+          <TextLabel source="Manager">
+            <renderToken source="ManagerMobile" prefix="Mob: " />
+          </TextLabel>
+          <TextLabel source="Manager">
+            <renderToken source="ManagerEmail" prefix="El. paštas: " />
+          </TextLabel>
+        </FlowPanel>
+        <Label text="_______________________________" style="text-align:right;" />
+      </row>
+      <row>
+        <Label />
+        <Label html="Užsakovo parašas" style="text-align:right; font-size:xx-small;" />
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

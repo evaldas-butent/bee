@@ -62,6 +62,8 @@
       <SimpleColumn name="SocialContacts" />
     </SimpleJoin>
 
+    <SimpleColumn name="RemindEmail" />
+
     <ExternalJoin name="CompanyPerson" joinType="LEFT" source="Employees">
       <SimpleColumn name="TabNumber" />
     </ExternalJoin>

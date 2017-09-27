@@ -288,6 +288,7 @@ public final class ClassifierKeeper {
     FormFactory.registerFormInterceptor(FORM_NEW_COMPANY, new CompanyForm());
     FormFactory.registerFormInterceptor(FORM_COMPANY_ACTION, new CompanyActionForm());
     FormFactory.registerFormInterceptor(FORM_COMPANY_PERSON, new CompanyPersonForm());
+    FormFactory.registerFormInterceptor(FORM_ITEM_COMPONENT, new ItemComponentForm());
 
     FormFactory.registerFormInterceptor("Holidays", new HolidaysForm());
 

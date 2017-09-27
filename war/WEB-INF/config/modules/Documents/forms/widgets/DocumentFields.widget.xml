@@ -55,13 +55,6 @@
   </row>
 
   <row>
-    <Label for="ReceivedNumber" class="bee-hasDefaults" style="&lbl;" />
-    <InputText source="ReceivedNumber" />
-    <Label for="SentNumber" class="bee-hasDefaults" style="&lbl;"/>
-    <InputText source="SentNumber" />
-  </row>
-
-  <row>
     <Label for="Description" style="&lbl;" />
     <cell colSpan="3">
       <InputArea source="Description" style="width: 100%; height: 60px;" />

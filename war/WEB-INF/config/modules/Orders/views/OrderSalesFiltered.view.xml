@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+
+      name="OrderSalesFiltered" source="OrderItems"
+      module="Orders" caption="=tradeActItems">
+
+  <xi:include href="columns/OrderSales.columns.xml" />
+</View>

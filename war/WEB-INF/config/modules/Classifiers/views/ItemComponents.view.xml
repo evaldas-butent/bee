@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+      name="ItemComponents" source="ItemComponents" caption="=components">
+  <Columns>
+    <SimpleColumn name="Item" />
+
+    <SimpleColumn name="Component" />
+    <SimpleJoin joinType="LEFT" name="Component">
+      <IdColumn name="Id" />
+      <SimpleColumn name="Name" />
+      <SimpleColumn name="Article" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Quantity" />
+  </Columns>
+</View>
