@@ -1194,10 +1194,8 @@ public class TransportReportsBean {
         SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
             SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")), COL_ORDER_MANAGER));
 
-    cargoClause.add(report.getCondition(SqlUtils.field(TBL_CARGO_TYPES, COL_CARGO_TYPE_NAME),
-            COL_CARGO_TYPE_NAME));
-    cargoClause.add(report.getCondition(SqlUtils.field(TBL_CARGO_GROUPS, COL_CARGO_GROUP_NAME),
-            COL_CARGO_GROUP_NAME));
+    cargoClause.add(report.getCondition(TBL_CARGO_TYPES, COL_CARGO_TYPE_NAME));
+    cargoClause.add(report.getCondition(TBL_CARGO_GROUPS, COL_CARGO_GROUP_NAME));
 
     if (!cargoClause.isEmpty()) {
       clause.add(SqlUtils.in(TBL_TRIPS, sys.getIdName(TBL_TRIPS),
@@ -1490,8 +1488,10 @@ public class TransportReportsBean {
           .addFrom(tmp)
           .addFromLeft(tmpPercents, SqlUtils.joinUsing(tmp, tmpPercents, COL_TRIP))
           .addFromLeft(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, tmpPercents, COL_CARGO))
-          .addFromLeft(VIEW_CARGO_TYPES, sys.joinTables(VIEW_CARGO_TYPES, TBL_ORDER_CARGO, COL_CARGO_TYPE))
-          .addFromLeft(VIEW_CARGO_GROUPS, sys.joinTables(VIEW_CARGO_GROUPS, TBL_ORDER_CARGO, COL_CARGO_GROUP))
+          .addFromLeft(VIEW_CARGO_TYPES,
+              sys.joinTables(VIEW_CARGO_TYPES, TBL_ORDER_CARGO, COL_CARGO_TYPE))
+          .addFromLeft(VIEW_CARGO_GROUPS,
+              sys.joinTables(VIEW_CARGO_GROUPS, TBL_ORDER_CARGO, COL_CARGO_GROUP))
           .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
           .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
           .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_ORDERS, COL_ORDER_MANAGER))
