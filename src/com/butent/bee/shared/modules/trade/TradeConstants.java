@@ -49,6 +49,8 @@ public final class TradeConstants {
 
   public static final String SVC_SAVE_CUSTOMER_RETURNS = "SaveCustomerReturns";
 
+  public static final String SVC_GET_ITEM_ANALOGS = "GetItemAnalogs";
+
   public static final String TBL_PURCHASES = "Purchases";
   public static final String TBL_PURCHASE_USAGE = "PurchaseUsage";
   public static final String TBL_PURCHASE_ITEMS = "PurchaseItems";

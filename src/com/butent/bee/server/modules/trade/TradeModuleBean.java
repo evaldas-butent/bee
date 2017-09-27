@@ -345,6 +345,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         response = saveCustomerReturns(reqInfo);
         break;
 
+      case SVC_GET_ITEM_ANALOGS:
+        response = getItemAnalogs(reqInfo);
+        break;
+
       default:
         if (reqInfo.getSubModule() == SubModule.ACTS) {
           response = act.doService(svc, reqInfo);
@@ -5453,5 +5457,35 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
 
     return analogs;
+  }
+
+  private ResponseObject getItemAnalogs(RequestInfo reqInfo) {
+    String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
+    if (BeeUtils.isEmpty(where)) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), Service.VAR_VIEW_WHERE);
+    }
+
+    BeeView view = sys.getView(VIEW_ITEMS);
+
+    Filter filter = Filter.and(Filter.restore(where), Filter.isNull(COL_ITEM_IS_SERVICE));
+
+    SqlSelect query = view.getQuery(usr.getCurrentUserId(), filter, null,
+        BeeConst.EMPTY_IMMUTABLE_STRING_SET);
+
+    query.resetFields();
+    query.addFields(view.getSourceAlias(), view.getSourceIdName());
+
+    query.resetOrder();
+
+    Set<Long> items = qs.getLongSet(query);
+
+    if (!items.isEmpty()) {
+      Set<Long> analogs = getItemAnalogs(items);
+      if (!analogs.isEmpty()) {
+        return ResponseObject.response(DataUtils.buildIdList(analogs));
+      }
+    }
+
+    return ResponseObject.emptyResponse();
   }
 }

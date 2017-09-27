@@ -19,6 +19,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Storage;
+import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -92,6 +93,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -575,7 +577,43 @@ public class TradeItemPicker extends Flow implements HasPaging {
       searchBy.addAll(getDefaultSearchBy(query));
     }
 
-    doQuery(Filter.and(buildParentFilter(), buildSearchFilter(query, searchBy)), searchBy);
+    Filter searchFilter = buildSearchFilter(query, searchBy);
+
+    boolean showAnalogs;
+    if (searchFilter == null) {
+      showAnalogs = false;
+    } else if (searchBy.size() == 1 && searchBy.get(0) == TradeItemSearch.ID) {
+      showAnalogs = false;
+    } else {
+      showAnalogs = getOperationType() != null && getOperationType().consumesStock();
+    }
+
+    if (showAnalogs) {
+      ParameterList parameters = TradeKeeper.createArgs(SVC_GET_ITEM_ANALOGS);
+      parameters.addDataItem(Service.VAR_VIEW_WHERE, searchFilter.serialize());
+
+      addStyleName(STYLE_SEARCH_RUNNING);
+
+      BeeKeeper.getRpc().makeRequest(parameters, response -> {
+        if (response.hasErrors()) {
+          removeStyleName(STYLE_SEARCH_RUNNING);
+
+        } else {
+          Filter analogFilter = null;
+          if (response.hasResponse()) {
+            Set<Long> analogs = DataUtils.parseIdSet(response.getResponseAsString());
+            if (!analogs.isEmpty()) {
+              analogFilter = Filter.idIn(analogs);
+            }
+          }
+
+          doQuery(Filter.and(buildParentFilter(), Filter.or(searchFilter, analogFilter)), searchBy);
+        }
+      });
+
+    } else {
+      doQuery(Filter.and(buildParentFilter(), searchFilter), searchBy);
+    }
   }
 
   private void doQuery(final Filter where, final Collection<TradeItemSearch> searchBy) {
