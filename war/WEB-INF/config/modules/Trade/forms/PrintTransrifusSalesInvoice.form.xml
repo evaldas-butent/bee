@@ -3,7 +3,7 @@
   <!ENTITY bold "font-weight:bold;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" name="PrintTransrifusSalesInvoice"
-  caption="=trdInvoice" disabledActions="save" width="75" widthUnit="%" height="75" heightUnit="%"
+  caption="XML sąskaita" disabledActions="save" width="75" widthUnit="%" height="75" heightUnit="%"
   xmlns:ui="http://www.butent.com/ui"
     >
 
@@ -26,7 +26,7 @@
         <Label name="DocNumber" class="bee-trade-print-document-number" />
         <DateTimeLabel source="Date" format="DATE_LONG" class="bee-trade-print-document-date" />
       </FlowPanel>
-      <FlowPanel>        
+      <FlowPanel>
         <Label name="DocId" class="bee-trade-print-document-id" />
       </FlowPanel>
     </FlowPanel>
@@ -65,7 +65,7 @@
           <Label name="SupplierWebsite" class="bee-trade-print-company-website" />
         </cell>
       </row>
-      
+
       <div class="bee-trade-print-company-separator"/>
       <row class="bee-trade-print-customer">
         <Label text="=printInvoiceBuyer" class="bee-trade-print-company-label" />
@@ -91,7 +91,7 @@
           <Label name="CustomerBank" class="bee-trade-print-company-bank" />
         </cell>
       </row>
-      
+
       <div class="bee-trade-print-company-separator"/>
       <row class="bee-trade-print-payer">
         <Label text="=payer" class="bee-trade-print-company-label" />

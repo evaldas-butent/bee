@@ -78,6 +78,17 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
   }
 
   @Override
+  public FormInterceptor getPrintFormInterceptor() {
+    return new TradeDocumentRenderer(VIEW_SALE_ITEMS, COL_SALE) {
+      @Override
+      public void onLoad(FormView form) {
+        TradeActKeeper.ensureSendMailPrintableForm(form);
+        super.afterCreate(form);
+      }
+    };
+  }
+
+  @Override
   protected ReportUtils.ReportCallback getReportCallback() {
     return new ReportUtils.ReportCallback() {
       @Override
