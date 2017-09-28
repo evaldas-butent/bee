@@ -13,6 +13,7 @@
     <DataColumn name="OrderDate" />
     <RelColumn name="OrderNo" editEnabled="true" editSource="Order" />
     <DataColumn name="Status" />
+    <DataColumn name="Supplier" label="=supplierId" filterSupplier="value" />
     <DataColumn name="SupplierName" />
     <DataColumn name="Number" />
   </g:columns>
