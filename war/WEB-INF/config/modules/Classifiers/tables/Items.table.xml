@@ -5,7 +5,7 @@
        idName="ItemID"
 >
   <Fields>
-    <String name="Name" precision="100" notNull="true" label="=itemName" />
+    <String name="Name" precision="100" notNull="true" label="=itemName" translatable="true" />
     <String name="Name2" precision="100" label="=itemName2" />
     <String name="Name3" precision="100" label="=itemName3" />
 
@@ -25,6 +25,14 @@
     <Numeric name="Height" precision="10" scale="3" label="=height" />
     <Numeric name="Width" precision="10" scale="3" label="=width" />
     <Numeric name="Length" precision="10" scale="3" label="=length" />
+
+    <Numeric name="Volume" precision="12" scale="5" label="=volume" />
+    <Numeric name="Brutto" precision="12" scale="5" label="=brutto" />
+    <Numeric name="Netto" precision="12" scale="5" label="=netto" />
+
+    <String name="AdditionalUnit" precision="10" label="=additionalItemUnit" />
+    <String name="CountryOfOrigin" precision="60" label="=countryOfOrigin" />
+    <Numeric name="Factor" precision="8" scale="3" label="=taFactorShort" />
 
     <Numeric name="Price" precision="15" scale="5" label="=salePrice" />
     <Relation name="Currency" relation="Currencies" label="=currency" />
@@ -63,7 +71,7 @@
     <Relation name="Type" relation="CategoryTree" label="=type" />
     <Relation name="Group" relation="CategoryTree" label="=group" />
 
-    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
               label="=dimensions" />
     <Relation name="TradeAccounts" unique="true" relation="TradeAccounts" editable="true"
               label="=finTradeAccounts" />

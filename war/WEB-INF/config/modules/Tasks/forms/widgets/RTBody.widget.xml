@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE FlowPanel [
-  <!ENTITY tbl "border-collapse: collapse;">
-  <!ENTITY cell "vertical-align: top; padding-bottom: 4px;">
-  <!ENTITY col1 "text-align: right; padding-right: 8px; width: 120px;">
-  <!ENTITY clbl "text-align: right; padding-left: 8px; padding-right: 8px;">
+    <!ENTITY tbl "border-collapse: collapse;">
+    <!ENTITY cell "vertical-align: top; padding-bottom: 4px;">
+    <!ENTITY col1 "text-align: right; padding-right: 8px; width: 120px;">
+    <!ENTITY clbl "text-align: right; padding-left: 8px; padding-right: 8px;">
 
-  <!ENTITY inp2x "width: 500px;">
-  <!ENTITY inp2y "width: 500px;">
-  
-  <!ENTITY spinner "width: 5em;">
-  
-  <!ENTITY tod "width: 5em;">
-  <!ENTITY timeStep "30">
-]>
+    <!ENTITY inp2x "width: 500px;">
+    <!ENTITY inp2y "width: 500px;">
+
+    <!ENTITY spinner "width: 5em;">
+
+    <!ENTITY tod "width: 5em;">
+    <!ENTITY timeStep "30">
+    ]>
 <FlowPanel xmlns="http://www.butent.com/widget">
 
   <Table kind="controls" style="&tbl;" cellStyle="&cell;">
     <col index="0" cellStyle="&col1;" />
     <col index="2" cellStyle="&clbl;" />
-  
+
     <row>
       <Label for="Type" />
       <DataSelector source="Type" renderColumns="TypeName" newRowEnabled="false" />
-	  <Label for="Priority" />
+      <Label for="Priority" />
       <Radio source="Priority" />
     </row>
 
@@ -36,72 +36,77 @@
     <row>
       <Label for="ScheduleDays" />
       <InputSpinner source="ScheduleDays" minValue="-1" maxValue="999" style="width: 60px;" />
+      <Label for="Product" name="Product" />
+      <DataSelector source="Product" renderColumns="ProductName" newRowEnabled="true"
+                    style="width: 11em;" filter="Visible" />
     </row>
 
     <row>
       <Label for="Company" />
-      <DataSelector source="Company" editPopup="true" newRowEnabled="false" choiceColumns="Name TypeName"
-          renderColumns="CompanyName CompanyTypeName"/>
+      <DataSelector source="Company" newRowEnabled="false"
+                    choiceColumns="Name TypeName" renderColumns="CompanyName CompanyTypeName" />
       <Label for="Contact" />
-      <DataSelector source="Contact" editPopup="true" newRowEnabled="false"
-        renderColumns="ContactFirstName ContactLastName"
-        choiceColumns="FirstName LastName CompanyName" options="Company" />
+      <DataSelector source="Contact" newRowEnabled="false"
+                    renderColumns="ContactFirstName ContactLastName"
+                    choiceColumns="FirstName LastName CompanyName" options="Company" />
     </row>
   </Table>
-  
-  <br/>
+
+  <br />
   <Table kind="controls" style="&tbl;" cellStyle="&cell;">
     <col index="0" cellStyle="&col1;" />
 
     <row>
       <Label for="Summary" />
-      <InputText source="Summary" style="&inp2x;" autocomplete="true"/>
+      <InputText source="Summary" style="&inp2x;" autocomplete="true" />
     </row>
 
-    <row>
-      <Label text="=crmTaskExecutors" />
+    <row listName="RTExecutors">
+      <Label text="=crmTaskExecutors" listName="RTExecutors" />
       <ChildSelector childTable="RTExecutors" viewName="Users" property="Executors"
-        targetRelColumn="RecurringTask" sourceRelColumn="User"
-        renderColumns="FirstName LastName" editPopup="true" newRowEnabled="false" style="&inp2x;"
-        label="=crmTaskExecutors" />
+                     targetRelColumn="RecurringTask" sourceRelColumn="User"
+                     renderColumns="FirstName LastName" newRowEnabled="false"
+                     style="&inp2x;" label="=crmTaskExecutors" />
     </row>
 
-    <row>
-      <Label text="=crmTaskExecutorGroups" />
+    <row listName="RTExecutorGroups">
+      <Label text="=crmTaskExecutorGroups" listName="RTExecutorGroups" />
       <ChildSelector childTable="RTExecutorGroups" viewName="UserGroupSettings"
-        targetRelColumn="RecurringTask" sourceRelColumn="Group"
-        property="ExecutorGroups" renderColumns="Name" editPopup="true" newRowEnabled="false"
-        style="&inp2y;" label="=crmTaskExecutorGroups" filter="Owner {u} or Visibility 1" />
+                     targetRelColumn="RecurringTask" sourceRelColumn="Group"
+                     property="ExecutorGroups" renderColumns="Name"
+                     newRowEnabled="false" style="&inp2y;" label="=crmTaskExecutorGroups"
+                     filter="Owner {u} or Visibility 1" />
     </row>
 
-    <row>
-      <Label text="=crmTaskObservers" />
+    <row listName="RTObservers">
+      <Label text="=crmTaskObservers" listName="RTObservers" />
       <ChildSelector childTable="RTObservers" viewName="Users" property="Observers"
-        targetRelColumn="RecurringTask" sourceRelColumn="User"      
-        renderColumns="FirstName LastName" editPopup="true" newRowEnabled="false" style="&inp2x;"
-        label="=crmTaskObservers" />
+                     targetRelColumn="RecurringTask" sourceRelColumn="User"
+                     renderColumns="FirstName LastName" newRowEnabled="false"
+                     style="&inp2x;" label="=crmTaskObservers" />
     </row>
 
-    <row>
-      <Label text="=crmTaskObserverGroups" />
+    <row listName="RTObserverGroups">
+      <Label text="=crmTaskObserverGroups" listName="RTObserverGroups" />
       <ChildSelector childTable="RTObserverGroups" viewName="UserGroupSettings"
-        targetRelColumn="RecurringTask" sourceRelColumn="Group"      
-        property="ObserverGroups" renderColumns="Name" editPopup="true" newRowEnabled="false"
-        style="&inp2y;" label="=crmTaskObserverGroups" filter="Owner {u} or Visibility 1" />
+                     targetRelColumn="RecurringTask" sourceRelColumn="Group"
+                     property="ObserverGroups" renderColumns="Name"
+                     newRowEnabled="false" style="&inp2y;" label="=crmTaskObserverGroups"
+                     filter="Owner {u} or Visibility 1" />
     </row>
-    
+
     <row>
       <Label text="=project" />
-      <DataSelector source="Project" style="&inp2y;" disablable="true" readOnly="true"/>
+      <DataSelector source="Project" style="&inp2y;" disablable="true" readOnly="true" />
     </row>
   </Table>
-  
-  <br/>
+
+  <br />
   <Table kind="controls" style="&tbl;" cellStyle="&cell;">
     <col index="0" cellStyle="&col1;" />
     <col index="2" cellStyle="&clbl;" />
     <col index="4" cellStyle="&clbl;" />
-    
+
     <row>
       <Label for="StartAt" />
       <InputTimeOfDay source="StartAt" step="&timeStep;" style="&tod;" />
@@ -114,11 +119,13 @@
     <row>
       <Label />
       <CheckBox source="CopyByMail" text="=mailNotify" />
-      <Label />
-      <CheckBox source="PrivateTask" text="=crmTaskPrivate"/>
+      <cell colSpan="4">
+        <FlowPanel>
+          <CheckBox source="PrivateTask" text="=crmTaskPrivate" />
+          <Button name="EndResult" text="=crmTaskEndResult" style="margin-left: 30px;" />
+        </FlowPanel>
+      </cell>
     </row>
   </Table>
 
-
-  
 </FlowPanel>

@@ -16,6 +16,7 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.StringPredicate;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -96,6 +97,10 @@ public final class SqlUtils {
     }
   }
 
+  public static IsCondition anyNotNull(String src, String fld1, String fld2) {
+    return or(notNull(src, fld1), notNull(src, fld2));
+  }
+
   public static IsExpression bitAnd(IsExpression expr, Object value) {
     return new FunctionExpression(SqlFunction.BITAND,
         ImmutableMap.of("expression", expr, "value", value));
@@ -156,6 +161,23 @@ public final class SqlUtils {
       clause.add(contains(expr, value));
     }
     return clause;
+  }
+
+  public static IsCondition containsAny(String source, Collection<String> fields,
+      Collection<String> values) {
+
+    if (BeeUtils.isEmpty(fields) || BeeUtils.isEmpty(values)) {
+      return null;
+
+    } else {
+      HasConditions conditions = or();
+
+      fields.stream().filter(StringPredicate.NOT_EMPTY).forEach(field ->
+          values.stream().filter(StringPredicate.NOT_EMPTY).forEach(value ->
+              conditions.add(contains(source, field, value))));
+
+      return conditions;
+    }
   }
 
   public static IsQuery createCheck(String table, String name, String expression) {
@@ -380,6 +402,14 @@ public final class SqlUtils {
     return orCondition;
   }
 
+  public static IsCondition equalsOrIsNull(String source, String field, Object value) {
+    if (value == null) {
+      return isNull(source, field);
+    } else {
+      return or(equals(source, field, value), isNull(source, field));
+    }
+  }
+
   public static IsExpression expression(Object... members) {
     Assert.minLength(ArrayUtils.length(members), 1);
     Assert.noNulls(members);
@@ -412,8 +442,11 @@ public final class SqlUtils {
     return fullText(field(source, field), value);
   }
 
+  public static IsCondition in(IsExpression xpr, SqlSelect query) {
+    return new ComparisonCondition(Operator.IN, xpr, Assert.notNull(query));
+  }
+
   public static IsCondition in(String src, String fld, SqlSelect query) {
-    Assert.notNull(query);
     return new ComparisonCondition(Operator.IN, field(src, fld), query);
   }
 
@@ -465,6 +498,13 @@ public final class SqlUtils {
     return inList(field(source, field), values);
   }
 
+  public static IsCondition isDifferent(String src, String fld1, String fld2) {
+    return or(
+        and(notNull(src, fld1), isNull(src, fld2)),
+        and(isNull(src, fld1), notNull(src, fld2)),
+        compare(field(src, fld1), Operator.NE, field(src, fld2)));
+  }
+
   public static IsCondition isNull(IsExpression expr) {
     return new ComparisonCondition(Operator.IS_NULL, expr);
   }
@@ -500,7 +540,7 @@ public final class SqlUtils {
   public static IsCondition joinUsing(String src1, String src2, String... flds) {
     Assert.minLength(ArrayUtils.length(flds), 1);
 
-    IsCondition cond = null;
+    IsCondition cond;
 
     if (flds.length > 1) {
       HasConditions cb = and();
@@ -675,6 +715,10 @@ public final class SqlUtils {
     return more(source, field, 0);
   }
 
+  public static IsCondition positive(String src, String fld1, String fld2) {
+    return and(positive(src, fld1), positive(src, fld2));
+  }
+
   public static IsQuery renameTable(String from, String to) {
     return new SqlCommand(SqlKeyword.RENAME_TABLE,
         ImmutableMap.of("nameFrom", (Object) name(from), "nameTo", name(to)));
@@ -802,7 +846,11 @@ public final class SqlUtils {
   }
 
   public static String uniqueName() {
-    return BeeUtils.randomString(5);
+    return BeeUtils.randomString(8);
+  }
+
+  public static String uniqueName(String prefix) {
+    return BeeUtils.trim(prefix) + uniqueName();
   }
 
   static <T> Collection<T> addCollection(Collection<T> destination, Collection<T> source) {

@@ -482,6 +482,11 @@ public final class EventUtils {
     }
   }
 
+  public static Element getRelatedEventTargetElement(NativeEvent ev) {
+    EventTarget target = (ev == null) ? null : ev.getRelatedEventTarget();
+    return (target == null) ? null : getTargetElement(target);
+  }
+
   public static Element getSourceElement(GwtEvent<?> ev) {
     Assert.notNull(ev);
     Object source = ev.getSource();
@@ -533,6 +538,16 @@ public final class EventUtils {
       return ((Event) ev).getTypeInt();
     }
     return Event.getTypeInt(ev.getType());
+  }
+
+  public static boolean hasClassName(NativeEvent ev, String className) {
+    if (ev != null && !BeeUtils.isEmpty(className)) {
+      Element element = getEventTargetElement(ev);
+      if (element != null) {
+        return element.hasClassName(className);
+      }
+    }
+    return false;
   }
 
   public static boolean hasModifierKey(HasNativeEvent ev) {

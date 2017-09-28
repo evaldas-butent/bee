@@ -2,11 +2,7 @@ package com.butent.bee.client;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
@@ -14,12 +10,12 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ReadyEvent;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.ModuleManager;
 import com.butent.bee.client.output.Printable;
@@ -28,7 +24,6 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.HeaderImpl;
@@ -43,7 +38,6 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
@@ -227,9 +221,8 @@ public class Search {
     @Override
     public void onCellUpdate(CellUpdateEvent event) {
       ResultWidget widget = findWidget(this, event.getViewName(), event.getRowId());
-      if (widget != null) {
-        event.applyTo(widget.getRow());
 
+      if (widget != null && event.applyTo(widget.getRow())) {
         DataInfo dataInfo = Data.getDataInfo(event.getViewName());
         if (dataInfo != null) {
           widget.render(query, dataInfo);
@@ -329,7 +322,7 @@ public class Search {
       super.onUnload();
     }
 
-    private ResultWidget findWidget(HasWidgets container, String viewName, long rowId) {
+    private static ResultWidget findWidget(HasWidgets container, String viewName, long rowId) {
       for (Widget child : container) {
         if (child instanceof ResultWidget) {
           ResultWidget widget = (ResultWidget) child;
@@ -394,7 +387,7 @@ public class Search {
     @Override
     public void onBrowserEvent(Event event) {
       if (EventUtils.isClick(event)) {
-        RowEditor.open(getViewName(), getRow(), Opener.NEW_TAB);
+        RowEditor.open(getViewName(), getRow());
       }
       super.onBrowserEvent(event);
     }
@@ -450,7 +443,8 @@ public class Search {
       BeeKeeper.getBus().fireEvent(event);
 
       if (BeeUtils.isEmpty(event.getResult())) {
-        return DataUtils.join(dataInfo, getRow(), BeeConst.STRING_SPACE);
+        return DataUtils.join(dataInfo, getRow(), BeeConst.STRING_SPACE,
+            Format.getDateRenderer(), Format.getDateTimeRenderer());
       } else {
         return event.getResult();
       }
@@ -479,36 +473,33 @@ public class Search {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.SEARCH);
     params.addPositionalData(value);
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        String[] arr = Codec.beeDeserializeCollection((String) response.getResponse());
-        final List<SearchResult> results = new ArrayList<>();
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      String[] arr = Codec.beeDeserializeCollection((String) response.getResponse());
+      final List<SearchResult> results = new ArrayList<>();
 
-        if (arr != null) {
-          for (String s : arr) {
-            SearchResult result = SearchResult.restore(s);
-            if (result != null) {
-              results.add(result);
-            }
+      if (arr != null) {
+        for (String s : arr) {
+          SearchResult result = SearchResult.restore(s);
+          if (result != null) {
+            results.add(result);
           }
         }
+      }
 
-        if (results.isEmpty() && callback == null) {
-          BeeKeeper.getScreen().notifyWarning(value, Localized.dictionary().nothingFound());
+      if (results.isEmpty() && callback == null) {
+        BeeKeeper.getScreen().notifyWarning(value, Localized.dictionary().nothingFound());
 
-        } else {
-          if (inputWidget != null) {
-            AutocompleteProvider.retainValue(inputWidget);
-          }
-
-          ModuleManager.maybeInitialize(new Command() {
-            @Override
-            public void execute() {
-              processResults(value, results, callback);
-            }
-          });
+      } else {
+        if (inputWidget != null) {
+          AutocompleteProvider.retainValue(inputWidget);
         }
+
+        ModuleManager.maybeInitialize(new Command() {
+          @Override
+          public void execute() {
+            processResults(value, results, callback);
+          }
+        });
       }
     });
   }
@@ -517,7 +508,7 @@ public class Search {
       ViewCallback callback) {
 
     if (results.size() == 1 && callback == null) {
-      RowEditor.open(results.get(0).getViewName(), results.get(0).getRow(), Opener.modeless());
+      RowEditor.open(results.get(0).getViewName(), results.get(0).getRow());
     } else {
       showResults(query, results, callback);
     }
@@ -566,13 +557,10 @@ public class Search {
     getInput().addStyleName(STYLE_INPUT);
     getInput().setTitle(Localized.dictionary().searchTips());
 
-    getInput().addKeyDownHandler(new KeyDownHandler() {
-      @Override
-      public void onKeyDown(KeyDownEvent event) {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-          event.preventDefault();
-          submit();
-        }
+    getInput().addKeyDownHandler(event -> {
+      if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+        event.preventDefault();
+        submit();
       }
     });
 
@@ -581,12 +569,7 @@ public class Search {
     FaLabel submit = new FaLabel(FontAwesome.SEARCH);
     submit.addStyleName(STYLE_SUBMIT);
 
-    submit.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        submit();
-      }
-    });
+    submit.addClickHandler(event -> submit());
 
     getSearchPanel().add(submit);
   }

@@ -5,6 +5,7 @@
       caption="=units" newRowCaption="=newUnit"
       newRowForm="Unit"
 >
+  <Relation renderColumns="Name" operator="STARTS" />
   <Columns>
     <SimpleColumn name="Name" />
     <SimpleColumn name="Caption" />

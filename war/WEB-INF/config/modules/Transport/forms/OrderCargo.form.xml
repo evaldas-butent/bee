@@ -24,10 +24,8 @@
           <Label text="=trTransportationPrice" />
         </cell>
         <cell style="padding-right: 10px;">
-          <DecimalLabel name="Amount" style="font-weight: bold; color: green;" />
+          <MoneyLabel property="TransportationIncome" style="font-weight:bold; color:green;" />
         </cell>
-        <DataSelector name="Currency" source="Currency" editEnabled="false"
-                      placeholder="=currencyShort" style="width: 5em; font-weight: bold;" />
       </row>
       <row>
         <cell kind="label">
@@ -42,12 +40,12 @@
           <Label text="=trLoadedKilometersTotal" />
         </cell>
         <cell style="padding-right: 10px;">
-          <IntegerLabel name="TotalLoaded" style="font-weight: bold;" />
+          <IntegerLabel property="LoadedKilometers" style="font-weight:bold;" />
         </cell>
         <cell style="padding-right: 10px; text-align: right;">
           <Label text="=trEmptyKilometersTotal" />
         </cell>
-        <IntegerLabel name="TotalEmpty" style="font-weight: bold;" />
+        <IntegerLabel property="EmptyKilometers" style="font-weight:bold;" />
       </row>
     </Table>
 
@@ -137,7 +135,7 @@
               </FlowPanel>
               <Label for="Value" />
               <FlowPanel>
-                <InputMoney source="Value" style="&decimal;" />
+                <InputMoney source="Value" style="&decimal;" currencySource="ValueCurrency"/>
                 <DataSelector source="ValueCurrency" editEnabled="false" style="&unit;" />
               </FlowPanel>
               <text />
@@ -153,8 +151,11 @@
         </FlowPanel>
       </page>
       <page>
-        <text>=trOrderCargoServices</text>
-        <ChildGrid name="CargoIncomes" relColumn="Cargo" />
+        <FlowPanel>
+          <Label text="=trOrderCargoServices" style="display:inline;" />
+          <MoneyLabel property="Income" style="display:inline; margin-left:5px;" />
+        </FlowPanel>
+        <ChildGrid name="CargoIncomes" relColumn="Cargo" summarize="false" />
       </page>
       <page>
         <text>=trips</text>

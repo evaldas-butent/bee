@@ -59,7 +59,7 @@ public abstract class AbstractRow implements IsRow {
           && version == other.getVersion()
           && editable == other.isEditable()
           && removable == other.isRemovable()
-          && BeeUtils.sameEntries(properties, other.getProperties())
+          && sameProperties(other)
           && BeeUtils.sameEntries(shadow, other.getShadow())
           && sameValues(other);
     }
@@ -335,14 +335,6 @@ public abstract class AbstractRow implements IsRow {
     }
     return sb.toString();
   }
-
-  protected void copyProperties(IsRow target) {
-    if (getProperties() != null) {
-      target.setProperties(getProperties().copy());
-    }
-  }
-
-  protected abstract boolean sameValues(IsRow other);
 
   protected void setShadow(Map<Integer, String> shadow) {
     this.shadow = shadow;

@@ -13,12 +13,12 @@ import java.util.List;
 public final class FilterSupplierFactory {
 
   public static AbstractFilterSupplier getSupplier(String viewName, List<BeeColumn> dataColumns,
-      String idColumnName, String versionColumnName, int sourceIndex, String label,
+      String idColumnName, String versionColumnName, String columnId, String label,
       List<String> searchBy, ValueType valueType, FilterSupplierType supplierType,
       List<String> renderColumns, List<String> orderColumns,
       String enumKey, Relation relation, String options) {
 
-    BeeColumn sourceColumn = BeeUtils.getQuietly(dataColumns, sourceIndex);
+    BeeColumn sourceColumn = DataUtils.getColumn(columnId, dataColumns);
 
     List<BeeColumn> searchColumns = new ArrayList<>();
     if (!BeeUtils.isEmpty(searchBy)) {
@@ -45,9 +45,8 @@ public final class FilterSupplierFactory {
     if (supplierType != null) {
       switch (supplierType) {
         case VALUE:
-          supplier =
-              new ValueFilterSupplier(viewName, dataColumns, idColumnName, versionColumnName,
-                  filterColumn, label, searchColumns, options);
+          supplier = new ValueFilterSupplier(viewName, dataColumns, idColumnName, versionColumnName,
+              filterColumn, label, searchColumns, options);
           break;
 
         case RANGE:
@@ -69,9 +68,18 @@ public final class FilterSupplierFactory {
           break;
 
         case VERSION:
-          supplier =
-              new VersionFilterSupplier(viewName, BeeColumn.forRowVersion(versionColumnName),
-                  label, options);
+          supplier = new VersionFilterSupplier(viewName, BeeColumn.forRowVersion(versionColumnName),
+              label, options);
+          break;
+
+        case CUSTOM:
+          supplier = new CustomFilterSupplier(viewName, dataColumns, idColumnName,
+              versionColumnName, columnId, valueType, label, searchColumns, options);
+          break;
+
+        case CUSTOM_DATE_TIME:
+          supplier = new CustomDateTimeFilterSupplier(viewName, filterColumn, columnId, valueType,
+              label, options);
           break;
       }
     }

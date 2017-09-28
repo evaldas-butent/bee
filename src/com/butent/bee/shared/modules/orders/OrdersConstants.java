@@ -1,5 +1,6 @@
 package com.butent.bee.shared.modules.orders;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -112,6 +113,8 @@ public final class OrdersConstants {
   public static final String COL_SALE_ITEM = "SaleItem";
   public static final String COL_DISCOUNT = "Discount";
   public static final String COL_ORDER_SALE = "OrderSale";
+  public static final String COL_ORDER_TRADE_OPERATION = "TradeOperation";
+  public static final String COL_TRADE_OPERATION_NAME = "OperationName";
 
   public static final String PRP_FREE_REMAINDER = "FreeRemainder";
   public static final String PRP_COMPLETED_INVOICES = "CompletedInvoices";
@@ -130,6 +133,9 @@ public final class OrdersConstants {
   public static final String PRM_CHECK_DEBT = "CheckDebt";
   public static final String PRM_NOTIFY_ABOUT_DEBTS = "NotifyAboutDebts";
   public static final String PRP_EMPTY_REMAINDER = "EmptyRemainder";
+
+  public static final String STYLE_ITEM_PRICE_PICKER_DISABLED = BeeConst.CSS_CLASS_PREFIX
+      + "ItemPricePicker-disabled";
 
   private OrdersConstants() {
   }

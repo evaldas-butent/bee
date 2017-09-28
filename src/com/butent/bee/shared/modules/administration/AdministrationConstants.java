@@ -119,7 +119,6 @@ public final class AdministrationConstants {
 
   public static final String PARAMETERS_PREFIX = "parameters_";
 
-  public static final String SVC_GET_PARAMETER = PARAMETERS_PREFIX + "parameter";
   public static final String SVC_GET_RELATION_PARAMETER = PARAMETERS_PREFIX + "relation_parameter";
   public static final String SVC_SET_PARAMETER = PARAMETERS_PREFIX + "set";
 
@@ -163,6 +162,9 @@ public final class AdministrationConstants {
   public static final String SVC_BLOCK_HOST = "block_host";
   public static final String SVC_CREATE_USER = "create_user";
   public static final String SVC_COPY_RIGHTS = "copy_rights";
+  public static final String SVC_CREATE_DATA_IMPORT_TEMPLATES = "create_data_import_templates";
+
+  public static final String SVC_DO_SUBSTITUTION = "do_substitution";
 
   public static final String VAR_IMPORT_TEST = "Test";
   public static final String VAR_IMPORT_FILE = "File";
@@ -217,6 +219,15 @@ public final class AdministrationConstants {
   public static final String TBL_IMPORT_PROPERTIES = "ImportProperties";
   public static final String TBL_IMPORT_MAPPINGS = "ImportMappings";
   public static final String TBL_IMPORT_CONDITIONS = "ImportConditions";
+
+  public static final String TBL_STAGES = "Stages";
+  public static final String TBL_STAGE_CONDITIONS = "StageConditions";
+  public static final String TBL_STAGE_ACTIONS = "StageActions";
+  public static final String TBL_STAGE_TRIGGERS = "StageTriggers";
+
+  public static final String TBL_SUBSTITUTIONS = "Substitutions";
+  public static final String TBL_SUBSTITUTION_OBJECTS = "SubstitutionObjects";
+  public static final String TBL_SUBSTITUTION_REASONS = "SubstitutionReasons";
 
   public static final String TBL_CUSTOM_CONFIG = "CustomConfig";
 
@@ -283,6 +294,8 @@ public final class AdministrationConstants {
   public static final String COL_PASSWORD = "Password";
   public static final String COL_USER_LOCALE = "Locale";
   public static final String COL_USER_INTERFACE = "Interface";
+  public static final String COL_USER_DATE_FORMAT = "DateFormat";
+  public static final String COL_USER_EULA_AGREEMENT = "EulaAgreement";
   public static final String COL_USER_BLOCK_FROM = "BlockAfter";
   public static final String COL_USER_BLOCK_UNTIL = "BlockBefore";
   public static final String COL_REMOTE_HOST = "Host";
@@ -298,6 +311,7 @@ public final class AdministrationConstants {
   public static final String COL_OBJECT = "Object";
   public static final String COL_OBJECT_NAME = "Name";
   public static final String COL_STATE = "State";
+  public static final String COL_OBJECT_ID = "ObjectID";
 
   public static final String COL_FILE = "File";
   public static final String COL_FILE_NAME = "Name";
@@ -377,9 +391,22 @@ public final class AdministrationConstants {
 
   public static final String COL_CLICK_SENSITIVITY_MILLIS = "ClickSensitivityMillis";
   public static final String COL_CLICK_SENSITIVITY_DISTANCE = "ClickSensitivityDistance";
+  public static final String COL_ACTION_SENSITIVITY_MILLIS = "ActionSensitivityMillis";
 
   public static final String COL_NEWS_REFRESH_INTERVAL_SECONDS = "NewsRefreshIntervalSeconds";
   public static final String COL_LOADING_STATE_DELAY_MILLIS = "LoadingStateDelayMillis";
+
+  public static final String COL_SHOW_GRID_FILTER_COMMAND = "showGridFilterCommand";
+
+  public static final String COL_GRID_EDIT_WINDOW = "GridEditWindow";
+  public static final String COL_GRID_NEW_ROW_WINDOW = "GridNewRowWindow";
+  public static final String COL_CHILD_EDIT_WINDOW = "ChildEditWindow";
+  public static final String COL_CHILD_NEW_ROW_WINDOW = "ChildNewRowWindow";
+  public static final String COL_RELATION_EDIT_WINDOW = "RelationEditWindow";
+  public static final String COL_RELATION_NEW_ROW_WINDOW = "RelationNewRowWindow";
+  public static final String COL_OTHER_EDIT_WINDOWS = "OtherEditWindows";
+  public static final String COL_OTHER_NEW_ROW_WINDOWS = "OtherNewRowWindows";
+  public static final String COL_NEW_MAIL_MESSAGE_WINDOW = "NewMailMessageWindow";
 
   public static final String COL_UI_THEME = "UiTheme";
   public static final String COL_USER_STYLE = "Style";
@@ -392,6 +419,18 @@ public final class AdministrationConstants {
   public static final String COL_IMPORT_VALUE = "Value";
   public static final String COL_IMPORT_RELATION_OPTION = "RelationOption";
   public static final String COL_IMPORT_MAPPING = "Mapping";
+
+  public static final String COL_STAGE = "Stage";
+  public static final String COL_STAGE_VIEW = "ViewName";
+  public static final String COL_STAGE_NAME = "StageName";
+  public static final String COL_STAGE_CONFIRM = "StageConfirm";
+
+  public static final String COL_STAGE_FIELD = "Field";
+  public static final String COL_STAGE_OPERATOR = "Operator";
+  public static final String COL_STAGE_VALUE = "Value";
+  public static final String COL_STAGE_FROM = "StageFrom";
+  public static final String COL_STAGE_ACTION = "Action";
+  public static final String COL_STAGE_TRIGGER = "Trigger";
 
   public static final String COL_CONFIG_MODULE = "ObjectModule";
   public static final String COL_CONFIG_TYPE = "ObjectType";
@@ -407,6 +446,13 @@ public final class AdministrationConstants {
   public static final String COL_EVENT_STARTED = "Started";
   public static final String COL_EVENT_ENDED = "Ended";
   public static final String COL_EVENT_RESULT = "Result";
+
+  public static final String COL_SUBSTITUTE = "Substitute";
+  public static final String COL_SUBSTITUTE_FROM = "SubstituteFrom";
+  public static final String COL_SUBSTITUTION = "Substitution";
+  public static final String COL_SUBSTITUTION_REASON = "SubstitutionReason";
+  public static final String COL_SUBSTITUTION_REASON_NAME = "SubstitutionReasonName";
+  public static final String COL_SUBSTITUTION_EXECUTED = "Executed";
 
   public static final String COL_DICTIONARY_KEY = "Key";
 
@@ -445,6 +491,11 @@ public final class AdministrationConstants {
   public static final String FORM_IMPORT_MAPPINGS = "ImportOptionMappings";
   public static final String FORM_IMPORT_OPTION = "ImportOption";
 
+  public static final String FORM_DEPENDENCY_RIGHTS = "DependencyRights";
+  public static final String FORM_STAGES = "StageEditor";
+
+  public static final String FORM_SUBSTITUTION = "Substitution";
+
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
 
   public static final String PRM_SERVER_PROPERTIES = "ServerProperties";
@@ -457,6 +508,8 @@ public final class AdministrationConstants {
   public static final String PRM_ERP_ADDRESS = "ERPAddress";
   public static final String PRM_ERP_LOGIN = "ERPLogin";
   public static final String PRM_ERP_PASSWORD = "ERPPassword";
+
+  public static final String PRM_RECORD_DEPENDENCY = "RecordDependency";
 
   public static final String PRM_WS_LB_EXCHANGE_RATES_ADDRESS = "WSLBExchangeRates";
 

@@ -7,31 +7,65 @@
 >
   <Table kind="controls">
     <col index="0" kind="label" />
+    <col index="2" kind="label" />
     <row>
-      <Label for="Group" />
-      <DataSelector source="Group" renderColumns="TypeName GroupName" />
+      <Label for="Type" />
+      <DataSelector source="Type" />
 
-      <Label for="Description" />
-      <cell rowSpan="4">
-        <InputArea source="Description" style="height:100%; width:300px;" />
-      </cell>
+      <Label for="Group" />
+      <DataSelector source="Group" renderColumns="GroupName2 GroupName" />
     </row>
     <row>
       <Label for="OptionName" />
       <InputText source="OptionName" />
+
+      <Label for="Description" />
+      <cell rowSpan="3">
+        <InputArea source="Description" visibleLines="7" style="width:300px;" />
+      </cell>
     </row>
     <row>
       <Label for="Code" />
       <InputText source="Code" />
     </row>
     <row>
+      <Label for="Code2" />
+      <InputText source="Code2" />
+    </row>
+    <row>
       <Label for="Item" />
       <DataSelector source="Item" newRowEnabled="false" />
+      <text />
+      <CheckBox source="Blocked" />
     </row>
     <row>
       <Label for="PhotoFile" />
-      <cell colSpan="3">
+      <cell rowSpan="2" colSpan="3">
         <Image name="PhotoFile" />
+      </cell>
+    </row>
+    <row>
+      <FlowPanel>
+        <Label for="PhotoCode" />
+        <ListBox source="PhotoCode">
+          <item>LOGO</item>
+          <item>MAIN</item>
+        </ListBox>
+      </FlowPanel>
+    </row>
+    <row>
+      <Label for="OptionName2" />
+      <cell colSpan="3">
+        <InputText source="OptionName2" style="width:100%;" />
+      </cell>
+    </row>
+    <row data="ConfPacketOptions" listName="ConfPacketOptions">
+      <Label text="=packet" listName="ConfPacketOptions" />
+      <cell colSpan="3">
+        <ChildSelector childTable="ConfPacketOptions" targetRelColumn="Packet"
+                       viewName="ConfOptions" sourceRelColumn="Option" newRowEnabled="false"
+                       style="width:100%;" choiceColumns="Code Code2 OptionName GroupName TypeName"
+                       renderColumns="Code Code2 OptionName" label="=packet" />
       </cell>
     </row>
   </Table>

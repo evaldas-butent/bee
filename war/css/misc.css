@@ -245,6 +245,9 @@
 .bee-rep-drill-off:before {
   color: silver;
 }
+.bee-rep-drill-on:before {
+  color: red;
+}
 .bee-rep-sort, .bee-rep-sort-asc, .bee-rep-sort-desc {
   cursor: pointer;
   font-family: FontAwesome;
@@ -256,11 +259,11 @@
 }
 .bee-rep-sort-asc:before {
   content: "\f0de";
-  color: black;
+  color: red;
 }
 .bee-rep-sort-desc:before {
   content: "\f0dd";
-  color: black;
+  color: red;
 }
 .bee-rep-cgroup {
   text-align: center;
@@ -388,6 +391,10 @@
 .bee-rep-report {
   border-collapse: collapse;
 }
+.bee-rep-report-param {
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
 .bee-rep-report .bee-rep-report-normal:hover {
   color: dodgerblue;
   cursor: pointer;
@@ -399,6 +406,8 @@
 .bee-rep-report-global td:first-child div:before {
   font-family: FontAwesome;
   content: "\f0ac";
+  margin-right: 5px;
+  color: blue;
 }
 
 .bee-EventsBoard-content {
@@ -510,6 +519,13 @@
   font-weight: bold;
   background-color: lightyellow;
 }
+.bee-conf-packet {
+  color: silver;
+}
+.bee-conf-packet-collapsed {
+  color: blue;
+  cursor: pointer;
+}
 .bee-conf-row-hdr {
   font-weight: bold;
 }
@@ -598,13 +614,18 @@
   flex: 1;
 }
 .bee-spec-container {
-  height: 100%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: flex;
   flex-direction: column;
 }
 .bee-spec-options {
   flex: 1;
   overflow: auto;
+  margin-top: 10px;
 }
 .bee-spec-box {
   overflow: auto;
@@ -612,26 +633,33 @@
   flex-direction: row;
   flex-wrap: wrap;
   align-items: flex-start;
+  max-width: 80vw;
+  max-height: 200px;
+}
+.bee-spec-summary {
+  max-width: 40%;
 }
 .bee-spec-summary tr td:nth-child(2) {
   font-weight: bold;
   text-align: right;
 }
 .bee-Popup .bee-spec-box {
-  max-width: 620px;
-  max-height: 500px;
   padding: 0 5px;
 }
 .bee-spec-thumbnail {
   width: 150px;
   height: 150px;
   margin: 10px;
+  padding: 10px;
+  box-sizing: border-box;
   background-color: white;
   border: 1px solid silver;
+  border-radius: 5px;
   display: flex;
   justify-content: space-around;
   flex-direction: column;
   text-align: center;
+  overflow: hidden;
 }
 .bee-spec-thumbnail-active:hover {
   cursor: pointer;
@@ -647,12 +675,13 @@
 }
 .bee-spec-description {
   background-color: lightgoldenrodyellow;
+  flex: 1;
 }
 .bee-spec-selectable {
   border-collapse: collapse;
   margin-top: 10px;
 }
-.bee-spec-selectable tr td:nth-child(2) {
+.bee-spec-selectable tr td:nth-child(2), .bee-spec-selectable tr td:nth-child(4) {
   text-align: right;
 }
 .bee-spec-selectable td {
@@ -673,6 +702,23 @@
 }
 .bee-row-Mode-upd {
   background-color: #ffb300;
+}
+
+.bee-stage {
+  display: inline-block;
+  padding: 5px;
+  text-align: center;
+  background-color: white;
+  color: #1eb2d8;
+  font-weight: bolder;
+  border: 1px solid #1eb2d8;
+  cursor: pointer;
+}
+
+.bee-stage-active {
+  background-color: #1eb2d8;
+  color: white;
+  cursor: default;
 }
 
 .bee-reminder-dialog-panel{
@@ -699,6 +745,10 @@
   color: white;
 }
 
+.bee-reminder-dialog-radioTask {
+  margin-left: 20px;
+}
+
 .bee-reminder-dialog-remindButton {
    background-color: #1eb2d8;
    color: white;
@@ -718,4 +768,16 @@
 
 .bee-reminder-dialog-not-visible {
   display: none;
+}
+
+.bee-Rights-object-selector {
+  width: 100%;
+}
+
+.bee-Rights-object-selector:hover {
+  cursor: pointer;
+  font-weight: bolder;
+}
+
+.bee-Rights-object-selector-cell{
 }

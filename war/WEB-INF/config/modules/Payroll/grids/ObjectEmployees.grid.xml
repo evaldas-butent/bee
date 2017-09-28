@@ -7,12 +7,12 @@
 
   <g:columns>
     <RelColumn name="Employee" renderColumns="FirstName LastName" sortBy="LastName FirstName" 
-      choiceColumns="FirstName LastName CompanyName" flexGrow="1" visible="true" />
+      choiceColumns="FirstName LastName CompanyName" flexGrow="1" visible="true" filter="!(DateOfDismissal) OR DateOfDismissal &gt; {t}" caching="local"/>
     <DataColumn name="EmployeeCompanyName" label="=company" flexGrow="1" />
 
     <RelColumn name="SubstituteFor" renderColumns="ForFirstName ForLastName"
       choiceColumns="FirstName LastName CompanyName" sortBy="ForLastName ForFirstName"
-      flexGrow="1" visible="true" />
+      flexGrow="1" visible="true" filter="!(DateOfDismissal) OR DateOfDismissal &gt; {t}" caching="local"/>
 
     <DataColumn name="DateFrom" />
     <DataColumn name="DateUntil" />

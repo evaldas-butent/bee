@@ -62,6 +62,11 @@ public class TableRow extends AbstractRow {
   }
 
   @Override
+  public boolean sameValues(IsRow other) {
+    return other != null && cells.equals(other.getCells());
+  }
+
+  @Override
   public void setCell(int index, IsCell cell) {
     assertIndex(index);
     cells.set(index, cell);
@@ -74,10 +79,5 @@ public class TableRow extends AbstractRow {
 
   protected void assertIndex(int index) {
     Assert.isIndex(cells, index);
-  }
-
-  @Override
-  protected boolean sameValues(IsRow other) {
-    return cells.equals(other.getCells());
   }
 }

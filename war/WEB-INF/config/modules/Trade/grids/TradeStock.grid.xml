@@ -16,15 +16,17 @@
     <DataColumn name="TradeDocumentItem" visible="false" />
     <DataColumn name="TradeDocument" caption="=trdDocumentShort"
                 editSource="TradeDocument" editViewName="TradeDocuments" visible="false" />
+
     <DataColumn name="Date" />
+    <DataColumn name="CustomerName" flexGrow="1" />
 
     <DataColumn name="ItemName" flexGrow="2" editSource="Item" editViewName="Items"
-                editPopup="true" visible="true" />
+                visible="true" />
     <DataColumn name="Article" flexGrow="1" />
 
-    <DataColumn name="WarehouseCode" label="=warehouse" editPopup="true" />
+    <DataColumn name="WarehouseCode" label="=warehouse" editEnabled="true" />
 
-    <DataColumn name="Quantity" scale="0" visible="true" />
+    <DataColumn name="Quantity" visible="true" />
     <DataColumn name="UnitName" label="=unitShort" />
 
     <DataColumn name="Cost" scale="2" />
@@ -35,5 +37,8 @@
         <ui:expression>row.Quantity * row.Cost</ui:expression>
       </render>
     </CalcColumn>
+
+    <DataColumn name="AccountCode" label="=account" horizontalAlignment="center"
+                backgroundSource="AccountBackground" foregroundSource="AccountForeground" />
   </g:columns>
 </g:Grid>

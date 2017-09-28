@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.HasDataTable;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.DndWidget;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.output.Printable;
@@ -24,6 +25,7 @@ import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasState;
 import com.butent.bee.shared.NotificationListener;
@@ -39,10 +41,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
-/**
- * Contains necessary methods for form implementing classes.
- */
 
 public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEvent.Handler,
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers,
@@ -64,22 +62,13 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void editRow(IsRow rowValue, Scheduler.ScheduledCommand focusCommand);
 
-  /**
-   * Focus the first widget on this form view. If there some widgets where handling keyboard events,
-   * the first widget usually is first element of DOM or having lower tab index.
-   * 
-   * 
-   */
   void focus();
 
-  /**
-   * Focus the widget on this form view.
-   * 
-   * @param source name of source where related focusable widget.
-   */
   boolean focus(String source);
 
   int flush();
+
+  GridView getBackingGrid();
 
   Boolean getBooleanValue(String source);
 
@@ -87,9 +76,11 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   Collection<RowChildren> getChildrenForUpdate();
 
-  default String getContainerStyleName() {
+  default String getContainerClassName() {
     return BeeConst.CSS_CLASS_PREFIX + "form-" + BeeUtils.trim(getFormName()) + "-container";
   }
+
+  String getContainerStyle();
 
   DateTime getDateTimeValue(String source);
 
@@ -114,6 +105,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   Map<String, Widget> getNamedWidgets();
 
   IsRow getOldRow();
+
+  String getOptions();
 
   IdentifiableWidget getRootWidget();
 
@@ -163,7 +156,11 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void refreshChildWidgets(IsRow row);
 
+  void saveChanges(RowCallback callback);
+
   void setAdding(boolean adding);
+
+  void setBackingGridId(String backingGridId);
 
   void setCaption(String caption);
 

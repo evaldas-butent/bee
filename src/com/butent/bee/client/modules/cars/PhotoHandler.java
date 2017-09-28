@@ -1,12 +1,8 @@
 package com.butent.bee.client.modules.cars;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_FILE_HASH;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_PHOTO;
 
-import static com.butent.bee.shared.modules.cars.CarsConstants.COL_PHOTO;
-
-import com.butent.bee.client.Global;
-import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
@@ -15,15 +11,12 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Objects;
 
-public class PhotoHandler extends AbstractFormInterceptor implements ClickHandler {
+public class PhotoHandler extends AbstractFormInterceptor {
 
   private Image image;
 
@@ -33,7 +26,7 @@ public class PhotoHandler extends AbstractFormInterceptor implements ClickHandle
 
     if (Objects.equals(name, COL_PHOTO) && widget instanceof Image) {
       image = (Image) widget;
-      image.addClickHandler(this);
+      image.addClickHandler(new PhotoPicker(PhotoHandler.this::onSetPhoto));
     }
     super.afterCreateWidget(name, widget, callback);
   }
@@ -45,9 +38,9 @@ public class PhotoHandler extends AbstractFormInterceptor implements ClickHandle
       Long fileId = DataUtils.getLong(form.getDataColumns(), row, COL_PHOTO);
 
       if (DataUtils.isId(fileId)) {
-        url = FileUtils.getUrl(fileId);
+        url = FileUtils.getUrl(DataUtils.getString(form.getDataColumns(), row, COL_FILE_HASH));
       } else {
-        url = "images/logo.png";
+        url = "images/copyright.png";
       }
       image.setUrl(url);
     }
@@ -59,32 +52,22 @@ public class PhotoHandler extends AbstractFormInterceptor implements ClickHandle
     return new PhotoHandler();
   }
 
-  @Override
-  public void onClick(ClickEvent clickEvent) {
-    InputFile inputFile = new InputFile(false);
-
-    DialogBox dialog = Global.inputWidget(Localized.dictionary().photo(), inputFile, () ->
-        onSetPhoto(BeeUtils.peek(FileUtils.getNewFileInfos(inputFile.getFiles()))));
-
-    inputFile.addChangeHandler(changeEvent -> {
-      dialog.close();
-      onSetPhoto(BeeUtils.peek(FileUtils.getNewFileInfos(inputFile.getFiles())));
-    });
-  }
-
   private void onSetPhoto(NewFileInfo fileInfo) {
     Long id = getActiveRowId();
-    int idx = getFormView().getDataIndex(COL_PHOTO);
+    int idx = getDataIndex(COL_PHOTO);
+    int hIdx = getDataIndex(COL_FILE_HASH);
 
     if (fileInfo != null) {
-      FileUtils.uploadFile(fileInfo, fileId -> {
+      FileUtils.uploadFile(fileInfo, info -> {
         if (Objects.equals(id, getActiveRowId())) {
-          getActiveRow().setValue(idx, fileId);
+          getActiveRow().setValue(idx, info.getId());
+          getActiveRow().setValue(hIdx, info.getHash());
           getFormView().refresh();
         }
       });
     } else {
       getActiveRow().clearCell(idx);
+      getActiveRow().clearCell(hIdx);
       getFormView().refresh();
     }
   }

@@ -12,16 +12,14 @@ import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.logical.SelectorEvent.Handler;
-import com.butent.bee.client.modules.mail.Relations;
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -40,7 +38,6 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -340,67 +337,55 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     ParameterList args = DiscussionsKeeper.createDiscussionRpcParameters(DiscussionEvent.CREATE);
     args.addDataItem(VAR_DISCUSSION_DATA, Codec.beeSerialize(rowSet));
 
-    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+    BeeKeeper.getRpc().makePostRequest(args, response -> {
+      Assert.notNull(response);
 
-      @Override
-      public void onResponse(ResponseObject response) {
-        Assert.notNull(response);
+      if (response.hasErrors()) {
+        event.getCallback().onFailure(response.getErrors());
+      } else if (response.hasResponse(BeeRow.class)) {
+        BeeRow createdDiscussion = BeeRow.restore(response.getResponseAsString());
 
-        if (response.hasErrors()) {
-          event.getCallback().onFailure(response.getErrors());
-        } else if (response.hasResponse(BeeRow.class)) {
-          BeeRow createdDiscussion = BeeRow.restore(response.getResponseAsString());
-
-          if (createdDiscussion == null) {
-            event.getCallback().onFailure(Localized.dictionary().discussNotCreated());
-            return;
-          }
-
-          createFiles(createdDiscussion.getId(), null);
-          final Collection<RowChildren> relData = new ArrayList<>();
-
-          if (relations != null) {
-            BeeUtils.overwrite(relData, relations.getRowChildren(true));
-          }
-
-          if (!BeeUtils.isEmpty(relData)) {
-            Queries.updateChildren(VIEW_DISCUSSIONS, createdDiscussion.getId(), relData,
-                new RowCallback() {
-              @Override
-              public void onSuccess(BeeRow result) {
-                event.getCallback().onSuccess(result);
-              }
-            });
-          } else {
-            event.getCallback().onSuccess(createdDiscussion);
-          }
-
-          String message;
-
-          if (BeeUtils.isEmpty(createdDiscussion.getString(form.getDataIndex(ALS_TOPIC_NAME)))) {
-            message = Localized.dictionary().discussCreatedNewDiscussion();
-          } else {
-            message = Localized.dictionary().discussCreatedNewAnnouncement();
-          }
-
-          BeeKeeper.getScreen().notifyInfo(message);
-
-          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_DISCUSSIONS);
-
-          ParameterList mailArgs =
-              DiscussionsKeeper.createDiscussionRpcParameters(DiscussionEvent.CREATE_MAIL);
-          mailArgs.addDataItem(VAR_DISCUSSION_DATA, Codec.beeSerialize(rowSet));
-          mailArgs.addDataItem(VAR_DISCUSSION_ID, createdDiscussion.getId());
-          BeeKeeper.getRpc().makePostRequest(mailArgs, new ResponseCallback() {
-            @Override
-            public void onResponse(ResponseObject emptyResp) {
-
-            }
-          });
-
-        } else {
-          event.getCallback().onFailure("Unknown response");
+        if (createdDiscussion == null) {
+          event.getCallback().onFailure(Localized.dictionary().discussNotCreated());
+          return;
         }
+
+        createFiles(createdDiscussion.getId(), null);
+        final Collection<RowChildren> relData = new ArrayList<>();
+
+        if (relations != null) {
+          BeeUtils.overwrite(relData, relations.getRowChildren(true));
+        }
+
+        if (!BeeUtils.isEmpty(relData)) {
+          Queries.updateChildren(VIEW_DISCUSSIONS, createdDiscussion.getId(), relData,
+              result -> event.getCallback().onSuccess(result));
+        } else {
+          event.getCallback().onSuccess(createdDiscussion);
+        }
+
+        String message;
+
+        if (BeeUtils.isEmpty(createdDiscussion.getString(form.getDataIndex(ALS_TOPIC_NAME)))) {
+          message = Localized.dictionary().discussCreatedNewDiscussion();
+        } else {
+          message = Localized.dictionary().discussCreatedNewAnnouncement();
+        }
+
+        BeeKeeper.getScreen().notifyInfo(message);
+
+        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_DISCUSSIONS);
+
+        ParameterList mailArgs =
+            DiscussionsKeeper.createDiscussionRpcParameters(DiscussionEvent.CREATE_MAIL);
+        mailArgs.addDataItem(VAR_DISCUSSION_DATA, Codec.beeSerialize(rowSet));
+        mailArgs.addDataItem(VAR_DISCUSSION_ID, createdDiscussion.getId());
+        BeeKeeper.getRpc().makePostRequest(mailArgs, emptyResp -> {
+
+        });
+
+      } else {
+        event.getCallback().onFailure("Unknown response");
       }
     });
   }
@@ -426,13 +411,8 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
       return;
     }
 
-    Queries.updateRow(rowSet, new RowCallback() {
-
-      @Override
-      public void onSuccess(BeeRow result) {
-        createFiles(result.getId(), fileCount -> event.getCallback().onSuccess(result));
-      }
-    });
+    Queries.updateRow(rowSet,
+        result -> createFiles(result.getId(), fileCount -> event.getCallback().onSuccess(result)));
   }
 
   @Override
@@ -455,13 +435,15 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
       oldFiles.put(row.getId(), oldFileList);
     }
 
-
+    if (focusCommand != null) {
+      focusCommand.execute();
+    }
 
     return false;
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow row) {
     if (summaryEditor != null) {
       summaryEditor.clearValue();
       summaryEditor.setValue(BeeConst.STRING_EMPTY);
@@ -520,17 +502,12 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     for (FileInfo file : uploadList) {
 
       FileUtils.uploadFile(file, result -> {
-
         List<String> values =
-            Lists.newArrayList(BeeUtils.toString(discussionId), BeeUtils.toString(result),
+            Lists.newArrayList(BeeUtils.toString(discussionId), BeeUtils.toString(result.getId()),
                 file.getCaption());
-        Queries.insert(VIEW_DISCUSSIONS_FILES, columns, values, null, new RowCallback() {
-
-          @Override
-          public void onSuccess(BeeRow discussFile) {
-            consumer.accept(FileStoreMode.NEW);
-            RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS_FILES, discussFile);
-          }
+        Queries.insert(VIEW_DISCUSSIONS_FILES, columns, values, null, discussFile -> {
+          consumer.accept(FileStoreMode.NEW);
+          RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS_FILES, discussFile);
         });
 
       });
@@ -540,27 +517,15 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
       Queries.update(VIEW_DISCUSSIONS_FILES, Filter.and(Filter.equals(COL_DISCUSSION,
           discussionId), Filter.equals(AdministrationConstants.COL_FILE, file.getId())),
-          COL_CAPTION, file.getCaption(), new IntCallback() {
-
-            @Override
-            public void onSuccess(Integer result) {
-              consumer.accept(FileStoreMode.RENAME);
-            }
-          });
+          COL_CAPTION, file.getCaption(), result -> consumer.accept(FileStoreMode.RENAME));
     }
 
     for (FileInfo file : deleteList) {
 
       Queries.delete(VIEW_DISCUSSIONS_FILES, Filter.and(
           Filter.equals(COL_DISCUSSION, discussionId), Filter.equals(
-              AdministrationConstants.COL_FILE, file.getId())), new IntCallback() {
-
-        @Override
-        public void onSuccess(Integer result) {
-          consumer.accept(FileStoreMode.DELETE);
-
-        }
-      });
+              AdministrationConstants.COL_FILE, file.getId())),
+          result -> consumer.accept(FileStoreMode.DELETE));
     }
 
     fileCollector.clear();

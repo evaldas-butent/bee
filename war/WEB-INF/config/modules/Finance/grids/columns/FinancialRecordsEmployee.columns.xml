@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
-  <RelColumn name="Employee" renderColumns="EmployeeFirstName EmployeeLastName"
-             sortBy="EmployeeLastName EmployeeFirstName" />
-</g:columns>

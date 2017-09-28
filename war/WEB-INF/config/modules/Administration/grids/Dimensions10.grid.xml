@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="Dimensions10" viewName="Dimensions10"
+        flexGrow="1"
+>
+  <g:columns>
+    <DataColumn name="Ordinal" flexGrow="0" />
+    <DataColumn name="Dim10Name" minWidth="100" visible="true"
+                backgroundSource="Dim10Background" foregroundSource="Dim10Foreground" />
+
+    <RelColumn name="Dim01Rel" renderColumns="Dim01Name" choiceColumns="Dim01Name"
+               backgroundSource="Dim01Background" foregroundSource="Dim01Foreground"
+               newRowEnabled="false" />
+    <RelColumn name="Dim02Rel" renderColumns="Dim02Name" choiceColumns="Dim02Name"
+               backgroundSource="Dim02Background" foregroundSource="Dim02Foreground"
+               newRowEnabled="false" />
+    <RelColumn name="Dim03Rel" renderColumns="Dim03Name" choiceColumns="Dim03Name"
+               backgroundSource="Dim03Background" foregroundSource="Dim03Foreground"
+               newRowEnabled="false" />
+    <RelColumn name="Dim04Rel" renderColumns="Dim04Name" choiceColumns="Dim04Name"
+               backgroundSource="Dim04Background" foregroundSource="Dim04Foreground"
+               newRowEnabled="false" />
+    <RelColumn name="Dim05Rel" renderColumns="Dim05Name" choiceColumns="Dim05Name"
+               backgroundSource="Dim05Background" foregroundSource="Dim05Foreground"
+               newRowEnabled="false" />
+    <RelColumn name="Dim06Rel" renderColumns="Dim06Name" choiceColumns="Dim06Name"
+               backgroundSource="Dim06Background" foregroundSource="Dim06Foreground"
+               newRowEnabled="false" />
+    <RelColumn name="Dim07Rel" renderColumns="Dim07Name" choiceColumns="Dim07Name"
+               backgroundSource="Dim07Background" foregroundSource="Dim07Foreground"
+               newRowEnabled="false" />
+    <RelColumn name="Dim08Rel" renderColumns="Dim08Name" choiceColumns="Dim08Name"
+               backgroundSource="Dim08Background" foregroundSource="Dim08Foreground"
+               newRowEnabled="false" />
+    <RelColumn name="Dim09Rel" renderColumns="Dim09Name" choiceColumns="Dim09Name"
+               backgroundSource="Dim09Background" foregroundSource="Dim09Foreground"
+               newRowEnabled="false" />
+
+    <DataColumn name="Dim10Background" updateMode="row" minWidth="100" flexGrow="0"
+                backgroundSource="Dim10Background" foregroundSource="Dim10Foreground">
+      <editor type="color" />
+    </DataColumn>
+    <DataColumn name="Dim10Foreground" updateMode="row" minWidth="100" flexGrow="0"
+                backgroundSource="Dim10Background" foregroundSource="Dim10Foreground">
+      <editor type="color" />
+    </DataColumn>
+
+    <DataColumn name="Notes" visible="false" />
+  </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>row.Dim10Name</ui:expression>
+  </g:rowMessage>
+</g:Grid>

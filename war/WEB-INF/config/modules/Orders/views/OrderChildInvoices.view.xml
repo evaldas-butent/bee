@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view" xmlns:x="http://www.butent.com/expression"
       name="OrderChildInvoices" source="Sales" caption="=trInvoices"
-      editForm="OrderInvoice" newRowForm="NewOrderInvoice">
+      editForm="OrderInvoice" newRowForm="NewOrderInvoice" rowCaption="InvoiceNo">
 
   <Columns>
       <ExternalJoin name="OrderSale" joinType="LEFT" source="OrderChildInvoices">
@@ -10,6 +10,14 @@
         <SimpleJoin name="OrderItem" joinType="LEFT">
           <HiddenColumn name="Order" />
           <AggregateColumn name="Order" aggregate="COUNT_DISTINCT" alias="OrderCount" />
+
+          <HiddenColumn name="ServiceItem" />
+          <SimpleJoin name="ServiceItem" joinType="LEFT">
+            <HiddenColumn name="ServiceMaintenance" />
+            <HiddenColumn name="ServiceObject"/>
+            <AggregateColumn name="ServiceMaintenance" aggregate="COUNT_DISTINCT" alias="ServiceMaintenanceCount" />
+            <AggregateColumn name="ServiceObject" aggregate="COUNT_DISTINCT" alias="ServiceObjectCount" />
+          </SimpleJoin>
         </SimpleJoin>
       </ExternalJoin>
 
@@ -75,6 +83,7 @@
           <SimpleColumn name="Email" alias="CustomerEmail" />
         </SimpleJoin>
       </SimpleJoin>
+      <SimpleColumn name="CreditDays" />
     </SimpleJoin>
 
     <SimpleColumn name="Payer" />
@@ -107,6 +116,38 @@
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
+
+    <SimpleColumn name="BoLSeries" />
+    <SimpleJoin name="BoLSeries" joinType="LEFT">
+      <SimpleColumn name="SeriesName" alias="BoLSeriesName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="BoLDriverTabNo" />
+    <SimpleJoin name="BoLDriverTabNo" joinType="LEFT">
+      <SimpleColumn name="TabNumber" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="DriverFirstName" />
+          <SimpleColumn name="LastName" alias="DriverLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="BoLNumber" />
+    <SimpleColumn name="BoLIssueDate" />
+    <SimpleColumn name="BoLDepartureDate" />
+    <SimpleColumn name="BoLUnloadingDate" />
+    <SimpleColumn name="BoLLoading" />
+    <SimpleColumn name="BoLUnloading" />
+    <SimpleColumn name="BoLVehicleNumber" />
+    <SimpleColumn name="BoLDriver" />
+
+    <SimpleColumn name="BoLCarrier" />
+    <SimpleJoin joinType="LEFT" name="BoLCarrier">
+      <SimpleColumn name="Name" alias="BoLCarrierName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Kind" />
   </Columns>
   <Order>
     <OrderBy column="Date" descending="true" />

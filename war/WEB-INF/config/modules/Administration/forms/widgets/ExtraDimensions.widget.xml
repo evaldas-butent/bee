@@ -1,33 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE SimplePanel [
-  <!ENTITY inpw "width: 20em;">
-]>
-<SimplePanel xmlns="http://www.butent.com/widget" xmlns:ui="http://www.butent.com/ui">
+    <!ENTITY inpw "width: 15em;">
+    ]>
+<SimplePanel xmlns="http://www.butent.com/widget">
   <Table kind="controls">
     <col index="0" kind="label" />
+    <col index="2" kind="label" />
 
-    <row data="Departments">
-      <Label for="Department" />
-      <DataSelector source="Department" renderColumns="DepartmentName" choiceColumns="FullName"
-        searchableColumns="DepartmentName" visibleLines="7" selectorClass="bee-BranchSelector"
-        style="&inpw;" newRowEnabled="false" summarize="true">
-        <ui:rowRenderer type="branch" />
-      </DataSelector>
+    <row>
+      <Label for="Dim01Rel" />
+      <DataSelector source="Dim01Rel" renderColumns="Dim01Name" choiceColumns="Dim01Name"
+                    backgroundSource="Dim01Background" foregroundSource="Dim01Foreground"
+                    newRowEnabled="false" style="&inpw;" summarize="true" />
+
+      <Label for="Dim02Rel" />
+      <DataSelector source="Dim02Rel" renderColumns="Dim02Name" choiceColumns="Dim02Name"
+                    backgroundSource="Dim02Background" foregroundSource="Dim02Foreground"
+                    newRowEnabled="false" style="&inpw;" summarize="true" />
     </row>
 
-    <row data="ActivityTypes">
-      <Label for="ActivityType" />
-      <DataSelector source="ActivityType" style="&inpw;" summarize="true" />
+    <row>
+      <Label for="Dim03Rel" />
+      <DataSelector source="Dim03Rel" renderColumns="Dim03Name" choiceColumns="Dim03Name"
+                    backgroundSource="Dim03Background" foregroundSource="Dim03Foreground"
+                    newRowEnabled="false" style="&inpw;" summarize="true" />
+
+      <Label for="Dim04Rel" />
+      <DataSelector source="Dim04Rel" renderColumns="Dim04Name" choiceColumns="Dim04Name"
+                    backgroundSource="Dim04Background" foregroundSource="Dim04Foreground"
+                    newRowEnabled="false" style="&inpw;" summarize="true" />
     </row>
 
-    <row data="CostCenters">
-      <Label for="CostCenter" />
-      <DataSelector source="CostCenter" style="&inpw;" summarize="true" />
+    <row>
+      <Label for="Dim05Rel" />
+      <DataSelector source="Dim05Rel" renderColumns="Dim05Name" choiceColumns="Dim05Name"
+                    backgroundSource="Dim05Background" foregroundSource="Dim05Foreground"
+                    newRowEnabled="false" style="&inpw;" summarize="true" />
+
+      <Label for="Dim06Rel" />
+      <DataSelector source="Dim06Rel" renderColumns="Dim06Name" choiceColumns="Dim06Name"
+                    backgroundSource="Dim06Background" foregroundSource="Dim06Foreground"
+                    newRowEnabled="false" style="&inpw;" summarize="true" />
     </row>
 
-    <row data="Locations">
-      <Label for="Object" />
-      <DataSelector source="Object" style="&inpw;" summarize="true" />
+    <row>
+      <Label for="Dim07Rel" />
+      <DataSelector source="Dim07Rel" renderColumns="Dim07Name" choiceColumns="Dim07Name"
+                    backgroundSource="Dim07Background" foregroundSource="Dim07Foreground"
+                    newRowEnabled="false" style="&inpw;" summarize="true" />
+
+      <Label for="Dim08Rel" />
+      <DataSelector source="Dim08Rel" renderColumns="Dim08Name" choiceColumns="Dim08Name"
+                    backgroundSource="Dim08Background" foregroundSource="Dim08Foreground"
+                    newRowEnabled="false" style="&inpw;" summarize="true" />
+    </row>
+
+    <row>
+      <Label for="Dim09Rel" />
+      <DataSelector source="Dim09Rel" renderColumns="Dim09Name" choiceColumns="Dim09Name"
+                    backgroundSource="Dim09Background" foregroundSource="Dim09Foreground"
+                    newRowEnabled="false" style="&inpw;" summarize="true" />
+
+      <Label for="Dim10Rel" />
+      <DataSelector source="Dim10Rel" renderColumns="Dim10Name" choiceColumns="Dim10Name"
+                    backgroundSource="Dim10Background" foregroundSource="Dim10Foreground"
+                    newRowEnabled="false" style="&inpw;" summarize="true" />
     </row>
   </Table>
 </SimplePanel>

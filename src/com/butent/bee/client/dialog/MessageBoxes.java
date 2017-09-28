@@ -50,9 +50,12 @@ import java.util.List;
 public final class MessageBoxes {
 
   public static final String STYLE_MESSAGE_BOX = BeeConst.CSS_CLASS_PREFIX + "MessageBox";
+
   public static final String STYLE_MESSAGE_BOX_DECIDE = STYLE_MESSAGE_BOX + "-decide";
   public static final String STYLE_MESSAGE_BOX_CONFIRM = STYLE_MESSAGE_BOX + "-confirm";
   public static final String STYLE_MESSAGE_BOX_DELETE = STYLE_MESSAGE_BOX + "-delete";
+  public static final String STYLE_MESSAGE_BOX_INFO = STYLE_MESSAGE_BOX + "-info";
+  public static final String STYLE_MESSAGE_BOX_ERROR = STYLE_MESSAGE_BOX + "-error";
 
   private static final BeeLogger logger = LogUtils.getLogger(MessageBoxes.class);
 
@@ -538,35 +541,33 @@ public final class MessageBoxes {
     showWidget(caption, container, null, action, clickHandler);
   }
 
-  public static void showWidget(String caption, Widget widget, Element target, Action action,
+  public static Popup showWidget(String caption, Widget widget, Element target, Action action,
       ClickHandler clickHandler) {
     Assert.notNull(widget);
 
-
+    Popup popup;
     if (BeeUtils.isEmpty(caption)) {
-      Popup popup = new Popup(OutsideClick.CLOSE);
-
-      popup.setAnimationEnabled(true);
-      popup.setHideOnEscape(true);
-      popup.setWidget(widget);
-      popup.focusOnOpen(widget);
-      popup.showRelativeTo(target);
+      popup = new Popup(OutsideClick.CLOSE);
     } else {
-      DialogBox dialogBox = DialogBox.create(caption);
-
-      dialogBox.setAnimationEnabled(true);
-      dialogBox.setHideOnEscape(true);
-      dialogBox.setWidget(widget);
-      dialogBox.focusOnOpen(widget);
-      dialogBox.showRelativeTo(target);
-
-      if (action != null && clickHandler != null) {
-        FaLabel faLabel = new FaLabel(action.getIcon());
-        faLabel.setTitle(action.getCaption());
-        faLabel.addClickHandler(clickHandler);
-        dialogBox.insertAction(1, faLabel);
-      }
+      popup = DialogBox.create(caption);
     }
+
+    popup.setAnimationEnabled(true);
+    popup.setHideOnEscape(true);
+
+    popup.setWidget(widget);
+
+    popup.focusOnOpen(widget);
+    popup.showRelativeTo(target);
+
+    if (action != null && clickHandler != null) {
+      FaLabel faLabel = new FaLabel(action.getIcon());
+      faLabel.setTitle(action.getCaption());
+      faLabel.addClickHandler(clickHandler);
+      ((DialogBox) popup).insertAction(1, faLabel);
+      }
+
+    return popup;
   }
 
   private static void rotateFocus(Event<?> event, IndexedPanel panel, boolean forward) {

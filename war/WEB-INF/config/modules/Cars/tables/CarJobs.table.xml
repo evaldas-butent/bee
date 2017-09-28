@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="CarJobs"
+       idName="JobID"
+>
+  <Fields>
+    <Relation name="Item" relation="Items" notNull="true" unique="true" label="=trAccountingItem" />
+
+    <String name="Duration" precision="10" label="=expectedDuration" />
+
+    <Numeric name="Price" precision="18" scale="8" label="=price" />
+    <Relation name="Currency" relation="Currencies" label="=currency" />
+
+    <Relation name="JobGroup" relation="CarJobGroups" label="=group" />
+  </Fields>
+</Table>

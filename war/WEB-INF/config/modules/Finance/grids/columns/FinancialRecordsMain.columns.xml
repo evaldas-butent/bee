@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+<g:columns xmlns="http://www.butent.com/column"
+           xmlns:g="http://www.butent.com/grid"
+           xmlns:ui="http://www.butent.com/ui">
   <IdColumn name="Id" visible="false" />
 
   <RelColumn name="Journal" renderColumns="JournalCode" choiceColumns="JournalCode JournalName"
@@ -7,25 +9,45 @@
 
   <DataColumn name="Date" carry="true" visible="true" />
 
-  <RelColumn name="Company" renderColumns="CompanyName" choiceColumns="Name" flexGrow="1" />
-  <DataColumn name="Content" flexGrow="1" />
+  <RelColumn name="Company" renderColumns="CompanyName" choiceColumns="Name" flexGrow="1"
+             carry="true" />
+  <DataColumn name="Content" flexGrow="1" carry="true" />
 
   <RelColumn name="Debit" renderColumns="DebitCode" choiceColumns="AccountCode AccountName"
-             newRowEnabled="false" visible="true" />
+             newRowEnabled="false" carry="true" visible="true">
+    <style>
+      <bodyStyle>
+        <ui:font>larger bolder</ui:font>
+      </bodyStyle>
+    </style>
+  </RelColumn>
 
-  <DataColumn name="DebitSeries" caption="=debitSeriesShort">
+  <DataColumn name="DebitSeries" caption="=debitSeriesShort" carry="true">
     <editor type="string" upperCase="true" />
   </DataColumn>
-  <DataColumn name="DebitDocument" caption="=debitDocumentShort" />
+  <DataColumn name="DebitDocument" caption="=debitDocumentShort" carry="true" />
 
   <RelColumn name="Credit" renderColumns="CreditCode" choiceColumns="AccountCode AccountName"
-             newRowEnabled="false" visible="true" />
+             newRowEnabled="false" carry="true" visible="true">
+    <style>
+      <bodyStyle>
+        <ui:font>larger bolder</ui:font>
+      </bodyStyle>
+    </style>
+  </RelColumn>
 
-  <DataColumn name="CreditSeries" caption="=creditSeriesShort">
+  <DataColumn name="CreditSeries" caption="=creditSeriesShort" carry="true">
     <editor type="string" upperCase="true" />
   </DataColumn>
-  <DataColumn name="CreditDocument" caption="=creditDocumentShort" />
+  <DataColumn name="CreditDocument" caption="=creditDocumentShort" carry="true" />
 
-  <DataColumn name="Amount" minWidth="80" visible="true" />
+  <DataColumn name="Amount" minWidth="80" visible="true">
+    <style>
+      <bodyStyle>
+        <ui:font>larger bolder</ui:font>
+      </bodyStyle>
+    </style>
+  </DataColumn>
+
   <RelColumn name="Currency" newRowEnabled="false" visible="true" />
 </g:columns>

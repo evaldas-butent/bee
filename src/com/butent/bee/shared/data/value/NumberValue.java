@@ -37,6 +37,11 @@ public class NumberValue extends Value {
   }
 
   @Override
+  public boolean equals(Object o) {
+    return o instanceof NumberValue && compareTo((NumberValue) o) == BeeConst.COMPARE_EQUAL;
+  }
+
+  @Override
   public Boolean getBoolean() {
     if (isNull()) {
       return null;

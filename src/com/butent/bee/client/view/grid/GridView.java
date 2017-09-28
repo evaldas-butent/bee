@@ -10,11 +10,8 @@ import com.butent.bee.client.event.logical.HasSummaryChangeHandlers;
 import com.butent.bee.client.event.logical.RowCountChangeEvent;
 import com.butent.bee.client.ui.HandlesHistory;
 import com.butent.bee.client.view.DataView;
-import com.butent.bee.client.view.add.HasAddEndHandlers;
-import com.butent.bee.client.view.add.HasAddStartHandlers;
 import com.butent.bee.client.view.add.HasReadyForInsertHandlers;
 import com.butent.bee.client.view.edit.EditStartEvent;
-import com.butent.bee.client.view.edit.HasEditFormHandlers;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.client.view.form.FormView;
@@ -24,10 +21,12 @@ import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.ModificationPreviewer;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.WindowType;
 
 import java.util.Collection;
 import java.util.List;
@@ -38,9 +37,9 @@ import java.util.function.Consumer;
  * Specifies necessary methods for grid view user interface component.
  */
 
-public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandlers,
+public interface GridView extends DataView,
     HasReadyForInsertHandlers, HasReadyForUpdateHandlers, HasSaveChangesHandlers,
-    HasEditFormHandlers, ParentRowCreator, HandlesHistory, DndWidget, HasWidgets,
+    HasGridFormHandlers, ParentRowCreator, HandlesHistory, DndWidget, HasWidgets,
     EditStartEvent.Handler, RowCountChangeEvent.Handler, DataReceivedEvent.Handler,
     HasSummaryChangeHandlers, HasState, ModificationPreviewer {
 
@@ -58,15 +57,21 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   int estimatePageSize(int containerWidth, int containerHeight);
 
-  void formCancel();
+  void formCancel(boolean focus);
 
   void formConfirm(Consumer<IsRow> consumer);
 
+  void formUnload(FormView formView);
+
   FormView getActiveForm();
+
+  DataInfo getDataInfo();
 
   List<String> getDynamicColumnGroups();
 
   Set<String> getEditInPlace();
+
+  WindowType getEditWindowType();
 
   FormView getForm(GridFormKind kind);
 
@@ -86,9 +91,17 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   String getGridName();
 
+  WindowType getNewRowWindowType();
+
   String getRelColumn();
 
+  Long getRelId();
+
   Collection<RowInfo> getSelectedRows(SelectedRows mode);
+
+  boolean hasChildUi();
+
+  boolean hasSelection();
 
   void initData(int rowCount, BeeRowSet rowSet);
 
@@ -97,6 +110,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   boolean isChild();
 
   boolean isEmpty();
+
+  boolean isInteractive();
 
   boolean isReadOnly();
 
@@ -111,6 +126,10 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   void reset(GridDescription gridDescription);
 
   void selectForm(GridFormKind kind, int index);
+
+  void setEditWindowType(WindowType windowType, boolean store);
+
+  void setNewRowWindowType(WindowType windowType, boolean store);
 
   void setRelId(Long relId);
 

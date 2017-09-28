@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="TradeItemExpend"
+       idName="TradeItemExpendID"
+>
+  <Fields>
+    <Relation name="TradeDocumentItem" relation="TradeDocumentItems" notNull="true"
+              cascade="DELETE" label="=trdDocumentItem" />
+
+    <Relation name="ExpenditureType" notNull="true" relation="ExpenditureTypes"
+              label="=trdExpenditureType" />
+
+    <Numeric name="Amount" precision="18" scale="8" notNull="true" label="=amount" />
+    <Relation name="Currency" relation="Currencies" notNull="true" defExpr="MAIN_CURRENCY"
+              label="=currency" />
+
+    <String name="Series" precision="10" label="=trdSeries" />
+    <String name="Number" precision="50" label="=trdNumber" />
+
+    <Relation name="Supplier" relation="Companies" label="=trdSupplier" />
+  </Fields>
+</Table>

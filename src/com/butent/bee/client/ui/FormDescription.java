@@ -35,6 +35,8 @@ public class FormDescription implements HasViewName {
   private static final String ATTR_PRINT_HEADER = "printHeader";
   private static final String ATTR_PRINT_FOOTER = "printFooter";
 
+  private static final String ATTR_CONTAINER_STYLE = "containerStyle";
+
   public static String getName(Element element) {
     Assert.notNull(element);
     return element.getAttribute(UiConstants.ATTR_NAME);
@@ -55,6 +57,10 @@ public class FormDescription implements HasViewName {
   public String getCaption() {
     String caption = getFormElement().getAttribute(UiConstants.ATTR_CAPTION);
     return Localized.maybeTranslate(BeeUtils.trim(caption));
+  }
+
+  public String getContainerStyle() {
+    return getFormElement().getAttribute(ATTR_CONTAINER_STYLE);
   }
 
   public Dimensions getDimensions() {

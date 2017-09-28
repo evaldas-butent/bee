@@ -4,7 +4,7 @@
            xmlns:ui="http://www.butent.com/ui">
 
   <RelColumn name="Item" renderColumns="ItemName" choiceColumns="Name Article" filter="!(IsService)"
-                            editPopup="true" visible="true" readOnly="true">
+             editEnabled="true" visible="true" readOnly="true">
   <dynStyle>
     <ui:inline>color: #ff5252; font-weight: bold;</ui:inline>
     <ui:expression>((row.Quantity - row.CompletedInvoices - row.ResRemainder) &gt; row.FreeRemainder

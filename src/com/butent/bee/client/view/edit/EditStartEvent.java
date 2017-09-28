@@ -14,10 +14,6 @@ import com.butent.bee.shared.data.IsRow;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-/**
- * Manages edit start event, gets column id, type, row value and other necessary parameters.
- */
-
 public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> implements Consumable {
 
   @FunctionalInterface
@@ -111,10 +107,6 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> implements 
     return columnId;
   }
 
-  public Consumer<FormView> getOnFormFocus() {
-    return onFormFocus;
-  }
-
   public IsRow getRowValue() {
     return rowValue;
   }
@@ -156,6 +148,12 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> implements 
     return readOnly;
   }
 
+  public void onFocus(FormView formView) {
+    if (getOnFormFocus() != null) {
+      getOnFormFocus().accept(formView);
+    }
+  }
+
   @Override
   public void setConsumed(boolean consumed) {
     this.consumed = consumed;
@@ -168,5 +166,9 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> implements 
   @Override
   protected void dispatch(Handler handler) {
     handler.onEditStart(this);
+  }
+
+  private Consumer<FormView> getOnFormFocus() {
+    return onFormFocus;
   }
 }

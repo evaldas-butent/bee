@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+<g:columns xmlns="http://www.butent.com/column"
+           xmlns:g="http://www.butent.com/grid"
+           xmlns:ui="http://www.butent.com/ui">
 
   <RelColumn name="Type" renderColumns="TypeName" />
   <DataColumn name="Priority" />
@@ -9,7 +11,18 @@
 
   <RelColumn name="Company" />
   <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
-    sortBy="ContactLastName ContactFirstName" visible="false" />
+             sortBy="ContactLastName ContactFirstName" visible="false" />
+
+  <RelColumn name="Project" renderColumns="ProjectName" visible="false" autoFit="true"
+             editEnabled="true" />
+
+  <RelColumn name="Product" renderColumns="ProductName" visible="false">
+    <dynStyle>
+      <ui:inline>color:[row.ProductForeground];
+        background-color:[row.ProductBackground];
+      </ui:inline>
+    </dynStyle>
+  </RelColumn>
 
   <DataColumn name="ScheduleFrom" />
   <DataColumn name="ScheduleUntil" />
@@ -26,7 +39,7 @@
   <DataColumn name="StartAt" visible="false" />
   <DataColumn name="DurationDays" visible="false" />
   <DataColumn name="DurationTime" visible="false" />
-    
+
   <RelColumn name="Reminder" />
   <DataColumn name="RemindBefore" visible="false" />
   <DataColumn name="RemindAt" visible="false" />

@@ -77,6 +77,18 @@
     </SimpleJoin>
 
     <SimpleColumn name="Kind" />
+
+    <ExternalJoin name="Sale" joinType="LEFT" source="SaleItems">
+      <ExternalJoin name="SaleItem" joinType="LEFT" source="OrderChildInvoices">
+        <SimpleJoin name="OrderItem" joinType="LEFT">
+          <HiddenColumn name="ServiceItem" />
+          <SimpleJoin name="ServiceItem" joinType="LEFT">
+            <AggregateColumn name="ServiceMaintenance" aggregate="COUNT"/>
+            <AggregateColumn name="ServiceObject" aggregate="COUNT"/>
+          </SimpleJoin>
+        </SimpleJoin>
+      </ExternalJoin>
+    </ExternalJoin>
   </Columns>
   <Order>
     <OrderBy column="Date" descending="true" />

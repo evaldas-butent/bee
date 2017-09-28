@@ -12,7 +12,6 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetDescription;
-import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditEndEvent;
@@ -22,6 +21,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -44,6 +44,10 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
 
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
+  }
+
+  @Override
+  public void afterCreatePresenter(Presenter presenter) {
   }
 
   @Override
@@ -95,12 +99,22 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
+  public boolean focusName(String name) {
+    if (getFormView() == null) {
+      return false;
+    } else {
+      Widget widget = getFormView().getWidgetByName(name);
+      return UiHelper.focus(widget);
+    }
+  }
+
+  @Override
   public boolean focusSource(String source) {
     if (getFormView() == null) {
       return false;
     } else {
       Widget widget = getFormView().getWidgetBySource(source);
-      return (widget == null) ? null : UiHelper.focus(widget);
+      return UiHelper.focus(widget);
     }
   }
 
@@ -122,6 +136,11 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   @Override
   public String getCaption() {
     return null;
+  }
+
+  @Override
+  public List<BeeColumn> getDataColumns() {
+    return (getFormView() == null) ? null : getFormView().getDataColumns();
   }
 
   @Override
@@ -161,17 +180,12 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
 
   @Override
   public GridView getGridView() {
-    if (getFormView() != null && getFormView().getViewPresenter() instanceof HasGridView) {
-      return ((HasGridView) getFormView().getViewPresenter()).getGridView();
-    } else {
-      return null;
-    }
+    return (getFormView() == null) ? null : getFormView().getBackingGrid();
   }
 
   @Override
   public HeaderView getHeaderView() {
-    return (getFormView() == null || getFormView().getViewPresenter() == null) ? null
-        : getFormView().getViewPresenter().getHeader();
+    return (getPresenter() == null) ? null : getPresenter().getHeader();
   }
 
   @Override
@@ -261,10 +275,6 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
-  public void onShow(Presenter presenter) {
-  }
-
-  @Override
   public void onSourceChange(IsRow row, String source, String value) {
   }
 
@@ -278,7 +288,7 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow row) {
   }
 
   @Override
@@ -297,5 +307,10 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   @Override
   public void setFormView(FormView formView) {
     this.formView = formView;
+  }
+
+  @Override
+  public boolean showReadOnly(boolean readOnly) {
+    return true;
   }
 }

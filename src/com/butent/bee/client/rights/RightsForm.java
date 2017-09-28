@@ -4,12 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.TableCellElement;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.MouseMoveEvent;
-import com.google.gwt.event.dom.client.MouseMoveHandler;
-import com.google.gwt.event.dom.client.MouseOutEvent;
-import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -19,8 +13,6 @@ import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
-import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
@@ -55,7 +47,6 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   protected static final String STYLE_SUFFIX_CELL = "-cell";
 
   private static final String STYLE_PANEL = STYLE_PREFIX + "panel";
-  private static final String STYLE_TABLE = STYLE_PREFIX + "table";
 
   private static final String STYLE_OBJECT_LABEL = STYLE_PREFIX + "object-label";
   private static final String STYLE_OBJECT_LABEL_CELL = STYLE_OBJECT_LABEL + STYLE_SUFFIX_CELL;
@@ -69,8 +60,6 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   private static final String STYLE_VALUE_DISABLED = STYLE_PREFIX + "value-disabled";
 
   private static final String STYLE_FILTER_NOT_MATCHED = STYLE_PREFIX + "filter-not-matched";
-
-  private static final String STYLE_HOVER = STYLE_PREFIX + "hover";
 
   private static final String STYLE_OBJECT_LEVEL_PREFIX = STYLE_PREFIX + "object-level-";
   private static final String STYLE_OBJECT_HAS_CHILDREN = STYLE_PREFIX + "object-has-children";
@@ -96,6 +85,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
     FormFactory.registerFormInterceptor("DataRights", new DataRightsHandler());
     FormFactory.registerFormInterceptor("FieldRights", new FieldRightsHandler());
+    FormFactory.registerFormInterceptor("ListRights", new ListRightsHandler());
 
     FormFactory.registerFormInterceptor("WidgetRights", new WidgetRightsHandler());
   }
@@ -113,27 +103,11 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     logger.debug(messages);
   }
 
-  protected static void enableValueWidet(Element elem, boolean enabled) {
+  protected static void enableValueWidget(Element elem, boolean enabled) {
     if (enabled) {
       elem.removeClassName(STYLE_VALUE_DISABLED);
     } else {
       elem.addClassName(STYLE_VALUE_DISABLED);
-    }
-  }
-
-  protected static ModuleAndSub getFirstVisibleModule(String input) {
-    if (BeeUtils.isEmpty(input)) {
-      return null;
-
-    } else {
-      List<ModuleAndSub> list = ModuleAndSub.parseList(input);
-
-      for (ModuleAndSub ms : list) {
-        if (BeeKeeper.getUser().isModuleVisible(ms)) {
-          return ms;
-        }
-      }
-      return null;
     }
   }
 
@@ -189,21 +163,14 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
   private final List<RightsObject> objects = new ArrayList<>();
 
-  private HtmlTable table;
-
-  private int hoverColumn = BeeConst.UNDEF;
+  private RightsTable table;
 
   @Override
   public boolean beforeAction(Action action, final Presenter presenter) {
     switch (action) {
       case CLOSE:
         if (!getChangedNames().isEmpty()) {
-          onClose(new Runnable() {
-            @Override
-            public void run() {
-              BeeKeeper.getScreen().closeWidget(presenter.getMainView());
-            }
-          });
+          onClose(() -> BeeKeeper.getScreen().closeWidget(presenter.getMainView()));
           return false;
 
         } else {
@@ -232,7 +199,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   }
 
   protected void addObjectToggle(int row, RightsObject object) {
-    table.setWidget(row, getValueStartCol() - 1, createObjectToggle(object.getName()),
+    table.setWidget(row, table.getValueStartCol() - 1, createObjectToggle(object.getName()),
         STYLE_OBJECT_TOGGLE_CELL);
   }
 
@@ -266,54 +233,32 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     }
 
     if (table == null) {
-      this.table = new HtmlTable(STYLE_TABLE);
-
-      table.addMouseMoveHandler(new MouseMoveHandler() {
+      this.table = new RightsTable() {
         @Override
-        public void onMouseMove(MouseMoveEvent event) {
-          Element target = EventUtils.getTargetElement(event.getNativeEvent().getEventTarget());
-
-          for (Element el = target; el != null; el = el.getParentElement()) {
-            if (TableCellElement.is(el)) {
-              int col = ((TableCellElement) el.cast()).getCellIndex();
-
-              if (getHoverColumn() != col) {
-                onColumnHover(col);
-              }
-
-            } else if (table.getId().equals(el.getId())) {
-              break;
-            }
+        public String formatModule(ModuleAndSub moduleAndSub) {
+          String s = RightsForm.this.formatModule(moduleAndSub);
+          if (s == null) {
+            s = super.formatModule(moduleAndSub);
           }
-        }
-      });
 
-      table.addMouseOutHandler(new MouseOutHandler() {
+          return s;
+        }
+
         @Override
-        public void onMouseOut(MouseOutEvent event) {
-          onColumnHover(BeeConst.UNDEF);
+        public int getValueStartCol() {
+          return RightsForm.this.getValueStartCol();
         }
-      });
-
+      };
     } else if (!table.isEmpty()) {
       table.clear();
     }
 
     populateTable();
-
     panel.add(table);
   }
 
   protected List<RightsObject> filterByModule(ModuleAndSub moduleAndSub) {
-    List<RightsObject> result = new ArrayList<>();
-
-    for (RightsObject object : objects) {
-      if (!object.hasParent() && Objects.equals(object.getModuleAndSub(), moduleAndSub)) {
-        result.add(object);
-      }
-    }
-
-    return result;
+    return RightsHelper.filterByModule(objects, moduleAndSub);
   }
 
   protected List<RightsObject> filterByParent(String parent) {
@@ -336,6 +281,10 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     }
 
     logger.severe("object", objectName, "not found");
+    return null;
+  }
+
+  protected String formatModule(ModuleAndSub moduleAndSub) {
     return null;
   }
 
@@ -424,47 +373,41 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
   protected abstract String getPanelStyleName();
 
-  protected HtmlTable getTable() {
+  protected RightsTable getTable() {
     return table;
   }
 
-  protected String getValueSelector() {
+  protected static String getValueSelector() {
     return Selectors.attributeEquals(Attributes.DATA_PREFIX + DATA_KEY_TYPE, DATA_TYPE_VALUE);
   }
 
   protected abstract int getValueStartCol();
 
-  protected int getValueStartRow() {
+  protected static int getValueStartRow() {
     return 2;
   }
 
-  protected boolean hasObject(Widget widget, String objectName) {
+  protected static boolean hasObject(Widget widget, String objectName) {
     return DomUtils.dataEquals(widget.getElement(), DATA_KEY_OBJECT, objectName);
   }
 
   protected void init() {
-    initObjects(new Consumer<List<RightsObject>>() {
-      @Override
-      public void accept(List<RightsObject> typeObjects) {
-        if (BeeUtils.isEmpty(typeObjects)) {
-          logger.severe(getObjectType(), "objects not available");
-          return;
-        }
-
-        if (!objects.isEmpty()) {
-          objects.clear();
-        }
-        objects.addAll(typeObjects);
-
-        initData(new Consumer<Boolean>() {
-          @Override
-          public void accept(Boolean input) {
-            if (BeeUtils.isTrue(input)) {
-              createUi();
-            }
-          }
-        });
+    initObjects(typeObjects -> {
+      if (BeeUtils.isEmpty(typeObjects)) {
+        logger.severe(getObjectType(), "objects not available");
+        return;
       }
+
+      if (!objects.isEmpty()) {
+        objects.clear();
+      }
+      objects.addAll(typeObjects);
+
+      initData(input -> {
+        if (BeeUtils.isTrue(input)) {
+          createUi();
+        }
+      });
     });
   }
 
@@ -472,13 +415,13 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
   protected abstract void initObjects(Consumer<List<RightsObject>> consumer);
 
-  protected boolean isDataType(Widget widget, String type) {
+  protected static boolean isDataType(Widget widget, String type) {
     return DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, type);
   }
 
   protected abstract boolean isObjectChecked(String objectName);
 
-  protected boolean isValueWidget(Widget widget) {
+  protected static boolean isValueWidget(Widget widget) {
     return DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE);
   }
 
@@ -527,12 +470,9 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     DecisionCallback callback = new DecisionCallback() {
       @Override
       public void onConfirm() {
-        save(new Consumer<Boolean>() {
-          @Override
-          public void accept(Boolean input) {
-            if (BeeUtils.isTrue(input)) {
-              runnable.run();
-            }
+        save(input -> {
+          if (BeeUtils.isTrue(input)) {
+            runnable.run();
           }
         });
       }
@@ -554,9 +494,9 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     removeClassName(table, STYLE_FILTER_NOT_MATCHED);
   }
 
-  protected abstract void save(final Consumer<Boolean> callback);
+  protected abstract void save(Consumer<Boolean> callback);
 
-  protected void setDataType(Widget widget, String type) {
+  protected static void setDataType(Widget widget, String type) {
     DomUtils.setDataProperty(widget.getElement(), DATA_KEY_TYPE, type);
   }
 
@@ -576,20 +516,17 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     if (object.hasChildren()) {
       widget.addStyleName(STYLE_OBJECT_CLOSED);
 
-      widget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          if (event.getSource() instanceof Widget) {
-            Widget source = (Widget) event.getSource();
-            String objectName = getObjectName(source);
-            boolean wasOpen = source.getElement().hasClassName(STYLE_OBJECT_OPEN);
+      widget.addClickHandler(event -> {
+        if (event.getSource() instanceof Widget) {
+          Widget source = (Widget) event.getSource();
+          String objectName = getObjectName(source);
+          boolean wasOpen = source.getElement().hasClassName(STYLE_OBJECT_OPEN);
 
-            if (!BeeUtils.isEmpty(objectName)) {
-              source.setStyleName(STYLE_OBJECT_OPEN, !wasOpen);
-              source.setStyleName(STYLE_OBJECT_CLOSED, wasOpen);
+          if (!BeeUtils.isEmpty(objectName)) {
+            source.setStyleName(STYLE_OBJECT_OPEN, !wasOpen);
+            source.setStyleName(STYLE_OBJECT_CLOSED, wasOpen);
 
-              setChildrenVisibility(objectName, !wasOpen);
-            }
+            setChildrenVisibility(objectName, !wasOpen);
           }
         }
       });
@@ -605,23 +542,16 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_TOGGLE);
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_OBJECT, objectName);
 
-    toggle.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (event.getSource() instanceof Toggle) {
-          Toggle ot = (Toggle) event.getSource();
-          updateObjectValueToggles(getObjectName(ot), ot.isChecked());
+    toggle.addClickHandler(event -> {
+      if (event.getSource() instanceof Toggle) {
+        Toggle ot = (Toggle) event.getSource();
+        updateObjectValueToggles(getObjectName(ot), ot.isChecked());
 
-          onObjectToggle(ot.isChecked());
-        }
+        onObjectToggle(ot.isChecked());
       }
     });
 
     return toggle;
-  }
-
-  private int getHoverColumn() {
-    return hoverColumn;
   }
 
   private Widget getObjectLabel(String objectName) {
@@ -634,24 +564,6 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
     logger.severe("object", objectName, "label not found");
     return null;
-  }
-
-  private void onColumnHover(int col) {
-    if (getHoverColumn() >= getValueStartCol()) {
-      List<TableCellElement> cells = table.getColumnCells(getHoverColumn());
-      for (TableCellElement cell : cells) {
-        cell.removeClassName(STYLE_HOVER);
-      }
-    }
-
-    setHoverColumn(col);
-
-    if (col >= getValueStartCol()) {
-      List<TableCellElement> cells = table.getColumnCells(col);
-      for (TableCellElement cell : cells) {
-        cell.addClassName(STYLE_HOVER);
-      }
-    }
   }
 
   private void setChildrenVisibility(String parent, boolean visible) {
@@ -679,9 +591,5 @@ public abstract class RightsForm extends AbstractFormInterceptor {
         }
       }
     }
-  }
-
-  private void setHoverColumn(int hoverColumn) {
-    this.hoverColumn = hoverColumn;
   }
 }

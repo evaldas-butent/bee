@@ -11,18 +11,15 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.event.DataChangeEvent.Effect;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -30,7 +27,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -111,14 +107,11 @@ final class TripSelector implements EditStopEvent.Handler, ClickHandler {
 
     for (String cargoId : cargos) {
       Queries.insert(VIEW_CARGO_TRIPS, columns,
-          Lists.newArrayList(cargoId, BeeUtils.toString(tripId)), null, new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
-              holder.set(holder.get() + 1);
+          Lists.newArrayList(cargoId, BeeUtils.toString(tripId)), null, result -> {
+            holder.set(holder.get() + 1);
 
-              if (Objects.equals(holder.get(), cargos.length)) {
-                Data.onTableChange(TBL_CARGO_TRIPS, EnumSet.of(Effect.REFRESH));
-              }
+            if (Objects.equals(holder.get(), cargos.length)) {
+              Data.refreshLocal(TBL_CARGO_TRIPS);
             }
           });
     }
@@ -128,12 +121,9 @@ final class TripSelector implements EditStopEvent.Handler, ClickHandler {
     DataInfo dataInfo = Data.getDataInfo(viewName);
 
     RowFactory.createRow(dataInfo.getEditForm(), dataInfo.getNewRowCaption(),
-        dataInfo, RowFactory.createEmptyRow(dataInfo, true), Modality.ENABLED, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow row) {
-            RowInsertEvent.fire(BeeKeeper.getBus(), viewName, row, null);
-            addTrip(row.getId());
-          }
+        dataInfo, RowFactory.createEmptyRow(dataInfo, true), Opener.MODAL, row -> {
+          RowInsertEvent.fire(BeeKeeper.getBus(), viewName, row, null);
+          addTrip(row.getId());
         });
   }
 }

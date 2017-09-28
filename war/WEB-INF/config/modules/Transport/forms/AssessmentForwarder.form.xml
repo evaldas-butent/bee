@@ -13,7 +13,7 @@
         name="AssessmentForwarder" viewName="AssessmentForwarders" caption="=carrier"
         height="700"
     >
-  <f:properties reports="PrintContractLT, PrintContractEN, PrintContractRU" />
+  <f:properties jasperReports="ForwarderContract" />
 
   <FlowPanel class="flexBox-vertical" style="padding: 10px 2px 2px 10px;">
     <FlowPanel for="Forwarder" style="&section;">
@@ -42,7 +42,8 @@
       <DataSelector source="Currency" style="&inline; width:5em; margin-left:5px;"
                     editEnabled="false" placeholder="=currencyShort" />
       <CheckBox source="VatPlus" text="=vatPlus" style="&inline; margin-left:5px;" />
-      <InputMoney source="Vat" placeholder="=vat" style="&inline; width:5em; margin-left:5px;" />
+      <InputMoney source="Vat" placeholder="=vat" percentageTag="VatPercent"
+                  style="&inline; width:5em; margin-left:5px;" />
       <CheckBox source="VatPercent" style="&inline; margin-left:5px;" text="%" />
     </FlowPanel>
 
@@ -50,10 +51,9 @@
       <Label for="Supplier" style="&labelLeft;" />
       <DataSelector source="Supplier" renderColumns="SupplierName SupplierTypeName"
                     choiceColumns="Name TypeName" style="&input; width:200px;" />
-      <Label name="IncomeLabel" for="Income" class="bee-required"
-             style="&labelRight; margin-left:30px;" />
+      <Label name="IncomeLabel" for="Income" style="&labelRight; margin-left:30px;" />
       <DataSelector name="Income" source="Income" style="&inline; width:70px;"
-                    newRowEnabled="false" editEnabled="false" required="true"
+                    newRowEnabled="false" editEnabled="false" caching="none"
                     choiceColumns="ServiceName Amount CurrencyName" />
     </FlowPanel>
 

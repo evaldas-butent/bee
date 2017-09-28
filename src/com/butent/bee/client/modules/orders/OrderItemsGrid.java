@@ -106,7 +106,7 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
   private Flow invoice = new Flow();
 
   private Long complectId;
-  private Double managerDiscount;
+  private Double managerDiscount = null;
   private GridView grid;
   private Long orderForm;
   private String complectName;
@@ -142,8 +142,9 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
       presenter.getHeader().addCommandItem(new Button(Localized.dictionary().unpack(), this));
     }
 
-    Global.getParameter(PRM_MANAGER_DISCOUNT,
-        input -> managerDiscount = BeeUtils.toDoubleOrNull(input));
+    if (Global.getParameterNumber(PRM_MANAGER_DISCOUNT) != null) {
+      managerDiscount = Global.getParameterNumber(PRM_MANAGER_DISCOUNT).doubleValue();
+    }
 
     super.afterCreatePresenter(presenter);
   }

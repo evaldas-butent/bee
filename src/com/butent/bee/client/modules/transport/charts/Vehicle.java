@@ -3,17 +3,16 @@ package com.butent.bee.client.modules.transport.charts;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_VEHICLE_BRAND_NAME;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -30,12 +29,15 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
 
   private static final int numberIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_NUMBER);
 
-  private static final int parentModelNameIndex =
-      Data.getColumnIndex(VIEW_VEHICLES, COL_PARENT_MODEL_NAME);
+  private static final int brandNameIndex = Data.getColumnIndex(VIEW_VEHICLES,
+      COL_VEHICLE_BRAND_NAME);
   private static final int modelNameIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_MODEL_NAME);
   private static final String modelLabel = Data.getColumnLabel(VIEW_VEHICLES, COL_MODEL);
+  private static final int modelIdIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_MODEL);
 
   private static final int typeNameIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_TYPE_NAME);
+  private static final int typeIdIndex = Data.getColumnIndex(VIEW_VEHICLES,
+      COL_VEHICLE_SERVICE_TYPE);
 
   private static final String managerLabel = Data.getColumnLabel(VIEW_TRANSPORT_GROUPS,
       COL_GROUP_MANAGER);
@@ -58,7 +60,9 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
   private final Long id;
   private final String number;
   private final String model;
+  private final Long modelId;
   private final String type;
+  private final Long typeId;
 
   private final Set<Long> groups;
 
@@ -71,9 +75,12 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
 
     this.id = row.getId();
     this.number = row.getString(numberIndex);
-    this.model = BeeUtils.joinWords(row.getString(parentModelNameIndex),
+    this.model = BeeUtils.joinWords(row.getString(brandNameIndex),
         row.getString(modelNameIndex));
+    this.modelId = row.getLong(modelIdIndex);
+
     this.type = BeeUtils.trim(row.getString(typeNameIndex));
+    this.typeId = row.getLong(typeIdIndex);
 
     this.groups = DataUtils.parseIdSet(row.getProperty(PROP_VEHICLE_GROUPS));
 
@@ -145,6 +152,10 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
     return model;
   }
 
+  Long getModelId() {
+    return modelId;
+  }
+
   String getNotes() {
     return BeeUtils.trim(row.getString(notesIndex));
   }
@@ -159,6 +170,10 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
 
   String getType() {
     return type;
+  }
+
+  Long getTypeId() {
+    return typeId;
   }
 
   void makeTarget(final DndTarget widget, final String overStyle, final VehicleType vehicleType) {
@@ -177,35 +192,17 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
       final Freight freight = (Freight) data;
       String title = freight.getCargoAndTripTitle();
 
-      Trip.createForCargo(this, freight, title, new RowCallback() {
-        @Override
-        public void onSuccess(final BeeRow tripRow) {
-          freight.updateTrip(tripRow.getId(), new RowCallback() {
-
-            @Override
-            public void onSuccess(BeeRow ct) {
-              afterAssignToNewTrip(freight, tripRow);
-            }
-          });
-        }
-      });
+      Trip.createForCargo(this, freight, title,
+          tripRow -> freight.updateTrip(tripRow.getId(),
+              ct -> afterAssignToNewTrip(freight, tripRow)));
 
     } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO)) {
       final OrderCargo orderCargo = (OrderCargo) data;
       String title = orderCargo.getTitle();
 
-      Trip.createForCargo(this, orderCargo, title, new RowCallback() {
-        @Override
-        public void onSuccess(final BeeRow tripRow) {
-          orderCargo.assignToTrip(tripRow.getId(), new RowCallback() {
-
-            @Override
-            public void onSuccess(BeeRow ct) {
-              afterAssignToNewTrip(orderCargo, tripRow);
-            }
-          });
-        }
-      });
+      Trip.createForCargo(this, orderCargo, title,
+          tripRow -> orderCargo.assignToTrip(tripRow.getId(),
+              ct -> afterAssignToNewTrip(orderCargo, tripRow)));
     }
   }
 
@@ -220,7 +217,7 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
       }
 
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), viewNames);
-      RowEditor.open(VIEW_TRIPS, tripRow, Opener.MODAL);
+      RowEditor.open(VIEW_TRIPS, tripRow);
     });
   }
 

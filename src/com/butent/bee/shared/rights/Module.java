@@ -73,7 +73,7 @@ public enum Module implements HasLocalizedCaption {
   DISCUSSIONS {
     @Override
     public String getCaption(Dictionary constants) {
-      return constants.discussions();
+      return constants.communication();
     }
 
     @Override

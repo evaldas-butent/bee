@@ -3,12 +3,14 @@ package com.butent.bee.client.render;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Range;
 
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -60,10 +62,10 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
     for (String s : splitter.split(item)) {
       switch (index) {
         case 0:
-          low = parse(s, true);
+          low = parse(s, true, DateOrdering.DEFAULT);
           break;
         case 1:
-          upp = parse(s, true);
+          upp = parse(s, true, DateOrdering.DEFAULT);
           break;
         case 2:
           value = Localized.maybeTranslate(s);
@@ -151,7 +153,7 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
         return entry.getValue();
       }
     }
-    return v.toString();
+    return v.render(Format.getDateRenderer(), Format.getDateTimeRenderer());
   }
 
   @Override

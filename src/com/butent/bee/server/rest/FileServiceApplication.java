@@ -28,7 +28,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.ejb.EJB;
-import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -38,46 +37,49 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Application;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-@ApplicationPath(AdministrationConstants.FILE_URL)
 @Path("/")
 @Produces(MediaType.APPLICATION_OCTET_STREAM)
 @Authorized
-public class FileServiceApplication extends Application {
+public class FileServiceApplication {
 
   private static BeeLogger logger = LogUtils.getLogger(FileServiceApplication.class);
 
   @EJB
   FileStorageBean fs;
 
-  @Override
-  public Set<Class<?>> getClasses() {
-    Set<Class<?>> classes = new HashSet<>();
-
-    classes.add(AuthenticationFilter.class);
-    classes.add(this.getClass());
-
-    return classes;
-  }
-
   @GET
   @Path("{id:\\d+}")
+  @Deprecated
   public Response getFile(@PathParam("id") Long fileId) {
-    return getFile(fileId, null);
-  }
-
-  @GET
-  @Path("{id:\\d+}/{name}")
-  public Response getFile(@PathParam("id") Long fileId, @PathParam("name") String fileName) {
     FileInfo fileInfo;
 
     try {
       fileInfo = fs.getFile(fileId);
+    } catch (IOException e) {
+      logger.error(e);
+      throw new InternalServerErrorException(e);
+    }
+    return response(fileInfo, null, false);
+  }
+
+  @GET
+  @Path("{hash:[a-f0-9]{40}}")
+  public Response getFile(@PathParam("hash") String hash) {
+    return getFile(hash, null);
+  }
+
+  @GET
+  @Path("{hash:[a-f0-9]{40}}/{name}")
+  public Response getFile(@PathParam("hash") String hash, @PathParam("name") String fileName) {
+    FileInfo fileInfo;
+
+    try {
+      fileInfo = fs.getFile(fs.getId(hash));
     } catch (IOException e) {
       logger.error(e);
       throw new InternalServerErrorException(e);
@@ -104,7 +106,7 @@ public class FileServiceApplication extends Application {
         Set<String> names = new HashSet<>();
 
         for (Map.Entry<String, String> entry : fileMap.entrySet()) {
-          FileInfo fileInfo = fs.getFile(BeeUtils.toLong(entry.getKey()));
+          FileInfo fileInfo = fs.getFile(fs.getId(entry.getKey()));
           String name = BeeUtils.notEmpty(entry.getValue(), fileInfo.getName());
 
           if (!names.add(name)) {
@@ -134,7 +136,7 @@ public class FileServiceApplication extends Application {
       logger.error(e);
       throw new InternalServerErrorException(e);
     }
-    FileInfo fileInfo = new FileInfo(null, fileName, tmp.length(),
+    FileInfo fileInfo = new FileInfo(null, null, fileName, tmp.length(),
         URLConnection.guessContentTypeFromName(fileName));
     fileInfo.setPath(tmp.getAbsolutePath());
     fileInfo.setTemporary(true);
@@ -151,12 +153,14 @@ public class FileServiceApplication extends Application {
       @HeaderParam(AdministrationConstants.FILE_COMMIT) String commit, InputStream is) {
 
     try {
-      Long fileId = fs.storeFile(is, fileName, fileType);
+      FileInfo fileInfo = fs.storeFile(is, fileName, fileType);
 
       if (BeeUtils.toBoolean(commit)) {
-        fileId = fs.commitFile(fileId);
+        fileInfo.setId(fs.commitFile(fileInfo.getId()));
       }
-      return RestResponse.ok(fileId);
+      RestResponse response = RestResponse.ok(fileInfo.getId());
+      response.setHash(fileInfo.getHash());
+      return response;
     } catch (IOException e) {
       return RestResponse.error(e);
     }

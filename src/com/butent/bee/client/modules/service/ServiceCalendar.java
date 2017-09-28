@@ -16,12 +16,9 @@ import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
@@ -45,6 +42,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.Colors;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -154,12 +152,9 @@ final class ServiceCalendar extends TimeBoard {
 
   static void open(final ViewCallback callback) {
     BeeKeeper.getRpc().makeRequest(ServiceKeeper.createArgs(SVC_GET_CALENDAR_DATA),
-        new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            ServiceCalendar sc = new ServiceCalendar();
-            sc.onCreate(response, callback);
-          }
+        response -> {
+          ServiceCalendar sc = new ServiceCalendar();
+          sc.onCreate(response, callback);
         });
   }
 
@@ -200,10 +195,9 @@ final class ServiceCalendar extends TimeBoard {
     if (range == null) {
       return BeeConst.STRING_EMPTY;
     } else if (Objects.equals(range.lowerEndpoint(), range.upperEndpoint())) {
-      return TimeUtils.render(range.lowerEndpoint());
+      return Format.renderDate(range.lowerEndpoint());
     } else {
-      return BeeUtils.join(TimeUtils.PERIOD_SEPARATOR,
-          range.lowerEndpoint(), range.upperEndpoint());
+      return Format.renderPeriod(range.lowerEndpoint(), range.upperEndpoint());
     }
   }
 
@@ -270,7 +264,7 @@ final class ServiceCalendar extends TimeBoard {
   public void handleAction(Action action) {
     switch (action) {
       case ADD:
-        RowFactory.createRow(VIEW_SERVICE_OBJECTS, Modality.ENABLED);
+        RowFactory.createRow(VIEW_SERVICE_OBJECTS);
         break;
 
       case EXPORT:
@@ -315,15 +309,12 @@ final class ServiceCalendar extends TimeBoard {
     Assert.notNull(oldRow);
 
     RowEditor.openForm(FORM_SETTINGS, getSettings().getViewName(), oldRow, Opener.MODAL,
-        new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            if (updateSetting(result)) {
-              if (requiresRefresh(oldRow, result)) {
-                refresh();
-              } else {
-                render(false);
-              }
+        result -> {
+          if (updateSetting(result)) {
+            if (requiresRefresh(oldRow, result)) {
+              refresh();
+            } else {
+              render(false);
             }
           }
         });
@@ -409,12 +400,9 @@ final class ServiceCalendar extends TimeBoard {
   @Override
   protected void refresh() {
     BeeKeeper.getRpc().makeRequest(ServiceKeeper.createArgs(SVC_GET_CALENDAR_DATA),
-        new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            if (setData(response, false)) {
-              render(false);
-            }
+        response -> {
+          if (setData(response, false)) {
+            render(false);
           }
         });
   }
@@ -535,12 +523,7 @@ final class ServiceCalendar extends TimeBoard {
     StyleUtils.setLeft(companyMover, getCompanyWidth() - TimeBoardHelper.DEFAULT_MOVER_WIDTH);
     StyleUtils.setHeight(companyMover, height);
 
-    companyMover.addMoveHandler(new MoveEvent.Handler() {
-      @Override
-      public void onMove(MoveEvent event) {
-        onCompanyResize(event);
-      }
-    });
+    companyMover.addMoveHandler(this::onCompanyResize);
 
     panel.add(companyMover);
 
@@ -549,12 +532,7 @@ final class ServiceCalendar extends TimeBoard {
       StyleUtils.setLeft(infoMover, getChartLeft() - TimeBoardHelper.DEFAULT_MOVER_WIDTH);
       StyleUtils.setHeight(infoMover, height);
 
-      infoMover.addMoveHandler(new MoveEvent.Handler() {
-        @Override
-        public void onMove(MoveEvent event) {
-          onInfoResize(event);
-        }
-      });
+      infoMover.addMoveHandler(this::onInfoResize);
 
       panel.add(infoMover);
     }
@@ -629,7 +607,7 @@ final class ServiceCalendar extends TimeBoard {
     return false;
   }
 
-  private IdentifiableWidget createCompanyWidget(ServiceCompanyWrapper company) {
+  private static IdentifiableWidget createCompanyWidget(ServiceCompanyWrapper company) {
     Flow panel = new Flow(STYLE_COMPANY_PANEL);
 
     CustomDiv label = new CustomDiv(STYLE_COMPANY_LABEL);
@@ -666,7 +644,7 @@ final class ServiceCalendar extends TimeBoard {
     return panel;
   }
 
-  private IdentifiableWidget createInfoWidget(ServiceObjectWrapper object) {
+  private static IdentifiableWidget createInfoWidget(ServiceObjectWrapper object) {
     Flow panel = new Flow(STYLE_INFO_PANEL);
 
     CustomDiv label = new CustomDiv(STYLE_INFO_LABEL);
@@ -745,7 +723,7 @@ final class ServiceCalendar extends TimeBoard {
     XSheet sheet = new XSheet();
     int rowIndex = 1;
 
-    Exporter.addCaption(sheet, getCaption(), rowIndex++, cc);
+    Exporter.addCaption(sheet, getCaption(), TextAlign.CENTER, rowIndex++, cc);
 
     if (!BeeUtils.isEmpty(filterLabels)) {
       for (String label : filterLabels) {
@@ -768,8 +746,8 @@ final class ServiceCalendar extends TimeBoard {
     if (groupColumns == 1) {
       row.add(new XCell(colIndex++, exportPeriod(range), headerStyleRef));
     } else {
-      row.add(new XCell(colIndex++, TimeUtils.render(range.lowerEndpoint()), headerStyleRef));
-      row.add(new XCell(colIndex++, TimeUtils.render(range.upperEndpoint()), headerStyleRef));
+      row.add(new XCell(colIndex++, Format.renderDate(range.lowerEndpoint()), headerStyleRef));
+      row.add(new XCell(colIndex++, Format.renderDate(range.upperEndpoint()), headerStyleRef));
     }
 
     exportMonthLabels(range, row, colIndex, headerStyleRef);
@@ -868,12 +846,7 @@ final class ServiceCalendar extends TimeBoard {
     Exporter.confirm(getCaption(), new Exporter.FileNameCallback() {
       @Override
       public void onSuccess(final String value) {
-        getFilterLabels(new Consumer<List<String>>() {
-          @Override
-          public void accept(List<String> input) {
-            doExport(value, input);
-          }
-        });
+        getFilterLabels(input -> doExport(value, input));
       }
     });
   }
@@ -1001,30 +974,27 @@ final class ServiceCalendar extends TimeBoard {
     }
 
     Queries.getRowSet(VIEW_TASK_TYPES, Lists.newArrayList(COL_TASK_TYPE_NAME),
-        new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            List<String> typeLabels = new ArrayList<>();
-            int index = result.getColumnIndex(COL_TASK_TYPE_NAME);
+        result -> {
+          List<String> typeLabels = new ArrayList<>();
+          int index = result.getColumnIndex(COL_TASK_TYPE_NAME);
 
-            for (Long tt : taskTypes) {
-              BeeRow row = result.getRowById(tt);
+          for (Long tt : taskTypes) {
+            BeeRow row = result.getRowById(tt);
 
-              if (row != null) {
-                String label = row.getString(index);
-                if (!BeeUtils.isEmpty(label) && !typeLabels.contains(label)) {
-                  typeLabels.add(label);
-                }
+            if (row != null) {
+              String label = row.getString(index);
+              if (!BeeUtils.isEmpty(label) && !typeLabels.contains(label)) {
+                typeLabels.add(label);
               }
             }
-
-            List<String> labels = new ArrayList<>();
-            if (!typeLabels.isEmpty()) {
-              labels.add(BeeUtils.joinItems(typeLabels));
-            }
-
-            consumer.accept(labels);
           }
+
+          List<String> labels = new ArrayList<>();
+          if (!typeLabels.isEmpty()) {
+            labels.add(BeeUtils.joinItems(typeLabels));
+          }
+
+          consumer.accept(labels);
         });
   }
 

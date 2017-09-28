@@ -1,28 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+      xmlns:x="http://www.butent.com/expression"
 
       name="TradeStock" source="TradeStock" caption="=trdStock"
 >
   <Columns>
     <SimpleColumn name="PrimaryDocumentItem" />
+
     <SimpleJoin joinType="LEFT" name="PrimaryDocumentItem">
-      <SimpleColumn name="TradeDocument" alias="PrimaryDocument" label="=trdPrimaryDocument" />
+      <HiddenColumn name="TradeDocument" alias="PrimaryDocument1" />
       <SimpleJoin joinType="LEFT" name="TradeDocument">
-        <SimpleColumn name="Date" alias="PrimaryDate" label="=trdPrimaryDate" />
+        <HiddenColumn name="Date" alias="PrimaryDate1" />
 
         <SimpleJoin joinType="LEFT" name="Supplier">
-          <SimpleColumn name="Name" alias="SupplierName" label="=trdSupplier" />
+          <HiddenColumn name="Name" alias="SupplierName1" />
         </SimpleJoin>
       </SimpleJoin>
 
       <SimpleColumn name="Article" />
     </SimpleJoin>
 
+    <ExternalJoin joinType="LEFT" targetName="TradeDocumentItem" source="TradeItemReturns"
+                  name="TradeDocumentItem">
+      <SimpleJoin joinType="LEFT" name="PrimaryDocumentItem">
+        <HiddenColumn name="TradeDocument" alias="PrimaryDocument2" />
+        <SimpleJoin joinType="LEFT" name="TradeDocument">
+          <HiddenColumn name="Date" alias="PrimaryDate2" />
+
+          <SimpleJoin joinType="LEFT" name="Supplier">
+            <HiddenColumn name="Name" alias="SupplierName2" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+    </ExternalJoin>
+
+    <SimpleColumn name="PrimaryDocument" label="=trdPrimaryDocument">
+      <x:nvl type="LONG">
+        <x:number>"PrimaryDocument2"</x:number>
+        <x:number>"PrimaryDocument1"</x:number>
+      </x:nvl>
+    </SimpleColumn>
+
+    <SimpleColumn name="PrimaryDate" label="=trdPrimaryDate">
+      <x:nvl type="DATETIME">
+        <x:datetime>"PrimaryDate2"</x:datetime>
+        <x:datetime>"PrimaryDate1"</x:datetime>
+      </x:nvl>
+    </SimpleColumn>
+
+    <SimpleColumn name="SupplierName" label="=trdSupplier">
+      <x:nvl type="STRING">
+        <x:string>"SupplierName2"</x:string>
+        <x:string>"SupplierName1"</x:string>
+      </x:nvl>
+    </SimpleColumn>
+
     <SimpleColumn name="TradeDocumentItem" />
     <SimpleJoin joinType="LEFT" name="TradeDocumentItem">
       <SimpleColumn name="TradeDocument" />
       <SimpleJoin joinType="LEFT" name="TradeDocument">
         <SimpleColumn name="Date" />
+        <SimpleColumn name="Customer" />
+        <SimpleJoin joinType="LEFT" name="Customer">
+          <SimpleColumn name="Name" alias="CustomerName" label="=trdCustomer" />
+        </SimpleJoin>
       </SimpleJoin>
 
       <SimpleColumn name="Item" />
@@ -40,11 +81,20 @@
       <SimpleColumn name="Name" alias="WarehouseName" />
     </SimpleJoin>
 
+    <SimpleColumn name="CostAccount" />
+    <SimpleJoin joinType="LEFT" name="CostAccount">
+      <SimpleColumn name="AccountCode" />
+      <SimpleColumn name="AccountName" />
+      <SimpleColumn name="Background" alias="AccountBackground" />
+      <SimpleColumn name="Foreground" alias="AccountForeground" />
+    </SimpleJoin>
+
     <SimpleColumn name="Quantity" />
 
     <ExternalJoin joinType="LEFT" targetName="PrimaryDocumentItem" source="TradeItemCost"
                   name="TradeDocumentItem">
       <SimpleColumn name="Cost" />
+      <SimpleColumn name="Currency" />
       <SimpleJoin joinType="LEFT" name="Currency">
         <SimpleColumn name="Name" alias="CurrencyName" />
       </SimpleJoin>

@@ -55,6 +55,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Creates a new {@code DateTime} object with {@code date} date.
+   *
    * @param date a date of object {@code Date}
    */
   public DateTime(Date date) {
@@ -71,6 +72,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Creates a new object of {@code DateTime} with date parameters.
+   *
    * @param year the year
    * @param month the month between 1-12
    * @param dom the day of month between 1-31
@@ -81,6 +83,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Creates a new object of {@code DateTime} with date and time parameters.
+   *
    * @param year the year
    * @param month the month between 1-12
    * @param dom the day of month between 1-31
@@ -94,6 +97,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Creates a new object of {@code DateTime} with date and times parameters including milliseconds.
+   *
    * @param year the year
    * @param month the month between 1-12
    * @param dom the day of month between 1-31
@@ -108,6 +112,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Creates new object of {@code DateTime} with {@code JustTime} parameter.
+   *
    * @param date time of {@code JustTime} object
    */
   public DateTime(JustDate date) {
@@ -128,17 +133,25 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Creates new object of {@code DateTime} with milliseconds parameter.
+   *
    * @param time time of milliseconds since 00:00:00 GMT on January 1, 1970
    */
   public DateTime(long time) {
     this.time = time;
   }
 
+  public void clearTimePart() {
+    if (hasTimePart()) {
+      setLocalDate(getYear(), getMonth(), getDom());
+    }
+  }
+
   /**
    * Compares two {@code DateTime} objects by date and time values.
+   *
    * @param other the {@code DateTime} to be compared
    * @return 0 the {@code DateTime} values of object are equals, more than 0 the {@code other}
-   *         values are greater, less than 0 the {@code other} values are lower.
+   * values are greater, less than 0 the {@code other} values are lower.
    */
   @Override
   public int compareTo(DateTime other) {
@@ -150,6 +163,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Deserializes {@code String} to {@code DateTime}.
+   *
    * @param s the {@code String} to deserialize
    */
   @Override
@@ -158,7 +172,8 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   }
 
   /**
-   * Compare two {@code DateTime} objects by date and time for eqaulity.
+   * Compare two {@code DateTime} objects by date and time for equality.
+   *
    * @return true if the {@code obj} are the same.
    */
   @Override
@@ -181,6 +196,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Returns the number day of month representing this object. The value returned between 1 and 31.
+   *
    * @return the number day of month representing this object.
    */
   @Override
@@ -192,6 +208,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   /**
    * Returns the number day of week representing this object. The value returned 1 and 7. First day
    * of week is Monday (value 1)
+   *
    * @return the number day of week.
    */
   @Override
@@ -202,6 +219,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Returns the number day of year representing this object. The value returned between 1 and 366
+   *
    * @return the number day of year representing this object.
    */
   @Override
@@ -212,6 +230,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Returns the number of hour represented this object. The value returned between 0 and 23;
+   *
    * @return the number of hour represented this object.
    */
   @Override
@@ -226,8 +245,9 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   }
 
   /**
-   * Returns the number of miliseconds the past of second. The value returned between 0 and 999.
-   * @return the number miliseconds the past of second.
+   * Returns the number of milliseconds the past of second. The value returned between 0 and 999.
+   *
+   * @return the number milliseconds the past of second.
    */
   @Override
   public int getMillis() {
@@ -237,6 +257,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Returns the number of minutes the past of hour. The value returned between 0 and 59.
+   *
    * @return the number of minutes the past of hour.
    */
   @Override
@@ -247,6 +268,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Returns the number of month. The value returned between 1 and 12
+   *
    * @return the number of month.
    */
   @Override
@@ -258,6 +280,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   /**
    * Returns the number of minutes past the hour represented by this date, as interpreted in the
    * local time zone.
+   *
    * @return the number of minutes past the hour represented by this date.
    */
   @Override
@@ -269,8 +292,9 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   /**
    * Returns the number of milliseconds since January 1, 1970, 00:00:00 GMT represented by this
    * DateTime object.
+   *
    * @return the number of milliseconds since January 1, 1970, 00:00:00 GMT represented by this
-   *         date.
+   * date.
    */
   @Override
   public long getTime() {
@@ -280,12 +304,17 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   /**
    * Returns the offset, measured in minutes, for the local time zone relative to UTC that is
    * appropriate for the time represented by this DateTime object.
+   *
    * @return the time-zone offset, in minutes, for the current time zone.
    */
   @SuppressWarnings("deprecation")
   @Override
   public int getTimezoneOffset() {
-    return new Date(getTime()).getTimezoneOffset();
+    return new Date(Math.max(getTime(), 0L)).getTimezoneOffset();
+  }
+
+  public int getTimezoneOffsetInMillis() {
+    return getTimezoneOffset() * TimeUtils.MILLIS_PER_MINUTE;
   }
 
   @Override
@@ -295,6 +324,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Returns the number the day of month by UTC time. The value returned between 1 and 31.
+   *
    * @return the number the day of month by UTC time.
    */
   public int getUtcDom() {
@@ -305,6 +335,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   /**
    * Returns the number the day of week by UTC time. The value returned between 1 and 7. First day
    * of week is Monday (value equals 1).
+   *
    * @return the number the day of week by UTC time.
    */
   public int getUtcDow() {
@@ -314,6 +345,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Returns the number the day of year by UTC time. The value returned between 1 and 366
+   *
    * @return Returns the number the day of year by UTC time.
    */
   public int getUtcDoy() {
@@ -323,6 +355,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Returns the number of hour of this object by UTC time. The value returned between 0 and 23.
+   *
    * @return the number of hour of this object by UTC time.
    */
   public int getUtcHour() {
@@ -332,6 +365,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Returns the number of milliseconds the past of second by UTC time.
+   *
    * @return the number of milliseconds the past of second by UTC time
    */
   public int getUtcMillis() {
@@ -341,6 +375,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Returns the number of minutes by UTC time. The value returned between 0 and 59
+   *
    * @return the number of minutes by UTC time
    */
   public int getUtcMinute() {
@@ -350,6 +385,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Returns a number representing the month by UTC time. The value returned between 1 and 12.
+   *
    * @return a number representing the month by UTC time
    */
   public int getUtcMonth() {
@@ -359,6 +395,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Returns a number of seconds the past minute by UTC time. The value returned between 0 and 59.
+   *
    * @return a number of seconds the past minute by UTC time
    */
   public int getUtcSecond() {
@@ -368,6 +405,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Returns a value of UTC year.
+   *
    * @return the UTC year representing this date
    */
   public int getUtcYear() {
@@ -377,6 +415,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Returns a value of year.
+   *
    * @return the year representing this date
    */
   @Override
@@ -387,6 +426,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Returns the {@code DateTime} object hash value.
+   *
    * @return the hash value of {@code DateTime}
    */
   @Override
@@ -394,6 +434,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     return Long.valueOf(getTime()).hashCode();
   }
 
+  @Override
   public boolean hasTimePart() {
     return getHour() != 0 || getMinute() != 0 || getSecond() != 0 || getMillis() != 0;
   }
@@ -473,6 +514,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Setting the time of milliseconds.
+   *
    * @param time the time milliseconds since January 1, 1970, 00:00:00 GMT
    */
   public void setTime(long time) {
@@ -493,52 +535,19 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     return true;
   }
 
-  public String toCompactString() {
-    String timeString = toCompactTimeString();
-    if (timeString.isEmpty()) {
-      return toDateString();
-    } else {
-      StringBuilder sb = new StringBuilder();
-      sb.append(toDateString()).append(TimeUtils.DATE_TIME_SEPARATOR).append(timeString);
-      return sb.toString();
-    }
-  }
-
-  public String toCompactTimeString() {
-    if (getMillis() != 0) {
-      return toTimeString();
-    }
-    if (getHour() == 0 && getMinute() == 0 && getSecond() == 0) {
-      return BeeConst.STRING_EMPTY;
-    }
-
-    StringBuilder sb = new StringBuilder();
-    sb.append(TimeUtils.padTwo(getHour()));
-    sb.append(TimeUtils.TIME_FIELD_SEPARATOR).append(TimeUtils.padTwo(getMinute()));
-
-    if (getSecond() != 0) {
-      sb.append(TimeUtils.TIME_FIELD_SEPARATOR).append(TimeUtils.padTwo(getSecond()));
-    }
-    return sb.toString();
-  }
-
-  /**
-   * Converts the {@code DateTime} in date to {@code String}.
-   * @return String of date
-   */
-  public String toDateString() {
-    return TimeUtils.dateToString(this);
-  }
-
   /**
    * Converts the {@code DateTime} to {@code String} with date and time.
+   *
    * @return String of date and time
    */
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(23);
-    sb.append(toDateString()).append(TimeUtils.DATE_TIME_SEPARATOR).append(toTimeString());
-    return sb.toString();
+    if (hasTimePart()) {
+      return dateToString(getYear(), getMonth(), getDom()) + TimeUtils.DATE_TIME_SEPARATOR
+          + toTimeString();
+    } else {
+      return dateToString(getYear(), getMonth(), getDom());
+    }
   }
 
   @Override
@@ -551,36 +560,43 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Converts the {@code DateTime} in time to {@code String}.
+   *
    * @return String of the time
    */
   public String toTimeString() {
     StringBuilder sb = new StringBuilder(12);
     sb.append(TimeUtils.padTwo(getHour())).append(TimeUtils.TIME_FIELD_SEPARATOR);
-    sb.append(TimeUtils.padTwo(getMinute())).append(TimeUtils.TIME_FIELD_SEPARATOR);
-    sb.append(TimeUtils.padTwo(getSecond()));
+    sb.append(TimeUtils.padTwo(getMinute()));
+
+    int s = getSecond();
     int z = getMillis();
-    if (z != 0) {
-      sb.append(TimeUtils.MILLIS_SEPARATOR).append(TimeUtils.millisToString(z));
+
+    if (s != 0 || z != 0) {
+      sb.append(TimeUtils.TIME_FIELD_SEPARATOR).append(TimeUtils.padTwo(s));
+
+      if (z != 0) {
+        sb.append(TimeUtils.MILLIS_SEPARATOR).append(TimeUtils.millisToString(z));
+      }
     }
     return sb.toString();
   }
 
   public String toUtcDateString() {
-    return TimeUtils.dateToString(getUtcYear(), getUtcMonth(), getUtcDom());
+    return dateToString(getUtcYear(), getUtcMonth(), getUtcDom());
   }
 
   /**
    * Converting {@code DateTime} object to UTC date and time to the {@code String}.
+   *
    * @return String of UTC date and time
    */
   public String toUtcString() {
-    StringBuilder sb = new StringBuilder(23);
-    sb.append(toUtcDateString()).append(TimeUtils.DATE_TIME_SEPARATOR).append(toUtcTimeString());
-    return sb.toString();
+    return toUtcDateString() + TimeUtils.DATE_TIME_SEPARATOR + toUtcTimeString();
   }
 
   /**
    * Converting {@code DateTime} object to UTC time to the {@code String}.
+   *
    * @return String of UTC time
    */
   public String toUtcTimeString() {
@@ -623,10 +639,6 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     if (utcFields == null) {
       computeUtcFields();
     }
-  }
-
-  private int getTimezoneOffsetInMillis() {
-    return getTimezoneOffset() * TimeUtils.MILLIS_PER_MINUTE;
   }
 
   private void resetComputedFields() {

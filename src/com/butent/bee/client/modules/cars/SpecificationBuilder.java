@@ -6,17 +6,22 @@ import com.google.common.collect.TreeMultimap;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.client.modules.cars.ConfPricelistForm.*;
+import static com.butent.bee.shared.html.builder.Factory.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_FILE_HASH;
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.ConfirmationCallback;
-import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
@@ -30,15 +35,13 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.html.builder.elements.Table;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.cars.Bundle;
 import com.butent.bee.shared.modules.cars.Configuration;
@@ -67,13 +70,13 @@ public class SpecificationBuilder implements InputCallback {
   private static final class Branch {
     private final Long id;
     private final String name;
-    private final Long photo;
+    private final String photo;
     private final Boolean blocked;
     private final List<Branch> childs = new ArrayList<>();
     private Branch parent;
     private Configuration configuration;
 
-    private Branch(Long id, String name, Long photo, Boolean blocked) {
+    private Branch(Long id, String name, String photo, Boolean blocked) {
       this.id = id;
       this.name = name;
       this.photo = photo;
@@ -116,7 +119,7 @@ public class SpecificationBuilder implements InputCallback {
       return BeeUtils.joinWords(path);
     }
 
-    public Long getPhoto() {
+    public String getPhoto() {
       return photo;
     }
 
@@ -137,7 +140,11 @@ public class SpecificationBuilder implements InputCallback {
   public static final String STYLE_THUMBNAIL = STYLE_PREFIX + "-thumbnail";
   private static final String STYLE_SELECTABLE = STYLE_PREFIX + "-selectable";
   public static final String STYLE_BLOCKED = STYLE_PREFIX + "-blocked";
-  private static final String STYLE_DESCRIPTION = STYLE_PREFIX + "-description";
+  public static final String STYLE_DESCRIPTION = STYLE_PREFIX + "-description";
+  public static final String STYLE_SUMMARY = STYLE_PREFIX + "-summary";
+
+  private static final String DATA_GRP = "grp";
+  private static final String DATA_PKG = "pkg";
 
   private Specification template;
   private final Consumer<Specification> callback;
@@ -149,26 +156,28 @@ public class SpecificationBuilder implements InputCallback {
 
   public SpecificationBuilder(Specification template, Consumer<Specification> callback) {
     this.template = template;
-    this.callback = Assert.notNull(callback);
+    this.callback = callback;
 
-    Queries.getRowSet(TBL_CONF_PRICELIST, null, new Queries.RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        Branch tree = new Branch(null, null, null, null);
-        Multimap<Long, Branch> hierarchy = LinkedHashMultimap.create();
+    Queries.getRowSet(TBL_CONF_PRICELIST, null, result -> {
+      Branch tree = new Branch(null, null, null, null);
+      Multimap<Long, Branch> hierarchy = LinkedHashMultimap.create();
 
-        for (int i = 0; i < result.getNumberOfRows(); i++) {
-          hierarchy.put(result.getLong(i, COL_BRANCH), new Branch(result.getRow(i).getId(),
-              result.getString(i, COL_BRANCH_NAME),
-              result.getLong(i, COL_PHOTO), result.getBoolean(i, COL_BLOCKED)));
-        }
-        fillTree(tree, hierarchy);
-        setBranch(tree);
+      for (int i = 0; i < result.getNumberOfRows(); i++) {
+        hierarchy.put(result.getLong(i, COL_BRANCH), new Branch(result.getRow(i).getId(),
+            result.getString(i, COL_BRANCH_NAME), result.getString(i, COL_FILE_HASH),
+            result.getBoolean(i, COL_BLOCKED)));
       }
+      fillTree(tree, hierarchy);
+      setBranch(tree);
     });
-    DialogBox dialog = Global.inputWidget(Localized.dictionary().specification(), container, this);
-    dialog.addStyleName(STYLE_DIALOG);
+    Popup dialog;
 
+    if (Objects.isNull(callback)) {
+      dialog = Global.showModalWidget(Localized.dictionary().specification(), container);
+    } else {
+      dialog = Global.inputWidget(Localized.dictionary().specification(), container, this);
+    }
+    dialog.addStyleName(STYLE_DIALOG);
     StyleUtils.setWidth(dialog, BeeKeeper.getScreen().getWidth() * 0.7, CssUnit.PX);
     StyleUtils.setHeight(dialog, BeeKeeper.getScreen().getHeight() * 0.9, CssUnit.PX);
   }
@@ -188,7 +197,9 @@ public class SpecificationBuilder implements InputCallback {
           }
         }
         if (!ok) {
-          return BeeUtils.join(": ", dimension.getName(), Localized.dictionary().valueRequired());
+          Global.showError(BeeUtils.join(": ", dimension.getName(),
+              Localized.dictionary().valueRequired()));
+          return InputBoxes.SILENT_ERROR;
         }
       }
     }
@@ -209,6 +220,7 @@ public class SpecificationBuilder implements InputCallback {
     if (specification.getBundle() != null) {
       List<String> selectedOptions = new ArrayList<>();
       Dimension dimension = null;
+      Configuration configuration = currentBranch.getConfiguration();
 
       for (Option option : specification.getOptions()) {
         if (!option.getDimension().isRequired()) {
@@ -216,33 +228,43 @@ public class SpecificationBuilder implements InputCallback {
             dimension = option.getDimension();
             selectedOptions.add("<i>" + dimension + ":</i>");
           }
-          Configuration configuration = currentBranch.getConfiguration();
           selectedOptions.add(BeeUtils.notEmpty(BeeUtils
                   .notEmpty(configuration.getRelationDescription(option, specification.getBundle()),
                       configuration.getOptionDescription(option), option.getDescription()),
-              option.getName()));
+              BeeUtils.joinWords(option.getCode(), option.getName())));
         }
       }
-      specification.setDescription(BeeUtils.join("<br><br><b>"
-              + Localized.dictionary().additionalEquipment() + "</b><br>",
-          specification.getDescription(), BeeUtils.join("<br>", selectedOptions.stream()
-              .map(s -> s.replace("\n", "<br>")).collect(Collectors.toList()))));
+      if (!BeeUtils.isEmpty(selectedOptions)) {
+        specification.setDescription(BeeUtils.join("<br><br><b>"
+                + Localized.dictionary().additionalEquipment() + "</b><br>",
+            specification.getDescription(), BeeUtils.join("<br>", selectedOptions)));
+      }
+      specification.setCriteria(collectCriteria(configuration));
 
       ParameterList args = CarsKeeper.createSvcArgs(SVC_SAVE_OBJECT);
       args.addDataItem(COL_OBJECT, Codec.beeSerialize(specification));
 
-      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          response.notify(BeeKeeper.getScreen());
+      BeeKeeper.getRpc().makePostRequest(args, response -> {
+        response.notify(BeeKeeper.getScreen());
 
-          if (!response.hasErrors()) {
-            specification.setId(response.getResponseAsLong());
-            callback.accept(specification);
-          }
+        if (!response.hasErrors()) {
+          specification.setId(response.getResponseAsLong());
+          callback.accept(specification);
         }
       });
+    } else {
+      callback.accept(null);
     }
+  }
+
+  public static String renderCriteria(Map<String, String> criteria) {
+    Table crit = table().addClass(STYLE_SUMMARY);
+
+    if (!BeeUtils.isEmpty(criteria)) {
+      criteria.forEach((key, val) ->
+          crit.append(tr().append(td().text(key)).append(td().text(val))));
+    }
+    return crit.toString();
   }
 
   private static Widget buildThumbnail(String choiceCaption, List<Widget[]> choices,
@@ -290,22 +312,27 @@ public class SpecificationBuilder implements InputCallback {
     return thumbnail;
   }
 
+  private Map<String, String> collectCriteria(Configuration configuration) {
+    Map<String, String> criteria = configuration.getBundleCriteria(specification.getBundle());
+
+    specification.getOptions().forEach(option -> {
+      criteria.putAll(configuration.getOptionCriteria(option));
+      criteria.putAll(configuration.getRelationCriteria(option, specification.getBundle()));
+    });
+    return criteria;
+  }
+
   private void collectRestrictions(Multimap<Dimension, Option> allOptions, Option option,
       boolean on, Map<Option, Boolean> options) throws BeeException {
 
-    if (!allOptions.containsValue(option) || Objects.equals(options.get(option), on)) {
+    if (!allOptions.containsValue(option)) {
       return;
     }
     if (options.containsKey(option)) {
-      if (options.get(option) != null) {
-        throw new BeeException(option.toString());
-      } else if (on) {
-        options.put(option, true);
+      if (Objects.equals(options.get(option), on)) {
         return;
       }
-    } else if (!on) {
-      options.put(option, false);
-      return;
+      throw new BeeException(option.toString());
     }
     options.put(option, on);
     Configuration configuration = currentBranch.getConfiguration();
@@ -325,8 +352,9 @@ public class SpecificationBuilder implements InputCallback {
         collectRestrictions(allOptions, opt, true, options);
       }
     } else {
-      for (Option opt : options.keySet()) {
-        if (configuration.getRequiredOptions(opt).contains(option)) {
+      for (Option opt : allOptions.values()) {
+        if (!Objects.equals(opt, option)
+            && configuration.getRequiredOptions(opt).contains(option)) {
           collectRestrictions(allOptions, opt, false, options);
         }
       }
@@ -343,14 +371,53 @@ public class SpecificationBuilder implements InputCallback {
   }
 
   private void filter(HtmlTable table, String value) {
+    int nameCol = 2;
+
     for (int i = 0; i < table.getRowCount(); i++) {
       List<TableCellElement> cells = table.getRowCells(i);
+      boolean show = BeeUtils.isEmpty(value);
 
       if (cells.size() > 2) {
-        table.getRowFormatter().setVisible(i, BeeUtils.isEmpty(value)
+        show = show
             || BeeUtils.containsSame(cells.get(1).getInnerText(), value)
-            || BeeUtils.containsSame(cells.get(2).getInnerText(), value));
+            || BeeUtils.containsSame(cells.get(nameCol).getInnerText(), value);
+
+        Widget packetWidget = table.getWidget(i, nameCol);
+        Integer groupIdx = BeeUtils.nvl(DomUtils.getDataPropertyInt(table.getRow(i), DATA_GRP),
+            BeeConst.UNDEF);
+        Integer packetIdx = BeeUtils.nvl(DomUtils.getDataPropertyInt(table.getRow(i), DATA_PKG),
+            BeeConst.UNDEF);
+
+        if (Objects.nonNull(packetWidget)) {
+          table.setText(i, nameCol, packetWidget.getElement().getInnerText());
+
+        } else if (!BeeConst.isUndef(packetIdx)) {
+          if (show) {
+            table.getRowFormatter().setVisible(packetIdx, true);
+
+          } else if (Objects.isNull(table.getWidget(packetIdx, nameCol))) {
+            Label name = new Label(table.getCellFormatter().getElement(packetIdx, nameCol)
+                .getInnerText());
+            name.setStyleName(STYLE_PACKET_COLLAPSED);
+
+            name.addClickHandler(clickEvent -> {
+              for (int j = packetIdx + 1; j < table.getRowCount(); j++) {
+                if (!Objects.equals(DomUtils.getDataPropertyInt(table.getRow(j), DATA_PKG),
+                    packetIdx)) {
+                  break;
+                }
+                table.getRowFormatter().setVisible(j, true);
+              }
+              table.setText(packetIdx, nameCol, name.getText());
+            });
+            table.setWidget(packetIdx, nameCol, name);
+          }
+        }
+        if (!BeeConst.isUndef(groupIdx) && show) {
+          table.getRowFormatter().setVisible(groupIdx, true);
+        }
       }
+      table.getRowFormatter().setVisible(i, show);
     }
     searchTag = value;
   }
@@ -387,8 +454,8 @@ public class SpecificationBuilder implements InputCallback {
     return options;
   }
 
-  private static Widget getPhoto(Long photo) {
-    return DataUtils.isId(photo) ? new Image(FileUtils.getUrl(photo)) : null;
+  private static Image getPhoto(String photo) {
+    return BeeUtils.isEmpty(photo) ? null : new Image(FileUtils.getUrl(photo));
   }
 
   private Integer normPrice(Option option) {
@@ -403,13 +470,18 @@ public class SpecificationBuilder implements InputCallback {
   }
 
   private void refresh() {
+    renderDescription();
     Configuration configuration = currentBranch.getConfiguration();
-    int scroll = 0;
 
-    for (Widget widget : container) {
-      if (widget.getElement().hasClassName(STYLE_OPTIONS)) {
-        scroll = widget.getElement().getScrollTop();
-      }
+    int scroll = 0;
+    Widget w = UiHelper.getChildByStyleName(container, STYLE_OPTIONS);
+    if (Objects.nonNull(w)) {
+      scroll = w.getElement().getScrollTop();
+    }
+    boolean disclosureOpen = false;
+    Disclosure d = UiHelper.getChild(container, Disclosure.class);
+    if (Objects.nonNull(d)) {
+      disclosureOpen = d.isOpen();
     }
     container.clear();
     Flow header = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
@@ -562,15 +634,21 @@ public class SpecificationBuilder implements InputCallback {
           specification.addOption(option, normPrice(option));
         }
         List<Widget[]> caps = new ArrayList<>();
-        opts.forEach(o -> caps.add(new Widget[] {getPhoto(o.getPhoto()), new Label(o.toString())}));
+        opts.forEach(o -> caps.add(new Widget[] {
+            getPhoto(BeeUtils.nvl(configuration.getRelationPhoto(o, specification.getBundle()),
+                configuration.getOptionPhoto(o), o.getPhoto())), new Label(o.toString())}));
 
         optionBox.add(buildThumbnail(dimension.getName(), caps,
             index -> toggleOption(allOptions, opts.get(index), true, false),
             Objects.isNull(option) ? null : new Widget[] {
                 new Label(dimension.getName()),
-                getPhoto(option.getPhoto()), new Label(option.toString())}));
+                getPhoto(BeeUtils.nvl(configuration.getRelationPhoto(option,
+                    specification.getBundle()), configuration.getOptionPhoto(option),
+                    option.getPhoto())),
+                new Label(option.toString())}));
       } else {
         int rowSelectable = BeeConst.UNDEF;
+        int groupIdx = BeeConst.UNDEF;
 
         for (Option option : opts) {
           if (!configuration.isDefault(option, specification.getBundle())) {
@@ -581,23 +659,46 @@ public class SpecificationBuilder implements InputCallback {
 
             if (BeeConst.isUndef(rowSelectable)) {
               rowSelectable = selectable.getRowCount();
-              selectable.setText(rowSelectable, 0, dimension.getName());
+              selectable.setText(rowSelectable, 0, dimension.getName(), STYLE_GROUP);
               selectable.getCellFormatter().setColSpan(rowSelectable, 0, 4);
+              groupIdx = rowSelectable;
             }
             rowSelectable++;
             selectable.setWidget(rowSelectable, 0, check);
             selectable.setText(rowSelectable, 1, option.getCode());
             selectable.setText(rowSelectable, 2, option.getName());
             selectable.setText(rowSelectable, 3, BeeUtils.toString(normPrice(option)));
+            DomUtils.setDataProperty(selectable.getRow(rowSelectable), DATA_GRP, groupIdx);
+
+            int packetIdx = rowSelectable;
+
+            for (Option opt : configuration.getPacketOptions(option, specification.getBundle())) {
+              rowSelectable++;
+              selectable.getCellFormatter().setStyleName(rowSelectable, 0, STYLE_PACKET);
+              selectable.setText(rowSelectable, 1, opt.getCode(), STYLE_PACKET);
+              selectable.setText(rowSelectable, 2, opt.getName(), STYLE_PACKET);
+              selectable.getCellFormatter().setStyleName(rowSelectable, 3, STYLE_PACKET);
+              DomUtils.setDataProperty(selectable.getRow(rowSelectable), DATA_PKG, packetIdx);
+              DomUtils.setDataProperty(selectable.getRow(rowSelectable), DATA_GRP, groupIdx);
+            }
           }
         }
       }
     }
-    if (!BeeUtils.isEmpty(specification.getDescription())) {
-      CustomDiv defaults = new CustomDiv(STYLE_DESCRIPTION);
-      defaults.setHtml(specification.getDescription());
-      subContainer.add(defaults);
-    }
+    Disclosure descriptionBox = new Disclosure(disclosureOpen,
+        new Label(Localized.dictionary().equipment()));
+    Flow content = new Flow();
+    descriptionBox.add(content);
+
+    CustomDiv descr = new CustomDiv(STYLE_DESCRIPTION);
+    descr.setHtml(specification.getDescription());
+    content.add(descr);
+
+    CustomDiv crit = new CustomDiv();
+    crit.setHtml(renderCriteria(collectCriteria(configuration)));
+    content.add(crit);
+
+    subContainer.add(descriptionBox);
     subContainer.add(optionBox);
 
     if (selectable.getRowCount() > 0) {
@@ -608,7 +709,7 @@ public class SpecificationBuilder implements InputCallback {
         filter(selectable, searchTag);
       }
       search.addInputHandler(inputEvent -> filter(selectable, search.getValue()));
-      subContainer.add(search);
+      container.insert(search, container.getWidgetCount() - 1);
       subContainer.add(selectable);
     }
     subContainer.getElement().setScrollTop(scroll);
@@ -626,22 +727,25 @@ public class SpecificationBuilder implements InputCallback {
 
       if (!BeeUtils.isEmpty(description)) {
         defaults.add(description);
-      }
-      for (Option option : getAvailableOptions().values()) {
-        if (!option.getDimension().isRequired() && configuration.isDefault(option, bundle)) {
-          if (!Objects.equals(option.getDimension(), dimension)) {
-            dimension = option.getDimension();
-            defaults.add("<i>" + dimension + ":</i>");
+      } else {
+        for (Option option : getAvailableOptions().values()) {
+          if (!option.getDimension().isRequired() && configuration.isDefault(option, bundle)
+              && Collections.disjoint(configuration.getDeniedOptions(option),
+              specification.getOptions())) {
+
+            if (!Objects.equals(option.getDimension(), dimension)) {
+              dimension = option.getDimension();
+              defaults.add("<i>" + dimension + ":</i>");
+            }
+            defaults.add(BeeUtils.notEmpty(BeeUtils
+                    .notEmpty(configuration.getRelationDescription(option, bundle),
+                        configuration.getOptionDescription(option), option.getDescription()),
+                BeeUtils.joinWords(option.getCode(), option.getName())));
           }
-          defaults.add(BeeUtils.notEmpty(BeeUtils
-                  .notEmpty(configuration.getRelationDescription(option, bundle),
-                      configuration.getOptionDescription(option), option.getDescription()),
-              option.getName()));
         }
       }
     }
-    specification.setDescription(BeeUtils.join("<br>",
-        defaults.stream().map(s -> s.replace("\n", "<br>")).collect(Collectors.toList())));
+    specification.setDescription(BeeUtils.join("<br>", defaults));
   }
 
   private void setBranch(Branch branch) {
@@ -669,15 +773,12 @@ public class SpecificationBuilder implements InputCallback {
         ParameterList args = CarsKeeper.createSvcArgs(SVC_GET_CONFIGURATION);
         args.addDataItem(COL_BRANCH, currentBranch.getId());
 
-        BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            response.notify(BeeKeeper.getScreen());
+        BeeKeeper.getRpc().makePostRequest(args, response -> {
+          response.notify(BeeKeeper.getScreen());
 
-            if (!response.hasErrors()) {
-              currentBranch.setConfiguration(Configuration.restore(response.getResponseAsString()));
-              setBundle(null);
-            }
+          if (!response.hasErrors()) {
+            currentBranch.setConfiguration(Configuration.restore(response.getResponseAsString()));
+            setBundle(null);
           }
         });
         return;
@@ -712,17 +813,15 @@ public class SpecificationBuilder implements InputCallback {
     } else {
       specification.setBundle(bundle, BeeUtils.toIntOrNull(configuration.getBundlePrice(bundle)));
     }
-    renderDescription();
     refresh();
   }
 
   private void toggleOption(Multimap<Dimension, Option> allOptions, Option option, boolean on,
       boolean silent) {
+    Configuration configuration = currentBranch.getConfiguration();
     Map<Option, Boolean> toggle = new TreeMap<>();
+    Set<Option> packetOptions = new HashSet<>();
 
-    for (Option opt : specification.getOptions()) {
-      toggle.put(opt, null);
-    }
     ConfirmationCallback confirmationCallback = new ConfirmationCallback() {
       @Override
       public void onCancel() {
@@ -731,17 +830,13 @@ public class SpecificationBuilder implements InputCallback {
 
       @Override
       public void onConfirm() {
-        for (Option opt : toggle.keySet()) {
-          Boolean action = toggle.get(opt);
-
-          if (action != null) {
-            if (action) {
-              specification.addOption(opt, normPrice(opt));
-            } else {
-              specification.getOptions().remove(opt);
-            }
+        toggle.forEach((opt, add) -> {
+          if (add) {
+            specification.addOption(opt, packetOptions.contains(opt) ? 0 : normPrice(opt));
+          } else {
+            specification.getOptions().remove(opt);
           }
-        }
+        });
         if (!silent) {
           refresh();
         }
@@ -749,20 +844,39 @@ public class SpecificationBuilder implements InputCallback {
     };
     try {
       collectRestrictions(allOptions, option, on, toggle);
+
+      toggle.keySet().removeIf(opt -> !opt.getDimension().isRequired()
+          && configuration.isDefault(opt, specification.getBundle()));
+
+      specification.getOptions().forEach(opt -> toggle.putIfAbsent(opt, true));
+
+      toggle.keySet().stream().filter(toggle::get).forEach(opt ->
+          packetOptions.addAll(configuration.getPacketOptions(opt, specification.getBundle())));
+
+      for (Iterator<Option> it = toggle.keySet().iterator(); it.hasNext(); ) {
+        Option opt = it.next();
+
+        if (toggle.get(opt) && !opt.getDimension().isRequired() && packetOptions.contains(opt)) {
+          specification.getOptions().remove(opt);
+          it.remove();
+        }
+      }
       List<String> msgs = new ArrayList<>();
       Dimension dimension = option.getDimension();
 
       if (!silent) {
-        for (Option opt : toggle.keySet()) {
-          Boolean action = toggle.get(opt);
+        toggle.forEach((opt, add) -> {
+          if (!Objects.equals(opt, option)
+              && !Objects.equals(specification.getOptions().contains(opt), add)
+              && (!dimension.isRequired() || !Objects.equals(dimension, opt.getDimension()))) {
 
-          if (action != null && !Objects.equals(opt, option)
-              && (!dimension.isRequired() || !Objects.equals(dimension, opt.getDimension()))
-              && !Objects.equals(specification.getOptions().contains(opt), action)) {
-
-            msgs.add(BeeUtils.joinWords(action ? "+" : "-", opt));
+            msgs.add(BeeUtils.joinWords(add
+                ? "<span style=\"font-family:" + FontAwesome.class.getSimpleName()
+                + "; color:green;\">" + FontAwesome.PLUS_CIRCLE.getCode() + "</span>"
+                : "<span style=\"font-family:" + FontAwesome.class.getSimpleName()
+                + "; color:red;\">" + FontAwesome.BAN.getCode() + "</span>", opt));
           }
-        }
+        });
       }
       if (BeeUtils.isEmpty(msgs)) {
         confirmationCallback.onConfirm();

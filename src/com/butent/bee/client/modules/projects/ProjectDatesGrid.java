@@ -3,12 +3,10 @@ package com.butent.bee.client.modules.projects;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -93,27 +91,20 @@ class ProjectDatesGrid extends AbstractGridInterceptor {
       }
 
       if (getGridView() != null) {
-        getGridView().ensureRelId(new IdCallback() {
-          @Override
-          public void onSuccess(Long result) {
+        getGridView().ensureRelId(result -> {
 
-            FormView parentForm = ViewHelper.getForm(getGridView().asWidget());
-            if (parentForm != null) {
+          FormView parentForm = ViewHelper.getForm(getGridView().asWidget());
+          if (parentForm != null) {
 
-              if (parentForm.getActiveRow() != null) {
-                RelationUtils.updateRow(viewProjectDates, getGridView().getRelColumn(), row,
-                    Data.getDataInfo(parentForm.getViewName()), parentForm.getActiveRow(), true);
+            if (parentForm.getActiveRow() != null) {
+              RelationUtils.updateRow(viewProjectDates, getGridView().getRelColumn(), row,
+                  Data.getDataInfo(parentForm.getViewName()), parentForm.getActiveRow(), true);
 
-              }
             }
-
-            RowFactory.createRow(viewProjectDates, row, Modality.ENABLED, new RowCallback() {
-              @Override
-              public void onSuccess(BeeRow createdDate) {
-                getGridPresenter().handleAction(Action.REFRESH);
-              }
-            });
           }
+
+          RowFactory.createRow(viewProjectDates, row, Opener.MODAL,
+              createdDate -> getGridPresenter().handleAction(Action.REFRESH));
         });
 
       }

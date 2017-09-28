@@ -4,7 +4,7 @@
         xmlns:ui="http://www.butent.com/ui"
 
         name="Account" viewName="Accounts" caption="=mailAccount" width="700" height="700"
-    >
+>
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-vertical-center">
       <Table kind="controls">
@@ -23,10 +23,10 @@
           <Label for="Signature" />
           <DataSelector source="Signature" choiceColumns="Description Content" style="width:200px"
                         currentUserFilter="User" />
-          <CheckBox source="SynchronizeAll" />
+          <ListBox source="SyncMode" />
         </row>
-        <row>
-          <Label text="=users" />
+        <row data="AccountUsers" listName="AccountUsers">
+          <Label text="=users" listName="AccountUsers" />
           <cell colSpan="2">
             <ChildSelector name="AccountUsers" childTable="AccountUsers" viewName="Users"
                            targetRelColumn="Account" sourceRelColumn="User"
@@ -45,7 +45,7 @@
           <FlowPanel class="flexBox-vertical-center flexible">
             <Table kind="controls">
               <col index="0" kind="label" />
-              
+
               <row>
                 <cell colSpan="2">
                   <TextLabel style="font-weight:bold; text-align:center;">
@@ -113,7 +113,7 @@
           <FlowPanel class="flexBox-vertical-center flexible">
             <Table kind="controls">
               <col index="0" kind="label" />
-              
+
               <row>
                 <cell colSpan="2">
                   <Label text="=mailSMTPServerSettings"

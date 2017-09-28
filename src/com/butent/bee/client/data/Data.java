@@ -28,6 +28,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -106,7 +107,7 @@ public final class Data {
           @Override
           public void onFailure(String... reason) {
             consumeSize(BeeConst.UNDEF);
-            super.onFailure(reason);
+            Queries.IntCallback.super.onFailure(reason);
           }
 
           @Override
@@ -197,6 +198,10 @@ public final class Data {
     return result;
   }
 
+  public static List<BeeColumn> getColumns(String viewName, String col1, String col2) {
+    return getColumns(viewName, Arrays.asList(col1, col2));
+  }
+
   public static Integer getColumnScale(String viewName, String colName) {
     return getDataInfo(viewName).getColumnScale(colName);
   }
@@ -282,6 +287,23 @@ public final class Data {
     return (dataInfo == null) ? null : dataInfo.getTableName();
   }
 
+  public static boolean hasDataInfo(String viewName) {
+    if (BeeUtils.isEmpty(viewName)) {
+      return false;
+    } else {
+      return getDataInfo(viewName, false) != null;
+    }
+  }
+
+  public static boolean hasEditForm(String viewName) {
+    if (BeeUtils.isEmpty(viewName)) {
+      return false;
+    } else {
+      DataInfo dataInfo = getDataInfo(viewName, false);
+      return dataInfo != null && !BeeUtils.isEmpty(dataInfo.getEditForm());
+    }
+  }
+
   public static boolean isColumnReadOnly(String viewName, BeeColumn column) {
     return column.isReadOnly() || readOnlyColumns.containsEntry(viewName, column.getId())
         || !BeeKeeper.getUser().canEditColumn(viewName, column.getId());
@@ -289,6 +311,10 @@ public final class Data {
 
   public static boolean isNull(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.isNull(viewName, row, colName);
+  }
+
+  public static boolean isTrue(String viewName, IsRow row, String colName) {
+    return COLUMN_MAPPER.isTrue(viewName, row, colName);
   }
 
   public static boolean isViewEditable(String viewName) {
@@ -317,13 +343,25 @@ public final class Data {
 
   public static void onTableChange(String tableName, EnumSet<DataChangeEvent.Effect> effects) {
     Collection<String> viewNames = DATA_INFO_PROVIDER.getViewNames(tableName);
-    for (String viewName : viewNames) {
-      DataChangeEvent.fire(BeeKeeper.getBus(), viewName, effects);
+    if (!viewNames.isEmpty()) {
+      DataChangeEvent.fire(BeeKeeper.getBus(), viewNames, effects);
     }
   }
 
   public static void onViewChange(String viewName, EnumSet<DataChangeEvent.Effect> effects) {
     onTableChange(getDataInfo(viewName).getTableName(), effects);
+  }
+
+  public static void refreshLocal(String viewOrTableName) {
+    DataInfo info = getDataInfo(viewOrTableName, false);
+    DATA_INFO_PROVIDER.getViewNames(Objects.isNull(info) ? viewOrTableName : info.getTableName())
+        .forEach(view -> DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), view));
+  }
+
+  public static void resetLocal(String viewOrTableName) {
+    DataInfo info = getDataInfo(viewOrTableName, false);
+    DATA_INFO_PROVIDER.getViewNames(Objects.isNull(info) ? viewOrTableName : info.getTableName())
+        .forEach(view -> DataChangeEvent.fireLocalReset(BeeKeeper.getBus(), view, null));
   }
 
   public static Double round(String viewName, String colName, Double value) {

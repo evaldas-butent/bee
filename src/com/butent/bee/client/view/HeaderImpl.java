@@ -6,9 +6,11 @@ import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.animation.Animatable;
+import com.butent.bee.client.animation.HasAnimatableActivity;
+import com.butent.bee.client.animation.HasHoverAnimation;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
+import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
@@ -19,6 +21,7 @@ import com.butent.bee.client.ui.Theme;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.client.widget.AnimatableLabel;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
@@ -30,6 +33,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Captions;
+import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -57,6 +61,7 @@ public class HeaderImpl extends Flow implements HeaderView {
   private static final String STYLE_MESSAGE = STYLE_PREFIX + "message";
   private static final String STYLE_ROW_ID = STYLE_PREFIX + "row-id";
   private static final String STYLE_ROW_MESSAGE = STYLE_PREFIX + "row-message";
+  private static final String STYLE_READ_ONLY = STYLE_PREFIX + "read-only";
 
   private static final String STYLE_COMMAND_PANEL = STYLE_PREFIX + "commandPanel";
 
@@ -66,6 +71,10 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   private static final String STYLE_CREATE_NEW = BeeConst.CSS_CLASS_PREFIX + "CreateNew";
   private static final String STYLE_SAVE_LARGE = BeeConst.CSS_CLASS_PREFIX + "SaveLarge";
+
+  private static final int MESSAGE_INDEX_ROW_ID = 0;
+  private static final int MESSAGE_INDEX_READ_ONLY = 1;
+  private static final int MESSAGE_INDEX_ROW_MESSAGE = 2;
 
   private static boolean hasAction(Action action, boolean def,
       Set<Action> enabledActions, Set<Action> disabledActions) {
@@ -77,6 +86,7 @@ public class HeaderImpl extends Flow implements HeaderView {
   }
 
   private Presenter viewPresenter;
+  private HandlesActions actionHandler;
 
   private final Label captionWidget = new Label();
 
@@ -107,10 +117,30 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   @Override
   public void addCommandItem(IdentifiableWidget widget) {
-    if (widget instanceof Animatable) {
-      ((Animatable) widget).enableAnimation();
+    if (widget instanceof HasAnimatableActivity) {
+      int duration = BeeUtils.round(Previewer.getActionSensitivityMillis()
+          * ((HasAnimatableActivity) widget).getSensitivityRatio());
+      addCommandItem((HasAnimatableActivity) widget, duration);
+
+    } else if (widget != null) {
+      addCommand(widget.asWidget());
     }
-    getCommandPanel().add(widget);
+  }
+
+  @Override
+  public void addCommandItem(HasAnimatableActivity widget, int duration) {
+    if (widget != null) {
+      if (duration > 0) {
+        widget.enableAnimation(duration);
+      }
+
+      addCommand(widget.asWidget());
+    }
+  }
+
+  private void addCommand(Widget command) {
+    HasHoverAnimation.init(command);
+    getCommandPanel().add(command);
   }
 
   @Override
@@ -162,7 +192,7 @@ public class HeaderImpl extends Flow implements HeaderView {
       }
 
       if (createNew) {
-        Label control = new Label("+ " + Localized.dictionary().createNew());
+        AnimatableLabel control = new AnimatableLabel(Localized.dictionary().createNew());
         control.addStyleName(STYLE_CREATE_NEW);
 
         initControl(control, Action.ADD, hiddenActions);
@@ -203,7 +233,7 @@ public class HeaderImpl extends Flow implements HeaderView {
 
     if (hasAction(Action.SAVE, false, enabledActions, disabledActions)) {
       if (Theme.hasActionSaveLarge()) {
-        Label control = new Label(Localized.dictionary().actionSave());
+        AnimatableLabel control = new AnimatableLabel(Localized.dictionary().actionSave());
         control.addStyleName(STYLE_SAVE_LARGE);
 
         initControl(control, Action.SAVE, hiddenActions);
@@ -254,8 +284,45 @@ public class HeaderImpl extends Flow implements HeaderView {
   }
 
   @Override
+  public boolean enableCommandByStyleName(String styleName, boolean enable) {
+    Widget command = getCommandByStyleName(styleName);
+
+    if (command instanceof HasEnabled) {
+      ((HasEnabled) command).setEnabled(enable);
+      return true;
+
+    } else {
+      return false;
+    }
+  }
+
+  @Override
+  public Widget getActionWidget(Action action) {
+    if (action == null) {
+      return null;
+    }
+
+    String id = getActionControls().get(action);
+
+    if (BeeUtils.isEmpty(id)) {
+      return null;
+    } else {
+      return DomUtils.getChildQuietly(this, id);
+    }
+  }
+
+  @Override
   public String getCaption() {
     return captionWidget.getHtml();
+  }
+
+  @Override
+  public Widget getCommandByStyleName(String styleName) {
+    if (BeeUtils.isEmpty(styleName)) {
+      return null;
+    } else {
+      return UiHelper.getChildByStyleName(getCommandPanel(), styleName);
+    }
   }
 
   @Override
@@ -266,6 +333,12 @@ public class HeaderImpl extends Flow implements HeaderView {
   @Override
   public Element getPrintElement() {
     return getElement();
+  }
+
+  @Override
+  public String getRowMessage() {
+    Element messageElement = Selectors.getElementByClassName(this, STYLE_ROW_MESSAGE);
+    return (messageElement == null) ? null : messageElement.getInnerHTML();
   }
 
   @Override
@@ -312,13 +385,8 @@ public class HeaderImpl extends Flow implements HeaderView {
     }
 
     Action a = (action == Action.CANCEL) ? Action.CLOSE : action;
+    Widget child = getActionWidget(a);
 
-    String id = getActionControls().get(a);
-    if (BeeUtils.isEmpty(id)) {
-      return false;
-    }
-
-    Widget child = DomUtils.getChildQuietly(this, id);
     if (DomUtils.isVisible(child)) {
       if (child instanceof HasEnabled) {
         return ((HasEnabled) child).isEnabled();
@@ -371,16 +439,18 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   @Override
   public boolean removeCommandByStyleName(String styleName) {
-    if (BeeUtils.isEmpty(styleName)) {
-      return false;
-    }
+    Widget command = getCommandByStyleName(styleName);
 
-    Widget command = UiHelper.getChildByStyleName(getCommandPanel(), styleName);
     if (command == null) {
       return false;
     } else {
       return getCommandPanel().remove(command);
     }
+  }
+
+  @Override
+  public void setActionHandler(HandlesActions actionHandler) {
+    this.actionHandler = actionHandler;
   }
 
   @Override
@@ -474,33 +544,44 @@ public class HeaderImpl extends Flow implements HeaderView {
   }
 
   @Override
+  public void setRowId(Long rowId) {
+    String message = DataUtils.isId(rowId) ? BeeUtils.bracket(rowId) : null;
+    setMessage(MESSAGE_INDEX_ROW_ID, message, STYLE_ROW_ID);
+  }
+
+  @Override
+  public void setRowMessage(String message) {
+    setMessage(MESSAGE_INDEX_ROW_MESSAGE, message, STYLE_ROW_MESSAGE);
+  }
+
+  @Override
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
   }
 
   @Override
   public void showAction(Action action, boolean visible) {
-    Assert.notNull(action);
-    String widgetId = getActionControls().get(action);
-    if (BeeUtils.isEmpty(widgetId)) {
-      if (visible) {
-        logger.warning("showAction:", action.name(), "widget not found");
-      }
-      return;
-    }
+    Widget widget = getActionWidget(action);
 
-    Widget widget = DomUtils.getChildQuietly(this, widgetId);
     if (widget == null) {
-      logger.warning("showAction", action.name(), visible, widgetId, "widget not found");
+      if (visible) {
+        logger.warning("showAction", action, "widget not found");
+      }
+
     } else {
       widget.setStyleName(STYLE_CONTROL_HIDDEN, !visible);
     }
   }
 
   @Override
+  public void showReadOnly(boolean readOnly) {
+    String message = readOnly ? Localized.dictionary().readOnly() : null;
+    setMessage(MESSAGE_INDEX_READ_ONLY, message, STYLE_READ_ONLY);
+  }
+
+  @Override
   public void showRowId(IsRow row) {
-    String message = DataUtils.hasId(row) ? BeeUtils.bracket(row.getId()) : null;
-    setMessage(0, message, STYLE_ROW_ID);
+    setRowId(DataUtils.getId(row));
   }
 
   @Override
@@ -514,7 +595,56 @@ public class HeaderImpl extends Flow implements HeaderView {
       message = null;
     }
 
-    setMessage(1, message, STYLE_ROW_MESSAGE);
+    setRowMessage(message);
+  }
+
+  @Override
+  public boolean startCommandByStyleName(String styleName, int duration) {
+    if (duration <= 0) {
+      return false;
+    }
+
+    Widget command = getCommandByStyleName(styleName);
+    if (command instanceof HasAnimatableActivity) {
+      ((HasAnimatableActivity) command).enableAnimation(duration);
+      ((HasAnimatableActivity) command).maybeAnimate();
+
+      return true;
+
+    } else {
+      return false;
+    }
+  }
+
+  @Override
+  public boolean stopAction(Action action) {
+    Widget child = getActionWidget(action);
+
+    if (child instanceof HasAnimatableActivity) {
+      ((HasAnimatableActivity) child).stop();
+      return true;
+
+    } else {
+      return false;
+    }
+  }
+
+  @Override
+  public boolean stopCommandByStyleName(String styleName, boolean disableAnimation) {
+    Widget command = getCommandByStyleName(styleName);
+
+    if (command instanceof HasAnimatableActivity) {
+      if (disableAnimation) {
+        ((HasAnimatableActivity) command).disableAnimation();
+      } else {
+        ((HasAnimatableActivity) command).stop();
+      }
+
+      return true;
+
+    } else {
+      return false;
+    }
   }
 
   @Override
@@ -533,6 +663,10 @@ public class HeaderImpl extends Flow implements HeaderView {
     return actionControls;
   }
 
+  private HandlesActions getActionHandler() {
+    return actionHandler;
+  }
+
   private Horizontal getCommandPanel() {
     return commandPanel;
   }
@@ -541,11 +675,7 @@ public class HeaderImpl extends Flow implements HeaderView {
     control.addStyleName(STYLE_CONTROL);
     control.addStyleName(action.getStyleName());
 
-    if (control instanceof Animatable) {
-      StyleUtils.enableAnimation(action, control);
-    }
-
-    control.setTitle(action.getCaption());
+    UiHelper.initActionWidget(action, control);
 
     if (hiddenActions != null && hiddenActions.contains(action)) {
       control.getElement().addClassName(STYLE_CONTROL_HIDDEN);
@@ -554,6 +684,9 @@ public class HeaderImpl extends Flow implements HeaderView {
     control.addClickHandler(event -> {
       if (getViewPresenter() != null) {
         getViewPresenter().handleAction(action);
+
+      } else if (getActionHandler() != null) {
+        getActionHandler().handleAction(action);
       }
     });
 

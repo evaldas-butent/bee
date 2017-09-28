@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
+        xmlns:f="http://www.butent.com/form"
 
-  name="TradeDocumentType" viewName="TradeDocumentTypes" caption="=trdDocumentType">
-
+        name="TradeDocumentType" viewName="TradeDocumentTypes" caption="=trdDocumentType"
+        width="700" height="400"
+>
   <Table kind="controls">
     <col index="0" kind="label" />
     <col index="2" kind="label" />
@@ -21,8 +22,8 @@
         <InputArea source="Description" visibleLines="3" style="width: 100%" />
       </cell>
     </row>
-    
-    <div style="height: 2vh; "/>
+
+    <div style="height: 2vh;" />
 
     <row>
       <Label text="=trdDocumentPhases" />
@@ -37,32 +38,35 @@
       </cell>
     </row>
 
-    <div style="height: 1vh; "/>
+    <div style="height: 1vh;" />
 
-    <row>
-      <Label text="=trdOperationsShort" />
+    <row listName="TradeTypeOperations">
+      <Label text="=trdOperationsShort" listName="TradeTypeOperations" />
       <cell colSpan="3">
-      <ChildSelector childTable="TradeTypeOperations" viewName="TradeOperations"
-        targetRelColumn="DocumentType" sourceRelColumn="Operation" renderColumns="OperationName"
-        newRowEnabled="false" style="width: 100%" />
+        <ChildSelector childTable="TradeTypeOperations" viewName="TradeOperations"
+                       targetRelColumn="DocumentType" sourceRelColumn="Operation"
+                       renderColumns="OperationName"
+                       newRowEnabled="false" style="width: 100%" />
       </cell>
     </row>
 
-    <row>
-      <Label text="=statuses" />
+    <row listName="TradeTypeStatuses">
+      <Label text="=statuses" listName="TradeTypeStatuses" />
       <cell colSpan="3">
-      <ChildSelector childTable="TradeTypeStatuses" viewName="TradeStatuses"
-        targetRelColumn="DocumentType" sourceRelColumn="Status" renderColumns="StatusName"
-        newRowEnabled="false" style="width: 100%" />
+        <ChildSelector childTable="TradeTypeStatuses" viewName="TradeStatuses"
+                       targetRelColumn="DocumentType" sourceRelColumn="Status"
+                       renderColumns="StatusName"
+                       newRowEnabled="false" style="width: 100%" />
       </cell>
     </row>
 
-    <row>
-      <Label text="=tags" />
+    <row listName="TradeTypeTags">
+      <Label text="=tags" listName="TradeTypeTags" />
       <cell colSpan="3">
-      <ChildSelector childTable="TradeTypeTags" viewName="TradeTags"
-        targetRelColumn="DocumentType" sourceRelColumn="TradeTag" renderColumns="TagName"
-        newRowEnabled="false" style="width: 100%;" />
+        <ChildSelector childTable="TradeTypeTags" viewName="TradeTags"
+                       targetRelColumn="DocumentType" sourceRelColumn="TradeTag"
+                       renderColumns="TagName"
+                       newRowEnabled="false" style="width: 100%;" />
       </cell>
     </row>
   </Table>

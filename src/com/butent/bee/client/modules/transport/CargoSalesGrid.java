@@ -12,7 +12,6 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.modules.trade.InvoiceBuilder;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.BeeRow;
@@ -106,13 +105,10 @@ public class CargoSalesGrid extends InvoiceBuilder {
       newRow.setValue(targetInfo.getColumnIndex(COL_CURRENCY), entry.getKey());
       newRow.setValue(targetInfo.getColumnIndex(ALS_CURRENCY_NAME), entry.getValue());
     }
-    Global.getRelationParameter(PRM_INVOICE_PREFIX, new BiConsumer<Long, String>() {
-      @Override
-      public void accept(Long prefixId, String prefix) {
-        newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_SALE_SERIES), prefixId);
-        newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_INVOICE_PREFIX), prefix);
-        consumer.accept(data, newRow);
-      }
+    Global.getParameterRelation(PRM_INVOICE_PREFIX, (prefixId, prefix) -> {
+      newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_SALE_SERIES), prefixId);
+      newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_INVOICE_PREFIX), prefix);
+      consumer.accept(data, newRow);
     });
   }
 
@@ -127,7 +123,7 @@ public class CargoSalesGrid extends InvoiceBuilder {
       Long assessment = Data.getLong(getViewName(), event.getRowValue(), COL_ASSESSMENT);
 
       if (DataUtils.isId(assessment)) {
-        RowEditor.open(VIEW_ASSESSMENTS, assessment, Opener.NEW_TAB);
+        RowEditor.open(VIEW_ASSESSMENTS, assessment);
         event.consume();
         return;
       }

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="AnalysisFilters" viewName="AnalysisFilters"
+        flexGrow="1"
+>
+  <xi:include href="columns/Employee.columns.xml" />
+  <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
+
+  <xi:include href="columns/AnalysisFilters.columns.xml" />
+
+  <g:rowStyle>
+    <ui:inline>color: green;</ui:inline>
+    <ui:expression>row.Include</ui:expression>
+  </g:rowStyle>
+  <g:rowStyle>
+    <ui:inline>color: red;</ui:inline>
+  </g:rowStyle>
+</g:Grid>

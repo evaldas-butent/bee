@@ -7,7 +7,7 @@
   >
   <g:columns>
     <RelColumn name="Category" choiceColumns="ParentName Name" />
-    <RelColumn name="Item" editPopup="true" />
+    <RelColumn name="Item" editEnabled="true" />
     <DataColumn name="Article" />
   </g:columns>
 

@@ -9,9 +9,12 @@
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="LEFT" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />
+
+      <SimpleColumn name="Unit" />
       <SimpleJoin joinType="LEFT" name="Unit">
         <SimpleColumn name="Name" alias="UnitName" />
       </SimpleJoin>
+
       <SimpleColumn name="IsService" />
     </SimpleJoin>
 
@@ -45,10 +48,16 @@
       </ExternalJoin>
     </ExternalJoin>
 
-    <SimpleColumn name="Warehouse" />
-    <SimpleJoin joinType="LEFT" name="Warehouse">
-      <SimpleColumn name="Code" alias="WarehouseCode" />
-      <SimpleColumn name="Name" alias="WarehouseName" />
+    <SimpleColumn name="ItemWarehouseFrom" />
+    <SimpleJoin joinType="LEFT" name="ItemWarehouseFrom">
+      <SimpleColumn name="Code" alias="ItemWarehouseFromCode" />
+      <SimpleColumn name="Name" alias="ItemWarehouseFromName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ItemWarehouseTo" />
+    <SimpleJoin joinType="LEFT" name="ItemWarehouseTo">
+      <SimpleColumn name="Code" alias="ItemWarehouseToCode" />
+      <SimpleColumn name="Name" alias="ItemWarehouseToName" />
     </SimpleJoin>
 
     <SimpleColumn name="Employee" />
@@ -64,9 +73,21 @@
       <SimpleColumn name="TabNumber" alias="EmployeeTabNumber" />
     </SimpleJoin>
 
-    <SimpleJoin name="Dimensions" joinType="LEFT">
-      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    <SimpleColumn name="ItemVehicle" />
+    <SimpleJoin name="ItemVehicle" joinType="LEFT">
+      <SimpleColumn name="Number" alias="ItemVehicleNumber" />
+      <SimpleColumn name="BodyNumber" alias="ItemVehicleBodyNumber" />
+
+      <SimpleColumn name="Model" alias="ItemVehicleModel" />
+      <SimpleJoin name="Model" joinType="LEFT">
+        <SimpleJoin name="Brand" joinType="LEFT">
+          <SimpleColumn name="BrandName" alias="ItemVehicleBrandName" />
+        </SimpleJoin>
+        <SimpleColumn name="Name" alias="ItemVehicleModelName" />
+      </SimpleJoin>
     </SimpleJoin>
+
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
     <SimpleJoin name="TradeAccounts" joinType="LEFT">
       <xi:include href="../../Classifiers/views/viewcolumns/TradeAccounts.viewcolumns.xml" />
     </SimpleJoin>

@@ -3,8 +3,6 @@ package com.butent.bee.client.modules.trade.acts;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -13,7 +11,6 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
@@ -22,16 +19,14 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
-import com.butent.bee.client.output.ReportParameters;
+import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.DataUtils;
@@ -46,7 +41,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.StringList;
@@ -115,7 +109,7 @@ public class TradeActServicesReport extends ReportInterceptor {
 
       loadMulti(parameters, FILTER_NAMES, form);
 
-      loadGroupBy(parameters, GROUP_NAMES, form);
+      loadGroupByIndex(parameters, GROUP_NAMES, form);
     }
 
     super.onLoad(form);
@@ -128,7 +122,7 @@ public class TradeActServicesReport extends ReportInterceptor {
 
     storeEditorValues(FILTER_NAMES);
 
-    storeGroupBy(GROUP_NAMES);
+    storeGroupByIndex(GROUP_NAMES);
   }
 
   @Override
@@ -168,7 +162,7 @@ public class TradeActServicesReport extends ReportInterceptor {
 
     if (DataUtils.isId(currency)) {
       params.addDataItem(COL_TA_CURRENCY, currency);
-      currencyName = getFilterLabel(NAME_CURRENCY);
+      currencyName = getSelectorLabel(NAME_CURRENCY);
     } else {
       currencyName = ClientDefaults.getCurrencyName();
     }
@@ -185,7 +179,7 @@ public class TradeActServicesReport extends ReportInterceptor {
           logger.warning(name, "has no label");
         }
 
-        headers.add(BeeUtils.joinWords(label, getFilterLabel(name)));
+        headers.add(BeeUtils.joinWords(label, getSelectorLabel(name)));
       }
     }
 
@@ -194,22 +188,19 @@ public class TradeActServicesReport extends ReportInterceptor {
       params.addDataItem(Service.VAR_GROUP_BY, NameUtils.join(groupBy));
     }
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasMessages()) {
-          response.notify(getFormView());
-        }
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      if (response.hasMessages()) {
+        response.notify(getFormView());
+      }
 
-        if (response.hasResponse(SimpleRowSet.class)) {
-          renderData(SimpleRowSet.restore(response.getResponseAsString()), currencyName);
+      if (response.hasResponse(SimpleRowSet.class)) {
+        renderData(SimpleRowSet.restore(response.getResponseAsString()), currencyName);
 
-          sheet.addHeaders(headers);
-          sheet.autoSizeAll();
+        sheet.addHeaders(headers);
+        sheet.autoSizeAll();
 
-        } else {
-          getFormView().notifyWarning(Localized.dictionary().nothingFound());
-        }
+      } else {
+        getFormView().notifyWarning(Localized.dictionary().nothingFound());
       }
     });
   }
@@ -225,10 +216,10 @@ public class TradeActServicesReport extends ReportInterceptor {
   protected String getBookmarkLabel() {
     List<String> labels = StringList.of(getReportCaption(),
         Format.renderPeriod(getDateTime(NAME_START_DATE), getDateTime(NAME_END_DATE)),
-        getFilterLabel(NAME_CURRENCY));
+        getSelectorLabel(NAME_CURRENCY));
 
     for (String name : FILTER_NAMES) {
-      labels.add(getFilterLabel(name));
+      labels.add(getSelectorLabel(name));
     }
 
     for (String groupName : GROUP_NAMES) {
@@ -251,7 +242,7 @@ public class TradeActServicesReport extends ReportInterceptor {
     addEditorValues(parameters, NAME_CURRENCY);
 
     addEditorValues(parameters, FILTER_NAMES);
-    addGroupBy(parameters, GROUP_NAMES);
+    addGroupByIndex(parameters, GROUP_NAMES);
 
     return parameters;
   }
@@ -363,10 +354,10 @@ public class TradeActServicesReport extends ReportInterceptor {
 
         } else {
           if (ValueType.DATE_TIME == type) {
-            text = TimeUtils.renderCompact(data.getDateTime(i, j));
+            text = Format.renderDateTime(data.getDateTime(i, j));
 
           } else if (ValueType.DATE == type) {
-            text = TimeUtils.renderDate(data.getDate(i, j));
+            text = Format.renderDate(data.getDate(i, j));
 
           } else {
             text = data.getValue(i, j);
@@ -433,19 +424,16 @@ public class TradeActServicesReport extends ReportInterceptor {
       final List<String> invClasses = Arrays.asList(getColumnStyle(COL_SALE),
           getColumnStyle(COL_TRADE_NUMBER), getColumnStyle(COL_TRADE_INVOICE_NO));
 
-      table.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          Element target = EventUtils.getEventTargetElement(event);
-          TableCellElement cell = DomUtils.getParentCell(target, true);
+      table.addClickHandler(event -> {
+        Element target = EventUtils.getEventTargetElement(event);
+        TableCellElement cell = DomUtils.getParentCell(target, true);
 
-          if (StyleUtils.hasAnyClass(cell, invClasses)) {
-            TableRowElement row = DomUtils.getParentRow(cell, false);
-            long invId = DomUtils.getDataIndexLong(row);
+        if (StyleUtils.hasAnyClass(cell, invClasses)) {
+          TableRowElement row = DomUtils.getParentRow(cell, false);
+          long invId = DomUtils.getDataIndexLong(row);
 
-            if (DataUtils.isId(invId)) {
-              RowEditor.open(VIEW_SALES, invId, Opener.MODAL);
-            }
+          if (DataUtils.isId(invId)) {
+            RowEditor.open(VIEW_SALES, invId);
           }
         }
       });

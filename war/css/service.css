@@ -118,3 +118,154 @@
 .bee-svc-print-defect-items-total-value {
   text-align: right;
 }
+
+.bee-svc-Events-content-Term,
+.bee-svc-Events-content-ShowCustomer,
+.bee-svc-Events-content-CustomerSent,
+.bee-svc-Events-content-SentEmail,
+.bee-svc-Events-content-SentSms,
+.bee-svc-Events-label {
+  margin-right: 2vh;
+}
+
+.bee-svc-Events-content-Additional {
+  font-weight: bolder;
+}
+
+.bee-svc-Events-EventContent{
+  overflow: hidden;
+  padding-bottom: 5px;
+  width: 80%;
+}
+
+.bee-svc-Events-label{
+  font-size: large;
+}
+
+.bee-svc-Events-EventNote {
+  display: table-cell;
+  width:100%;
+  padding-right: 2vh;
+}
+
+.bee-EventsBoard-content-EventNote {
+  margin-top: 0.3vh;
+}
+
+.bee-service-maintenance-late {
+  color: red;
+}
+
+.bee-svc-toggle {
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  color: gray;
+}
+
+.bee-svc-toggle:hover {
+  color: black;
+}
+
+.bee-Header-message .bee-svc-object-title{
+  font-size:23px;
+  color: #484849;
+  font-weight: lighter;
+}
+
+.bee-Header-message .bee-svc-object-small-title{
+  font-size:14px;
+}
+
+.bee-svc-contact-panel {
+}
+
+.bee-svc-object-criteria-panel {
+  max-width: 90em;
+}
+
+.bee-svc-object-main-criteria-panel {
+  margin: 2ex 2ex 2ex 1em;
+  border: 1px solid #ccc;
+}
+
+.bee-svc-criteria-grid {
+  width: 50%;
+  margin-right: 2ex;
+}
+
+.bee-svc-Events-content-EventType {
+  border-radius: 5px;
+  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px;
+}
+
+.bee-svc-Events-content-EventNote {
+  border-radius: 0 1vh 1vh;
+  border: 1px solid #ccc;
+  padding: 0.1vh 1vh 0.2vh 1vh;
+  max-width: 80%;
+  word-wrap: normal;
+}
+
+.bee-svc-Events-info-panel {
+  margin-top: 1vh;
+}
+
+.bee-svc-add-button {
+  display:inline-block;
+  position: inherit;
+  margin-top: 4.5ex;
+}
+
+.bee-svc-maintenance-panel {
+  max-width: 40em;
+  min-width: 20em;
+  width: 31em;
+}
+
+.bee-svc-maintenance-info-label {
+  white-space: nowrap;
+  vertical-align:top;
+  padding-right: 6px;
+}
+
+.bee-svc-maintenance-info-field {
+  word-break: break-all;
+}
+
+.bee-svc-panel-title {
+  font-size: 16px;
+  margin-top: 1vh;
+}
+
+.bee-svc-maintenance-other-info {
+  padding: 1em 0 1em 1em;
+  min-width: 10em;
+}
+
+.bee-svc-maintenance-creator-info {
+  color: #ababab;
+}
+
+.bee-svc-maintenance-input-area {
+  width:100%;
+  height: 75px;
+}
+
+.bee-svc-maintenance-equipment-area {
+  width:100%;
+  min-height: 75px;
+}
+
+.bee-svc-split-panel {
+  min-height: 640px;
+  min-width: 300px;
+}
+
+.bee-reserved-repairs-id-cell:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}

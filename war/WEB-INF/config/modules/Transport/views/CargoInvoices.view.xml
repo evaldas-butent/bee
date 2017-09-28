@@ -3,7 +3,7 @@
       xmlns:x="http://www.butent.com/expression"
 
   name="CargoInvoices" source="Sales"
-  editForm="CargoInvoice" newRowForm="NewSale" newRowCaption="=trNewCargoInvoice"
+  editForm="CargoInvoice" newRowForm="NewSale" newRowCaption="=trNewCargoInvoice" rowCaption="InvoicePrefix InvoiceNo"
   >
   <Columns>
     <SimpleColumn name="Date" />
@@ -74,6 +74,10 @@
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn name="FirstName" alias="ManagerFirstName" />
           <SimpleColumn name="LastName" alias="ManagerLastName" />
+        </SimpleJoin>
+        <SimpleColumn name="Position" />
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ManagerPosition" />
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>

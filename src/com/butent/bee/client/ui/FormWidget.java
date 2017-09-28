@@ -66,11 +66,14 @@ import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.layout.SummaryProxy;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.Vertical;
-import com.butent.bee.client.modules.mail.Relations;
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.richtext.RichTextEditor;
+import com.butent.bee.client.style.ColorStyleProvider;
+import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.style.HasTextAlign;
 import com.butent.bee.client.style.HasVerticalAlign;
+import com.butent.bee.client.style.StyleProvider;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
@@ -189,7 +192,8 @@ public enum FormWidget {
   CANVAS("Canvas", EnumSet.of(Type.DISPLAY)),
   CHECK_BOX("CheckBox", EnumSet.of(Type.EDITABLE)),
   CHILD_GRID(UiConstants.TAG_CHILD_GRID, EnumSet.of(Type.IS_CHILD, Type.IS_GRID)),
-  CHILD_SELECTOR("ChildSelector", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.IS_CHILD)),
+  CHILD_SELECTOR(UiConstants.TAG_CHILD_SELECTOR,
+      EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.IS_CHILD)),
   COLOR_EDITOR("ColorEditor", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   COMPLEX_PANEL("ComplexPanel", EnumSet.of(Type.HAS_LAYERS)),
   CUSTOM("Custom", EnumSet.of(Type.IS_CUSTOM)),
@@ -504,14 +508,37 @@ public enum FormWidget {
 
     if (BeeUtils.isDigit(s)) {
       scale = BeeUtils.toInt(s);
-    } else if (column != null && !BeeConst.isUndef(column.getScale())) {
-      scale = money
-          ? Math.min(column.getScale(), Format.getDefaultMoneyScale()) : column.getScale();
+    } else if (money) {
+      scale = Format.getDefaultMoneyScale();
     } else {
-      scale = money ? Format.getDefaultMoneyScale() : BeeConst.UNDEF;
+      scale = BeeConst.UNDEF;
     }
 
-    widget.setScale(scale);
+    int columnScale;
+    if (column == null) {
+      columnScale = BeeConst.UNDEF;
+    } else {
+      switch (column.getType()) {
+        case INTEGER:
+        case LONG:
+          columnScale = 0;
+          break;
+        default:
+          columnScale = column.getScale();
+      }
+    }
+
+    if (scale > 0 && columnScale >= 0) {
+      scale = Math.min(scale, columnScale);
+    }
+
+    if (money && scale == Format.getDefaultMoneyScale()) {
+      widget.setScale(scale);
+    } else if (columnScale >= 0) {
+      widget.setScale(columnScale);
+    } else if (scale >= 0) {
+      widget.setScale(scale);
+    }
 
     String pattern = attributes.get(UiConstants.ATTR_FORMAT);
     NumberFormat format;
@@ -519,14 +546,23 @@ public enum FormWidget {
     if (BeeUtils.isEmpty(pattern)) {
       if (money && scale == Format.getDefaultMoneyScale()) {
         format = Format.getDefaultMoneyFormat();
-      } else {
+      } else if (Math.max(scale, 0) < columnScale) {
+        format = Format.getDecimalFormat(Math.max(scale, 0), columnScale);
+      } else if (scale >= 0) {
         format = Format.getDecimalFormat(scale);
+      } else if (columnScale >= 0) {
+        format = Format.getDecimalFormat(columnScale);
+      } else {
+        format = null;
       }
+
     } else {
       format = Format.getNumberFormat(pattern);
     }
 
-    widget.setNumberFormat(format);
+    if (format != null) {
+      widget.setNumberFormat(format);
+    }
 
     String currencySource = attributes.get(HasRelatedCurrency.ATTR_CURRENCY_SOURCE);
     if (!BeeUtils.isEmpty(currencySource)) {
@@ -1177,6 +1213,18 @@ public enum FormWidget {
             widgetInterceptor.configureRelation(name, relation);
           }
           widget = ChildSelector.create(viewName, relation, attributes);
+
+          if (widget != null && !BeeUtils.isEmpty(viewName)) {
+            String listName = BeeUtils.notEmpty(attributes.get(UiConstants.ATTR_LIST_NAME),
+                attributes.get(UiConstants.ATTR_CHILD_TABLE));
+
+            if (BeeKeeper.getUser().isListRequired(viewName, listName)) {
+              attributes.put(UiConstants.ATTR_REQUIRED, BeeConst.STRING_TRUE);
+            }
+            if (!BeeKeeper.getUser().canEditList(viewName, listName)) {
+              attributes.put(UiConstants.ATTR_READ_ONLY, BeeConst.STRING_TRUE);
+            }
+          }
         }
         break;
 
@@ -1409,7 +1457,7 @@ public enum FormWidget {
         widget = new InputDate();
         format = attributes.get(UiConstants.ATTR_FORMAT);
         if (!BeeUtils.isEmpty(format)) {
-          ((InputDate) widget).setDateTimeFormat(Format.getDateTimeFormat(format));
+          ((InputDate) widget).setDateTimeFormat(Format.parseDateTimeFormat(format));
         }
         break;
 
@@ -1417,7 +1465,7 @@ public enum FormWidget {
         widget = new InputDateTime();
         format = attributes.get(UiConstants.ATTR_FORMAT);
         if (!BeeUtils.isEmpty(format)) {
-          ((InputDateTime) widget).setDateTimeFormat(Format.getDateTimeFormat(format));
+          ((InputDateTime) widget).setDateTimeFormat(Format.parseDateTimeFormat(format));
         }
         break;
 
@@ -1872,10 +1920,8 @@ public enum FormWidget {
             editForm != null ? Action.parse(attributes.get(FormDescription.ATTR_DISABLED_ACTIONS))
                 : EnumSet.allOf(Action.class), treeViewName, treeFavoriteName);
 
-        ((TreeView) widget).setViewPresenter(new TreePresenter((TreeView) widget,
-            treeViewName, attributes.get("parentColumn"),
-            attributes.get("orderColumn"), attributes.get("relationColumn"),
-            XmlUtils.getCalculation(element, TAG_CALC), editForm));
+        ((TreeView) widget).setViewPresenter(TreePresenter.create(name, (TreeView) widget,
+            treeViewName, attributes, XmlUtils.getCalculation(element, TAG_CALC), editForm));
         break;
 
       case DECORATOR:
@@ -1945,10 +1991,18 @@ public enum FormWidget {
           UiHelper.setDefaultBounds((HasBounds) widget, column);
         }
 
-      } else if (isLabel() && attributes.containsKey(UiConstants.ATTR_FOR)) {
-        BeeColumn forColumn = getColumn(columns, attributes, UiConstants.ATTR_FOR);
-        if (forColumn != null) {
-          associateLabel(widget, forColumn);
+      } else if (isLabel()) {
+        if (attributes.containsKey(UiConstants.ATTR_FOR)) {
+          BeeColumn forColumn = getColumn(columns, attributes, UiConstants.ATTR_FOR);
+          if (forColumn != null) {
+            associateLabel(widget, forColumn);
+          }
+
+        } else if (attributes.containsKey(UiConstants.ATTR_LIST_NAME)) {
+          String listName = attributes.get(UiConstants.ATTR_LIST_NAME);
+          if (BeeKeeper.getUser().isListRequired(viewName, listName)) {
+            widget.addStyleName(StyleUtils.NAME_REQUIRED);
+          }
         }
       }
 
@@ -2024,7 +2078,8 @@ public enum FormWidget {
     }
 
     if (!dynStyles.isEmpty()) {
-      widgetDescription.setDynStyles(dynStyles);
+      widgetDescription.setConditionalStyle(ConditionalStyle.create(dynStyles,
+          widgetDescription.getSource(), columns));
     }
 
     if (!attributes.isEmpty()) {
@@ -2048,6 +2103,18 @@ public enum FormWidget {
           ((ListBox) widget).setVisibleItemCount(cnt);
         } else {
           ((ListBox) widget).updateSize();
+        }
+      }
+
+      if (widgetDescription.getConditionalStyle() == null) {
+        String bgSource = attributes.get(UiConstants.ATTR_BACKGROUND_SOURCE);
+        String fgSource = attributes.get(UiConstants.ATTR_FOREGROUND_SOURCE);
+
+        if (BeeUtils.anyNotEmpty(bgSource, fgSource)) {
+          StyleProvider styleProvider = ColorStyleProvider.create(columns, bgSource, fgSource);
+          if (styleProvider != null) {
+            widgetDescription.setConditionalStyle(ConditionalStyle.create(styleProvider));
+          }
         }
       }
     }
@@ -2396,6 +2463,11 @@ public enum FormWidget {
 
         StyleUtils.updateAppearance(tab.getElement(), child.getAttribute(UiConstants.ATTR_CLASS),
             child.getAttribute(UiConstants.ATTR_STYLE));
+
+        String key = child.getAttribute(UiConstants.ATTR_KEY);
+        if (!BeeUtils.isEmpty(key)) {
+          DomUtils.setDataKey(tab.getElement(), key);
+        }
       }
 
     } else if (this == RADIO && BeeUtils.same(childTag, TAG_OPTION)) {
@@ -2405,9 +2477,14 @@ public enum FormWidget {
       }
 
     } else if (BeeUtils.same(childTag, HasItems.TAG_ITEM) && parent instanceof HasItems) {
-      String item = XmlUtils.getText(child);
-      if (!BeeUtils.isEmpty(item)) {
-        ((HasItems) parent).addItem(Localized.maybeTranslate(item));
+      String text = Localized.maybeTranslate(XmlUtils.getText(child));
+      if (!BeeUtils.isEmpty(text)) {
+        if (parent instanceof ListBox && child.hasAttribute(UiConstants.ATTR_VALUE)) {
+          String value = child.getAttribute(UiConstants.ATTR_VALUE);
+          ((ListBox) parent).addItem(text, value);
+        } else {
+          ((HasItems) parent).addItem(text);
+        }
       }
 
     } else if (this == HEADER_CONTENT_FOOTER) {

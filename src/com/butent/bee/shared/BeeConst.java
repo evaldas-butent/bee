@@ -5,6 +5,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.IntSupplier;
 
 /**
  * Stores all default values (databases, boolean, separators etc.).
@@ -91,6 +92,8 @@ public final class BeeConst {
   public static final String STRING_EXCLAMATION = "!";
   public static final String STRING_NUMBER_SIGN = "#";
   public static final String STRING_CHECK_MARK = "\u2713";
+  public static final String STRING_LEFT_ARROW = "\u2190";
+  public static final String STRING_RIGHT_ARROW = "\u2192";
 
   public static final String STRING_FALSE = Boolean.toString(false);
   public static final String STRING_TRUE = Boolean.toString(true);
@@ -179,6 +182,8 @@ public final class BeeConst {
   public static final List<Long> EMPTY_IMMUTABLE_LONG_LIST = Collections.emptyList();
 
   public static final Set<Integer> EMPTY_IMMUTABLE_INT_SET = Collections.emptySet();
+
+  public static final IntSupplier INT_ZERO_SUPPLIER = () -> 0;
 
   private static String home = SERVER;
 

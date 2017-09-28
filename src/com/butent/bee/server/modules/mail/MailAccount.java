@@ -22,12 +22,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.mail.Flags;
@@ -46,40 +48,56 @@ public class MailAccount {
   private static final long CONNECTION_TIMEOUT = TimeUtils.MILLIS_PER_MINUTE;
   private static final long TIMEOUT = TimeUtils.MILLIS_PER_MINUTE * 10L;
 
-  private static final class MailStore {
-    private static final int MAX_CONCURRENT_THEADS = 15;
+  static final class MailStore {
+    private final ArrayBlockingQueue<Object> running;
+    Store store;
+    long lastActivity = System.currentTimeMillis();
 
-    final Store store;
-    final long start;
-    int cnt;
+    private MailStore(int maxSessions) {
+      int size = BeeUtils.positive(maxSessions, 15);
+      running = new ArrayBlockingQueue<>(size, true);
 
-    private MailStore(Store store) {
-      this.store = Assert.notNull(store);
-      this.start = System.currentTimeMillis();
+      for (int i = 0; i < size; i++) {
+        running.add(new Object());
+      }
     }
 
-    private void enter() {
-      cnt++;
-    }
-
-    private boolean expired() {
-      return BeeUtils.isMore(System.currentTimeMillis() - start, TIMEOUT);
-    }
-
-    private boolean full() {
-      return cnt == MAX_CONCURRENT_THEADS;
-    }
-
-    private Store getStore() {
+    public Store get() throws MessagingException {
+      if (Objects.isNull(store)) {
+        throw new MessagingException("Store was not initialized");
+      }
       return store;
     }
 
-    private boolean idle() {
-      return cnt <= 0;
+    private void enter() throws MessagingException {
+      try {
+        logger.debug("Waiting for store...");
+
+        if (!running.offer(new Object(), TIMEOUT, TimeUnit.MILLISECONDS)) {
+          throw new MessagingException("Store wait timeout");
+        }
+        logger.debug("Entering store...");
+        lastActivity = System.currentTimeMillis();
+
+      } catch (InterruptedException e) {
+        throw new MessagingException("Failure waiting for store", e);
+      }
     }
 
-    private void leave() {
-      cnt--;
+    private boolean expired() {
+      return BeeUtils.isMore(System.currentTimeMillis() - lastActivity, TimeUtils.MILLIS_PER_HOUR);
+    }
+
+    private boolean leave() {
+      logger.debug("Leaving store...");
+      lastActivity = System.currentTimeMillis();
+      running.poll();
+      return running.size() == 0;
+    }
+
+    private void set(Store st) {
+      this.store = st;
+      running.clear();
     }
   }
 
@@ -88,7 +106,7 @@ public class MailAccount {
   private static final Map<Long, MailStore> stores = new HashMap<>();
   private static final ReentrantLock storesLock = new ReentrantLock();
 
-  private static boolean checkNewFolderName(Folder newFolder, String name, boolean acceptExisting)
+  private static boolean checkNewFolderName(Folder newFolder, String name)
       throws MessagingException {
     if (name.indexOf(newFolder.getSeparator()) >= 0) {
       throw new MessagingException("Invalid folder name: " + name);
@@ -96,9 +114,6 @@ public class MailAccount {
     logger.debug("Checking, if folder exists:", name);
 
     if (newFolder.exists()) {
-      if (acceptExisting) {
-        return false;
-      }
       throw new MessagingException("Folder with new name already exists: " + name);
     }
     return true;
@@ -106,8 +121,8 @@ public class MailAccount {
 
   private static void fillTree(MailFolder parent, Multimap<Long, SimpleRow> folders) {
     for (SimpleRow row : folders.get(parent.getId())) {
-      MailFolder folder = new MailFolder(parent, row.getLong(COL_FOLDER),
-          row.getValue(COL_FOLDER_NAME), row.getLong(COL_FOLDER_UID));
+      MailFolder folder = new MailFolder(row.getLong(COL_FOLDER), row.getValue(COL_FOLDER_NAME),
+          row.getLong(COL_FOLDER_UID));
 
       folder.setModSeq(row.getLong(COL_FOLDER_MODSEQ));
       folder.setUnread(BeeUtils.unbox(row.getInt(COL_MESSAGE)));
@@ -145,7 +160,7 @@ public class MailAccount {
   private final String storeLogin;
   private final String storePassword;
   private final boolean storeSSL;
-  private final Map<String, String> storeProperties;
+  private final Map<String, String> storeProperties = new LinkedHashMap<>();
 
   private final Protocol transportProtocol = Protocol.SMTP;
   private final String transportHost;
@@ -153,7 +168,7 @@ public class MailAccount {
   private final String transportLogin;
   private final String transportPassword;
   private final boolean transportSSL;
-  private final Map<String, String> transportProperties;
+  private final Map<String, String> transportProperties = new LinkedHashMap<>();
 
   private final AccountInfo accountInfo;
   private Collection<Long> accountUsers = new HashSet<>();
@@ -169,7 +184,8 @@ public class MailAccount {
     storePassword = BeeUtils.isEmpty(data.getValue(COL_STORE_PASSWORD))
         ? null : Codec.decodeBase64(data.getValue(COL_STORE_PASSWORD));
     storeSSL = BeeUtils.isTrue(data.getBoolean(COL_STORE_SSL));
-    storeProperties = Codec.deserializeLinkedHashMap(data.getValue(COL_STORE_PROPERTIES));
+    Codec.deserializeLinkedHashMap(data.getValue(COL_STORE_PROPERTIES))
+        .forEach((p, v) -> storeProperties.put(BeeUtils.normalize(p), v));
 
     transportHost = data.getValue(COL_TRANSPORT_SERVER);
     transportPort = data.getInt(COL_TRANSPORT_PORT);
@@ -178,7 +194,8 @@ public class MailAccount {
     transportPassword = BeeUtils.isEmpty(data.getValue(COL_TRANSPORT_PASSWORD))
         ? null : Codec.decodeBase64(data.getValue(COL_TRANSPORT_PASSWORD));
     transportSSL = BeeUtils.isTrue(data.getBoolean(COL_TRANSPORT_SSL));
-    transportProperties = Codec.deserializeLinkedHashMap(data.getValue(COL_TRANSPORT_PROPERTIES));
+    Codec.deserializeLinkedHashMap(data.getValue(COL_TRANSPORT_PROPERTIES))
+        .forEach((p, v) -> transportProperties.put(BeeUtils.normalize(p), v));
 
     accountInfo = new AccountInfo(data);
   }
@@ -191,25 +208,12 @@ public class MailAccount {
     return accountInfo.getAddress();
   }
 
-  public Long getSignatureId() {
-    return accountInfo.getSignatureId();
+  public String getFolderCaption(Long folderId) {
+    return accountInfo.getFolderCaption(folderId);
   }
 
-  public String getStoreErrorMessage() {
-    String err = null;
-
-    if (BeeUtils.isEmpty(err)) {
-      if (storeProtocol == null) {
-        err = "Unknown store protocol";
-
-      } else if (BeeUtils.isEmpty(storeHost)) {
-        err = "Unknown store host";
-
-      } else if (BeeUtils.isEmpty(storeLogin)) {
-        err = "Unknown store login";
-      }
-    }
-    return err;
+  public Long getSignatureId() {
+    return accountInfo.getSignatureId();
   }
 
   public String getStoreHost() {
@@ -295,10 +299,6 @@ public class MailAccount {
     return transportSSL;
   }
 
-  public boolean isValidStoreAccount() {
-    return BeeUtils.isEmpty(getStoreErrorMessage());
-  }
-
   public boolean isValidTransportAccount() {
     return BeeUtils.isEmpty(getTransportErrorMessage());
   }
@@ -309,24 +309,20 @@ public class MailAccount {
     if (!isStoredRemotedly(localFolder)) {
       return false;
     }
-    Store store = null;
-    Folder folder;
+    MailStore store = null;
 
     try {
-      store = connectToStore();
-      folder = getRemoteFolder(store, localFolder);
+      store = connect();
+      Folder folder = getRemoteFolder(store.get(), localFolder);
       folder.appendMessages(new MimeMessage[] {message});
 
     } finally {
-      disconnectFromStore(store);
+      disconnect(store);
     }
     return true;
   }
 
-  Store connectToStore() throws MessagingException {
-    if (!isValidStoreAccount()) {
-      throw new MessagingException(getStoreErrorMessage());
-    }
+  MailStore connect() throws MessagingException {
     storesLock.lock();
     MailStore mailStore = stores.get(getAccountId());
 
@@ -334,26 +330,19 @@ public class MailAccount {
       if (mailStore.expired()) {
         logger.debug("Removing expired store...");
         stores.remove(getAccountId());
+      } else {
         storesLock.unlock();
-        return connectToStore();
-
-      } else if (mailStore.idle() || mailStore.full()) {
-        logger.debug("Waiting for connected store...");
-        storesLock.unlock();
-
-        try {
-          Thread.sleep(TimeUtils.MILLIS_PER_SECOND);
-        } catch (InterruptedException e) {
-          logger.warning(e.getMessage());
-        }
-        return connectToStore();
+        mailStore.enter();
+        return mailStore;
       }
-      logger.debug("Entering connected store...");
-      mailStore.enter();
-      storesLock.unlock();
-    } else {
-      logger.debug("Connecting to store...");
+    }
+    logger.debug("Opening store...");
 
+    mailStore = new MailStore(BeeUtils.toInt(getStoreProperties().get("maxsessions")));
+    stores.put(getAccountId(), mailStore);
+    storesLock.unlock();
+
+    try {
       String protocol = getStoreProtocol().name().toLowerCase();
       Properties props = new Properties();
       String pfx = "mail." + protocol + ".";
@@ -374,24 +363,19 @@ public class MailAccount {
         String key = prop.getKey();
         props.put(BeeUtils.isPrefix(key, "mail.") ? key : pfx + key, prop.getValue());
       }
-      Session session = Session.getInstance(props, null);
-      mailStore = new MailStore(session.getStore(protocol));
+      Store store = Session.getInstance(props, null).getStore(protocol);
+      store.connect(getStoreHost(), getStorePort(), getStoreLogin(), getStorePassword());
+      mailStore.set(store);
 
-      stores.put(getAccountId(), mailStore);
+    } catch (MessagingException ex) {
+      storesLock.lock();
+      stores.remove(getAccountId());
       storesLock.unlock();
-
-      try {
-        mailStore.getStore().connect(getStoreHost(), getStorePort(), getStoreLogin(),
-            getStorePassword());
-      } catch (MessagingException ex) {
-        storesLock.lock();
-        stores.remove(getAccountId());
-        storesLock.unlock();
-        throw ex;
-      }
-      mailStore.enter();
+      mailStore.set(null);
+      throw new ConnectionFailureException(ex.getMessage());
     }
-    return mailStore.getStore();
+    mailStore.enter();
+    return mailStore;
   }
 
   Transport connectToTransport() throws MessagingException {
@@ -427,58 +411,43 @@ public class MailAccount {
     return transport;
   }
 
-  boolean createRemoteFolder(MailFolder parent, String name, boolean acceptExisting)
-      throws MessagingException {
+  boolean createRemoteFolder(MailFolder parent, String name) throws MessagingException {
     boolean ok = true;
 
     if (!isStoredRemotedly(parent)) {
       return ok;
     }
-    Store store = null;
-    Folder folder;
+    MailStore store = null;
 
     try {
-      store = connectToStore();
-      folder = getRemoteFolder(store, parent);
+      store = connect();
+      Folder folder = getRemoteFolder(store.get(), parent);
       Folder newFolder = folder.getFolder(name);
 
-      if (checkNewFolderName(newFolder, name, acceptExisting)) {
-        logger.debug("Creating folder:", name);
+      if (checkNewFolderName(newFolder, name)) {
+        logger.debug("Creating folder:", newFolder.getFullName());
         ok = newFolder.create(Folder.HOLDS_MESSAGES);
       }
-      if (ok) {
-        newFolder.setSubscribed(true);
-      }
     } finally {
-      disconnectFromStore(store);
+      disconnect(store);
     }
     return ok;
   }
 
-  void disconnectFromStore(Store store) {
-    if (store != null) {
+  void disconnect(MailStore mailStore) {
+    if (mailStore != null) {
       storesLock.lock();
-      MailStore mailStore = stores.get(getAccountId());
-      boolean disconnect = mailStore == null || mailStore.getStore() != store;
+      boolean close = mailStore.leave();
 
-      if (!disconnect) {
-        mailStore.leave();
-        disconnect = mailStore.idle();
-
-        if (disconnect) {
-          stores.remove(getAccountId());
-        }
-      }
-      if (disconnect) {
-        logger.debug("Disconnecting from store...");
-      } else {
-        logger.debug("Leaving connected store...");
+      if (close && Objects.equals(mailStore, stores.get(getAccountId()))) {
+        stores.remove(getAccountId());
       }
       storesLock.unlock();
 
-      if (disconnect) {
+      if (close) {
+        logger.debug("Closing store...");
         try {
-          store.close();
+          mailStore.get().close();
         } catch (MessagingException e) {
           logger.warning(e);
         }
@@ -492,18 +461,17 @@ public class MailAccount {
     if (!isStoredRemotedly(source)) {
       return ok;
     }
-    Store store = null;
-    Folder folder;
+    MailStore store = null;
 
     try {
-      store = connectToStore();
-      folder = getRemoteFolder(store, source);
+      store = connect();
+      Folder folder = getRemoteFolder(store.get(), source);
 
       logger.debug("Removing folder:", folder.getName());
       ok = folder.delete(true) || !folder.exists();
 
     } finally {
-      disconnectFromStore(store);
+      disconnect(store);
     }
     return ok;
   }
@@ -514,12 +482,29 @@ public class MailAccount {
 
   Folder getRemoteFolder(Store remoteStore, MailFolder localFolder) throws MessagingException {
     Assert.noNulls(remoteStore, localFolder);
+    Folder remote;
 
+    if (localFolder.getParent() == null) {
+      logger.debug("Looking for remote", localFolder.getName(), "folder");
+      remote = remoteStore.getDefaultFolder();
+    } else {
+      String path = localFolder.getPath(remoteStore.getDefaultFolder().getSeparator());
+      logger.debug("Looking for remote", path, "folder");
+      remote = remoteStore.getFolder(path);
+
+      if (!remote.exists()) {
+        remote = getRemoteFolder2(remoteStore, localFolder);
+      }
+    }
+    return remote;
+  }
+
+  Folder getRemoteFolder2(Store remoteStore, MailFolder localFolder) throws MessagingException {
     if (localFolder.getParent() == null) {
       logger.debug("Looking for remote", localFolder.getName(), "folder");
       return remoteStore.getDefaultFolder();
     }
-    Folder remoteParent = getRemoteFolder(remoteStore, localFolder.getParent());
+    Folder remoteParent = getRemoteFolder2(remoteStore, localFolder.getParent());
 
     String name = localFolder.getName();
     logger.debug("Looking for remote folder", name, "in", localFolder.getParent().getName());
@@ -528,7 +513,7 @@ public class MailAccount {
 
     if (!remote.exists()) {
       if (isInbox(localFolder) || !isSystemFolder(localFolder)
-          || !createRemoteFolder(localFolder.getParent(), name, false)) {
+          || !createRemoteFolder(localFolder.getParent(), name)) {
 
         throw new MessagingException(BeeUtils.joinWords("Remote folder", name, "in",
             localFolder.getParent().getName(), "does not exist"));
@@ -538,19 +523,23 @@ public class MailAccount {
   }
 
   MailFolder getDraftsFolder() {
-    return findFolder(accountInfo.getSystemFolder(SystemFolder.Drafts));
+    return findFolder(getSystemFolder(SystemFolder.Drafts));
   }
 
   MailFolder getInboxFolder() {
-    return findFolder(accountInfo.getSystemFolder(SystemFolder.Inbox));
+    return findFolder(getSystemFolder(SystemFolder.Inbox));
   }
 
   MailFolder getSentFolder() {
-    return findFolder(accountInfo.getSystemFolder(SystemFolder.Sent));
+    return findFolder(getSystemFolder(SystemFolder.Sent));
+  }
+
+  public Long getSystemFolder(SystemFolder sysFolder) {
+    return accountInfo.getSystemFolder(sysFolder);
   }
 
   MailFolder getTrashFolder() {
-    return findFolder(accountInfo.getSystemFolder(SystemFolder.Trash));
+    return findFolder(getSystemFolder(SystemFolder.Trash));
   }
 
   MailFolder getRootFolder() {
@@ -569,6 +558,10 @@ public class MailAccount {
     return accountInfo.isInboxFolder(folder.getId());
   }
 
+  boolean isRoot(MailFolder folder) {
+    return folder == getRootFolder();
+  }
+
   boolean isSystemFolder(MailFolder folder) {
     return accountInfo.isSystemFolder(folder.getId());
   }
@@ -584,16 +577,16 @@ public class MailAccount {
     if (!move && !isTarget || ArrayUtils.length(uids) == 0) {
       return true;
     }
-    Store store = null;
+    MailStore store = null;
     Folder remoteSource = null;
 
     try {
-      store = connectToStore();
-      remoteSource = getRemoteFolder(store, source);
+      store = connect();
+      remoteSource = getRemoteFolder(store.get(), source);
       List<Message> messages = getMessageReferences(remoteSource, source.getUidValidity(), uids);
 
       if (isTarget) {
-        Folder remoteTarget = getRemoteFolder(store, target);
+        Folder remoteTarget = getRemoteFolder(store.get(), target);
 
         if (!holdsMessages(remoteTarget)) {
           throw new MessagingException(BeeUtils.joinWords("Folder",
@@ -603,13 +596,8 @@ public class MailAccount {
         remoteSource.copyMessages(messages.toArray(new Message[0]), remoteTarget);
       }
       if (move) {
-        for (Iterator<Message> iterator = messages.iterator(); iterator.hasNext(); ) {
-          Message message = iterator.next();
+        messages.removeIf(Message::isExpunged);
 
-          if (message.isExpunged()) {
-            iterator.remove();
-          }
-        }
         if (!BeeUtils.isEmpty(messages)) {
           logger.debug("Deleting selected messages from folder:", remoteSource.getName());
           remoteSource.setFlags(messages.toArray(new Message[0]), new Flags(Flag.DELETED), true);
@@ -628,7 +616,7 @@ public class MailAccount {
           logger.warning(e);
         }
       }
-      disconnectFromStore(store);
+      disconnect(store);
     }
     return true;
   }
@@ -639,21 +627,20 @@ public class MailAccount {
     if (!isStoredRemotedly(source)) {
       return ok;
     }
-    Store store = null;
-    Folder folder;
+    MailStore store = null;
 
     try {
-      store = connectToStore();
-      folder = getRemoteFolder(store, source);
+      store = connect();
+      Folder folder = getRemoteFolder(store.get(), source);
       Folder newFolder = folder.getParent().getFolder(name);
 
-      checkNewFolderName(newFolder, name, false);
+      checkNewFolderName(newFolder, name);
 
       logger.debug("Renamng folder:", folder.getName(), "->", name);
       ok = folder.renameTo(newFolder);
 
     } finally {
-      disconnectFromStore(store);
+      disconnect(store);
     }
     return ok;
   }
@@ -664,12 +651,12 @@ public class MailAccount {
     if (!isStoredRemotedly(source)) {
       return false;
     }
-    Store store = null;
+    MailStore store = null;
     Folder folder = null;
 
     try {
-      store = connectToStore();
-      folder = getRemoteFolder(store, source);
+      store = connect();
+      folder = getRemoteFolder(store.get(), source);
       List<Message> messages = getMessageReferences(folder, source.getUidValidity(), uids);
 
       Flag flag = MailEnvelope.getFlag(messageFlag);
@@ -695,7 +682,7 @@ public class MailAccount {
           logger.warning(e);
         }
       }
-      disconnectFromStore(store);
+      disconnect(store);
     }
     return true;
   }
@@ -703,6 +690,10 @@ public class MailAccount {
   void setFolders(Multimap<Long, SimpleRow> folders) {
     getRootFolder().getSubFolders().clear();
     fillTree(getRootFolder(), folders);
+  }
+
+  void setSystemFolder(SystemFolder sysFolder, Long folderId) {
+    accountInfo.setSystemFolder(sysFolder, folderId);
   }
 
   void setUsers(Long... users) {

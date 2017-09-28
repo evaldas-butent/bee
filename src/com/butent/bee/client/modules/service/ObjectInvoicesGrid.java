@@ -12,6 +12,7 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.Map;
@@ -20,6 +21,7 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
 
   private final String idColumnName;
 
+  private boolean filterByMaintenance;
   private Long pendingId;
 
   ObjectInvoicesGrid() {
@@ -54,9 +56,12 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
 
   @Override
   public void onParentRow(ParentRowEvent event) {
-    if (getGridPresenter() == null) {
-      setPendingId(event.getRowId());
-    } else {
+    setPendingId(event.getRowId());
+    if (BeeUtils.same(event.getViewName(), TBL_SERVICE_MAINTENANCE)) {
+      setFilterByMaintenance(true);
+    }
+
+    if (getGridPresenter() != null) {
       maybeRefresh(getGridPresenter(), event.getRowId());
     }
   }
@@ -65,7 +70,9 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
     Filter filter;
 
     if (DataUtils.isId(parentId)) {
-      filter = Filter.in(idColumnName, VIEW_MAINTENANCE, COL_MAINTENANCE_INVOICE,
+      filter = Filter.or(Filter.in(idColumnName, VIEW_MAINTENANCE, COL_MAINTENANCE_INVOICE,
+          Filter.equals(
+              isFilterByMaintenance() ? COL_SERVICE_MAINTENANCE : COL_SERVICE_OBJECT, parentId)),
           Filter.equals(COL_SERVICE_OBJECT, parentId));
     } else {
       filter = Filter.isFalse();
@@ -91,5 +98,13 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
 
   private void setPendingId(Long pendingId) {
     this.pendingId = pendingId;
+  }
+
+  private boolean isFilterByMaintenance() {
+    return filterByMaintenance;
+  }
+
+  private void setFilterByMaintenance(boolean filterByMaintenance) {
+    this.filterByMaintenance = filterByMaintenance;
   }
 }

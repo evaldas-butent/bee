@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="CalExecutorGroups" viewName="CalExecutorGroups" minColumnWidth="120"
-  >
+        name="CalExecutorGroups" viewName="CalExecutorGroups" minColumnWidth="120"
+>
   <g:columns>
-    <RelColumn name="Group" visible="true" readOnly="true" editEnabled="true" editPopup="true" />
+    <RelColumn name="Group" visible="true" readOnly="true" editEnabled="true" />
 
     <DataColumn name="Background" updateMode="row">
       <editor type="color" />

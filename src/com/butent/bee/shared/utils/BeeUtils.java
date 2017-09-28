@@ -1100,6 +1100,28 @@ public final class BeeUtils {
     return cs.length() >= min;
   }
 
+  public static boolean hasDistinctElements(List<?> list) {
+    if (size(list) > 1) {
+      return list.stream().distinct().count() == list.size();
+    } else {
+      return true;
+    }
+  }
+
+  public static int indexOf(String src, String ctxt, int fromIndex, boolean caseSensitive) {
+    if (src == null || ctxt == null) {
+      return BeeConst.UNDEF;
+    } else if (caseSensitive) {
+      return src.indexOf(ctxt, fromIndex);
+    } else {
+      return src.toLowerCase().indexOf(ctxt.toLowerCase(), fromIndex);
+    }
+  }
+
+  public static <T> int indexOf(List<? extends T> list, T item) {
+    return (list == null) ? BeeConst.UNDEF : list.indexOf(item);
+  }
+
   public static int indexOfSame(List<String> list, String s) {
     if (isEmpty(list)) {
       return BeeConst.UNDEF;
@@ -1216,15 +1238,12 @@ public final class BeeUtils {
 
     Set<T> result;
 
-    if (isEmpty(col1)) {
+    if (isEmpty(col1) || isEmpty(col2)) {
       result = new HashSet<>();
 
     } else {
       result = new HashSet<>(col1);
-
-      if (!isEmpty(col2)) {
-        result.retainAll(col2);
-      }
+      result.retainAll(col2);
     }
 
     return result;
@@ -1612,7 +1631,7 @@ public final class BeeUtils {
   }
 
   public static boolean isNegative(Integer x) {
-    return (x == null) ? false : x < 0;
+    return x != null && x < 0;
   }
 
   public static boolean isNegativeInt(String s) {
@@ -1628,11 +1647,11 @@ public final class BeeUtils {
   }
 
   public static boolean isNonNegative(Integer x) {
-    return (x == null) ? false : x >= 0;
+    return x != null && x >= 0;
   }
 
   public static boolean isNonNegative(Long x) {
-    return (x == null) ? false : x >= 0L;
+    return x != null && x >= 0L;
   }
 
   public static boolean isNonNegativeDouble(String s) {
@@ -1644,7 +1663,7 @@ public final class BeeUtils {
   }
 
   public static boolean isPositive(BigDecimal x) {
-    return (x == null) ? false : x.compareTo(BigDecimal.ZERO) > 0;
+    return x != null && x.compareTo(BigDecimal.ZERO) > 0;
   }
 
   public static boolean isPositive(Double d) {
@@ -1656,11 +1675,11 @@ public final class BeeUtils {
   }
 
   public static boolean isPositive(Integer x) {
-    return (x == null) ? false : x > 0;
+    return x != null && x > 0;
   }
 
   public static boolean isPositive(Long x) {
-    return (x == null) ? false : x > 0L;
+    return x != null && x > 0L;
   }
 
   public static boolean isPositiveDouble(String s) {
@@ -1753,8 +1772,13 @@ public final class BeeUtils {
   public static boolean isTrue(Boolean b) {
     if (b == null) {
       return false;
+    } else {
+      return b;
     }
-    return b.booleanValue();
+  }
+
+  public static boolean isUpperCase(String s) {
+    return !isEmpty(s) && s.equals(s.toUpperCase());
   }
 
   public static boolean isWhitespace(char ch) {
@@ -2148,12 +2172,12 @@ public final class BeeUtils {
     }
   }
 
-  public static int positive(int x, int def) {
-    return (x > 0) ? x : def;
-  }
-
-  public static int positive(int x, int y, int def) {
-    return (x > 0) ? x : positive(y, def);
+  public static int positive(Integer x, int def) {
+    if (isPositive(x)) {
+      return x;
+    } else {
+      return def;
+    }
   }
 
   public static Long positive(Long x, Long def) {
@@ -2224,6 +2248,22 @@ public final class BeeUtils {
       z.append(proper(x, null));
     }
     return z.toString();
+  }
+
+  public static String quote(String v) {
+    if (v == null) {
+      return BeeConst.STRING_QUOT + BeeConst.STRING_QUOT;
+
+    } else if (v.contains(BeeConst.STRING_QUOT)) {
+      if (v.contains(BeeConst.STRING_APOS)) {
+        return bracket(v.trim());
+      } else {
+        return BeeConst.STRING_APOS + v.trim() + BeeConst.STRING_APOS;
+      }
+
+    } else {
+      return BeeConst.STRING_QUOT + v.trim() + BeeConst.STRING_QUOT;
+    }
   }
 
   public static char randomChar(char min, char max) {
@@ -2437,7 +2477,7 @@ public final class BeeUtils {
     if (str == null) {
       return null;
     } else {
-      return CharMatcher.WHITESPACE.removeFrom(str);
+      return CharMatcher.whitespace().removeFrom(str);
     }
   }
 
@@ -2481,7 +2521,7 @@ public final class BeeUtils {
    * @return a String with replaced phrases.
    */
   public static String replace(String text, String search, String replacement) {
-    return replace(text, search, replacement, -1);
+    return replace(text, search, replacement, -1, true);
   }
 
   /**
@@ -2493,13 +2533,15 @@ public final class BeeUtils {
    * @param max the number of occurrences to replace
    * @return a String with replaced phrases.
    */
-  public static String replace(String text, String search, String replacement, int max) {
+  public static String replace(String text, String search, String replacement, int max,
+      boolean caseSensitive) {
+
     if (!hasLength(text) || !hasLength(search) || max == 0) {
       return text;
     }
 
     int start = 0;
-    int end = text.indexOf(search, start);
+    int end = indexOf(text, search, start, caseSensitive);
     if (end < 0) {
       return text;
     }
@@ -2518,11 +2560,15 @@ public final class BeeUtils {
       if (--cnt == 0) {
         break;
       }
-      end = text.indexOf(search, start);
+      end = indexOf(text, search, start, caseSensitive);
     }
     sb.append(text.substring(start));
 
     return sb.toString();
+  }
+
+  public static String replaceSame(String text, String search, String replacement) {
+    return replace(text, search, replacement, -1, false);
   }
 
   /**
@@ -3218,6 +3264,14 @@ public final class BeeUtils {
     return isDouble(x) ? toString(x) : null;
   }
 
+  public static String toStringOrNull(Integer x) {
+    return (x == null) ? null : toString(x);
+  }
+
+  public static String toStringOrNull(Long x) {
+    return (x == null) ? null : toString(x);
+  }
+
   public static String trim(String s) {
     return (s == null) ? BeeConst.STRING_EMPTY : s.trim();
   }
@@ -3282,6 +3336,10 @@ public final class BeeUtils {
    */
   public static double unbox(Double box) {
     return (box == null) ? BeeConst.DOUBLE_ZERO : box;
+  }
+
+  public static double unbox(Number box) {
+    return (box == null) ? BeeConst.DOUBLE_ZERO : box.doubleValue();
   }
 
   /**
@@ -3411,10 +3469,19 @@ public final class BeeUtils {
   static String transform(Object x) {
     if (x == null) {
       return BeeConst.STRING_EMPTY;
+
     } else if (x instanceof String) {
       return ((String) x).trim();
+
     } else if (ArrayUtils.isArray(x)) {
       return ArrayUtils.toString(x);
+
+    } else if (x instanceof Collection) {
+      return isEmpty((Collection<?>) x) ? BeeConst.STRING_EMPTY : x.toString();
+
+    } else if (x instanceof Map) {
+      return isEmpty((Map<?, ?>) x) ? BeeConst.STRING_EMPTY : x.toString();
+
     } else {
       return x.toString();
     }

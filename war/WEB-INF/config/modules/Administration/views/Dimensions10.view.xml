@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="Dimensions10" source="Dimensions10" module="Administration"
+>
+  <Columns>
+    <SimpleColumn name="Ordinal" />
+    <SimpleColumn name="Dim10Name" />
+
+    <SimpleColumn name="Dim10Background" />
+    <SimpleColumn name="Dim10Foreground" />
+
+    <SimpleColumn name="Dim01Rel" />
+    <SimpleJoin joinType="LEFT" name="Dim01Rel">
+      <SimpleColumn name="Dim01Name" />
+      <SimpleColumn name="Dim01Background" />
+      <SimpleColumn name="Dim01Foreground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Dim02Rel" />
+    <SimpleJoin joinType="LEFT" name="Dim02Rel">
+      <SimpleColumn name="Dim02Name" />
+      <SimpleColumn name="Dim02Background" />
+      <SimpleColumn name="Dim02Foreground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Dim03Rel" />
+    <SimpleJoin joinType="LEFT" name="Dim03Rel">
+      <SimpleColumn name="Dim03Name" />
+      <SimpleColumn name="Dim03Background" />
+      <SimpleColumn name="Dim03Foreground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Dim04Rel" />
+    <SimpleJoin joinType="LEFT" name="Dim04Rel">
+      <SimpleColumn name="Dim04Name" />
+      <SimpleColumn name="Dim04Background" />
+      <SimpleColumn name="Dim04Foreground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Dim05Rel" />
+    <SimpleJoin joinType="LEFT" name="Dim05Rel">
+      <SimpleColumn name="Dim05Name" />
+      <SimpleColumn name="Dim05Background" />
+      <SimpleColumn name="Dim05Foreground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Dim06Rel" />
+    <SimpleJoin joinType="LEFT" name="Dim06Rel">
+      <SimpleColumn name="Dim06Name" />
+      <SimpleColumn name="Dim06Background" />
+      <SimpleColumn name="Dim06Foreground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Dim07Rel" />
+    <SimpleJoin joinType="LEFT" name="Dim07Rel">
+      <SimpleColumn name="Dim07Name" />
+      <SimpleColumn name="Dim07Background" />
+      <SimpleColumn name="Dim07Foreground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Dim08Rel" />
+    <SimpleJoin joinType="LEFT" name="Dim08Rel">
+      <SimpleColumn name="Dim08Name" />
+      <SimpleColumn name="Dim08Background" />
+      <SimpleColumn name="Dim08Foreground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Dim09Rel" />
+    <SimpleJoin joinType="LEFT" name="Dim09Rel">
+      <SimpleColumn name="Dim09Name" />
+      <SimpleColumn name="Dim09Background" />
+      <SimpleColumn name="Dim09Foreground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Notes" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Ordinal" />
+    <OrderBy column="Dim10Name" />
+  </Order>
+</View>
