@@ -154,6 +154,15 @@
     <SimpleJoin name="Maker" joinType="LEFT">
       <SimpleColumn alias="MakerName" name="Name" />
     </SimpleJoin>
+
+    <ExternalJoin source="ServiceObjects" name="Item" joinType="LEFT">
+      <IdColumn name="ServiceObject" />
+      <SimpleColumn name="Model" alias="ObjectModel" />
+
+      <SimpleJoin name="Category" joinType="LEFT">
+        <SimpleColumn name="Name" alias="ObjectCategory" />
+      </SimpleJoin>
+    </ExternalJoin>
     <!-- } Transrifus -->
   </Columns>
 

@@ -130,7 +130,16 @@
           <InputText source="ItemInButenta" style="&finp;" />
         </FlowPanel>
       </FlowPanel>
-<!-- } Transrifus -->
+
+      <FlowPanel class="&mrcl;" style="&mrst;">
+        <FlowPanel style="&mfld; width: 19em;" />
+
+        <FlowPanel style="&mfld; width: 41em;" for="Item">
+          <Label for="Item" style="&flbl;" />
+          <DataSelector source="Item" viewName="Items" style="&finp;"/>
+        </FlowPanel>
+      </FlowPanel>
+      <!-- } Transrifus -->
     </FlowPanel>
   </center>
 </SplitPanel>

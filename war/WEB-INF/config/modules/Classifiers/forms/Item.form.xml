@@ -270,6 +270,17 @@
             <!-- } Transrifus -->
           </row>
 
+          <!-- Transrifus { -->
+          <row>
+            <Label text="=svcDevice" data="ServiceObjects" />
+            <cell colSpan="3">
+              <DataSelector source="ServiceObject" editViewName="ServiceObjects"
+                            renderColumns="ObjectCategory ObjectModel" data="ServiceObjects"
+                            style="width: 100%;" readOnly="true" />
+            </cell>
+          </row>
+          <!-- } Transrifus -->
+
           <row module="Trade.Acts">
             <Label for="TimeUnit">
               &forservice;

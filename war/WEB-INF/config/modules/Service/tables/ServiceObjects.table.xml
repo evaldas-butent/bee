@@ -25,6 +25,8 @@
     <String name="BodyNo" precision="100" label="=svcBodyNo"/>
     <String name="Seller" precision="100" label="=svcSeller"/>
     <String name="ItemInButenta" precision="100" label="=svcItemInButenta" />
+
+    <Relation name="Item" relation="Items" unique="true" label="=item" />
     <!-- } Transrifus -->
 
     <String name="ArticleNo" precision="50" label="=ecItemCode" />
