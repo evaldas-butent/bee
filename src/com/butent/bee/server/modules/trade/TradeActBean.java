@@ -257,7 +257,9 @@ public class TradeActBean implements HasTimerService {
         BeeParameter.createRelation(module, PRM_CONTINUOUS_ACT_STATUS, TBL_TRADE_STATUSES,
             COL_STATUS_NAME),
         BeeParameter.createText(module, PRM_SYNC_ERP_DATA),
-        BeeParameter.createNumber(module, PRM_SYNC_ERP_STOCK));
+        BeeParameter.createNumber(module, PRM_SYNC_ERP_STOCK),
+        BeeParameter.createText(module, PRM_INVOICE_MAIL_SIGNATURE)
+        );
   }
 
   @Override

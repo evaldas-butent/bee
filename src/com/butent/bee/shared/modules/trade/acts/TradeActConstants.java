@@ -159,6 +159,8 @@ public final class TradeActConstants {
   public static final String PRM_APPROVED_ACT_STATUS = "ApprovedActStatus";
   public static final String PRM_SYNC_ERP_DATA = "SyncHours";
   public static final String PRM_SYNC_ERP_STOCK = "SyncStockInMinutes";
+  public static final String PRM_INVOICE_MAIL_SIGNATURE = "InvoiceMailSignature";
+
   public static final String PRP_INSERT_COLS = "InsertCols";
 
   public static final String PFX_START_STOCK = "StartStock_";

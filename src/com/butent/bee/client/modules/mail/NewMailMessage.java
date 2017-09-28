@@ -10,6 +10,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.PRM_INVOICE_MAIL_SIGNATURE;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -372,7 +373,22 @@ public final class NewMailMessage extends AbstractFormInterceptor
             signaturesWidget.addChangeHandler(
                 event -> applySignature(BeeUtils.toLongOrNull(signaturesWidget.getValue())));
 
-            applySignature(isDraft ? null : account.getSignatureId());
+            Long defaultSignature = null;
+
+            if (!isDraft) {
+              String invoiceSignature = Global.getParameterText(PRM_INVOICE_MAIL_SIGNATURE);
+
+              for (int i = 0; i < signaturesWidget.getItemCount(); i++) {
+                if (BeeUtils.same(signaturesWidget.getItemText(i), invoiceSignature)) {
+                  defaultSignature = BeeUtils.toLongOrNull(signaturesWidget.getValue(i));
+                  break;
+                }
+              }
+              if (!DataUtils.isId(defaultSignature)) {
+                defaultSignature = account.getSignatureId();
+              }
+            }
+            applySignature(defaultSignature);
           }
         });
     dialog.insertAction(1, signaturesWidget);
