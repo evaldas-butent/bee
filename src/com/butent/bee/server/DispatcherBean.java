@@ -31,6 +31,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
@@ -115,9 +116,18 @@ public class DispatcherBean {
     data.put(PRM_CURRENCY, prm.getRelationInfo(PRM_CURRENCY));
 
     List<BeeParameter> params = new ArrayList<>();
-    Arrays.stream(Module.values()).filter(Module::isEnabled).map(Module::getName)
-        .forEach(moduleName -> params.addAll(prm.getParameters(moduleName)));
+    Arrays.stream(Module.values()).forEach(module -> {
+      if (module.isEnabled()) {
+        params.addAll(prm.getParameters(module.getName()));
+      }
+      module.getSubModules().forEach(subModule -> {
+        ModuleAndSub moduleAndSub = ModuleAndSub.of(module, subModule);
 
+        if (moduleAndSub.isEnabled()) {
+          params.addAll(prm.getParameters(moduleAndSub.getName()));
+        }
+      });
+    });
     data.put(TBL_PARAMETERS, params);
 
     SupportedLocale locale = userService.getSupportedLocale();
