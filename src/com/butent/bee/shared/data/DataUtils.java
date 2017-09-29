@@ -584,6 +584,14 @@ public final class DataUtils {
     return getLongQuietly(row, getColumnIndex(columnId, columns));
   }
 
+  public static Long getLongQuietly(SimpleRowSet.SimpleRow row, String columnId) {
+    if (row != null && row.hasColumn(columnId)) {
+      return row.getLong(columnId);
+    } else {
+      return null;
+    }
+  }
+
   public static Long getLongQuietly(IsRow row, int index) {
     if (row == null) {
       return null;
