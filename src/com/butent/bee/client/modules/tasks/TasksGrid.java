@@ -131,7 +131,7 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
       ((HasCellRenderer) column).setRenderer(new ModeRenderer());
 
     } else if (BeeUtils.same(columnId, NAME_SLACK) && column instanceof HasCellRenderer) {
-      ((HasCellRenderer) column).setRenderer(new TaskSlackRenderer(dataColumns));
+      ((HasCellRenderer) column).setRenderer(new TaskSlackRenderer(dataColumns, VIEW_TASKS));
 
     } else if (BeeUtils.inListSame(columnId, COL_FINISH_TIME, COL_EXECUTOR)) {
       editableColumn.addCellValidationHandler(ValidationHelper.DO_NOT_VALIDATE);

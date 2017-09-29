@@ -325,19 +325,14 @@ public class SpecificationBuilder implements InputCallback {
   private void collectRestrictions(Multimap<Dimension, Option> allOptions, Option option,
       boolean on, Map<Option, Boolean> options) throws BeeException {
 
-    if (!allOptions.containsValue(option) || Objects.equals(options.get(option), on)) {
+    if (!allOptions.containsValue(option)) {
       return;
     }
     if (options.containsKey(option)) {
-      if (options.get(option) != null) {
-        throw new BeeException(option.toString());
-      } else if (on) {
-        options.put(option, true);
+      if (Objects.equals(options.get(option), on)) {
         return;
       }
-    } else if (!on) {
-      options.put(option, false);
-      return;
+      throw new BeeException(option.toString());
     }
     options.put(option, on);
     Configuration configuration = currentBranch.getConfiguration();
@@ -357,8 +352,9 @@ public class SpecificationBuilder implements InputCallback {
         collectRestrictions(allOptions, opt, true, options);
       }
     } else {
-      for (Option opt : options.keySet()) {
-        if (configuration.getRequiredOptions(opt).contains(option)) {
+      for (Option opt : allOptions.values()) {
+        if (!Objects.equals(opt, option)
+            && configuration.getRequiredOptions(opt).contains(option)) {
           collectRestrictions(allOptions, opt, false, options);
         }
       }
@@ -674,20 +670,16 @@ public class SpecificationBuilder implements InputCallback {
             selectable.setText(rowSelectable, 3, BeeUtils.toString(normPrice(option)));
             DomUtils.setDataProperty(selectable.getRow(rowSelectable), DATA_GRP, groupIdx);
 
-            Set<Long> packets = DataUtils.parseIdSet(configuration.getRelationPackets(option,
-                specification.getBundle()));
             int packetIdx = rowSelectable;
 
-            for (Option opt : configuration.getPackets(option)) {
-              if (!packets.contains(opt.getId())) {
-                rowSelectable++;
-                selectable.getCellFormatter().setStyleName(rowSelectable, 0, STYLE_PACKET);
-                selectable.setText(rowSelectable, 1, opt.getCode(), STYLE_PACKET);
-                selectable.setText(rowSelectable, 2, opt.getName(), STYLE_PACKET);
-                selectable.getCellFormatter().setStyleName(rowSelectable, 3, STYLE_PACKET);
-                DomUtils.setDataProperty(selectable.getRow(rowSelectable), DATA_PKG, packetIdx);
-                DomUtils.setDataProperty(selectable.getRow(rowSelectable), DATA_GRP, groupIdx);
-              }
+            for (Option opt : configuration.getPacketOptions(option, specification.getBundle())) {
+              rowSelectable++;
+              selectable.getCellFormatter().setStyleName(rowSelectable, 0, STYLE_PACKET);
+              selectable.setText(rowSelectable, 1, opt.getCode(), STYLE_PACKET);
+              selectable.setText(rowSelectable, 2, opt.getName(), STYLE_PACKET);
+              selectable.getCellFormatter().setStyleName(rowSelectable, 3, STYLE_PACKET);
+              DomUtils.setDataProperty(selectable.getRow(rowSelectable), DATA_PKG, packetIdx);
+              DomUtils.setDataProperty(selectable.getRow(rowSelectable), DATA_GRP, groupIdx);
             }
           }
         }
@@ -826,11 +818,10 @@ public class SpecificationBuilder implements InputCallback {
 
   private void toggleOption(Multimap<Dimension, Option> allOptions, Option option, boolean on,
       boolean silent) {
+    Configuration configuration = currentBranch.getConfiguration();
     Map<Option, Boolean> toggle = new TreeMap<>();
+    Set<Option> packetOptions = new HashSet<>();
 
-    for (Option opt : specification.getOptions()) {
-      toggle.put(opt, null);
-    }
     ConfirmationCallback confirmationCallback = new ConfirmationCallback() {
       @Override
       public void onCancel() {
@@ -839,53 +830,53 @@ public class SpecificationBuilder implements InputCallback {
 
       @Override
       public void onConfirm() {
-        for (Option opt : toggle.keySet()) {
-          Boolean action = toggle.get(opt);
-
-          if (action != null) {
-            if (action) {
-              specification.addOption(opt, normPrice(opt));
-            } else {
-              specification.getOptions().remove(opt);
-            }
+        toggle.forEach((opt, add) -> {
+          if (add) {
+            specification.addOption(opt, packetOptions.contains(opt) ? 0 : normPrice(opt));
+          } else {
+            specification.getOptions().remove(opt);
           }
-        }
+        });
         if (!silent) {
           refresh();
         }
       }
     };
     try {
-      Set<Option> defaults = new HashSet<>();
+      collectRestrictions(allOptions, option, on, toggle);
 
-      for (Option opt : allOptions.values()) {
-        if (!opt.getDimension().isRequired()
-            && currentBranch.getConfiguration().isDefault(opt, specification.getBundle())) {
-          defaults.add(opt);
-          toggle.put(opt, null);
+      toggle.keySet().removeIf(opt -> !opt.getDimension().isRequired()
+          && configuration.isDefault(opt, specification.getBundle()));
+
+      specification.getOptions().forEach(opt -> toggle.putIfAbsent(opt, true));
+
+      toggle.keySet().stream().filter(toggle::get).forEach(opt ->
+          packetOptions.addAll(configuration.getPacketOptions(opt, specification.getBundle())));
+
+      for (Iterator<Option> it = toggle.keySet().iterator(); it.hasNext(); ) {
+        Option opt = it.next();
+
+        if (toggle.get(opt) && !opt.getDimension().isRequired() && packetOptions.contains(opt)) {
+          specification.getOptions().remove(opt);
+          it.remove();
         }
       }
-      collectRestrictions(allOptions, option, on, toggle);
-      toggle.keySet().removeAll(defaults);
-
       List<String> msgs = new ArrayList<>();
       Dimension dimension = option.getDimension();
 
       if (!silent) {
-        for (Option opt : toggle.keySet()) {
-          Boolean action = toggle.get(opt);
+        toggle.forEach((opt, add) -> {
+          if (!Objects.equals(opt, option)
+              && !Objects.equals(specification.getOptions().contains(opt), add)
+              && (!dimension.isRequired() || !Objects.equals(dimension, opt.getDimension()))) {
 
-          if (action != null && !Objects.equals(opt, option)
-              && (!dimension.isRequired() || !Objects.equals(dimension, opt.getDimension()))
-              && !Objects.equals(specification.getOptions().contains(opt), action)) {
-
-            msgs.add(BeeUtils.joinWords(action
+            msgs.add(BeeUtils.joinWords(add
                 ? "<span style=\"font-family:" + FontAwesome.class.getSimpleName()
                 + "; color:green;\">" + FontAwesome.PLUS_CIRCLE.getCode() + "</span>"
                 : "<span style=\"font-family:" + FontAwesome.class.getSimpleName()
                 + "; color:red;\">" + FontAwesome.BAN.getCode() + "</span>", opt));
           }
-        }
+        });
       }
       if (BeeUtils.isEmpty(msgs)) {
         confirmationCallback.onConfirm();

@@ -67,7 +67,12 @@ public abstract class InvoiceBuilder extends AbstractGridInterceptor
       mainItem = null;
     }
     RowFactory.createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo,
-        newRow, Opener.DETACHED, new InvoiceForm(mainItem), row -> {
+        newRow, Opener.DETACHED, new InvoiceForm(mainItem) {
+          @Override
+          public boolean saveOnPrintNewRow() {
+            return false;
+          }
+        }, row -> {
           ParameterList args = getRequestArgs();
 
           if (args != null) {

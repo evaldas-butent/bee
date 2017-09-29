@@ -8,6 +8,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
@@ -64,7 +65,8 @@ class Driver extends Filterable implements HasDateRange, HasItemName {
       JustDate experience, String notes, Set<Long> groups) {
 
     this.id = driverId;
-    this.itemName = BeeUtils.joinWords(firstName, lastName);
+    this.itemName = BeeUtils.joinWords(firstName, lastName,
+        Localized.dictionary().captionId().toLowerCase(), driverId);
 
     if (!BeeUtils.isEmpty(groups)) {
       this.groups.addAll(groups);

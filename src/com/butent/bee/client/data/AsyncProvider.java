@@ -242,11 +242,11 @@ public class AsyncProvider extends Provider {
       ModificationPreviewer modificationPreviewer, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
       Filter immutableFilter, CachingPolicy cachingPolicy, Map<String, Filter> parentFilters,
-      Filter userFilter) {
+      Filter userFilter, String dataOptions) {
 
     super(display, presenter, modificationPreviewer, notificationListener,
         viewName, columns, idColumnName, versionColumnName,
-        immutableFilter, parentFilters, userFilter);
+        immutableFilter, parentFilters, userFilter, dataOptions);
 
     this.cachingPolicy = cachingPolicy;
     this.enablePrefetch = CachingPolicy.FULL.equals(cachingPolicy);
@@ -298,7 +298,7 @@ public class AsyncProvider extends Provider {
 
           if (step == getRepeatStep()) {
             if (!isPrefetchPending() && duration <= AsyncProvider.maxRepeatMillis
-                && getRightsStates().isEmpty()) {
+                && !hasQueryOptions()) {
               prefetch(step, (int) duration);
             }
           } else {
@@ -487,7 +487,7 @@ public class AsyncProvider extends Provider {
     Order ord = getOrder();
 
     CachingPolicy caching = getCachingPolicy();
-    if (caching != null && caching.doRead() && getRightsStates().isEmpty()) {
+    if (caching != null && caching.doRead() && !hasQueryOptions()) {
       BeeRowSet rowSet = Global.getCache().getRowSet(getViewName(), flt, ord, offset, limit);
       if (rowSet != null) {
         requestScheduler.cancel();

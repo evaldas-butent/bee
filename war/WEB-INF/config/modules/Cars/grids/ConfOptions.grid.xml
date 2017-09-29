@@ -5,7 +5,8 @@
 >
   <g:columns>
     <IdColumn name="ID" />
-    <RelColumn name="Group" renderColumns="TypeName GroupName2 GroupName" visible="true" />
+    <RelColumn name="Type" visible="true" />
+    <RelColumn name="Group" renderColumns="GroupName2 GroupName" visible="true" />
     <DataColumn name="OptionName" visible="true" />
     <DataColumn name="OptionName2" visible="false" />
     <DataColumn name="Code" />

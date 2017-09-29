@@ -371,7 +371,7 @@ public final class ParametersGrid extends AbstractGridInterceptor {
 
       case RELATION:
         Pair<String, String> relData = Pair.restore(prm.getOptions());
-        ArrayList<String> cols = Lists.newArrayList(relData.getB());
+        ArrayList<String> cols = Lists.newArrayList(Codec.beeDeserializeCollection(relData.getB()));
         Relation relation = Relation.create(relData.getA(), cols);
         relation.disableEdit();
         relation.disableNewRow();

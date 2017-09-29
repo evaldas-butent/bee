@@ -302,12 +302,12 @@
         </SimplePanel>
       </page>
 
-      <page>
+      <page predicate="!row.IsService">
         <text>=suppliers</text>
         <ChildGrid name="ItemSuppliers" relColumn="Item" />
       </page>
 
-      <page>
+      <page predicate="!row.IsService">
         <text>=manufacturers</text>
         <ChildGrid name="ItemManufacturers" relColumn="Item" />
       </page>
@@ -335,12 +335,17 @@
         </FlowPanel>
       </page>
 
-      <page module="Trade" predicate="!row.IsService &amp;&amp; rowId > 0">
+      <page module="Trade" data="TradeStock" predicate="!row.IsService &amp;&amp; rowId > 0">
         <text>=trdStock</text>
         <FlowPanel class="flexBox-vertical">
           <FlowPanel name="StockByWarehouse" style="margin: auto;" />
           <ChildGrid name="ItemStock" relColumn="Item" class="flexible" style="min-height: 75%;" />
         </FlowPanel>
+      </page>
+
+      <page module="Trade" data="ItemAnalogs" predicate="!row.IsService &amp;&amp; rowId > 0">
+        <text>=itemAnalogsShort</text>
+        <GridPanel name="AnalogsOfItem" parent="{form}" child="true" paging="false" />
       </page>
 
       <page module="Trade" predicate="rowId > 0">

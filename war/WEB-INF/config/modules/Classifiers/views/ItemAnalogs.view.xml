@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="ItemAnalogs" source="ItemAnalogs"
+      caption="=itemAnalogs" newRowCaption="=itemAnalogsNew"
+>
+  <Columns>
+    <SimpleColumn name="Item1" />
+
+    <SimpleJoin joinType="LEFT" name="Item1">
+      <SimpleColumn name="Name" alias="Item1Name" label="=itemName+ 1" />
+      <SimpleColumn name="Article" alias="Item1Article" label="=article+ 1" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Item2" />
+
+    <SimpleJoin joinType="LEFT" name="Item2">
+      <SimpleColumn name="Name" alias="Item2Name" label="=itemName+ 2" />
+      <SimpleColumn name="Article" alias="Item2Article" label="=article+ 2" />
+    </SimpleJoin>
+  </Columns>
+
+  <Order>
+    <OrderBy column="Item1Name" />
+    <OrderBy column="Item1Article" />
+    <OrderBy column="Item1" />
+
+    <OrderBy column="Item2Name" />
+    <OrderBy column="Item2Article" />
+    <OrderBy column="Item2" />
+  </Order>
+</View>

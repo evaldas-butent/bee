@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="SubstitutionObjects" source="SubstitutionObjects"
+>
+  <Columns>
+    <SimpleColumn name="Substitution" />
+    <SimpleColumn name="Object" />
+    <SimpleColumn name="ObjectID" />
+  </Columns>
+</View>

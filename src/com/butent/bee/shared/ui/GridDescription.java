@@ -35,7 +35,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     COLUMNS, WIDGETS, AUTO_FIT, AUTO_FLEX, FLEXIBILITY,
     FAVORITE, ENABLE_COPY, CACHE_DATA, CACHE_DESCRIPTION,
     MIN_NUMBER_OF_ROWS, MAX_NUMBER_OF_ROWS, RENDER_MODE, ROW_CHANGE_SENSITIVITY_MILLIS,
-    PREDEFINED_FILTERS, OPTIONS, PROPERTIES
+    PREDEFINED_FILTERS, DATA_OPTIONS, PROPERTIES
   }
 
   public static final String TBL_GRID_SETTINGS = "GridSettings";
@@ -138,7 +138,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private final List<FilterDescription> predefinedFilters = new ArrayList<>();
 
-  private String options;
+  private String dataOptions;
   private final Map<String, String> properties = new HashMap<>();
 
   public GridDescription(String name) {
@@ -400,8 +400,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           setPredefinedFilters(FilterDescription.restoreList(value));
           break;
 
-        case OPTIONS:
-          setOptions(value);
+        case DATA_OPTIONS:
+          setDataOptions(value);
           break;
         case PROPERTIES:
           setProperties(Codec.deserializeLinkedHashMap(value));
@@ -553,7 +553,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Max Number Of Rows", getMaxNumberOfRows(),
         "Render Mode", getRenderMode(),
         "Row Change Sensitivity Millis", getRowChangeSensitivityMillis(),
-        "Options", getOptions());
+        "Data Options", getDataOptions());
 
     int cnt;
     int i;
@@ -722,8 +722,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return newRowWindow;
   }
 
-  public String getOptions() {
-    return options;
+  public String getDataOptions() {
+    return dataOptions;
   }
 
   public Order getOrder() {
@@ -989,8 +989,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case PREDEFINED_FILTERS:
           arr[i++] = getPredefinedFilters();
           break;
-        case OPTIONS:
-          arr[i++] = getOptions();
+        case DATA_OPTIONS:
+          arr[i++] = getDataOptions();
           break;
         case PROPERTIES:
           arr[i++] = getProperties();
@@ -1145,8 +1145,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.newRowWindow = newRowWindow;
   }
 
-  public void setOptions(String options) {
-    this.options = options;
+  public void setDataOptions(String dataOptions) {
+    this.dataOptions = dataOptions;
   }
 
   public void setOrder(Order order) {

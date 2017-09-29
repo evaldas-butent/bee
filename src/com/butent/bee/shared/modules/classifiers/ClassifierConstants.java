@@ -277,6 +277,7 @@ public final class ClassifierConstants {
   public static final String COL_WAREHOUSE_NAME = "Name";
   public static final String COL_WAREHOUSE_SUPPLIER_CODE = "SupplierCode";
   public static final String COL_WAREHOUSE_BRANCH = "Branch";
+  public static final String COL_WAREHOUSE_CONSIGNMENT = "Consignment";
   public static final String COL_WAREHOUSE_REMAINDER = "Remainder";
 
   public static final String COL_RELATION_TYPE = "RelationType";

@@ -17,6 +17,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -35,6 +36,7 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
@@ -53,7 +55,9 @@ import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
@@ -64,6 +68,7 @@ import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -290,6 +295,22 @@ class TaskBuilder extends ProductSupportInterceptor {
           setTaskRow(row);
           super.onDataSelector(event);
         }
+      });
+    } else if (BeeUtils.same(name, COL_END_RESULT) && widget instanceof Button) {
+      ((Button) widget).addClickHandler(clickEvent -> {
+        if (relations != null) {
+          TaskUtils.renderEndResult(relations.getWidgetMap(true), getFormView(), true, null);
+        }
+      });
+    } else if (BeeUtils.same(name, COL_TASK_TEMPLATE) && widget instanceof UnboundSelector) {
+      ((UnboundSelector) widget).addSelectorHandler(event -> {
+        JustDate now = TimeUtils.today();
+        Filter filter = Filter.and(Filter.or(Filter.isNull(COL_START_TIME),
+            Filter.compareWithValue(COL_START_TIME, Operator.LE, new DateValue(now))),
+            Filter.or(Filter.isNull(COL_FINISH_TIME), Filter.compareWithValue(COL_FINISH_TIME,
+                Operator.GE, new DateValue(now))));
+
+        event.getSelector().setAdditionalFilter(filter);
       });
     }
 
@@ -753,6 +774,17 @@ class TaskBuilder extends ProductSupportInterceptor {
       }
 
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
+
+      String endResult = Data.getString(getViewName(), tasks.getRow(0), COL_END_RESULT);
+      if (!BeeUtils.isEmpty(endResult)) {
+        List<String> translations = new ArrayList<>();
+
+        for (String viewName : Codec.deserializeList(endResult)) {
+          translations.add(Data.getViewCaption(viewName));
+        }
+
+        TaskUtils.insertEndResultNote(tasks.getRowIds(), null, translations, null);
+      }
 
     } else {
       callback.onFailure("Unknown response");

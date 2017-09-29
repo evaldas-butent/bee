@@ -14,6 +14,11 @@
     <Relation name="Type" relation="TaskTypes" label="=crmTaskType" />
 
     <String name="ExpectedDuration" precision="10" label="=crmTaskExpectedDuration" />
+    <Numeric name="ExpectedExpenses" precision="15" scale="5" label="=crmTaskExpectedExpenses" />
+    <Relation name="Currency" relation="Currencies" label="=currency" defExpr="MAIN_CURRENCY" />
+
+    <Date name="StartTime" label="=validFrom" />
+    <Date name="FinishTime" label="=validUntil" />
 
     <Relation name="Company" relation="Companies" label="=company" />
     <Relation name="Contact" relation="CompanyPersons" label="=personContact" />
@@ -21,5 +26,13 @@
     <Relation name="Reminder" relation="ReminderTypes" cascade="SET_NULL" label="=crmReminder" />
     <Relation name="ProjectTemplate" relation="ProjectTemplates" cascade="SET_NULL" label="=prjTemplate" />
     <Relation name="StageTemplate" relation="ProjectTMLStages" cascade="SET_NULL" label="=prjStage" />
+
+    <Relation name="Product" relation="TaskProducts" label="=crmTaskProduct" />
+
+    <Boolean name="PrivateTask" label="=crmTaskPrivate" />
+    <Boolean name="Mail" label="=mailNotify" />
+    <Boolean name="NotScheduledTask" label="=crmTasksNotScheduledTask" />
+
+    <Text name="EndResult" label="=crmTaskEndResult" />
   </Fields>
 </Table>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="TTObserverGroups"
+       idName="TTObserverGroupID"
+>
+  <Fields>
+    <Relation name="TaskTemplate" notNull="true" relation="TaskTemplates" cascade="DELETE"
+              label="=crmTaskTemplate" />
+    <Relation name="Group" notNull="true" relation="UserGroupSettings" cascade="DELETE"
+              label="=group" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="TaskTemplate Group" />
+  </Constraints>
+</Table>

@@ -3,9 +3,7 @@ package com.butent.bee.shared.modules.trade;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.EnumSet;
 
 public enum TradeDocumentPhase implements HasLocalizedCaption {
   ORDER(false) {
@@ -93,8 +91,8 @@ public enum TradeDocumentPhase implements HasLocalizedCaption {
     }
   };
 
-  public static Collection<TradeDocumentPhase> getStockPhases() {
-    Set<TradeDocumentPhase> stockPhases = new HashSet<>();
+  public static EnumSet<TradeDocumentPhase> getStockPhases() {
+    EnumSet<TradeDocumentPhase> stockPhases = EnumSet.noneOf(TradeDocumentPhase.class);
 
     for (TradeDocumentPhase phase : values()) {
       if (phase.modifyStock()) {

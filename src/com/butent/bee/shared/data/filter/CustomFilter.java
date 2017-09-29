@@ -2,7 +2,9 @@ package com.butent.bee.shared.data.filter;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -23,6 +25,18 @@ public class CustomFilter extends Filter {
   private static final Splitter splitter =
       Splitter.on(CharMatcher.anyOf(KEY_SEPARATOR + ARG_SEPARATOR)).omitEmptyStrings()
           .trimResults();
+
+  public static Multimap<String, String> getOptions(List<String> list) {
+    Multimap<String, String> options = ArrayListMultimap.create();
+
+    if (BeeUtils.size(list) > 1) {
+      for (int i = 0; i < list.size() - 1; i += 2) {
+        options.put(list.get(i), list.get(i + 1));
+      }
+    }
+
+    return options;
+  }
 
   static boolean is(String input) {
     return BeeUtils.isPrefix(input, PREFIX) && BeeUtils.isSuffix(input, SUFFIX)
