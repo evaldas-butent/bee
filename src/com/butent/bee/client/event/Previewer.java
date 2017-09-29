@@ -14,6 +14,7 @@ import com.butent.bee.client.Bee;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.shared.Assert;
@@ -22,7 +23,6 @@ import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -91,6 +91,8 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
 
   private static final int DEFAULT_CLICK_SENSITIVITY_MILLIS = 0;
   private static final int DEFAULT_CLICK_SENSITIVITY_DISTANCE = 1;
+
+  private static final int DEFAULT_ACTION_SENSITIVITY_MILLIS = 500;
 
   public static void ensureRegistered(PreviewHandler handler) {
     Assert.notNull(handler);
@@ -177,6 +179,15 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     return (millis > 0) ? millis : DEFAULT_CLICK_SENSITIVITY_MILLIS;
   }
 
+  public static int getActionSensitivityMillis() {
+    int millis = BeeKeeper.getUser().getActionSensitivityMillis();
+    if (millis <= 0) {
+      millis = Settings.getActionSensitivityMillis();
+    }
+
+    return (millis > 0) ? millis : DEFAULT_ACTION_SENSITIVITY_MILLIS;
+  }
+
   private static boolean isExternalElement(Element element) {
     if (element == null) {
       return false;
@@ -184,11 +195,9 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     if (element.getId() != null && element.getId().startsWith("mce_")) {
       return true;
     }
+
     String className = DomUtils.getClassName(element);
-    if (className != null && className.startsWith("mce-")) {
-      return true;
-    }
-    return false;
+    return className != null && className.startsWith("mce-");
   }
 
   private static void onInteraction() {
@@ -226,12 +235,12 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     }
 
     if (lastClick != null) {
-      info.add(new Property("Last Click", TimeUtils.renderDateTime(lastClick.time, true)));
+      info.add(new Property("Last Click", Format.renderDateTime(lastClick.time)));
       info.add(new Property("Last Click X", BeeUtils.toString(lastClick.x, 3)));
       info.add(new Property("Last Click Y", BeeUtils.toString(lastClick.y, 3)));
     }
     if (lastKeyPress > 0) {
-      info.add(new Property("Last Key Press", TimeUtils.renderDateTime(lastKeyPress, true)));
+      info.add(new Property("Last Key Press", Format.renderDateTime(lastKeyPress)));
     }
 
     return info;
@@ -242,8 +251,8 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     String type = event.getNativeEvent().getType();
 
     if (modalCount == 0 && EventUtils.EVENT_TYPE_MOUSE_DOWN.equals(type)) {
-      for (int i = 0; i < mouseDownPriorHandlers.size(); i++) {
-        mouseDownPriorHandlers.get(i).onEventPreview(event, getTargetNode(event));
+      for (PreviewHandler mouseDownPriorHandler : mouseDownPriorHandlers) {
+        mouseDownPriorHandler.onEventPreview(event, getTargetNode(event));
         if (event.isCanceled() || event.isConsumed()) {
           return;
         }

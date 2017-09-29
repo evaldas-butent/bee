@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.BooleanValue;
@@ -15,11 +16,18 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 public final class SummaryChangeEvent extends GwtEvent<SummaryChangeEvent.Handler> {
 
+  @FunctionalInterface
   public interface Handler extends EventHandler {
     void onSummaryChange(SummaryChangeEvent event);
+  }
+
+  @FunctionalInterface
+  public interface Renderer extends Function<Map<String, Value>, String> {
   }
 
   private static final Type<Handler> TYPE = new Type<>();
@@ -87,7 +95,7 @@ public final class SummaryChangeEvent extends GwtEvent<SummaryChangeEvent.Handle
             break;
 
           default:
-            messages.add(value.toString());
+            messages.add(value.render(Format.getDateRenderer(), Format.getDateTimeRenderer()));
         }
       }
     }

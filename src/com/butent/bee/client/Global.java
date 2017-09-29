@@ -23,10 +23,12 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.MessageBoxes;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.output.Printer;
@@ -56,15 +58,20 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -100,6 +107,8 @@ public final class Global {
 
   private static final ReportSettings reportSettings = new ReportSettings();
 
+  private static final Map<String, BeeParameter> parameters = new HashMap<>();
+
   private static boolean debug;
   private static int explain;
 
@@ -119,7 +128,7 @@ public final class Global {
     if (!value.equals(styleSheets.get(key))) {
       styleSheets.put(key, value);
 
-      String css = CharMatcher.BREAKING_WHITESPACE.collapseFrom(value, BeeConst.CHAR_SPACE);
+      String css = CharMatcher.breakingWhitespace().collapseFrom(value, BeeConst.CHAR_SPACE);
       StyleInjector.inject(css);
       Printer.onInjectStyleSheet(css);
     }
@@ -232,31 +241,39 @@ public final class Global {
     return newsAggregator;
   }
 
-  public static void getParameter(String prm, final Consumer<String> prmConsumer) {
-    Assert.notEmpty(prm);
-    Assert.notNull(prmConsumer);
-
-    ParameterList args = AdministrationKeeper.createArgs(SVC_GET_PARAMETER);
-    args.addDataItem(COL_PARAMETER, prm);
-
-    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(BeeKeeper.getScreen());
-
-        if (!response.hasErrors()) {
-          prmConsumer.accept(response.getResponseAsString());
-        }
-      }
-    });
+  public static Boolean getParameterBoolean(String prm) {
+    BeeParameter parameter = parameters.get(prm);
+    return Objects.isNull(parameter) ? null : (parameter.supportsUsers()
+        ? parameter.getBoolean(BeeKeeper.getUser().getUserId()) : parameter.getBoolean());
   }
 
-  public static void getRelationParameter(String prm, final BiConsumer<Long, String> prmConsumer) {
-    Assert.notEmpty(prm);
-    Assert.notNull(prmConsumer);
+  public static JustDate getParameterDate(String prm) {
+    BeeParameter parameter = parameters.get(prm);
+    return Objects.isNull(parameter) ? null : (parameter.supportsUsers()
+        ? parameter.getDate(BeeKeeper.getUser().getUserId()) : parameter.getDate());
+  }
 
+  public static Map<String, String> getParameterMap(String prm) {
+    BeeParameter parameter = parameters.get(prm);
+    return Objects.isNull(parameter) ? new HashMap<>() : (parameter.supportsUsers()
+        ? parameter.getMap(BeeKeeper.getUser().getUserId()) : parameter.getMap());
+  }
+
+  public static Number getParameterNumber(String prm) {
+    BeeParameter parameter = parameters.get(prm);
+    return Objects.isNull(parameter) ? null : (parameter.supportsUsers()
+        ? parameter.getNumber(BeeKeeper.getUser().getUserId()) : parameter.getNumber());
+  }
+
+  public static Long getParameterRelation(String prm) {
+    BeeParameter parameter = parameters.get(prm);
+    return Objects.isNull(parameter) ? null : (parameter.supportsUsers()
+        ? parameter.getRelation(BeeKeeper.getUser().getUserId()) : parameter.getRelation());
+  }
+
+  public static void getParameterRelation(String prm, BiConsumer<Long, String> prmConsumer) {
     ParameterList args = AdministrationKeeper.createArgs(SVC_GET_RELATION_PARAMETER);
-    args.addDataItem(COL_PARAMETER, prm);
+    args.addDataItem(COL_PARAMETER, Assert.notEmpty(prm));
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
@@ -269,6 +286,18 @@ public final class Global {
         }
       }
     });
+  }
+
+  public static String getParameterText(String prm) {
+    BeeParameter parameter = parameters.get(prm);
+    return Objects.isNull(parameter) ? null : (parameter.supportsUsers()
+        ? parameter.getText(BeeKeeper.getUser().getUserId()) : parameter.getText());
+  }
+
+  public static Long getParameterTime(String prm) {
+    BeeParameter parameter = parameters.get(prm);
+    return Objects.isNull(parameter) ? null : (parameter.supportsUsers()
+        ? parameter.getTime(BeeKeeper.getUser().getUserId()) : parameter.getTime());
   }
 
   public static ReportSettings getReportSettings() {
@@ -402,7 +431,8 @@ public final class Global {
 
     int r = 0;
     for (int i = 0; i < c; i++) {
-      String label = BeeUtils.notEmpty(data.getColumnLabel(i), data.getColumnId(i));
+      String label = BeeUtils.notEmpty(Localized.maybeTranslate(data.getColumnLabel(i)),
+          data.getColumnId(i));
       table.setHtml(r, i, label);
 
       TableCellElement cell = table.getCellFormatter().getElement(r, i);
@@ -419,20 +449,21 @@ public final class Global {
       for (int i = 0; i < c; i++) {
         if (!row.isNull(i)) {
           ValueType type = data.getColumnType(i);
-          String value = DataUtils.render(data.getColumn(i), row, i);
+          String value = DataUtils.render(data.getColumn(i), row, i,
+              Format.getDateRenderer(), Format.getDateTimeRenderer());
 
           if (type == ValueType.LONG) {
             Long x = row.getLong(i);
             if (x != null && maybeTime.contains(x)) {
               type = ValueType.DATE_TIME;
-              value = new DateTime(x).toCompactString();
+              value = Format.renderDateTime(x);
             }
           }
 
           table.setHtml(r, i, value);
 
           if (ValueType.isNumeric(type) || ValueType.TEXT == type
-              && CharMatcher.DIGIT.matchesAnyOf(value) && BeeUtils.isDouble(value)) {
+              && CharMatcher.digit().matchesAnyOf(value) && BeeUtils.isDouble(value)) {
             table.getCellFormatter().setHorizontalAlignment(r, i, TextAlign.RIGHT);
           }
         }
@@ -448,13 +479,13 @@ public final class Global {
 
     if (huhs == null) {
       caption = null;
-      messages = Lists.newArrayList("Huh");
+      messages = Collections.singletonList("Huh");
     } else {
       caption = "Huh";
-      messages = Lists.newArrayList(huhs);
+      messages = Arrays.asList(huhs);
     }
 
-    messageBox(caption, Icon.QUESTION, messages, Lists.newArrayList("kthxbai"), 0, null);
+    messageBox(caption, null, messages, Collections.singletonList("kthxbai"), 0, null);
   }
 
   public static void setDebug(boolean debug) {
@@ -492,7 +523,7 @@ public final class Global {
   }
 
   public static void showError(List<String> messages) {
-    showError(Localized.dictionary().error(), messages, MessageBoxes.STYLE_MESSAGE_BOX_CONFIRM,
+    showError(Localized.dictionary().error(), messages, MessageBoxes.STYLE_MESSAGE_BOX_ERROR,
         null);
   }
 
@@ -506,7 +537,7 @@ public final class Global {
   }
 
   public static void showError(String caption, List<String> messages) {
-    showError(caption, messages, MessageBoxes.STYLE_MESSAGE_BOX_CONFIRM, null);
+    showError(caption, messages, MessageBoxes.STYLE_MESSAGE_BOX_ERROR, null);
   }
 
   public static void showError(String caption, List<String> messages, String dialogStyle) {
@@ -519,7 +550,7 @@ public final class Global {
   }
 
   public static void showInfo(List<String> messages) {
-    showInfo(null, messages, MessageBoxes.STYLE_MESSAGE_BOX_CONFIRM, null);
+    showInfo(null, messages, MessageBoxes.STYLE_MESSAGE_BOX_INFO, null);
   }
 
   public static void showInfo(String message) {
@@ -532,7 +563,7 @@ public final class Global {
   }
 
   public static void showInfo(String caption, List<String> messages) {
-    showInfo(caption, messages, MessageBoxes.STYLE_MESSAGE_BOX_CONFIRM, null);
+    showInfo(caption, messages, MessageBoxes.STYLE_MESSAGE_BOX_INFO, null);
   }
 
   public static void showInfo(String caption, List<String> messages, String dialogStyle) {
@@ -553,20 +584,20 @@ public final class Global {
     MessageBoxes.showTable(caption, table, action, clickHandler, styles);
   }
 
-  public static void showModalWidget(String caption, Widget widget) {
-    showModalWidget(caption, widget, null);
+  public static Popup showModalWidget(String caption, Widget widget) {
+    return showModalWidget(caption, widget, null);
   }
 
-  public static void showModalWidget(String caption, Widget widget, Element target) {
-    MessageBoxes.showWidget(caption, widget, target, null, null);
+  public static Popup showModalWidget(String caption, Widget widget, Element target) {
+    return MessageBoxes.showWidget(caption, widget, target, null, null);
   }
 
-  public static void showModalWidget(Widget widget) {
-    showModalWidget(null, widget, null);
+  public static Popup showModalWidget(Widget widget) {
+    return showModalWidget(null, widget, null);
   }
 
-  public static void showModalWidget(Widget widget, Element target) {
-    showModalWidget(null, widget, target);
+  public static Popup showModalWidget(Widget widget, Element target) {
+    return showModalWidget(null, widget, target);
   }
 
   public static void showModalWidget(String caption, Widget widget, Element target, Action action,
@@ -592,6 +623,10 @@ public final class Global {
     if (widget != null) {
       BeeKeeper.getScreen().show(widget);
     }
+  }
+
+  public static void storeParameter(BeeParameter parameter) {
+    parameters.put(parameter.getName(), parameter);
   }
 
   static void init() {

@@ -25,6 +25,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.view.grid.GridView;
@@ -118,22 +119,19 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
 
       setWidget(panel);
 
-      Global.getParameter(PRM_MESSAGE_TEMPLATE, parameter -> {
-        for (Map.Entry<String, String> entry : Codec.deserializeLinkedHashMap(
-            parameter).entrySet()) {
-          String[] items;
-
-          try {
-            items = Codec.beeDeserializeCollection(entry.getValue());
-          } catch (Exception e) {
-            items = null;
-          }
-          if (!ArrayUtils.isEmpty(items)) {
-            templates.put(entry.getKey(), Arrays.asList(items));
-          }
+      Global.getParameterMap(PRM_MESSAGE_TEMPLATE).forEach((key, value) -> {
+        String[] items;
+        try {
+          items = Codec.beeDeserializeCollection(value);
+        } catch (Exception e) {
+          items = null;
         }
-        renderTemplates(null);
+        if (!ArrayUtils.isEmpty(items)) {
+          templates.put(key, Arrays.asList(items));
+        }
       });
+      renderTemplates(null, false);
+
       Queries.getRowSet(TBL_DRIVERS,
           Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, COL_MOBILE),
           BeeUtils.isEmpty(driverIds) ? Filter.isFalse() : Filter.idIn(driverIds),
@@ -200,13 +198,13 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       Global.inputCollection(loc.template(), caption, false, template, input -> {
         if (BeeUtils.isEmpty(input)) {
           templates.remove(caption);
-          renderTemplates(null);
+          renderTemplates(null, true);
         } else {
           Global.inputString(loc.name(), null, new StringCallback() {
             @Override
             public void onSuccess(String name) {
               templates.put(name, input);
-              renderTemplates(name);
+              renderTemplates(name, true);
             }
           }, null, caption);
         }
@@ -232,6 +230,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
 
           Data.getColumns(TBL_CARGO_LOADING).stream()
               .filter(col -> col.getType() != ValueType.LONG)
+              .filter(col -> !BeeUtils.isSuffix(col.getId(), VAR_UNBOUND))
               .forEach(col -> {
                 caps.add(loc.cargoHandlingPlaces() + " " + Localized.getLabel(col));
                 keys.add(prfx + col.getId());
@@ -324,7 +323,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
                             value = BeeUtils.notEmpty(value, BeeUtils.toString(x));
                             break;
                           case COL_PLACE_DATE:
-                            value = TimeUtils.renderCompact(TimeUtils.toDateTimeOrNull(value));
+                            value = Format.renderDateTime(TimeUtils.toDateTimeOrNull(value));
                             break;
                         }
                       } else {
@@ -345,7 +344,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       updateCharacterCount();
     }
 
-    private void renderTemplates(String name) {
+    private void renderTemplates(String name, boolean save) {
       tabs.clear();
       int idx = BeeConst.UNDEF;
       int c = 0;
@@ -363,7 +362,9 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       if (!BeeConst.isUndef(idx)) {
         tabs.selectTab(idx);
       }
-      Global.setParameter(PRM_MESSAGE_TEMPLATE, Codec.beeSerialize(templates), false);
+      if (save) {
+        Global.setParameter(PRM_MESSAGE_TEMPLATE, Codec.beeSerialize(templates), false);
+      }
     }
 
     private void sendMessage() {
@@ -520,12 +521,12 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
         JustDate date = row.getDate(col);
 
         if (date != null) {
-          value = date.toString();
+          value = Format.renderDate(date);
         }
         break;
 
       case DATE_TIME:
-        value = TimeUtils.renderCompact(row.getDateTime(col));
+        value = Format.renderDateTime(row.getDateTime(col));
         break;
 
       default:

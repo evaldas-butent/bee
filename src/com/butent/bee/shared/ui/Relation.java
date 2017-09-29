@@ -68,8 +68,6 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
   public static final String ATTR_VALUE_SOURCE = "valueSource";
   public static final String ATTR_STRICT = "strict";
 
-  private static final Operator DEFAULT_OPERATOR = Operator.CONTAINS;
-
   public static Relation create() {
     return new Relation();
   }
@@ -732,21 +730,17 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     } else {
       String enabled = getAttribute(UiConstants.ATTR_EDIT_ENABLED);
       return BeeConst.isTrue(enabled)
-          || BeeUtils.isEmpty(enabled) && getAttributes().containsKey(UiConstants.ATTR_EDIT_POPUP);
+          || BeeUtils.isEmpty(enabled) && getAttributes().containsKey(UiConstants.ATTR_EDIT_WINDOW);
     }
   }
 
-  public Boolean isEditModal() {
-    return BeeUtils.toBooleanOrNull(getAttribute(UiConstants.ATTR_EDIT_POPUP));
+  public WindowType getEditWindowType() {
+    return WindowType.parse(getAttribute(UiConstants.ATTR_EDIT_WINDOW));
   }
 
   public boolean isNewRowEnabled() {
     return BeeUtils.isEmpty(getValueSource())
         && !BeeConst.isFalse(getAttribute(UiConstants.ATTR_NEW_ROW_ENABLED));
-  }
-
-  public Operator nvlOperator() {
-    return BeeUtils.nvl(getOperator(), DEFAULT_OPERATOR);
   }
 
   public boolean renderSource() {

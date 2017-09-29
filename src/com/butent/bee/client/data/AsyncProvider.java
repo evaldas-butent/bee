@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Timer;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
+import com.butent.bee.client.communication.RpcCallbackWithId;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.shared.Assert;
@@ -40,7 +41,7 @@ import java.util.function.Consumer;
 
 public class AsyncProvider extends Provider {
 
-  private final class QueryCallback extends Queries.RowSetCallback {
+  private final class QueryCallback extends RpcCallbackWithId<BeeRowSet> {
 
     private final Range<Integer> queryRange;
 
@@ -241,11 +242,11 @@ public class AsyncProvider extends Provider {
       ModificationPreviewer modificationPreviewer, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
       Filter immutableFilter, CachingPolicy cachingPolicy, Map<String, Filter> parentFilters,
-      Filter userFilter) {
+      Filter userFilter, String dataOptions) {
 
     super(display, presenter, modificationPreviewer, notificationListener,
         viewName, columns, idColumnName, versionColumnName,
-        immutableFilter, parentFilters, userFilter);
+        immutableFilter, parentFilters, userFilter, dataOptions);
 
     this.cachingPolicy = cachingPolicy;
     this.enablePrefetch = CachingPolicy.FULL.equals(cachingPolicy);
@@ -274,6 +275,11 @@ public class AsyncProvider extends Provider {
   }
 
   @Override
+  public void hasAnyRows(Filter filter, Consumer<Boolean> callback) {
+    Queries.hasAnyRows(getViewName(), getQueryFilter(filter), callback::accept);
+  }
+
+  @Override
   public void onDataRequest(DataRequestEvent event) {
     switch (event.getOrigin()) {
       case SCROLLER:
@@ -292,7 +298,7 @@ public class AsyncProvider extends Provider {
 
           if (step == getRepeatStep()) {
             if (!isPrefetchPending() && duration <= AsyncProvider.maxRepeatMillis
-                && getRightsStates().isEmpty()) {
+                && !hasQueryOptions()) {
               prefetch(step, (int) duration);
             }
           } else {
@@ -378,7 +384,7 @@ public class AsyncProvider extends Provider {
       Queries.getRowCount(getViewName(), getFilter(), new Queries.IntCallback() {
         @Override
         public void onFailure(String... reason) {
-          super.onFailure(reason);
+          Queries.IntCallback.super.onFailure(reason);
           onStateChange(State.ERROR);
         }
 
@@ -405,7 +411,7 @@ public class AsyncProvider extends Provider {
     Queries.getRowCount(getViewName(), flt, new Queries.IntCallback() {
       @Override
       public void onFailure(String... reason) {
-        super.onFailure(reason);
+        Queries.IntCallback.super.onFailure(reason);
         onStateChange(State.ERROR);
 
         if (callback != null) {
@@ -481,7 +487,7 @@ public class AsyncProvider extends Provider {
     Order ord = getOrder();
 
     CachingPolicy caching = getCachingPolicy();
-    if (caching != null && caching.doRead() && getRightsStates().isEmpty()) {
+    if (caching != null && caching.doRead() && !hasQueryOptions()) {
       BeeRowSet rowSet = Global.getCache().getRowSet(getViewName(), flt, ord, offset, limit);
       if (rowSet != null) {
         requestScheduler.cancel();
@@ -647,12 +653,9 @@ public class AsyncProvider extends Provider {
     final long startTime = System.currentTimeMillis();
 
     Queries.getRowSet(getViewName(), null, flt, ord, queryOffset, queryLimit, CachingPolicy.WRITE,
-        new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            onResponse(startTime);
-            setPrefetchPending(false);
-          }
+        result -> {
+          onResponse(startTime);
+          setPrefetchPending(false);
         });
   }
 

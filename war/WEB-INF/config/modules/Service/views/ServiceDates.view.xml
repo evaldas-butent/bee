@@ -12,6 +12,8 @@
     
     <SimpleColumn name="Color" />
     <SimpleColumn name="Note" />
+
+    <SimpleColumn name="ServiceMaintenance" />
   </Columns>
   <Order>
     <OrderBy column="DateFrom" />

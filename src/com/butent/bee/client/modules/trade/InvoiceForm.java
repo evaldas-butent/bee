@@ -19,7 +19,6 @@ import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.DataUtils;
@@ -38,7 +37,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class InvoiceForm extends PrintFormInterceptor implements SelectorEvent.Handler {
+public class InvoiceForm extends InvoiceERPForm implements SelectorEvent.Handler {
 
   Holder<Long> mainItem;
 
@@ -81,8 +80,11 @@ public class InvoiceForm extends PrintFormInterceptor implements SelectorEvent.H
               listener.fireEvent(event);
             }
           });
-      return;
     }
+  }
+
+  @Override
+  public void getERPStocks(Long id) {
   }
 
   @Override
@@ -117,18 +119,21 @@ public class InvoiceForm extends PrintFormInterceptor implements SelectorEvent.H
       }
 
       for (String field : fields) {
-        Long warehouse = Data.getLong(viewName, relatedRow, field);
+        int idx = getDataIndex(field);
+        int codeIdx = getDataIndex(field + "Code");
 
-        if (DataUtils.isId(warehouse)) {
-          int idx = getDataIndex(field);
-          int codeIdx = getDataIndex(field + "Code");
+        if (!BeeConst.isUndef(idx) && !BeeConst.isUndef(codeIdx)) {
+          Long warehouse = Data.getLong(viewName, relatedRow, field);
 
-          if (!BeeConst.isUndef(idx) && !BeeConst.isUndef(codeIdx)) {
+          if (DataUtils.isId(warehouse)) {
             getActiveRow().setValue(idx, warehouse);
             getActiveRow().setValue(codeIdx, Data.getString(viewName, relatedRow, field + "Code"));
 
-            getFormView().refreshBySource(field);
+          } else {
+            getActiveRow().clearCell(idx);
+            getActiveRow().clearCell(codeIdx);
           }
+          getFormView().refreshBySource(field);
         }
       }
     }
@@ -143,9 +148,9 @@ public class InvoiceForm extends PrintFormInterceptor implements SelectorEvent.H
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-    calculateTerm(newRow, COL_TRADE_DATE, newRow.getString(getDataIndex(COL_TRADE_DATE)));
-    super.onStartNewRow(form, oldRow, newRow);
+  public void onStartNewRow(FormView form, IsRow row) {
+    calculateTerm(row, COL_TRADE_DATE, row.getString(getDataIndex(COL_TRADE_DATE)));
+    super.onStartNewRow(form, row);
   }
 
   private void calculateTerm(final IsRow row, final String column, final String value) {
@@ -174,21 +179,18 @@ public class InvoiceForm extends PrintFormInterceptor implements SelectorEvent.H
       default:
         return;
     }
-    RpcCallback<String> callback = new RpcCallback<String>() {
-      @Override
-      public void onSuccess(String days) {
-        JustDate term = null;
+    RpcCallback<String> callback = days -> {
+      JustDate term = null;
 
-        if (BeeUtils.isPositiveInt(days)) {
-          Long millis = getValue(COL_TRADE_DATE, row, column, value);
+      if (BeeUtils.isPositiveInt(days)) {
+        Long millis = getValue(COL_TRADE_DATE, row, column, value);
 
-          if (millis != null) {
-            term = TimeUtils.nextDay(new DateTime(millis), BeeUtils.toInt(days));
-          }
+        if (millis != null) {
+          term = TimeUtils.nextDay(new DateTime(millis), BeeUtils.toInt(days));
         }
-        row.setValue(termIdx, term);
-        getFormView().refreshBySource(COL_TRADE_TERM);
       }
+      row.setValue(termIdx, term);
+      getFormView().refreshBySource(COL_TRADE_TERM);
     };
     if (DataUtils.isId(companyId)) {
       Queries.getValue(TBL_COMPANIES, companyId, creditColumn, callback);

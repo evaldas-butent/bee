@@ -14,7 +14,7 @@ import com.butent.bee.shared.rights.Module;
 
 public final class PayrollKeeper {
 
-  static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "payroll-";
+  public static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "payroll-";
 
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.PAYROLL, method);
@@ -46,6 +46,8 @@ public final class PayrollKeeper {
     ConditionalStyle.registerGridColumnStyleProvider(GRID_WORK_SCHEDULE_DAY, ALS_TR_UNTIL, csp);
 
     GridFactory.registerGridInterceptor(GRID_TIME_RANGES, new TimeRangesGrid());
+    GridFactory.registerGridInterceptor(VIEW_EMPLOYEE_OBJECTS, new EmployeeObjectsGrid());
+    GridFactory.registerGridInterceptor("ObjectEmployees", new EmployeeObjectsGrid());
 
     FormFactory.registerFormInterceptor(FORM_LOCATION, new LocationForm());
     FormFactory.registerFormInterceptor(FORM_EMPLOYEE, new EmployeeForm());

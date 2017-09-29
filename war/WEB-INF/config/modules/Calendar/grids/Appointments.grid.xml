@@ -3,6 +3,7 @@
 
   name="Appointments" viewName="Appointments" caption="=calAppointments"
   newRowForm="Appointment" editForm="Appointment" order="AppointmentID desc"
+        filter="!(ServiceEvent)"
   >
   <g:columns>
     <IdColumn name="Id" visible="false" />
@@ -16,7 +17,7 @@
     <DataColumn name="CompanyPhone" visible="false" />
 
     <DataColumn name="VehicleNumber" visible="false" />
-    <DataColumn name="VehicleModel" renderColumns="VehicleParentModel VehicleModel"
+    <DataColumn name="VehicleModel" renderColumns="VehicleBrand VehicleModel"
       visible="false" />
 
     <DataColumn name="StartDateTime" visible="true" />

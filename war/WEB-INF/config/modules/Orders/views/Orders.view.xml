@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view" xmlns:x="http://www.butent.com/expression"
 
   name="Orders" source="Orders" module="Orders" editForm="Order"
-  newRowForm="Order">
+  newRowForm="Order" rowCaption="Number">
   <Columns>
     <SimpleColumn name="Status" />
     <SimpleColumn name="Source" />
@@ -19,6 +19,14 @@
     <SimpleJoin name="Warehouse" joinType="LEFT">
       <SimpleColumn name="Code" alias="WarehouseCode" />
       <SimpleColumn name="Name" alias="WarehouseName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="TradeOperation" />
+    <SimpleJoin name="TradeOperation" joinType="LEFT">
+      <SimpleColumn name="OperationName" />
+      <SimpleColumn name="CashRegisterNo" />
+      <SimpleColumn name="OperationVatMode" />
+      <SimpleColumn name="VatPercent" />
     </SimpleJoin>
 
     <SimpleColumn name="Series" />

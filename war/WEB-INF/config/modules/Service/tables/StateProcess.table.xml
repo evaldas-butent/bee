@@ -9,14 +9,17 @@
     <Relation name="MaintenanceType" relation="MaintenanceTypes" notNull="true" label="=svcServiceType" />
     <Relation name="MaintenanceState" relation="MaintenanceStates" notNull="true" label="=svcServiceState" />
     <Boolean name="Initial" label="=svcInitial" />
-    <Boolean name="Finite" label="=svcFinite" />
+    <Boolean name="Finite" label="=svcFinal" />
     <Boolean name="NotifyCustomer" label="=svcNotifyCustomer" />
+    <Boolean name="ShowCustomer" label="=svcShowCustomer" />
     <Text name="Message" label="=message" />
     <Boolean name="Comment" label="=svcComment" />
     <Relation name="Item" relation="Items" label="=service" />
     <Boolean name="Term" label="=svcTerm" />
     <Boolean name="Warranty" label="=svcWarranty" />
     <Integer name="DaysActive" label="=svcDaysActive" />
+    <Boolean name="ProhibitEdit" label="=svcProhibitEdit" />
+    <Boolean name="IsItemsRequired" label="=ecShoppingCart" />
   </Fields>
   <Constraints>
     <Unique fields="Role MaintenanceType MaintenanceState" />

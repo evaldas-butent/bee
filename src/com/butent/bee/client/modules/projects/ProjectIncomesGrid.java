@@ -1,20 +1,15 @@
 package com.butent.bee.client.modules.projects;
 
 import com.google.common.collect.Maps;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -23,6 +18,7 @@ import com.butent.bee.client.grid.column.CalculatedColumn;
 import com.butent.bee.client.modules.trade.acts.ItemPricePicker;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.HasCellRenderer;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditableColumn;
@@ -37,7 +33,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
@@ -76,24 +71,20 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
           int idxItemPrice = DataUtils.getColumnIndex(COL_PROJECT_ITEM_PRICE, dataColumns);
           CellSource cellSource = CellSource.forColumn(dataColumns.get(idxItemPrice), idxItemPrice);
 
-          RowFunction<Long> currencyFunction = new RowFunction<Long>() {
-
-            @Override
-            public Long apply(IsRow activeRow) {
-              if (getGridPresenter() == null) {
-                return null;
-              }
-
-              GridView grid = getGridPresenter().getGridView();
-
-              if (grid == null && activeRow == null) {
-                return ViewHelper.getParentValueLong(getGridPresenter().getMainView().asWidget(),
-                  VIEW_PROJECTS, COL_PROJECT_CURENCY);
-              }
-
-              return activeRow.getLong(
-                  grid.getDataIndex(COL_PROJECT_INCOME_CURENCY));
+          RowFunction<Long> currencyFunction = activeRow -> {
+            if (getGridPresenter() == null) {
+              return null;
             }
+
+            GridView grid = getGridPresenter().getGridView();
+
+            if (grid == null && activeRow == null) {
+              return ViewHelper.getParentValueLong(getGridPresenter().getMainView().asWidget(),
+                  VIEW_PROJECTS, COL_PROJECT_CURENCY);
+            }
+
+            return activeRow.getLong(
+                grid.getDataIndex(COL_PROJECT_INCOME_CURENCY));
           };
 
           ItemPricePicker pricePicker =
@@ -108,7 +99,6 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
 
     return super.afterCreateColumn(columnName, dataColumns, column, header, footer, editableColumn);
   }
-
 
   @Override
   public void beforeRefresh(GridPresenter presenter) {
@@ -178,7 +168,7 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
                       .getColumnIndex(AdministrationConstants.COL_CURRENCY)),
                   projectRow.getString(projectDataInfo
                       .getColumnIndex(AdministrationConstants.ALS_CURRENCY_NAME))
-                  );
+              );
         }
 
         if (customer != null) {
@@ -196,57 +186,48 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
         }
 
         RowFactory.createRow(FORM_NEW_PROJECT_INVOICE, null, salesInfo, newSalesRow,
-            Modality.ENABLED, null,
-            new AbstractFormInterceptor() {
+            Opener.MODAL, new AbstractFormInterceptor() {
 
               @Override
               public FormInterceptor getInstance() {
                 return this;
               }
-            }, null, new RowCallback() {
+            }, row -> {
+              ParameterList args = ProjectsKeeper.createSvcArgs(SVC_CREATE_INVOICE_ITEMS);
+              args.addDataItem(TradeConstants.COL_SALE, row.getId());
+              args.addDataItem(TradeConstants.COL_TRADE_CURRENCY, row.getLong(salesInfo
+                  .getColumnIndex(TradeConstants.COL_TRADE_CURRENCY)));
+              args.addDataItem(Service.VAR_ID, DataUtils.buildIdList(result.getRowIds()));
 
-              @Override
-              public void onSuccess(final BeeRow row) {
-                ParameterList args = ProjectsKeeper.createSvcArgs(SVC_CREATE_INVOICE_ITEMS);
-                args.addDataItem(TradeConstants.COL_SALE, row.getId());
-                args.addDataItem(TradeConstants.COL_TRADE_CURRENCY, row.getLong(salesInfo
-                    .getColumnIndex(TradeConstants.COL_TRADE_CURRENCY)));
-                args.addDataItem(Service.VAR_ID, DataUtils.buildIdList(result.getRowIds()));
+              BeeKeeper.getRpc().makePostRequest(args, response -> {
+                response.notify(presenter.getGridView());
 
-                BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+                if (response.hasErrors()) {
+                  return;
+                }
 
-                  @Override
-                  public void onResponse(ResponseObject response) {
-                    response.notify(presenter.getGridView());
+                Popup popup = UiHelper.getParentPopup(presenter.getGridView().getGrid());
 
-                    if (response.hasErrors()) {
-                      return;
-                    }
+                if (popup != null) {
+                  popup.close();
+                }
 
-                    Popup popup = UiHelper.getParentPopup(presenter.getGridView().getGrid());
+                ProjectsKeeper.fireRowSetUpdateRefresh(VIEW_PROJECT_INCOMES,
+                    Filter.idIn(result.getRowIds()));
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_PROJECT_INVOICES);
 
-                    if (popup != null) {
-                      popup.close();
-                    }
+                Map<String, Map<String, String>> oldData = Maps.newHashMap();
+                Map<String, Map<String, String>> newData = Maps.newHashMap();
+                Map<String, String> commentData = Maps.newHashMap();
 
-                    ProjectsKeeper.fireRowSetUpdateRefresh(VIEW_PROJECT_INCOMES,
-                        Filter.idIn(result.getRowIds()));
-                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_PROJECT_INVOICES);
+                commentData.put(TradeConstants.COL_SALE, BeeUtils.toString(row.getId()));
+                oldData.put(VIEW_PROJECT_INVOICES, commentData);
+                newData.put(VIEW_PROJECT_INVOICES, commentData);
 
-                    Map<String, Map<String, String>> oldData = Maps.newHashMap();
-                    Map<String, Map<String, String>> newData = Maps.newHashMap();
-                    Map<String, String> commentData = Maps.newHashMap();
-
-                    commentData.put(TradeConstants.COL_SALE, BeeUtils.toString(row.getId()));
-                    oldData.put(VIEW_PROJECT_INVOICES, commentData);
-                    newData.put(VIEW_PROJECT_INVOICES, commentData);
-
-                    ProjectsHelper.registerProjectEvent(VIEW_PROJECT_EVENTS, ProjectEvent.EDIT,
-                        parentForm.getActiveRowId(), BeeConst.STRING_EMPTY,
-                        newData, oldData);
-                  }
-                });
-              }
+                ProjectsHelper.registerProjectEvent(VIEW_PROJECT_EVENTS, ProjectEvent.EDIT,
+                    parentForm.getActiveRowId(), BeeConst.STRING_EMPTY,
+                    newData, oldData);
+              });
             });
       }
     });
@@ -275,13 +256,7 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
     FaLabel createInvoiceButton = new FaLabel(FontAwesome.LIST_ALT);
     createInvoiceButton.setTitle(Localized.dictionary().createInvoice());
 
-    createInvoiceButton.addClickHandler(new ClickHandler() {
-
-      @Override
-      public void onClick(ClickEvent arg0) {
-        createInvoice();
-      }
-    });
+    createInvoiceButton.addClickHandler(arg0 -> createInvoice());
 
     presenter.getHeader().addCommandItem(createInvoiceButton);
   }

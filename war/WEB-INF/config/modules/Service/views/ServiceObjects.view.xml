@@ -4,9 +4,9 @@
   name="ServiceObjects" source="ServiceObjects"
   caption="=svcDevices" newRowCaption="=svcNewDevice"
   editForm="ServiceObject" newRowForm="ServiceObject"
-  rowCaption="CategoryName Address CustomerName"
+  rowCaption="Model CategoryName ArticleNo"
   >
-  <Relation renderColumns="Address" choiceColumns="Address CustomerName" />
+  <Relation renderColumns="Model CategoryName ArticleNo" choiceColumns="Model CategoryName ArticleNo" />
   <Columns>
     <SimpleColumn name="Category" />
     <SimpleJoin joinType="LEFT" name="Category">
@@ -21,6 +21,7 @@
       <SimpleColumn name="CreditDays" />
       <SimpleJoin joinType="LEFT" name="CompanyType">
         <SimpleColumn name="Name" alias="CustomerTypeName" />
+        <SimpleColumn name="TypePerson" />
       </SimpleJoin>
     </SimpleJoin>
 
@@ -35,27 +36,25 @@
     <SimpleColumn name="ContactPerson" />
     <SimpleJoin joinType="LEFT" name="ContactPerson">
       <SimpleJoin name="Person" joinType="LEFT">
-        <SimpleColumn alias="ContactPersonFirstName" name="FirstName" />
-        <SimpleColumn alias="ContactPersonLastName" name="LastName" />
+        <SimpleColumn alias="ContactFirstName" name="FirstName" />
+        <SimpleColumn alias="ContactLastName" name="LastName" />
       </SimpleJoin>
       <SimpleJoin name="Contact" joinType="LEFT">
-        <SimpleColumn name="Phone" alias="ContactPersonPhone"/>
-        <SimpleColumn name="Email" alias="ContactPersonEmail"/>
+        <SimpleColumn name="Phone" alias="ContactPhone"/>
+        <SimpleColumn name="Email"/>
         <SimpleJoin name="Email" joinType="LEFT">
-          <SimpleColumn name="Email" alias="ContactPersonEmailAddress"/>
+          <SimpleColumn name="Email" alias="ContactEmail"/>
         </SimpleJoin>
-        <SimpleColumn name="Address" alias="ContactPersonAddress"/>
+        <SimpleColumn name="Address" alias="ContactAddress"/>
       </SimpleJoin>
     </SimpleJoin>
-    <SimpleColumn name="Manufacturer" />
-    <SimpleJoin joinType="LEFT" name="Manufacturer">
-      <SimpleColumn name="Name" alias="ManufacturerName" />
-      <SimpleJoin joinType="LEFT" name="CompanyType">
-        <SimpleColumn name="Name" alias="ManufacturerTypeName" />
-      </SimpleJoin>
+    <SimpleColumn name="ServiceManufacturer" />
+    <SimpleJoin joinType="LEFT" name="ServiceManufacturer">
+      <SimpleColumn name="ManufacturerName" />
     </SimpleJoin>
 
     <SimpleColumn name="Model" />
     <SimpleColumn name="SerialNo" />
+    <SimpleColumn name="ArticleNo" />
   </Columns>
 </View>

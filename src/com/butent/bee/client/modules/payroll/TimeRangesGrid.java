@@ -72,15 +72,15 @@ class TimeRangesGrid extends AbstractGridInterceptor {
       String duration = event.getValue(COL_TR_DURATION);
 
       if (BeeUtils.isEmpty(code)) {
-        showError(gridView, Data.getColumnLabel(getViewName(), COL_TR_CODE),
-            Localized.dictionary().valueRequired());
+        showError(gridView, Localized.dictionary()
+            .fieldRequired(Data.getColumnLabel(getViewName(), COL_TR_CODE)));
         tryFocus(gridView, COL_TR_CODE);
         return;
       }
 
       if (BeeUtils.isEmpty(from)) {
-        showError(gridView, Data.getColumnLabel(getViewName(), COL_TR_FROM),
-            Localized.dictionary().valueRequired());
+        showError(gridView, Localized.dictionary()
+            .fieldRequired(Data.getColumnLabel(getViewName(), COL_TR_FROM)));
         tryFocus(gridView, COL_TR_FROM);
         return;
 
@@ -91,8 +91,8 @@ class TimeRangesGrid extends AbstractGridInterceptor {
       }
 
       if (BeeUtils.isEmpty(until)) {
-        showError(gridView, Data.getColumnLabel(getViewName(), COL_TR_UNTIL),
-            Localized.dictionary().valueRequired());
+        showError(gridView, Localized.dictionary()
+            .fieldRequired(Data.getColumnLabel(getViewName(), COL_TR_UNTIL)));
         tryFocus(gridView, COL_TR_UNTIL);
         return;
 

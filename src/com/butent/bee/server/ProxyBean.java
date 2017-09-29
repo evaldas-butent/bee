@@ -1,12 +1,12 @@
 package com.butent.bee.server;
 
-import static com.butent.bee.shared.html.builder.Factory.datalist;
-import static com.butent.bee.shared.html.builder.Factory.option;
+import static com.butent.bee.shared.html.builder.Factory.*;
 
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -51,5 +51,9 @@ public class ProxyBean {
 
   public ResponseObject insert(SqlInsert si) {
     return qs.insertDataWithResponse(si);
+  }
+
+  public ResponseObject update(SqlUpdate su) {
+    return qs.updateDataWithResponse(su);
   }
 }

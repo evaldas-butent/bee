@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="FinancialIndicatorsSecondary" viewName="FinancialIndicators"
+        caption="=finIndicatorsSecondary" newRowCaption="=finIndicatorSecondaryNew"
+        editForm="FinancialIndicatorSecondary" newRowForm="FinancialIndicatorSecondary"
+        filter="IndicatorKind = 1"
+>
+  <g:columns>
+    <DataColumn name="IndicatorName" minWidth="100" flexGrow="1" visible="true"
+                backgroundSource="Background" foregroundSource="Foreground" />
+    <DataColumn name="IndicatorAbbreviation" />
+
+    <DataColumn name="IndicatorScript" flexGrow="1" required="true" visible="true" />
+
+    <DataColumn name="IndicatorRatio" />
+    <DataColumn name="IndicatorScale" minValue="0" maxValue="5" />
+
+    <DataColumn name="IndicatorTurnoverOrBalance" visible="false" />
+    <DataColumn name="IndicatorNormalBalance" visible="false" />
+
+    <DataColumn name="Description" flexGrow="1" />
+
+    <DataColumn name="Background" updateMode="row" minWidth="100" editInPlace="true"
+                backgroundSource="Background" foregroundSource="Foreground">
+      <editor type="color" />
+    </DataColumn>
+    <DataColumn name="Foreground" updateMode="row" minWidth="100" editInPlace="true"
+                backgroundSource="Background" foregroundSource="Foreground">
+      <editor type="color" />
+    </DataColumn>
+  </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>row.IndicatorName</ui:expression>
+  </g:rowMessage>
+</g:Grid>

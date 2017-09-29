@@ -256,7 +256,7 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
 
             if (!BeeUtils.isPositive(relatedRow.getLong(Data.getColumnIndex(VIEW_ORDERS_TEMPLATES,
                 COL_WAREHOUSE))) && !BeeUtils.isPositive(form.getLongValue(COL_WAREHOUSE))) {
-              form.notifySevere(lc.warehouse() + " " + lc.valueRequired());
+              form.notifySevere(lc.fieldRequired(lc.warehouse()));
               event.getSelector().clearValue();
               return;
             }
@@ -264,7 +264,7 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
 
           if (!BeeUtils.isPositive(relatedRow.getLong(Data.getColumnIndex(VIEW_ORDERS_TEMPLATES,
               COL_COMPANY))) && !BeeUtils.isPositive(form.getLongValue(COL_COMPANY))) {
-            form.notifySevere(lc.client() + " " + lc.valueRequired());
+            form.notifySevere(lc.fieldRequired(lc.client()));
             event.getSelector().clearValue();
             return;
           }

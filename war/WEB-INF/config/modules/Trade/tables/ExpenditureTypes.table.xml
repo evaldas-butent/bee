@@ -20,7 +20,7 @@
 
     <Relation name="Item" relation="Items" label="=item" />
 
-    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
               label="=dimensions" />
 
     <String name="Background" precision="100" label="=backgroundColor" />

@@ -2,17 +2,25 @@ package com.butent.bee.shared.modules.finance;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.NonNullMap;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
-public final class TradeAccounts {
+public final class TradeAccounts implements BeeSerializable {
 
-  private static final String COL_COST_ACCOUNT = "CostAccount";
+  public static final String TBL_TRADE_ACCOUNTS = "TradeAccounts";
+  public static final String COL_TRADE_ACCOUNTS = "TradeAccounts";
+
+  public static final String COL_COST_ACCOUNT = "CostAccount";
 
   private static final String COL_TRADE_PAYABLES = "TradePayables";
   private static final String COL_TRADE_RECEIVABLES = "TradeReceivables";
@@ -131,19 +139,25 @@ public final class TradeAccounts {
         vatPayable, vatReceivable, salesRevenue, salesDiscounts, costOfGoodsSold, writeOffAccount);
   }
 
-  private final Long costAccount;
+  public static TradeAccounts restore(String s) {
+    TradeAccounts tradeAccounts = new TradeAccounts();
+    tradeAccounts.deserialize(s);
+    return tradeAccounts;
+  }
 
-  private final Long tradePayables;
-  private final Long tradeReceivables;
+  private Long costAccount;
 
-  private final Long vatPayable;
-  private final Long vatReceivable;
+  private Long tradePayables;
+  private Long tradeReceivables;
 
-  private final Long salesRevenue;
-  private final Long salesDiscounts;
+  private Long vatPayable;
+  private Long vatReceivable;
 
-  private final Long costOfGoodsSold;
-  private final Long writeOffAccount;
+  private Long salesRevenue;
+  private Long salesDiscounts;
+
+  private Long costOfGoodsSold;
+  private Long writeOffAccount;
 
   public TradeAccounts(Long costAccount, Long tradePayables, Long tradeReceivables,
       Long vatPayable, Long vatReceivable, Long salesRevenue, Long salesDiscounts,
@@ -158,6 +172,9 @@ public final class TradeAccounts {
     this.salesDiscounts = salesDiscounts;
     this.costOfGoodsSold = costOfGoodsSold;
     this.writeOffAccount = writeOffAccount;
+  }
+
+  private TradeAccounts() {
   }
 
   public Long getCostAccount() {
@@ -204,6 +221,59 @@ public final class TradeAccounts {
         && costOfGoodsSold == null && writeOffAccount == null;
   }
 
+  public Map<String, Long> getValues() {
+    Map<String, Long> values = new NonNullMap<>();
+
+    values.put(COL_COST_ACCOUNT, getCostAccount());
+
+    values.put(COL_TRADE_PAYABLES, getTradePayables());
+    values.put(COL_TRADE_RECEIVABLES, getTradeReceivables());
+
+    values.put(COL_VAT_PAYABLE, getVatPayable());
+    values.put(COL_VAT_RECEIVABLE, getVatReceivable());
+
+    values.put(COL_SALES_REVENUE, getSalesRevenue());
+    values.put(COL_SALES_DISCOUNTS, getSalesDiscounts());
+
+    values.put(COL_COST_OF_GOODS_SOLD, getCostOfGoodsSold());
+    values.put(COL_WRITE_OFF_ACCOUNT, getWriteOffAccount());
+
+    return values;
+  }
+
+  @Override
+  public void deserialize(String s) {
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Assert.lengthEquals(arr, 9);
+
+    Long[] values = Arrays.stream(arr).map(BeeUtils::toLongOrNull).toArray(Long[]::new);
+    int i = 0;
+
+    setCostAccount(values[i++]);
+
+    setTradePayables(values[i++]);
+    setTradeReceivables(values[i++]);
+
+    setVatPayable(values[i++]);
+    setVatReceivable(values[i++]);
+
+    setSalesRevenue(values[i++]);
+    setSalesDiscounts(values[i++]);
+
+    setCostOfGoodsSold(values[i++]);
+    setWriteOffAccount(values[i]);
+  }
+
+  @Override
+  public String serialize() {
+    return Codec.beeSerialize(new Long[] {
+        getCostAccount(),
+        getTradePayables(), getTradeReceivables(),
+        getVatPayable(), getVatReceivable(),
+        getSalesRevenue(), getSalesDiscounts(),
+        getCostOfGoodsSold(), getWriteOffAccount()});
+  }
+
   @Override
   public String toString() {
     if (isEmpty()) {
@@ -215,5 +285,41 @@ public final class TradeAccounts {
           COL_SALES_REVENUE, salesRevenue, COL_SALES_DISCOUNTS, salesDiscounts,
           COL_COST_OF_GOODS_SOLD, costOfGoodsSold, COL_WRITE_OFF_ACCOUNT, writeOffAccount);
     }
+  }
+
+  private void setCostAccount(Long costAccount) {
+    this.costAccount = costAccount;
+  }
+
+  private void setTradePayables(Long tradePayables) {
+    this.tradePayables = tradePayables;
+  }
+
+  private void setTradeReceivables(Long tradeReceivables) {
+    this.tradeReceivables = tradeReceivables;
+  }
+
+  private void setVatPayable(Long vatPayable) {
+    this.vatPayable = vatPayable;
+  }
+
+  private void setVatReceivable(Long vatReceivable) {
+    this.vatReceivable = vatReceivable;
+  }
+
+  private void setSalesRevenue(Long salesRevenue) {
+    this.salesRevenue = salesRevenue;
+  }
+
+  private void setSalesDiscounts(Long salesDiscounts) {
+    this.salesDiscounts = salesDiscounts;
+  }
+
+  private void setCostOfGoodsSold(Long costOfGoodsSold) {
+    this.costOfGoodsSold = costOfGoodsSold;
+  }
+
+  private void setWriteOffAccount(Long writeOffAccount) {
+    this.writeOffAccount = writeOffAccount;
   }
 }

@@ -19,6 +19,7 @@ import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.finance.FinanceConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
@@ -74,10 +75,13 @@ public final class EnumUtils {
     TradeConstants.register();
     OrdersConstants.register();
     PayrollConstants.register();
+    FinanceConstants.register();
   }
 
   public static String getCaption(Enum<?> e) {
-    if (e instanceof HasCaption) {
+    if (e instanceof HasLocalizedCaption) {
+      return ((HasLocalizedCaption) e).getCaption(Localized.dictionary());
+    } else if (e instanceof HasCaption) {
       return ((HasCaption) e).getCaption();
     } else {
       return proper(e);
@@ -329,6 +333,10 @@ public final class EnumUtils {
     } else {
       return joiner.join(values.stream().map(nameFunction).iterator());
     }
+  }
+
+  public static Integer ordinal(Enum<?> e) {
+    return (e == null) ? null : e.ordinal();
   }
 
   public static <E extends Enum<?>> List<E> parseIndexList(Class<E> clazz, String input) {

@@ -252,7 +252,7 @@ class EmployeeSchedule extends WorkScheduleWidget {
         Lists.newArrayList(COL_LOCATION_NAME));
 
     selector.addStyleName(selectorStyleName);
-    DomUtils.setPlaceholder(selector, Localized.dictionary().newObject());
+    DomUtils.setPlaceholder(selector, Localized.dictionary().newObjectLocation());
 
     if (!BeeUtils.isEmpty(partIds)) {
       Set<Long> ids = new HashSet<>();
@@ -306,7 +306,18 @@ class EmployeeSchedule extends WorkScheduleWidget {
         getTimeCardChangesFilter()));
 
     viewNames.add(VIEW_TIME_CARD_CODES);
+
+    WorkScheduleKind kind = getWorkScheduleKind();
+
+    if (kind != null) {
+      filters.put(VIEW_TIME_CARD_CODES, Filter.notNull(kind.getTccColumnName()));
+    }
     viewNames.add(VIEW_TIME_RANGES);
+    viewNames.add(VIEW_WORK_SCHEDULE_LOCKS);
+    filters.put(VIEW_WORK_SCHEDULE_LOCKS, wsFilter);
+
+    viewNames.add(VIEW_WORK_SCHEDULE_INFO);
+    filters.put(VIEW_WORK_SCHEDULE_INFO, getWorkScheduleRelationFilter());
 
     Queries.getData(viewNames, filters, CachingPolicy.NONE, new Queries.DataCallback() {
       @Override
@@ -337,6 +348,12 @@ class EmployeeSchedule extends WorkScheduleWidget {
 
             case VIEW_TIME_RANGES:
               setTimeRanges(rowSet);
+              break;
+            case VIEW_WORK_SCHEDULE_LOCKS:
+              setTableLocks(rowSet);
+              break;
+            case VIEW_WORK_SCHEDULE_INFO:
+              setTableInfo(rowSet);
               break;
           }
         }

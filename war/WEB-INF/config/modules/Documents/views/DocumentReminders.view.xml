@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="DocumentReminders" source="DocumentReminders"
+>
+  <Columns>
+    <SimpleColumn name="IsTask" />
+
+    <SimpleColumn name="User" />
+    <SimpleJoin name="User" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Contact" joinType="LEFT">
+          <SimpleJoin name="Email" joinType="LEFT">
+            <SimpleColumn name="Email" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="TaskTemplate" />
+    <SimpleColumn name="Document" />
+    <SimpleColumn name="Executors" />
+    <SimpleColumn name="ReminderDate" />
+    <SimpleColumn name="Active" />
+    <SimpleColumn name="UserDate" />
+  </Columns>
+</View>

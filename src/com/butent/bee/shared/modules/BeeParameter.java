@@ -13,6 +13,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,7 +50,7 @@ public final class BeeParameter implements BeeSerializable {
   public static BeeParameter createDate(String module, String name, boolean userMode,
       JustDate defValue) {
     return new BeeParameter(module, name, ParameterType.DATE, userMode,
-        defValue != null ? defValue.toString() : null);
+        defValue != null ? defValue.serialize() : null);
   }
 
   public static BeeParameter createDateTime(String module, String name) {
@@ -59,7 +60,7 @@ public final class BeeParameter implements BeeSerializable {
   public static BeeParameter createDateTime(String module, String name, boolean userMode,
       DateTime defValue) {
     return new BeeParameter(module, name, ParameterType.DATETIME, userMode,
-        defValue != null ? defValue.toCompactString() : null);
+        defValue != null ? defValue.serialize() : null);
   }
 
   public static BeeParameter createMap(String module, String name) {
@@ -83,17 +84,17 @@ public final class BeeParameter implements BeeSerializable {
   }
 
   public static BeeParameter createRelation(String module, String name,
-      String relationView, String relationField) {
-    return createRelation(module, name, false, relationView, relationField);
+      String relationView, String... relationFields) {
+    return createRelation(module, name, false, relationView, relationFields);
   }
 
   public static BeeParameter createRelation(String module, String name, boolean userMode,
-      String relationView, String relationField) {
+      String relationView, String... relationFields) {
     Assert.notEmpty(relationView);
-    Assert.notEmpty(relationField);
+    Assert.state(!Arrays.asList(relationFields).isEmpty());
 
     BeeParameter param = new BeeParameter(module, name, ParameterType.RELATION, userMode, null);
-    param.setOptions(Pair.of(relationView, relationField).serialize());
+    param.setOptions(Pair.of(relationView, relationFields).serialize());
     return param;
   }
 
@@ -406,11 +407,11 @@ public final class BeeParameter implements BeeSerializable {
         break;
 
       case DATE:
-        val = TimeUtils.parseDate(expr);
+        val = TimeUtils.toDateOrNull(expr);
         break;
 
       case DATETIME:
-        val = TimeUtils.parseDateTime(expr);
+        val = TimeUtils.toDateTimeOrNull(expr);
         break;
 
       case COLLECTION:

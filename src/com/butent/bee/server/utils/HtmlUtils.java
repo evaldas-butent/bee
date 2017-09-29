@@ -1,7 +1,6 @@
 package com.butent.bee.server.utils;
 
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import org.jsoup.Jsoup;
 import org.jsoup.examples.HtmlToPlainText;
@@ -20,19 +19,21 @@ public final class HtmlUtils {
     if (dirtyHtml != null) {
       return Jsoup.clean(dirtyHtml, "http:", Whitelist.relaxed()
           .addTags("font")
+          .addAttributes("font", "face", "size")
           .addAttributes(":all", "style", "color")
           .preserveRelativeLinks(true), new Document.OutputSettings().prettyPrint(false));
     }
     return dirtyHtml;
   }
 
-  public static Map<Long, String> getFileReferences(String html) {
-    Map<Long, String> files = new HashMap<>();
-    Pattern pattern = Pattern.compile("src=\"(" + AdministrationConstants.FILE_URL + "/(\\d+))\"");
+  public static Map<String, String> getFileReferences(String html) {
+    Map<String, String> files = new HashMap<>();
+    Pattern pattern = Pattern.compile("src=\"(" + AdministrationConstants.FILE_URL
+        + "/([a-f0-9]{40}))\"");
     Matcher matcher = pattern.matcher(html);
 
     while (matcher.find()) {
-      files.put(BeeUtils.toLong(matcher.group(2)), matcher.group(1));
+      files.put(matcher.group(2), matcher.group(1));
     }
     return files;
   }

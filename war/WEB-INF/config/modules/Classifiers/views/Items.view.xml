@@ -31,6 +31,13 @@
     <SimpleColumn name="Width" />
     <SimpleColumn name="Length" />
 
+    <SimpleColumn name="Volume" />
+    <SimpleColumn name="Brutto" />
+    <SimpleColumn name="Netto" />
+    <SimpleColumn name="AdditionalUnit" />
+    <SimpleColumn name="CountryOfOrigin" />
+    <SimpleColumn name="Factor" />
+
     <SimpleColumn name="Price" />
     <SimpleColumn name="Currency" />
     <SimpleJoin joinType="LEFT" name="Currency">
@@ -119,9 +126,7 @@
       <SimpleColumn name="Name" alias="ItemGroupName" />
     </SimpleJoin>
 
-    <SimpleJoin name="Dimensions" joinType="LEFT">
-      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
-    </SimpleJoin>
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
     <SimpleJoin name="TradeAccounts" joinType="LEFT">
       <xi:include href="viewcolumns/TradeAccounts.viewcolumns.xml" />
     </SimpleJoin>

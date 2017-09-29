@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY row "margin:5px 5px 0 5px;">
-  <!ENTITY chlabel "text-align:right; width:100px; padding-top:2px; margin-right:5px;">
-]>
+    <!ENTITY row "margin:5px 5px 0 5px;">
+    <!ENTITY chlabel "text-align:right; width:100px; padding-top:2px; margin-right:5px;">
+    ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
-  xmlns:xi="http://www.w3.org/2001/XInclude" name="Document" caption="=document"
-  width="900" height="500" favorite="Name">
+        xmlns:xi="http://www.w3.org/2001/XInclude" name="Document" caption="=document"
+        width="80" widthUnit="vw" height="80" heightUnit="vh" favorite="Name">
 
   <TabbedPages resizable="false">
     <page>
@@ -13,12 +13,14 @@
       <FlowPanel>
         <FlowPanel class="flexBox-horizontal" style="overflow:auto;">
           <xi:include href="widgets/DocumentFields.widget.xml" />
-          <FlowPanel style="max-width: 40%;" >
+          <FlowPanel style="max-width: 40%;">
             <Relations relColumn="Document" inline="true"
-              defaultRelations="Companies Persons Requests Tasks" style="margin-left: 15px; min-width:300px;" />
+                       defaultRelations="Companies Persons Requests Tasks"
+                       style="margin-left: 15px; min-width:300px;" />
           </FlowPanel>
         </FlowPanel>
-        <ChildGrid name="DocumentFiles" relColumn="Document" style="margin-top: 1ex; height: 400px;" />
+        <ChildGrid name="DocumentFiles" relColumn="Document"
+                   style="margin-top: 1ex; height: 400px;" />
       </FlowPanel>
     </page>
 

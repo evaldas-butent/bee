@@ -1,48 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE columns [
+    <!ENTITY renderLoadingOptions "{
+                         &quot;viewName&quot;:&quot;CargoLoading&quot;,
+                         &quot;render&quot;: {
+                           &quot;City&quot;: &quot;CityName, PostIndex&quot;,
+                           &quot;Country&quot;: &quot;flg_CountryCode, CountryName, CountryCode&quot;
+                         }
+                       }">
+    <!ENTITY renderUnloadingOptions "{
+                         &quot;viewName&quot;:&quot;CargoUnloading&quot;,
+                         &quot;render&quot;: {
+                           &quot;City&quot;: &quot;CityName, PostIndex&quot;,
+                           &quot;Country&quot;: &quot;flg_CountryCode, CountryName, CountryCode&quot;
+                         }
+                       }">
+]>
 <g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
            xmlns:ui="http://www.butent.com/ui">
-  <PropColumn type="datetime" name="LoadingDate" label="=trLoadingDate" visible="false" />
-  <PropColumn type="string" name="LoadingAddress" label="=trLoadingAddress" visible="false" />
-  <PropColumn type="string" name="LoadingCityName" label="=trLoadingCity" visible="false">
+
+  <PropColumn type="datetime" name="LoadingDate" label="=trLoadingDate" visible="false"
+              filterSupplier="customDateTime" filterOptions="CargoHandling" />
+  <PropColumn type="string" name="LoadingAddress" label="=trLoadingAddress" visible="false"
+              filterSupplier="custom" filterOptions="CargoHandling" />
+  <PropColumn type="string" name="LoadingCityName" label="=trLoadingCity" visible="false"
+              filterSupplier="custom" filterOptions="CargoHandling">
     <render>
       <ui:expression>row.LoadingCityName ? row.LoadingCityName : row.LoadingCityUnbound</ui:expression>
     </render>
   </PropColumn>
-  <PropColumn type="string" name="LoadingPostIndex" label="=trLoadingPostIndex" visible="false" />
-  <PropColumn type="string" name="LoadingCountryName" label="=trLoadingCountry" visible="false">
+  <PropColumn type="string" name="LoadingPostIndex" label="=trLoadingPostIndex" visible="false"
+              filterSupplier="custom" filterOptions="CargoHandling" />
+  <PropColumn type="string" name="LoadingCountryName" label="=trLoadingCountry" visible="false"
+              filterSupplier="custom" filterOptions="CargoHandling">
     <render>
       <ui:expression>row.LoadingCountryName ? row.LoadingCountryName : row.LoadingCountryUnbound</ui:expression>
     </render>
   </PropColumn>
   <PropColumn type="string" name="LoadingCountryCode" cellType="html"
-              width="30" caption="-" label="=from" sortable="false"
+              width="30" label="=from" sortable="false"
               horizontalAlignment="center" exportWidthFactor="0.5" visible="false">
     <renderer type="flag" />
   </PropColumn>
-  <PropColumn type="string" name="LoadingNumber" label="=trLoadingNumber" visible="false" />
+  <PropColumn type="string" name="LoadingNumber" label="=trLoadingNumber" visible="false"
+              filterSupplier="custom" filterOptions="CargoHandling" />
 
-  <PropColumn type="datetime" name="UnloadingDate" label="=trUnloadingDate" visible="false" />
-  <PropColumn type="string" name="UnloadingAddress" label="=trUnloadingAddress" visible="false" />
-  <PropColumn type="string" name="UnloadingCityName" label="=trUnloadingCity" visible="false">
+  <PropColumn type="datetime" name="UnloadingDate" label="=trUnloadingDate" visible="false"
+              filterSupplier="customDateTime" filterOptions="CargoHandling" />
+  <PropColumn type="string" name="UnloadingAddress" label="=trUnloadingAddress" visible="false"
+              filterSupplier="custom" filterOptions="CargoHandling" />
+  <PropColumn type="string" name="UnloadingCityName" label="=trUnloadingCity" visible="false"
+              filterSupplier="custom" filterOptions="CargoHandling">
     <render>
       <ui:expression>row.UnloadingCityName ? row.UnloadingCityName : row.UnloadingCityUnbound</ui:expression>
     </render>
   </PropColumn>
   <PropColumn type="string" name="UnloadingPostIndex" label="=trUnloadingPostIndex"
-              visible="false" />
+              visible="false" filterSupplier="custom" filterOptions="CargoHandling" />
   <PropColumn type="string" name="UnloadingCountryName" label="=trUnloadingCountry"
-              visible="false">
+              visible="false" filterSupplier="custom" filterOptions="CargoHandling">
     <render>
       <ui:expression>row.UnloadingCountryName ? row.UnloadingCountryName : row.UnloadingCountryUnbound</ui:expression>
     </render>
   </PropColumn>
   <PropColumn type="string" name="UnloadingCountryCode" cellType="html"
-              width="30" caption="-" label="=to" sortable="false"
+              width="30" label="=to" sortable="false"
               horizontalAlignment="center" exportWidthFactor="0.5" visible="false">
     <renderer type="flag" />
   </PropColumn>
-  <PropColumn type="string" name="UnloadingNumber" label="=trUnloadingNumber" visible="false" />
+  <PropColumn type="string" name="UnloadingNumber" label="=trUnloadingNumber" visible="false"
+              filterSupplier="custom" filterOptions="CargoHandling" />
 
   <PropColumn type="integer" name="EmptyKilometers" label="=trEmptyKilometers" visible="false" />
   <PropColumn type="integer" name="LoadedKilometers" label="=trLoadedKilometers" visible="false" />
+
+  <PropColumn type="string" cellType="html" name="Loading" exportable="false" sortable="false"
+              renderColumns="Date Note Company Contact Address City Country Number"
+              label="=cargoLoading" minWidth="140" flexBasis="120" filterOptions="-">
+    <style>
+      <bodyStyle>
+        <ui:inline>overflow-y:auto;</ui:inline>
+      </bodyStyle>
+    </style>
+    <renderer type="place" options="&renderLoadingOptions;"/>
+  </PropColumn>
+
+  <PropColumn type="string" cellType="html" name="Unloading" exportable="false" sortable="false"
+              renderColumns="Date Note Company Contact Address City Country Number"
+              label="=cargoUnloading" minWidth="140" flexBasis="120" filterOptions="-">
+    <style>
+      <bodyStyle>
+        <ui:inline>overflow-y:auto;</ui:inline>
+      </bodyStyle>
+    </style>
+    <renderer type="place" options="&renderUnloadingOptions;"/>
+  </PropColumn>
+
 </g:columns>

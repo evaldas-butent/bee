@@ -7,8 +7,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -17,7 +15,6 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -25,16 +22,14 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
-import com.butent.bee.client.output.ReportParameters;
+import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.DataUtils;
@@ -52,7 +47,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -116,7 +110,7 @@ public class TradeActStockReport extends ReportInterceptor {
     String h2;
 
     if (start == null || end == null) {
-      h1 = Localized.dictionary().trdRemainders();
+      h1 = Localized.dictionary().taRemainders();
       h2 = Format.renderDateLong(BeeUtils.nvl(start, end));
 
     } else {
@@ -240,7 +234,7 @@ public class TradeActStockReport extends ReportInterceptor {
 
       loadMulti(parameters, FILTER_NAMES, form);
 
-      loadGroupBy(parameters, GROUP_NAMES, form);
+      loadGroupByIndex(parameters, GROUP_NAMES, form);
     }
 
     super.onLoad(form);
@@ -253,7 +247,7 @@ public class TradeActStockReport extends ReportInterceptor {
 
     storeEditorValues(FILTER_NAMES);
 
-    storeGroupBy(GROUP_NAMES);
+    storeGroupByIndex(GROUP_NAMES);
   }
 
   @Override
@@ -314,7 +308,7 @@ public class TradeActStockReport extends ReportInterceptor {
           logger.warning(name, "has no label");
         }
 
-        headers.add(BeeUtils.joinWords(label, getFilterLabel(name)));
+        headers.add(BeeUtils.joinWords(label, getSelectorLabel(name)));
 
         Set<Long> values = DataUtils.parseIdSet(ids);
 
@@ -342,24 +336,21 @@ public class TradeActStockReport extends ReportInterceptor {
       params.addDataItem(Service.VAR_GROUP_BY, NameUtils.join(groupBy));
     }
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(final ResponseObject response) {
-        if (response.hasMessages()) {
-          response.notify(getFormView());
-        }
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      if (response.hasMessages()) {
+        response.notify(getFormView());
+      }
 
-        if (response.hasResponse(SimpleRowSet.class)) {
-          TradeActKeeper.ensureChache(() -> {
-            renderData(SimpleRowSet.restore(response.getResponseAsString()), start, end);
+      if (response.hasResponse(SimpleRowSet.class)) {
+        TradeActKeeper.ensureChache(() -> {
+          renderData(SimpleRowSet.restore(response.getResponseAsString()), start, end);
 
-            sheet.addHeaders(headers);
-            sheet.autoSizeAll();
-          });
+          sheet.addHeaders(headers);
+          sheet.autoSizeAll();
+        });
 
-        } else {
-          getFormView().notifyWarning(Localized.dictionary().nothingFound());
-        }
+      } else {
+        getFormView().notifyWarning(Localized.dictionary().nothingFound());
       }
     });
   }
@@ -372,7 +363,7 @@ public class TradeActStockReport extends ReportInterceptor {
 
       String fileName;
       if (start == null || end == null) {
-        fileName = Localized.dictionary().trdRemainders();
+        fileName = Localized.dictionary().taRemainders();
       } else {
         fileName = Localized.dictionary().trdMovementOfGoods();
       }
@@ -393,7 +384,7 @@ public class TradeActStockReport extends ReportInterceptor {
     labels.addAll(captions);
 
     for (String name : FILTER_NAMES) {
-      labels.add(getFilterLabel(name));
+      labels.add(getSelectorLabel(name));
     }
 
     for (String groupName : GROUP_NAMES) {
@@ -416,7 +407,7 @@ public class TradeActStockReport extends ReportInterceptor {
     addBooleanValues(parameters, COL_TRADE_ITEM_QUANTITY, COL_ITEM_WEIGHT);
 
     addEditorValues(parameters, FILTER_NAMES);
-    addGroupBy(parameters, GROUP_NAMES);
+    addGroupByIndex(parameters, GROUP_NAMES);
 
     return parameters;
   }
@@ -640,10 +631,10 @@ public class TradeActStockReport extends ReportInterceptor {
 
         } else {
           if (ValueType.DATE_TIME == type) {
-            text = TimeUtils.renderCompact(data.getDateTime(i, j));
+            text = Format.renderDateTime(data.getDateTime(i, j));
 
           } else if (ValueType.DATE == type) {
-            text = TimeUtils.renderDate(data.getDate(i, j));
+            text = Format.renderDate(data.getDate(i, j));
 
           } else {
             text = data.getValue(i, j);
@@ -725,27 +716,24 @@ public class TradeActStockReport extends ReportInterceptor {
 
       final String period = Format.renderPeriod(start, end);
 
-      table.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          Element target = EventUtils.getEventTargetElement(event);
+      table.addClickHandler(event -> {
+        Element target = EventUtils.getEventTargetElement(event);
 
-          TableCellElement cell = DomUtils.getParentCell(target, true);
-          TableRowElement row = DomUtils.getParentRow(cell, false);
+        TableCellElement cell = DomUtils.getParentCell(target, true);
+        TableRowElement row = DomUtils.getParentRow(cell, false);
 
-          if (StyleUtils.hasClassName(cell, STYLE_MOVEMENT)
-              && StyleUtils.hasAnyClass(row, movementRowClasses)) {
+        if (StyleUtils.hasClassName(cell, STYLE_MOVEMENT)
+            && StyleUtils.hasAnyClass(row, movementRowClasses)) {
 
-            String colName = DomUtils.getDataProperty(cell, KEY_COL_NAME);
-            if (BeeUtils.allNotEmpty(colName, cell.getInnerText())) {
-              showMovement(period, row, colName);
-            }
+          String colName = DomUtils.getDataProperty(cell, KEY_COL_NAME);
+          if (BeeUtils.allNotEmpty(colName, cell.getInnerText())) {
+            showMovement(period, row, colName);
+          }
 
-          } else if (StyleUtils.hasAnyClass(cell, itemClasses)) {
-            long id = DomUtils.getDataIndexLong(row);
-            if (DataUtils.isId(id)) {
-              RowEditor.open(VIEW_ITEMS, id, Opener.MODAL);
-            }
+        } else if (StyleUtils.hasAnyClass(cell, itemClasses)) {
+          long id = DomUtils.getDataIndexLong(row);
+          if (DataUtils.isId(id)) {
+            RowEditor.open(VIEW_ITEMS, id);
           }
         }
       });

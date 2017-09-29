@@ -24,7 +24,18 @@
               </row>
               <row>
                 <Label for="PhotoFile" />
-                <Image name="PhotoFile" style="width:20em; height:150px; object-fit:contain;" />
+                <cell rowSpan="2">
+                  <Image name="PhotoFile" style="width:20em; height:150px; object-fit:contain;" />
+                </cell>
+              </row>
+              <row>
+                <FlowPanel>
+                  <Label for="PhotoCode" />
+                  <ListBox source="PhotoCode">
+                    <item>LOGO</item>
+                    <item>MAIN</item>
+                  </ListBox>
+                </FlowPanel>
               </row>
               <row>
                 <Label for="Description" />
@@ -38,8 +49,8 @@
                 </FlowPanel>
               </row>
               <row>
-                <Label for="Type" />
-                <DataSelector source="Type" style="width:20em;" />
+                <Label for="Type" class="bee-required" />
+                <DataSelector source="Type" style="width:20em;" required="true" />
               </row>
             </Table>
           </FlowPanel>

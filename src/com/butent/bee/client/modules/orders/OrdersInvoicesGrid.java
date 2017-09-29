@@ -8,13 +8,10 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.modules.trade.InvoicesGrid;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
@@ -23,9 +20,7 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
@@ -109,69 +104,60 @@ public class OrdersInvoicesGrid extends InvoicesGrid {
           COL_TRADE_CUSTOMER, COL_TRADE_CUSTOMER + "Name", COL_TRADE_WAREHOUSE_FROM,
           COL_TRADE_WAREHOUSE_FROM + "Code");
 
-      Queries.getRowSet(getViewName(), null, Filter.idIn(ids), new Queries.RowSetCallback() {
-        @Override
-        public void onSuccess(BeeRowSet result) {
-          joinAction.setVisible(true);
+      Queries.getRowSet(getViewName(), null, Filter.idIn(ids), result -> {
+        joinAction.setVisible(true);
 
-          for (String col : new String[] {COL_TRADE_EXPORTED, COL_TRADE_CUSTOMER,
-              COL_TRADE_OPERATION, COL_TRADE_WAREHOUSE_FROM}) {
-            int idx = result.getColumnIndex(col);
+        for (String col : new String[] {COL_TRADE_EXPORTED, COL_TRADE_CUSTOMER,
+            COL_TRADE_OPERATION, COL_TRADE_WAREHOUSE_FROM}) {
+          int idx = result.getColumnIndex(col);
 
-            if (result.getDistinctStrings(idx).size() > 1) {
-              view.notifyWarning(BeeUtils.joinWords(Localized.dictionary().moreThenOneValue(),
-                  Localized.getLabel(result.getColumn(idx))));
-              return;
-            }
-          }
-
-          int idx = result.getColumnIndex(COL_TRADE_JOIN);
-          if (result.getDistinctStrings(idx).contains(null)) {
-            view.notifyWarning(BeeUtils.joinWords(Localized.dictionary().trInvoiceHasNotAttribute(),
+          if (result.getDistinctStrings(idx).size() > 1) {
+            view.notifyWarning(BeeUtils.joinWords(Localized.dictionary().moreThenOneValue(),
                 Localized.getLabel(result.getColumn(idx))));
             return;
           }
+        }
 
-          DataInfo dataInfo = Data.getDataInfo(VIEW_ORDER_CHILD_INVOICES);
-          BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
+        int idx = result.getColumnIndex(COL_TRADE_JOIN);
+        if (result.getDistinctStrings(idx).contains(null)) {
+          view.notifyWarning(BeeUtils.joinWords(Localized.dictionary().trInvoiceHasNotAttribute(),
+              Localized.getLabel(result.getColumn(idx))));
+          return;
+        }
 
-          newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER),
-              BeeKeeper.getUser().getUserId());
-          newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER + COL_PERSON),
-              BeeKeeper.getUser().getUserData().getCompanyPerson());
-          newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER + COL_FIRST_NAME),
-              BeeKeeper.getUser().getFirstName());
-          newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER + COL_LAST_NAME),
-              BeeKeeper.getUser().getLastName());
-          newRow.setValue(dataInfo.getColumnIndex(TradeConstants.COL_TRADE_SUPPLIER),
-              BeeKeeper.getUser().getCompany());
-          newRow.setValue(dataInfo.getColumnIndex(ALS_SUPPLIER_NAME),
-              BeeKeeper.getUser().getCompanyName());
+        DataInfo dataInfo = Data.getDataInfo(VIEW_ORDER_CHILD_INVOICES);
+        BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
 
-          for (String col : cols) {
-              newRow.setValue(dataInfo.getColumnIndex(col),
-                  BeeUtils.joinItems(result.getDistinctStrings(result.getColumnIndex(col))));
-          }
+        newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER),
+            BeeKeeper.getUser().getUserId());
+        newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER + COL_PERSON),
+            BeeKeeper.getUser().getUserData().getCompanyPerson());
+        newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER + COL_FIRST_NAME),
+            BeeKeeper.getUser().getFirstName());
+        newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER + COL_LAST_NAME),
+            BeeKeeper.getUser().getLastName());
+        newRow.setValue(dataInfo.getColumnIndex(TradeConstants.COL_TRADE_SUPPLIER),
+            BeeKeeper.getUser().getCompany());
+        newRow.setValue(dataInfo.getColumnIndex(ALS_SUPPLIER_NAME),
+            BeeKeeper.getUser().getCompanyName());
 
-          RowFactory.createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo,
-              newRow, Modality.ENABLED, null, new NewOrderInvoiceForm(), null, new RowCallback() {
-                @Override
-                public void onSuccess(BeeRow newInvoice) {
-                  ParameterList params = OrdersKeeper.createSvcArgs(SVC_JOIN_INVOICES);
-                  params.addDataItem(Service.VAR_DATA, Codec.beeSerialize(ids));
-                  params.addDataItem(COL_SALE, newInvoice.getId());
+        for (String col : cols) {
+            newRow.setValue(dataInfo.getColumnIndex(col),
+                BeeUtils.joinItems(result.getDistinctStrings(result.getColumnIndex(col))));
+        }
 
-                  BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-                    @Override
-                    public void onResponse(ResponseObject response) {
-                      if (!response.hasErrors()) {
-                        Data.onViewChange(VIEW_ORDER_CHILD_INVOICES, DataChangeEvent.RESET_REFRESH);
-                      }
-                    }
-                  });
+        RowFactory.createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo,
+            newRow, Opener.MODAL, new NewOrderInvoiceForm(), newInvoice -> {
+              ParameterList params = OrdersKeeper.createSvcArgs(SVC_JOIN_INVOICES);
+              params.addDataItem(Service.VAR_DATA, Codec.beeSerialize(ids));
+              params.addDataItem(COL_SALE, newInvoice.getId());
+
+              BeeKeeper.getRpc().makePostRequest(params, response -> {
+                if (!response.hasErrors()) {
+                  Data.onViewChange(VIEW_ORDER_CHILD_INVOICES, DataChangeEvent.RESET_REFRESH);
                 }
               });
-        }
+            });
       });
     } else {
       super.onClick(event);

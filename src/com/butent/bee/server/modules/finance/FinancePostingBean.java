@@ -1,6 +1,8 @@
 package com.butent.bee.server.modules.finance;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
@@ -20,6 +22,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -99,7 +102,9 @@ public class FinancePostingBean {
     TradeAccounts defaultAccounts = TradeAccounts.createAvailable(config, config.getRow(rowIndex));
 
     Long defaultJournal = config.getLong(rowIndex, COL_DEFAULT_JOURNAL);
-    Long costOfMerchandise = config.getLong(rowIndex, COL_COST_OF_MERCHANDISE);
+
+    Long transitoryAccount = config.getLong(rowIndex, COL_TRANSITORY_ACCOUNT);
+    Long purchaseReturns = config.getLong(rowIndex, COL_PURCHASE_RETURNS);
 
     List<TradeDimensionsPrecedence> dimensionsPrecedence = TradeDimensionsPrecedence
         .parse(config.getString(rowIndex, COL_TRADE_DIMENSIONS_PRECEDENCE));
@@ -112,7 +117,7 @@ public class FinancePostingBean {
       date = docData.getDateTime(rowIndex, COL_TRADE_DATE);
     }
 
-    String series = docData.getString(rowIndex, COL_SERIES);
+    String series = docData.getString(rowIndex, COL_TRADE_SERIES);
     String number = docData.getString(rowIndex, COL_TRADE_NUMBER);
     if (BeeUtils.isEmpty(number)) {
       number = docData.getString(rowIndex, COL_TRADE_DOCUMENT_NUMBER_1);
@@ -175,11 +180,11 @@ public class FinancePostingBean {
     TradeAccounts warehouseToAccounts = getTradeAccounts(VIEW_WAREHOUSES, warehouseTo);
 
     int itemIndex = docLines.getColumnIndex(COL_ITEM);
-    int isServiceIndex = docLines.getColumnIndex(COL_ITEM_IS_SERVICE);
-
     int quantityIndex = docLines.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
 
-    int warehouseIndex = docLines.getColumnIndex(COL_TRADE_ITEM_WAREHOUSE);
+    int itemWarehouseFromIndex = docLines.getColumnIndex(COL_TRADE_ITEM_WAREHOUSE_FROM);
+    int itemWarehouseToIndex = docLines.getColumnIndex(COL_TRADE_ITEM_WAREHOUSE_TO);
+
     int employeeIndex = docLines.getColumnIndex(COL_TRADE_ITEM_EMPLOYEE);
 
     int parentIndex = docLines.getColumnIndex(COL_TRADE_ITEM_PARENT);
@@ -190,18 +195,46 @@ public class FinancePostingBean {
     int parentCostIndex = docLines.getColumnIndex(ALS_PARENT_COST);
     int parentCostCurrencyIndex = docLines.getColumnIndex(ALS_PARENT_COST_CURRENCY);
 
-    TradeDocumentSums tdSums = TradeDocumentSums.of(docData, docLines);
+    TradeDocumentSums tdSums = TradeDocumentSums.of(docData, 0, docLines, null);
     double docTotal = tdSums.getTotal();
 
     Map<Long, Long> itemCategoryTree = getItemCategoryTree();
 
+    Multimap<Long, SimpleRow> itemExpenditures;
+    if (operationType.providesCost()) {
+      itemExpenditures = getTradeItemExpenditures(docLines.getRowIds());
+    } else {
+      itemExpenditures = null;
+    }
+
+    int consignment = BeeConst.UNDEF;
+    Long consignmentDebit = null;
+    Long consignmentCredit = null;
+
+    if (operationType.maybeConsignment()) {
+      SimpleRow row = qs.getRow(TBL_TRADE_OPERATIONS, operation);
+
+      if (row != null) {
+        Integer mode = row.getInt(COL_OPERATION_CONSIGNMENT);
+        consignmentDebit = row.getLong(COL_OPERATION_CONSIGNMENT_DEBIT);
+        consignmentCredit = row.getLong(COL_OPERATION_CONSIGNMENT_CREDIT);
+
+        if (BeeUtils.isPositive(mode)
+            && FinanceUtils.isValidEntry(consignmentDebit, consignmentCredit)) {
+
+          consignment = mode;
+        }
+      }
+    }
+
     List<BeeColumn> columns = sys.getView(VIEW_FINANCIAL_RECORDS).getRowSetColumns();
     BeeRowSet buffer = new BeeRowSet(VIEW_FINANCIAL_RECORDS, columns);
 
+    Long debit;
+    Long credit;
+
     for (BeeRow row : docLines) {
       Long item = row.getLong(itemIndex);
-      boolean isService = BeeUtils.isTrue(row.getBoolean(isServiceIndex));
-
       Double quantity = row.getDouble(quantityIndex);
 
       Long employee = row.getLong(employeeIndex);
@@ -217,8 +250,11 @@ public class FinancePostingBean {
       Double parentCost = row.getDouble(parentCostIndex);
       Long parentCostCurrency = row.getLong(parentCostCurrencyIndex);
 
-      Long lineWarehouse = row.getLong(warehouseIndex);
-      Long parentWarehouse = getParentWarehouse(parent);
+      Long itemWarehouseFrom = getParentWarehouse(parent);
+      if (!DataUtils.isId(itemWarehouseFrom)) {
+        itemWarehouseFrom = row.getLong(itemWarehouseFromIndex);
+      }
+      Long itemWarehouseTo = row.getLong(itemWarehouseToIndex);
 
       dimensions.put(TradeDimensionsPrecedence.DOCUMENT_LINE, Dimensions.create(docLines, row));
       accounts.put(TradeAccountsPrecedence.DOCUMENT_LINE, TradeAccounts.create(docLines, row));
@@ -245,14 +281,18 @@ public class FinancePostingBean {
       accounts.put(TradeAccountsPrecedence.ITEM_CATEGORY,
           getItemCategoriesTradeAccounts(itemCategories, itemCategoryTree));
 
-      dimensions.put(TradeDimensionsPrecedence.WAREHOUSE,
-          getWarehouseDimensions(operationType,
-              warehouseFrom, warehouseFromDimensions, warehouseTo, warehouseToDimensions,
-              lineWarehouse, parentWarehouse));
-      accounts.put(TradeAccountsPrecedence.WAREHOUSE,
-          getWarehouseTradeAccounts(operationType,
-              warehouseFrom, warehouseFromAccounts, warehouseTo, warehouseToAccounts,
-              lineWarehouse, parentWarehouse));
+      if (operationType.consumesStock()) {
+        dimensions.put(TradeDimensionsPrecedence.WAREHOUSE,
+            getWarehouseDimensions(warehouseFrom, warehouseFromDimensions, itemWarehouseFrom));
+        accounts.put(TradeAccountsPrecedence.WAREHOUSE,
+            getWarehouseTradeAccounts(warehouseFrom, warehouseFromAccounts, itemWarehouseFrom));
+
+      } else {
+        dimensions.put(TradeDimensionsPrecedence.WAREHOUSE,
+            getWarehouseDimensions(warehouseTo, warehouseToDimensions, itemWarehouseTo));
+        accounts.put(TradeAccountsPrecedence.WAREHOUSE,
+            getWarehouseTradeAccounts(warehouseTo, warehouseToAccounts, itemWarehouseTo));
+      }
 
       Dimensions dim = computeTradeDimensions(dimensionsPrecedence, dimensions);
       TradeAccounts acc = computeTradeAccounts(accountsPrecedence, accounts, defaultAccounts);
@@ -268,29 +308,135 @@ public class FinancePostingBean {
       List<BeeRow> lineRows = new ArrayList<>();
 
       if (BeeUtils.nonZero(lineTotal - lineVat)) {
-        BeeUtils.addNotNull(lineRows,
-            post(columns, date,
-                operationType.getAmountDebit(acc), operationType.getAmountCredit(acc),
-                lineTotal - lineVat, currency, employee, dim));
+        if (consignment > 0) {
+          BeeUtils.addNotNull(lineRows,
+              post(columns, date, consignmentDebit, consignmentCredit,
+                  lineTotal - lineVat, currency, quantity, company, employee, dim));
+        }
+
+        if (proceed(consignment)) {
+          debit = operationType.getAmountDebit(acc);
+          credit = operationType.getAmountCredit(acc);
+
+          if (operationType.isReturn() && operationType.consumesStock()
+              && DataUtils.isId(purchaseReturns)) {
+
+            credit = purchaseReturns;
+          }
+
+          BeeUtils.addNotNull(lineRows,
+              post(columns, date, debit, credit, lineTotal - lineVat, currency, quantity,
+                  company, employee, dim));
+        }
       }
 
-      if (BeeUtils.nonZero(parentCostAmount)) {
-        BeeUtils.addNotNull(lineRows,
-            post(columns, date, acc.getCostOfGoodsSold(), costOfMerchandise,
-                parentCostAmount, parentCostCurrency, employee, dim));
-      }
-
-      if (BeeUtils.nonZero(lineVat)) {
+      if (BeeUtils.nonZero(lineVat) && proceed(consignment)) {
         BeeUtils.addNotNull(lineRows,
             post(columns, date, operationType.getVatDebit(acc), operationType.getVatCredit(acc),
-                lineVat, currency, employee, dim));
+                lineVat, currency, quantity, company, employee, dim));
+      }
+
+      if (operationType.providesCost()) {
+        List<SimpleRow> expenditures = new ArrayList<>();
+        if (itemExpenditures != null && itemExpenditures.containsKey(row.getId())) {
+          expenditures.addAll(itemExpenditures.get(row.getId()));
+        }
+
+        debit = operationType.getCostDebit(acc);
+        credit = operationType.getCostCredit(acc);
+
+        if (BeeUtils.isDouble(costAmount) && FinanceUtils.isValidEntry(debit, credit)) {
+          double amount = costAmount;
+          if (!expenditures.isEmpty()) {
+            amount -= expenditures.stream()
+                .mapToDouble(er -> er.getDouble(COL_EXPENDITURE_AMOUNT)).sum();
+          }
+
+          BeeUtils.addNotNull(lineRows,
+              post(columns, date, debit, credit, amount, costCurrency, quantity,
+                  company, employee, dim));
+        }
+
+        if (!expenditures.isEmpty()) {
+          debit = BeeUtils.nvl(debit, operationType.getAmountDebit(acc));
+          credit = BeeUtils.nvl(credit, operationType.getAmountCredit(acc));
+
+          lineRows.addAll(postExpenditures(columns, expenditures, date, debit, credit,
+              company, employee, dim));
+        }
+      }
+
+      if (operationType.consumesStock() && BeeUtils.nonZero(parentCostAmount)) {
+        credit = getParentCostAccount(parent);
+
+        if (operationType.producesStock()) {
+          Long cFr = BeeUtils.nvl(payer, supplier, customer);
+          Long cTo = BeeUtils.nvl(payer, customer, supplier);
+
+          Long wFr = BeeUtils.nvl(itemWarehouseFrom, warehouseFrom);
+          Long wTo = BeeUtils.nvl(itemWarehouseTo, warehouseTo);
+
+          Dimensions dimFr = dim;
+          Dimensions dimTo = dim;
+
+          TradeAccounts accTo = acc;
+
+          if (DataUtils.isId(cFr) && !Objects.equals(cFr, cTo)) {
+            EnumMap<TradeDimensionsPrecedence, Dimensions> dFr = new EnumMap<>(dimensions);
+            dFr.put(TradeDimensionsPrecedence.COMPANY, getDimensions(VIEW_COMPANIES, cFr));
+
+            dimFr = computeTradeDimensions(dimensionsPrecedence, dFr);
+          }
+
+          if (DataUtils.isId(wTo) && !Objects.equals(wFr, wTo)) {
+            EnumMap<TradeDimensionsPrecedence, Dimensions> dTo = new EnumMap<>(dimensions);
+            EnumMap<TradeAccountsPrecedence, TradeAccounts> aTo = new EnumMap<>(accounts);
+
+            dTo.put(TradeDimensionsPrecedence.WAREHOUSE,
+                getWarehouseDimensions(warehouseTo, warehouseToDimensions, itemWarehouseTo));
+            aTo.put(TradeAccountsPrecedence.WAREHOUSE,
+                getWarehouseTradeAccounts(warehouseTo, warehouseToAccounts, itemWarehouseTo));
+
+            dimTo = computeTradeDimensions(dimensionsPrecedence, dTo);
+            accTo = computeTradeAccounts(accountsPrecedence, aTo, defaultAccounts);
+          }
+
+          debit = accTo.getCostAccount();
+
+          if (DataUtils.isId(transitoryAccount)) {
+            BeeUtils.addNotNull(lineRows,
+                post(columns, date, transitoryAccount, credit,
+                    parentCostAmount, parentCostCurrency, quantity, cFr, employee, dimFr));
+
+            BeeUtils.addNotNull(lineRows,
+                post(columns, date, debit, transitoryAccount,
+                    parentCostAmount, parentCostCurrency, quantity, cTo, employee, dimTo));
+
+          } else {
+            BeeUtils.addNotNull(lineRows,
+                post(columns, date, debit, credit,
+                    parentCostAmount, parentCostCurrency, quantity, company, employee, dim));
+          }
+
+        } else {
+          if (operationType.isReturn() && DataUtils.isId(purchaseReturns)) {
+            debit = purchaseReturns;
+          } else {
+            debit = operationType.getCostDebit(acc);
+          }
+
+          BeeUtils.addNotNull(lineRows,
+              post(columns, date, debit, credit,
+                  parentCostAmount, parentCostCurrency, quantity, company, employee, dim));
+        }
       }
 
       if (!DataUtils.isEmpty(docPayments)
           && BeeUtils.nonZero(lineTotal) && BeeUtils.nonZero(docTotal)) {
 
         lineRows.addAll(postPayments(columns, docPayments, operationType.consumesStock(),
-            operationType.getDebtAccount(acc), lineTotal / docTotal, currency, employee, dim));
+            operationType.getDebtAccount(acc), lineTotal, docTotal, currency, quantity,
+            company, employee, dim));
       }
 
       if (!lineRows.isEmpty()) {
@@ -424,6 +570,75 @@ public class FinancePostingBean {
     return null;
   }
 
+  private Multimap<Long, SimpleRow> getTradeItemExpenditures(Collection<Long> tdItems) {
+    Multimap<Long, SimpleRow> result = ArrayListMultimap.create();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_ITEM_EXPENDITURES, COL_TRADE_DOCUMENT_ITEM, COL_EXPENDITURE_TYPE,
+            COL_EXPENDITURE_AMOUNT, COL_EXPENDITURE_CURRENCY,
+            COL_EXPENDITURE_SERIES, COL_EXPENDITURE_NUMBER)
+        .addExpr(
+            SqlUtils.nvl(
+                SqlUtils.field(TBL_TRADE_ITEM_EXPENDITURES, COL_EXPENDITURE_SUPPLIER),
+                SqlUtils.field(TBL_EXPENDITURE_TYPES, COL_EXPENDITURE_TYPE_SUPPLIER)),
+            COL_EXPENDITURE_SUPPLIER)
+        .addFields(TBL_EXPENDITURE_TYPES, COL_EXPENDITURE_TYPE_DEBIT, COL_EXPENDITURE_TYPE_CREDIT)
+        .addFrom(TBL_TRADE_ITEM_EXPENDITURES)
+        .addFromLeft(TBL_EXPENDITURE_TYPES, sys.joinTables(TBL_EXPENDITURE_TYPES,
+            TBL_TRADE_ITEM_EXPENDITURES, COL_EXPENDITURE_TYPE))
+        .setWhere(SqlUtils.inList(TBL_TRADE_ITEM_EXPENDITURES, COL_TRADE_DOCUMENT_ITEM, tdItems));
+
+    SimpleRowSet data = qs.getData(query);
+    if (!DataUtils.isEmpty(data)) {
+      data.forEach(row -> result.put(row.getLong(COL_TRADE_DOCUMENT_ITEM), row));
+    }
+
+    return result;
+  }
+
+  private List<BeeRow> postExpenditures(List<BeeColumn> columns, Collection<SimpleRow> input,
+      DateTime date, Long defDebit, Long defCredit,
+      Long company, Long employee, Dimensions defDim) {
+
+    List<BeeRow> result = new ArrayList<>();
+
+    for (SimpleRow row : input) {
+      Double amount = row.getDouble(COL_EXPENDITURE_AMOUNT);
+      Long currency = row.getLong(COL_EXPENDITURE_CURRENCY);
+
+      String series = row.getValue(COL_EXPENDITURE_SERIES);
+      String number = row.getValue(COL_EXPENDITURE_NUMBER);
+
+      Long supplier = row.getLong(COL_EXPENDITURE_SUPPLIER);
+
+      Long debit = row.getLong(COL_EXPENDITURE_TYPE_DEBIT);
+      Long credit = row.getLong(COL_EXPENDITURE_TYPE_CREDIT);
+
+      Dimensions expDim = getDimensions(VIEW_EXPENDITURE_TYPES, row.getLong(COL_EXPENDITURE_TYPE));
+      Dimensions dimensions = Dimensions.mergeNotEmpty(expDim, defDim);
+
+      BeeRow output = post(columns, date,
+          BeeUtils.nvl(debit, defDebit), BeeUtils.nvl(credit, defCredit), amount, currency, null,
+          BeeUtils.nvl(supplier, company), employee, dimensions);
+
+      if (output != null) {
+        if (!BeeUtils.isEmpty(number)) {
+          int numberIndex = DataUtils.getColumnIndex(COL_FIN_CREDIT_DOCUMENT, columns);
+          output.setValue(numberIndex, number.trim());
+
+          if (!BeeUtils.isEmpty(series)) {
+            int seriesIndex = DataUtils.getColumnIndex(COL_FIN_CREDIT_SERIES, columns);
+            output.setValue(seriesIndex, series.trim());
+          }
+        }
+
+        result.add(output);
+      }
+    }
+
+    return result;
+  }
+
   private Long getParentWarehouse(Long parent) {
     if (DataUtils.isId(parent)) {
       return qs.getLong(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE, COL_TRADE_DOCUMENT_ITEM, parent);
@@ -432,45 +647,31 @@ public class FinancePostingBean {
     }
   }
 
-  private Dimensions getWarehouseDimensions(OperationType operationType,
-      Long warehouseFrom, Dimensions warehouseFromDimensions,
-      Long warehouseTo, Dimensions warehouseToDimensions,
-      Long lineWarehouse, Long parentWarehouse) {
-
-    if (operationType.consumesStock()) {
-      if (!DataUtils.isId(parentWarehouse) || Objects.equals(parentWarehouse, warehouseFrom)) {
-        return warehouseFromDimensions;
-      } else {
-        return getDimensions(VIEW_WAREHOUSES, parentWarehouse);
-      }
-
+  private Long getParentCostAccount(Long parent) {
+    if (DataUtils.isId(parent)) {
+      return qs.getLong(TBL_TRADE_STOCK, COL_STOCK_ACCOUNT, COL_TRADE_DOCUMENT_ITEM, parent);
     } else {
-      if (!DataUtils.isId(lineWarehouse) || Objects.equals(lineWarehouse, warehouseTo)) {
-        return warehouseToDimensions;
-      } else {
-        return getDimensions(VIEW_WAREHOUSES, lineWarehouse);
-      }
+      return null;
     }
   }
 
-  private TradeAccounts getWarehouseTradeAccounts(OperationType operationType,
-      Long warehouseFrom, TradeAccounts warehouseFromAccounts,
-      Long warehouseTo, TradeAccounts warehouseToAccounts,
-      Long lineWarehouse, Long parentWarehouse) {
+  private Dimensions getWarehouseDimensions(Long docWarehouse, Dimensions docWarehouseDimensions,
+      Long itemWarehouse) {
 
-    if (operationType.consumesStock()) {
-      if (!DataUtils.isId(parentWarehouse) || Objects.equals(parentWarehouse, warehouseFrom)) {
-        return warehouseFromAccounts;
-      } else {
-        return getTradeAccounts(VIEW_WAREHOUSES, parentWarehouse);
-      }
-
+    if (!DataUtils.isId(itemWarehouse) || Objects.equals(docWarehouse, itemWarehouse)) {
+      return docWarehouseDimensions;
     } else {
-      if (!DataUtils.isId(lineWarehouse) || Objects.equals(lineWarehouse, warehouseTo)) {
-        return warehouseToAccounts;
-      } else {
-        return getTradeAccounts(VIEW_WAREHOUSES, lineWarehouse);
-      }
+      return getDimensions(VIEW_WAREHOUSES, itemWarehouse);
+    }
+  }
+
+  private TradeAccounts getWarehouseTradeAccounts(Long docWarehouse,
+      TradeAccounts docWarehouseAccounts, Long itemWarehouse) {
+
+    if (!DataUtils.isId(itemWarehouse) || Objects.equals(docWarehouse, itemWarehouse)) {
+      return docWarehouseAccounts;
+    } else {
+      return getTradeAccounts(VIEW_WAREHOUSES, itemWarehouse);
     }
   }
 
@@ -490,8 +691,8 @@ public class FinancePostingBean {
   }
 
   private static List<BeeRow> postPayments(List<BeeColumn> columns, BeeRowSet payments,
-      boolean asDebit, Long debtAccount, double factor, Long currency,
-      Long employee, Dimensions dimensions) {
+      boolean asDebit, Long debtAccount, double lineTotal, double docTotal,
+      Long currency, Double quantity, Long company, Long employee, Dimensions dimensions) {
 
     List<BeeRow> result = new ArrayList<>();
 
@@ -504,6 +705,8 @@ public class FinancePostingBean {
     int seriesIndex = payments.getColumnIndex(COL_TRADE_PAYMENT_SERIES);
     int numberIndex = payments.getColumnIndex(COL_TRADE_PAYMENT_NUMBER);
 
+    int prepaymentIndex = payments.getColumnIndex(COL_TRADE_PREPAYMENT_PARENT);
+
     int outputPaymentIndex = DataUtils.getColumnIndex(COL_FIN_TRADE_PAYMENT, columns);
 
     int outputSeriesIndex = DataUtils.getColumnIndex(asDebit
@@ -511,12 +714,19 @@ public class FinancePostingBean {
     int outputDocumentIndex = DataUtils.getColumnIndex(asDebit
         ? COL_FIN_DEBIT_DOCUMENT : COL_FIN_CREDIT_DOCUMENT, columns);
 
+    int outputPrepaymentIndex = DataUtils.getColumnIndex(COL_FIN_PREPAYMENT_PARENT, columns);
+
     for (BeeRow row : payments) {
       DateTime date = row.getDateTime(dateIndex);
 
       Double amount = row.getDouble(amountIndex);
+      Double qty = null;
+
       if (BeeUtils.nonZero(amount)) {
-        amount *= factor;
+        if (BeeUtils.nonZero(quantity)) {
+          qty = quantity * amount / docTotal;
+        }
+        amount *= lineTotal / docTotal;
       }
 
       Long account = row.getLong(accountIndex);
@@ -527,10 +737,13 @@ public class FinancePostingBean {
       String series = row.getString(seriesIndex);
       String number = row.getString(numberIndex);
 
+      Long prepayment = row.getLong(prepaymentIndex);
+
       Long debit = asDebit ? account : debtAccount;
       Long credit = asDebit ? debtAccount : account;
 
-      BeeRow output = post(columns, date, debit, credit, amount, currency, employee, dimensions);
+      BeeRow output = post(columns, date, debit, credit, amount, currency, qty,
+          company, employee, dimensions);
 
       if (output != null) {
         output.setValue(outputPaymentIndex, row.getId());
@@ -541,6 +754,10 @@ public class FinancePostingBean {
           if (!BeeUtils.isEmpty(series)) {
             output.setValue(outputSeriesIndex, series.trim());
           }
+        }
+
+        if (DataUtils.isId(prepayment)) {
+          output.setValue(outputPrepaymentIndex, prepayment);
         }
 
         result.add(output);
@@ -606,6 +823,7 @@ public class FinancePostingBean {
     int creditIndex = DataUtils.getColumnIndex(COL_FIN_CREDIT, columns);
 
     int amountIndex = DataUtils.getColumnIndex(COL_FIN_AMOUNT, columns);
+    int quantityIndex = DataUtils.getColumnIndex(COL_FIN_QUANTITY, columns);
 
     int percentIndex = distribution.getColumnIndex(COL_FIN_DISTR_PERCENT);
 
@@ -625,6 +843,7 @@ public class FinancePostingBean {
 
       for (BeeRow inputRow : inputRows) {
         double inputAmount = inputRow.getDouble(amountIndex);
+        Double inputQuantity = inputRow.getDouble(quantityIndex);
 
         for (int i = 0; i < distributionRows.size(); i++) {
           BeeRow distributionRow = distributionRows.get(i);
@@ -632,6 +851,10 @@ public class FinancePostingBean {
 
           BeeRow outputRow = DataUtils.cloneRow(inputRow);
           outputRow.setValue(amountIndex, inputAmount * factor);
+
+          if (BeeUtils.nonZero(inputQuantity)) {
+            outputRow.setValue(quantityIndex, inputQuantity * factor);
+          }
 
           Long debitReplacement = distributionRow.getLong(debitReplacementIndex);
           if (DataUtils.isId(debitReplacement)) {
@@ -653,6 +876,10 @@ public class FinancePostingBean {
         if (remainingFactor >= BeeConst.DOUBLE_ONE / BeeConst.DOUBLE_ONE_HUNDRED) {
           BeeRow outputRow = DataUtils.cloneRow(inputRow);
           outputRow.setValue(amountIndex, inputAmount * remainingFactor);
+
+          if (BeeUtils.nonZero(inputQuantity)) {
+            outputRow.setValue(quantityIndex, inputQuantity * remainingFactor);
+          }
 
           outputRows.add(outputRow);
         }
@@ -915,8 +1142,8 @@ public class FinancePostingBean {
   }
 
   private static BeeRow post(List<BeeColumn> columns, DateTime date,
-      Long debit, Long credit, Double amount, Long currency,
-      Long employee, Dimensions dimensions) {
+      Long debit, Long credit, Double amount, Long currency, Double quantity,
+      Long company, Long employee, Dimensions dimensions) {
 
     if (FinanceUtils.isValidEntry(date, debit, credit, amount, currency)) {
       BeeRow row = DataUtils.createEmptyRow(columns.size());
@@ -928,6 +1155,14 @@ public class FinancePostingBean {
 
       row.setValue(DataUtils.getColumnIndex(COL_FIN_AMOUNT, columns), amount);
       row.setValue(DataUtils.getColumnIndex(COL_FIN_CURRENCY, columns), currency);
+
+      if (BeeUtils.nonZero(quantity)) {
+        row.setValue(DataUtils.getColumnIndex(COL_FIN_QUANTITY, columns), quantity);
+      }
+
+      if (DataUtils.isId(company)) {
+        row.setValue(DataUtils.getColumnIndex(COL_FIN_COMPANY, columns), company);
+      }
 
       if (DataUtils.isId(employee)) {
         row.setValue(DataUtils.getColumnIndex(COL_FIN_EMPLOYEE, columns), employee);
@@ -950,21 +1185,34 @@ public class FinancePostingBean {
     }
 
     int amountIndex = input.getColumnIndex(COL_FIN_AMOUNT);
+    int quantityIndex = input.getColumnIndex(COL_FIN_QUANTITY);
 
-    Map<List<String>, Double> map = input.getRows().stream().collect(
-        Collectors.groupingBy(row -> FinanceUtils.groupingFunction(row, amountIndex),
+    Map<List<String>, Double> amounts = input.getRows().stream().collect(
+        Collectors.groupingBy(row -> FinanceUtils.groupingFunction(row, amountIndex, quantityIndex),
             Collectors.summingDouble(row -> BeeUtils.unbox(row.getDouble(amountIndex)))));
 
-    if (map.size() == input.getNumberOfRows()) {
+    if (amounts.size() == input.getNumberOfRows()) {
       return input;
     }
 
-    BeeRowSet result = new BeeRowSet(input.getViewName(), input.getColumns());
-    int amountScale = input.getColumn(amountIndex).getScale();
+    Map<List<String>, Double> quantities = input.getRows().stream().collect(
+        Collectors.groupingBy(row -> FinanceUtils.groupingFunction(row, amountIndex, quantityIndex),
+            Collectors.summingDouble(row -> BeeUtils.unbox(row.getDouble(quantityIndex)))));
 
-    map.forEach((values, amount) -> {
+    BeeRowSet result = new BeeRowSet(input.getViewName(), input.getColumns());
+
+    int amountScale = input.getColumn(amountIndex).getScale();
+    int quantityScale = input.getColumn(quantityIndex).getScale();
+
+    amounts.forEach((values, amount) -> {
       List<String> list = new ArrayList<>(values);
+
       list.set(amountIndex, BeeUtils.toString(amount, amountScale));
+
+      Double quantity = quantities.get(values);
+      if (BeeUtils.nonZero(quantity)) {
+        list.set(quantityIndex, BeeUtils.toString(quantity, quantityScale));
+      }
 
       result.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, list);
     });
@@ -996,5 +1244,9 @@ public class FinancePostingBean {
     }
 
     return ResponseObject.response(insert.getNumberOfRows());
+  }
+
+  private static boolean proceed(int consignment) {
+    return consignment != 1;
   }
 }

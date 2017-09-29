@@ -4,14 +4,11 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.event.logical.OpenEvent;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -29,6 +26,7 @@ import com.butent.bee.shared.data.filter.FilterParser;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -42,6 +40,8 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
 
   private static final Splitter valueSplitter =
       Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
+  private static final Splitter wordSplitter =
+      Splitter.on(BeeConst.CHAR_SPACE).omitEmptyStrings().trimResults();
 
   private final List<BeeColumn> columns = new ArrayList<>();
   private final String idColumnName;
@@ -66,7 +66,7 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
     this.idColumnName = idColumnName;
     this.versionColumnName = versionColumnName;
 
-    if (BeeUtils.isEmpty(searchColumns)) {
+    if (BeeUtils.isEmpty(searchColumns) && column != null) {
       searchBy.add(column);
     } else {
       searchBy.addAll(searchColumns);
@@ -87,12 +87,9 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
               BeeUtils.join(BeeConst.STRING_MINUS, searchBy), "filter"));
     }
 
-    editor.addKeyDownHandler(new KeyDownHandler() {
-      @Override
-      public void onKeyDown(KeyDownEvent event) {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-          ValueFilterSupplier.this.onSave();
-        }
+    editor.addKeyDownHandler(event -> {
+      if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+        ValueFilterSupplier.this.onSave();
       }
     });
 
@@ -146,32 +143,19 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
       CustomDiv separator = new CustomDiv(STYLE_PREFIX + "separator");
       panel.add(separator);
 
-      Button notEmpty = new Button(NOT_NULL_VALUE_LABEL, new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          onEmptiness(false);
-        }
-      });
+      Button notEmpty = new Button(NOT_NULL_VALUE_LABEL, event -> onEmptiness(false));
       notEmpty.addStyleName(STYLE_PREFIX + "notEmpty");
       panel.add(notEmpty);
 
-      Button empty = new Button(NULL_VALUE_LABEL, new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          onEmptiness(true);
-        }
-      });
+      Button empty = new Button(NULL_VALUE_LABEL, event -> onEmptiness(true));
       empty.addStyleName(STYLE_PREFIX + "empty");
       panel.add(empty);
     }
 
-    OpenEvent.Handler onOpen = new OpenEvent.Handler() {
-      @Override
-      public void onOpen(OpenEvent event) {
-        editor.setFocus(true);
-        if (!BeeUtils.isEmpty(getOldValue())) {
-          editor.selectAll();
-        }
+    OpenEvent.Handler onOpen = event -> {
+      editor.setFocus(true);
+      if (!BeeUtils.isEmpty(getOldValue())) {
+        editor.selectAll();
       }
     };
 
@@ -209,13 +193,32 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
   }
 
   private Filter buildComparison(Operator operator, String value) {
+    DateOrdering dateOrdering = Format.getDefaultDateOrdering();
+
     if (searchBy.size() <= 1) {
-      return ColumnValueFilter.compareWithValue(getColumn(), operator, value);
+      return ColumnValueFilter.compareWithValue(getColumn(), operator, value, dateOrdering);
+
+    } else if (BeeUtils.contains(BeeUtils.trim(value), BeeConst.CHAR_SPACE)
+        && ValueType.isString(getColumnType())) {
+
+      List<String> words = wordSplitter.splitToList(value);
+
+      CompoundFilter filter = Filter.and();
+
+      for (BeeColumn by : searchBy) {
+        CompoundFilter sub = Filter.or();
+        for (String word : words) {
+          sub.add(ColumnValueFilter.compareWithValue(by, operator, word, dateOrdering));
+        }
+        filter.add(sub);
+      }
+
+      return filter;
 
     } else {
       CompoundFilter filter = Filter.or();
       for (BeeColumn by : searchBy) {
-        filter.add(ColumnValueFilter.compareWithValue(by, operator, value));
+        filter.add(ColumnValueFilter.compareWithValue(by, operator, value, dateOrdering));
       }
       return filter;
     }
@@ -347,7 +350,7 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
     this.emptiness = empt;
   }
 
-  private boolean validate(String input) {
+  protected boolean validate(String input) {
     if (BeeUtils.isEmpty(input)) {
       return true;
 

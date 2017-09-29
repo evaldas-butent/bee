@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
@@ -13,10 +12,10 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.trade.InvoiceForm;
 import com.butent.bee.client.modules.trade.InvoicesGrid;
 import com.butent.bee.client.modules.transport.charts.ChartBase;
@@ -36,8 +35,6 @@ import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowTransformEvent;
@@ -47,11 +44,13 @@ import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.report.ReportInfo;
+import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.shared.rights.Module;
-import com.butent.bee.shared.ui.Preloader;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -85,7 +84,8 @@ public final class TransportHandler {
               break;
             }
           }
-          report.showModal(reportInfo);
+          report.showModal(new ReportParameters(Collections.singletonMap(COL_RS_REPORT,
+              reportInfo.serialize())));
         };
 
         if (reports.size() > 1) {
@@ -108,8 +108,8 @@ public final class TransportHandler {
     public void onRowTransform(RowTransformEvent event) {
       if (event.hasView(VIEW_ASSESSMENTS)) {
         event.setResult(DataUtils.join(Data.getDataInfo(VIEW_ASSESSMENTS), event.getRow(),
-            Lists.newArrayList("ID", COL_STATUS, COL_DATE, "CustomerName", "OrderNotes"),
-            BeeConst.STRING_SPACE));
+            Arrays.asList("ID", COL_STATUS, COL_DATE, "CustomerName", "OrderNotes"),
+            BeeConst.STRING_SPACE, Format.getDateRenderer(), Format.getDateTimeRenderer()));
       }
     }
   }
@@ -122,7 +122,7 @@ public final class TransportHandler {
     }
 
     @Override
-    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
       IsRow type = getSelectedTreeItem();
 
       if (type != null) {
@@ -153,13 +153,7 @@ public final class TransportHandler {
     }
   }
 
-  private static boolean bindExpensesToIncomes;
-
   private TransportHandler() {
-  }
-
-  public static boolean bindExpensesToIncomes() {
-    return bindExpensesToIncomes;
   }
 
   public static ParameterList createArgs(String method) {
@@ -170,9 +164,9 @@ public final class TransportHandler {
     MenuService.ASSESSMENTS_GRID.setHandler(
         parameters -> openAssessment(parameters, ViewHelper.getPresenterCallback()));
 
-    ViewFactory.registerSupplier(GridFactory.getSupplierKey(GRID_ASSESSMENT_REQUESTS, null),
-        callback -> openAssessment(GRID_ASSESSMENT_REQUESTS,
-            ViewFactory.getPresenterCallback(callback)));
+    ViewFactory.registerSupplier(GridFactory.getSupplierKey(GRID_ASSESSMENT_REQUESTS,
+        new AssessmentRequestsGrid()), callback -> openAssessment(GRID_ASSESSMENT_REQUESTS,
+        ViewFactory.getPresenterCallback(callback)));
     ViewFactory.registerSupplier(GridFactory.getSupplierKey(GRID_ASSESSMENT_ORDERS, null),
         callback -> openAssessment(GRID_ASSESSMENT_ORDERS,
             ViewFactory.getPresenterCallback(callback)));
@@ -220,13 +214,8 @@ public final class TransportHandler {
         new FileGridInterceptor(COL_CARGO, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
-    if (!BeeKeeper.getUser().isAdministrator()) {
-      Filter mngFilter = Filter.or(BeeKeeper.getUser().getFilter(COL_ORDER_MANAGER),
-          Filter.isNull(COL_ORDER_MANAGER));
-
-      GridFactory.registerImmutableFilter(VIEW_ORDERS, mngFilter);
-      GridFactory.registerImmutableFilter(VIEW_ALL_CARGO, mngFilter);
-    }
+    GridFactory.registerGridInterceptor(TBL_CARGO_LOADING, new CargoHandlingGrid());
+    GridFactory.registerGridInterceptor(TBL_CARGO_UNLOADING, new CargoHandlingGrid());
 
     FormFactory.registerFormInterceptor(FORM_ORDER, new TransportationOrderForm());
     FormFactory.registerFormInterceptor(FORM_NEW_SIMPLE_ORDER, new NewSimpleTransportationOrder());
@@ -237,15 +226,7 @@ public final class TransportHandler {
 
     FormFactory.registerFormInterceptor(FORM_CARGO, new OrderCargoForm());
 
-    final Preloader assessmentConsumer = command ->
-        Global.getParameter(PRM_BIND_EXPENSES_TO_INCOMES, prm -> {
-          bindExpensesToIncomes = BeeUtils.unbox(BeeUtils.toBoolean(prm));
-          command.run();
-        });
-    FormFactory.registerPreloader(FORM_CARGO,
-        command -> OrderCargoForm.preload(() -> assessmentConsumer.accept(command)));
-    FormFactory.registerPreloader(FORM_ASSESSMENT, assessmentConsumer);
-    FormFactory.registerPreloader(FORM_ASSESSMENT_FORWARDER, assessmentConsumer);
+    FormFactory.registerPreloader(FORM_CARGO, OrderCargoForm::preload);
 
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT, new AssessmentForm());
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT_FORWARDER, new AssessmentForwarderForm());
@@ -269,12 +250,12 @@ public final class TransportHandler {
     CargoIncomesObserver.register();
   }
 
-  private static void openAssessment(final String gridName, final PresenterCallback callback) {
-    final GridInterceptor interceptor;
+  private static void openAssessment(String gridName, PresenterCallback callback) {
+    GridInterceptor interceptor;
 
     switch (gridName) {
       case GRID_ASSESSMENT_REQUESTS:
-        interceptor = null;
+        interceptor = new AssessmentRequestsGrid();
         break;
 
       case GRID_ASSESSMENT_ORDERS:
@@ -285,26 +266,18 @@ public final class TransportHandler {
         Global.showError(Localized.dictionary().dataNotAvailable(gridName));
         return;
     }
-    final Long userPerson = BeeKeeper.getUser().getUserData().getCompanyPerson();
+    Long userPerson = BeeKeeper.getUser().getUserData().getCompanyPerson();
 
-    Queries.getRowSet(TBL_DEPARTMENT_EMPLOYEES, Lists.newArrayList(COL_DEPARTMENT),
+    Queries.getRowSet(TBL_DEPARTMENT_EMPLOYEES, Collections.singletonList(COL_DEPARTMENT),
         Filter.and(Filter.equals(COL_COMPANY_PERSON, userPerson),
-            Filter.notNull(COL_DEPARTMENT_HEAD)), new RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            Set<Long> departments = new HashSet<>();
-            Long user = BeeKeeper.getUser().getUserId();
+            Filter.notNull(COL_DEPARTMENT_HEAD)), result -> {
 
-            for (BeeRow row : result) {
-              departments.add(row.getLong(0));
-            }
-            GridFactory.openGrid(gridName, interceptor,
-                GridOptions.forFilter(Filter.or(Lists.newArrayList(
-                    Filter.equals(COL_COMPANY_PERSON, userPerson),
-                    Filter.any(COL_DEPARTMENT, departments),
-                    Filter.equals(COL_USER, user), Filter.equals(COL_GROUP, user)))),
-                callback);
-          }
+          Set<Long> departments = new HashSet<>();
+          result.forEach(row -> departments.add(row.getLong(0)));
+
+          GridFactory.openGrid(gridName, interceptor,
+              GridOptions.forFilter(Filter.or(Filter.equals(COL_COMPANY_PERSON, userPerson),
+                  Filter.notNull(COL_USER), Filter.any(COL_DEPARTMENT, departments))), callback);
         });
   }
 }

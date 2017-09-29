@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY inp "width: 14em;">
-]>
+    <!ENTITY inp "width: 14em;">
+    ]>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
+        xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
 
-  name="Appointment" viewName="Appointments" caption="=calAppointment" showRowId="true">
-
+        name="Appointment" viewName="Appointments" caption="=calAppointment" showRowId="true"
+        width="60" widthUnit="vw" height="75" heightUnit="vh"
+>
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls" style="margin-top: 1ex; margin-bottom: 2ex;">
-       
+
       <col index="0" kind="label" />
       <col index="2" kind="label" />
       <col index="4" kind="label" />
@@ -25,14 +26,15 @@
 
       <row>
         <Label for="Company" />
-        <DataSelector source="Company" choiceColumns="Name TypeName" 
-            renderColumns="CompanyName CompanyTypeName" style="&inp;" />
+        <DataSelector source="Company" choiceColumns="Name TypeName"
+                      renderColumns="CompanyName CompanyTypeName" style="&inp;" />
         <Label for="CompanyPerson" />
         <DataSelector source="CompanyPerson"
-          renderColumns="PersonFirstName PersonLastName"
-          choiceColumns="FirstName LastName CompanyName" options="Company" style="&inp;" />
+                      renderColumns="PersonFirstName PersonLastName"
+                      choiceColumns="FirstName LastName CompanyName" options="Company"
+                      style="&inp;" />
       </row>
- 
+
       <row>
         <Label for="StartDateTime" visible="true" />
         <InputDateTime source="StartDateTime" visible="true" style="&inp;" />
@@ -44,7 +46,8 @@
         <Label for="EndDateTime" visible="true" />
         <InputDateTime source="EndDateTime" visible="true" style="&inp;" />
         <Label text="=type" for="Type" visible="true" class="bee-required" />
-        <DataSelector source="AppointmentType" renderColumns="TypeName" visible="true" style="&inp;"/>
+        <DataSelector source="AppointmentType" renderColumns="TypeName" visible="true"
+                      style="&inp;" />
       </row>
 
       <row>
@@ -60,16 +63,16 @@
         <Label for="Location" />
         <InputText source="Location" style="&inp;" />
       </row>
-        
+
       <row>
         <Label for="Creator" />
         <DataSelector source="Creator" editSource="CreatorCompanyPerson"
-          renderColumns="CreatorFirstName CreatorLastName" style="&inp;" />
+                      renderColumns="CreatorFirstName CreatorLastName" style="&inp;" />
         <Label for="Project" />
         <DataSelector source="Project" choiceColumns="Name" style="&inp;" />
       </row>
     </Table>
-    
+
     <TabbedPages class="flexible">
       <page>
         <text>=calAttendees</text>
@@ -86,7 +89,7 @@
         <SimplePanel>
           <InputArea source="Description" class="occupy-1" summarize="true" />
         </SimplePanel>
-      </page>  
+      </page>
 
       <page>
         <text>=calParameters</text>
@@ -101,11 +104,11 @@
       <page for="Vehicle">
         <text>=transport</text>
         <Table kind="controls" style="border-collapse: collapse; margin-top: 2ex;"
-          cellStyle="padding: 3px; border: 1px solid #ccc;" >
+               cellStyle="padding: 3px; border: 1px solid #ccc;">
           <row>
             <DataSelector source="VehicleNumber" caption="=vehicleNumber" summarize="true" />
             <TextLabel source="Vehicle" caption="=vehicleModel" inline="true"
-              renderColumns="VehicleParentModel VehicleModel" />
+                       renderColumns="VehicleBrand VehicleModel" />
             <TextLabel source="VehicleType" caption="=vehicleType" inline="true" />
           </row>
 
@@ -116,58 +119,61 @@
           </row>
 
           <row>
-            <DateLabel source="VehicleProductionDate" caption="=vehicleProductionDate" inline="true" />
+            <DateLabel source="VehicleProductionDate" caption="=vehicleProductionDate"
+                       inline="true" />
             <TextLabel source="VehicleEngineNumber" caption="=vehicleEngineNumber" inline="true" />
             <TextLabel source="VehicleBodyNumber" caption="=vehicleBodyNumber" inline="true" />
           </row>
 
           <row>
             <IntegerLabel source="VehicleNetto" caption="=vehicleNetto" inline="true"
-              style="width: 100px;" />
+                          style="width: 100px;" />
             <IntegerLabel source="VehicleBrutto" caption="=vehicleBrutto" inline="true"
-              style="width: 100px;" />
+                          style="width: 100px;" />
           </row>
 
           <row>
             <DecimalLabel source="VehiclePower" caption="=vehiclePower" inline="true"
-              style="width: 100px;" />
+                          style="width: 100px;" />
             <IntegerLabel source="VehicleEngineVolume" caption="=vehicleEngineVolume"
-              inline="true" style="width: 100px;" />
+                          inline="true" style="width: 100px;" />
           </row>
 
           <row>
             <TextLabel source="VehicleFuel" caption="=vehicleFuel" inline="true" />
             <DecimalLabel source="VehicleTankCapacity" caption="=vehicleTankCapacity"
-              inline="true" style="width: 100px;" />
+                          inline="true" style="width: 100px;" />
             <IntegerLabel source="VehicleSpeedometer" caption="=vehicleSpeedometer"
-              inline="true" style="width: 100px;" />
+                          inline="true" style="width: 100px;" />
           </row>
 
           <row>
             <cell colSpan="3">
-              <TextLabel source="VehicleNotes" caption="=vehicleNotes" style="white-space: pre-wrap;" />
-            </cell>  
+              <TextLabel source="VehicleNotes" caption="=vehicleNotes"
+                         style="white-space: pre-wrap;" />
+            </cell>
           </row>
         </Table>
       </page>
       <page>
-      <text>=relatedInformation</text>
-      <Relations relColumn="Appointment" inline="true"
-                 defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
+        <text>=relatedInformation</text>
+        <Relations relColumn="Appointment" inline="true"
+                   defaultRelations="Companies Persons Requests Tasks"
+                   style="margin: 0px 15px 0px 15px; min-width:300px;" />
       </page>
     </TabbedPages>
   </FlowPanel>
   <f:rowValidation>
     <ui:function>
       if (!row.StartDateTime || !row.EndDateTime) {
-        return null;
+      return null;
       }
 
       if (row.StartDateTime &lt; row.EndDateTime) {
-        return null;
+      return null;
       } else {
-        return $wnd.Bee_maybeTranslate("=calPlannedEndDateMustBeGreater");
+      return $wnd.Bee_maybeTranslate("=calPlannedEndDateMustBeGreater");
       }
     </ui:function>
   </f:rowValidation>
-</f:Form>  
+</f:Form>

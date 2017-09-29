@@ -16,6 +16,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.Colors;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -69,11 +70,9 @@ public final class OrdersKeeper {
 
     SelectorEvent.register(new OrdersSelectorHandler());
 
-    Global.getParameter(PRM_NOTIFY_ABOUT_DEBTS, input -> {
-      if (BeeUtils.toBoolean(input)) {
-        OrdersObserver.register();
-      }
-    });
+    if (BeeUtils.unbox(Global.getParameterBoolean(PRM_NOTIFY_ABOUT_DEBTS))) {
+      OrdersObserver.register();
+    }
   }
 
   private OrdersKeeper() {
@@ -102,7 +101,7 @@ public final class OrdersKeeper {
     XCell cell;
 
     if (!BeeUtils.isEmpty(caption)) {
-      Exporter.addCaption(sheet, caption, rowIndex++, columnCount);
+      Exporter.addCaption(sheet, caption, TextAlign.LEFT, rowIndex++, columnCount);
       rowIndex++;
     }
 

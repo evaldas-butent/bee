@@ -23,8 +23,6 @@
 
     <SimpleColumn name="Content" />
 
-    <SimpleJoin joinType="LEFT" name="Dimensions">
-      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
-    </SimpleJoin>
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
   </Columns>
 </View>

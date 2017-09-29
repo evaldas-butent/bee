@@ -4,18 +4,30 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 
-public abstract class RowCallback extends RpcCallback<BeeRow> {
+@FunctionalInterface
+public interface RowCallback extends RpcCallback<BeeRow> {
 
-  public static RowCallback refreshView(final String viewName) {
-    return new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow result) {
-        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), viewName);
-      }
-    };
+  static RowCallback refreshRow(String viewName) {
+    return refreshRow(viewName, false);
   }
 
-  public void onCancel() {
+  static RowCallback refreshRow(final String viewName, final boolean refreshChildren) {
+    return result -> RowUpdateEvent.fire(BeeKeeper.getBus(), viewName, result, refreshChildren);
+  }
+
+  static RowCallback refreshView(String viewName) {
+    return refreshView(viewName, null);
+  }
+
+  static RowCallback refreshView(final String viewName, final Long parentId) {
+    return result -> DataChangeEvent.fireRefresh(BeeKeeper.getBus(), viewName, parentId);
+  }
+
+  default void onCancel() {
+  }
+
+  default void onDeny() {
   }
 }

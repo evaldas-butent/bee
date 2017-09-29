@@ -10,7 +10,7 @@
 
     <String name="Content" precision="100" label="=finContent" notNull="true" translatable="true" />
 
-    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
               label="=dimensions" />
   </Fields>
 </Table>

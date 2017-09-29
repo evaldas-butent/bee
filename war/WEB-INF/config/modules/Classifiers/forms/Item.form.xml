@@ -13,7 +13,7 @@
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="Item" viewName="Items" caption="=item"
-        width="820" height="720"
+        width="820" widthUnit="px" height="80" heightUnit="vh"
 >
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls" style="margin-top: 1ex; margin-bottom: 1em;">
@@ -41,10 +41,10 @@
 
       <row>
         <Label for="Type" />
-        <DataSelector source="Type" />
+        <DataSelector source="Type" newRowEnabled="false" />
 
         <Label for="Group" />
-        <DataSelector source="Group" />
+        <DataSelector source="Group" newRowEnabled="false" />
 
         <CheckBox source="Vat" text="=vat" />
         <FlowPanel>
@@ -256,13 +256,11 @@
             <InputDecimal source="Area" style="width: 80px;" summarize="true">
               &foritem;
             </InputDecimal>
+          </row>
 
-            <Label for="PackageUnits" >
-              &foritem;
-            </Label>
-            <InputDecimal source="PackageUnits" style="width: 80px;" summarize="true" >
-              &foritem;
-            </InputDecimal>
+          <row>
+            <Label for="DefaultQuantity" />
+            <InputInteger source="DefaultQuantity" summarize="true" />
           </row>
 
           <row module="Trade.Acts">
@@ -287,15 +285,10 @@
               &forservice;
             </InputInteger>
           </row>
-
-          <row module="Trade">
-            <Label for="DefaultQuantity" />
-            <InputInteger source="DefaultQuantity" style="width: 80px;" summarize="true" />
-          </row>
         </Table>
       </page>
 
-      <page data="Dimensions">
+      <page>
         <text>=dimensions</text>
         <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
       </page>
@@ -313,7 +306,7 @@
       <page>
         <text>=pictures</text>
         <Gallery viewName="ItemGraphics" relColumn="Item" pictureColumn="Picture"
-          orderColumn="Ordinal" summarize="true" />
+                 orderColumn="Ordinal" summarize="true" />
       </page>
 
       <page for="Description">

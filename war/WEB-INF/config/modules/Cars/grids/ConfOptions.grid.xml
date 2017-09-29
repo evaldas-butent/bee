@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-        name="ConfOptions" viewName="ConfOptions" caption="=options"
+        name="ConfOptions" viewName="ConfOptions" caption="=options" editInPlace="true"
 >
   <g:columns>
-    <RelColumn name="Group" renderColumns="TypeName GroupName" />
-    <DataColumn name="OptionName" />
+    <IdColumn name="ID" />
+    <RelColumn name="Type" visible="true" />
+    <RelColumn name="Group" renderColumns="GroupName2 GroupName" visible="true" />
+    <DataColumn name="OptionName" visible="true" />
+    <DataColumn name="OptionName2" visible="false" />
     <DataColumn name="Code" />
+    <DataColumn name="Code2" visible="false" />
+    <DataColumn name="Blocked" />
   </g:columns>
 </g:Grid>

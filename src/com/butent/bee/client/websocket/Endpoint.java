@@ -69,8 +69,6 @@ public final class Endpoint {
   private static WebSocket socket;
   private static String sessionId;
 
-  private static MessageDispatcher dispatcher = new MessageDispatcher();
-
   private static Map<String, Consumer<String>> progressQueue = new HashMap<>();
   private static Map<String, Function<ProgressMessage, Boolean>> progressHandlers = new HashMap<>();
 
@@ -98,7 +96,7 @@ public final class Endpoint {
     }
   }
 
-  public static void enqueuePropgress(final String progressId, Consumer<String> consumer) {
+  public static void enqueueProgress(final String progressId, Consumer<String> consumer) {
     Assert.notEmpty(progressId);
     Assert.notNull(consumer);
 
@@ -168,24 +166,33 @@ public final class Endpoint {
     return false;
   }
 
+  public static String createProgress(String caption, String id) {
+    InlineLabel close = new InlineLabel(String.valueOf(BeeConst.CHAR_TIMES));
+    Thermometer th = new Thermometer(caption, BeeConst.DOUBLE_ONE, close);
+
+    if (!BeeUtils.isEmpty(id)) {
+      th.setId(id);
+    }
+    String progressId = BeeKeeper.getScreen().addProgress(th);
+
+    if (!BeeUtils.isEmpty(progressId)) {
+      close.addClickHandler(ev -> cancelProgress(progressId));
+    }
+    return progressId;
+  }
+
   public static void initProgress(String caption, final Consumer<String> consumer) {
-    final String progressId;
+    String progressId;
 
     if (Endpoint.isOpen()) {
-      InlineLabel close = new InlineLabel(String.valueOf(BeeConst.CHAR_TIMES));
-      Thermometer th = new Thermometer(caption, BeeConst.DOUBLE_ONE, close);
-      progressId = BeeKeeper.getScreen().addProgress(th);
-
-      if (progressId != null) {
-        close.addClickHandler(ev -> cancelProgress(progressId));
-      }
+      progressId = createProgress(caption, null);
     } else {
       progressId = null;
     }
     if (progressId == null) {
       consumer.accept(null);
     } else {
-      enqueuePropgress(progressId, input -> {
+      enqueueProgress(progressId, input -> {
         String progress = progressId;
 
         if (BeeUtils.isEmpty(input)) {
@@ -273,7 +280,8 @@ public final class Endpoint {
       socket.send(data);
 
       if (message.isLoggable()) {
-        logger.info("->", data.length(), message.getType().name().toLowerCase(), message.brief());
+        logger.info(BeeConst.STRING_RIGHT_ARROW, data.length(),
+            message.getType().name().toLowerCase(), message.brief());
       }
     }
   }
@@ -295,7 +303,7 @@ public final class Endpoint {
     }
   }
 
-  static boolean startPropgress(String progressId) {
+  static boolean startProgress(String progressId) {
     if (!progressQueue.isEmpty()) {
       Consumer<String> starter = progressQueue.remove(progressId);
       if (starter != null) {
@@ -347,10 +355,10 @@ public final class Endpoint {
       Message message = Message.decode((String) data);
       if (message != null) {
         if (message.isLoggable()) {
-          logger.info("<-", ((String) data).length(), message.getType().name().toLowerCase(),
-              message.brief());
+          logger.info(BeeConst.STRING_LEFT_ARROW, ((String) data).length(),
+              message.getType().name().toLowerCase(), message.brief());
         }
-        dispatcher.dispatch(message);
+        MessageDispatcher.dispatch(message);
       }
 
     } else if (data == null) {

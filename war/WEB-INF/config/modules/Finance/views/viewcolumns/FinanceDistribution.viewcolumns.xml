@@ -21,9 +21,7 @@
 
   <SimpleColumn name="Percent" />
 
-  <SimpleJoin joinType="LEFT" name="Dimensions">
-    <xi:include href="../../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
-  </SimpleJoin>
+  <xi:include href="../../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
 
   <SimpleColumn name="DebitReplacement" />
   <SimpleJoin joinType="LEFT" name="DebitReplacement">

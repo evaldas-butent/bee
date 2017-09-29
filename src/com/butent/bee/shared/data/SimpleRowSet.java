@@ -22,10 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Enables storing data in hash map type structure.
- */
-
 public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
 
   public final class SimpleRow {
@@ -131,6 +127,14 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
       return getRowSet().hasColumn(colName);
     }
 
+    public boolean isNull(String colName) {
+      return getValue(colName) == null;
+    }
+
+    public boolean isTrue(String colName) {
+      return BeeUtils.isTrue(getBoolean(colName));
+    }
+
     public void setValue(int colIndex, String value) {
       getRowSet().setValue(rowIndex, colIndex, value);
     }
@@ -162,29 +166,8 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
     }
   }
 
-  /**
-   * Contains a list of items for serialization.
-   */
-
   private enum Serial {
     COLUMN_NAMES, COLUMNS, ROWS
-  }
-
-  public static SimpleRowSet getIfPresent(Map<String, String> map, String key) {
-    if (BeeUtils.containsKey(map, key)) {
-      return restore(map.get(key));
-    } else {
-      return null;
-    }
-  }
-
-  public static SimpleRowSet restore(String s) {
-    if (BeeUtils.isEmpty(s)) {
-      return null;
-    }
-    SimpleRowSet rs = new SimpleRowSet();
-    rs.deserialize(s);
-    return rs;
   }
 
   private String[] columnNames = new String[0];
@@ -228,18 +211,11 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
   }
 
   @Override
-  public void deserialize(String s) {
+  public void deserialize(String data) {
     Assert.isTrue(getNumberOfColumns() == 0);
 
-    String[] arr = Codec.beeDeserializeCollection(s);
-    Serial[] members = Serial.values();
-    Assert.lengthEquals(arr, members.length);
-
-    for (int i = 0; i < members.length; i++) {
-      Serial member = members[i];
-      String value = arr[i];
-
-      switch (member) {
+    processMembers(Serial.class, data, (serial, value) -> {
+      switch (serial) {
         case COLUMN_NAMES:
           columnNames = Codec.beeDeserializeCollection(value);
           break;
@@ -267,7 +243,7 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
           }
           break;
       }
-    }
+    });
   }
 
   public Boolean getBoolean(int rowIndex, int colIndex) {
@@ -321,8 +297,7 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
 
   public JustDate getDate(int rowIndex, int colIndex) {
     Long value = getLong(rowIndex, colIndex);
-    return (value == null)
-        ? null : TimeUtils.toDateOrNull(BeeUtils.toString(value / TimeUtils.MILLIS_PER_DAY));
+    return (value == null) ? null : new JustDate(JustDate.readDays(value));
   }
 
   public JustDate getDate(int rowIndex, String colName) {
@@ -411,6 +386,14 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
 
   public <E extends Enum<?>> E getEnum(int rowIndex, String colName, Class<E> clazz) {
     return getEnum(rowIndex, getColumnIndex(colName), clazz);
+  }
+
+  public static SimpleRowSet getIfPresent(Map<String, String> map, String key) {
+    if (BeeUtils.containsKey(map, key)) {
+      return restore(map.get(key));
+    } else {
+      return null;
+    }
   }
 
   public Integer getInt(int rowIndex, int colIndex) {
@@ -519,50 +502,47 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
     return new RowSetIterator();
   }
 
-  public boolean removeColumn(String colName) {
+  public void removeColumn(String colName) {
     if (BeeUtils.isEmpty(colName)) {
-      return false;
+      return;
     }
-
     String key = colName.toLowerCase();
     if (!columns.containsKey(key)) {
-      return false;
+      return;
     }
-
     int index = columns.remove(key);
     columnNames = ArrayUtils.remove(columnNames, index);
 
     for (int i = 0; i < rows.size(); i++) {
       rows.set(i, ArrayUtils.remove(rows.get(i), index));
     }
-
     indexes = null;
+  }
 
-    return true;
+  public static SimpleRowSet restore(String data) {
+    return BeeSerializable.restore(data, SimpleRowSet::new);
   }
 
   @Override
   public String serialize() {
-    Serial[] members = Serial.values();
-    Object[] arr = new Object[members.length];
-    int i = 0;
+    return serializeMembers(Serial.class, serial -> {
+      Object value = null;
 
-    for (Serial member : members) {
-      switch (member) {
+      switch (serial) {
         case COLUMN_NAMES:
-          arr[i++] = columnNames;
+          value = columnNames;
           break;
 
         case COLUMNS:
-          arr[i++] = columns;
+          value = columns;
           break;
 
         case ROWS:
-          arr[i++] = rows;
+          value = rows;
           break;
       }
-    }
-    return Codec.beeSerialize(arr);
+      return value;
+    });
   }
 
   public void setValue(int rowIndex, int colIndex, String value) {

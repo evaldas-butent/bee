@@ -1,31 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY inline "display: inline-block;">
-  <!ENTITY lbl "text-align: right; padding: 0 10px 0 30px;">
-  <!ENTITY lbl4 "padding: 10px 10px 0 10px; min-width: 115px; text-align: right;">
-  <!ENTITY inp "&inline; width: 205px;">
-  <!ENTITY inpCountry "&inline; width: 178px;">
-  <!ENTITY l1 "&inline; margin: 10px 10px 0 10px; min-width: 115px; text-align: right;">
-  <!ENTITY flow "&inline; min-width: 340px;">
-  <!ENTITY form "Person">
-]>
+    <!ENTITY inline "display: inline-block;">
+    <!ENTITY lbl "text-align: right; padding: 0 10px 0 30px;">
+    <!ENTITY lbl4 "padding: 10px 10px 0 10px; min-width: 115px; text-align: right;">
+    <!ENTITY inp "&inline; width: 205px;">
+    <!ENTITY inpCountry "&inline; width: 178px;">
+    <!ENTITY l1 "&inline; margin: 10px 10px 0 10px; min-width: 115px; text-align: right;">
+    <!ENTITY flow "&inline; min-width: 340px;">
+    <!ENTITY form "Person">
+    ]>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
 
-  name="&form;" viewName="Persons" caption="=person" width="800" height="600"
-  favorite="FirstName LastName"
-  >
+        name="&form;" viewName="Persons" caption="=person" width="800" height="600"
+        favorite="FirstName LastName"
+>
   <FlowPanel class="flexBox-vertical">
     <css id="&form;">
       .&form;-input{
-        width: 885px;
+      width: 885px;
       }
       .&form;-table td .bee-InputText,
       .&form;-table td .bee-MultiSelector-container{
-        width: 100%;
-        min-width: 200px;
+      width: 100%;
+      min-width: 200px;
       }
     </css>
     <FlowPanel style="overflow:scroll;">
@@ -33,7 +32,7 @@
         <row>
           <cell rowSpan="4">
             <Image name="PhotoImg"
-              style="max-height: 100px; max-width: 100px; border: 1px dashed silver; cursor: default;" />
+                   style="max-height: 100px; max-width: 100px; border: 1px dashed silver; cursor: default;" />
           </cell>
           <Label text="=firstName" style="&lbl;" class="bee-required" />
           <InputText source="FirstName" style="width: 135px;" />
@@ -45,13 +44,13 @@
           <HorizontalPanel>
             <Label text="=photo" horizontalAlignment="right" />
             <FileCollector name="PhotoFile"
-              editableColumns="none" accept="image/*">
+                           editableColumns="none" accept="image/*">
               <face resource="attachment" />
             </FileCollector>
           </HorizontalPanel>
           <cell colSpan="2">
             <FlowPanel class="flexBox-horizontal"
-              style="font-style:italic; font-size: smaller;">
+                       style="font-style:italic; font-size: smaller;">
               <Image name="unsetPhoto" resource="silverMinus" />
               <Label html="(" style="margin-left: 8px;" />
               <Label text="=allowPhotoSize" style="text-transform: lowercase; " />
@@ -64,28 +63,30 @@
       <Disclosure open="false">
         <Label text="=otherInfo" style="text-transform: uppercase; " />
         <FlowPanel style="padding-bottom: 40px;">
-        <FlowPanel style="&flow;">
-          <Label text="=phone" for="Phone" style="&l1;" />
-          <InputText style="&inp;" source="Phone" />
-        </FlowPanel>
-        <FlowPanel style="&flow;">
-          <Label for="Mobile" style="&l1;" />
-          <InputText style="&inp;" source="Mobile" />
-        </FlowPanel>
-        <FlowPanel style="&flow;">
-          <Label for="EmailId" style="&l1;" />
-          <DataSelector style="&inp;" source="EmailId"
-            maxLength="50" />
-        </FlowPanel>
+          <FlowPanel style="&flow;">
+            <Label text="=phone" for="Phone" style="&l1;" />
+            <InputText style="&inp;" source="Phone" />
+          </FlowPanel>
+          <FlowPanel style="&flow;">
+            <Label for="Mobile" style="&l1;" />
+            <InputText style="&inp;" source="Mobile" />
+          </FlowPanel>
+          <FlowPanel style="&flow;">
+            <Label for="EmailId" style="&l1;" />
+            <DataSelector style="&inp;" source="EmailId"
+                          maxLength="50" />
+          </FlowPanel>
           <Table kind="controls" class="&form;-table">
-          <col index="0" cellStyle="&lbl4;" />
-          <col index="1" class="&form;-input" />
-            <row>
-              <Label text="=mailRecipientsGroups" />
+            <col index="0" cellStyle="&lbl4;" />
+            <col index="1" class="&form;-input" />
+            <row data="RcpsGroupsContacts" listName="RcpsGroupsContacts">
+              <Label text="=mailRecipientsGroups" listName="RcpsGroupsContacts" />
               <ChildSelector viewName="RecipientsGroups" childTable="RcpsGroupsContacts"
-                  targetRelColumn="Person" sourceRelColumn="RecipientsGroup" renderColumns="GroupName"
-                  choiceColumns="GroupName" label="=mailRecipientsGroups" summarize="true"
-                  filter="Creator {u} or Visibility = 0" />
+                             targetRelColumn="Person" sourceRelColumn="RecipientsGroup"
+                             renderColumns="GroupName"
+                             choiceColumns="GroupName" label="=mailRecipientsGroups"
+                             summarize="true"
+                             filter="Creator {u} or Visibility = 0" />
             </row>
             <row for="Address">
               <Label for="Address" />
@@ -104,12 +105,12 @@
           </FlowPanel>
           <FlowPanel style="&flow;">
             <Label text="=country" style="&l1;"
-                for="Country" />
+                   for="Country" />
             <FlowPanel for="Country" style="&inline;">
               <DataSelector source="Country" style="&inpCountry;">
                 <renderToken source="CountryName" />
                 <renderToken source="CountryCode" prefix=" ("
-                  suffix=")" />
+                             suffix=")" />
                 <selectorColumn source="Name" />
                 <selectorColumn source="Code">
                   <ui:renderer type="flag" />
@@ -120,58 +121,58 @@
           </FlowPanel>
           <FlowPanel style="&flow;">
             <Label text="=postIndex" style="&l1;"
-              for="PostIndex" />
+                   for="PostIndex" />
             <InputText source="PostIndex" style="&inp;" />
           </FlowPanel>
           <FlowPanel>
-          <FlowPanel style="&flow;">
-            <Label text="=website" style="&l1;" for="Website" />
-            <InputText source="Website" style="&inp;" />
+            <FlowPanel style="&flow;">
+              <Label text="=website" style="&l1;" for="Website" />
+              <InputText source="Website" style="&inp;" />
+            </FlowPanel>
+            <FlowPanel style="&flow;">
+              <Label for="SocialContacts" style="&l1;" />
+              <InputText source="SocialContacts" style="&inp;" />
+            </FlowPanel>
+            <FlowPanel style="&flow;">
+              <Label for="DateOfBirth" style="&l1;" />
+              <InputDate source="DateOfBirth" style="&inp;" minValue="1900" />
+            </FlowPanel>
           </FlowPanel>
-          <FlowPanel style="&flow;">
-            <Label for="SocialContacts" style="&l1;" />
-            <InputText source="SocialContacts" style="&inp;" />
-          </FlowPanel>
-          <FlowPanel  style="&flow;">
-            <Label for="DateOfBirth" style="&l1;" />
-            <InputDate source="DateOfBirth" style="&inp;"
-              minValue="1900" maxValue="2000" />
-          </FlowPanel>
-          </FlowPanel>
-          </FlowPanel>
+        </FlowPanel>
       </Disclosure>
 
       <Disclosure open="false">
         <Label text="=contactFamily" style="text-transform: uppercase; " />
         <FlowPanel>
-          <ChildGrid name="PersonFamily" relColumn="Person" style="min-height: 250px;"/>
+          <ChildGrid name="PersonFamily" relColumn="Person" style="min-height: 250px;" />
         </FlowPanel>
       </Disclosure>
     </FlowPanel>
-    
-      <TabbedPages class="flexible" style="margin-top: 1ex;">
-        <page for="CompanyPersons">
-          <text>=personCompanies</text>
-          <ChildGrid name="CompanyPersons" relColumn="Person" />
-        </page>
 
-        <page module="Documents" data="RelatedDocuments" for="Person">
-          <text>=documents</text>
-          <ChildGrid name="RelatedDocuments" relColumn="Person" />
-        </page>
+    <TabbedPages class="flexible" style="margin-top: 1ex;">
+      <page for="CompanyPersons">
+        <text>=personCompanies</text>
+        <ChildGrid name="CompanyPersons" relColumn="Person" />
+      </page>
 
-        <page for="Notes">
-          <text>=notes</text>
-          <SimplePanel>
-            <InputArea source="Notes" class="occupy-1"
-              summarize="true" />
-          </SimplePanel>
-        </page>
-        <page>
+      <page module="Documents" data="RelatedDocuments" for="Person">
+        <text>=documents</text>
+        <ChildGrid name="RelatedDocuments" relColumn="Person" />
+      </page>
+
+      <page for="Notes">
+        <text>=notes</text>
+        <SimplePanel>
+          <InputArea source="Notes" class="occupy-1"
+                     summarize="true" />
+        </SimplePanel>
+      </page>
+      <page>
         <text>=relatedInformation</text>
         <Relations relColumn="Person" inline="true"
-                   defaultRelations="Companies Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
-        </page>
-      </TabbedPages>
-    </FlowPanel>
+                   defaultRelations="Companies Requests Tasks"
+                   style="margin: 0px 15px 0px 15px; min-width:300px;" />
+      </page>
+    </TabbedPages>
+  </FlowPanel>
 </f:Form>

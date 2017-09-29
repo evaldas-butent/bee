@@ -1,7 +1,14 @@
 package com.butent.bee.shared.modules.cars;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_FILE_HASH;
+import static com.butent.bee.shared.modules.cars.CarsConstants.*;
+
+import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -18,9 +25,48 @@ public class Option implements BeeSerializable, Comparable<Option> {
   private Dimension dimension;
   private String code;
   private String description;
-  private Long photo;
+  private String photo;
 
-  public Option(long id, String name, Dimension dimension) {
+  public Option(IsRow isRow) {
+    this(isRow.getId(),
+        BeeUtils.notEmpty(Data.getString(TBL_CONF_OPTIONS, isRow, COL_OPTION_NAME2),
+            Data.getString(TBL_CONF_OPTIONS, isRow, COL_OPTION_NAME)),
+        new Dimension(Data.getLong(TBL_CONF_OPTIONS, isRow, COL_GROUP),
+            BeeUtils.notEmpty(Data.getString(TBL_CONF_OPTIONS, isRow, COL_GROUP_NAME2),
+                Data.getString(TBL_CONF_OPTIONS, isRow, COL_GROUP_NAME))));
+
+    setCode(BeeUtils.join("", Data.getString(TBL_CONF_OPTIONS, isRow, COL_CODE),
+        BeeUtils.parenthesize(Data.getString(TBL_CONF_OPTIONS, isRow, COL_CODE2))));
+  }
+
+  public Option(SimpleRowSet.SimpleRow simpleRow) {
+    this(simpleRow.getLong(COL_OPTION), simpleRow.hasColumn(COL_OPTION_NAME2)
+            ? BeeUtils.notEmpty(simpleRow.getValue(COL_OPTION_NAME2),
+        simpleRow.getValue(COL_OPTION_NAME)) : simpleRow.getValue(COL_OPTION_NAME),
+        new Dimension(simpleRow.getLong(CarsConstants.COL_GROUP),
+            simpleRow.hasColumn(COL_GROUP_NAME2)
+                ? BeeUtils.notEmpty(simpleRow.getValue(COL_GROUP_NAME2),
+                simpleRow.getValue(CarsConstants.COL_GROUP_NAME))
+                : simpleRow.getValue(CarsConstants.COL_GROUP_NAME)));
+
+    if (simpleRow.hasColumn(COL_REQUIRED)) {
+      getDimension().setRequired(simpleRow.getBoolean(COL_REQUIRED));
+    }
+    if (simpleRow.hasColumn(COL_CODE)) {
+      setCode(simpleRow.getValue(COL_CODE));
+    }
+    if (simpleRow.hasColumn(COL_CODE2)) {
+      setCode(BeeUtils.join("", getCode(), BeeUtils.parenthesize(simpleRow.getValue(COL_CODE2))));
+    }
+    if (simpleRow.hasColumn(COL_DESCRIPTION)) {
+      setDescription(simpleRow.getValue(COL_DESCRIPTION));
+    }
+    if (simpleRow.hasColumn(COL_FILE_HASH)) {
+      setPhoto(simpleRow.getValue(COL_FILE_HASH));
+    }
+  }
+
+  private Option(long id, String name, Dimension dimension) {
     this.id = id;
     this.name = Assert.notEmpty(name);
     this.dimension = Assert.notNull(dimension);
@@ -31,8 +77,13 @@ public class Option implements BeeSerializable, Comparable<Option> {
 
   @Override
   public int compareTo(Option o) {
-    int order = o == null ? 1 : getDimension().compareTo(o.getDimension());
-    return order == 0 ? name.compareTo(o.name) : order;
+    int order = BeeUtils.compareNullsFirst(getDimension(),
+        Objects.nonNull(o) ? o.getDimension() : null);
+
+    if (order == BeeConst.COMPARE_EQUAL) {
+      order = BeeUtils.compareNullsFirst(name, o.name);
+    }
+    return order == BeeConst.COMPARE_EQUAL ? BeeUtils.compareNullsFirst(id, o.id) : order;
   }
 
   @Override
@@ -62,7 +113,7 @@ public class Option implements BeeSerializable, Comparable<Option> {
           this.description = value;
           break;
         case PHOTO:
-          this.photo = BeeUtils.toLongOrNull(value);
+          this.photo = value;
           break;
       }
     }
@@ -99,7 +150,7 @@ public class Option implements BeeSerializable, Comparable<Option> {
     return name;
   }
 
-  public Long getPhoto() {
+  public String getPhoto() {
     return photo;
   }
 
@@ -148,18 +199,18 @@ public class Option implements BeeSerializable, Comparable<Option> {
     return Codec.beeSerialize(arr);
   }
 
-  public Option setCode(String c) {
+  private Option setCode(String c) {
     this.code = c;
     return this;
   }
 
-  public Option setDescription(String descr) {
+  private Option setDescription(String descr) {
     this.description = descr;
     return this;
   }
 
-  public Option setPhoto(Long ph) {
-    this.photo = ph;
+  private Option setPhoto(String newPhoto) {
+    this.photo = newPhoto;
     return this;
   }
 

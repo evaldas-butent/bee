@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+
+        name="CarJob" caption="=serviceJob"
+>
+  <FlowPanel class="flexBox-vertical">
+    <Table kind="controls">
+      <col index="0" kind="label" />
+      <col index="2" kind="label" />
+      <row>
+        <Label for="Item" />
+        <DataSelector source="Item" viewName="CarItems" choiceColumns="Name Article"
+                      renderColumns="ItemName" newRowEnabled="false" filter="IsService"
+                      caching="none" />
+
+        <Label for="Article" />
+        <TextLabel source="Article" />
+      </row>
+      <row>
+        <Label for="Duration" />
+        <InputTime source="Duration" step="5" />
+
+        <Label for="Price" />
+        <InputDecimal source="Price" currencySource="Currency" scale="2" />
+        <DataSelector source="Currency" for="Price" newRowEnabled="false" editEnabled="false"
+                      style="width:50px;" placeholder="=currencyShort" />
+      </row>
+      <row>
+        <Label for="JobGroup" />
+        <DataSelector source="JobGroup" />
+      </row>
+    </Table>
+    <br />
+    <ChildGrid class="flexible" name="CarJobModels" relColumn="Job" />
+  </FlowPanel>
+</f:Form>

@@ -5,7 +5,6 @@ import com.google.common.collect.Sets;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -19,24 +18,25 @@ final class TruckTimeBoard extends VehicleTimeBoard {
 
   static final String SUPPLIER_KEY = "truck_time_board";
   private static final String DATA_SERVICE = SVC_GET_TRUCK_TB_DATA;
+  private static final String FILTER_DATA_SERVICE = SVC_GET_TRUCK_TB_FILTER_DATA;
 
   private static final Set<String> SETTINGS_COLUMNS_TRIGGERING_REFRESH =
       Sets.newHashSet(COL_TRUCK_MIN_DATE, COL_TRUCK_MAX_DATE,
-          COL_TRUCK_TRANSPORT_GROUPS, COL_TRUCK_COMPLETED_TRIPS);
+          COL_TRUCK_TRANSPORT_GROUPS, COL_TRUCK_COMPLETED_TRIPS, COL_FILTER_DEPENDS_ON_DATA);
 
   static void open(final ViewCallback callback) {
-    BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(DATA_SERVICE),
-        new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            TruckTimeBoard ttb = new TruckTimeBoard();
-            ttb.onCreate(response, callback);
+    BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(SVC_GET_SETTINGS),
+        settingsResponse -> {
+          if (!settingsResponse.hasErrors()) {
+            TruckTimeBoard ttb = new TruckTimeBoard(settingsResponse);
+
+            ttb.requestData(response -> ttb.onCreate(response, callback));
           }
         });
   }
 
-  private TruckTimeBoard() {
-    super();
+  private TruckTimeBoard(ResponseObject settingsResponse) {
+    super(settingsResponse);
   }
 
   @Override
@@ -86,6 +86,11 @@ final class TruckTimeBoard extends VehicleTimeBoard {
   }
 
   @Override
+  protected String getFilterService() {
+    return FILTER_DATA_SERVICE;
+  }
+
+  @Override
   protected String getFooterHeightColumnName() {
     return COL_TRUCK_FOOTER_HEIGHT;
   }
@@ -111,6 +116,16 @@ final class TruckTimeBoard extends VehicleTimeBoard {
   }
 
   @Override
+  protected String getRefreshLocalChangesColumnName() {
+    return COL_TRUCK_REFRESH_LOCAL_CHANGES;
+  }
+
+  @Override
+  protected String getRefreshRemoteChangesColumnName() {
+    return COL_TRUCK_REFRESH_REMOTE_CHANGES;
+  }
+
+  @Override
   protected String getRowHeightColumnName() {
     return COL_TRUCK_PIXELS_PER_ROW;
   }
@@ -128,6 +143,16 @@ final class TruckTimeBoard extends VehicleTimeBoard {
   @Override
   protected String getSettingsFormName() {
     return FORM_TRUCK_SETTINGS;
+  }
+
+  @Override
+  protected String getSettingsMaxDate() {
+    return COL_TRUCK_MAX_DATE;
+  }
+
+  @Override
+  protected String getSettingsMinDate() {
+    return COL_TRUCK_MIN_DATE;
   }
 
   @Override

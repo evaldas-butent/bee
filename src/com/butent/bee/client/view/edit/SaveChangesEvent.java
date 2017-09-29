@@ -28,6 +28,7 @@ public final class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> i
 
   public static SaveChangesEvent create(IsRow oldRow, IsRow newRow, List<BeeColumn> dataColumns,
       Collection<RowChildren> children, RowCallback callback) {
+
     List<BeeColumn> columns = new ArrayList<>();
     List<String> oldValues = new ArrayList<>();
     List<String> newValues = new ArrayList<>();
@@ -81,7 +82,9 @@ public final class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> i
   private SaveChangesEvent(IsRow oldRow, IsRow newRow, List<BeeColumn> columns,
       List<String> oldValues, List<String> newValues, Collection<RowChildren> children,
       RowCallback callback) {
+
     super();
+
     this.oldRow = oldRow;
     this.newRow = newRow;
     this.columns = columns;

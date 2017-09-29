@@ -12,7 +12,7 @@
     <IdColumn name="Id" visible="false" />
     <DataColumn name="Name" visible="true" />
 
-    <RelColumn name="CompanyType" />
+    <RelColumn name="CompanyType" renderColumns="TypeName"/>
     <RelColumn name="CompanyGroup" filterSupplier="value" />
     <RelColumn name="CompanyPriority" />
     <DataColumn name="Code" />
@@ -46,6 +46,8 @@
     <DataColumn name="DiscountPercent" visible="false" />
     <DataColumn name="DiscountParent" renderColumns="DiscountParentName" visible="false" />
     <DataColumn name="PriceName" visible="false" />
+
+    <PropColumn name="Activity" type="string"  caption="=companyActivities" filterSupplier="custom" filterOptions="company_activities"/>
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />

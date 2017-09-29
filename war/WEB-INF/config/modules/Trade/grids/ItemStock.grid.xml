@@ -12,14 +12,15 @@
 
     <DataColumn name="Date" />
     <DataColumn name="SupplierName" flexGrow="1" />
+    <DataColumn name="CustomerName" flexGrow="1" />
 
     <DataColumn name="Article" flexGrow="1" />
 
-    <DataColumn name="WarehouseCode" label="=warehouse" editPopup="true">
+    <DataColumn name="WarehouseCode" label="=warehouse" editEnabled="true">
       <footer text="=totalOf" horizontalAlignment="right" />
     </DataColumn>
 
-    <DataColumn name="Quantity" scale="0" visible="true">
+    <DataColumn name="Quantity" visible="true">
       <footer aggregate="sum" />
     </DataColumn>
 
@@ -33,9 +34,13 @@
       <footer aggregate="sum" scale="2" />
     </CalcColumn>
 
-    <DataColumn name="PrimaryDocumentItem" visible="false" />
-    <DataColumn name="PrimaryDocument" editSource="PrimaryDocument" editViewName="TradeDocuments" />
+    <DataColumn name="AccountCode" label="=account" horizontalAlignment="center"
+                backgroundSource="AccountBackground" foregroundSource="AccountForeground" />
 
-    <DataColumn name="PrimaryDate" />
+    <DataColumn name="PrimaryDocumentItem" visible="false" />
+    <DataColumn name="PrimaryDocument" editSource="PrimaryDocument" editViewName="TradeDocuments"
+                visible="false" />
+
+    <DataColumn name="PrimaryDate" visible="false" />
   </g:columns>
 </g:Grid>

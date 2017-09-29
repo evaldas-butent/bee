@@ -2,8 +2,6 @@ package com.butent.bee.client.modules.projects;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
@@ -14,7 +12,6 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.eventsboard.EventsBoard;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InternalLink;
@@ -153,15 +150,8 @@ class ProjectEventsHandler extends EventsBoard {
               InternalLink link =
                   new InternalLink(BeeUtils.joinWords(columnLabel, oldChanges
                       .get(PROP_DOCUMENT_LINK)));
-              link.addClickHandler(new ClickHandler() {
-
-                @Override
-                public void onClick(ClickEvent arg0) {
-                  RowEditor.open(DocumentConstants.VIEW_DOCUMENTS, BeeUtils.toLongOrNull(oldChanges
-                      .get(col)),
-                      Opener.NEW_TAB);
-                }
-              });
+              link.addClickHandler(arg0 -> RowEditor.open(DocumentConstants.VIEW_DOCUMENTS,
+                  BeeUtils.toLongOrNull(oldChanges.get(col))));
 
               links.add(link);
               continue;
@@ -177,15 +167,8 @@ class ProjectEventsHandler extends EventsBoard {
               link =
                   new InternalLink(BeeUtils.joinWords(columnLabel, oldChanges
                       .get(col)));
-              link.addClickHandler(new ClickHandler() {
-
-                @Override
-                public void onClick(ClickEvent arg0) {
-                  RowEditor.open(VIEW_PROJECT_INVOICES, BeeUtils.toLongOrNull(oldChanges
-                      .get(col)),
-                      Opener.NEW_TAB);
-                }
-              });
+              link.addClickHandler(arg0 -> RowEditor.open(VIEW_PROJECT_INVOICES,
+                  BeeUtils.toLongOrNull(oldChanges.get(col))));
 
               links.add(link);
               continue;

@@ -1,15 +1,14 @@
 package com.butent.bee.server.modules.documents;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
-import static com.butent.bee.shared.html.builder.Factory.td;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_CATEGORY_NAME;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.server.Invocation;
 import com.butent.bee.server.communication.ChatBean;
@@ -25,18 +24,20 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
-import com.butent.bee.server.modules.administration.ExtensionIcons;
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.classifiers.TimerBuilder;
 import com.butent.bee.server.modules.mail.MailModuleBean;
+import com.butent.bee.server.modules.tasks.TasksModuleBean;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
-import com.butent.bee.server.sql.IsFrom;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -53,6 +54,8 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.html.Tags;
@@ -60,12 +63,16 @@ import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.Element;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Tbody;
+import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
 import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.i18n.Formatter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RegulatedWidget;
@@ -81,9 +88,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.annotation.Resource;
@@ -117,6 +126,10 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
   MailModuleBean mail;
   @EJB
   ChatBean chat;
+  @EJB
+  ParamHolderBean prm;
+  @EJB
+  TasksModuleBean tmb;
 
   @Resource
   TimerService timerService;
@@ -132,7 +145,8 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
 
     result.addAll(qs.getSearchResults(VIEW_DOCUMENT_FILES,
         Filter.anyContains(Sets.newHashSet(AdministrationConstants.ALS_FILE_NAME,
-            COL_FILE_CAPTION, COL_FILE_DESCRIPTION, COL_FILE_COMMENT), query)));
+            AdministrationConstants.COL_FILE_CAPTION, COL_FILE_DESCRIPTION, COL_FILE_COMMENT),
+            query)));
 
     return result;
 
@@ -191,48 +205,6 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
   @Override
   public void init() {
     sys.registerDataEventHandler(new DataEventHandler() {
-      @Subscribe
-      @AllowConcurrentEvents
-      public void applyDocumentRights(ViewQueryEvent event) {
-        if (event.isTarget(TBL_DOCUMENTS, VIEW_RELATED_DOCUMENTS) && !usr.isAdministrator()) {
-          if (event.isBefore()) {
-            SqlSelect query = event.getQuery();
-            String tableAlias = null;
-
-            for (IsFrom from : query.getFrom()) {
-              if (from.getSource() instanceof String
-                  && BeeUtils.same((String) from.getSource(), TBL_DOCUMENT_TREE)) {
-                tableAlias = BeeUtils.notEmpty(from.getAlias(), TBL_DOCUMENT_TREE);
-                break;
-              }
-            }
-            if (!BeeUtils.isEmpty(tableAlias)) {
-              sys.filterVisibleState(query, TBL_DOCUMENT_TREE, tableAlias);
-            }
-          } else {
-            BeeRowSet rs = event.getRowset();
-            int categoryIdx = rs.getColumnIndex(COL_DOCUMENT_CATEGORY);
-            List<Long> categories = new ArrayList<>();
-
-            if (BeeUtils.isNonNegative(categoryIdx)) {
-              for (Long category : rs.getDistinctLongs(categoryIdx)) {
-                categories.add(category);
-              }
-            }
-            if (!BeeUtils.isEmpty(categories)) {
-              BeeRowSet catRs = qs.getViewData(TBL_DOCUMENT_TREE, Filter.idIn(categories), null,
-                  Lists.newArrayList(COL_DOCUMENT_CATEGORY + COL_CATEGORY_NAME));
-
-              for (BeeRow row : rs) {
-                IsRow catRow = catRs.getRowById(row.getLong(categoryIdx));
-                row.setEditable(catRow.isEditable());
-                row.setRemovable(catRow.isRemovable());
-              }
-            }
-          }
-        }
-      }
-
       @Subscribe
       @AllowConcurrentEvents
       public void fillDocumentNumber(ViewInsertEvent event) {
@@ -330,11 +302,7 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
       @Subscribe
       @AllowConcurrentEvents
       public void setRowProperties(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_DOCUMENT_FILES)) {
-          ExtensionIcons.setIcons(event.getRowset(), AdministrationConstants.ALS_FILE_NAME,
-              AdministrationConstants.PROP_ICON);
-
-        } else if (event.isAfter(VIEW_DOCUMENT_TEMPLATES)) {
+        if (event.isAfter(VIEW_DOCUMENT_TEMPLATES)) {
           Map<Long, IsRow> indexedRows = new HashMap<>();
           BeeRowSet rowSet = event.getRowset();
           int idx = rowSet.getColumnIndex(COL_DOCUMENT_DATA);
@@ -437,18 +405,38 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
           if (event instanceof DataEvent.ViewUpdateEvent) {
             DataEvent.ViewUpdateEvent ev = (DataEvent.ViewUpdateEvent) event;
             if (DataUtils.contains(ev.getColumns(), COL_DOCUMENT_EXPIRES)) {
+              createUpdateDocumentReminder(ev.getRow().getId(), ev.getRow().getDateTime(
+                  DataUtils.getColumnIndex(COL_DOCUMENT_EXPIRES, ev.getColumns())), true);
+
               createOrUpdateTimers(TIMER_REMIND_DOCUMENT_END, TBL_DOCUMENTS, ev.getRow().getId());
             }
           } else if (event instanceof DataEvent.ViewDeleteEvent) {
             for (long id : ((DataEvent.ViewDeleteEvent) event).getIds()) {
+              deleteDocumentReminder(id);
+
               createOrUpdateTimers(TIMER_REMIND_DOCUMENT_END, TBL_DOCUMENTS, id);
             }
           } else if (event instanceof DataEvent.ViewInsertEvent) {
             DataEvent.ViewInsertEvent ev = (DataEvent.ViewInsertEvent) event;
             if (DataUtils.contains(ev.getColumns(), COL_DOCUMENT_EXPIRES)) {
+              createUpdateDocumentReminder(ev.getRow().getId(), ev.getRow().getDateTime(
+                  DataUtils.getColumnIndex(COL_DOCUMENT_EXPIRES, ev.getColumns())), false);
+
               createOrUpdateTimers(TIMER_REMIND_DOCUMENT_END, TBL_DOCUMENTS,
                   ((DataEvent.ViewInsertEvent) event).getRow().getId());
             }
+          }
+        } else if (event.isAfter(VIEW_DOCUMENT_REMINDERS)) {
+          if (event instanceof DataEvent.ViewUpdateEvent) {
+            DataEvent.ViewUpdateEvent ev = (DataEvent.ViewUpdateEvent) event;
+            if (DataUtils.contains(ev.getColumns(), COL_DOCUMENT_REMINDER_DATE)
+                || DataUtils.contains(ev.getColumns(), COL_DOCUMENT_REMINDER_ACTIVE)) {
+              createOrUpdateTimers(TIMER_REMIND_DOCUMENT_END, VIEW_DOCUMENT_REMINDERS,
+                  ev.getRow().getId());
+            }
+          } else if (event instanceof DataEvent.ViewInsertEvent) {
+            createOrUpdateTimers(TIMER_REMIND_DOCUMENT_END, VIEW_DOCUMENT_REMINDERS,
+                ((DataEvent.ViewInsertEvent) event).getRow().getId());
           }
         }
       }
@@ -478,7 +466,7 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
               .addFromInner(TBL_DOCUMENT_TREE,
                   sysBean.joinTables(TBL_DOCUMENT_TREE, TBL_DOCUMENTS, COL_DOCUMENT_CATEGORY));
 
-          sysBean.filterVisibleState(query, TBL_DOCUMENT_TREE);
+          sysBean.filterVisibleState(query, TBL_DOCUMENT_TREE, null);
         }
         return query;
       }
@@ -486,6 +474,87 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
 
     buildTimers(TIMER_REMIND_DOCUMENT_END);
 
+  }
+
+  private DateTime calculateTimerTime(boolean userDate, DateTime dateTime) {
+    Integer percentExpired = prm.getInteger(TaskConstants.PRM_SUMMARY_EXPIRED_TASK_PERCENT);
+    DateTime timerTime = null;
+
+    if (dateTime != null) {
+      if (userDate) {
+        timerTime = dateTime;
+      } else if (BeeUtils.isPositive(percentExpired)) {
+        long now = System.currentTimeMillis();
+        long expDate = dateTime.getTime();
+
+        if ((expDate - now) > TimeUtils.MILLIS_PER_DAY) {
+          long diff = (now - expDate) * percentExpired / 100 / TimeUtils.MILLIS_PER_DAY;
+          int days = BeeUtils.ceil(diff) < 0 ? Math.abs(BeeUtils.ceil(diff)) : 0;
+
+          if (days > 0) {
+            TimeUtils.addDay(dateTime, -days);
+            long startHours = BeeUtils.unbox(prm.getTime(TaskConstants.PRM_START_OF_WORK_DAY));
+            timerTime = new DateTime(dateTime.getDate().getTime() + startHours);
+          }
+        }
+      } else if (TimeUtils.isMeq(TimeUtils.goMonth(dateTime, -1),
+          new DateTime(System.currentTimeMillis()))) {
+        timerTime = TimeUtils.goMonth(dateTime, -1);
+      } else {
+        TimeUtils.addDay(dateTime, -DOCUMENT_EXPIRATION_MIN_DAYS);
+        timerTime = dateTime;
+      }
+    }
+
+    if (timerTime != null && timerTime.getTime() < System.currentTimeMillis()) {
+      timerTime = null;
+    }
+
+    return timerTime;
+  }
+
+  private void createUpdateDocumentReminder(long documentId, DateTime expDate, boolean update) {
+    SqlSelect select = new SqlSelect()
+        .addFields(VIEW_DOCUMENT_REMINDERS, COL_DOCUMENT_REMINDER_USER_DATE)
+        .addFrom(VIEW_DOCUMENT_REMINDERS)
+        .setWhere(SqlUtils.and(SqlUtils.equals(VIEW_DOCUMENT_REMINDERS, COL_DOCUMENT, documentId),
+            SqlUtils.equals(VIEW_DOCUMENT_REMINDERS, COL_DOCUMENT_REMINDER_ACTIVE, true)));
+
+    SimpleRowSet data = qs.getData(select);
+
+    boolean emptyReminder = data.isEmpty();
+    boolean userDate = BeeUtils.unbox(qs.getBoolean(select));
+
+    DateTime timerTime = calculateTimerTime(userDate, expDate);
+
+    if (!userDate) {
+      if (timerTime != null) {
+        if (update && !emptyReminder) {
+          SqlUpdate updateSql = new SqlUpdate(VIEW_DOCUMENT_REMINDERS)
+              .addConstant(COL_DOCUMENT_REMINDER_DATE, timerTime)
+              .setWhere(SqlUtils.equals(VIEW_DOCUMENT_REMINDERS, COL_DOCUMENT, documentId));
+
+          qs.updateData(updateSql);
+        } else {
+          SqlInsert insert = new SqlInsert(VIEW_DOCUMENT_REMINDERS)
+              .addConstant(COL_DOCUMENT_REMINDER_USER, usr.getCurrentUserId())
+              .addConstant(COL_DOCUMENT, documentId)
+              .addConstant(COL_DOCUMENT_REMINDER_DATE, timerTime)
+              .addConstant(COL_DOCUMENT_REMINDER_ACTIVE, 1);
+
+          qs.insertData(insert);
+        }
+      } else if (update) {
+        deleteDocumentReminder(documentId);
+      }
+    }
+  }
+
+  private void deleteDocumentReminder(long documentId) {
+    SqlDelete delete = new SqlDelete(VIEW_DOCUMENT_REMINDERS)
+        .setWhere(SqlUtils.equals(VIEW_DOCUMENT_REMINDERS, COL_DOCUMENT, documentId));
+
+    qs.updateData(delete);
   }
 
   @Override
@@ -497,7 +566,262 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
 
       if (DataUtils.isId(documentId)
           && DataUtils.isId(mail.getSenderAccountId(TIMER_REMIND_DOCUMENT_END))) {
-        sendExpiredDocumentsReminders(documentId);
+
+        SqlSelect select = new SqlSelect()
+            .addFields(VIEW_DOCUMENT_REMINDERS, COL_DOCUMENT_REMINDER_ISTASK,
+                COL_DOCUMENT_REMINDER_USER, COL_DOCUMENT_REMINDER_EXECUTORS,
+                COL_DOCUMENT_REMINDER_TASK_TEMPLATE, COL_DOCUMENT_REMINDER_DATE, COL_DOCUMENT)
+            .addFields(TBL_DOCUMENTS, COL_DOCUMENT_COMPANY, COL_DOCUMENT_NAME,
+                DocumentConstants.COL_DESCRIPTION, COL_DOCUMENT_EXPIRES)
+            .addField(TBL_DOCUMENTS, COL_USER, COL_DOCUMENT + COL_USER)
+            .addFrom(VIEW_DOCUMENT_REMINDERS)
+            .addFromLeft(TBL_DOCUMENTS, sys.joinTables(TBL_DOCUMENTS, VIEW_DOCUMENT_REMINDERS,
+                COL_DOCUMENT))
+            .setWhere(SqlUtils.and(SqlUtils.equals(VIEW_DOCUMENT_REMINDERS,
+                COL_DOCUMENT, documentId), SqlUtils.equals(VIEW_DOCUMENT_REMINDERS,
+                COL_DOCUMENT_REMINDER_ACTIVE, true)));
+
+        SimpleRowSet data = qs.getData(select);
+
+        if (!data.isEmpty()) {
+          boolean isTask = BeeUtils.unbox(data.getRow(0).getBoolean(COL_DOCUMENT_REMINDER_ISTASK));
+
+          if (isTask) {
+            createReminderTasks(data.getRow(0));
+          } else {
+            Long reminderUser = data.getRow(0).getLong(COL_DOCUMENT_REMINDER_USER);
+            sendExpiredDocumentsReminders(documentId, reminderUser);
+          }
+
+          deleteDocumentReminder(documentId);
+        }
+      }
+    }
+  }
+
+  private void createReminderTasks(SimpleRow row) {
+    Set<Long> allExecutors = new HashSet<>();
+
+    List<BeeColumn> columns = new ArrayList<>();
+    List<String> values = new ArrayList<>();
+
+    List<BeeColumn> taskColumns = sys.getView(VIEW_TASKS).getRowSetColumns();
+
+    Long templateId = row.getLong(COL_DOCUMENT_REMINDER_TASK_TEMPLATE);
+    List<Long> executors = Codec.deserializeIdList(row.getValue(COL_DOCUMENT_REMINDER_EXECUTORS));
+
+    if (DataUtils.isId(templateId)) {
+      JustDate now = TimeUtils.today();
+
+      Filter filter = Filter.and(Filter.or(Filter.isNull(COL_START_TIME),
+          Filter.compareWithValue(COL_START_TIME, Operator.LE, new DateValue(now))),
+          Filter.or(Filter.isNull(COL_FINISH_TIME), Filter.compareWithValue(COL_FINISH_TIME,
+              Operator.GE, new DateValue(now))));
+
+      List<String> requiredColumns = Arrays.asList(COL_TASK_TYPE, COL_EXPECTED_DURATION,
+          COL_EXPECTED_EXPENSES, COL_CURRENCY, COL_COMPANY, COL_CONTACT, COL_PRODUCT,
+          COL_PRIVATE_TASK, COL_END_RESULT);
+
+      BeeRowSet ttData = qs.getViewData(VIEW_TASK_TEMPLATES,  Filter.and(filter,
+          Filter.compareId(templateId)), null, requiredColumns);
+
+      if (DataUtils.isEmpty(ttData)) {
+        return;
+      }
+
+      SqlSelect selextExecutors = new SqlSelect()
+          .addFields(VIEW_TT_EXECUTORS, COL_USER)
+          .addFrom(VIEW_TT_EXECUTORS)
+          .setWhere(SqlUtils.equals(VIEW_TT_EXECUTORS, COL_DOCUMENT_REMINDER_TASK_TEMPLATE,
+              templateId));
+
+      Set<Long> ttExecutors = qs.getLongSet(selextExecutors);
+
+      allExecutors.addAll(ttExecutors);
+
+      for (int i = 0; i < requiredColumns.size(); i++) {
+        String colName = requiredColumns.get(i);
+        String value = ttData.getRow(0).getString(i);
+        int index = DataUtils.getColumnIndex(colName, taskColumns);
+
+        if (!BeeUtils.isEmpty(value) && index >= 0) {
+          columns.add(DataUtils.getColumn(colName, taskColumns));
+          values.add(value);
+        }
+      }
+
+      if (!BeeUtils.isEmpty(row.getValue(COL_DOCUMENT_COMPANY))) {
+        int index = columns.indexOf(DataUtils.getColumn(COL_COMPANY, columns));
+
+        if (index > 0) {
+          values.set(index, row.getValue(COL_DOCUMENT_COMPANY));
+        } else {
+          columns.add(DataUtils.getColumn(COL_COMPANY, taskColumns));
+          values.add(row.getValue(COL_DOCUMENT_COMPANY));
+        }
+      }
+    } else {
+      columns.add(DataUtils.getColumn(COL_COMPANY, taskColumns));
+      values.add(row.getValue(COL_DOCUMENT_COMPANY));
+    }
+
+    allExecutors.addAll(executors);
+
+    columns.add(DataUtils.getColumn(COL_SUMMARY, taskColumns));
+    values.add(null);
+
+    columns.add(DataUtils.getColumn(DocumentConstants.COL_DESCRIPTION, taskColumns));
+    values.add(BeeUtils.join(". ", row.getValue(COL_DOCUMENT_NAME),
+        row.getValue(DocumentConstants.COL_DESCRIPTION)));
+
+    columns.add(DataUtils.getColumn(COL_EXECUTOR, taskColumns));
+    values.add(null);
+
+    columns.add(DataUtils.getColumn(COL_OWNER, taskColumns));
+    values.add(null);
+
+    columns.add(DataUtils.getColumn(COL_STATUS, taskColumns));
+    values.add(null);
+
+    columns.add(DataUtils.getColumn(COL_START_TIME, taskColumns));
+    values.add(row.getValue(COL_DOCUMENT_REMINDER_DATE));
+
+    columns.add(DataUtils.getColumn(COL_FINISH_TIME, taskColumns));
+    DateTime expires = row.getDateTime(COL_DOCUMENT_EXPIRES);
+
+    if (expires == null || TimeUtils.isMeq(row.getDateTime(COL_DOCUMENT_REMINDER_DATE), expires)) {
+      DateTime finishDate = row.getDateTime(COL_DOCUMENT_REMINDER_DATE);
+      TimeUtils.addDay(finishDate, 30);
+      values.add(BeeUtils.toString(finishDate.getTime()));
+    } else {
+      values.add(BeeUtils.toString(expires.getTime()));
+    }
+
+    SqlSelect selectHeads = new SqlSelect()
+        .addField(TBL_USERS, sys.getIdName(TBL_USERS), COL_EXECUTOR)
+        .addField("Head" + TBL_USERS, sys.getIdName(TBL_USERS), COL_DEPARTMENT_HEAD)
+        .addFrom(TBL_USERS)
+        .addFromLeft(TBL_DEPARTMENT_EMPLOYEES,
+            SqlUtils.joinUsing(TBL_DEPARTMENT_EMPLOYEES, TBL_USERS, COL_COMPANY_PERSON))
+        .addFromLeft(TBL_DEPARTMENTS,
+            sys.joinTables(TBL_DEPARTMENTS, TBL_DEPARTMENT_EMPLOYEES, COL_DEPARTMENT))
+        .addFromLeft(TBL_DEPARTMENT_EMPLOYEES, "Head" + TBL_DEPARTMENT_EMPLOYEES,
+            sys.joinTables(TBL_DEPARTMENT_EMPLOYEES, "Head" + TBL_DEPARTMENT_EMPLOYEES,
+                TBL_DEPARTMENTS, COL_DEPARTMENT_HEAD))
+        .addFromLeft(TBL_USERS, "Head" + TBL_USERS, SqlUtils.join("Head" + TBL_USERS,
+            COL_COMPANY_PERSON, "Head" + TBL_DEPARTMENT_EMPLOYEES, COL_COMPANY_PERSON))
+        .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_DEPARTMENT_EMPLOYEES, COL_DEPARTMENT),
+            SqlUtils.joinNotEqual(TBL_DEPARTMENT_EMPLOYEES, sys.getIdName(TBL_DEPARTMENT_EMPLOYEES),
+                TBL_DEPARTMENTS, COL_DEPARTMENT_HEAD), sys.idInList(TBL_USERS, allExecutors)));
+
+    Long autoTaskUser = prm.getRelation(PRM_AUTO_TASK_USER);
+    Map<Long, Long> executorOwners = new HashMap<>();
+    Map<Long, Long> validExecutors = new HashMap<>();
+
+    for (SimpleRow simpleRow : qs.getData(selectHeads)) {
+      Long executor = simpleRow.getLong(COL_EXECUTOR);
+      Long departmentHead = simpleRow.getLong(COL_DEPARTMENT_HEAD);
+
+      executorOwners.put(executor, departmentHead);
+    }
+
+    for (Long executor : allExecutors) {
+
+      Long departmentHead = executorOwners.getOrDefault(executor, autoTaskUser);
+
+      if (executor != null && usr.isActive(executor)) {
+        if (departmentHead != null && usr.isActive(departmentHead)) {
+          validExecutors.put(executor, departmentHead);
+        } else if (autoTaskUser != null && usr.isActive(autoTaskUser)) {
+          validExecutors.put(executor, autoTaskUser);
+        }
+      } else {
+        if (departmentHead != null && usr.isActive(departmentHead)) {
+          validExecutors.put(departmentHead, departmentHead);
+        } else if (autoTaskUser != null && usr.isActive(autoTaskUser)) {
+          validExecutors.put(autoTaskUser, autoTaskUser);
+        }
+      }
+    }
+
+    BeeRowSet taskData = new BeeRowSet(VIEW_TASKS, columns);
+    BeeRow taskRow = new BeeRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, values);
+
+    for (Long executor : validExecutors.keySet()) {
+      taskRow.setValue(taskData.getColumnIndex(COL_OWNER), validExecutors.get(executor));
+
+      Dictionary dic = usr.getDictionary(executor);
+      taskRow.setValue(taskData.getColumnIndex(COL_SUMMARY),
+          dic.documentExpireReminderMailSubject());
+
+      taskRow.setProperty(PROP_EXECUTORS, executor);
+
+      ResponseObject response = tmb.createTasks(taskData, taskRow,  validExecutors.get(executor));
+
+      if (!response.hasErrors() && response.hasResponse(String.class)) {
+        List<Long> createdTasks = DataUtils.parseIdList(response.getResponseAsString());
+
+        insertFiles(VIEW_TT_FILES, COL_TASK_TEMPLATE, templateId, createdTasks.get(0));
+
+        createRelationAndComment(createdTasks.get(0), row.getLong(COL_DOCUMENT), dic,
+            validExecutors.get(executor), row.getLong(COL_DOCUMENT + COL_USER), templateId);
+      }
+    }
+  }
+
+  private void createRelationAndComment(Long taskId, Long documentId, Dictionary dic,
+      Long owner, Long user, Long templateId) {
+
+    if (DataUtils.isId(taskId) && DataUtils.isId(documentId)) {
+      SqlInsert insertDocRel = new SqlInsert(TBL_RELATIONS)
+          .addConstant(COL_TASK, taskId)
+          .addConstant(COL_DOCUMENT, documentId);
+
+      if (DataUtils.isId(templateId)) {
+        qs.insertData(new SqlInsert(TBL_RELATIONS)
+            .addConstant(COL_TASK_TEMPLATE, templateId)
+            .addConstant(COL_DOCUMENT, documentId));
+      }
+
+      SqlInsert insertComment = new SqlInsert(TBL_TASK_EVENTS)
+          .addConstant(COL_TASK, taskId)
+          .addConstant(COL_PUBLISHER, owner)
+          .addConstant(COL_PUBLISH_TIME, TimeUtils.nowMillis())
+          .addConstant(COL_COMMENT, dic.crmAutoCreatedTask())
+          .addConstant(TaskConstants.COL_EVENT, TaskEvent.EDIT);
+
+      if (DataUtils.isId(user)) {
+        String name = dic.creator() + ": " + usr.getUserSign(user);
+        insertComment.addConstant(COL_EVENT_NOTE, name);
+      }
+
+      qs.insertData(insertDocRel);
+      qs.insertData(insertComment);
+
+      insertFiles(VIEW_DOCUMENT_FILES, COL_DOCUMENT, documentId, taskId);
+    }
+  }
+
+  private void insertFiles(String tableName, String column, Long columnId, Long taskId) {
+    if (DataUtils.isId(columnId) && DataUtils.isId(taskId)) {
+
+      SqlSelect selectFiles = new SqlSelect()
+          .addFields(tableName, COL_FILE, COL_CAPTION)
+          .addFrom(tableName)
+          .setWhere(SqlUtils.equals(tableName, column, columnId));
+
+      SimpleRowSet files = qs.getData(selectFiles);
+
+      if (!files.isEmpty()) {
+        for (SimpleRow file : files) {
+
+          SqlInsert insertFiles = new SqlInsert(VIEW_TASK_FILES)
+              .addConstant(COL_TASK, taskId)
+              .addConstant(COL_FILE, file.getLong(COL_FILE))
+              .addConstant(COL_CAPTION, file.getValue(COL_CAPTION));
+
+          qs.insertData(insertFiles);
+        }
       }
     }
   }
@@ -505,31 +829,28 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
   @Override
   protected List<Timer> createTimers(String timerIdentifier, IsCondition wh) {
     List<Timer> timersList = new ArrayList<>();
-    if (BeeUtils.same(timerIdentifier, TIMER_REMIND_DOCUMENT_END)) {
-      String docIdColumn = sys.getIdName(TBL_DOCUMENTS);
 
+    if (BeeUtils.same(timerIdentifier, TIMER_REMIND_DOCUMENT_END)) {
       SimpleRowSet data = qs.getData(new SqlSelect()
-      .addFields(TBL_DOCUMENTS, sys.getIdName(TBL_DOCUMENTS), COL_DOCUMENT_EXPIRES)
-      .addFrom(TBL_DOCUMENTS)
-      .setWhere(SqlUtils.and(wh,
-          SqlUtils.notNull(TBL_DOCUMENTS, COL_DOCUMENT_EXPIRES),
-          SqlUtils.moreEqual(TBL_DOCUMENTS,
-              COL_DOCUMENT_EXPIRES, TimeUtils.today(DOCUMENT_EXPIRATION_MIN_DAYS)))));
+          .addFields(VIEW_DOCUMENT_REMINDERS, sys.getIdName(VIEW_DOCUMENT_REMINDERS),
+              COL_DOCUMENT_REMINDER_USER, COL_DOCUMENT_REMINDER_DATE, COL_DOCUMENT_REMINDER_ISTASK,
+              COL_DOCUMENT, COL_DOCUMENT_REMINDER_USER_DATE)
+          .addFields(TBL_DOCUMENTS, COL_DOCUMENT_EXPIRES)
+          .addFrom(VIEW_DOCUMENT_REMINDERS)
+          .addFromLeft(TBL_DOCUMENTS, sys.joinTables(TBL_DOCUMENTS,
+              VIEW_DOCUMENT_REMINDERS, COL_DOCUMENT))
+          .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, VIEW_DOCUMENT_REMINDERS,
+              COL_DOCUMENT_REMINDER_USER))
+          .setWhere(SqlUtils.and(wh,
+              SqlUtils.equals(VIEW_DOCUMENT_REMINDERS, COL_DOCUMENT_REMINDER_ACTIVE, true))));
 
       for (SimpleRowSet.SimpleRow row : data) {
-        Long timerId = row.getLong(docIdColumn);
+        Long timerId = row.getLong(COL_DOCUMENT);
 
-        DateTime expDate = TimeUtils.toDateTimeOrNull(row.getValue(COL_DOCUMENT_EXPIRES));
-        DateTime timerTime;
+        DateTime expDate = TimeUtils.toDateTimeOrNull(row.getValue(COL_DOCUMENT_REMINDER_DATE));
+        boolean userDate = BeeUtils.unbox(row.getBoolean(COL_DOCUMENT_REMINDER_USER_DATE));
 
-        if (TimeUtils.isMeq(
-                        TimeUtils.goMonth(expDate, -1), new DateTime(System.currentTimeMillis()))) {
-          timerTime = TimeUtils.goMonth(expDate, -1);
-
-        } else {
-          TimeUtils.addDay(expDate, -DOCUMENT_EXPIRATION_MIN_DAYS);
-          timerTime = expDate;
-        }
+        DateTime timerTime = calculateTimerTime(userDate, expDate);
 
         if (timerTime == null) {
           continue;
@@ -553,20 +874,29 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
 
   @Override
   protected Pair<IsCondition, List<String>> getConditionAndTimerIdForUpdate(String timerIdentifier,
-                                                                String viewName, Long relationId) {
-    if (BeeUtils.same(timerIdentifier, TIMER_REMIND_DOCUMENT_END)
-        && BeeUtils.same(viewName, TBL_DOCUMENTS)) {
-      IsCondition wh = SqlUtils.equals(TBL_DOCUMENTS,  sys.getIdName(TBL_DOCUMENTS), relationId);
-      List<String> timerIdentifiersIds = new ArrayList<>();
-      timerIdentifiersIds.add(timerIdentifier + relationId);
-      return Pair.of(wh, timerIdentifiersIds);
+      String viewName, Long relationId) {
+    IsCondition wh = null;
 
+    if (BeeUtils.same(timerIdentifier, TIMER_REMIND_DOCUMENT_END)) {
+      if (BeeUtils.same(viewName, TBL_DOCUMENTS)) {
+        wh = SqlUtils.equals(TBL_DOCUMENTS, sys.getIdName(TBL_DOCUMENTS), relationId);
+        List<String> timerIdentifiersIds = new ArrayList<>();
+        timerIdentifiersIds.add(timerIdentifier + relationId);
+        return Pair.of(wh, timerIdentifiersIds);
+      } else if (BeeUtils.same(viewName, VIEW_DOCUMENT_REMINDERS)) {
+        Long reminderId = relationId;
+        wh = SqlUtils.equals(VIEW_DOCUMENT_REMINDERS, sys.getIdName(VIEW_DOCUMENT_REMINDERS),
+            reminderId);
+        List<String> timerIdentifiersIds = new ArrayList<String>();
+        timerIdentifiersIds.add(timerIdentifier + reminderId);
+        return Pair.of(wh, timerIdentifiersIds);
+      }
     }
 
     return null;
   }
 
-  private void sendExpiredDocumentsReminders(Long documentId) {
+  private void sendExpiredDocumentsReminders(Long documentId, Long reminderUser) {
     SqlSelect query = new SqlSelect()
         .addFields(TBL_DOCUMENTS, sys.getIdName(TBL_DOCUMENTS), COL_DOCUMENT_USER,
             COL_DOCUMENT_DATE, COL_DOCUMENT_EXPIRES,
@@ -587,73 +917,79 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
 
     SimpleRowSet data = qs.getData(query);
     if (data.getNumberOfRows() > 0 && DataUtils.isId(senderAccountId)) {
-      formAndSendExpiredDocument(data.getRow(0), senderAccountId);
+      formAndSendExpiredDocument(data.getRow(0), senderAccountId, reminderUser);
     }
   }
 
-  private void formAndSendExpiredDocument(SimpleRow dRow, Long senderAccountId) {
-    Document doc = new Document();
+  private void formAndSendExpiredDocument(SimpleRow dRow, Long senderAccountId,
+      Long reminderUser) {
 
     Long userId = dRow.getLong(COL_DOCUMENT_USER);
-    Dictionary dic = usr.getDictionary(userId);
 
-    doc.getHead().append(meta().encodingDeclarationUtf8());
+    for (Long user : new Long[]{userId, reminderUser}) {
+      Document doc = new Document();
 
-    Div panel = div();
-    doc.getBody().append(panel);
+      Dictionary dic = usr.getDictionary(user);
+      DateTimeFormatInfo dtfInfo = usr.getDateTimeFormatInfo(user);
 
-    Tbody fields = tbody().append(
-        tr().append(
-            td().text(dic.documentName()),
-            td().text(dRow.getValue(COL_DOCUMENT_NAME))),
-        tr().append(
-            td().text(dic.company()),
-            td().text(BeeUtils.joinWords(dRow.getValue(ALS_DOCUMENT_COMPANY_NAME),
-                dRow.getValue(ALS_TYPE_NAME)))),
-        tr().append(
-            td().text(dic.documentDate()),
-            td().text(TimeUtils.renderCompact(dRow.getDateTime(COL_DOCUMENT_DATE)))),
-        tr().append(
-            td().text(dic.documentExpires()),
-            td().text(TimeUtils.renderCompact(dRow.getDateTime(COL_DOCUMENT_EXPIRES)))),
-        tr().append(
-            td().text(dic.documentNumber()),
-            td().text(dRow.getValue(COL_DOCUMENT_NUMBER))),
-        tr().append(
-            td().text(dic.documentRegistrationNumberShort()),
-            td().text(dRow.getValue(COL_REGISTRATION_NUMBER))));
+      doc.getHead().append(meta().encodingDeclarationUtf8());
 
-    List<Element> cells = fields.queryTag(Tags.TD);
-    for (Element cell : cells) {
-      if (cell.index() == 0) {
-        cell.setPaddingRight(1, CssUnit.EM);
-        cell.setFontWeight(FontWeight.BOLDER);
+      Div panel = div();
+      doc.getBody().append(panel);
+
+      Tbody fields = tbody().append(
+          tr().append(
+              td().text(dic.documentName()),
+              td().text(dRow.getValue(COL_DOCUMENT_NAME))),
+          tr().append(
+              td().text(dic.company()),
+              td().text(BeeUtils.joinWords(dRow.getValue(ALS_DOCUMENT_COMPANY_NAME),
+                  dRow.getValue(ALS_TYPE_NAME)))),
+          tr().append(
+              td().text(dic.documentDate()),
+              td().text(Formatter.renderDateTime(dtfInfo, dRow.getDateTime(COL_DOCUMENT_DATE)))),
+          tr().append(
+              td().text(dic.documentExpires()),
+              td().text(Formatter.renderDateTime(dtfInfo, dRow.getDateTime(COL_DOCUMENT_EXPIRES)))),
+          tr().append(
+              td().text(dic.documentNumber()),
+              td().text(dRow.getValue(COL_DOCUMENT_NUMBER))),
+          tr().append(
+              td().text(dic.documentRegistrationNumberShort()),
+              td().text(dRow.getValue(COL_REGISTRATION_NUMBER))));
+
+      List<Element> cells = fields.queryTag(Tags.TD);
+      for (Element cell : cells) {
+        if (cell.index() == 0) {
+          cell.setPaddingRight(1, CssUnit.EM);
+          cell.setFontWeight(FontWeight.BOLDER);
+        }
       }
+
+      panel.append(table().append(fields));
+
+      String content = doc.buildLines();
+      String headerCaption = BeeUtils.joinWords(dic.document(),
+          dRow.getValue(COL_DOCUMENT_NAME));
+
+      String recipientEmail;
+      if (user != null && usr.isActive(user)) {
+        recipientEmail = usr.getUserEmail(user, false);
+      } else {
+        recipientEmail = mail.getSenderAccountEmail(senderAccountId);
+      }
+
+      ResponseObject mailResponse = mail.sendStyledMail(senderAccountId, recipientEmail,
+          dic.documentExpireReminderMailSubject(), content, headerCaption);
+
+      if (mailResponse.hasErrors()) {
+        logger.severe(TIMER_REMIND_DOCUMENT_END, "mail error - canceled");
+      }
+
+      Map<String, String> linkData = new HashMap<>();
+      linkData.put(VIEW_DOCUMENTS, dRow.getValue(sys.getIdName(TBL_DOCUMENTS)));
+      chat.putMessage(mail.styleMailHeader(headerCaption), user, linkData);
     }
-
-    panel.append(table().append(fields));
-
-    String content = doc.buildLines();
-    String headerCaption = BeeUtils.joinWords(dic.document(),
-        dRow.getValue(COL_DOCUMENT_NAME));
-
-    String recipientEmail;
-    if (userId != null && usr.isActive(userId)) {
-      recipientEmail = usr.getUserEmail(userId, false);
-    } else {
-      recipientEmail = mail.getSenderAccountEmail(senderAccountId);
-    }
-
-    ResponseObject mailResponse = mail.sendStyledMail(senderAccountId, recipientEmail,
-        dic.documentExpireReminderMailSubject(), content, headerCaption);
-
-    if (mailResponse.hasErrors()) {
-      logger.severe(TIMER_REMIND_DOCUMENT_END, "mail error - canceled");
-    }
-
-    Map<String, String> linkData = new HashMap<>();
-    linkData.put(VIEW_DOCUMENTS, dRow.getValue(sys.getIdName(TBL_DOCUMENTS)));
-    chat.putMessage(mail.styleMailHeader(headerCaption), userId, linkData);
   }
 
   private ResponseObject copyDocumentData(Long data) {

@@ -1,27 +1,24 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.xml.client.Element;
-
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
-import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
-import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.Objects;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public class AssessmentForwarderForm extends PrintFormInterceptor {
 
@@ -41,55 +38,7 @@ public class AssessmentForwarderForm extends PrintFormInterceptor {
         }
       });
     }
-    if (BeeUtils.inList(name, TBL_CARGO_LOADING, TBL_CARGO_UNLOADING)) {
-      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
-
-        @Override
-        public GridInterceptor getInstance() {
-          return null;
-        }
-
-        @Override
-        public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-          if (gridView.isEmpty()) {
-            FormView form = ViewHelper.getForm(AssessmentForwarderForm.this.getGridView());
-
-            if (Objects.nonNull(form)) {
-              Widget grid = form.getWidgetByName(gridView.getViewName());
-              IsRow parentRow = grid instanceof ChildGrid
-                  ? BeeUtils.peek(((ChildGrid) grid).getGridView().getRowData()) : null;
-
-              if (Objects.nonNull(parentRow)) {
-                for (BeeColumn column : gridView.getDataColumns()) {
-                  String col = column.getId();
-
-                  if (!BeeUtils.inList(col, COL_CARGO, COL_CARGO_TRIP)) {
-                    int idx = gridView.getDataIndex(col);
-                    newRow.setValue(idx, parentRow.getValue(idx));
-                  }
-                }
-              }
-            }
-          }
-          return true;
-        }
-      });
-    }
     super.afterCreateWidget(name, widget, callback);
-  }
-
-  @Override
-  public boolean beforeCreateWidget(String name, Element description) {
-    if (!TransportHandler.bindExpensesToIncomes()
-        && BeeUtils.inListSame(name, VAR_INCOME + "Label", VAR_INCOME)) {
-      return false;
-    }
-    return super.beforeCreateWidget(name, description);
-  }
-
-  @Override
-  public FormInterceptor getPrintFormInterceptor() {
-    return new AssessmentForwarderPrintForm();
   }
 
   @Override
@@ -97,4 +46,30 @@ public class AssessmentForwarderForm extends PrintFormInterceptor {
     return new AssessmentForwarderForm();
   }
 
+  @Override
+  protected void getReportParameters(Consumer<Map<String, String>> parametersConsumer) {
+    Map<String, Long> companies = new HashMap<>();
+    companies.put(COL_CUSTOMER, BeeKeeper.getUser().getCompany());
+    companies.put(COL_FORWARDER, getLongValue(COL_FORWARDER));
+
+    super.getReportParameters(defaultParameters ->
+        ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
+          IsRow row = getActiveRow();
+          FormView form = getFormView();
+
+          defaultParameters.putAll(companiesInfo);
+          defaultParameters.put(COL_ORDER_ID, BeeUtils.toString(row.getId()));
+
+          TransportUtils.getCargoPlaces(Filter.equals(COL_CARGO_TRIP,
+              getActiveRow().getLong(form.getDataIndex(COL_CARGO_TRIP))), (loading, unloading) -> {
+            for (BeeRowSet places : new BeeRowSet[] {loading, unloading}) {
+
+              BeeRowSet current = TransportUtils.copyCargoPlaces(places);
+
+              defaultParameters.put(places.getViewName(), current.serialize());
+            }
+            parametersConsumer.accept(defaultParameters);
+          });
+        }));
+  }
 }

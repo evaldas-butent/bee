@@ -24,6 +24,7 @@ import com.butent.bee.server.utils.BeeDataSource;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -94,6 +95,10 @@ public class QueryServiceBean {
     BeeRowSet getViewData(BeeView view, SqlSelect query, Filter filter);
 
     int getViewSize(BeeView view, SqlSelect query, Filter filter);
+
+    default boolean hasAnyRows(BeeView view, SqlSelect query, Filter filter) {
+      return getViewSize(view, query, filter) > 0;
+    }
   }
 
   /**
@@ -419,6 +424,15 @@ public class QueryServiceBean {
     return getSingleValue(query).getDateTime(0, 0);
   }
 
+  public DateTime getDateTimeById(String tableName, long id, String fieldName) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(sys.idEquals(tableName, id));
+
+    return getDateTime(query);
+  }
+
   public DateTime[] getDateTimeColumn(IsQuery query) {
     return getSingleColumn(query).getDateTimeColumn(0);
   }
@@ -429,6 +443,15 @@ public class QueryServiceBean {
 
   public BigDecimal[] getDecimalColumn(IsQuery query) {
     return getSingleColumn(query).getDecimalColumn(0);
+  }
+
+  public Set<Integer> getDistinctInts(String tableName, String fieldName, IsCondition where) {
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(where);
+
+    return getIntSet(query);
   }
 
   public Set<Long> getDistinctLongs(String viewName, String column, Filter filter) {
@@ -459,6 +482,15 @@ public class QueryServiceBean {
         .setWhere(where);
 
     return getLongSet(query);
+  }
+
+  public Set<String> getDistinctValues(String tableName, String fieldName, IsCondition where) {
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(where);
+
+    return getValueSet(query);
   }
 
   public Double getDouble(IsQuery query) {
@@ -574,7 +606,7 @@ public class QueryServiceBean {
         .addFrom(tblName)
         .setWhere(SqlUtils.equals(tblName, fldName, fldValue));
 
-    String als = sys.joinTranslationField(query, tblName, null, fldName, locale.getLanguage());
+    String als = sys.joinTranslationField(query, tblName, tblName, fldName, locale.getLanguage());
 
     return ArrayUtils.getQuietly(getColumn(query.addFields(als, fldName)), 0);
   }
@@ -610,9 +642,7 @@ public class QueryServiceBean {
 
     Long[] arr = getLongColumn(query);
     if (arr != null && arr.length > 0) {
-      for (Long value : arr) {
-        result.add(value);
-      }
+      Collections.addAll(result, arr);
     }
 
     return result;
@@ -623,9 +653,7 @@ public class QueryServiceBean {
 
     Long[] arr = getLongColumn(query);
     if (arr != null && arr.length > 0) {
-      for (Long value : arr) {
-        result.add(value);
-      }
+      Collections.addAll(result, arr);
     }
 
     return result;
@@ -731,6 +759,17 @@ public class QueryServiceBean {
     return results;
   }
 
+  public Set<String> getSet(IsQuery query) {
+    Set<String> result = new HashSet<>();
+
+    String[] arr = getColumn(query);
+    if (arr != null && arr.length > 0) {
+      Collections.addAll(result, arr);
+    }
+
+    return result;
+  }
+
   public String getValue(IsQuery query) {
     return getSingleValue(query).getValue(0, 0);
   }
@@ -749,9 +788,7 @@ public class QueryServiceBean {
 
     String[] arr = getColumn(query);
     if (arr != null && arr.length > 0) {
-      for (String value : arr) {
-        result.add(value);
-      }
+      Collections.addAll(result, arr);
     }
 
     return result;
@@ -766,7 +803,7 @@ public class QueryServiceBean {
   }
 
   public BeeRowSet getViewData(String viewName, Filter filter, Order order) {
-    return getViewData(viewName, filter, order, BeeConst.UNDEF, BeeConst.UNDEF, null);
+    return getViewData(viewName, filter, order, null);
   }
 
   public BeeRowSet getViewData(String viewName, Filter filter, Order order, List<String> columns) {
@@ -775,6 +812,12 @@ public class QueryServiceBean {
 
   public BeeRowSet getViewData(String viewName, Filter filter, Order order, int limit, int offset,
       List<String> columns) {
+
+    return getViewData(viewName, filter, order, limit, offset, columns, null);
+  }
+
+  public BeeRowSet getViewData(String viewName, Filter filter, Order order, int limit, int offset,
+      List<String> columns, Object eventOptions) {
 
     BeeView view = sys.getView(viewName);
     SqlSelect query = view.getQuery(usr.getCurrentUserId(), filter, order, columns);
@@ -786,8 +829,9 @@ public class QueryServiceBean {
       query.setOffset(offset);
     }
     if (!usr.isAdministrator()) {
-      String tableName = view.getSourceName();
-      String tableAlias = view.getSourceAlias();
+      Pair<String, String> sourcePair = getDependencies(viewName, query);
+      String tableName = sourcePair.getA();
+      String tableAlias = sourcePair.getB();
 
       sys.filterVisibleState(query, tableName, tableAlias);
 
@@ -813,16 +857,20 @@ public class QueryServiceBean {
     if (provider != null) {
       return provider.getViewData(view, query, filter);
     }
-    return getViewData(query, view, BeeUtils.isEmpty(columns));
+
+    boolean postEvent = BeeUtils.isEmpty(columns) || eventOptions != null;
+    return getViewData(query, view, postEvent, eventOptions);
   }
 
-  public BeeRowSet getViewData(final SqlSelect query, final BeeView view, boolean postEvent) {
+  public BeeRowSet getViewData(final SqlSelect query, final BeeView view, boolean postEvent,
+      Object eventOptions) {
+
     Assert.noNulls(query, view);
     Assert.state(!query.isEmpty());
 
     activateTables(query);
 
-    final ViewQueryEvent event = new ViewQueryEvent(view.getName(), query);
+    final ViewQueryEvent event = new ViewQueryEvent(view.getName(), query, eventOptions);
 
     if (postEvent) {
       sys.postDataEvent(event);
@@ -854,14 +902,33 @@ public class QueryServiceBean {
     SqlSelect query = view.getQuery(usr.getCurrentUserId(), filter);
 
     if (!usr.isAdministrator()) {
-      sys.filterVisibleState(query, view.getSourceName(), view.getSourceAlias());
+      Pair<String, String> sourcePair = getDependencies(viewName, query);
+      sys.filterVisibleState(query, sourcePair.getA(), sourcePair.getB());
     }
-    ViewDataProvider provider = viewDataProviders.get(viewName);
 
+    ViewDataProvider provider = viewDataProviders.get(viewName);
     if (provider != null) {
       return provider.getViewSize(view, query, filter);
     }
+
     return sqlCount(query);
+  }
+
+  public boolean hasAnyRows(String viewName, Filter filter) {
+    BeeView view = sys.getView(viewName);
+    SqlSelect query = view.getQuery(usr.getCurrentUserId(), filter);
+
+    if (!usr.isAdministrator()) {
+      Pair<String, String> sourcePair = getDependencies(viewName, query);
+      sys.filterVisibleState(query, sourcePair.getA(), sourcePair.getB());
+    }
+
+    ViewDataProvider provider = viewDataProviders.get(viewName);
+    if (provider != null) {
+      return provider.hasAnyRows(view, query, filter);
+    }
+
+    return sqlExists(query);
   }
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
@@ -1120,9 +1187,7 @@ public class QueryServiceBean {
     SimpleRowSet data = getData(ss);
 
     List<String> columns = new ArrayList<>();
-    for (String colName : data.getColumnNames()) {
-      columns.add(colName);
-    }
+    Collections.addAll(columns, data.getColumnNames());
 
     return columns;
   }
@@ -1161,11 +1226,19 @@ public class QueryServiceBean {
   }
 
   public boolean sqlExists(String source, IsCondition where) {
-    return sqlCount(new SqlSelect().addFrom(source).setWhere(where)) > 0;
+    return sqlCount(new SqlSelect().addFrom(source).setWhere(where).setLimit(1)) > 0;
   }
 
   public boolean sqlExists(String source, String field, Object value) {
     return sqlExists(source, SqlUtils.equals(source, field, value));
+  }
+
+  public boolean sqlExists(SqlSelect query) {
+    SqlSelect ss = query.copyOf().resetOrder().setLimit(1);
+    if (ss.isEmpty()) {
+      ss.addConstant(null, "dummy");
+    }
+    return !DataUtils.isEmpty(getData(ss));
   }
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
@@ -1320,6 +1393,44 @@ public class QueryServiceBean {
         }
       }
     }
+  }
+
+  private Pair<String, String> getDependencies(String viewName, SqlSelect query) {
+    BeeView vw = sys.getView(viewName);
+    String tableName = vw.getSourceName();
+    String tableAlias = vw.getSourceAlias();
+
+    List<Pair<String, String>> decoded = new ArrayList<>();
+    Map<String, String> dependency = prm.getMap(AdministrationConstants.PRM_RECORD_DEPENDENCY);
+    String rel = dependency.get(viewName);
+
+    while (Objects.nonNull(vw) && vw.hasColumn(rel)) {
+      String col = rel;
+      int idx = decoded.size();
+      do {
+        decoded.add(idx, Pair.of(vw.getColumnField(col), vw.getColumnRelation(col)));
+
+        if (decoded.size() == 1) {
+          tableAlias = vw.getColumnSource(col);
+          col = null;
+        } else {
+          col = vw.getColumnParent(col);
+        }
+      } while (!BeeUtils.isEmpty(col));
+
+      String relTable = vw.getColumnRelation(rel);
+      rel = dependency.get(relTable);
+      vw = sys.getView(relTable);
+    }
+    if (!BeeUtils.isEmpty(decoded)) {
+      for (Pair<String, String> pair : decoded) {
+        tableName = pair.getB();
+        tableAlias = BeeTable.joinTable(tableAlias, pair.getA(), tableName,
+            sys.getIdName(tableName), BeeUtils.join(BeeConst.STRING_UNDER, tableName, tableAlias),
+            query, null);
+      }
+    }
+    return Pair.of(tableName, tableAlias);
   }
 
   private SimpleRowSet getSingleColumn(IsQuery query) {
@@ -1525,7 +1636,7 @@ public class QueryServiceBean {
 
           case DATE:
             Long time = BeeUtils.toLongOrNull(rs.getString(colIndex));
-            values[i] = (time == null) ? null : BeeUtils.toString(time / TimeUtils.MILLIS_PER_DAY);
+            values[i] = (time == null) ? null : BeeUtils.toString(JustDate.readDays(time));
             break;
 
           case NUMBER:

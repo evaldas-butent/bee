@@ -4,39 +4,35 @@ import com.google.common.collect.Lists;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
-import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.VIEW_VEHICLES;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RowFormatter;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
-import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -49,9 +45,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public final class ClassifierKeeper {
@@ -64,12 +60,14 @@ public final class ClassifierKeeper {
       if (event.hasView(VIEW_COMPANIES)) {
         event.setResult(DataUtils.join(Data.getDataInfo(VIEW_COMPANIES), event.getRow(),
             Lists.newArrayList(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE, COL_EMAIL_ADDRESS,
-                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
+                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE,
+            Format.getDateRenderer(), Format.getDateTimeRenderer()));
 
       } else if (event.hasView(VIEW_PERSONS)) {
         event.setResult(DataUtils.join(Data.getDataInfo(VIEW_PERSONS), event.getRow(),
             Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE, COL_EMAIL_ADDRESS,
-                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
+                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE,
+            Format.getDateRenderer(), Format.getDateTimeRenderer()));
       }
     }
   }
@@ -78,72 +76,60 @@ public final class ClassifierKeeper {
     return BeeKeeper.getRpc().createParameters(Module.CLASSIFIERS, method);
   }
 
-  private static class VehiclesGridHandler extends TreeGridInterceptor {
+  public static void getHolidays(final Consumer<Set<Integer>> consumer) {
+    Long countryId = Global.getParameterRelation(AdministrationConstants.PRM_COUNTRY);
 
-    @Override
-    public VehiclesGridHandler getInstance() {
-      return new VehiclesGridHandler();
-    }
+    if (DataUtils.isId(countryId)) {
+      Queries.getRowSet(VIEW_HOLIDAYS, Collections.singletonList(COL_HOLY_DAY),
+          Filter.equals(COL_HOLY_COUNTRY, countryId),
+          result -> {
+            Set<Integer> holidays = new HashSet<>();
 
-    @Override
-    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-      IsRow model = getSelectedTreeItem();
-
-      if (model != null) {
-        List<BeeColumn> cols = getGridPresenter().getDataColumns();
-        newRow.setValue(DataUtils.getColumnIndex("Model", cols), model.getId());
-        newRow.setValue(DataUtils.getColumnIndex("ParentModelName", cols),
-            getModelValue(model, "ParentName"));
-        newRow.setValue(DataUtils.getColumnIndex("ModelName", cols),
-            getModelValue(model, "Name"));
-      }
-      return true;
-    }
-
-    @Override
-    protected Filter getFilter(Long model) {
-      if (model == null) {
-        return null;
-      } else {
-        Value value = new LongValue(model);
-
-        return Filter.or(Filter.isEqual("ParentModel", value),
-            Filter.isEqual("Model", value));
-      }
-    }
-
-    private String getModelValue(IsRow model, String colName) {
-      if (BeeUtils.allNotNull(model, getTreeDataColumns())) {
-        return model.getString(getTreeColumnIndex(colName));
-      }
-      return null;
+            if (!DataUtils.isEmpty(result)) {
+              int index = result.getColumnIndex(COL_HOLY_DAY);
+              for (BeeRow row : result) {
+                holidays.add(row.getInteger(index));
+              }
+            }
+            consumer.accept(holidays);
+          });
+    } else {
+      consumer.accept(BeeConst.EMPTY_IMMUTABLE_INT_SET);
     }
   }
 
-  public static void getHolidays(final Consumer<Set<Integer>> consumer) {
-    Global.getParameter(AdministrationConstants.PRM_COUNTRY, input -> {
-      if (DataUtils.isId(input)) {
-        Queries.getRowSet(VIEW_HOLIDAYS, Collections.singletonList(COL_HOLY_DAY),
-            Filter.equals(COL_HOLY_COUNTRY, BeeUtils.toLong(input)),
-            new Queries.RowSetCallback() {
-              @Override
-              public void onSuccess(BeeRowSet result) {
-                Set<Integer> holidays = new HashSet<>();
+  public static void getPriceAndDiscount(Long item, Map<String, String> options,
+      BiConsumer<Double, Double> consumer) {
 
-                if (!DataUtils.isEmpty(result)) {
-                  int index = result.getColumnIndex(COL_HOLY_DAY);
-                  for (BeeRow row : result) {
-                    holidays.add(row.getInteger(index));
-                  }
-                }
+    Assert.notEmpty(options);
+    Assert.notNull(item);
+    Assert.notNull(consumer);
 
-                consumer.accept(holidays);
-              }
-            });
+    ParameterList params = createArgs(SVC_GET_PRICE_AND_DISCOUNT);
 
-      } else {
-        consumer.accept(BeeConst.EMPTY_IMMUTABLE_INT_SET);
+    for (Map.Entry<String, String> entry : options.entrySet()) {
+      if (BeeUtils.allNotEmpty(entry.getKey(), entry.getValue())) {
+        params.addQueryItem(entry.getKey(), entry.getValue());
       }
+    }
+
+    params.addQueryItem(COL_DISCOUNT_ITEM, item);
+
+    if (Global.getExplain() > 0) {
+      params.addQueryItem(Service.VAR_EXPLAIN, Global.getExplain());
+    }
+
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      Double price = null;
+      Double percent = null;
+
+      if (response.hasResponse()) {
+        Pair<String, String> pair = Pair.restore(response.getResponseAsString());
+        price = BeeUtils.toDoubleOrNull(pair.getA());
+        percent = BeeUtils.toDoubleOrNull(pair.getB());
+      }
+
+      consumer.accept(price, percent);
     });
   }
 
@@ -181,22 +167,19 @@ public final class ClassifierKeeper {
         params.addQueryItem(Service.VAR_EXPLAIN, Global.getExplain());
       }
 
-      BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          if (response.hasResponse()) {
-            Pair<String, String> pair = Pair.restore(response.getResponseAsString());
+      BeeKeeper.getRpc().makeRequest(params, response -> {
+        if (response.hasResponse()) {
+          Pair<String, String> pair = Pair.restore(response.getResponseAsString());
 
-            Double price = BeeUtils.toDoubleOrNull(pair.getA());
-            Double percent = BeeUtils.toDoubleOrNull(pair.getB());
+          Double price = BeeUtils.toDoubleOrNull(pair.getA());
+          Double percent = BeeUtils.toDoubleOrNull(pair.getB());
 
-            result.put(item, Pair.of(price, percent));
-          }
+          result.put(item, Pair.of(price, percent));
+        }
 
-          latch.decrement();
-          if (latch.isOpen()) {
-            consumer.accept(result);
-          }
+        latch.decrement();
+        if (latch.isOpen()) {
+          consumer.accept(result);
         }
       });
     }
@@ -246,13 +229,10 @@ public final class ClassifierKeeper {
       prm.addDataItem(COL_ADDRESS, address);
     }
 
-    BeeKeeper.getRpc().makePostRequest(prm, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        String qrBase64 = response.getResponseAsString();
-        qrCodeImage.setUrl("data:image/png;base64," + qrBase64);
-        Global.showModalWidget(Localized.dictionary().qrCode(), qrCodeImage);
-      }
+    BeeKeeper.getRpc().makeRequest(prm, response -> {
+      String qrBase64 = response.getResponseAsString();
+      qrCodeImage.setUrl("data:image/png;base64," + qrBase64);
+      Global.showModalWidget(Localized.dictionary().qrCode(), qrCodeImage);
     });
 
   }
@@ -268,7 +248,7 @@ public final class ClassifierKeeper {
       ViewFactory.createAndShow(key);
     });
 
-    GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
+    GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGrid());
     GridFactory.registerGridInterceptor(TBL_DISCOUNTS, new DiscountsGrid());
 
     ColorStyleProvider csp = ColorStyleProvider.createDefault(VIEW_CHART_OF_ACCOUNTS);
@@ -295,6 +275,27 @@ public final class ClassifierKeeper {
     SelectorEvent.register(new ClassifierSelector());
 
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
+
+    RendererFactory.registerTreeFormatter(TREE_ITEM_CATEGORIES, getCategoryTreeFormatter());
+  }
+
+  private static RowFormatter getCategoryTreeFormatter() {
+    DataInfo dataInfo = Data.getDataInfo(VIEW_ITEM_CATEGORY_TREE);
+    if (dataInfo == null) {
+      return null;
+    }
+
+    int nameIndex = dataInfo.getColumnIndex(COL_CATEGORY_NAME);
+    int goodsIndex = dataInfo.getColumnIndex(COL_CATEGORY_GOODS);
+    int servicesIndex = dataInfo.getColumnIndex(COL_CATEGORY_SERVICES);
+
+    String goodsLabel = Localized.dictionary().goods().toLowerCase();
+    String servicesLabel = Localized.dictionary().services().toLowerCase();
+
+    return row -> BeeUtils.joinWords(row.getString(nameIndex), BeeUtils.parenthesize(
+        BeeUtils.joinItems(BeeUtils.joinOptions(Localized.dictionary().captionId(), row.getId()),
+            row.isTrue(goodsIndex) ? goodsLabel : null,
+            row.isTrue(servicesIndex) ? servicesLabel : null)));
   }
 
   private ClassifierKeeper() {

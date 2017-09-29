@@ -3,10 +3,10 @@
         xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="TradeDocumentItems" viewName="TradeDocumentItems" newRowCaption="=newItem"
-        flexGrow="1" autoFlex="true"
+        autoFlex="true"
 >
   <g:columns>
-    <DataColumn name="ItemName" editSource="Item" visible="true">
+    <DataColumn name="ItemName" editSource="Item" flexGrow="2" visible="true">
       <dynStyle>
         <ui:inline>color: blue;</ui:inline>
         <ui:expression>row.IsService</ui:expression>
@@ -14,7 +14,8 @@
       <footer text="=totalOf" horizontalAlignment="right" />
     </DataColumn>
 
-    <DataColumn name="Article" sortBy="PrimaryArticle Article" searchBy="Article PrimaryArticle">
+    <DataColumn name="Article" sortBy="PrimaryArticle Article" searchBy="Article PrimaryArticle"
+                flexGrow="1">
       <render>
         <ui:expression>row.Parent ? row.PrimaryArticle : row.Article</ui:expression>
       </render>
@@ -23,17 +24,17 @@
       </editable>
     </DataColumn>
 
-    <DataColumn name="Quantity" scale="0" visible="true">
+    <DataColumn name="Quantity" visible="true">
       <footer aggregate="sum" />
     </DataColumn>
-    <DataColumn name="UnitName" flexGrow="0" label="=unitShort" />
+    <DataColumn name="UnitName" label="=unitShort" />
 
     <DataColumn name="Price" scale="2" />
-    <CalcColumn name="Amount" type="decimal" caption="=amount" scale="2">
+    <CalcColumn name="Amount" type="decimal" caption="=amount" scale="2" visible="false">
       <footer aggregate="sum" />
     </CalcColumn>
 
-    <DataColumn name="Discount" scale="0" carry="true" flexGrow="0">
+    <DataColumn name="Discount" scale="0" carry="true">
       <editor type="number" percentageTag="DiscountIsPercent" />
     </DataColumn>
     <DataColumn name="DiscountIsPercent" width="20" sortable="false" format="%" carry="true" />
@@ -49,7 +50,7 @@
       <footer aggregate="sum" />
     </CalcColumn>
 
-    <DataColumn name="Vat" scale="0" carry="true" flexGrow="0">
+    <DataColumn name="Vat" scale="0" carry="true">
       <editor type="number" percentageTag="VatIsPercent" />
     </DataColumn>
     <DataColumn name="VatIsPercent" width="20" sortable="false" format="%" carry="true" />
@@ -59,7 +60,7 @@
 
     <CalcColumn name="PriceWithVat" type="decimal" caption="=priceWithVat" scale="2"
                 visible="false" />
-    <CalcColumn name="Total" type="decimal" caption="=total" scale="2">
+    <CalcColumn name="Total" type="decimal" caption="=total" scale="2" minWidth="60">
       <style>
         <bodyStyle>
           <ui:font>bold</ui:font>
@@ -76,21 +77,26 @@
               expression="(row.Parent ? row.ParentCost : row.Cost) * row.Quantity" />
     </CalcColumn>
 
-    <RelColumn name="Warehouse" choiceColumns="Code Name" renderColumns="WarehouseCode"
-               newRowEnabled="false" flexGrow="0" visible="false" />
+    <RelColumn name="ItemWarehouseFrom" caption="=trdWarehouseFromShort" choiceColumns="Code Name"
+               renderColumns="ItemWarehouseFromCode" newRowEnabled="false" visible="false" />
+    <RelColumn name="ItemWarehouseTo" caption="=trdWarehouseToShort" choiceColumns="Code Name"
+               renderColumns="ItemWarehouseToCode" newRowEnabled="false" visible="false" />
 
     <RelColumn name="Employee" renderColumns="EmployeeFirstName EmployeeLastName"
                sortBy="EmployeeLastName EmployeeFirstName" newRowEnabled="false" visible="false" />
+    <RelColumn name="ItemVehicle" caption="=trdItemVehicleShort"
+               renderColumns="ItemVehicleBrandName ItemVehicleModelName ItemVehicleNumber ItemVehicleBodyNumber"
+               newRowEnabled="false" visible="false" />
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
   <xi:include href="../../Classifiers/grids/columns/HiddenTradeAccounts.columns.xml" />
 
   <g:columns>
-    <DataColumn name="Note" maxWidth="300" />
+    <DataColumn name="Note" maxWidth="300" flexGrow="1" />
 
-    <IdColumn name="Id" flexGrow="0" visible="false" />
-    <DataColumn name="Parent" flexGrow="0" visible="false" />
+    <IdColumn name="Id" visible="false" />
+    <DataColumn name="Parent" visible="false" />
   </g:columns>
 
   <g:rowMessage>

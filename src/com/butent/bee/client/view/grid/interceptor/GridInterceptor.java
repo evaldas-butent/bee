@@ -5,6 +5,7 @@ import com.google.gwt.xml.client.Element;
 import com.butent.bee.client.data.HasActiveRow;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
+import com.butent.bee.client.event.logical.DataReceivedEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.event.logical.RowCountChangeEvent;
@@ -20,7 +21,7 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
-import com.butent.bee.client.view.edit.EditorConsumer;
+import com.butent.bee.client.view.edit.EditorBuilder;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.grid.DynamicColumnEnumerator;
@@ -28,7 +29,6 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsColumn;
@@ -41,6 +41,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.WindowType;
 
 import java.util.Collection;
 import java.util.List;
@@ -48,8 +49,8 @@ import java.util.Map;
 
 public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent.Handler,
     ParentRowEvent.Handler, EditStartEvent.Handler, EditEndEvent.Handler,
-    ProvidesGridColumnRenderer, DynamicColumnEnumerator, HasViewName, EditorConsumer,
-    HasActiveRow, ModificationPreviewer {
+    ProvidesGridColumnRenderer, DynamicColumnEnumerator, HasViewName, EditorBuilder,
+    HasActiveRow, ModificationPreviewer, DataReceivedEvent.Handler {
 
   enum DeleteMode {
     CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI, DENY
@@ -105,14 +106,16 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
    */
   StyleProvider getColumnStyleProvider(String columnName);
 
-  List<BeeColumn> getDataColumns();
-
   DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
       Collection<RowInfo> selectedRows, DeleteMode defMode);
 
   List<String> getDeleteRowMessage(IsRow row);
 
   Pair<String, String> getDeleteRowsMessage(int selectedRows);
+
+  default WindowType getEditWindowType() {
+    return (getGridView() == null) ? null : getGridView().getEditWindowType();
+  }
 
   AbstractFilterSupplier getFilterSupplier(String columnName, ColumnDescription columnDescription);
 
@@ -132,6 +135,10 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
 
   GridInterceptor getInstance();
 
+  default WindowType getNewRowWindowType() {
+    return (getGridView() == null) ? null : getGridView().getNewRowWindowType();
+  }
+
   List<String> getParentLabels();
 
   List<FilterDescription> getPredefinedFilters(List<FilterDescription> defaultFilters);
@@ -145,11 +152,13 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
 
   boolean initDescription(GridDescription gridDescription);
 
+  default boolean isAttached() {
+    return getGridView() != null && getGridView().asWidget().isAttached();
+  }
+
   boolean isRowEditable(IsRow row);
 
   boolean onClose(GridPresenter presenter);
-
-  void onDataReceived(List<? extends IsRow> rows);
 
   void onLoad(GridView gridView);
 
@@ -161,7 +170,7 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
 
   void onSaveChanges(GridView gridView, SaveChangesEvent event);
 
-  boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow);
+  boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy);
 
   void onUnload(GridView gridView);
 

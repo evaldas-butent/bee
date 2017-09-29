@@ -87,6 +87,16 @@
       <SimpleColumn name="AccountCode" alias="CostOfMerchandiseCode" />
     </SimpleJoin>
 
+    <SimpleColumn name="PurchaseReturns" />
+    <SimpleJoin joinType="LEFT" name="PurchaseReturns">
+      <SimpleColumn name="AccountCode" alias="PurchaseReturnsCode" />
+    </SimpleJoin>
+
+    <SimpleColumn name="DischargeAccount" />
+    <SimpleJoin joinType="LEFT" name="DischargeAccount">
+      <SimpleColumn name="AccountCode" alias="DischargeAccountCode" />
+    </SimpleJoin>
+
     <SimpleColumn name="TradeAccountsPrecedence" />
     <SimpleColumn name="TradeDimensionsPrecedence" />
   </Columns>

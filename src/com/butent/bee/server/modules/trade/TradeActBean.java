@@ -52,9 +52,13 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.Totalizer;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
+import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -183,7 +187,9 @@ public class TradeActBean {
     return response;
   }
 
-  public Collection<BeeParameter> getDefaultParameters(String module) {
+  public Collection<BeeParameter> getDefaultParameters() {
+    String module = ModuleAndSub.of(Module.TRADE, SubModule.ACTS).getName();
+
     return Lists.newArrayList(
         BeeParameter.createText(module, PRM_IMPORT_TA_ITEM_RX, false, RX_IMPORT_ACT_ITEM),
         BeeParameter.createNumber(module, PRM_TA_NUMBER_LENGTH, false, 6),
@@ -723,7 +729,7 @@ public class TradeActBean {
     SqlSelect returnQuery = new SqlSelect()
         .addFields(TBL_TRADE_ACTS, COL_TA_PARENT)
         .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
-        .addSum(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY, ALS_RETURNED_QTY)
+        .addSum(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY, TradeActConstants.ALS_RETURNED_QTY)
         .addFrom(TBL_TRADE_ACTS)
         .addFromInner(TBL_TRADE_ACT_ITEMS,
             sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
@@ -826,7 +832,7 @@ public class TradeActBean {
     }
 
     query.addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY);
-    query.addFields(returnAlias, ALS_RETURNED_QTY);
+    query.addFields(returnAlias, TradeActConstants.ALS_RETURNED_QTY);
     query.addField(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY, ALS_REMAINING_QTY);
 
     query.addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_PRICE);
@@ -853,8 +859,8 @@ public class TradeActBean {
     SqlUpdate update = new SqlUpdate(tmp)
         .addExpression(ALS_REMAINING_QTY,
             SqlUtils.minus(SqlUtils.field(tmp, COL_TRADE_ITEM_QUANTITY),
-                SqlUtils.field(tmp, ALS_RETURNED_QTY)))
-        .setWhere(SqlUtils.positive(tmp, ALS_RETURNED_QTY));
+                SqlUtils.field(tmp, TradeActConstants.ALS_RETURNED_QTY)))
+        .setWhere(SqlUtils.positive(tmp, TradeActConstants.ALS_RETURNED_QTY));
 
     qs.updateData(update);
 
@@ -910,7 +916,8 @@ public class TradeActBean {
           COL_SERIES_NAME, COL_TA_NUMBER, COL_OPERATION_NAME,
           ALS_COMPANY_NAME, COL_COMPANY_OBJECT_NAME,
           itemIdName, ALS_ITEM_NAME, COL_ITEM_ARTICLE,
-          COL_TRADE_ITEM_QUANTITY, ALS_UNIT_NAME, ALS_RETURNED_QTY, ALS_REMAINING_QTY,
+          COL_TRADE_ITEM_QUANTITY, ALS_UNIT_NAME,
+          TradeActConstants.ALS_RETURNED_QTY, ALS_REMAINING_QTY,
           COL_TRADE_ITEM_PRICE, ALS_BASE_AMOUNT, COL_TRADE_DISCOUNT, ALS_DISCOUNT_AMOUNT,
           ALS_TOTAL_AMOUNT);
 
@@ -971,7 +978,7 @@ public class TradeActBean {
       }
 
       query.addSum(tmp, COL_TRADE_ITEM_QUANTITY);
-      query.addSum(tmp, ALS_RETURNED_QTY);
+      query.addSum(tmp, TradeActConstants.ALS_RETURNED_QTY);
       query.addSum(tmp, ALS_REMAINING_QTY);
       query.addSum(tmp, ALS_BASE_AMOUNT);
       query.addSum(tmp, ALS_DISCOUNT_AMOUNT);
@@ -1358,8 +1365,13 @@ public class TradeActBean {
             rangeAlias, COL_TA_INVOICE_ITEM));
 
     if (groupBy.isEmpty()) {
+      query.addFromLeft(TBL_SALES_SERIES,
+          sys.joinTables(TBL_SALES_SERIES, TBL_SALES, COL_TRADE_SALE_SERIES));
+
       query.addFields(TBL_SALE_ITEMS, COL_SALE);
-      query.addFields(TBL_SALES, COL_TRADE_DATE, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO);
+      query.addFields(TBL_SALES, COL_TRADE_DATE);
+      query.addField(TBL_SALES_SERIES, COL_SERIES_NAME, COL_TRADE_INVOICE_PREFIX);
+      query.addFields(TBL_SALES, COL_TRADE_INVOICE_NO);
       query.addFields(rangeAlias, COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO);
     }
 

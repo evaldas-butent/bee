@@ -18,6 +18,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class ImportOptionMappingsForm extends AbstractFormInterceptor {
 
@@ -65,6 +66,9 @@ public class ImportOptionMappingsForm extends AbstractFormInterceptor {
       ImportProperty prop = new ImportProperty(name, Data.getColumnLabel(viewName, name), true);
 
       if (!BeeUtils.isEmpty(col.getRelation())) {
+        if (Objects.isNull(Data.getDataInfo(col.getRelation(), false))) {
+          continue;
+        }
         prop.setRelation(col.getRelation());
       }
       props.put(prop.getName(), prop);

@@ -253,21 +253,13 @@
           </fieldset>
 
           <fieldset>
-            <legend>=cargoHandlingPlaces</legend>
+            <legend>=cargoLoadingPlaces</legend>
             <div style="max-height:500px; overflow:auto;">
-              <table id="Handling">
+              <table id="Loading">
                 <tbody>
                   <tr>
                     <td>
-                      <span style="cursor:pointer; visibility:hidden;"
-                            onclick="drop(this.id)">-
-                      </span>
-                    </td>
-                    <td style="text-align:center; font-weight:bold;">
-                      <label style="float:none;">=loading</label>
-                    </td>
-                    <td style="text-align:center; font-weight:bold;">
-                      <label style="float:none;">=unloading</label>
+                      <span style="cursor:pointer; visibility:hidden;" onclick="drop(this.id)">-</span>
                     </td>
                   </tr>
                   <tr>
@@ -277,9 +269,6 @@
                     <td>
                       <input name="LoadingDate" type="date" required="required" />
                     </td>
-                    <td>
-                      <input name="UnloadingDate" type="date" required="required" />
-                    </td>
                   </tr>
                   <tr>
                     <td>
@@ -288,21 +277,14 @@
                     <td>
                       <input name="LoadingTime" type="time" />
                     </td>
-                    <td>
-                      <input name="UnloadingTime" type="time" />
-                    </td>
                   </tr>
                   <tr>
                     <td>
                       <label>=country</label>
                     </td>
                     <td>
-                      <input name="LoadingCountry" type="text" required="required" maxlength="60"
-                             list="Countries-Name" />
-                    </td>
-                    <td>
-                      <input name="UnloadingCountry" type="text" required="required" maxlength="60"
-                             list="Countries-Name" />
+                      <input name="LoadingCountryUnbound" type="text" required="required"
+                             maxlength="60" list="Countries-Name" />
                     </td>
                   </tr>
                   <tr>
@@ -310,12 +292,8 @@
                       <label>=city</label>
                     </td>
                     <td>
-                      <input name="LoadingCity" type="text" required="required" maxlength="30"
-                             list="Cities-Name" />
-                    </td>
-                    <td>
-                      <input name="UnloadingCity" type="text" required="required" maxlength="30"
-                             list="Cities-Name" />
+                      <input name="LoadingCityUnbound" type="text" required="required"
+                             maxlength="60" list="Cities-Name" />
                     </td>
                   </tr>
                   <tr>
@@ -324,10 +302,6 @@
                     </td>
                     <td>
                       <input name="LoadingAddress" type="text" required="required"
-                             maxlength="100" />
-                    </td>
-                    <td>
-                      <input name="UnloadingAddress" type="text" required="required"
                              maxlength="100" />
                     </td>
                   </tr>
@@ -339,6 +313,103 @@
                       <input name="LoadingPostIndex" type="text" required="required"
                              maxlength="20" />
                     </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=company</label>
+                    </td>
+                    <td>
+                      <input name="LoadingCompany" type="text" maxlength="100" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=companyPerson</label>
+                    </td>
+                    <td>
+                      <input name="LoadingContact" type="text" maxlength="50" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=ref</label>
+                    </td>
+                    <td>
+                      <input name="LoadingNumber" type="text" maxlength="50" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=trLoadedKilometers</label>
+                    </td>
+                    <td>
+                      <input name="LoadingLoadedKilometers" type="number" maxlength="5" />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <span style="cursor:pointer;" onclick="replicate('Loading')">+</span>
+            <input id="LoadingCounter" type="hidden" value="1" disabled="disabled" />
+          </fieldset>
+
+          <fieldset>
+            <legend>=cargoUnloadingPlaces</legend>
+            <div style="max-height:500px; overflow:auto;">
+              <table id="Unloading">
+                <tbody>
+                  <tr>
+                    <td>
+                      <span style="cursor:pointer; visibility:hidden;" onclick="drop(this.id)">-</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=date</label>
+                    </td>
+                    <td>
+                      <input name="UnloadingDate" type="date" required="required" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=time</label>
+                    </td>
+                    <td>
+                      <input name="UnloadingTime" type="time" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=country</label>
+                    </td>
+                    <td>
+                      <input name="UnloadingCountryUnbound" type="text" required="required"
+                             maxlength="60" list="Countries-Name" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=city</label>
+                    </td>
+                    <td>
+                      <input name="UnloadingCityUnbound" type="text" required="required"
+                             maxlength="60" list="Cities-Name" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=address</label>
+                    </td>
+                    <td>
+                      <input name="UnloadingAddress" type="text" required="required"
+                             maxlength="100" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=postIndex</label>
+                    </td>
                     <td>
                       <input name="UnloadingPostIndex" type="text" required="required"
                              maxlength="20" />
@@ -349,12 +420,7 @@
                       <label>=company</label>
                     </td>
                     <td>
-                      <input name="LoadingCompany" type="text" required="required"
-                             maxlength="100" />
-                    </td>
-                    <td>
-                      <input name="UnloadingCompany" type="text" required="required"
-                             maxlength="100" />
+                      <input name="UnloadingCompany" type="text" maxlength="100" />
                     </td>
                   </tr>
                   <tr>
@@ -362,11 +428,7 @@
                       <label>=companyPerson</label>
                     </td>
                     <td>
-                      <input name="LoadingContact" type="text" required="required" maxlength="50" />
-                    </td>
-                    <td>
-                      <input name="UnloadingContact" type="text" required="required"
-                             maxlength="50" />
+                      <input name="UnloadingContact" type="text" required="required" maxlength="50" />
                     </td>
                   </tr>
                   <tr>
@@ -374,17 +436,22 @@
                       <label>=ref</label>
                     </td>
                     <td>
-                      <input name="LoadingNumber" type="text" maxlength="50" />
+                      <input name="UnloadingNumber" type="text" maxlength="50" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=trLoadedKilometers</label>
                     </td>
                     <td>
-                      <input name="UnloadingNumber" type="text" maxlength="50" />
+                      <input name="UnloadingLoadedKilometers" type="number" maxlength="5" />
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
-            <span style="cursor:pointer;" onclick="replicate('Handling')">+</span>
-            <input id="HandlingCounter" type="hidden" value="1" disabled="disabled" />
+            <span style="cursor:pointer;" onclick="replicate('Unloading')">+</span>
+            <input id="UnloadingCounter" type="hidden" value="1" disabled="disabled" />
           </fieldset>
 
           <fieldset>
@@ -396,7 +463,7 @@
                     <label for="Description">=trRequestCargoDescription</label>
                   </td>
                   <td>
-                    <input type="text" id="Description" name="Description" />
+                    <input type="text" id="Description" name="Description" required="required" />
                   </td>
                 </tr>
                 <tr>
@@ -515,14 +582,6 @@
                     </td>
                     <td>
                       <select id="ShippingTerms-Name" name="ShippingTerm" required="required" />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <label for="LoadedKilometers">=trLoadedKilometers</label>
-                    </td>
-                    <td>
-                      <input id="LoadedKilometers" name="LoadedKilometers" type="number" maxlength="5" />
                     </td>
                   </tr>
                   <tr>

@@ -11,7 +11,7 @@
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="TradeOperation" viewName="TradeOperations" caption="=trdOperation"
-        width="750" widthUnit="px" height="70" heightUnit="vh"
+        width="70" widthUnit="vw" height="70" heightUnit="vh"
 >
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls" style="margin: 1ex 1em;">
@@ -56,7 +56,11 @@
 
       <row>
         <Label for="OperationVatMode" />
-        <ListBox source="OperationVatMode" style="&lstw;" />
+        <FlowPanel>
+          <ListBox source="OperationVatMode" style="7rem" />
+          <InlineLabel for="VatPercent" style="margin-left: 32px; margin-right: 5px;" />
+          <InputDecimal source="VatPercent" style="width: 40px;" />
+        </FlowPanel>
 
         <Label for="OperationDiscountMode" />
         <ListBox source="OperationDiscountMode" style="&lstw;" />
@@ -88,14 +92,42 @@
     </Table>
 
     <TabbedPages class="flexible">
-      <page data="Dimensions">
+      <page>
         <text>=dimensions</text>
         <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
       </page>
 
       <page module="Finance" data="TradeAccounts">
         <text>=finAccounts</text>
-        <xi:include href="widgets/TradeAccounts.widget.xml" />
+        <FlowPanel class="flexBox-horizontal-top">
+          <xi:include href="widgets/TradeAccounts.widget.xml" />
+
+          <SimplePanel style="margin-left: 5%;">
+            <Table kind="controls">
+              <col index="0" kind="label" />
+
+              <row>
+                <Label for="Consignment" />
+                <InputInteger source="Consignment" style="width: 3em;" minValue="1" maxValue="2"
+                              summarize="true" />
+              </row>
+
+              <row>
+                <Label for="ConsignmentDebit" />
+                <DataSelector source="ConsignmentDebit" style="width: 6em;" newRowEnabled="false"
+                              choiceColumns="AccountCode AccountName"
+                              renderColumns="ConsignmentDebitCode" summarize="true" />
+              </row>
+
+              <row>
+                <Label for="ConsignmentCredit" />
+                <DataSelector source="ConsignmentCredit" style="width: 6em;" newRowEnabled="false"
+                              choiceColumns="AccountCode AccountName"
+                              renderColumns="ConsignmentCreditCode" summarize="true" />
+              </row>
+            </Table>
+          </SimplePanel>
+        </FlowPanel>
       </page>
 
       <page module="Finance Trade">

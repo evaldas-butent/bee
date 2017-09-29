@@ -7,13 +7,17 @@
   <Columns>
     <SimpleColumn name="Code" />
     <SimpleColumn name="Name" />
-    <SimpleColumn name="Description" />
-    <SimpleColumn name="SupplierCode" />
 
     <SimpleColumn name="Branch" />
     <SimpleJoin joinType="LEFT" name="Branch">
       <SimpleColumn alias="BranchName" name="Name" />
     </SimpleJoin>
+
+    <SimpleColumn name="SupplierCode" />
+
+    <SimpleColumn name="Consignment" />
+
+    <SimpleColumn name="Description" />
 
     <SimpleJoin name="Contact" joinType="LEFT">
       <SimpleColumn name="Phone" />
@@ -43,9 +47,7 @@
       <SimpleColumn name="SocialContacts" />
     </SimpleJoin>
 
-    <SimpleJoin name="Dimensions" joinType="LEFT">
-      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
-    </SimpleJoin>
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
     <SimpleJoin name="TradeAccounts" joinType="LEFT">
       <xi:include href="viewcolumns/TradeAccounts.viewcolumns.xml" />
     </SimpleJoin>

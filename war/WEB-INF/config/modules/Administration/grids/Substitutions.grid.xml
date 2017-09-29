@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="Substitutions" viewName="Substitutions" caption="=substitutions"
+>
+  <g:columns>
+    <RelColumn name="User" visible="true" />
+    <RelColumn name="Substitute" visible="true" />
+
+    <RelColumn name="SubstitutionReason" minWidth="100" flexGrow="1" visible="true"
+               renderColumns="SubstitutionReasonName"
+               backgroundSource="Background" foregroundSource="Foreground" />
+
+    <DataColumn name="SubstituteFrom" />
+
+    <DataColumn name="Executed">
+      <style>
+        <bodyStyle>
+          <ui:inline>color:silver;</ui:inline>
+        </bodyStyle>
+      </style>
+    </DataColumn>
+  </g:columns>
+
+  <g:rowEditable>
+    <ui:expression>!row.Executed</ui:expression>
+  </g:rowEditable>
+</g:Grid>

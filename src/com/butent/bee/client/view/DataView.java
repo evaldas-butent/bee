@@ -7,6 +7,7 @@ import com.butent.bee.client.data.HasDataRows;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
 
@@ -24,9 +25,9 @@ public interface DataView extends View, NotificationListener, HasViewName, HasAc
 
   List<BeeColumn> getDataColumns();
 
-  int getDataIndex(String source);
-
-  String getOptions();
+  default int getDataIndex(String source) {
+    return DataUtils.getColumnIndex(source, getDataColumns());
+  }
 
   Map<String, String> getProperties();
 

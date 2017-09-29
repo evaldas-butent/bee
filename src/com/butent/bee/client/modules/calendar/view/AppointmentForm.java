@@ -10,7 +10,7 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.modules.mail.Relations;
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.edit.EditableWidget;
@@ -57,7 +57,7 @@ public class AppointmentForm extends AbstractFormInterceptor {
             Data.setValue(VIEW_TASKS, row, COL_COMPANY, companyId);
             Data.setValue(VIEW_TASKS, row, ALS_COMPANY_NAME, company);
           }
-          RowFactory.createRelatedRow(formName, row, selector, null);
+          RowFactory.createRelatedRow(formName, row, selector);
         }
       } else {
         Filter filter = null;

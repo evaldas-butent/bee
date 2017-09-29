@@ -24,14 +24,19 @@
     <Relation name="Currency" relation="Currencies" notNull="true" defExpr="MAIN_CURRENCY"
               label="=currency" />
 
+    <Numeric name="Quantity" precision="15" scale="5" label="=quantity" />
+
     <Relation name="TradeDocument" relation="TradeDocuments" cascade="DELETE"
               label="=trdDocumentLong" />
     <Relation name="TradePayment" relation="TradePayments" cascade="DELETE"
               label="=trdPayment" />
 
+    <Enum name="PrepaymentKind" key="PrepaymentKind" label="=prepaymentKind" />
+    <Relation name="PrepaymentParent" relation="FinancialRecords" label="=prepaymentParent" />
+
     <Relation name="Employee" relation="Employees" label="=employee" />
 
-    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
               label="=dimensions" />
   </Fields>
 

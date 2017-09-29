@@ -3,76 +3,61 @@ package com.butent.bee.client.modules.transport;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_CURRENCY;
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
-import com.butent.bee.client.view.ViewHelper;
-import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.client.widget.IntegerLabel;
-import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
-import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
+import java.util.Set;
 
-class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Handler {
+class OrderCargoForm extends AbstractFormInterceptor {
 
-  static void preload(final ScheduledCommand command) {
-    Global.getParameter(PRM_CARGO_TYPE, new Consumer<String>() {
-      @Override
-      public void accept(String input) {
-        if (DataUtils.isId(input)) {
-          Queries.getRow(VIEW_CARGO_TYPES, BeeUtils.toLong(input), new RowCallback() {
-            @Override
-            public void onFailure(String... reason) {
-              super.onFailure(reason);
-              defaultCargoType = null;
-              command.execute();
-            }
+  private FaLabel copyAction;
 
-            @Override
-            public void onSuccess(BeeRow result) {
-              defaultCargoType = result;
-              command.execute();
-            }
-          });
+  static void preload(Runnable command) {
+    Long typeId = Global.getParameterRelation(PRM_CARGO_TYPE);
 
-        } else {
+    if (DataUtils.isId(typeId)) {
+      Queries.getRow(VIEW_CARGO_TYPES, typeId, new RowCallback() {
+        @Override
+        public void onFailure(String... reason) {
+          RowCallback.super.onFailure(reason);
           defaultCargoType = null;
-          command.execute();
+          command.run();
         }
-      }
-    });
+
+        @Override
+        public void onSuccess(BeeRow result) {
+          defaultCargoType = result;
+          command.run();
+        }
+      });
+    } else {
+      defaultCargoType = null;
+      command.run();
+    }
   }
 
   private static IsRow defaultCargoType;
@@ -81,82 +66,23 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
-    if (BeeUtils.same(name, COL_CURRENCY) && widget instanceof DataSelector) {
-      final DataSelector selector = (DataSelector) widget;
-
-      selector.addEditStopHandler(event -> {
-        if (event.isChanged()) {
-          refresh(BeeUtils.toLongOrNull(selector.getNormalizedValue()));
-        }
-      });
-    } else if (widget instanceof ChildGrid) {
+    if (widget instanceof ChildGrid) {
       switch (name) {
         case TBL_CARGO_INCOMES:
-          final FormView form = getFormView();
-
-          ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+          ((ChildGrid) widget).setGridInterceptor(new CargoIncomesGrid() {
             @Override
-            public void afterDeleteRow(long rowId) {
-              refresh(form.getLongValue(COL_CURRENCY));
-            }
-
-            @Override
-            public void afterInsertRow(IsRow result) {
-              refresh(form.getLongValue(COL_CURRENCY));
-            }
-
-            @Override
-            public void afterUpdateCell(IsColumn column, String oldValue, String newValue,
-                IsRow result, boolean rowMode) {
-              if (BeeUtils.inListSame(column.getId(), COL_DATE, COL_AMOUNT, COL_CURRENCY,
-                  COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)) {
-                refresh(form.getLongValue(COL_CURRENCY));
+            public boolean previewModify(Set<Long> rowIds) {
+              if (super.previewModify(rowIds)) {
+                Data.refreshLocal(TBL_CARGO_TRIPS);
+                return true;
               }
-            }
-
-            @Override
-            public GridInterceptor getInstance() {
-              return null;
+              return false;
             }
           });
           break;
 
         case TBL_CARGO_EXPENSES:
-          ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
-            @Override
-            public void afterCreateEditor(String source, Editor editor, boolean embedded) {
-              if (BeeUtils.same(source, COL_CARGO_INCOME) && editor instanceof DataSelector) {
-                ((DataSelector) editor).addSelectorHandler(OrderCargoForm.this);
-              }
-              super.afterCreateEditor(source, editor, embedded);
-            }
-
-            @Override
-            public ColumnDescription beforeCreateColumn(GridView gridView,
-                ColumnDescription descr) {
-              if (!TransportHandler.bindExpensesToIncomes()
-                  && Objects.equals(descr.getId(), COL_CARGO_INCOME)) {
-                return null;
-              }
-              return super.beforeCreateColumn(gridView, descr);
-            }
-
-            @Override
-            public GridInterceptor getInstance() {
-              return null;
-            }
-          });
-          break;
-
-        case TBL_CARGO_LOADING:
-        case TBL_CARGO_UNLOADING:
-          ((ChildGrid) widget).addReadyHandler(re -> {
-            GridView gridView = ViewHelper.getChildGrid(getFormView(), name);
-
-            if (gridView != null) {
-              gridView.getGrid().addMutationHandler(mu -> refreshKilometers());
-            }
-          });
+          ((ChildGrid) widget).setGridInterceptor(new CargoExpensesGrid());
           break;
 
         case VIEW_CARGO_TRIPS:
@@ -168,10 +94,8 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
-    refresh(row.getLong(form.getDataIndex(COL_CURRENCY)));
-    refreshKilometers();
-
     Widget cmrWidget = form.getWidgetBySource(COL_CARGO_CMR);
+
     if (cmrWidget instanceof DataSelector) {
       Filter filter;
 
@@ -193,13 +117,6 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
   }
 
   @Override
-  public void onDataSelector(SelectorEvent event) {
-    if (BeeUtils.same(event.getRelatedViewName(), TBL_CARGO_INCOMES) && event.isOpened()) {
-      event.getSelector().setAdditionalFilter(Filter.equals(COL_CARGO, getActiveRowId()));
-    }
-  }
-
-  @Override
   public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
@@ -210,94 +127,39 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
     }
     header.addCommandItem(new Profit(COL_CARGO, BeeUtils.toString(row.getId())));
 
+    if (!DataUtils.isNewRow(row)) {
+      header.addCommandItem(getCopyAction());
+    }
+
     return true;
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow row) {
     form.getViewPresenter().getHeader().clearCommandPanel();
 
     if (defaultCargoType != null) {
-      RelationUtils.updateRow(Data.getDataInfo(form.getViewName()), COL_CARGO_TYPE, newRow,
+      RelationUtils.updateRow(Data.getDataInfo(form.getViewName()), COL_CARGO_TYPE, row,
           Data.getDataInfo(VIEW_CARGO_TYPES), defaultCargoType, true);
     }
   }
 
-  private void refresh(Long currency) {
-    final FormView form = getFormView();
-    final Widget widget = form.getWidgetByName(COL_AMOUNT);
+  private IdentifiableWidget getCopyAction() {
+    if (copyAction == null) {
+      copyAction = new FaLabel(FontAwesome.COPY);
+      copyAction.setTitle(Localized.dictionary().actionCopy());
 
-    if (widget != null) {
-      widget.getElement().setInnerText(null);
+      copyAction.addClickHandler(clickEvent -> {
+        final Long orderId = getLongValue(COL_ORDER);
 
-      if (!DataUtils.isId(getActiveRow().getId())) {
-        return;
-      }
-      ParameterList args = TransportHandler.createArgs(SVC_GET_CARGO_TOTAL);
-      args.addDataItem(COL_CARGO, getActiveRow().getId());
-
-      if (DataUtils.isId(currency)) {
-        args.addDataItem(COL_CURRENCY, currency);
-      }
-      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          response.notify(form);
-
-          if (response.hasErrors()) {
-            return;
-          }
-          widget.getElement().setInnerText(response.getResponseAsString());
+        if (DataUtils.isId(orderId)) {
+          Global.confirm(Localized.dictionary().trCopyOrder(), () ->
+              TransportUtils.copyOrderWithCargos(orderId, Filter.compareId(getActiveRowId()),
+                  (newOrderId, newCargos) ->
+                  RowEditor.open(getViewName(), BeeUtils.peek(newCargos).getId())));
         }
       });
-      ChildGrid grid = (ChildGrid) getWidgetByName(VIEW_CARGO_TRIPS);
-
-      if (Objects.nonNull(grid) && Objects.nonNull(grid.getPresenter())) {
-        grid.getPresenter().refresh(false, false);
-      }
     }
-  }
-
-  private void refreshKilometers() {
-    Integer emptyKm = null;
-    Integer loadedKm = null;
-
-    for (String view : new String[] {TBL_CARGO_LOADING, TBL_CARGO_UNLOADING}) {
-      GridView grid = ViewHelper.getChildGrid(getFormView(), view);
-
-      if (grid != null && !grid.isEmpty()) {
-        List<? extends IsRow> childRows = grid.getRowData();
-        int emptyKmIndex = grid.getDataIndex(COL_EMPTY_KILOMETERS);
-        int loadedKmIndex = grid.getDataIndex(COL_LOADED_KILOMETERS);
-
-        for (IsRow childRow : childRows) {
-          Integer v = childRow.getInteger(emptyKmIndex);
-          if (v != null) {
-            if (emptyKm == null) {
-              emptyKm = v;
-            } else {
-              emptyKm += v;
-            }
-          }
-
-          v = childRow.getInteger(loadedKmIndex);
-          if (v != null) {
-            if (loadedKm == null) {
-              loadedKm = v;
-            } else {
-              loadedKm += v;
-            }
-          }
-        }
-      }
-    }
-    Widget widget = getFormView().getWidgetByName("TotalEmpty");
-    if (widget instanceof IntegerLabel) {
-      ((IntegerLabel) widget).setValue(emptyKm);
-    }
-    widget = getFormView().getWidgetByName("TotalLoaded");
-    if (widget instanceof IntegerLabel) {
-      ((IntegerLabel) widget).setValue(loadedKm);
-    }
+    return copyAction;
   }
 }

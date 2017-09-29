@@ -39,7 +39,6 @@
       <xs:enumeration value="update_exchange_rates" />
       <xs:enumeration value="calendar_reports" />
       <xs:enumeration value="task_list" />
-      <xs:enumeration value="task_reports" />
       <xs:enumeration value="discuss_list" />
       <xs:enumeration value="documents" />
       <xs:enumeration value="open_mail" />
@@ -53,6 +52,7 @@
       <xs:enumeration value="trailer_time_board" />
       <xs:enumeration value="assessments_grid" />
       <xs:enumeration value="service_calendar" />
+      <xs:enumeration value="car_service_calendar" />
       <xs:enumeration value="trade_act_new" />
       <xs:enumeration value="trade_act_list" />
       <xs:enumeration value="trade_documents" />
@@ -60,6 +60,8 @@
       <xs:enumeration value="finance_default_accounts" />
       <xs:enumeration value="finance_posting_precedence" />
       <xs:enumeration value="extra_dimensions" />
+      <xs:enumeration value="stages" />
+      <xs:enumeration value="service_maintenance_list" />
     </xs:restriction>
   </xs:simpleType>
 

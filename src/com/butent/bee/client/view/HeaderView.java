@@ -5,12 +5,14 @@ import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.IndexedPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.animation.HasAnimatableActivity;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.HandlesActions;
 
 import java.util.Collection;
 import java.util.Set;
@@ -29,9 +31,19 @@ public interface HeaderView extends View, IndexedPanel, Printable, HasClickHandl
 
   void addCommandItem(IdentifiableWidget widget);
 
+  void addCommandItem(HasAnimatableActivity widget, int duration);
+
   void clearCommandPanel();
 
+  boolean enableCommandByStyleName(String styleName, boolean enable);
+
+  Widget getActionWidget(Action action);
+
+  Widget getCommandByStyleName(String styleName);
+
   int getHeight();
+
+  String getRowMessage();
 
   boolean hasAction(Action action);
 
@@ -47,6 +59,8 @@ public interface HeaderView extends View, IndexedPanel, Printable, HasClickHandl
 
   boolean removeCommandByStyleName(String styleName);
 
+  void setActionHandler(HandlesActions actionHandler);
+
   void setCaption(String caption);
 
   void setCaptionTitle(String title);
@@ -55,9 +69,25 @@ public interface HeaderView extends View, IndexedPanel, Printable, HasClickHandl
 
   void setMessage(int index, String message, String styleName);
 
+  void setRowId(Long rowId);
+
+  void setRowMessage(String message);
+
   void showAction(Action action, boolean visible);
+
+  void showReadOnly(boolean readOnly);
 
   void showRowId(IsRow row);
 
   void showRowMessage(Evaluator evaluator, IsRow row);
+
+  boolean startCommandByStyleName(String styleName, int duration);
+
+  boolean stopAction(Action action);
+
+  default boolean stopCommandByStyleName(String styleName) {
+    return stopCommandByStyleName(styleName, false);
+  }
+
+  boolean stopCommandByStyleName(String styleName, boolean disableAnimation);
 }

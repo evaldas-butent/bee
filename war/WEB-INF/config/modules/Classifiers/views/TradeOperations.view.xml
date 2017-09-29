@@ -4,6 +4,7 @@
       name="TradeOperations" source="TradeOperations"
       caption="=trdOperations" newRowCaption="=trdNewOperation"
       newRowForm="TradeOperation" editForm="TradeOperation"
+      module="Trade Transport Orders Service"
 >
   <Columns>
     <SimpleColumn name="OperationName" />
@@ -14,6 +15,8 @@
     <SimpleColumn name="Price" />
 
     <SimpleColumn name="OperationVatMode" />
+    <SimpleColumn name="VatPercent" />
+
     <SimpleColumn name="OperationDiscountMode" />
 
     <SimpleColumn name="WarehouseFrom" />
@@ -34,11 +37,21 @@
 
     <SimpleColumn name="IsDefault" />
 
-    <SimpleJoin name="Dimensions" joinType="LEFT">
-      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
-    </SimpleJoin>
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
     <SimpleJoin name="TradeAccounts" joinType="LEFT">
       <xi:include href="viewcolumns/TradeAccounts.viewcolumns.xml" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Consignment" />
+
+    <SimpleColumn name="ConsignmentDebit" />
+    <SimpleJoin joinType="LEFT" name="ConsignmentDebit">
+      <SimpleColumn name="AccountCode" alias="ConsignmentDebitCode" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ConsignmentCredit" />
+    <SimpleJoin joinType="LEFT" name="ConsignmentCredit">
+      <SimpleColumn name="AccountCode" alias="ConsignmentCreditCode" />
     </SimpleJoin>
 
     <SimpleColumn name="Background" />

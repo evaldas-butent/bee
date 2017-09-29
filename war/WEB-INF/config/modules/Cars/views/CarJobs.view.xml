@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="CarJobs" source="CarJobs" caption="=serviceJobs"
+      newRowCaption="=newServiceJob" editForm="CarJob" newRowForm="CarJob"
+>
+  <Columns>
+    <SimpleColumn name="Item"/>
+    <SimpleJoin joinType="LEFT" name="Item">
+      <SimpleColumn name="Name" alias="ItemName" />
+      <SimpleColumn name="Article" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Duration" />
+
+    <SimpleColumn name="Price" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="JobGroup" />
+    <SimpleJoin joinType="LEFT" name="JobGroup">
+      <SimpleColumn name="Name" alias="JobGroupName" />
+    </SimpleJoin>
+
+    <ExternalJoin name="Job" joinType="LEFT" source="CarJobModels">
+      <HiddenColumn name="Model" />
+      <AggregateColumn name="Duration" alias="ModelDuration" aggregate="MAX" />
+      <AggregateColumn name="Price" alias="ModelPrice" aggregate="MAX" />
+      <AggregateColumn name="Currency" alias="ModelCurrency" aggregate="MAX" />
+      <SimpleJoin joinType="LEFT" name="Currency">
+        <AggregateColumn name="Name" alias="ModelCurrencyName" aggregate="MAX" />
+      </SimpleJoin>
+    </ExternalJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="ItemName" />
+    <OrderBy column="Article" />
+  </Order>
+</View>

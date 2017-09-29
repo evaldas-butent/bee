@@ -460,8 +460,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
         ok = true;
 
       } else if (COL_ITEM.equals(by) && !DataUtils.isId(query)) {
-        BeeKeeper.getScreen().notifyWarning(
-            BeeUtils.joinWords(Localized.dictionary().invalidIdValue(), query));
+        BeeKeeper.getScreen().notifyWarning(Localized.dictionary().invalidIdValue(query));
         ok = false;
 
       } else {
@@ -692,7 +691,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
       } else {
         Global.decide(Localized.dictionary().goods(),
-            Lists.newArrayList(Localized.dictionary().taSaveSelectedItems()),
+            Lists.newArrayList(Localized.dictionary().saveSelectedItems()),
             new DecisionCallback() {
               @Override
               public void onConfirm() {
@@ -875,9 +874,11 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
           STYLE_ID_PREFIX + STYLE_CELL_SUFFIX);
 
       table.setText(r, c++, DataUtils.join(items.getColumns(), item, typeIndexes,
-          BeeConst.STRING_EOL), STYLE_TYPE_PREFIX + STYLE_CELL_SUFFIX);
+          BeeConst.STRING_EOL, Format.getDateRenderer(), Format.getDateTimeRenderer()),
+          STYLE_TYPE_PREFIX + STYLE_CELL_SUFFIX);
       table.setText(r, c++, DataUtils.join(items.getColumns(), item, groupIndexes,
-          BeeConst.STRING_EOL), STYLE_GROUP_PREFIX + STYLE_CELL_SUFFIX);
+          BeeConst.STRING_EOL, Format.getDateRenderer(), Format.getDateTimeRenderer()),
+          STYLE_GROUP_PREFIX + STYLE_CELL_SUFFIX);
 
       if (isOrder) {
         int notMnfctIdx = items.getColumnIndex(COL_ITEM_NOT_MANUFACTURED);

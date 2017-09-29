@@ -2,7 +2,7 @@
 <Table xmlns="http://www.butent.com/table" name="OrderItems" idName="OrderItemID">
   <Fields>
 
-    <Relation name="Order" notNull="true" relation="Orders" cascade="DELETE" label="=order" />
+    <Relation name="Order" relation="Orders" cascade="DELETE" label="=order" />
     <Relation name="Item" notNull="true" relation="Items" label="=item" />
     <Numeric name="ResRemainder" precision="12" scale="5" label="=ordResRemainder" />
     <Numeric name="Quantity" precision="12" scale="3" notNull="true" label="=quantity" />
@@ -19,5 +19,7 @@
     <Date name="SupplierTerm" label="=ordSupplierTerm" />
     <Relation name="Parent" relation="OrderItems" label="=taParent" cascade="SET_NULL"/>
     <Text name="Note" label="=note" />
+
+    <Relation name="ServiceItem" relation="ServiceItems" cascade="DELETE" label="=svcMaintenance" />
   </Fields>
 </Table>

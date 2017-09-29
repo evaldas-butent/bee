@@ -13,9 +13,11 @@
     <Integer name="Ordinal" label="=ordinal" />
 
     <Enum name="Kind" key="TradeActKind" label="=taKind" />
-    <Enum name="Price" key="ItemPrice" label="=price" />
+    <Enum name="Price" key="ItemPrice" label="=price" precision="2" />
 
     <Enum name="OperationVatMode" key="TradeVatMode" label="=vatMode" />
+    <Numeric name="VatPercent" precision="3" label="=vatPercent" />
+
     <Enum name="OperationDiscountMode" key="TradeDiscountMode" label="=discountMode" />
 
     <Relation name="WarehouseFrom" relation="Warehouses" label="=trdWarehouseFrom" />
@@ -27,10 +29,14 @@
 
     <Boolean name="IsDefault" label="=trdOperationDefault" />
 
-    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
               label="=dimensions" />
     <Relation name="TradeAccounts" unique="true" relation="TradeAccounts" editable="true"
               label="=finTradeAccounts" />
+
+    <Numeric name="Consignment" precision="1" label="=consignment" />
+    <Relation name="ConsignmentDebit" relation="ChartOfAccounts" label="=consignmentDebit" />
+    <Relation name="ConsignmentCredit" relation="ChartOfAccounts" label="=consignmentCredit" />
 
     <String name="Background" precision="100" label="=backgroundColor" />
     <String name="Foreground" precision="100" label="=foregroundColor" />

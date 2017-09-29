@@ -2,14 +2,19 @@
 <!DOCTYPE Form>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
 
-        name="CargoPlaceUnbound" width="450" height="550"
+        name="CargoPlaceUnbound" width="450" height="560"
 >
   <Table kind="controls">
     <col index="0" kind="label" />
     <col index="2" kind="label" />
     <row>
       <Label for="Date" class="bee-required" />
-      <InputDateTime source="Date" required="true" />
+      <FlowPanel class="flexBox-horizontal">
+        <InputDateTime source="Date" required="true" />
+        <FaLabel name="DateQst" char="question_circle" disablable="false"
+                 style="display: inline-block; margin: 5px;"
+                 title="=trRequestDateTitle" />
+      </FlowPanel>
     </row>
     <row>
       <Label for="Company" />

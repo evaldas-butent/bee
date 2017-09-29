@@ -9,13 +9,13 @@ import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.client.composite.Relations.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.UserInfo;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.data.Data;
@@ -23,15 +23,13 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.event.logical.MutationEvent;
-import com.butent.bee.client.event.logical.MutationEvent.Handler;
 import com.butent.bee.client.eventsboard.EventsBoard.EventFilesFilter;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Split;
@@ -40,6 +38,7 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.HeaderView;
@@ -49,7 +48,6 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -131,16 +129,12 @@ public class RequestEditor extends ProductSupportInterceptor {
 
     if (BeeUtils.same(name, "Split") && widget instanceof Split) {
       split = (Split) widget;
-      split.addMutationHandler(new Handler() {
+      split.addMutationHandler(event -> {
+        int size = split.getDirectionSize(Direction.WEST);
 
-        @Override
-        public void onMutation(MutationEvent event) {
-          int size = split.getDirectionSize(Direction.WEST);
-
-          String key = getStorageKey(NAME_REQUEST_TREE);
-          if (size > 0 && !BeeUtils.isEmpty(key)) {
-            BeeKeeper.getStorage().set(key, size);
-          }
+        String key = getStorageKey(NAME_REQUEST_TREE);
+        if (size > 0 && !BeeUtils.isEmpty(key)) {
+          BeeKeeper.getStorage().set(key, size);
         }
       });
     } else if (widget instanceof Flow && BeeUtils.same(name, WIDGET_REQUEST_COMMENTS)) {
@@ -288,9 +282,9 @@ public class RequestEditor extends ProductSupportInterceptor {
 
       if (column.getType() == ValueType.DATE_TIME) {
         long oldMillis = BeeUtils.toLong(oldValue);
-        oldValue = new DateTime(oldMillis).toString();
+        oldValue = Format.renderDateTime(oldMillis);
         long newMillis = BeeUtils.toLong(newValue);
-        newValue = new DateTime(newMillis).toString();
+        newValue = Format.renderDateTime(newMillis);
       }
 
       oldDataMap.put(column.getId(), oldValue);
@@ -346,20 +340,17 @@ public class RequestEditor extends ProductSupportInterceptor {
       ParameterList params = TasksKeeper.createArgs(SVC_GET_REQUEST_FILES);
       params.addDataItem(COL_REQUEST, row.getId());
 
-      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          response.notify(form);
+      BeeKeeper.getRpc().makePostRequest(params, response -> {
+        response.notify(form);
 
-          if (response.hasErrors()) {
-            return;
-          }
-          List<FileInfo> files = FileInfo.restoreCollection((String) response.getResponse());
+        if (response.hasErrors()) {
+          return;
+        }
+        List<FileInfo> files = FileInfo.restoreCollection((String) response.getResponse());
 
-          if (!files.isEmpty()) {
-            for (FileInfo file : files) {
-              ((FileGroup) fileWidget).addFile(file);
-            }
+        if (!files.isEmpty()) {
+          for (FileInfo file : files) {
+            ((FileGroup) fileWidget).addFile(file);
           }
         }
       });
@@ -475,13 +466,9 @@ public class RequestEditor extends ProductSupportInterceptor {
       newValues.add(comment);
 
       Queries.update(form.getViewName(), row.getId(), row.getVersion(), columns, oldValues,
-          newValues, form.getChildrenForUpdate(), new RowCallback() {
-
-            @Override
-            public void onSuccess(BeeRow result) {
-              finishRequestWithTask(result, time, type, comment, date);
-              new FinishSaveCallback(form).onSuccess(result);
-            }
+          newValues, form.getChildrenForUpdate(), result -> {
+            finishRequestWithTask(result, time, type, comment, date);
+            new FinishSaveCallback(form).onSuccess(result);
           });
       dialog.close();
     });
@@ -605,8 +592,8 @@ public class RequestEditor extends ProductSupportInterceptor {
           .getString(form.getDataIndex(COL_PRODUCT)));
     }
 
-    taskRow.setProperty(PROP_EXECUTORS, user);
-    taskRow.setProperty(PROP_REQUESTS, reqRow.getId());
+    taskRow.setProperty(PROP_EXECUTORS, DataUtils.buildIdList(user));
+    taskRow.setProperty(PFX_RELATED + VIEW_REQUESTS,  DataUtils.buildIdList(reqRow.getId()));
 
     BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_TASKS, taskDataInfo.getColumns(),
         taskRow, Sets.newHashSet(COL_EXECUTOR, COL_STATUS), true);
@@ -618,19 +605,15 @@ public class RequestEditor extends ProductSupportInterceptor {
     params.addDataItem(VAR_TASK_COMMENT, comment);
     params.addDataItem(VAR_TASK_DURATION_DATE, date.serialize());
 
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+    BeeKeeper.getRpc().makePostRequest(params, response -> {
+      if (!response.hasErrors()) {
+        Map<String, String> data = Maps.newLinkedHashMap();
+        data.put(BeeUtils.toString(TaskEvent.CREATE.ordinal()), BeeUtils.toString(BeeRow.restore(
+            response.getResponseAsString()).getId()));
 
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (!response.hasErrors()) {
-          Map<String, String> data = Maps.newLinkedHashMap();
-          data.put(BeeUtils.toString(TaskEvent.CREATE.ordinal()), BeeUtils.toString(BeeRow.restore(
-              response.getResponseAsString()).getId()));
-
-          insertEventNote(reqRow.getId(), comment, Codec.beeSerialize(data), TaskEvent.CREATE,
-              null);
-          form.refresh();
-        }
+        insertEventNote(reqRow.getId(), comment, Codec.beeSerialize(data), TaskEvent.CREATE,
+            null);
+        form.refresh();
       }
     });
   }
@@ -701,37 +684,37 @@ public class RequestEditor extends ProductSupportInterceptor {
         .getString(form.getDataIndex(COL_REQUEST_CONTENT)));
 
     DataSelector managerSel = (DataSelector) form.getWidgetByName(WIDGET_MANGAER_NAME);
-    Map<Long, FileInfo> files = Maps.newHashMap();
     FileGroup filesList = (FileGroup) form.getWidgetByName(WIDGET_FILES_NAME);
 
-    for (FileInfo f : filesList.getFiles()) {
-      files.put(f.getId(), f);
+    if (filesList != null) {
+      taskRow.setProperty(PROP_FILES, Codec.beeSerialize(filesList.getFiles()));
     }
 
-    taskRow.setProperty(PROP_REQUESTS, reqRow.getId());
-    RowFactory.createRow(taskDataInfo.getNewRowForm(), null, taskDataInfo, taskRow,
-        Modality.ENABLED, null,
-        new TaskBuilder(files, BeeUtils.toLongOrNull(managerSel.getValue()), true), null,
-        new RowCallback() {
-
-          @Override
-          public void onSuccess(BeeRow result) {
-            Map<String, String> data = Maps.newLinkedHashMap();
-            data.put(BeeUtils.toString(TaskEvent.CREATE.ordinal()), result.getString(0));
-
-            insertEventNote(reqRow.getId(), null, Codec.beeSerialize(data), TaskEvent.CREATE, null);
-
-            int idxFinished = form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED);
-
-            List<BeeColumn> columns =
-                Lists.newArrayList(Data.getColumn(VIEW_REQUESTS, COL_REQUEST_FINISHED));
-            List<String> oldValues = Arrays.asList(reqRow.getString(idxFinished));
-            List<String> newValues = Arrays.asList(BeeUtils.toString(new DateTime().getTime()));
-
-            Queries.update(form.getViewName(), reqRow.getId(), reqRow.getVersion(),
-                columns, oldValues, newValues, form.getChildrenForUpdate(),
-                new FinishSaveCallback(form));
+    if (managerSel != null && BeeUtils.isLong(managerSel.getValue())) {
+      taskRow.setProperty(PROP_EXECUTORS,
+        DataUtils.buildIdList(BeeUtils.toLong(managerSel.getValue())));
+    }
+    taskRow.setProperty(PFX_RELATED + VIEW_REQUESTS, DataUtils.buildIdList(reqRow.getId()));
+    RowFactory.createRow(taskDataInfo.getNewRowForm(), null, taskDataInfo, taskRow, Opener.MODAL,
+        new TaskBuilder(true), result -> {
+          if (result == null) {
+            return;
           }
+          Map<String, String> data = Maps.newLinkedHashMap();
+          data.put(BeeUtils.toString(TaskEvent.CREATE.ordinal()), result.getString(0));
+
+          insertEventNote(reqRow.getId(), null, Codec.beeSerialize(data), TaskEvent.CREATE, null);
+
+          int idxFinished = form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED);
+
+          List<BeeColumn> columns =
+              Lists.newArrayList(Data.getColumn(VIEW_REQUESTS, COL_REQUEST_FINISHED));
+          List<String> oldValues = Arrays.asList(reqRow.getString(idxFinished));
+          List<String> newValues = Arrays.asList(BeeUtils.toString(new DateTime().getTime()));
+
+          Queries.update(form.getViewName(), reqRow.getId(), reqRow.getVersion(),
+              columns, oldValues, newValues, form.getChildrenForUpdate(),
+              new FinishSaveCallback(form));
         });
   }
 

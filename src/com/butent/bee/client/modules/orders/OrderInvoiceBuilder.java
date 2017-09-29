@@ -12,11 +12,8 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Popup;
@@ -38,7 +35,6 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -201,17 +197,14 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
       params.addDataItem(COL_ITEM_COMPLECT, Codec.beeSerialize(complects));
       params.addDataItem(Service.VAR_DATA, Codec.beeSerialize(rowSet));
 
-      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          if (!response.hasErrors()) {
-            BeeRowSet result = BeeRowSet.restore(response.getResponseAsString());
-            if (!result.isEmpty()) {
-              createInvoice(result);
-            }
-          } else {
-            getGridView().notifySevere(response.getErrors());
+      BeeKeeper.getRpc().makePostRequest(params, response -> {
+        if (!response.hasErrors()) {
+          BeeRowSet result = BeeRowSet.restore(response.getResponseAsString());
+          if (!result.isEmpty()) {
+            createInvoice(result);
           }
+        } else {
+          getGridView().notifySevere(response.getErrors());
         }
       });
 
@@ -225,8 +218,27 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
     return new OrderInvoiceBuilder();
   }
 
-  private static ParameterList getRequestArgs() {
+  public ParameterList getRequestArgs() {
     return OrdersKeeper.createSvcArgs(OrdersConstants.SVC_CREATE_INVOICE_ITEMS);
+  }
+
+  public boolean validItemForInvoice(IsRow row) {
+    return false;
+  }
+
+  private Double addFreeQuantity(Double qty, IsRow row) {
+    if (validItemForInvoice(row)) {
+      return qty;
+    }
+    return BeeConst.DOUBLE_ZERO;
+  }
+
+  private void additionalQtyCalculation(IsRow row, int comQtyIdx, Double qty,
+      Map<Long, Double> freeMap, int itemIdx) {
+    if (validItemForInvoice(row)) {
+      row.setValue(comQtyIdx, qty);
+      freeMap.put(row.getLong(itemIdx), qty);
+    }
   }
 
   private void createInvoice(final BeeRowSet data) {
@@ -276,19 +288,14 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
     newRow.setValue(targetInfo.getColumnIndex(TradeConstants.COL_TRADE_MANAGER
         + ClassifierConstants.COL_LAST_NAME), BeeKeeper.getUser().getLastName());
 
-    Global.getRelationParameter(PRM_DEFAULT_SALE_OPERATION, (t, u) -> {
+    Global.getParameterRelation(PRM_DEFAULT_SALE_OPERATION, (t, u) -> {
       if (DataUtils.isId(t)) {
         newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_OPERATION), t);
         newRow.setValue(targetInfo.getColumnIndex(COL_OPERATION_NAME), u);
         Queries.getValue(TBL_TRADE_OPERATIONS, t, COL_OPERATION_CASH_REGISTER_NO,
-            new RpcCallback<String>() {
-
-              @Override
-              public void onSuccess(String result) {
-                newRow
-                    .setValue(targetInfo.getColumnIndex(COL_OPERATION_CASH_REGISTER_NO), result);
-                getInvoiceItems(data, newRow);
-              }
+            result -> {
+              newRow.setValue(targetInfo.getColumnIndex(COL_OPERATION_CASH_REGISTER_NO), result);
+              getInvoiceItems(data, newRow);
             });
       } else {
         getInvoiceItems(data, newRow);
@@ -304,7 +311,7 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
 
     if (!itemAbsent) {
       for (BeeRow row : data) {
-        idsQty.put(row.getId(), row.getDouble(Data.getColumnIndex(VIEW_ORDER_SALES,
+        idsQty.put(row.getId(), row.getDouble(Data.getColumnIndex(getViewName(),
             COL_COMPLETED_QTY)));
         if (!DataUtils.isId(row.getLong(item))) {
           itemAbsent = true;
@@ -320,58 +327,51 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
       mainItem = null;
     }
     RowFactory.createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo,
-        newRow, null, null, null, null, new RowCallback() {
-          @Override
-          public void onSuccess(final BeeRow row) {
-            ParameterList args = getRequestArgs();
+        newRow, Opener.MODAL, null, row -> {
+          ParameterList args = getRequestArgs();
 
-            if (args != null) {
-              Map<String, String> params = new HashMap<>();
+          if (args != null) {
+            Map<String, String> params = new HashMap<>();
 
-              params.put(Service.VAR_TABLE, Data.getViewTable(getViewName()));
-              params.put(COL_SALE, String.valueOf(row.getId()));
-              params.put(Service.VAR_DATA, Codec.beeSerialize(idsQty));
-              params.put(COL_CURRENCY, row.getString(dataInfo.getColumnIndex(COL_CURRENCY)));
+            params.put(Service.VAR_TABLE, Data.getViewTable(getViewName()));
+            params.put(COL_SALE, String.valueOf(row.getId()));
+            params.put(Service.VAR_DATA, Codec.beeSerialize(idsQty));
+            params.put(COL_CURRENCY, row.getString(dataInfo.getColumnIndex(COL_CURRENCY)));
 
-              if (mainItem != null && DataUtils.isId(mainItem.get())) {
-                params.put(ClassifierConstants.COL_ITEM, BeeUtils.toString(mainItem.get()));
-              }
-              for (String prm : params.keySet()) {
-                if (!args.hasParameter(prm)) {
-                  args.addDataItem(prm, params.get(prm));
-                }
-              }
-              BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-                @Override
-                public void onResponse(ResponseObject response) {
-                  response.notify(getGridView());
-
-                  if (!response.hasErrors()) {
-                    Popup popup = UiHelper.getParentPopup(getGridView().getGrid());
-
-                    if (popup != null) {
-                      popup.close();
-                    }
-                    Data.onViewChange(getViewName(), DataChangeEvent.RESET_REFRESH);
-                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDER_CHILD_INVOICES);
-                    RowEditor.openForm(dataInfo.getEditForm(), dataInfo, Filter.compareId(row
-                        .getId()), Opener.MODAL);
-                  }
-                }
-              });
+            if (mainItem != null && DataUtils.isId(mainItem.get())) {
+              params.put(ClassifierConstants.COL_ITEM, BeeUtils.toString(mainItem.get()));
             }
+            for (String prm : params.keySet()) {
+              if (!args.hasParameter(prm)) {
+                args.addDataItem(prm, params.get(prm));
+              }
+            }
+            BeeKeeper.getRpc().makePostRequest(args, response -> {
+              response.notify(getGridView());
+
+              if (!response.hasErrors()) {
+                Popup popup = UiHelper.getParentPopup(getGridView().getGrid());
+
+                if (popup != null) {
+                  popup.close();
+                }
+                Data.onViewChange(getViewName(), DataChangeEvent.RESET_REFRESH);
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDER_CHILD_INVOICES);
+                RowEditor.openForm(dataInfo.getEditForm(), dataInfo, Filter.compareId(row.getId()));
+              }
+            });
           }
         });
   }
 
   private void getItemsAmount(ClickEvent event) {
     final Set<Long> ids = new HashSet<>();
-    int comQtyIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_COMPLETED_QTY);
-    int priceIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_ITEM_PRICE);
-    int discountIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_TRADE_DISCOUNT);
-    int vatPlusIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_TRADE_VAT_PLUS);
-    int vatIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_TRADE_VAT);
-    int vatPrcIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_TRADE_VAT_PERC);
+    int comQtyIdx = Data.getColumnIndex(getViewName(), COL_COMPLETED_QTY);
+    int priceIdx = Data.getColumnIndex(getViewName(), COL_ITEM_PRICE);
+    int discountIdx = Data.getColumnIndex(getViewName(), COL_TRADE_DISCOUNT);
+    int vatPlusIdx = Data.getColumnIndex(getViewName(), COL_TRADE_VAT_PLUS);
+    int vatIdx = Data.getColumnIndex(getViewName(), COL_TRADE_VAT);
+    int vatPrcIdx = Data.getColumnIndex(getViewName(), COL_TRADE_VAT_PERC);
 
     double totalAmount = 0;
 

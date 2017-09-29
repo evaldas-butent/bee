@@ -174,6 +174,8 @@ public class TabbedPages extends Flow implements
     private final Evaluator rowPredicate;
     private boolean enabled = true;
 
+    private SummaryChangeEvent.Renderer summaryRenderer;
+
     private Tab(Widget child, Evaluator rowPredicate) {
       this(child, null, null, rowPredicate);
     }
@@ -217,9 +219,14 @@ public class TabbedPages extends Flow implements
     public void onSummaryChange(SummaryChangeEvent event) {
       Value oldValue = summaryValues.get(event.getSourceId());
 
-      if (!Objects.equals(event.getValue(), oldValue)) {
+      if (summaryRenderer != null || !Objects.equals(event.getValue(), oldValue)) {
         summaryValues.put(event.getSourceId(), event.getValue());
-        summaryWidget.setHtml(SummaryChangeEvent.renderSummary(summaryValues.values()));
+
+        String html = (summaryRenderer == null)
+            ? SummaryChangeEvent.renderSummary(summaryValues.values())
+            : summaryRenderer.apply(summaryValues);
+
+        summaryWidget.setHtml(html);
       }
     }
 
@@ -231,6 +238,10 @@ public class TabbedPages extends Flow implements
 
     private void setSelected(boolean selected) {
       setStyleName(getStylePrefix() + "tabSelected", selected);
+    }
+
+    private void setSummaryRenderer(SummaryChangeEvent.Renderer summaryRenderer) {
+      this.summaryRenderer = summaryRenderer;
     }
 
     private boolean onDataChange(IsRow row) {
@@ -393,9 +404,20 @@ public class TabbedPages extends Flow implements
     return (getSelectedIndex() >= 0) ? getContentWidget(getSelectedIndex()) : null;
   }
 
+  public int getTabIndexByDataKey(String key) {
+    if (!BeeUtils.isEmpty(key)) {
+      for (int i = 0; i < getPageCount(); i++) {
+        if (BeeUtils.same(DomUtils.getDataKey(getTab(i).getElement()), key)) {
+          return i;
+        }
+      }
+    }
+
+    return BeeConst.UNDEF;
+  }
+
   public Widget getTabWidget(int index) {
-    checkIndex(index);
-    return getTab(index).getWidget();
+    return checkIndex(index) ? getTab(index).getWidget() : null;
   }
 
   public void insert(Widget content, String text, String summary,
@@ -421,35 +443,38 @@ public class TabbedPages extends Flow implements
   }
 
   public void removePage(int index) {
-    checkIndex(index);
+    if (checkIndex(index)) {
+      saveLayout();
 
-    saveLayout();
+      tabBar.remove(index);
+      deckPanel.remove(index);
 
-    tabBar.remove(index);
-    deckPanel.remove(index);
+      if (index == getSelectedIndex()) {
+        setSelectedIndex(BeeConst.UNDEF);
 
-    if (index == getSelectedIndex()) {
-      setSelectedIndex(BeeConst.UNDEF);
+        int page = nextEnabledPage(index);
+        if (isIndex(page)) {
+          selectPage(page, SelectionOrigin.REMOVE);
+        }
 
-      int page = nextEnabledPage(index);
-      if (isIndex(page)) {
-        selectPage(page, SelectionOrigin.REMOVE);
+      } else if (index < getSelectedIndex()) {
+        setSelectedIndex(getSelectedIndex() - 1);
       }
 
-    } else if (index < getSelectedIndex()) {
-      setSelectedIndex(getSelectedIndex() - 1);
+      checkLayout();
     }
-
-    checkLayout();
   }
 
   public void resizePage(int index) {
-    checkIndex(index);
-    deckPanel.resize(index);
+    if (checkIndex(index)) {
+      deckPanel.resize(index);
+    }
   }
 
   public boolean selectPage(int index, SelectionOrigin origin) {
-    checkIndex(index);
+    if (!checkIndex(index)) {
+      return false;
+    }
     if (index == getSelectedIndex()) {
       return true;
     }
@@ -487,9 +512,20 @@ public class TabbedPages extends Flow implements
     }
   }
 
+  public void setSummaryRenderer(int index, SummaryChangeEvent.Renderer summaryRenderer) {
+    if (checkIndex(index)) {
+      getTab(index).setSummaryRenderer(summaryRenderer);
+    }
+  }
+
+  public void setSummaryRenderer(String tabKey, SummaryChangeEvent.Renderer summaryRenderer) {
+    setSummaryRenderer(getTabIndexByDataKey(tabKey), summaryRenderer);
+  }
+
   public void setTabStyle(int index, String style, boolean add) {
-    checkIndex(index);
-    getTab(index).setStyleName(style, add);
+    if (checkIndex(index)) {
+      getTab(index).setStyleName(style, add);
+    }
   }
 
   protected void checkLayout() {
@@ -539,8 +575,14 @@ public class TabbedPages extends Flow implements
     setTabBarSize(isAttached() ? ElementSize.forOffset(tabBar) : null);
   }
 
-  private void checkIndex(int index) {
-    Assert.betweenExclusive(index, 0, getPageCount(), "page index out of bounds");
+  private boolean checkIndex(int index) {
+    if (BeeUtils.betweenExclusive(index, 0, getPageCount())) {
+      return true;
+    } else {
+      logger.severe(NameUtils.getName(this), getId(),
+          "page index", index, "page count", getPageCount());
+      return false;
+    }
   }
 
   private Tab createTab(Widget caption, String summary,
@@ -711,28 +753,28 @@ public class TabbedPages extends Flow implements
   }
 
   private void setPageEnabled(int index, boolean enabled) {
-    checkIndex(index);
-
-    Tab tab = getTab(index);
-    if (tab.isEnabled() == enabled) {
-      return;
-    }
-
-    saveLayout();
-    tab.setEnabled(enabled);
-
-    if (!enabled && index == getSelectedIndex()) {
-      int page = nextEnabledPage(index);
-
-      if (isIndex(page)) {
-        selectPage(page, SelectionOrigin.SCRIPT);
-      } else {
-        tab.setSelected(false);
-        setSelectedIndex(BeeConst.UNDEF);
+    if (checkIndex(index)) {
+      Tab tab = getTab(index);
+      if (tab.isEnabled() == enabled) {
+        return;
       }
-    }
 
-    checkLayout();
+      saveLayout();
+      tab.setEnabled(enabled);
+
+      if (!enabled && index == getSelectedIndex()) {
+        int page = nextEnabledPage(index);
+
+        if (isIndex(page)) {
+          selectPage(page, SelectionOrigin.SCRIPT);
+        } else {
+          tab.setSelected(false);
+          setSelectedIndex(BeeConst.UNDEF);
+        }
+      }
+
+      checkLayout();
+    }
   }
 
   private void setSelectedIndex(int selectedIndex) {

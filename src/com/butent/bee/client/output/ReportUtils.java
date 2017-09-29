@@ -23,6 +23,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -58,7 +59,7 @@ public final class ReportUtils {
   public static void getPdfReport(String report, Consumer<FileInfo> reportConsumer,
       Map<String, String> parameters, BeeRowSet... data) {
 
-    makeRequest(report, "pdf", Assert.notNull(reportConsumer), parameters, data);
+    makeRequest(report, Assert.notNull(reportConsumer), parameters, data);
   }
 
   public static void getReports(Report report, Consumer<List<ReportInfo>> consumer) {
@@ -76,11 +77,15 @@ public final class ReportUtils {
               reports.add(ReportInfo.restore(rep.serialize()));
             }
             for (BeeRow row : result) {
-              ReportInfo rep = ReportInfo.restore(row.getString(idx));
-              rep.setId(row.getId());
-              rep.setGlobal(BeeUtils.isEmpty(row.getString(userIdx)));
-              reports.remove(rep);
-              reports.add(rep);
+              try {
+                ReportInfo rep = ReportInfo.restore(row.getString(idx));
+                rep.setId(row.getId());
+                rep.setGlobal(BeeUtils.isEmpty(row.getString(userIdx)));
+                reports.remove(rep);
+                reports.add(rep);
+              } catch (Throwable ex) {
+                LogUtils.getRootLogger().error(ex, row.getId(), row.getString(idx));
+              }
             }
             consumer.accept(reports);
           }
@@ -92,7 +97,7 @@ public final class ReportUtils {
   }
 
   public static void preview(FileInfo repInfo, ReportCallback callback) {
-    String url = FileUtils.getUrl(repInfo.getId(), BeeUtils.notEmpty(repInfo.getCaption(),
+    String url = FileUtils.getUrl(repInfo.getHash(), BeeUtils.notEmpty(repInfo.getCaption(),
         repInfo.getName()));
 
     Frame frame = new Frame(url);
@@ -120,12 +125,12 @@ public final class ReportUtils {
     getPdfReport(report, repInfo -> preview(repInfo, callback), parameters, data);
   }
 
-  private static void makeRequest(String report, String format, Consumer<FileInfo> responseConsumer,
+  private static void makeRequest(String report, Consumer<FileInfo> responseConsumer,
       Map<String, String> parameters, BeeRowSet... data) {
 
     ParameterList args = new ParameterList(GET_REPORT);
     args.addDataItem(VAR_REPORT, Assert.notEmpty(report));
-    args.addNotEmptyData(VAR_REPORT_FORMAT, format);
+    args.addNotEmptyData(VAR_REPORT_FORMAT, "pdf");
     args.addDataItem(VAR_REPORT_PARAMETERS, Codec.beeSerialize(parameters));
 
     if (!ArrayUtils.isEmpty(data)) {
@@ -137,7 +142,9 @@ public final class ReportUtils {
         response.notify(BeeKeeper.getScreen());
 
         if (!response.hasErrors()) {
-          responseConsumer.accept(FileInfo.restore(response.getResponseAsString()));
+          FileInfo fileInfo = FileInfo.restore(response.getResponseAsString());
+          fileInfo.setDescription(report);
+          responseConsumer.accept(fileInfo);
         }
       }
     });

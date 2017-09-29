@@ -10,7 +10,7 @@
     <InputText source="Phone" summarize="true" />
     <Label for="EmailId" style="&lbl;" />
     <cell colSpan="2" for="EmailId" >
-      <DataSelector source="EmailId" style="&inp;" maxLength="50" editEnabled="true"
+      <DataSelector source="EmailId" style="&inp;" maxLength="255" editEnabled="true"
         summarize="true" />
     </cell>
   </row>
@@ -29,17 +29,8 @@
     <InputText source="Fax" summarize="true" />
   </row>
   
-  <row>
-    <Label text="=mailRecipientsGroups" />
-    <cell colSpan="5">
-      <ChildSelector viewName="RecipientsGroups" childTable="RcpsGroupsContacts"
-        targetRelColumn="CompanyPerson" sourceRelColumn="RecipientsGroup" renderColumns="GroupName"
-        choiceColumns="GroupName" label="=mailRecipientsGroups" style="width: 100%;" summarize="true" 
-        filter="Creator {u} or Visibility = 0" />
-    </cell>
-  </row>
   <row for="Address">
-    <Label for="Address" />
+    <Label for="Address" name="Address"/>
     <cell colSpan="5">
       <InputText source="Address" style="width: 100%;" summarize="true" />
     </cell>

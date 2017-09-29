@@ -3,44 +3,42 @@ package com.butent.bee.client.modules.mail;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.RowSetCallback;
-import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DecisionCallback;
-import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.DialogConstants;
-import com.butent.bee.client.dialog.InputBoxes;
-import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.presenter.FormPresenter;
+import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.view.form.CloseCallback;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
@@ -49,6 +47,8 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
+import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -64,52 +64,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 public final class NewMailMessage extends AbstractFormInterceptor
-    implements ClickHandler, SelectionHandler<FileInfo> {
-
-  private class DialogCallback implements InputCallback {
-    @Override
-    public String getErrorMessage() {
-      if (validate()) {
-        return null;
-      } else {
-        return InputBoxes.SILENT_ERROR;
-      }
-    }
-
-    @Override
-    public void onClose(final CloseCallback closeCallback) {
-      Assert.notNull(closeCallback);
-
-      if (hasChanges()) {
-        Global.decide(null, Lists.newArrayList(Localized.dictionary().mailMessageWasNotSent(),
-            Localized.dictionary().mailQuestionSaveToDraft()), new DecisionCallback() {
-          @Override
-          public void onCancel() {
-            UiHelper.focus(getFormView().asWidget());
-          }
-
-          @Override
-          public void onConfirm() {
-            closeCallback.onSave();
-          }
-
-          @Override
-          public void onDeny() {
-            closeCallback.onClose();
-          }
-        }, DialogConstants.DECISION_YES);
-      } else {
-        closeCallback.onClose();
-      }
-    }
-
-    @Override
-    public void onSuccess() {
-      save(true);
-    }
-  }
+    implements SelectionHandler<FileInfo> {
 
   public static void create(String to, String subject, String content,
       Collection<FileInfo> attachments, BiConsumer<Long, Boolean> callback) {
@@ -139,26 +97,62 @@ public final class NewMailMessage extends AbstractFormInterceptor
     NewMailMessage newMessage = new NewMailMessage(availableAccounts, defaultAccount,
         to, cc, bcc, subject, content, attachments, relatedId, isDraft);
 
-    Global.getParameter(PRM_SIGNATURE_POSITION, isAbove -> {
-      FormFactory.createFormView(FORM_NEW_MAIL_MESSAGE, null, null, false, newMessage,
-          (formDescription, formView) -> {
-            if (formView != null) {
-              formView.start(null);
-              boolean modal = Popup.hasEventPreview();
+    newMessage.isSignatureAbove =
+        BeeUtils.unbox(Global.getParameterBoolean(PRM_SIGNATURE_POSITION));
 
-              DialogBox dialog = Global.inputWidget(formView.getCaption(), formView,
-                  newMessage.new DialogCallback(), RowFactory.DIALOG_STYLE);
+    FormFactory.openForm(FORM_NEW_MAIL_MESSAGE, newMessage, presenter -> {
+      if (presenter instanceof FormPresenter) {
+        newMessage.initHeader(presenter.getHeader());
 
-              if (!modal) {
-                dialog.setPreviewEnabled(false);
-              }
-              newMessage.initHeader(dialog);
-            }
-          });
-      newMessage.isSignatureAbove = BeeUtils.toBoolean(isAbove);
+        FormView formView = ((FormPresenter) presenter).getFormView();
+        WindowType windowType = getWindowType();
+
+        if (windowType.isPopup()) {
+          ModalForm dialog = new ModalForm(presenter, formView, false);
+
+          dialog.setPreviewEnabled(windowType == WindowType.MODAL);
+          dialog.focusOnOpen(newMessage.getFocusWidget());
+
+          dialog.centerOrCascade(formView.getContainerClassName());
+
+        } else {
+          PresenterCallback.SHOW_IN_NEW_TAB.onCreate(presenter);
+        }
+      }
     });
+
     return newMessage;
   }
+
+  private static WindowType getWindowType() {
+    if (Popup.hasEventPreview()) {
+      return WindowType.MODAL;
+
+    } else {
+      String wtp = BeeKeeper.getUser().getNewMailMessageWindow();
+      if (BeeUtils.isEmpty(wtp)) {
+        wtp = Settings.getNewMailMessageWindow();
+      }
+
+      WindowType windowType = WindowType.parse(wtp);
+      return (windowType == null) ? WindowType.DEFAULT_NEW_MAIL_MESSAGE : windowType;
+    }
+  }
+
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "mail-NewMessage-";
+
+  private static final String STYLE_ACCOUNTS = STYLE_PREFIX + "accounts";
+  private static final String STYLE_ACCOUNTS_SINGLE = STYLE_ACCOUNTS + "-single";
+  private static final String STYLE_ACCOUNTS_MULTI = STYLE_ACCOUNTS + "-multi";
+
+  private static final String STYLE_SIGNATURE_LABEL = STYLE_PREFIX + "signature-label";
+  private static final String STYLE_SIGNATURES = STYLE_PREFIX + "signatures";
+  private static final String STYLE_SIGNATURES_ZERO = STYLE_SIGNATURES + "-zero";
+  private static final String STYLE_SIGNATURES_SINGLE = STYLE_SIGNATURES + "-single";
+  private static final String STYLE_SIGNATURES_MULTI = STYLE_SIGNATURES + "-multi";
+
+  private static final String STYLE_SEND = STYLE_PREFIX + "send";
+  private static final String STYLE_SAVE = STYLE_PREFIX + "save";
 
   private AccountInfo account;
   private final List<AccountInfo> accounts = new ArrayList<>();
@@ -204,7 +198,8 @@ public final class NewMailMessage extends AbstractFormInterceptor
       Collection<String> emails = recs.get(type);
 
       if (!BeeUtils.isEmpty(emails)) {
-        recipients.putAll(type, emails);
+        recipients.putAll(type,
+            emails.stream().filter(s -> !BeeUtils.isEmpty(s)).collect(Collectors.toSet()));
 
         if (!isDraft) {
           recipients.remove(type, defaultAccount.getAddress());
@@ -245,28 +240,45 @@ public final class NewMailMessage extends AbstractFormInterceptor
   }
 
   @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    if (action == Action.CLOSE && hasChanges()) {
+      Global.decide(null, Lists.newArrayList(Localized.dictionary().mailMessageWasNotSent(),
+          Localized.dictionary().mailQuestionSaveToDraft()), new DecisionCallback() {
+        @Override
+        public void onCancel() {
+          UiHelper.focus(getFormView().asWidget());
+        }
+
+        @Override
+        public void onConfirm() {
+          onSave(true);
+        }
+
+        @Override
+        public void onDeny() {
+          close();
+        }
+      }, DialogConstants.DECISION_YES);
+
+      return false;
+
+    } else {
+      return super.beforeAction(action, presenter);
+    }
+  }
+
+  @Override
   public FormInterceptor getInstance() {
     Assert.unsupported();
     return null;
   }
 
   @Override
-  public void onClick(ClickEvent event) {
-    if (validate()) {
-      Popup dialog = UiHelper.getParentPopup(getFormView().asWidget());
-      if (dialog != null) {
-        dialog.close();
-      }
-      save(false);
-    }
-  }
-
-  @Override
   public void onSelection(SelectionEvent<FileInfo> event) {
-    final FileInfo file = event.getSelectedItem();
+    FileInfo file = event.getSelectedItem();
 
     if (attachmentsWidget.contains(file)) {
-      FileUtils.uploadFile(file, new Callback<Long>() {
+      FileUtils.uploadFile(file, new Callback<FileInfo>() {
         @Override
         public void onFailure(String... reason) {
           attachmentsWidget.removeFile(file);
@@ -274,11 +286,19 @@ public final class NewMailMessage extends AbstractFormInterceptor
         }
 
         @Override
-        public void onSuccess(Long id) {
-          file.setFileId(id);
+        public void onSuccess(FileInfo info) {
           attachmentsWidget.refreshFile(file);
         }
       });
+    }
+  }
+
+  @Override
+  public void onStart(FormView form) {
+    super.onStart(form);
+
+    if (!UiHelper.isModal(form.asWidget())) {
+      UiHelper.focus(getFocusWidget());
     }
   }
 
@@ -313,6 +333,25 @@ public final class NewMailMessage extends AbstractFormInterceptor
     signaturesWidget.setValue(value);
   }
 
+  private void close() {
+    BeeKeeper.getScreen().closeWidget(getPresenter().getMainView());
+  }
+
+  private Widget getFocusWidget() {
+    Editor w = null;
+
+    if (BeeUtils.isEmpty(recipients.get(AddressType.TO))) {
+      w = recipientWidgets.get(AddressType.TO);
+    }
+    if (Objects.isNull(w) && BeeUtils.isEmpty(subject)) {
+      w = subjectWidget;
+    }
+    if (Objects.isNull(w)) {
+      w = contentWidget;
+    }
+    return Objects.isNull(w) ? null : w.asWidget();
+  }
+
   private boolean hasChanges() {
     for (AddressType type : recipientWidgets.keySet()) {
       Set<String> values = new HashSet<>(recipientWidgets.get(type).getValues());
@@ -330,36 +369,11 @@ public final class NewMailMessage extends AbstractFormInterceptor
     return !BeeUtils.sameElements(defaultAttachments, attachmentsWidget.getFiles());
   }
 
-  private void initHeader(DialogBox dialog) {
-    FaLabel send = new FaLabel(FontAwesome.PAPER_PLANE);
-    send.setTitle(Localized.dictionary().send());
-    send.enableAnimation();
-    send.addClickHandler(this);
-
-    dialog.insertAction(1, send);
-
-    Queries.getRowSet(TBL_SIGNATURES, null,
-        Filter.equals(COL_USER, BeeKeeper.getUser().getUserId()), new RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            for (int i = 0; i < result.getNumberOfRows(); i++) {
-              Long signatureId = result.getRow(i).getId();
-
-              signatures.put(signatureId, result.getString(i, COL_SIGNATURE_CONTENT));
-              signaturesWidget.addItem(result.getString(i, COL_SIGNATURE_NAME),
-                  BeeUtils.toString(signatureId));
-            }
-            signaturesWidget.setEnabled(signaturesWidget.getItemCount() > 0);
-            signaturesWidget.addChangeHandler(
-                event -> applySignature(BeeUtils.toLongOrNull(signaturesWidget.getValue())));
-
-            applySignature(isDraft ? null : account.getSignatureId());
-          }
-        });
-    dialog.insertAction(1, signaturesWidget);
-    dialog.getHeader().insert(new Label(Localized.dictionary().mailSignature() + ":"), 1);
-
+  private void initHeader(HeaderView header) {
     final ListBox accountsWidget = new ListBox();
+    accountsWidget.addStyleName(STYLE_ACCOUNTS);
+    accountsWidget.addStyleName((accounts.size() > 1)
+        ? STYLE_ACCOUNTS_MULTI : STYLE_ACCOUNTS_SINGLE);
 
     for (int i = 0; i < accounts.size(); i++) {
       AccountInfo accountInfo = accounts.get(i);
@@ -369,6 +383,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
         accountsWidget.setSelectedIndex(i);
       }
     }
+
     accountsWidget.setEnabled(accountsWidget.getItemCount() > 1);
     accountsWidget.addChangeHandler(event -> {
       AccountInfo selectedAccount = accounts.get(accountsWidget.getSelectedIndex());
@@ -378,7 +393,66 @@ public final class NewMailMessage extends AbstractFormInterceptor
         applySignature(account.getSignatureId());
       }
     });
-    dialog.insertAction(1, accountsWidget);
+
+    header.addCommandItem(accountsWidget);
+
+    final Label signatureLabel = new Label(Localized.dictionary().mailSignature() + ":");
+    signatureLabel.addStyleName(STYLE_SIGNATURE_LABEL);
+
+    signaturesWidget.addStyleName(STYLE_SIGNATURES);
+
+    Queries.getRowSet(TBL_SIGNATURES, null,
+        Filter.equals(COL_USER, BeeKeeper.getUser().getUserId()), result -> {
+          for (int i = 0; i < result.getNumberOfRows(); i++) {
+            Long signatureId = result.getRow(i).getId();
+
+            signatures.put(signatureId, result.getString(i, COL_SIGNATURE_CONTENT));
+            signaturesWidget.addItem(result.getString(i, COL_SIGNATURE_NAME),
+                BeeUtils.toString(signatureId));
+          }
+          signaturesWidget.setEnabled(signaturesWidget.getItemCount() > 0);
+          signaturesWidget.addChangeHandler(
+              event -> applySignature(BeeUtils.toLongOrNull(signaturesWidget.getValue())));
+
+          applySignature(isDraft ? null : account.getSignatureId());
+
+          String styleName;
+          switch (signaturesWidget.getItemCount()) {
+            case 0:
+              styleName = STYLE_SIGNATURES_ZERO;
+              break;
+            case 1:
+              styleName = STYLE_SIGNATURES_SINGLE;
+              break;
+            default:
+              styleName = STYLE_SIGNATURES_MULTI;
+          }
+
+          signatureLabel.addStyleName(styleName);
+          signaturesWidget.addStyleName(styleName);
+        });
+
+    header.addCommandItem(signatureLabel);
+    header.addCommandItem(signaturesWidget);
+
+    FaLabel send = new FaLabel(FontAwesome.PAPER_PLANE, STYLE_SEND);
+    send.setTitle(Localized.dictionary().send());
+    send.addClickHandler(event -> onSave(false));
+
+    header.addCommandItem(send);
+
+    FaLabel save = new FaLabel(FontAwesome.SAVE, STYLE_SAVE);
+    save.setTitle(Localized.dictionary().actionSave());
+    save.addClickHandler(event -> onSave(true));
+
+    header.addCommandItem(save);
+  }
+
+  private void onSave(boolean saveMode) {
+    if (validate()) {
+      close();
+      save(saveMode);
+    }
   }
 
   private void save(final boolean saveMode) {
@@ -410,14 +484,11 @@ public final class NewMailMessage extends AbstractFormInterceptor
     if (!BeeUtils.isEmpty(attachments)) {
       params.addDataItem(TBL_ATTACHMENTS, Codec.beeSerialize(attachments));
     }
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(BeeKeeper.getScreen());
+    BeeKeeper.getRpc().makePostRequest(params, response -> {
+      response.notify(BeeKeeper.getScreen());
 
-        if (actionCallback != null && !response.hasErrors()) {
-          actionCallback.accept(response.getResponseAsLong(), saveMode);
-        }
+      if (actionCallback != null && !response.hasErrors()) {
+        actionCallback.accept(response.getResponseAsLong(), saveMode);
       }
     });
   }

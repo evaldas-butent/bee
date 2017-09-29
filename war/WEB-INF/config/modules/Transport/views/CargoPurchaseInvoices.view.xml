@@ -4,7 +4,7 @@
 
       name="CargoPurchaseInvoices" source="Purchases" caption="=trPurchaseInvoices"
       editForm="CargoPurchaseInvoice"
-      newRowForm="NewPurchase" newRowCaption="=trNewCargoPurchaseInvoice"
+      newRowForm="NewPurchase" newRowCaption="=trNewCargoPurchaseInvoice" rowCaption="InvoicePrefix InvoiceNo"
 >
   <Columns>
     <SimpleColumn name="Date" />
@@ -45,6 +45,14 @@
       <SimpleColumn name="Name" alias="SupplierName" />
       <SimpleJoin joinType="LEFT" name="CompanyType">
         <SimpleColumn name="Name" alias="SupplierType" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Customer" />
+    <SimpleJoin joinType="LEFT" name="Customer">
+      <SimpleColumn name="Name" alias="CustomerName" label="=trdCustomer" />
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="CustomerTypeName" />
       </SimpleJoin>
     </SimpleJoin>
 
