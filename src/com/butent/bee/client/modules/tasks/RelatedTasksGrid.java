@@ -9,15 +9,22 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.RowActionEvent;
+import com.butent.bee.client.grid.ColumnFooter;
+import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
+import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
@@ -29,10 +36,34 @@ import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
+
 class RelatedTasksGrid extends TasksGrid {
+
+  private static final String NAME_MODE = "Mode";
+  private static final String NAME_SLACK = "Slack";
 
   RelatedTasksGrid() {
     super(TaskType.RELATED, null);
+  }
+
+  @Override
+  public boolean afterCreateColumn(String columnId, List<? extends IsColumn> dataColumns,
+      AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
+      EditableColumn editableColumn) {
+
+    if (BeeUtils.same(columnId, NAME_MODE) && column instanceof HasCellRenderer) {
+      ((HasCellRenderer) column).setRenderer(new ModeRenderer());
+
+    } else if (BeeUtils.same(columnId, NAME_SLACK) && column instanceof HasCellRenderer) {
+      ((HasCellRenderer) column).setRenderer(new TaskSlackRenderer(dataColumns,
+          VIEW_RELATED_TASKS));
+
+    } else if (BeeUtils.inListSame(columnId, COL_FINISH_TIME, COL_EXECUTOR)) {
+      editableColumn.addCellValidationHandler(ValidationHelper.DO_NOT_VALIDATE);
+    }
+
+    return true;
   }
 
   @Override

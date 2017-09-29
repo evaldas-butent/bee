@@ -1791,7 +1791,8 @@ public class TransportModuleBean implements BeeModule {
     if (!DataUtils.isId(role)) {
       return ResponseObject.parameterNotFound(SVC_CREATE_USER, PRM_SELF_SERVICE_ROLE);
     }
-    ResponseObject resp = ResponseObject.info(usr.getDictionary().newUser(), login);
+    ResponseObject resp =
+        ResponseObject.info(usr.getDictionary().ecRegistrationMailContent(login, password, ""));
     String email;
 
     try {

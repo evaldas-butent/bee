@@ -16,7 +16,9 @@
     <DataColumn name="TradeDocumentItem" visible="false" />
     <DataColumn name="TradeDocument" caption="=trdDocumentShort"
                 editSource="TradeDocument" editViewName="TradeDocuments" visible="false" />
+
     <DataColumn name="Date" />
+    <DataColumn name="CustomerName" flexGrow="1" />
 
     <DataColumn name="ItemName" flexGrow="2" editSource="Item" editViewName="Items"
                 visible="true" />

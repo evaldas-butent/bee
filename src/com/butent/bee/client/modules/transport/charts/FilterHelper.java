@@ -101,6 +101,8 @@ final class FilterHelper {
   private static final double DIALOG_MAX_WIDTH_FACTOR = 0.8;
   private static final double DIALOG_MAX_HEIGHT_FACTOR = 0.8;
 
+  private static final int DIALOG_WIDTH_MARGIN = 30;
+
   static void addFilter(List<ChartFilter> filters, ChartFilter filter) {
     int index = BeeConst.UNDEF;
 
@@ -330,7 +332,8 @@ final class FilterHelper {
     int dialogMaxHeight = BeeUtils.round(BeeKeeper.getScreen().getHeight()
         * DIALOG_MAX_HEIGHT_FACTOR);
 
-    int dataPanelWidth = (dialogMaxWidth - DATA_SPLITTER_WIDTH * (dataCounter - 1)) / dataCounter;
+    int dataPanelWidth = (dialogMaxWidth - DIALOG_WIDTH_MARGIN - DATA_SPLITTER_WIDTH * dataCounter)
+        / dataCounter;
     int dataPanelHeight = dialogMaxHeight - DialogBox.HEADER_HEIGHT
         - SAVED_FILTERS_HEIGHT - COMMAND_GROUP_HEIGHT - DomUtils.getScrollBarHeight();
 
@@ -343,10 +346,10 @@ final class FilterHelper {
     dataPanelWidth = BeeUtils.clamp(dataPanelWidth, DATA_PANEL_MIN_WIDTH, DATA_PANEL_MAX_WIDTH);
     dataPanelHeight = BeeUtils.clamp(dataPanelHeight, DATA_PANEL_MIN_HEIGHT, DATA_PANEL_MAX_HEIGHT);
 
-    int dataContainerWidth = dataPanelWidth * dataCounter + DATA_SPLITTER_WIDTH * (dataCounter - 1);
+    int dataContainerWidth = (dataPanelWidth + DATA_SPLITTER_WIDTH) * dataCounter;
     int dataContainerHeight = dataPanelHeight;
 
-    int dataWrapperWidth = Math.min(dataContainerWidth, dialogMaxWidth);
+    int dataWrapperWidth = Math.min(dataContainerWidth, dialogMaxWidth - DIALOG_WIDTH_MARGIN);
     int dataWrapperHeight = dataContainerHeight + DomUtils.getScrollBarHeight();
 
     int contentHeight = dataWrapperHeight + SAVED_FILTERS_HEIGHT + COMMAND_GROUP_HEIGHT;
@@ -357,21 +360,16 @@ final class FilterHelper {
     dataContainer.addStyleName(STYLE_DATA_CONTAINER);
     StyleUtils.setHeight(dataContainer, dataContainerHeight);
 
-    int dataIndex = 0;
     for (ChartData data : filterData) {
       data.saveState();
 
       if (data.isEnabled() && !data.isEmpty()) {
         FilterDataWidget dataWidget = new FilterDataWidget(data);
-
-        dataIndex++;
-        if (dataIndex < dataCounter) {
-          dataContainer.addWest(dataWidget, dataPanelWidth, DATA_SPLITTER_WIDTH);
-        } else {
-          dataContainer.add(dataWidget);
-        }
+        dataContainer.addWest(dataWidget, dataPanelWidth, DATA_SPLITTER_WIDTH);
       }
     }
+
+    dataContainer.add(new CustomDiv());
 
     Flow savedContainer = new Flow(STYLE_SAVED_CONTAINER);
     renderSavedFilters(savedContainer, savedFilters, callback);
@@ -431,7 +429,7 @@ final class FilterHelper {
     content.add(commands);
 
     dialog.setWidget(content);
-    StyleUtils.setWidth(dialog, dataWrapperWidth);
+    StyleUtils.setWidth(dialog, dataWrapperWidth + DIALOG_WIDTH_MARGIN);
 
     dialog.setHideOnEscape(true);
     dialog.setAnimationEnabled(true);
@@ -478,7 +476,7 @@ final class FilterHelper {
 
   private static void addSavedFiltersData(List<ChartData> data, List<ChartFilter> savedFilters) {
     for (ChartFilter cf : savedFilters) {
-      for (FilterValue fv: cf.getValues()) {
+      for (FilterValue fv : cf.getValues()) {
         if (fv.isValid()) {
           ChartData ncd = getDataByType(data, fv.getType());
 

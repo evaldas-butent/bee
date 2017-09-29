@@ -6,14 +6,18 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.ChoiceCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -26,6 +30,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -41,83 +46,24 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
       if (DataUtils.isNewRow(getActiveRow())) {
         return saveOnPrintNewRow();
       }
-      String[] reports = BeeUtils.split(getFormView().getProperty("reports"), BeeConst.CHAR_COMMA);
+      FormView form = getFormView();
+      IsRow oldRow = form.getOldRow();
+      IsRow newRow = form.getActiveRow();
 
-      if (!ArrayUtils.isEmpty(reports)) {
-        final List<FormDescription> forms = Lists.newArrayListWithCapacity(reports.length);
-        for (int i = 0; i < reports.length; i++) {
-          forms.add(null);
-        }
-        final ChoiceCallback choice = value -> {
-          if (BeeUtils.isIndex(forms, value)) {
-            FormDescription form = forms.get(value);
-
-            String viewName = form.getViewName();
-            IsRow row = getFormView().getActiveRow();
-
-            if (BeeUtils.isEmpty(viewName)
-                || BeeUtils.same(viewName, getFormView().getViewName())) {
-
-              RowEditor.openForm(form.getName(), Data.getDataInfo(getFormView().getViewName()),
-                  row, null, getPrintFormInterceptor());
-            } else {
-              RowEditor.openForm(form.getName(), Data.getDataInfo(viewName),
-                  Filter.compareId(row.getId()), null, getPrintFormInterceptor());
-            }
-          } else {
-            printJasperReport();
-          }
-        };
-        final Holder<Integer> counter = Holder.of(0);
-
-        for (int i = 0; i < reports.length; i++) {
-          final int idx = i;
-          FormFactory.getFormDescription(reports[i], new Callback<FormDescription>() {
-            @Override
-            public void onFailure(String... reason) {
-              Callback.super.onFailure(reason);
-              process();
-            }
-
-            @Override
-            public void onSuccess(FormDescription formDescription) {
-              forms.set(idx, formDescription);
-              process();
-            }
-
-            private void process() {
-              counter.set(counter.get() + 1);
-
-              if (counter.get() == forms.size()) {
-                List<String> captions = new ArrayList<>();
-                List<FormDescription> descriptions = new ArrayList<>();
-
-                for (FormDescription dscr : forms) {
-                  if (dscr != null) {
-                    captions.add(BeeUtils.notEmpty(Localized.maybeTranslate(dscr.getCaption()),
-                        dscr.getName()));
-                    descriptions.add(dscr);
-                  }
-                }
-                if (!ArrayUtils.isEmpty(getReports())) {
-                  captions.add(Localized.dictionary().otherInfo() + "...");
-                }
-                BeeUtils.overwrite(forms, descriptions);
-
-                if (captions.size() > 1) {
-                  Global.choice(null,
-                      Localized.dictionary().choosePrintingForm(), captions, choice);
-
-                } else if (captions.size() == 1) {
-                  choice.onSuccess(0);
-                }
+      if (!newRow.sameValues(oldRow) || !newRow.sameProperties(oldRow)) {
+        Global.confirm(form.getCaption(), Icon.QUESTION,
+            Collections.singletonList(Localized.dictionary().saveAndPrintQuestion()),
+            Localized.dictionary().saveAndPrintAction(), Localized.dictionary().cancel(),
+            () -> form.saveChanges(new RowUpdateCallback(form.getViewName()) {
+              @Override
+              public void onSuccess(BeeRow result) {
+                super.onSuccess(result);
+                presenter.handleAction(action);
               }
-            }
-          });
-        }
+            }));
         return false;
-
-      } else if (printJasperReport()) {
+      }
+      if (printLegacyReport() || printJasperReport()) {
         return false;
       }
     }
@@ -126,6 +72,11 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
 
   public FormInterceptor getPrintFormInterceptor() {
     return null;
+  }
+
+  @Override
+  public boolean saveOnPrintNewRow() {
+    return true;
   }
 
   protected ReportUtils.ReportCallback getReportCallback() {
@@ -175,6 +126,85 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
       }
       getReportData(data -> ReportUtils.showReport(report, getReportCallback(), parameters, data));
     });
+  }
+
+  private boolean printLegacyReport() {
+    String[] reports = BeeUtils.split(getFormView().getProperty("reports"), BeeConst.CHAR_COMMA);
+
+    if (ArrayUtils.isEmpty(reports)) {
+      return false;
+    }
+    List<FormDescription> forms = Lists.newArrayListWithCapacity(reports.length);
+    for (int i = 0; i < ArrayUtils.length(reports); i++) {
+      forms.add(null);
+    }
+    ChoiceCallback choice = value -> {
+      if (BeeUtils.isIndex(forms, value)) {
+        FormDescription form = forms.get(value);
+
+        String viewName = form.getViewName();
+        IsRow row = getFormView().getActiveRow();
+
+        if (BeeUtils.isEmpty(viewName)
+            || BeeUtils.same(viewName, getFormView().getViewName())) {
+
+          RowEditor.openForm(form.getName(), Data.getDataInfo(getFormView().getViewName()),
+              row, null, getPrintFormInterceptor());
+        } else {
+          RowEditor.openForm(form.getName(), Data.getDataInfo(viewName),
+              Filter.compareId(row.getId()), null, getPrintFormInterceptor());
+        }
+      } else {
+        printJasperReport();
+      }
+    };
+    Holder<Integer> counter = Holder.of(0);
+
+    for (int i = 0; i < reports.length; i++) {
+      final int idx = i;
+      FormFactory.getFormDescription(reports[i], new Callback<FormDescription>() {
+        @Override
+        public void onFailure(String... reason) {
+          Callback.super.onFailure(reason);
+          process();
+        }
+
+        @Override
+        public void onSuccess(FormDescription formDescription) {
+          forms.set(idx, formDescription);
+          process();
+        }
+
+        private void process() {
+          counter.set(counter.get() + 1);
+
+          if (counter.get() == forms.size()) {
+            List<String> captions = new ArrayList<>();
+            List<FormDescription> descriptions = new ArrayList<>();
+
+            for (FormDescription dscr : forms) {
+              if (dscr != null) {
+                captions.add(BeeUtils.notEmpty(Localized.maybeTranslate(dscr.getCaption()),
+                    dscr.getName()));
+                descriptions.add(dscr);
+              }
+            }
+            if (!ArrayUtils.isEmpty(getReports())) {
+              captions.add(Localized.dictionary().otherInfo() + "...");
+            }
+            BeeUtils.overwrite(forms, descriptions);
+
+            if (captions.size() > 1) {
+              Global.choice(null, Localized.dictionary().choosePrintingForm(), captions, choice);
+
+            } else if (captions.size() == 1) {
+              choice.onSuccess(0);
+            }
+          }
+        }
+      });
+    }
+    return true;
   }
 
   private boolean printJasperReport() {

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+
+        name="ItemAnalogs" viewName="ItemAnalogs" caption="=itemAnalogsNew"
+        height="160" heightUnit="px" width="40" widthUnit="vw"
+>
+  <Table kind="controls" style="margin-left: 2vw; margin-top: 1vh;">
+    <col index="0" kind="label" />
+    <row>
+      <Label for="Item1" />
+      <DataSelector source="Item1" style="width: 30vw;" filter="!(IsService)" />
+    </row>
+    <row>
+      <Label for="Item2" />
+      <DataSelector source="Item2" style="width: 30vw;" filter="!(IsService)" />
+    </row>
+  </Table>
+</f:Form>

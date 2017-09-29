@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="Substitutions" idName="SubstitutionID"
+>
+  <Fields>
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user" />
+    <Relation name="Substitute" notNull="true" relation="Users" cascade="DELETE"
+              label="=substitute" />
+
+    <Relation name="SubstitutionReason" relation="SubstitutionReasons" notNull="true"
+              label="=reason" />
+
+    <Date name="SubstituteFrom" label="=dateFromShort" notNull="true" />
+    <Text name="Note" label="=note" />
+
+    <DateTime name="Executed" label="=crmTaskStatusCompleted" />
+  </Fields>
+
+  <Constraints>
+    <Check>
+      <PostgreSql>"User" != "Substitute"</PostgreSql>
+      <MsSql />
+      <Oracle />
+    </Check>
+  </Constraints>
+</Table>

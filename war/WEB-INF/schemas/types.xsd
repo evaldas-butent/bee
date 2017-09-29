@@ -399,6 +399,7 @@
       <xs:enumeration value="DocumentFiles" />
       <xs:enumeration value="DocumentItems" />
       <xs:enumeration value="DocumentPlaces" />
+      <xs:enumeration value="DocumentReminders" />
       <xs:enumeration value="Documents" />
       <xs:enumeration value="DocumentStatuses" />
       <xs:enumeration value="DocumentTemplates" />
@@ -465,6 +466,7 @@
       <xs:enumeration value="InformationSources" />
       <xs:enumeration value="InvoiceTradeActs" />
       <xs:enumeration value="IpFilters" />
+      <xs:enumeration value="ItemAnalogs" />
       <xs:enumeration value="ItemCategories" />
       <xs:enumeration value="ItemGraphics" />
       <xs:enumeration value="ItemManufacturers" />
@@ -601,6 +603,9 @@
       <xs:enumeration value="Stages" />
       <xs:enumeration value="StageTriggers" />
       <xs:enumeration value="StateProcess" />
+      <xs:enumeration value="SubstitutionObjects" />
+      <xs:enumeration value="SubstitutionReasons" />
+      <xs:enumeration value="Substitutions" />
       <xs:enumeration value="TaskDurations" />
       <xs:enumeration value="TaskEvents" />
       <xs:enumeration value="TaskFiles" />
@@ -637,6 +642,11 @@
       <xs:enumeration value="TimeRanges" />
       <xs:enumeration value="TimeZones" />
       <xs:enumeration value="TodoList" />
+      <xs:enumeration value="TTExecutors" />
+      <xs:enumeration value="TTExecutorGroups" />
+      <xs:enumeration value="TTFiles" />
+      <xs:enumeration value="TTObservers" />
+      <xs:enumeration value="TTObserverGroups" />
       <xs:enumeration value="TradeAccounts" />
       <xs:enumeration value="TradeActInvoices" />
       <xs:enumeration value="TradeActItems" />

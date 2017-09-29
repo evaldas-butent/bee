@@ -310,6 +310,10 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
     SummaryChangeEvent.maybeFire(this);
   }
 
+  public Map<Choice, String> getCache() {
+    return cache;
+  }
+
   public CellSource getCellSource() {
     return cellSource;
   }

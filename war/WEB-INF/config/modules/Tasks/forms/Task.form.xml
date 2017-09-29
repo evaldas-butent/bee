@@ -165,9 +165,14 @@
 
                 <row>
                   <Label />
-                  <CheckBox name="Mail" text="=mailNotify" />
-                  <Label />
-                  <CheckBox source="PrivateTask" />
+                  <cell colSpan="3">
+                    <FlowPanel>
+                      <CheckBox name="Mail" text="=mailNotify" />
+                      <CheckBox source="PrivateTask" style="margin-left: 30px;" />
+                      <Button name="EndResult" text="=crmTaskEndResult" style="margin-left: 30px;"
+                              disablable="false" />
+                    </FlowPanel>
+                  </cell>
                 </row>
               </Table>
 

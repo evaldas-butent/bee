@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Table xmlns="http://www.butent.com/table"
-  
-  name="Warehouses"
-  idName="WarehouseID"
-  >
+
+       name="Warehouses"
+       idName="WarehouseID"
+>
   <Fields>
     <String name="Code" precision="20" notNull="true" unique="true" label="=code" />
     <String name="Name" precision="100" label="=name" />
 
     <Relation name="Branch" relation="Branches" label="=branch" />
     <String name="SupplierCode" precision="10" unique="true" label="=ecSupplierWarehouse" />
+
+    <Boolean name="Consignment" label="=consignment" />
+
     <Text name="Description" label="=description" />
 
-    <Relation name="Contact" unique="true" relation="Contacts" editable="true" label="=contacts"/>
+    <Relation name="Contact" unique="true" relation="Contacts" editable="true" label="=contacts" />
 
     <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
               label="=dimensions" />

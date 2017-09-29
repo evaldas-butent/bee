@@ -48,6 +48,10 @@ public final class TradeConstants {
   public static final String SVC_DISCHARGE_DEBT = "DischargeDebt";
   public static final String SVC_DISCHARGE_PREPAYMENT = "DischargePrepayment";
 
+  public static final String SVC_SAVE_CUSTOMER_RETURNS = "SaveCustomerReturns";
+
+  public static final String SVC_GET_ITEM_ANALOGS = "GetItemAnalogs";
+
   public static final String TBL_PURCHASES = "Purchases";
   public static final String TBL_PURCHASE_USAGE = "PurchaseUsage";
   public static final String TBL_PURCHASE_ITEMS = "PurchaseItems";
@@ -77,6 +81,8 @@ public final class TradeConstants {
 
   public static final String TBL_TRADE_PAYMENTS = "TradePayments";
   public static final String TBL_TRADE_PAYMENT_TERMS = "TradePaymentTerms";
+
+  public static final String TBL_ITEM_ANALOGS = "ItemAnalogs";
 
   public static final String VAR_VIEW_NAME = "view_name";
   public static final String VAR_ID_LIST = "IdList";
@@ -117,6 +123,8 @@ public final class TradeConstants {
   public static final String VIEW_TRADE_MOVEMENT = "TradeMovement";
   public static final String VIEW_ITEM_SELECTION = "ItemSelection";
   public static final String VIEW_TRADE_ITEMS_FOR_RETURN = "TradeItemsForReturn";
+
+  public static final String VIEW_ITEM_ANALOGS = "ItemAnalogs";
 
   public static final String COL_PURCHASE = "Purchase";
 
@@ -201,6 +209,9 @@ public final class TradeConstants {
   public static final String COL_OPERATION_DEFAULT = "IsDefault";
   public static final String COL_OPERATION_CASH_REGISTER_NO = "CashRegisterNo";
   public static final String COL_OPERATION_ORDINAL = "Ordinal";
+  public static final String COL_OPERATION_CONSIGNMENT = "Consignment";
+  public static final String COL_OPERATION_CONSIGNMENT_DEBIT = "ConsignmentDebit";
+  public static final String COL_OPERATION_CONSIGNMENT_CREDIT = "ConsignmentCredit";
 
   public static final String COL_STATUS_NAME = "StatusName";
   public static final String COL_STATUS_ACTIVE = "StatusActive";
@@ -277,6 +288,9 @@ public final class TradeConstants {
   public static final String COL_TRADE_ITEM_COST = "Cost";
   public static final String COL_TRADE_ITEM_COST_CURRENCY = "Currency";
 
+  public static final String COL_ITEM_ANALOG_1 = "Item1";
+  public static final String COL_ITEM_ANALOG_2 = "Item2";
+
   public static final String ALS_TRADE_BOL_SERIES = "BoLSeriesName";
   public static final String ALS_TRADE_BOL_DRIVER_TAB_NO = "DriverTabNo";
   public static final String ALS_TRADE_BOL_DRIVER_EMPLOYEES = "DriverEmployees";
@@ -296,10 +310,13 @@ public final class TradeConstants {
 
   public static final String ALS_WAREHOUSE_FROM_CODE = "WarehouseFromCode";
   public static final String ALS_WAREHOUSE_FROM_NAME = "WarehouseFromName";
+  public static final String ALS_WAREHOUSE_FROM_CONSIGNMENT = "WarehouseFromConsignment";
   public static final String ALS_WAREHOUSE_TO_CODE = "WarehouseToCode";
   public static final String ALS_WAREHOUSE_TO_NAME = "WarehouseToName";
+  public static final String ALS_WAREHOUSE_TO_CONSIGNMENT = "WarehouseToConsignment";
 
   public static final String ALS_STOCK_PRIMARY_DATE = "PrimaryDate";
+  public static final String ALS_PRIMARY_ARTICLE = "PrimaryArticle";
 
   public static final String ALS_COST_CURRENCY = "CostCurrency";
   public static final String ALS_PARENT_COST = "ParentCost";
@@ -323,6 +340,7 @@ public final class TradeConstants {
 
   public static final String PROP_TD_PAID = "TdPaid";
   public static final String PROP_TD_DEBT = "TdDebt";
+  public static final String PROP_TD_PAYMENT_TERMS = "TdPaymentTerms";
 
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";
@@ -361,6 +379,8 @@ public final class TradeConstants {
   public static final String GRID_TRADE_PAYABLES = "TradePayables";
   public static final String GRID_TRADE_RECEIVABLES = "TradeReceivables";
 
+  public static final String GRID_ANALOGS_OF_ITEM = "AnalogsOfItem";
+
   public static final String FORM_SALES_INVOICE = "SalesInvoice";
   public static final String FORM_DEBT_REPORT_TEMPLATE = "DebtReportTemplate";
 
@@ -372,8 +392,10 @@ public final class TradeConstants {
   public static final String PRM_PROTECT_TRADE_DOCUMENTS_BEFORE = "ProtectTradeDocumentsBefore";
 
   public static final String FILTER_ITEM_HAS_STOCK = "item_has_stock";
+  public static final String FILTER_STOCK_CONSIGNOR = "stock_consignor";
   public static final String FILTER_USER_TRADE_SERIES = "user_trade_series";
   public static final String FILTER_HAS_TRADE_DEBT = "has_trade_debt";
+  public static final String FILTER_ITEM_ANALOGS = "item_analogs";
 
   public static final int MAX_STOCK_DEPTH = 1_000;
   public static final int DEFAULT_SERIES_NUMBER_LENGTH = 6;
@@ -406,6 +428,7 @@ public final class TradeConstants {
 
   public static final String RP_WAREHOUSES = "Warehouses";
   public static final String RP_SUPPLIERS = "Suppliers";
+  public static final String RP_CUSTOMERS = "Customers";
   public static final String RP_MANUFACTURERS = "Manufacturers";
   public static final String RP_DOCUMENTS = "Documents";
   public static final String RP_ITEM_TYPES = "ItemTypes";

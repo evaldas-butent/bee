@@ -55,28 +55,28 @@ public class CachedProvider extends Provider {
 
     this(display, presenter, modificationPreviewer, notificationListener,
         viewName, columns, null, null,
-        null, table, null, null);
+        null, table, null, null, null);
   }
 
   public CachedProvider(HasDataTable display, HasDataProvider presenter,
       ModificationPreviewer modificationPreviewer, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, Filter immutableFilter, BeeRowSet table,
-      Map<String, Filter> parentFilters, Filter userFilter) {
+      Map<String, Filter> parentFilters, Filter userFilter, String dataOptions) {
 
     this(display, presenter, modificationPreviewer, notificationListener,
         viewName, columns, null, null,
-        immutableFilter, table, parentFilters, userFilter);
+        immutableFilter, table, parentFilters, userFilter, dataOptions);
   }
 
   public CachedProvider(HasDataTable display, HasDataProvider presenter,
       ModificationPreviewer modificationPreviewer, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
       Filter immutableFilter, BeeRowSet table, Map<String, Filter> parentFilters,
-      Filter userFilter) {
+      Filter userFilter, String dataOptions) {
 
     super(display, presenter, modificationPreviewer, notificationListener,
         viewName, columns, idColumnName, versionColumnName,
-        immutableFilter, parentFilters, userFilter);
+        immutableFilter, parentFilters, userFilter, dataOptions);
 
     Assert.notNull(table);
     this.table = table;

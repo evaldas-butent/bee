@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="SubstitutionReasons" viewName="SubstitutionReasons" caption="=substitutionReasons"
+>
+  <g:columns>
+    <DataColumn name="Ordinal" visible="false" />
+
+    <DataColumn name="SubstitutionReasonName" minWidth="100" flexGrow="1" visible="true"
+                backgroundSource="Background" foregroundSource="Foreground" />
+
+    <DataColumn name="Visible" />
+
+    <DataColumn name="Background" updateMode="row" minWidth="100"
+                backgroundSource="Background" foregroundSource="Foreground">
+      <editor type="color" />
+    </DataColumn>
+    <DataColumn name="Foreground" updateMode="row" minWidth="100"
+                backgroundSource="Background" foregroundSource="Foreground">
+      <editor type="color" />
+    </DataColumn>
+  </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>row.SubstitutionReasonName</ui:expression>
+  </g:rowMessage>
+</g:Grid>

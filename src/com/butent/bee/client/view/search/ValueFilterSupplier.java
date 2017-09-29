@@ -40,6 +40,8 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
 
   private static final Splitter valueSplitter =
       Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
+  private static final Splitter wordSplitter =
+      Splitter.on(BeeConst.CHAR_SPACE).omitEmptyStrings().trimResults();
 
   private final List<BeeColumn> columns = new ArrayList<>();
   private final String idColumnName;
@@ -195,6 +197,23 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
 
     if (searchBy.size() <= 1) {
       return ColumnValueFilter.compareWithValue(getColumn(), operator, value, dateOrdering);
+
+    } else if (BeeUtils.contains(BeeUtils.trim(value), BeeConst.CHAR_SPACE)
+        && ValueType.isString(getColumnType())) {
+
+      List<String> words = wordSplitter.splitToList(value);
+
+      CompoundFilter filter = Filter.and();
+
+      for (BeeColumn by : searchBy) {
+        CompoundFilter sub = Filter.or();
+        for (String word : words) {
+          sub.add(ColumnValueFilter.compareWithValue(by, operator, word, dateOrdering));
+        }
+        filter.add(sub);
+      }
+
+      return filter;
 
     } else {
       CompoundFilter filter = Filter.or();

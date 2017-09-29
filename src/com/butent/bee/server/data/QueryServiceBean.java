@@ -803,7 +803,7 @@ public class QueryServiceBean {
   }
 
   public BeeRowSet getViewData(String viewName, Filter filter, Order order) {
-    return getViewData(viewName, filter, order, BeeConst.UNDEF, BeeConst.UNDEF, null);
+    return getViewData(viewName, filter, order, null);
   }
 
   public BeeRowSet getViewData(String viewName, Filter filter, Order order, List<String> columns) {
@@ -812,6 +812,12 @@ public class QueryServiceBean {
 
   public BeeRowSet getViewData(String viewName, Filter filter, Order order, int limit, int offset,
       List<String> columns) {
+
+    return getViewData(viewName, filter, order, limit, offset, columns, null);
+  }
+
+  public BeeRowSet getViewData(String viewName, Filter filter, Order order, int limit, int offset,
+      List<String> columns, Object eventOptions) {
 
     BeeView view = sys.getView(viewName);
     SqlSelect query = view.getQuery(usr.getCurrentUserId(), filter, order, columns);
@@ -851,16 +857,20 @@ public class QueryServiceBean {
     if (provider != null) {
       return provider.getViewData(view, query, filter);
     }
-    return getViewData(query, view, BeeUtils.isEmpty(columns));
+
+    boolean postEvent = BeeUtils.isEmpty(columns) || eventOptions != null;
+    return getViewData(query, view, postEvent, eventOptions);
   }
 
-  public BeeRowSet getViewData(final SqlSelect query, final BeeView view, boolean postEvent) {
+  public BeeRowSet getViewData(final SqlSelect query, final BeeView view, boolean postEvent,
+      Object eventOptions) {
+
     Assert.noNulls(query, view);
     Assert.state(!query.isEmpty());
 
     activateTables(query);
 
-    final ViewQueryEvent event = new ViewQueryEvent(view.getName(), query);
+    final ViewQueryEvent event = new ViewQueryEvent(view.getName(), query, eventOptions);
 
     if (postEvent) {
       sys.postDataEvent(event);

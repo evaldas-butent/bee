@@ -11,6 +11,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.data.HasDataProvider;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.GridPanel;
@@ -876,6 +877,14 @@ class PaymentForm extends AbstractFormInterceptor {
   private void refreshMainDebts(Long payer, Long currency) {
     DateTime dateTo = getDateTime(NAME_DATE_TO);
     DateTime termTo = getDateTime(NAME_TERM_TO);
+
+    GridView gridView = getGrid(debtKind.tradeDebtsMainGrid());
+
+    if (gridView != null && gridView.getViewPresenter() instanceof HasDataProvider) {
+      String options = (termTo == null) ? TBL_TRADE_PAYMENT_TERMS
+          : BeeUtils.joinItems(TBL_TRADE_PAYMENT_TERMS, termTo.getTime());
+      ((HasDataProvider) gridView.getViewPresenter()).getDataProvider().setDataOptions(options);
+    }
 
     refreshDebts(debtKind.tradeDebtsMainGrid(), payer, currency, dateTo, termTo);
   }

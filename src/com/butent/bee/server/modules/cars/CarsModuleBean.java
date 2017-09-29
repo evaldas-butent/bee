@@ -644,7 +644,7 @@ public class CarsModuleBean implements BeeModule {
   }
 
   public ResponseObject setRelation(Long branchId, String key, Long optionId, ConfInfo info,
-      String packet) {
+      String deniedPacketOptions) {
     SimpleRowSet.SimpleRow row = qs.getRow(new SqlSelect()
         .addField(TBL_CONF_BRANCH_BUNDLES, sys.getIdName(TBL_CONF_BRANCH_BUNDLES),
             COL_BRANCH_BUNDLE)
@@ -680,7 +680,7 @@ public class CarsModuleBean implements BeeModule {
           .addConstant(COL_DESCRIPTION, info.getDescription())
           .addConstant(COL_CRITERIA, Codec.beeSerialize(info.getCriteria()))
           .addConstant(COL_PHOTO, photoId)
-          .addConstant(COL_PACKET, packet)
+          .addConstant(COL_PACKET, deniedPacketOptions)
           .setWhere(sys.idEquals(TBL_CONF_RELATIONS, relationId)));
     } else {
       Long branchOptionId = row.getLong(COL_BRANCH_OPTION);
@@ -695,7 +695,7 @@ public class CarsModuleBean implements BeeModule {
           .addConstant(COL_BRANCH_OPTION, branchOptionId)
           .addNotEmpty(COL_PRICE, info.getPrice())
           .addNotEmpty(COL_DESCRIPTION, info.getDescription())
-          .addNotEmpty(COL_PACKET, packet)
+          .addNotEmpty(COL_PACKET, deniedPacketOptions)
           .addConstant(COL_CRITERIA, Codec.beeSerialize(info.getCriteria()))
           .addNotNull(COL_PHOTO, photoId));
     }
@@ -954,8 +954,8 @@ public class CarsModuleBean implements BeeModule {
               sys.joinTables(TBL_CONF_GROUPS, TBL_CONF_OPTIONS, COL_GROUP))
           .setWhere(SqlUtils.inList(TBL_CONF_PACKET_OPTIONS, COL_PACKET, optMap.keySet())));
 
-      data.forEach(simpleRow -> configuration.getPackets(optMap.get(simpleRow.getLong(COL_PACKET)))
-          .add(new Option(simpleRow)));
+      data.forEach(simpleRow -> configuration
+          .getPacketOptions(optMap.get(simpleRow.getLong(COL_PACKET))).add(new Option(simpleRow)));
 
       data = qs.getData(new SqlSelect()
           .addFields(TBL_CONF_RESTRICTIONS, COL_BRANCH_OPTION, COL_OPTION, COL_DENIED)

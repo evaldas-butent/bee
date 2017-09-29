@@ -5,6 +5,7 @@
        idName="OptionID"
 >
   <Fields>
+    <Relation name="Type" relation="ConfTypes" notNull="true" label="=optionType" />
     <Relation name="Group" relation="ConfGroups" notNull="true" label="=optionGroup" />
     <String name="OptionName" precision="150" notNull="true" label="=option" />
     <String name="OptionName2" precision="100" label="=option+2" />
@@ -18,6 +19,6 @@
     <Boolean name="Blocked" label="=actionBlock" />
   </Fields>
   <Constraints>
-    <Unique fields="Group Code" />
+    <Unique fields="Type Code" />
   </Constraints>
 </Table>

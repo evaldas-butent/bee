@@ -105,6 +105,8 @@ import com.butent.bee.shared.modules.classifiers.PriceInfo;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.trade.OperationType;
+import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
@@ -131,6 +133,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -1380,7 +1383,9 @@ public class ClassifiersModuleBean implements BeeModule {
       return ResponseObject.parameterNotFound(reqInfo.getLabel(), COL_DISCOUNT_ITEM);
     }
 
+    OperationType operationType = reqInfo.getParameterEnum(COL_OPERATION_TYPE, OperationType.class);
     Long operation = reqInfo.getParameterLong(COL_DISCOUNT_OPERATION);
+
     Long warehouse = reqInfo.getParameterLong(COL_DISCOUNT_WAREHOUSE);
 
     Long time = reqInfo.getParameterLong(Service.VAR_TIME);
@@ -1406,12 +1411,31 @@ public class ClassifiersModuleBean implements BeeModule {
 
     int explain = BeeUtils.unbox(reqInfo.getParameterInt(Service.VAR_EXPLAIN));
     if (explain > 0) {
-      explain(SVC_GET_PRICE_AND_DISCOUNT,
+      explain(reqInfo.getLabel(),
           BeeUtils.joinOptions(COL_DISCOUNT_COMPANY, company, COL_DISCOUNT_ITEM, item,
-              COL_DISCOUNT_OPERATION, operation, COL_DISCOUNT_WAREHOUSE, warehouse,
-              Service.VAR_TIME, time, Service.VAR_QTY, qty, COL_DISCOUNT_UNIT, unit,
+              COL_OPERATION_TYPE, operationType, COL_DISCOUNT_OPERATION, operation,
+              COL_DISCOUNT_WAREHOUSE, warehouse, Service.VAR_TIME, time,
+              Service.VAR_QTY, qty, COL_DISCOUNT_UNIT, unit,
               COL_DISCOUNT_CURRENCY, currency, COL_DISCOUNT_PRICE_NAME, defPriceName,
               Service.VAR_REQUIRED, requiredColumns));
+    }
+
+    if (operationType != null && operationType.isReturn()) {
+      Pair<Double, Double> pair = getPriceAndDiscountForReturn(
+          operationType.producesStock(), company, item, time, currency);
+
+      if (explain > 0) {
+        if (pair == null) {
+          explain(reqInfo.getLabel(), operationType, "no data for return");
+        } else {
+          explain(reqInfo.getLabel(), operationType, "result for return:",
+              COL_TRADE_ITEM_PRICE, pair.getA(), COL_TRADE_DOCUMENT_ITEM_DISCOUNT, pair.getB());
+        }
+      }
+
+      if (pair != null) {
+        return ResponseObject.response(pair);
+      }
     }
 
     List<Long> companyParents = getDiscountParents(company);
@@ -1670,21 +1694,88 @@ public class ClassifiersModuleBean implements BeeModule {
 
     if (explain > 0) {
       if (result.isNull()) {
-        explain(SVC_GET_PRICE_AND_DISCOUNT, "result is null");
+        explain(reqInfo.getLabel(), "result is null");
       } else {
-        explain(SVC_GET_PRICE_AND_DISCOUNT, "result:",
+        explain(reqInfo.getLabel(), "result:",
             COL_DISCOUNT_PRICE, result.getA(), COL_DISCOUNT_PERCENT, result.getB());
       }
     }
 
     if (!BeeUtils.isPositive(result.getA()) && !BeeUtils.isDouble(result.getB())) {
       if (explain > 0) {
-        explain(SVC_GET_PRICE_AND_DISCOUNT, "response is empty");
+        explain(reqInfo.getLabel(), "response is empty");
       }
       return ResponseObject.emptyResponse();
     } else {
       return ResponseObject.response(result);
     }
+  }
+
+  private Pair<Double, Double> getPriceAndDiscountForReturn(boolean isCustomer,
+      Long company, Long item, Long time, Long currency) {
+
+    HasConditions conditions = SqlUtils.and();
+
+    conditions.add(SqlUtils.equals(TBL_TRADE_DOCUMENTS,
+        isCustomer ? COL_TRADE_CUSTOMER : COL_TRADE_SUPPLIER, company));
+
+    if (BeeUtils.isPositive(time)) {
+      conditions.add(SqlUtils.less(TBL_TRADE_DOCUMENTS, COL_TRADE_DATE,
+          TimeUtils.startOfNextDay(new DateTime(time))));
+    }
+
+    if (DataUtils.isId(currency)) {
+      conditions.add(SqlUtils.equals(TBL_TRADE_DOCUMENTS, COL_TRADE_CURRENCY, currency));
+    }
+
+    conditions.add(SqlUtils.inList(TBL_TRADE_DOCUMENTS, COL_TRADE_DOCUMENT_PHASE,
+        TradeDocumentPhase.getStockPhases()));
+
+    EnumSet<OperationType> operationTypes;
+    if (isCustomer) {
+      operationTypes = EnumSet.of(OperationType.SALE, OperationType.POS);
+    } else {
+      operationTypes = EnumSet.of(OperationType.PURCHASE);
+    }
+
+    conditions.add(SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE, operationTypes));
+
+    conditions.add(SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, item));
+    conditions.add(SqlUtils.positive(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PRICE));
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_DOCUMENTS, COL_TRADE_CURRENCY, COL_TRADE_DOCUMENT_DISCOUNT_MODE)
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PRICE,
+            COL_TRADE_DOCUMENT_ITEM_DISCOUNT, COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT)
+        .addFrom(TBL_TRADE_DOCUMENTS)
+        .addFromLeft(TBL_TRADE_OPERATIONS, sys.joinTables(TBL_TRADE_OPERATIONS,
+            TBL_TRADE_DOCUMENTS, COL_TRADE_OPERATION))
+        .addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENTS,
+            TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT))
+        .setWhere(conditions)
+        .addOrderDesc(TBL_TRADE_DOCUMENTS, COL_TRADE_DATE)
+        .addOrderDesc(TBL_TRADE_DOCUMENT_ITEMS, sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS))
+        .setLimit(1);
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      return null;
+    }
+
+    SimpleRow row = data.getRow(0);
+
+    Double price = row.getDouble(COL_TRADE_ITEM_PRICE);
+
+    Double discount;
+    if (!row.isNull(COL_TRADE_DOCUMENT_DISCOUNT_MODE)
+        && row.isTrue(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT)) {
+
+      discount = row.getDouble(COL_TRADE_DOCUMENT_ITEM_DISCOUNT);
+    } else {
+      discount = null;
+    }
+
+    return Pair.of(price, discount);
   }
 
   private Pair<Double, Double> getPriceAndDiscount(List<PriceInfo> discounts,
@@ -2132,7 +2223,7 @@ public class ClassifiersModuleBean implements BeeModule {
       return null;
     }
     if (BeeUtils.isPositive(reqInfo.getParameterInt(Service.VAR_EXPLAIN))) {
-      explain(SVC_GET_PRICE_AND_DISCOUNT, TBL_CAR_DISCOUNTS,
+      explain(reqInfo.getLabel(), TBL_CAR_DISCOUNTS,
           BeeUtils.joinOptions(COL_MODEL, model, COL_PRODUCTION_DATE, prodDate));
     }
     HasConditions carDiscountWhere = SqlUtils.and();

@@ -98,7 +98,7 @@
       <row>
         <Label text="=crmTaskTemplate" data="TaskTemplates" />
         <UnboundSelector viewName="TaskTemplates" choiceColumns="Name" newRowEnabled="false"
-                         style="&inp2x;" data="TaskTemplates" />
+                         style="&inp2x;" data="TaskTemplates" name="TaskTemplate" />
       </row>
 
       <row>
@@ -157,8 +157,13 @@
 
       <row>
         <Label />
-        <CheckBox name="Mail" text="=mailNotify" />
-        <CheckBox source="PrivateTask" />
+        <cell colSpan="3">
+          <FlowPanel>
+            <CheckBox name="Mail" text="=mailNotify" />
+            <CheckBox source="PrivateTask" style="margin-left: 30px;" />
+            <Button name="EndResult" text="=crmTaskEndResult" style="margin-left: 30px;" />
+          </FlowPanel>
+        </cell>
       </row>
     </Table>
 

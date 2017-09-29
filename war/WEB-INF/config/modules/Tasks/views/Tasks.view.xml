@@ -105,7 +105,8 @@
       <HiddenColumn name="Event"/>
       <AggregateColumn name="PublishTime" alias="LastBreakEvent" aggregate="MAX" />
     </ExternalJoin>
-    
+
+    <SimpleColumn name="EndResult" />
   </Columns>
 
   <Order>

@@ -15,6 +15,7 @@ import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
@@ -35,6 +36,7 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputDate;
@@ -263,6 +265,8 @@ class RecurringTaskHandler extends ProductSupportInterceptor implements CellVali
 
   private final Multimap<Integer, BeeRow> offspring = ArrayListMultimap.create();
 
+  private Relations relations;
+
   private BeeRowSet executors;
   private final Map<Integer, String> dayElementIds = new HashMap<>();
 
@@ -335,6 +339,19 @@ class RecurringTaskHandler extends ProductSupportInterceptor implements CellVali
             errorLabels.put(Cron.DAY_OF_WEEK, (HasHtml) widget);
           }
           break;
+        case COL_END_RESULT:
+          if (widget instanceof Button) {
+            ((Button) widget).addClickHandler(clickEvent -> {
+              if (relations != null) {
+                TaskUtils.renderEndResult(relations.getWidgetMap(true), getFormView(), true, null);
+              }
+            });
+          }
+          break;
+        case AdministrationConstants.VIEW_RELATIONS:
+          if (widget instanceof Relations) {
+            relations = (Relations) widget;
+          }
       }
     }
   }

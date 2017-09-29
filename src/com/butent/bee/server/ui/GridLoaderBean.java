@@ -107,6 +107,7 @@ public class GridLoaderBean {
   private static final String ATTR_CACHE_DATA = "cacheData";
 
   private static final String ATTR_DATA_PROVIDER = "dataProvider";
+  private static final String ATTR_DATA_OPTIONS = "dataOptions";
   private static final String ATTR_INITIAL_ROW_SET_SIZE = "initialRowSetSize";
 
   private static final String ATTR_ENABLED_ACTIONS = "enabledActions";
@@ -1078,9 +1079,9 @@ public class GridLoaderBean {
       }
     }
 
-    String options = src.getAttribute(HasOptions.ATTR_OPTIONS);
+    String options = src.getAttribute(ATTR_DATA_OPTIONS);
     if (!BeeUtils.isEmpty(options)) {
-      dst.setOptions(options);
+      dst.setDataOptions(options);
     }
 
     List<Element> propElements = XmlUtils.getElementsByLocalName(src,
