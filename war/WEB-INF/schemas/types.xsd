@@ -449,6 +449,7 @@
       <xs:enumeration value="InformationSources" />
       <xs:enumeration value="InvoiceTradeActs" />
       <xs:enumeration value="IpFilters" />
+      <xs:enumeration value="ItemAnalogs" />
       <xs:enumeration value="ItemCategories" />
       <xs:enumeration value="ItemGraphics" />
       <xs:enumeration value="ItemManufacturers" />
