@@ -30,7 +30,7 @@
     <Text name="Notes" label="=notes" />
     <Numeric name="TransportationPrice" precision="15" scale="2" label="=trTransportationPrice" />
     <Relation name="TransportationCurrency" relation="Currencies" label="=currencyShort" defExpr="MAIN_CURRENCY" />
-    <String name="PaymentDays" precision="50" label="=transportConditions" />
+    <String name="PaymentDays" precision="100" label="=transportConditions" />
     <Boolean name="TransportationVatPlus" label="=vatPlus" defValue="1" />
     <Numeric name="TransportationVAT" precision="12" scale="2" label="=vat" />
     <Boolean name="TransportationVatPercent" label="=vatPercent" defValue="1" />
