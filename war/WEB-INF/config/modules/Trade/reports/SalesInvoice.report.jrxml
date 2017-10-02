@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-06-30T14:55:54 -->
+<!-- 2017-10-02T10:12:38 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -182,7 +182,7 @@
 				<reportElement x="0" y="0" width="169" height="44" uuid="64172b7e-1296-4a8c-a92a-74717db465d5">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
-				<imageExpression><![CDATA["http://www.transrifus.lt/images/logo.png"]]></imageExpression>
+				<imageExpression><![CDATA["images/logo.png"]]></imageExpression>
 			</image>
 			<textField isStretchWithOverflow="true" pattern="y MMM d">
 				<reportElement x="260" y="32" width="318" height="12" uuid="705f9b96-6b0e-4f1b-9b7e-511c4e6d019e">
