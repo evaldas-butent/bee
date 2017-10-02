@@ -32,7 +32,7 @@
 
       <page data="Relations" for="RecurringTask">
         <text>=relatedTo</text>
-        <Relations relColumn="RecurringTask" inline="true" summarize="true">
+        <Relations name="Relations" relColumn="RecurringTask" inline="true" summarize="true">
           <Relation viewName="Companies" renderColumns="Name" newRowEnabled="false" />
           <Relation viewName="Persons" renderColumns="FirstName LastName" newRowEnabled="false" />
           <Relation viewName="Documents" renderColumns="Name" newRowEnabled="false" />

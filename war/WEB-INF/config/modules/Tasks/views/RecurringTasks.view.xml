@@ -58,6 +58,8 @@
       <SimpleColumn name="Background" alias="ProductBackground"/>
       <SimpleColumn name="Foreground" alias="ProductForeground"/>
     </SimpleJoin>
+
+    <SimpleColumn name="EndResult" />
   </Columns>
 </View>
  

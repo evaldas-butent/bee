@@ -174,6 +174,7 @@ public final class Service {
   public static final String VAR_VIEW_COLUMNS = RPC_VAR_PREFIX + "view_columns";
 
   public static final String VAR_VIEW_SIZE = RPC_VAR_PREFIX + "view_size";
+  public static final String VAR_VIEW_EVENT_OPTIONS = RPC_VAR_PREFIX + "view_event_options";
   public static final String VAR_VIEW_ROW_ID = RPC_VAR_PREFIX + "view_row_id";
   public static final String VAR_VIEW_LIST = RPC_VAR_PREFIX + "view_list";
 

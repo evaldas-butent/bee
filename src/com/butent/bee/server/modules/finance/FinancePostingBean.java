@@ -102,7 +102,9 @@ public class FinancePostingBean {
     TradeAccounts defaultAccounts = TradeAccounts.createAvailable(config, config.getRow(rowIndex));
 
     Long defaultJournal = config.getLong(rowIndex, COL_DEFAULT_JOURNAL);
+
     Long transitoryAccount = config.getLong(rowIndex, COL_TRANSITORY_ACCOUNT);
+    Long purchaseReturns = config.getLong(rowIndex, COL_PURCHASE_RETURNS);
 
     List<TradeDimensionsPrecedence> dimensionsPrecedence = TradeDimensionsPrecedence
         .parse(config.getString(rowIndex, COL_TRADE_DIMENSIONS_PRECEDENCE));
@@ -178,8 +180,6 @@ public class FinancePostingBean {
     TradeAccounts warehouseToAccounts = getTradeAccounts(VIEW_WAREHOUSES, warehouseTo);
 
     int itemIndex = docLines.getColumnIndex(COL_ITEM);
-    int isServiceIndex = docLines.getColumnIndex(COL_ITEM_IS_SERVICE);
-
     int quantityIndex = docLines.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
 
     int itemWarehouseFromIndex = docLines.getColumnIndex(COL_TRADE_ITEM_WAREHOUSE_FROM);
@@ -207,13 +207,34 @@ public class FinancePostingBean {
       itemExpenditures = null;
     }
 
+    int consignment = BeeConst.UNDEF;
+    Long consignmentDebit = null;
+    Long consignmentCredit = null;
+
+    if (operationType.maybeConsignment()) {
+      SimpleRow row = qs.getRow(TBL_TRADE_OPERATIONS, operation);
+
+      if (row != null) {
+        Integer mode = row.getInt(COL_OPERATION_CONSIGNMENT);
+        consignmentDebit = row.getLong(COL_OPERATION_CONSIGNMENT_DEBIT);
+        consignmentCredit = row.getLong(COL_OPERATION_CONSIGNMENT_CREDIT);
+
+        if (BeeUtils.isPositive(mode)
+            && FinanceUtils.isValidEntry(consignmentDebit, consignmentCredit)) {
+
+          consignment = mode;
+        }
+      }
+    }
+
     List<BeeColumn> columns = sys.getView(VIEW_FINANCIAL_RECORDS).getRowSetColumns();
     BeeRowSet buffer = new BeeRowSet(VIEW_FINANCIAL_RECORDS, columns);
 
+    Long debit;
+    Long credit;
+
     for (BeeRow row : docLines) {
       Long item = row.getLong(itemIndex);
-      boolean isService = row.isTrue(isServiceIndex);
-
       Double quantity = row.getDouble(quantityIndex);
 
       Long employee = row.getLong(employeeIndex);
@@ -287,28 +308,66 @@ public class FinancePostingBean {
       List<BeeRow> lineRows = new ArrayList<>();
 
       if (BeeUtils.nonZero(lineTotal - lineVat)) {
-        BeeUtils.addNotNull(lineRows,
-            post(columns, date,
-                operationType.getAmountDebit(acc), operationType.getAmountCredit(acc),
-                lineTotal - lineVat, currency, quantity, company, employee, dim));
+        if (consignment > 0) {
+          BeeUtils.addNotNull(lineRows,
+              post(columns, date, consignmentDebit, consignmentCredit,
+                  lineTotal - lineVat, currency, quantity, company, employee, dim));
+        }
+
+        if (proceed(consignment)) {
+          debit = operationType.getAmountDebit(acc);
+          credit = operationType.getAmountCredit(acc);
+
+          if (operationType.isReturn() && operationType.consumesStock()
+              && DataUtils.isId(purchaseReturns)) {
+
+            credit = purchaseReturns;
+          }
+
+          BeeUtils.addNotNull(lineRows,
+              post(columns, date, debit, credit, lineTotal - lineVat, currency, quantity,
+                  company, employee, dim));
+        }
       }
 
-      if (BeeUtils.nonZero(lineVat)) {
+      if (BeeUtils.nonZero(lineVat) && proceed(consignment)) {
         BeeUtils.addNotNull(lineRows,
             post(columns, date, operationType.getVatDebit(acc), operationType.getVatCredit(acc),
                 lineVat, currency, quantity, company, employee, dim));
       }
 
-      if (operationType.providesCost() && itemExpenditures != null
-          && itemExpenditures.containsKey(row.getId())) {
+      if (operationType.providesCost()) {
+        List<SimpleRow> expenditures = new ArrayList<>();
+        if (itemExpenditures != null && itemExpenditures.containsKey(row.getId())) {
+          expenditures.addAll(itemExpenditures.get(row.getId()));
+        }
 
-        lineRows.addAll(postExpenditures(columns, itemExpenditures.get(row.getId()), date,
-            operationType.getAmountDebit(acc), operationType.getAmountCredit(acc),
-            company, employee, dim));
+        debit = operationType.getCostDebit(acc);
+        credit = operationType.getCostCredit(acc);
+
+        if (BeeUtils.isDouble(costAmount) && FinanceUtils.isValidEntry(debit, credit)) {
+          double amount = costAmount;
+          if (!expenditures.isEmpty()) {
+            amount -= expenditures.stream()
+                .mapToDouble(er -> er.getDouble(COL_EXPENDITURE_AMOUNT)).sum();
+          }
+
+          BeeUtils.addNotNull(lineRows,
+              post(columns, date, debit, credit, amount, costCurrency, quantity,
+                  company, employee, dim));
+        }
+
+        if (!expenditures.isEmpty()) {
+          debit = BeeUtils.nvl(debit, operationType.getAmountDebit(acc));
+          credit = BeeUtils.nvl(credit, operationType.getAmountCredit(acc));
+
+          lineRows.addAll(postExpenditures(columns, expenditures, date, debit, credit,
+              company, employee, dim));
+        }
       }
 
       if (operationType.consumesStock() && BeeUtils.nonZero(parentCostAmount)) {
-        Long credit = getParentCostAccount(parent);
+        credit = getParentCostAccount(parent);
 
         if (operationType.producesStock()) {
           Long cFr = BeeUtils.nvl(payer, supplier, customer);
@@ -342,7 +401,7 @@ public class FinancePostingBean {
             accTo = computeTradeAccounts(accountsPrecedence, aTo, defaultAccounts);
           }
 
-          Long debit = accTo.getCostAccount();
+          debit = accTo.getCostAccount();
 
           if (DataUtils.isId(transitoryAccount)) {
             BeeUtils.addNotNull(lineRows,
@@ -360,8 +419,14 @@ public class FinancePostingBean {
           }
 
         } else {
+          if (operationType.isReturn() && DataUtils.isId(purchaseReturns)) {
+            debit = purchaseReturns;
+          } else {
+            debit = operationType.getCostDebit(acc);
+          }
+
           BeeUtils.addNotNull(lineRows,
-              post(columns, date, operationType.getParentCostDebit(acc), credit,
+              post(columns, date, debit, credit,
                   parentCostAmount, parentCostCurrency, quantity, company, employee, dim));
         }
       }
@@ -1179,5 +1244,9 @@ public class FinancePostingBean {
     }
 
     return ResponseObject.response(insert.getNumberOfRows());
+  }
+
+  private static boolean proceed(int consignment) {
+    return consignment != 1;
   }
 }

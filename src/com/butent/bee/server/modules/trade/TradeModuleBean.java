@@ -70,6 +70,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.CustomFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
@@ -127,6 +128,9 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.StringList;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
@@ -335,6 +339,14 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       case SVC_DISCHARGE_PREPAYMENT:
         response = dischargePrepayment(reqInfo);
+        break;
+
+      case SVC_SAVE_CUSTOMER_RETURNS:
+        response = saveCustomerReturns(reqInfo);
+        break;
+
+      case SVC_GET_ITEM_ANALOGS:
+        response = getItemAnalogs(reqInfo);
         break;
 
       default:
@@ -646,7 +658,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           Long warehouse = BeeUtils.nvl(tradeDocumentItem.getItemWarehouseFrom(),
               document.getWarehouseFrom());
 
-          Map<Long, Double> parentQuantities = getParentQuantities(item, warehouse, usedParents);
+          Long consignor = getConsignor(warehouse, operationType,
+              document.getSupplier(), document.getCustomer());
+
+          Map<Long, Double> parentQuantities = getParentQuantities(item, warehouse, consignor,
+              usedParents);
+
           double totalStock = parentQuantities.values().stream().mapToDouble(d -> d).sum();
 
           if (!parentQuantities.isEmpty() && totalStock >= quantity) {
@@ -1045,16 +1062,19 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                 if (!BeeUtils.isEmpty(itemIds)) {
                   if (DataUtils.isId(warehouse)) {
                     event.setUserObject(DataUtils.buildIdList(itemIds));
+
                   } else {
-                    event.addErrorMessage("warehouse-receiver required for items");
-                    event.addErrorMessage(DataUtils.buildIdList(itemIds));
+                    Dictionary dictionary = usr.getDictionary();
+
+                    event.addErrorMessage(dictionary.fieldRequired(dictionary.trdWarehouseTo()));
+                    event.addErrorMessage(BeeUtils.joinWords(dictionary.trdDocumentItems(),
+                        DataUtils.buildIdList(itemIds)));
                   }
                 }
 
-              } else if (event.isAfter() && DataUtils.isId(warehouse)
-                  && (event.getUserObject() instanceof String)) {
+              } else if (event.isAfter() && DataUtils.isId(warehouse) && event.hasOptions()) {
+                Set<Long> itemIds = DataUtils.parseIdSet(event.getOptions());
 
-                Set<Long> itemIds = DataUtils.parseIdSet((String) event.getUserObject());
                 if (!BeeUtils.isEmpty(itemIds)) {
                   SqlUpdate update = new SqlUpdate(TBL_TRADE_STOCK)
                       .addConstant(COL_STOCK_WAREHOUSE, warehouse)
@@ -1099,9 +1119,42 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             && usr.isDataVisible(VIEW_TRADE_STOCK)
             && DataUtils.containsNull(event.getRowset(), COL_ITEM_IS_SERVICE)) {
 
+          OperationType operationType = null;
+          Long supplier = null;
+          Long customer = null;
+
+          boolean isSelection = event.isTarget(VIEW_ITEM_SELECTION);
+          Long consignor = null;
+
+          if (event.hasOptions()) {
+            Map<String, String> options = Codec.deserializeHashMap(event.getOptions());
+
+            for (Map.Entry<String, String> entry : options.entrySet()) {
+              String value = entry.getValue();
+
+              switch (entry.getKey()) {
+                case COL_OPERATION_TYPE:
+                  operationType = EnumUtils.getEnumByIndex(OperationType.class, value);
+                  break;
+                case COL_TRADE_SUPPLIER:
+                  supplier = BeeUtils.toLongOrNull(value);
+                  break;
+                case COL_TRADE_CUSTOMER:
+                  customer = BeeUtils.toLongOrNull(value);
+                  break;
+              }
+            }
+
+            if (isSelection && operationType != null && !operationType.consumesStock()) {
+              return;
+            }
+
+            consignor = getConsignor(operationType, supplier, customer);
+          }
+
           BeeRowSet rowSet = event.getRowset();
           Multimap<Long, Triplet<Long, String, Double>> stock =
-              getStockByWarehouse(rowSet.getRowIds());
+              getStockByWarehouse(rowSet.getRowIds(), consignor);
 
           if (!stock.isEmpty()) {
             for (BeeRow row : rowSet) {
@@ -1111,11 +1164,18 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               }
             }
 
-            if (event.isTarget(VIEW_ITEM_SELECTION)) {
+            if (isSelection) {
               Map<Long, String> warehouses = new HashMap<>();
               stock.values().forEach(value -> warehouses.put(value.getA(), value.getB()));
 
               rowSet.setTableProperty(PROP_WAREHOUSES, Codec.beeSerialize(warehouses));
+
+              Set<Long> consignmentWarehouses;
+              if (DataUtils.isId(consignor)) {
+                consignmentWarehouses = getConsignmentWarehouses();
+              } else {
+                consignmentWarehouses = new HashSet<>();
+              }
 
               int serviceTagIndex = rowSet.getColumnIndex(COL_ITEM_IS_SERVICE);
 
@@ -1125,7 +1185,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                   .collect(Collectors.toSet());
 
               warehouses.forEach((warehouseId, warehouseCode) -> {
-                Multimap<Long, ItemQuantities> reservations = getReservations(warehouseId, items);
+                Multimap<Long, ItemQuantities> reservations;
+                if (consignmentWarehouses.contains(warehouseId)) {
+                  reservations = HashMultimap.create();
+                } else {
+                  reservations = getReservations(warehouseId, items);
+                }
+
                 Map<Long, Double> averageCost = getAverageCost(warehouseId, items);
 
                 if (!reservations.isEmpty() || !averageCost.isEmpty()) {
@@ -1207,6 +1273,23 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
           int operationTypeIndex = docData.getColumnIndex(COL_OPERATION_TYPE);
 
+          DateTime termTo = null;
+          SqlSelect ptQuery = null;
+
+          if (BeeUtils.containsSame(event.getOptions(), TBL_TRADE_PAYMENT_TERMS)) {
+            for (String s : NameUtils.toList(event.getOptions())) {
+              if (BeeUtils.isDigit(s)) {
+                termTo = DateTime.restore(s);
+              }
+            }
+
+            ptQuery = new SqlSelect()
+                .addFields(TBL_TRADE_PAYMENT_TERMS,
+                    COL_TRADE_PAYMENT_TERM_DATE, COL_TRADE_PAYMENT_TERM_AMOUNT)
+                .addFrom(TBL_TRADE_PAYMENT_TERMS)
+                .addOrder(TBL_TRADE_PAYMENT_TERMS, COL_TRADE_PAYMENT_TERM_DATE);
+          }
+
           for (int index = 0; index < docData.getNumberOfRows(); index++) {
             BeeRow docRow = docData.getRow(index);
             long docId = docRow.getId();
@@ -1222,6 +1305,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               double vat = tds.getVat();
               double total = tds.getTotal();
               double paid = tds.getPaid();
+              double debt = tds.getDebt();
 
               docRow.setNonZero(PROP_TD_AMOUNT, tds.getAmount());
               docRow.setNonZero(PROP_TD_DISCOUNT, tds.getDiscount());
@@ -1229,15 +1313,60 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               docRow.setNonZero(PROP_TD_VAT, vat);
               docRow.setNonZero(PROP_TD_TOTAL, total);
 
-              boolean ok = BeeUtils.isPositive(paid);
-              if (!ok) {
+              boolean hasDebt = BeeUtils.isPositive(paid);
+              if (!hasDebt) {
                 OperationType opType = docRow.getEnum(operationTypeIndex, OperationType.class);
-                ok = opType != null && opType.hasDebt();
+                hasDebt = opType != null && opType.hasDebt();
               }
 
-              if (ok) {
+              if (hasDebt) {
                 docRow.setNonZero(PROP_TD_PAID, paid);
-                docRow.setNonZero(PROP_TD_DEBT, total - paid);
+                docRow.setNonZero(PROP_TD_DEBT, debt);
+
+                if (ptQuery != null) {
+                  ptQuery.setWhere(SqlUtils.equals(TBL_TRADE_PAYMENT_TERMS, COL_TRADE_DOCUMENT,
+                      docId));
+                  SimpleRowSet ptData = qs.getData(ptQuery);
+
+                  if (!DataUtils.isEmpty(ptData)) {
+                    List<String> ptList = new ArrayList<>();
+
+                    double ptDebt = BeeConst.DOUBLE_ZERO;
+                    double ptPaid = BeeConst.DOUBLE_ZERO;
+
+                    for (SimpleRow ptRow : ptData) {
+                      DateTime ptDate = ptRow.getDateTime(COL_TRADE_PAYMENT_TERM_DATE);
+                      Double ptAmount = ptRow.getDouble(COL_TRADE_PAYMENT_TERM_AMOUNT);
+
+                      if (ptDate != null && BeeUtils.isPositive(ptAmount)) {
+                        if (termTo != null && BeeUtils.isLess(ptDate, termTo)) {
+                          ptDebt += ptAmount;
+                        }
+
+                        if (BeeUtils.isPositive(paid)) {
+                          double p = Math.min(paid - ptPaid, ptAmount);
+
+                          ptAmount -= p;
+                          ptPaid += p;
+                        }
+
+                        if (BeeUtils.isPositive(ptAmount)) {
+                          ptList.add(ptDate.serialize());
+                          ptList.add(BeeUtils.toString(ptAmount));
+                        }
+                      }
+                    }
+
+                    if (!ptList.isEmpty()) {
+                      docRow.setProperty(PROP_TD_PAYMENT_TERMS, Codec.beeSerialize(ptList));
+                    }
+
+                    ptDebt -= paid;
+                    if (BeeUtils.isPositive(ptDebt) && BeeUtils.isLess(ptDebt, debt)) {
+                      docRow.setProperty(PROP_TD_DEBT, ptDebt);
+                    }
+                  }
+                }
               }
             }
           }
@@ -1338,32 +1467,198 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     BeeView.registerConditionProvider(FILTER_ITEM_HAS_STOCK, (view, args) -> {
       Set<Long> warehouses = new HashSet<>();
+      Set<Long> suppliers = new HashSet<>();
+      Set<Long> customers = new HashSet<>();
+
+      DateTime primaryDate = null;
+      Set<String> primaryDocumentNumbers = new HashSet<>();
+
+      OperationType operationType = null;
+      boolean consignment = false;
 
       if (!BeeUtils.isEmpty(args)) {
-        for (String arg : args) {
-          Long warehouse = BeeUtils.toLongOrNull(arg);
-          if (DataUtils.isId(warehouse)) {
-            warehouses.add(warehouse);
+        Multimap<String, String> options = CustomFilter.getOptions(args);
+
+        for (Map.Entry<String, String> entry : options.entries()) {
+          String value = entry.getValue();
+
+          switch (entry.getKey()) {
+            case COL_STOCK_WAREHOUSE:
+              Long warehouse = BeeUtils.toLongOrNull(value);
+              if (DataUtils.isId(warehouse)) {
+                warehouses.add(warehouse);
+              }
+              break;
+
+            case COL_TRADE_SUPPLIER:
+              Long supplier = BeeUtils.toLongOrNull(value);
+              if (DataUtils.isId(supplier)) {
+                suppliers.add(supplier);
+              }
+              break;
+
+            case COL_TRADE_CUSTOMER:
+              Long customer = BeeUtils.toLongOrNull(value);
+              if (DataUtils.isId(customer)) {
+                customers.add(customer);
+              }
+              break;
+
+            case COL_TRADE_DATE:
+              primaryDate = DateTime.restore(value);
+              break;
+
+            case COL_TRADE_NUMBER:
+              if (!BeeUtils.isEmpty(value)) {
+                primaryDocumentNumbers.add(value.trim());
+              }
+              break;
+
+            case COL_OPERATION_TYPE:
+              operationType = Codec.unpack(OperationType.class, value);
+              break;
+
+            case COL_WAREHOUSE_CONSIGNMENT:
+              consignment = Codec.unpack(value);
+              break;
           }
         }
       }
 
-      SqlSelect query = new SqlSelect().setDistinctMode(true)
-          .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
-          .addFrom(TBL_TRADE_STOCK)
-          .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
-              TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM));
+      String aliasStock = TBL_TRADE_STOCK;
+      String aliasPrimaryDocumentItems = SqlUtils.uniqueName("pdi");
 
-      IsCondition qtyWhere = SqlUtils.positive(TBL_TRADE_STOCK, COL_STOCK_QUANTITY);
+      String documentItemId = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
+      String documentId = sys.getIdName(TBL_TRADE_DOCUMENTS);
 
-      if (warehouses.isEmpty()) {
-        query.setWhere(qtyWhere);
-      } else {
-        query.setWhere(SqlUtils.and(qtyWhere,
-            SqlUtils.inList(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE, warehouses)));
+      HasConditions where = SqlUtils.and();
+      where.add(SqlUtils.positive(aliasStock, COL_STOCK_QUANTITY));
+
+      if (!warehouses.isEmpty()) {
+        where.add(SqlUtils.inList(aliasStock, COL_STOCK_WAREHOUSE, warehouses));
       }
 
+      SqlSelect query = new SqlSelect().setDistinctMode(true)
+          .addFields(aliasPrimaryDocumentItems, COL_ITEM)
+          .addFrom(TBL_TRADE_STOCK, aliasStock)
+          .addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, aliasPrimaryDocumentItems,
+              SqlUtils.join(aliasPrimaryDocumentItems, documentItemId,
+                  aliasStock, COL_PRIMARY_DOCUMENT_ITEM));
+
+      if (consignment) {
+        Long supplier = suppliers.stream().findAny().orElse(null);
+        Long customer = customers.stream().findAny().orElse(null);
+
+        Long consignor = getConsignor(operationType, supplier, customer);
+
+        if (DataUtils.isId(consignor)) {
+          String aliasDocumentItems = SqlUtils.uniqueName("dit");
+          String aliasDocuments = SqlUtils.uniqueName("doc");
+
+          query.addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, aliasDocumentItems,
+              SqlUtils.join(aliasDocumentItems, documentItemId,
+                  aliasStock, COL_TRADE_DOCUMENT_ITEM));
+          query.addFromLeft(TBL_TRADE_DOCUMENTS, aliasDocuments,
+              SqlUtils.join(aliasDocuments, documentId, aliasDocumentItems, COL_TRADE_DOCUMENT));
+
+          where.add(SqlUtils.equals(aliasDocuments, COL_TRADE_CUSTOMER, consignor));
+        }
+
+      } else if (!suppliers.isEmpty() || primaryDate != null || !primaryDocumentNumbers.isEmpty()) {
+        String aliasPrimaryDocuments = SqlUtils.uniqueName("pdo");
+
+        String aliasReturnDocumentItems = SqlUtils.uniqueName("rdi");
+        String aliasReturnDocuments = SqlUtils.uniqueName("rdo");
+
+        query.addFromLeft(TBL_TRADE_DOCUMENTS, aliasPrimaryDocuments,
+            SqlUtils.join(aliasPrimaryDocuments, documentId,
+                aliasPrimaryDocumentItems, COL_TRADE_DOCUMENT));
+
+        query.addFromLeft(TBL_TRADE_ITEM_RETURNS,
+            SqlUtils.join(TBL_TRADE_ITEM_RETURNS, COL_TRADE_DOCUMENT_ITEM,
+                aliasStock, COL_TRADE_DOCUMENT_ITEM));
+
+        query.addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, aliasReturnDocumentItems,
+            SqlUtils.join(aliasReturnDocumentItems, documentItemId,
+                TBL_TRADE_ITEM_RETURNS, COL_PRIMARY_DOCUMENT_ITEM));
+        query.addFromLeft(TBL_TRADE_DOCUMENTS, aliasReturnDocuments,
+            SqlUtils.join(aliasReturnDocuments, documentId,
+                aliasReturnDocumentItems, COL_TRADE_DOCUMENT));
+
+        IsCondition pointOfNoReturn =
+            SqlUtils.isNull(TBL_TRADE_ITEM_RETURNS, COL_PRIMARY_DOCUMENT_ITEM);
+
+        if (!suppliers.isEmpty()) {
+          where.add(
+              SqlUtils.or(
+                  SqlUtils.and(pointOfNoReturn,
+                      SqlUtils.inList(aliasPrimaryDocuments, COL_TRADE_SUPPLIER, suppliers)),
+                  SqlUtils.inList(aliasReturnDocuments, COL_TRADE_SUPPLIER, suppliers)));
+        }
+
+        if (primaryDate != null) {
+          where.add(
+              SqlUtils.or(
+                  SqlUtils.and(pointOfNoReturn,
+                      SqlUtils.less(aliasPrimaryDocuments, COL_TRADE_DATE, primaryDate)),
+                  SqlUtils.less(aliasReturnDocuments, COL_TRADE_DATE, primaryDate)));
+        }
+
+        if (!primaryDocumentNumbers.isEmpty()) {
+          StringList numberColumns = StringList.of(COL_TRADE_NUMBER,
+              COL_TRADE_DOCUMENT_NUMBER_1, COL_TRADE_DOCUMENT_NUMBER_2);
+
+          where.add(
+              SqlUtils.or(
+                  SqlUtils.and(pointOfNoReturn,
+                      SqlUtils.containsAny(aliasPrimaryDocuments, numberColumns,
+                          primaryDocumentNumbers)),
+                  SqlUtils.containsAny(aliasReturnDocuments, numberColumns,
+                      primaryDocumentNumbers)));
+        }
+      }
+
+      query.setWhere(where);
+
       return SqlUtils.in(view.getSourceAlias(), view.getSourceIdName(), query);
+    });
+
+    BeeView.registerConditionProvider(FILTER_STOCK_CONSIGNOR, (view, args) -> {
+      OperationType operationType = null;
+
+      Long supplier = null;
+      Long customer = null;
+
+      if (!BeeUtils.isEmpty(args)) {
+        Multimap<String, String> options = CustomFilter.getOptions(args);
+
+        for (Map.Entry<String, String> entry : options.entries()) {
+          String value = entry.getValue();
+
+          switch (entry.getKey()) {
+            case COL_OPERATION_TYPE:
+              operationType = Codec.unpack(OperationType.class, value);
+              break;
+
+            case COL_TRADE_SUPPLIER:
+              supplier = BeeUtils.toLongOrNull(value);
+              break;
+
+            case COL_TRADE_CUSTOMER:
+              customer = BeeUtils.toLongOrNull(value);
+              break;
+          }
+        }
+      }
+
+      Long consignor = getConsignor(operationType, supplier, customer);
+
+      if (DataUtils.isId(consignor)) {
+        return SqlUtils.equals(view.getColumnSource(COL_TRADE_CUSTOMER), COL_TRADE_CUSTOMER,
+            consignor);
+      } else {
+        return SqlUtils.sqlFalse();
+      }
     });
 
     BeeView.registerConditionProvider(FILTER_USER_TRADE_SERIES, (view, args) -> {
@@ -1481,7 +1776,24 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               tds.addPayments(paymentData);
             }
 
-            if (BeeUtils.nonZero(tds.getDebt())) {
+            double debt = tds.getDebt();
+
+            if (termTo != null && BeeUtils.isPositive(debt) && !DataUtils.isEmpty(paymentData)) {
+              SqlSelect ptQuery = new SqlSelect()
+                  .addSum(TBL_TRADE_PAYMENT_TERMS, COL_TRADE_PAYMENT_TERM_AMOUNT)
+                  .addFrom(TBL_TRADE_PAYMENT_TERMS)
+                  .setWhere(SqlUtils.and(
+                      SqlUtils.equals(TBL_TRADE_PAYMENT_TERMS, COL_TRADE_DOCUMENT, docId),
+                      SqlUtils.less(TBL_TRADE_PAYMENT_TERMS, COL_TRADE_PAYMENT_TERM_DATE, termTo)));
+
+              Double ptAmount = qs.getDouble(ptQuery);
+
+              if (BeeUtils.isPositive(ptAmount) && BeeUtils.isMeq(tds.getPaid(), ptAmount)) {
+                debt = BeeConst.DOUBLE_ZERO;
+              }
+            }
+
+            if (BeeUtils.nonZero(debt)) {
               docIds.add(docId);
             }
           }
@@ -1493,6 +1805,27 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       }
 
       return SqlUtils.sqlFalse();
+    });
+
+    BeeView.registerConditionProvider(FILTER_ITEM_ANALOGS, (view, args) -> {
+      Set<Long> items = new HashSet<>();
+
+      if (!BeeUtils.isEmpty(args)) {
+        for (String s : args) {
+          Long item = BeeUtils.toLongOrNull(s);
+          if (DataUtils.isId(item)) {
+            items.add(item);
+          }
+        }
+      }
+
+      Set<Long> analogs = getItemAnalogs(items);
+
+      if (analogs.isEmpty()) {
+        return SqlUtils.sqlFalse();
+      } else {
+        return SqlUtils.inList(view.getSourceAlias(), view.getSourceIdName(), analogs);
+      }
     });
 
     registerStockReservationsProvider(ModuleAndSub.of(getModule()),
@@ -1526,7 +1859,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     BeeRowSet typeData = qs.getViewData(VIEW_TRADE_DOCUMENT_TYPES, Filter.compareId(typeId));
     if (DataUtils.isEmpty(typeData)) {
-      return ResponseObject.error(reqInfo.getLabel(), typeId, "not found");
+      return ResponseObject.error(reqInfo.getLabel(), usr.getDictionary().keyNotFound(typeId));
     }
 
     BeeRow typeRow = typeData.getRow(0);
@@ -2272,18 +2605,27 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       Long warehouseFrom = newRow.getLong(newRowSet.getColumnIndex(COL_TRADE_WAREHOUSE_FROM));
       Long warehouseTo = newRow.getLong(newRowSet.getColumnIndex(COL_TRADE_WAREHOUSE_TO));
 
+      Long supplier = newRow.getLong(newRowSet.getColumnIndex(COL_TRADE_SUPPLIER));
+      Long customer = newRow.getLong(newRowSet.getColumnIndex(COL_TRADE_CUSTOMER));
+
       Collection<String> errorMessages = verifyPhaseTransition(docId, operationType,
-          warehouseFrom, warehouseTo, newStock);
+          warehouseFrom, warehouseTo, newStock, supplier, customer);
 
       ResponseObject response;
 
       if (!BeeUtils.isEmpty(errorMessages)) {
-        response = ResponseObject.error(reqInfo.getLabel(), docId);
+        Dictionary dictionary = usr.getDictionary();
+        response = ResponseObject.error(dictionary.trdDocument(), docId,
+            (oldPhase == null) ? BeeConst.STRING_EMPTY : oldPhase.getCaption(dictionary),
+            BeeConst.STRING_RIGHT_ARROW, newPhase.getCaption(dictionary));
+
         errorMessages.forEach(response::addError);
         return response;
       }
 
-      response = doPhaseTransition(docId, operationType, warehouseFrom, warehouseTo, newStock);
+      response = doPhaseTransition(docId, operationType, warehouseFrom, warehouseTo, newStock,
+          supplier, customer);
+
       if (response != null && response.hasErrors()) {
         return response;
       }
@@ -2330,7 +2672,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   }
 
   private ResponseObject doPhaseTransition(long docId, OperationType operationType,
-      Long warehouseFrom, Long warehouseTo, boolean toStock) {
+      Long warehouseFrom, Long warehouseTo, boolean toStock, Long supplier, Long customer) {
 
     IsCondition itemCondition = SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT,
         docId);
@@ -2339,7 +2681,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     if (operationType.consumesStock() && operationType.producesStock()) {
       if (toStock) {
-        response = adoptItems(itemCondition, warehouseFrom);
+        response = adoptItems(itemCondition, warehouseFrom, operationType, supplier, customer);
         if (!response.hasErrors()) {
           response = insertStock(itemCondition, warehouseTo);
         }
@@ -2360,7 +2702,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     } else if (operationType.consumesStock()) {
       if (toStock) {
-        response = adoptItems(itemCondition, warehouseFrom);
+        response = adoptItems(itemCondition, warehouseFrom, operationType, supplier, customer);
       } else {
         response = leaveParents(itemCondition);
       }
@@ -2373,7 +2715,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return response;
   }
 
-  private ResponseObject adoptItems(IsCondition itemCondition, Long documentWarehouseFrom) {
+  private ResponseObject adoptItems(IsCondition itemCondition, Long documentWarehouseFrom,
+      OperationType operationType, Long supplier, Long customer) {
+
     int count = 0;
 
     String idName = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
@@ -2401,10 +2745,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           warehouseFrom = documentWarehouseFrom;
         }
 
+        Long consignor = getConsignor(warehouseFrom, operationType, supplier, customer);
+
         Double qty = itemRow.getDouble(COL_TRADE_ITEM_QUANTITY);
 
         Long parent = null;
-        Map<Long, Double> parentQuantities = getParentQuantities(item, warehouseFrom, usedParents);
+        Map<Long, Double> parentQuantities = getParentQuantities(item, warehouseFrom, consignor,
+            usedParents);
 
         if (!BeeUtils.isEmpty(parentQuantities)) {
           for (Map.Entry<Long, Double> entry : parentQuantities.entrySet()) {
@@ -2416,8 +2763,11 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         }
 
         if (!DataUtils.isId(parent)) {
-          return ResponseObject.error("parent not found for id", id, "item", item, "qty", qty,
-              "warehouse", warehouseFrom);
+          Dictionary dictionary = usr.getDictionary();
+          return ResponseObject.error(BeeUtils.joinOptions(dictionary.trdDocumentItem(), id,
+              dictionary.item(), item, dictionary.trdQuantity(), qty,
+              dictionary.warehouse(), warehouseFrom, dictionary.consignor(), consignor,
+              dictionary.trdQuantityStock(), BeeUtils.sum(parentQuantities.values())));
         }
 
         if (BeeUtils.nonZero(qty)) {
@@ -2448,27 +2798,48 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return ResponseObject.response(count);
   }
 
-  private Map<Long, Double> getParentQuantities(Long item, Long warehouse,
+  private Map<Long, Double> getParentQuantities(Long item, Long warehouse, Long consignor,
       Map<Long, Double> exclude) {
 
     Map<Long, Double> result = new LinkedHashMap<>();
 
+    String aliasPrimaryDocumentItems = SqlUtils.uniqueName("pdi");
+    String aliasPrimaryDocuments = SqlUtils.uniqueName("pdo");
+
+    String documentItemId = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
+    String documentId = sys.getIdName(TBL_TRADE_DOCUMENTS);
+
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, COL_STOCK_QUANTITY)
         .addFrom(TBL_TRADE_STOCK)
-        .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
-            TBL_TRADE_STOCK, COL_PRIMARY_DOCUMENT_ITEM))
-        .addFromInner(TBL_TRADE_DOCUMENTS, sys.joinTables(TBL_TRADE_DOCUMENTS,
-            TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT))
-        .addOrder(TBL_TRADE_DOCUMENTS, COL_TRADE_DATE)
+        .addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, aliasPrimaryDocumentItems,
+            SqlUtils.join(aliasPrimaryDocumentItems, documentItemId,
+                TBL_TRADE_STOCK, COL_PRIMARY_DOCUMENT_ITEM))
+        .addFromLeft(TBL_TRADE_DOCUMENTS, aliasPrimaryDocuments,
+            SqlUtils.join(aliasPrimaryDocuments, documentId,
+                aliasPrimaryDocumentItems, COL_TRADE_DOCUMENT))
+        .addOrder(aliasPrimaryDocuments, COL_TRADE_DATE)
         .addOrder(TBL_TRADE_STOCK, COL_PRIMARY_DOCUMENT_ITEM);
 
     HasConditions where = SqlUtils.and(
-        SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, item),
+        SqlUtils.equals(aliasPrimaryDocumentItems, COL_ITEM, item),
         SqlUtils.positive(TBL_TRADE_STOCK, COL_STOCK_QUANTITY));
 
     if (DataUtils.isId(warehouse)) {
       where.add(SqlUtils.equals(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE, warehouse));
+    }
+
+    if (DataUtils.isId(consignor)) {
+      String aliasDocumentItems = SqlUtils.uniqueName("dit");
+      String aliasDocuments = SqlUtils.uniqueName("doc");
+
+      query.addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, aliasDocumentItems,
+          SqlUtils.join(aliasDocumentItems, documentItemId,
+              TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM));
+      query.addFromLeft(TBL_TRADE_DOCUMENTS, aliasDocuments,
+          SqlUtils.join(aliasDocuments, documentId, aliasDocumentItems, COL_TRADE_DOCUMENT));
+
+      where.add(SqlUtils.equals(aliasDocuments, COL_TRADE_CUSTOMER, consignor));
     }
 
     query.setWhere(where);
@@ -2613,7 +2984,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   }
 
   private Collection<String> verifyPhaseTransition(long docId, OperationType operationType,
-      Long warehouseFrom, Long warehouseTo, boolean toStock) {
+      Long warehouseFrom, Long warehouseTo, boolean toStock, Long supplier, Long customer) {
 
     List<String> messages = new ArrayList<>();
 
@@ -2623,26 +2994,50 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       return messages;
     }
 
+    Dictionary dictionary = usr.getDictionary();
+
     if (operationType == null) {
-      messages.add("operation type not specified");
-      return messages;
-    }
-    if (toStock && operationType.producesStock() && !DataUtils.isId(warehouseTo)) {
-      messages.add("warehouse-receiver not specified");
+      messages.add(dictionary.fieldRequired(dictionary.trdOperationType()));
       return messages;
     }
 
-    if (operationType.producesStock() && !toStock && hasChildren(itemCondition)) {
-      messages.add("document has children");
+    if (toStock && operationType.producesStock()) {
+      if (!DataUtils.isId(warehouseTo)) {
+        messages.add(dictionary.fieldRequired(dictionary.trdWarehouseTo()));
+        return messages;
+      }
+
+      if (!DataUtils.isId(customer) && isConsignmentWarehouse(warehouseTo)) {
+        messages.add(dictionary.fieldRequired(dictionary.trdCustomer()));
+        return messages;
+      }
     }
+
+    if (operationType.producesStock() && !toStock && hasChildren(itemCondition)) {
+      messages.add(dictionary.trdDocumentHasChildren());
+    }
+
     if (operationType.consumesStock() && toStock) {
-      messages.addAll(verifyStock(itemCondition, warehouseFrom));
+      if (isConsignmentWarehouse(warehouseFrom)
+          && !DataUtils.isId(getConsignor(operationType, supplier, customer))) {
+
+        messages.add(dictionary.trdEnterSupplierOrCustomer());
+
+      } else if (DataUtils.isId(warehouseFrom)) {
+        messages.addAll(verifyStock(itemCondition, warehouseFrom,
+            operationType, supplier, customer, dictionary));
+
+      } else {
+        messages.add(dictionary.fieldRequired(dictionary.trdWarehouseFrom()));
+      }
     }
 
     return messages;
   }
 
-  private List<String> verifyStock(IsCondition itemCondition, Long documentWarehouseFrom) {
+  private List<String> verifyStock(IsCondition itemCondition, Long documentWarehouseFrom,
+      OperationType operationType, Long supplier, Long customer, Dictionary dictionary) {
+
     List<String> messages = new ArrayList<>();
 
     String idName = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
@@ -2669,10 +3064,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           warehouseFrom = documentWarehouseFrom;
         }
 
+        Long consignor = getConsignor(warehouseFrom, operationType, supplier, customer);
+
         Double qty = itemRow.getDouble(COL_TRADE_ITEM_QUANTITY);
 
         Long parent = null;
-        Map<Long, Double> parentQuantities = getParentQuantities(item, warehouseFrom, usedParents);
+        Map<Long, Double> parentQuantities = getParentQuantities(item, warehouseFrom, consignor,
+            usedParents);
 
         if (!BeeUtils.isEmpty(parentQuantities)) {
           for (Map.Entry<Long, Double> entry : parentQuantities.entrySet()) {
@@ -2685,8 +3083,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         }
 
         if (!DataUtils.isId(parent)) {
-          messages.add(BeeUtils.joinWords("parent not found for id", id, "item", item,
-              "qty", qty, "warehouse", warehouseFrom));
+          messages.add(BeeUtils.joinOptions(dictionary.trdDocumentItem(), id,
+              dictionary.item(), item, dictionary.trdQuantity(), qty,
+              dictionary.warehouse(), warehouseFrom, dictionary.consignor(), consignor,
+              dictionary.trdQuantityStock(), BeeUtils.sum(parentQuantities.values())));
         }
       }
     }
@@ -2773,7 +3173,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   private ResponseObject onTradeItemQuantityUpdate(long itemId, Double newQty) {
     if (modifyItemStock(itemId)) {
       if (!BeeUtils.isPositive(newQty)) {
-        return ResponseObject.error("invalid quantity", newQty);
+        return ResponseObject.error(usr.getDictionary().invalidQuantity(newQty));
       }
 
       String idName = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
@@ -2798,8 +3198,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           itemNewStock = BeeUtils.unbox(itemOldStock) - oldQty + newQty;
 
           if (BeeUtils.isNegative(itemNewStock)) {
-            return ResponseObject.error("item stock", itemOldStock, "-", oldQty, "+", newQty,
-                "=", itemNewStock);
+            return ResponseObject.error(usr.getDictionary().trdQuantityStock(), itemOldStock,
+                "-", oldQty, "+", newQty, "=", itemNewStock);
           }
         }
 
@@ -2815,8 +3215,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             parentNewStock = BeeUtils.unbox(parentOldStock) + oldQty - newQty;
 
             if (BeeUtils.isNegative(parentNewStock)) {
-              return ResponseObject.error("parent stock", parentOldStock, "+", oldQty, "-", newQty,
-                  "=", parentNewStock);
+              Dictionary dictionary = usr.getDictionary();
+              return ResponseObject.error(dictionary.trdItemParent(), dictionary.trdQuantityStock(),
+                  parentOldStock, "+", oldQty, "-", newQty, "=", parentNewStock);
             }
           }
         }
@@ -2940,7 +3341,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       if (!Objects.equals(oldValue, warehouse)) {
         if (!DataUtils.isId(warehouse)) {
-          return ResponseObject.error("warehouse required");
+          Dictionary dictionary = usr.getDictionary();
+          return ResponseObject.error(dictionary.fieldRequired(dictionary.trdWarehouseTo()));
         }
 
         SqlUpdate update = new SqlUpdate(TBL_TRADE_STOCK)
@@ -2971,39 +3373,43 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   }
 
   private String verifyTradeItemInsert(long docId, Double quantity, Long warehouseTo, Long parent) {
+    Dictionary dictionary = usr.getDictionary();
+
     if (!BeeUtils.isDouble(quantity)) {
-      return "item quantity not available";
+      return dictionary.fieldRequired(dictionary.trdQuantity());
     }
 
     OperationType operationType = getOperationTypeByTradeDocument(docId);
     if (operationType == null) {
-      return "operation type not available";
+      return dictionary.fieldRequired(dictionary.trdOperationType());
     }
 
     if (operationType.consumesStock()) {
       if (!DataUtils.isId(parent)) {
-        return "item parent not available";
+        return dictionary.fieldRequired(dictionary.trdItemParent());
       }
 
       Double stock = qs.getDouble(TBL_TRADE_STOCK, COL_STOCK_QUANTITY,
           COL_TRADE_DOCUMENT_ITEM, parent);
 
       if (!BeeUtils.isDouble(stock)) {
-        return "parent stock not found";
+        return BeeUtils.joinWords(dictionary.trdItemParent(), parent,
+            dictionary.trdQuantityStock(), 0);
       }
       if (stock < quantity) {
-        return BeeUtils.joinWords("parent", parent, "stock", stock, "quantity", quantity);
+        return BeeUtils.joinWords(dictionary.trdItemParent(), parent,
+            dictionary.trdQuantityStock(), stock, dictionary.trdQuantity(), quantity);
       }
     }
 
     if (operationType.producesStock()) {
       if (BeeUtils.isNegative(quantity)) {
-        return "quantity must be >= 0";
+        return dictionary.invalidQuantity(quantity);
       }
 
       Long warehouseReceiver = getWarehouseReceiver(docId, warehouseTo);
       if (!DataUtils.isId(warehouseReceiver)) {
-        return "warehouse-receiver not specified";
+        return dictionary.fieldRequired(dictionary.trdWarehouseTo());
       }
     }
 
@@ -3068,7 +3474,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     for (Long itemId : itemIds) {
       if (DataUtils.isId(itemId)) {
         if (qs.sqlExists(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT, itemId)) {
-          return ResponseObject.error("item", itemId, "has children");
+          return ResponseObject.error(itemId, usr.getDictionary().trdDocumentItemHasChildren());
         }
 
         SqlSelect query = new SqlSelect()
@@ -3113,7 +3519,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     for (Long docId : docIds) {
       if (DataUtils.isId(docId)) {
         if (hasChildren(SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT, docId))) {
-          return ResponseObject.error("document", docId, "has children");
+          return ResponseObject.error(docId, usr.getDictionary().trdDocumentHasChildren());
         }
 
         SqlSelect query = new SqlSelect()
@@ -3229,9 +3635,11 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     String parents = qs.sqlCreateTemp(rootQuery);
     int count = qs.sqlCount(parents, null);
 
+    Dictionary dictionary = usr.getDictionary();
+
     if (count <= 0) {
       qs.sqlDropTemp(parents);
-      response.addWarning("stock root items not found");
+      response.addWarning(dictionary.dataNotAvailable(dictionary.trdStock()));
 
       if (!qs.isEmpty(TBL_TRADE_STOCK)) {
         response.addWarning(BeeUtils.joinWords(TBL_TRADE_STOCK, "is not empty"));
@@ -3247,7 +3655,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     SqlSelect stockQuery = new SqlSelect().addFields(parents, stockFields).addFrom(parents);
     String stock = qs.sqlCreateTemp(stockQuery);
 
-    String message = buildMessage(stopwatch, "depth", 0, "count", count);
+    String message = buildMessage(stopwatch, dictionary.depth(), 0, dictionary.size(), count);
     logger.info(message);
     response.addInfo(message);
 
@@ -3279,7 +3687,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         return insResponse;
       }
 
-      message = buildMessage(stopwatch, "depth", depth, "count", count);
+      message = buildMessage(stopwatch, dictionary.depth(), depth, dictionary.size(), count);
       logger.info(message);
       response.addInfo(message);
 
@@ -3326,7 +3734,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         return updResponse;
       }
 
-      message = buildMessage(stopwatch, "consumers", updResponse.getResponse());
+      message = buildMessage(stopwatch, dictionary.rebuildTradeStockConsumers(),
+          updResponse.getResponse());
       logger.info(message);
       response.addInfo(message);
     }
@@ -3384,7 +3793,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         }
       }
 
-      message = buildMessage(stopwatch, "updated", diffData.getNumberOfRows());
+      message = buildMessage(stopwatch, dictionary.rowsUpdated(diffData.getNumberOfRows()));
       logger.info(message);
       response.addInfo(message);
 
@@ -3411,7 +3820,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         return delResponse;
       }
 
-      message = buildMessage(stopwatch, "deleted", delResponse.getResponse());
+      message = buildMessage(stopwatch, dictionary.rowsDeleted(delResponse.getResponse()));
       logger.info(message);
       response.addInfo(message);
 
@@ -3466,7 +3875,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         }
       }
 
-      message = buildMessage(stopwatch, "inserted", newData.getNumberOfRows());
+      message = buildMessage(stopwatch, dictionary.rowsInserted(newData.getNumberOfRows()));
       logger.info(message);
       response.addInfo(message);
 
@@ -3479,7 +3888,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       refreshStock();
 
     } else {
-      message = "trade stock is up to date";
+      message = dictionary.rebuildTradeStockIsUpToDate();
 
       logger.info(message);
       response.addInfo(message);
@@ -3978,8 +4387,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   }
 
   private Multimap<Long, Triplet<Long, String, Double>> getStockByWarehouse(
-      Collection<Long> items) {
+      Collection<Long> items, Long consignor) {
+
     Multimap<Long, Triplet<Long, String, Double>> result = ArrayListMultimap.create();
+
+    HasConditions where = SqlUtils.and(SqlUtils.inList(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, items),
+        SqlUtils.nonZero(TBL_TRADE_STOCK, COL_STOCK_QUANTITY));
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
@@ -3987,15 +4400,23 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
         .addSum(TBL_TRADE_STOCK, COL_STOCK_QUANTITY)
         .addFrom(TBL_TRADE_STOCK)
-        .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
+        .addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
             TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM))
-        .addFromInner(TBL_WAREHOUSES, sys.joinTables(TBL_WAREHOUSES,
+        .addFromLeft(TBL_WAREHOUSES, sys.joinTables(TBL_WAREHOUSES,
             TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE))
-        .setWhere(SqlUtils.and(SqlUtils.inList(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, items),
-            SqlUtils.nonZero(TBL_TRADE_STOCK, COL_STOCK_QUANTITY)))
         .addGroup(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
         .addGroup(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE)
         .addGroup(TBL_WAREHOUSES, COL_WAREHOUSE_CODE);
+
+    if (DataUtils.isId(consignor)) {
+      query.addFromLeft(TBL_TRADE_DOCUMENTS, sys.joinTables(TBL_TRADE_DOCUMENTS,
+          TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT));
+
+      where.add(SqlUtils.or(SqlUtils.isNull(TBL_WAREHOUSES, COL_WAREHOUSE_CONSIGNMENT),
+          SqlUtils.equals(TBL_TRADE_DOCUMENTS, COL_TRADE_CUSTOMER, consignor)));
+    }
+
+    query.setWhere(where);
 
     SimpleRowSet data = qs.getData(query);
 
@@ -4519,7 +4940,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           messages.add(Localized.dictionary().parameterNotFound(COL_TRADE_CURRENCY));
         }
 
-        if (!DataUtils.isId(currency)) {
+        if (!DataUtils.isId(account)) {
           messages.add("payment account not available");
         }
 
@@ -4908,5 +5329,163 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     } else {
       return accounts.stream().findAny().get();
     }
+  }
+
+  private ResponseObject saveCustomerReturns(RequestInfo reqInfo) {
+    Map<String, String> idMap =
+        Codec.deserializeHashMap(reqInfo.getParameter(TBL_TRADE_ITEM_RETURNS));
+    if (BeeUtils.isEmpty(idMap)) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), TBL_TRADE_ITEM_RETURNS);
+    }
+
+    int count = 0;
+
+    for (Map.Entry<String, String> entry : idMap.entrySet()) {
+      Long id = BeeUtils.toLongOrNull(entry.getKey());
+      Long relId = BeeUtils.toLongOrNull(entry.getValue());
+
+      if (DataUtils.isId(id) && DataUtils.isId(relId) && !Objects.equals(id, relId)) {
+        Long parent = qs.getLongById(TBL_TRADE_DOCUMENT_ITEMS, relId, COL_TRADE_ITEM_PARENT);
+        Long primary;
+
+        if (DataUtils.isId(parent)) {
+          primary = qs.getLong(TBL_TRADE_ITEM_RETURNS, COL_PRIMARY_DOCUMENT_ITEM,
+              COL_TRADE_DOCUMENT_ITEM, parent);
+          if (!DataUtils.isId(primary)) {
+            primary = qs.getLong(TBL_TRADE_STOCK, COL_PRIMARY_DOCUMENT_ITEM,
+                COL_TRADE_DOCUMENT_ITEM, parent);
+          }
+
+        } else {
+          primary = null;
+        }
+
+        SqlInsert insert = new SqlInsert(TBL_TRADE_ITEM_RETURNS)
+            .addConstant(COL_TRADE_DOCUMENT_ITEM, id)
+            .addConstant(COL_RELATED_DOCUMENT_ITEM, relId)
+            .addNotNull(COL_PRIMARY_DOCUMENT_ITEM, primary);
+
+        ResponseObject insertResponse = qs.insertDataWithResponse(insert);
+        if (insertResponse.hasErrors()) {
+          return insertResponse;
+        }
+
+        count++;
+      }
+    }
+
+    return ResponseObject.response(count);
+  }
+
+  private Long getConsignor(Long warehouse, OperationType operationType,
+      Long supplier, Long customer) {
+
+    if (isConsignmentWarehouse(warehouse)) {
+      return getConsignor(operationType, supplier, customer);
+    } else {
+      return null;
+    }
+  }
+
+  private Long getConsignor(OperationType operationType, Long supplier, Long customer) {
+    if (operationType != null && !operationType.consumesStock()) {
+      return null;
+
+    } else if (DataUtils.isId(supplier)) {
+      if (DataUtils.isId(customer) && !Objects.equals(supplier, customer)
+          && operationType != null && !operationType.producesStock()
+          && Objects.equals(supplier, prm.getRelation(PRM_COMPANY))) {
+
+        return customer;
+      }
+
+      return supplier;
+
+    } else {
+      return customer;
+    }
+  }
+
+  private Set<Long> getConsignmentWarehouses() {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_WAREHOUSES, sys.getIdName(TBL_WAREHOUSES))
+        .addFrom(TBL_WAREHOUSES)
+        .setWhere(SqlUtils.notNull(TBL_WAREHOUSES, COL_WAREHOUSE_CONSIGNMENT));
+
+    return qs.getLongSet(query);
+  }
+
+  private boolean isConsignmentWarehouse(Long warehouse) {
+    return DataUtils.isId(warehouse)
+        && BeeUtils.isTrue(qs.getBooleanById(TBL_WAREHOUSES, warehouse, COL_WAREHOUSE_CONSIGNMENT));
+  }
+
+  private Set<Long> getItemAnalogs(Set<Long> input) {
+    Set<Long> analogs = new HashSet<>();
+    if (BeeUtils.isEmpty(input)) {
+      return analogs;
+    }
+
+    IsCondition where = SqlUtils.and(SqlUtils.inList(TBL_ITEM_ANALOGS, COL_ITEM_ANALOG_1, input),
+        SqlUtils.not(SqlUtils.inList(TBL_ITEM_ANALOGS, COL_ITEM_ANALOG_2, input)));
+
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_ITEM_ANALOGS, COL_ITEM_ANALOG_2)
+        .addFrom(TBL_ITEM_ANALOGS)
+        .setWhere(where);
+
+    Set<Long> items = qs.getLongSet(query);
+    if (!BeeUtils.isEmpty(items)) {
+      analogs.addAll(items);
+    }
+
+    where = SqlUtils.and(SqlUtils.inList(TBL_ITEM_ANALOGS, COL_ITEM_ANALOG_2, input),
+        SqlUtils.not(SqlUtils.inList(TBL_ITEM_ANALOGS, COL_ITEM_ANALOG_1, input)));
+
+    query = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_ITEM_ANALOGS, COL_ITEM_ANALOG_1)
+        .addFrom(TBL_ITEM_ANALOGS)
+        .setWhere(where);
+
+    items = qs.getLongSet(query);
+    if (!BeeUtils.isEmpty(items)) {
+      analogs.addAll(items);
+    }
+
+    if (!analogs.isEmpty()) {
+      analogs.addAll(getItemAnalogs(BeeUtils.union(input, analogs)));
+    }
+
+    return analogs;
+  }
+
+  private ResponseObject getItemAnalogs(RequestInfo reqInfo) {
+    String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
+    if (BeeUtils.isEmpty(where)) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), Service.VAR_VIEW_WHERE);
+    }
+
+    BeeView view = sys.getView(VIEW_ITEMS);
+
+    Filter filter = Filter.and(Filter.restore(where), Filter.isNull(COL_ITEM_IS_SERVICE));
+
+    SqlSelect query = view.getQuery(usr.getCurrentUserId(), filter, null,
+        BeeConst.EMPTY_IMMUTABLE_STRING_SET);
+
+    query.resetFields();
+    query.addFields(view.getSourceAlias(), view.getSourceIdName());
+
+    query.resetOrder();
+
+    Set<Long> items = qs.getLongSet(query);
+
+    if (!items.isEmpty()) {
+      Set<Long> analogs = getItemAnalogs(items);
+      if (!analogs.isEmpty()) {
+        return ResponseObject.response(DataUtils.buildIdList(analogs));
+      }
+    }
+
+    return ResponseObject.emptyResponse();
   }
 }

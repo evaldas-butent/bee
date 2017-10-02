@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="SubstitutionReasons"
+       idName="SubstitutionReasonID"
+>
+  <Fields>
+    <Integer name="Ordinal" label="=ordinal" />
+    <String name="SubstitutionReasonName" precision="30" notNull="true" unique="true"
+            label="=reason" />
+    <Boolean name="Visible" label="=visible" defValue="true" />
+
+    <String name="Background" precision="100" label="=backgroundColor" />
+    <String name="Foreground" precision="100" label="=foregroundColor" />
+  </Fields>
+</Table>

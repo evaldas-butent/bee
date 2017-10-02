@@ -12,6 +12,7 @@
 
     <DataColumn name="Date" />
     <DataColumn name="SupplierName" flexGrow="1" />
+    <DataColumn name="CustomerName" flexGrow="1" />
 
     <DataColumn name="Article" flexGrow="1" />
 

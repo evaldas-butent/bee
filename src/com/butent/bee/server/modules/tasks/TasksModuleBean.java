@@ -87,6 +87,7 @@ import com.butent.bee.shared.i18n.DateTimeFormat;
 import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Formatter;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.PredefinedFormat;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -147,7 +148,7 @@ import javax.ejb.TimerService;
 public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
   private static final String COL_DELAYED_HOURS = "DelayedHours";
-  private static final String COL_TERM_EXPIRES  = "TermExpires";
+  private static final String COL_TERM_EXPIRES = "TermExpires";
 
   private static BeeLogger logger = LogUtils.getLogger(TasksModuleBean.class);
 
@@ -306,7 +307,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         BeeParameter.createRelation(module, PRM_DEFAULT_REST_REQUEST_FORM, "RequestForms", "Name"),
         BeeParameter.createRelation(module, PRM_DEFAULT_REST_REQUEST_TYPE, "RequestTypes", "Name"),
         BeeParameter.createBoolean(module, PRM_CREATE_PRIVATE_TASK_FIRST, true, null),
-        BeeParameter.createNumber(module, PRM_SUMMARY_EXPIRED_TASK_PERCENT, false, 10)
+        BeeParameter.createNumber(module, PRM_SUMMARY_EXPIRED_TASK_PERCENT, false, 10),
+        BeeParameter.createRelation(module, PRM_AUTO_TASK_USER, VIEW_USERS, COL_FIRST_NAME,
+            COL_LAST_NAME)
     );
 
     return params;
@@ -621,6 +624,15 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     });
 
     buildTimers(TIMER_REMIND_TASKS_SUMMARY, TIMER_REMIND_USER_TASKS);
+
+    AdministrationModuleBean.registerSubstitutionProvider(TBL_TASKS,
+        TasksModuleBean.this::substituteTasks);
+
+    AdministrationModuleBean.registerSubstitutionProvider(TBL_RECURRING_TASKS, (user, substitute,
+        reason, note) -> TasksModuleBean.this.substituteRTasks(user, substitute));
+
+    AdministrationModuleBean.registerSubstitutionProvider(VIEW_TASK_TEMPLATES, (user, substitute,
+        reason, note) -> TasksModuleBean.this.substituteTaskTemplates(user, substitute));
   }
 
   @Override
@@ -685,6 +697,162 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         }
       }
     }
+  }
+
+  private Set<Long> substituteRTasks(Long user, Long substitute) {
+    Set<Long> ids = new HashSet<>();
+
+    List<Long> byOwner = qs.getLongList(new SqlSelect()
+        .addFields(TBL_RECURRING_TASKS, sys.getIdName(TBL_RECURRING_TASKS))
+        .addFrom(TBL_RECURRING_TASKS)
+        .setWhere(SqlUtils.equals(TBL_RECURRING_TASKS, COL_OWNER, user)));
+
+    if (!byOwner.isEmpty()) {
+      qs.updateData(new SqlUpdate(TBL_RECURRING_TASKS)
+          .addConstant(COL_OWNER, substitute)
+          .setWhere(sys.idInList(TBL_RECURRING_TASKS, byOwner)));
+
+      ids.addAll(byOwner);
+    }
+    Stream.of(TBL_RT_EXECUTORS, TBL_RT_OBSERVERS).forEach(table -> {
+      List<Long> rTasks = qs.getLongList(new SqlSelect()
+          .addFields(table, COL_RECURRING_TASK)
+          .addFrom(table)
+          .setWhere(SqlUtils.equals(table, COL_USER, user)));
+
+      if (!rTasks.isEmpty()) {
+        qs.updateData(new SqlDelete(table)
+            .setWhere(SqlUtils.and(SqlUtils.equals(table, COL_USER, substitute),
+                SqlUtils.inList(table, COL_RECURRING_TASK, rTasks))));
+
+        qs.updateData(new SqlUpdate(table)
+            .addConstant(COL_USER, substitute)
+            .setWhere(SqlUtils.and(SqlUtils.equals(table, COL_USER, user),
+                SqlUtils.inList(table, COL_RECURRING_TASK, rTasks))));
+
+        ids.addAll(rTasks);
+      }
+    });
+    return ids;
+  }
+
+  private Set<Long> substituteTaskTemplates(Long user, Long substitute) {
+    Set<Long> ids = new HashSet<>();
+
+    Stream.of(VIEW_TT_EXECUTORS, VIEW_TT_OBSERVERS).forEach(table -> {
+      List<Long> taskTemplates = qs.getLongList(new SqlSelect()
+          .addFields(table, COL_TASK_TEMPLATE)
+          .addFrom(table)
+          .setWhere(SqlUtils.equals(table, COL_USER, user)));
+
+      if (!taskTemplates.isEmpty()) {
+        qs.updateData(new SqlDelete(table)
+            .setWhere(SqlUtils.and(SqlUtils.equals(table, COL_USER, substitute),
+                SqlUtils.inList(table, COL_TASK_TEMPLATE, taskTemplates))));
+
+        qs.updateData(new SqlUpdate(table)
+            .addConstant(COL_USER, substitute)
+            .setWhere(SqlUtils.and(SqlUtils.equals(table, COL_USER, user),
+                SqlUtils.inList(table, COL_TASK_TEMPLATE, taskTemplates))));
+
+        ids.addAll(taskTemplates);
+      }
+    });
+    return ids;
+  }
+
+  private Set<Long> substituteTasks(Long user, Long substitute, String reason, String note) {
+    String idCol = sys.getIdName(TBL_TASKS);
+    String minCol = "MinUser";
+    String maxCol = "MaxUser";
+    Set<Long> ids = new HashSet<>();
+    Dictionary loc = Localized.dictionary();
+
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addFields(TBL_TASKS, idCol, COL_OWNER, COL_EXECUTOR, COL_STATUS)
+        .addMin(TBL_TASK_USERS, COL_USER, minCol)
+        .addMax(TBL_TASK_USERS, COL_USER, maxCol)
+        .addFrom(TBL_TASKS)
+        .addFromLeft(TBL_TASK_USERS,
+            SqlUtils.and(sys.joinTables(TBL_TASKS, TBL_TASK_USERS, COL_TASK),
+                SqlUtils.inList(TBL_TASK_USERS, COL_USER, user, substitute)))
+        .setWhere(SqlUtils.and(SqlUtils.not(SqlUtils.inList(TBL_TASKS, COL_STATUS,
+            TaskStatus.COMPLETED, TaskStatus.APPROVED, TaskStatus.CANCELED)),
+            SqlUtils.or(SqlUtils.equals(TBL_TASKS, COL_OWNER, user),
+                SqlUtils.equals(TBL_TASKS, COL_EXECUTOR, user),
+                SqlUtils.equals(TBL_TASK_USERS, COL_USER, user))))
+        .addGroup(TBL_TASKS, idCol, COL_OWNER, COL_EXECUTOR, COL_STATUS));
+
+    BeeRowSet rs = qs.getViewDataById(TBL_USERS, user);
+    String userLabel = BeeUtils.joinWords(rs.getStringByRowId(user, COL_FIRST_NAME),
+        rs.getStringByRowId(user, COL_LAST_NAME));
+
+    rs = qs.getViewDataById(TBL_USERS, substitute);
+    String substituteLabel = BeeUtils.joinWords(rs.getStringByRowId(substitute, COL_FIRST_NAME),
+        rs.getStringByRowId(substitute, COL_LAST_NAME));
+
+    data.forEach(row -> {
+      List<String> sb = new ArrayList<>();
+      sb.add(reason);
+      Long task = row.getLong(idCol);
+      boolean userIsObserver = BeeUtils.in(user, row.getLong(minCol), row.getLong(maxCol));
+      boolean subsIsObserver = BeeUtils.in(substitute, row.getLong(minCol), row.getLong(maxCol));
+
+      SqlUpdate update = new SqlUpdate(TBL_TASKS)
+          .setWhere(sys.idEquals(TBL_TASKS, task));
+
+      if (Objects.equals(row.getLong(COL_OWNER), user)) {
+        update.addConstant(COL_OWNER, substitute);
+        sb.add(TaskUtils.getUpdateNote(loc.crmTaskManager(), userLabel, substituteLabel));
+      }
+      if (Objects.equals(row.getLong(COL_EXECUTOR), user)) {
+        update.addConstant(COL_EXECUTOR, substitute);
+
+        TaskStatus currentStatus = EnumUtils.getEnumByIndex(TaskStatus.class,
+            row.getInt(COL_STATUS));
+
+        if (!Objects.equals(currentStatus, TaskStatus.NOT_VISITED)) {
+          update.addConstant(COL_STATUS, TaskStatus.NOT_VISITED);
+
+          sb.add(TaskUtils.getUpdateNote(loc.crmTaskStatus(),
+              currentStatus.getCaption(usr.getDictionary()),
+              TaskStatus.NOT_VISITED.getCaption(usr.getDictionary())));
+        }
+        sb.add(TaskUtils.getUpdateNote(loc.crmTaskExecutor(), userLabel, substituteLabel));
+      }
+      if (!update.isEmpty()) {
+        qs.updateData(update);
+      } else {
+        subsIsObserver = qs.sqlExists(TBL_TASK_USERS,
+            SqlUtils.and(SqlUtils.equals(TBL_TASK_USERS, COL_TASK, task),
+                SqlUtils.equals(TBL_TASK_USERS, COL_USER, substitute)));
+
+        sb.add(TaskUtils.getUpdateNote(loc.crmTaskObservers(), userLabel, substituteLabel));
+      }
+      IsCondition wh = SqlUtils.and(SqlUtils.equals(TBL_TASK_USERS, COL_TASK, task),
+          SqlUtils.equals(TBL_TASK_USERS, COL_USER, user));
+
+      if (userIsObserver && subsIsObserver) {
+        qs.updateData(new SqlDelete(TBL_TASK_USERS)
+            .setWhere(wh));
+
+      } else if (userIsObserver) {
+        qs.updateData(new SqlUpdate(TBL_TASK_USERS)
+            .addConstant(COL_USER, substitute)
+            .addConstant(COL_LAST_ACCESS, null)
+            .setWhere(wh));
+
+      } else if (!subsIsObserver) {
+        qs.insertData(new SqlInsert(TBL_TASK_USERS)
+            .addConstant(COL_TASK, task)
+            .addConstant(COL_USER, substitute));
+      }
+      registerTaskEvent(task, usr.getCurrentUserId(), TaskEvent.SUBSTITUTE, note,
+          BeeUtils.join(BeeConst.STRING_EOL, sb), null, null, null, System.currentTimeMillis());
+
+      ids.add(task);
+    });
+    return ids;
   }
 
   @Override
@@ -1026,12 +1194,11 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
   private IsCondition getTaskStatusConditionForReminders() {
     return SqlUtils.not(SqlUtils.inList(TBL_TASKS, COL_STATUS,
-      Sets.newHashSet(TaskStatus.NOT_SCHEDULED.ordinal(), TaskStatus.APPROVED.ordinal())));
+        Sets.newHashSet(TaskStatus.NOT_SCHEDULED.ordinal(), TaskStatus.APPROVED.ordinal())));
   }
 
-
   private List<String> generateReminderTimersIdsListForUpdate(String timerIdentifier,
-                                                              Long reminderTypeId, Long taskId) {
+      Long reminderTypeId, Long taskId) {
 
     List<String> timersIds = new ArrayList<>();
 
@@ -1039,22 +1206,22 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     if (reminderTypeId != null) {
       data = qs.getData(new SqlSelect()
-        .addFields(VIEW_USER_REMINDERS, sys.getIdName(VIEW_USER_REMINDERS))
-        .addFrom(VIEW_USER_REMINDERS)
-        .addFromInner(TBL_TASKS, sys.joinTables(TBL_TASKS,
-          VIEW_USER_REMINDERS, COL_USER_REMINDER_OBJECT))
-        .setWhere(SqlUtils.and(SqlUtils.equals(VIEW_USER_REMINDERS,
-          COL_USER_REMINDER_TYPE, reminderTypeId),
-          SqlUtils.equals(VIEW_USER_REMINDERS, COL_USER_REMINDER_ACTIVE, true),
-          getTaskStatusConditionForReminders())));
+          .addFields(VIEW_USER_REMINDERS, sys.getIdName(VIEW_USER_REMINDERS))
+          .addFrom(VIEW_USER_REMINDERS)
+          .addFromInner(TBL_TASKS, sys.joinTables(TBL_TASKS,
+              VIEW_USER_REMINDERS, COL_USER_REMINDER_OBJECT))
+          .setWhere(SqlUtils.and(SqlUtils.equals(VIEW_USER_REMINDERS,
+              COL_USER_REMINDER_TYPE, reminderTypeId),
+              SqlUtils.equals(VIEW_USER_REMINDERS, COL_USER_REMINDER_ACTIVE, true),
+              getTaskStatusConditionForReminders())));
 
     } else if (taskId != null) {
       data = qs.getData(new SqlSelect()
-        .addFields(VIEW_USER_REMINDERS, sys.getIdName(VIEW_USER_REMINDERS))
-        .addFrom(VIEW_USER_REMINDERS)
-        .setWhere(SqlUtils.and(SqlUtils.equals(VIEW_USER_REMINDERS,
-          COL_USER_REMINDER_OBJECT, taskId),
-          SqlUtils.equals(VIEW_USER_REMINDERS, COL_USER_REMINDER_ACTIVE, true))));
+          .addFields(VIEW_USER_REMINDERS, sys.getIdName(VIEW_USER_REMINDERS))
+          .addFrom(VIEW_USER_REMINDERS)
+          .setWhere(SqlUtils.and(SqlUtils.equals(VIEW_USER_REMINDERS,
+              COL_USER_REMINDER_OBJECT, taskId),
+              SqlUtils.equals(VIEW_USER_REMINDERS, COL_USER_REMINDER_ACTIVE, true))));
     }
 
     if (data != null) {
@@ -1358,7 +1525,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     return response;
   }
 
-  private ResponseObject createTasks(BeeRowSet data, BeeRow row, long owner) {
+  public ResponseObject createTasks(BeeRowSet data, BeeRow row, long owner) {
     ResponseObject response = null;
 
     Map<String, String> properties = row.getProperties();
@@ -2497,8 +2664,8 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       Collection<RowChildren> taskRel = new ArrayList<>();
 
       relations.forEach(rel ->
-        taskRel.add(RowChildren.create(rel.getRepository(), COL_TASK, null, rel.getChildColumn(),
-          rel.getChildrenIds()))
+          taskRel.add(RowChildren.create(rel.getRepository(), COL_TASK, null, rel.getChildColumn(),
+              rel.getChildrenIds()))
       );
 
       SimpleRowSet fileData = getRecurringTaskFileData(rtId);
@@ -2791,6 +2958,12 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       values.add(BeeUtils.toString(privateTask));
     }
 
+    String endResult = DataUtils.getString(rtColumns, rtRow, COL_END_RESULT);
+    if (!BeeUtils.isEmpty(endResult)) {
+      columns.add(DataUtils.getColumn(COL_END_RESULT, taskColumns));
+      values.add(endResult);
+    }
+
     BeeRowSet taskData = new BeeRowSet(VIEW_TASKS, columns);
     BeeRow taskRow = new BeeRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, values);
 
@@ -2863,8 +3036,8 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     Collection<RowChildren> relations = getRelations(COL_RECURRING_TASK, rtId);
     Collection<RowChildren> taskRel = new ArrayList<>();
     relations.forEach(rel ->
-      taskRel.add(RowChildren.create(rel.getRepository(), COL_TASK, null, rel.getChildColumn(),
-        rel.getChildrenIds()))
+        taskRel.add(RowChildren.create(rel.getRepository(), COL_TASK, null, rel.getChildColumn(),
+            rel.getChildrenIds()))
     );
 
     SimpleRowSet fileData = getRecurringTaskFileData(rtId);
@@ -3103,42 +3276,43 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     String alsExecutorCompanyPerson = SqlUtils.uniqueName("als");
 
     SqlSelect query =
-      new SqlSelect()
-        .addFields(TBL_TASKS, COL_TASK_ID, COL_SUMMARY, COL_STATUS, COL_OWNER, COL_EXECUTOR)
-        .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
-        .addFields(TBL_TASKS, COL_START_TIME, COL_FINISH_TIME)
-        .addExpr(SqlUtils.concat(
-          SqlUtils.nvl(SqlUtils.field(alsExecutorPerson, COL_FIRST_NAME), "''"),
-          "' '",
-          SqlUtils.nvl(SqlUtils.field(alsExecutorPerson, COL_LAST_NAME), "''")
-        ), ALS_EXECUTOR_FIRST_NAME)
-        .addEmptyField(COL_DELAYED_HOURS, SqlConstants.SqlDataType.LONG, 0, 0, false)
-        .addEmptyField(COL_TERM_EXPIRES, SqlConstants.SqlDataType.LONG, 0, 0, false)
-        .addFrom(TBL_TASKS)
-        .addFromLeft(TBL_COMPANIES,
-          sys.joinTables(TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
-        .addFromLeft(TBL_USERS, alsExecutorUser, sys.joinTables(TBL_USERS, alsExecutorUser,
-          TBL_TASKS, COL_EXECUTOR))
-        .addFromLeft(TBL_COMPANY_PERSONS, alsExecutorCompanyPerson,
-          sys.joinTables(TBL_COMPANY_PERSONS, alsExecutorCompanyPerson, alsExecutorUser,
-            COL_COMPANY_PERSON))
-        .addFromLeft(TBL_PERSONS, alsExecutorPerson,
-          sys.joinTables(TBL_PERSONS, alsExecutorPerson, alsExecutorCompanyPerson, COL_PERSON))
-        .setWhere(
-          SqlUtils.and(
-            SqlUtils.or(
-              SqlUtils.equals(TBL_TASKS, COL_EXECUTOR, userID),
-              SqlUtils.equals(TBL_TASKS, COL_OWNER, userID)
-            ),
-            SqlUtils.or(
-              SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.ACTIVE),
-              SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.SUSPENDED),
-              SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.NOT_SCHEDULED),
-              SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.NOT_VISITED),
-              SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.VISITED)
-            )
-          ))
-        .addOrder(TBL_TASKS, COL_EXECUTOR, COL_FINISH_TIME);
+        new SqlSelect()
+            .addFields(TBL_TASKS, COL_TASK_ID, COL_SUMMARY, COL_STATUS, COL_OWNER, COL_EXECUTOR)
+            .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
+            .addFields(TBL_TASKS, COL_START_TIME, COL_FINISH_TIME)
+            .addExpr(SqlUtils.concat(
+                SqlUtils.nvl(SqlUtils.field(alsExecutorPerson, COL_FIRST_NAME), "''"),
+                "' '",
+                SqlUtils.nvl(SqlUtils.field(alsExecutorPerson, COL_LAST_NAME), "''")
+            ), ALS_EXECUTOR_FIRST_NAME)
+            .addEmptyField(COL_DELAYED_HOURS, SqlConstants.SqlDataType.LONG, 0, 0, false)
+            .addEmptyField(COL_TERM_EXPIRES, SqlConstants.SqlDataType.LONG, 0, 0, false)
+            .addFrom(TBL_TASKS)
+            .addFromLeft(TBL_COMPANIES,
+                sys.joinTables(TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
+            .addFromLeft(TBL_USERS, alsExecutorUser, sys.joinTables(TBL_USERS, alsExecutorUser,
+                TBL_TASKS, COL_EXECUTOR))
+            .addFromLeft(TBL_COMPANY_PERSONS, alsExecutorCompanyPerson,
+                sys.joinTables(TBL_COMPANY_PERSONS, alsExecutorCompanyPerson, alsExecutorUser,
+                    COL_COMPANY_PERSON))
+            .addFromLeft(TBL_PERSONS, alsExecutorPerson,
+                sys.joinTables(TBL_PERSONS, alsExecutorPerson, alsExecutorCompanyPerson,
+                    COL_PERSON))
+            .setWhere(
+                SqlUtils.and(
+                    SqlUtils.or(
+                        SqlUtils.equals(TBL_TASKS, COL_EXECUTOR, userID),
+                        SqlUtils.equals(TBL_TASKS, COL_OWNER, userID)
+                    ),
+                    SqlUtils.or(
+                        SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.ACTIVE),
+                        SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.SUSPENDED),
+                        SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.NOT_SCHEDULED),
+                        SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.NOT_VISITED),
+                        SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.VISITED)
+                    )
+                ))
+            .addOrder(TBL_TASKS, COL_EXECUTOR, COL_FINISH_TIME);
 
     SimpleRowSet data = qs.getData(query);
 
@@ -3173,7 +3347,6 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     Map<TaskStatus, Integer> delegatedStates = new HashMap<>();
     Integer latePercent = prm.getInteger(PRM_SUMMARY_EXPIRED_TASK_PERCENT);
 
-
     for (SimpleRowSet.SimpleRow row : tasks) {
       TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class,
           row.getInt(tasks.getColumnIndex(COL_STATUS)));
@@ -3182,15 +3355,15 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         long startTime = BeeUtils.unbox(row.getLong(tasks.getColumnIndex(COL_START_TIME)));
 
         if (Objects.equals(userId, row.getLong(COL_OWNER))
-          && !Objects.equals(userId, row.getLong(COL_EXECUTOR))) {
+            && !Objects.equals(userId, row.getLong(COL_EXECUTOR))) {
           delegatedStates.put(status, BeeUtils.unbox(executeStates.get(status)) + 1);
         } else {
           executeStates.put(status, BeeUtils.unbox(executeStates.get(status)) + 1);
         }
 
         if ((row.getLong(tasks.getColumnIndex(COL_FINISH_TIME)) == null
-          || row.getLong(tasks.getColumnIndex(COL_START_TIME)) == null)
-          && Objects.equals(userId, row.getLong(COL_OWNER))) {
+            || row.getLong(tasks.getColumnIndex(COL_START_TIME)) == null)
+            && Objects.equals(userId, row.getLong(COL_OWNER))) {
           continue;
         } else if ((finishTime - nowTime) < 0) {
           long diff = (nowTime - finishTime) / TimeUtils.MILLIS_PER_DAY;
@@ -3198,14 +3371,14 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
           row.setValue(COL_DELAYED_HOURS, BeeUtils.toString(days));
 
           if (Objects.equals(userId, row.getLong(COL_OWNER))
-            && !Objects.equals(userId, row.getLong(COL_EXECUTOR))) {
+              && !Objects.equals(userId, row.getLong(COL_EXECUTOR))) {
             lateDelegate.addRow(row.getValues());
           } else {
             lateTasks.addRow(row.getValues());
           }
         } else if (BeeUtils.isPositive(latePercent)
-          && (((finishTime - nowTime) * 100 / (finishTime - startTime)) <= latePercent)
-          || (finishTime - nowTime) < TimeUtils.MILLIS_PER_DAY) {
+            && (((finishTime - nowTime) * 100 / (finishTime - startTime)) <= latePercent)
+            || (finishTime - nowTime) < TimeUtils.MILLIS_PER_DAY) {
 
           long diff = (nowTime - finishTime) / TimeUtils.MILLIS_PER_DAY;
           int days = BeeUtils.ceil(diff) < 0 ? Math.abs(BeeUtils.ceil(diff)) : 0;
@@ -3219,7 +3392,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     }
 
     if (DataUtils.isEmpty(lateTasks) && DataUtils.isEmpty(lateDelegate)
-      && DataUtils.isEmpty(willLate)) {
+        && DataUtils.isEmpty(willLate)) {
       return;
     }
 
@@ -3244,21 +3417,21 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     if (!DataUtils.isEmpty(lateTasks)) {
       doc.getBody().append(createMailSummaryPart(dic, dic.crmTaskSummaryActiveTasks(),
-        dic.crmTaskSummaryActiveLateTasks(), executeStates, lateTasks, false,
-        excludedExecutorColumns, userId));
+          dic.crmTaskSummaryActiveLateTasks(), executeStates, lateTasks, false,
+          excludedExecutorColumns, userId));
       doc.getBody().append(br(), br());
     }
     if (!DataUtils.isEmpty(willLate)) {
       doc.getBody().append(createMailSummaryPart(dic, "",
-        dic.crmTaskSummarySoonLateTasks(), null, willLate, true,
-        excludedWillLate, userId));
+          dic.crmTaskSummarySoonLateTasks(), null, willLate, true,
+          excludedWillLate, userId));
       doc.getBody().append(br(), br());
     }
 
     if (!DataUtils.isEmpty(lateDelegate)) {
       doc.getBody().append(createMailSummaryPart(dic, dic.crmTaskSummaryDelegatedTasks(),
-        dic.crmTaskSummaryDelegatedLateTasks(), delegatedStates, lateDelegate, true,
-        excludedDelegatedColumns, userId));
+          dic.crmTaskSummaryDelegatedLateTasks(), delegatedStates, lateDelegate, true,
+          excludedDelegatedColumns, userId));
     }
 
     mail.sendMail(accountId, to, subject, doc.buildLines());
@@ -3267,8 +3440,8 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
   }
 
   private Table createMailSummaryPart(Dictionary dic, String statSubject, String subject,
-                                      Map<TaskStatus, Integer> stateStats, SimpleRowSet taskList,
-                                      boolean delegate, List<String> excludedCols, Long userId) {
+      Map<TaskStatus, Integer> stateStats, SimpleRowSet taskList,
+      boolean delegate, List<String> excludedCols, Long userId) {
     Table mainTable = table();
     mainTable.setBackground("#f5f5f5");
     mainTable.setWidth("100%");
@@ -3278,7 +3451,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       Table partTable = createMailSummaryPartTable(statSubject);
       mainTable.append(tr().append(td().append(partTable)));
       partTable.append(tr().append(td().append(createMailSummaryStateStats(dic, stateStats, taskList
-        .getNumberOfRows(), delegate))));
+          .getNumberOfRows(), delegate))));
 
       partTable.append(tr());
     }
@@ -3289,9 +3462,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       Table partTable2 = createMailSummaryPartTable(subject);
       mainTable.append(tr().append(td().append(partTable2)));
       partTable2.append(tr().append(td().append(cls.createRemindTemplate(taskList,
-        getReminderDataLabels(dic), getReminderDataTypes(), null,
-        excludedCols, BeeConst.STRING_EMPTY, BeeConst.STRING_EMPTY, userId).getBody())
-        .backgroundColor("white"))).setPaddingTop(10, CssUnit.PX);
+          getReminderDataLabels(dic), getReminderDataTypes(), null,
+          excludedCols, BeeConst.STRING_EMPTY, BeeConst.STRING_EMPTY, userId).getBody())
+          .backgroundColor("white"))).setPaddingTop(10, CssUnit.PX);
 
       partTable2.append(tr());
     }
@@ -3319,7 +3492,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
   }
 
   private Table createMailSummaryStateStats(Dictionary dic, Map<TaskStatus, Integer> stateStats,
-                                            int lateCount, boolean delegated) {
+      int lateCount, boolean delegated) {
     Table stateTable = table();
     Tr stateHeader = tr();
     Tr stateCount = tr();
@@ -3329,8 +3502,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     stateTable.append(stateHeader);
     stateTable.append(stateCount);
 
-    TaskStatus[] states = new TaskStatus[]{TaskStatus.NOT_VISITED, TaskStatus.VISITED,
-      TaskStatus.ACTIVE, TaskStatus.SUSPENDED, TaskStatus.NOT_SCHEDULED};
+    TaskStatus[] states = new TaskStatus[] {
+        TaskStatus.NOT_VISITED, TaskStatus.VISITED,
+        TaskStatus.ACTIVE, TaskStatus.SUSPENDED, TaskStatus.NOT_SCHEDULED};
 
     for (TaskStatus status : states) {
       Td stateCell = td();
@@ -3356,13 +3530,13 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
           continue;
       }
       Td content = td().text(status.getCaption(dic).toUpperCase())
-        .textAlign(TextAlign.CENTER);
+          .textAlign(TextAlign.CENTER);
       content.setWidth(delegated ? "16%" : "20%");
 
       stateHeader.append(content);
       stateCell.text(BeeUtils.toString(BeeUtils.unbox(stateStats.get(status))))
-        .textAlign(TextAlign.CENTER)
-        .fontSize(FontSize.LARGER);
+          .textAlign(TextAlign.CENTER)
+          .fontSize(FontSize.LARGER);
       stateCell.setBorderBottomStyle(BorderStyle.SOLID);
       stateCell.setBorderBottomWidth(2, CssUnit.PX);
       stateCount.append(stateCell);
@@ -3370,10 +3544,10 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     Td lateCell = td();
     stateHeader.append(td().text(dic.crmTaskLabelLate().toUpperCase())
-      .textAlign(TextAlign.CENTER));
+        .textAlign(TextAlign.CENTER));
     lateCell.text(BeeUtils.toString(lateCount))
-      .textAlign(TextAlign.CENTER)
-      .fontSize(FontSize.LARGER);
+        .textAlign(TextAlign.CENTER)
+        .fontSize(FontSize.LARGER);
     lateCell.setBorderBottomStyle(BorderStyle.SOLID);
     lateCell.setBorderBottomWidth(2, CssUnit.PX);
     lateCell.setBorderBottomColor("orangered");

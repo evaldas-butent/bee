@@ -2,6 +2,8 @@
 <View xmlns="http://www.butent.com/view"
 
       name="AssessmentForwarders" source="AssessmentForwarders" caption="=carriers"
+      newRowForm="AssessmentForwarder" newRowCaption="=trNewCarrier"
+      editForm="AssessmentForwarder"
       rowCaption="ForwarderName ForwarderTypeName OrderNo"
 >
   <Columns>

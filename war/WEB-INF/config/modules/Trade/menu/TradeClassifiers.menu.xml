@@ -10,6 +10,9 @@
         separator="true" />
   <Item name="TradeTags" label="=tags" service="grid" parameters="TradeTags" />
 
+  <Item name="ItemAnalogs" label="=itemAnalogs" service="grid" parameters="ItemAnalogs"
+        separator="true" />
+
   <Item name="ExpenditureTypes" label="=trdExpenditureTypes" service="grid"
         parameters="ExpenditureTypes" separator="true" />
   <Item name="TradeDocumentTypes" label="=trdDocumentTypes" service="grid"

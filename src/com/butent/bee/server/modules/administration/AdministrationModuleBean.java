@@ -85,6 +85,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -95,6 +96,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
+import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
@@ -106,6 +108,9 @@ import lt.lb.webservices.exchangerates.ExchangeRatesWS;
 public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
   private static BeeLogger logger = LogUtils.getLogger(AdministrationModuleBean.class);
+
+  private static final Map<String, SubstitutionProvider> substitutionProviders =
+      new LinkedHashMap<>();
 
   @EJB
   SystemBean sys;
@@ -204,6 +209,9 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     } else if (BeeUtils.same(svc, SVC_DICTIONARY_DATABASE_TO_PROPERTIES)) {
       response = dictionaryDatabaseToProperties(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_DO_SUBSTITUTION)) {
+      response = substitute(reqInfo.getParameterLong(COL_SUBSTITUTION));
+
     } else if (BeeUtils.same(svc, SVC_INIT_DIMENSION_NAMES)) {
       response = initDimensionNames();
     } else if (BeeUtils.same(svc, SVC_CREATE_DATA_IMPORT_TEMPLATES)) {
@@ -242,7 +250,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
             Dimensions.SPACETIME / 2),
         BeeParameter.createNumber(module, PRM_ERP_REFRESH_INTERVAL),
         BeeParameter.createBoolean(module, PRM_OVERDUE_INVOICES)
-      );
+    );
 
     params.addAll(getSqlEngineParameters());
     return params;
@@ -510,6 +518,10 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       long time = (dt == null) ? System.currentTimeMillis() : dt.getTime();
       return v * getRate(from, time) / getRate(to, time);
     }
+  }
+
+  public static void registerSubstitutionProvider(String viewName, SubstitutionProvider provider) {
+    substitutionProviders.put(Assert.notEmpty(viewName), Assert.notNull(provider));
   }
 
   private ResponseObject blockHost(RequestInfo reqInfo) {
@@ -1114,6 +1126,49 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     ResponseObject response = updateExchangeRates(daysOfToday, daysOfToday);
 
     sys.eventEnd(historyId, response.getMessages().toArray());
+  }
+
+  @Schedule(persistent = false)
+  private void substitute() {
+    for (Long id : qs.getLongColumn(new SqlSelect()
+        .addFields(TBL_SUBSTITUTIONS, sys.getIdName(TBL_SUBSTITUTIONS))
+        .addFrom(TBL_SUBSTITUTIONS)
+        .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_SUBSTITUTIONS, COL_SUBSTITUTION_EXECUTED),
+            SqlUtils.lessEqual(TBL_SUBSTITUTIONS, COL_SUBSTITUTE_FROM, TimeUtils.today()))))) {
+
+      substitute(id);
+    }
+  }
+
+  private ResponseObject substitute(Long id) {
+    SimpleRow row = qs.getRow(new SqlSelect()
+        .addFields(TBL_SUBSTITUTIONS, COL_USER, COL_SUBSTITUTE, COL_TRADE_ITEM_NOTE)
+        .addFields(TBL_SUBSTITUTION_REASONS, COL_SUBSTITUTION_REASON_NAME)
+        .addFrom(TBL_SUBSTITUTIONS)
+        .addFromInner(TBL_SUBSTITUTION_REASONS,
+            sys.joinTables(TBL_SUBSTITUTION_REASONS, TBL_SUBSTITUTIONS, COL_SUBSTITUTION_REASON))
+        .setWhere(SqlUtils.and(sys.idEquals(TBL_SUBSTITUTIONS, id),
+            SqlUtils.isNull(TBL_SUBSTITUTIONS, COL_SUBSTITUTION_EXECUTED))));
+
+    if (Objects.isNull(row)) {
+      return ResponseObject.warning(Localized.dictionary().actionCanNotBeExecuted());
+    }
+    substitutionProviders.forEach((viewName, provider) -> {
+      Set<Long> ids = provider.substitute(row.getLong(COL_USER), row.getLong(COL_SUBSTITUTE),
+          row.getValue(COL_SUBSTITUTION_REASON_NAME), row.getValue(COL_TRADE_ITEM_NOTE));
+
+      if (!BeeUtils.isEmpty(ids)) {
+        ids.forEach(objId -> qs.insertData(new SqlInsert(TBL_SUBSTITUTION_OBJECTS)
+            .addConstant(COL_SUBSTITUTION, id)
+            .addConstant(COL_OBJECT, viewName)
+            .addConstant(COL_OBJECT_ID, objId)));
+      }
+    });
+    qs.updateData(new SqlUpdate(TBL_SUBSTITUTIONS)
+        .addConstant(COL_SUBSTITUTION_EXECUTED, TimeUtils.nowSeconds())
+        .setWhere(sys.idEquals(TBL_SUBSTITUTIONS, id)));
+
+    return ResponseObject.emptyResponse();
   }
 
   private ResponseObject updateExchangeRates(String low, String high) {

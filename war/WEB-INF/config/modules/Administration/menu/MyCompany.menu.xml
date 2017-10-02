@@ -10,6 +10,11 @@ name="MyCompany" label="=myCompanyMenu" order="1100" module="Administration Clas
   <Item name="UserGroupSettings" label="=userGroups" service="grid"
         parameters="UserGroupSettings" />
 
+  <Item name="Substitutions" label="=substitutions" service="grid" parameters="Substitutions"
+        separator="true"/>
+  <Item name="SubstitutionReasons" label="=substitutionReasons" service="grid"
+        parameters="SubstitutionReasons" />
+
   <Item name="Departments" label="=departments" service="grid" parameters="Departments"
         separator="true" module="Administration"/>
 

@@ -147,8 +147,11 @@
             </FlowPanel>
             
             <FlowPanel style="&section;">
-              <Label />
-              <CheckBox source="PrivateTask" style="margin-left: 100px;"/>
+              <Label style="&lbl1;" />
+              <CheckBox source="PrivateTask" />
+              <Label style="&lbl2;" />
+              <Button name="EndResult" text="=crmTaskEndResult" style="margin-left: 30px;"
+                      disablable="false" />
             </FlowPanel>
             
           </FlowPanel>

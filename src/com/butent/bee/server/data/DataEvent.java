@@ -103,8 +103,8 @@ public abstract class DataEvent {
     private final SqlSelect query;
     private BeeRowSet rowset;
 
-    ViewQueryEvent(String viewName, SqlSelect query) {
-      super(viewName);
+    ViewQueryEvent(String viewName, SqlSelect query, Object userObject) {
+      super(viewName, userObject);
       Assert.notNull(query);
       this.query = query;
     }
@@ -173,6 +173,11 @@ public abstract class DataEvent {
     this.targetName = Assert.notEmpty(targetName);
   }
 
+  private DataEvent(String targetName, Object userObject) {
+    this(targetName);
+    this.userObject = userObject;
+  }
+
   public void addErrorMessage(String message) {
     if (!BeeUtils.isEmpty(message)) {
       if (errors == null) {
@@ -194,6 +199,14 @@ public abstract class DataEvent {
     return (attributes == null) ? null : attributes.get(name);
   }
 
+  public String getOptions() {
+    if (getUserObject() instanceof String) {
+      return (String) getUserObject();
+    } else {
+      return null;
+    }
+  }
+
   public String getTargetName() {
     return targetName;
   }
@@ -208,6 +221,10 @@ public abstract class DataEvent {
 
   public boolean hasErrors() {
     return !BeeUtils.isEmpty(errors);
+  }
+
+  public boolean hasOptions() {
+    return !BeeUtils.isEmpty(getOptions());
   }
 
   public boolean isAfter(String... targets) {
