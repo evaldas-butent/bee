@@ -2630,7 +2630,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             .addFields(trade, COL_SALE_PAYER, COL_TRADE_BOL_NUMBER, COL_TRADE_BOL_LOADING,
                 COL_TRADE_BOL_UNLOADING, COL_TRADE_BOL_VEHICLE_NUMBER, COL_TRADE_BOL_DRIVER,
                 COL_TRADE_BOL_CARRIER, COL_TRADE_BOL_ISSUE_DATE, COL_TRADE_BOL_DEPARTURE_DATE,
-                COL_TRADE_BOL_UNLOADING_DATE)
+                COL_TRADE_BOL_UNLOADING_DATE, COL_NOTES)
             .addField(OrdersConstants.TBL_ORDER_SERIES, COL_SERIES_NAME, ALS_TRADE_BOL_SERIES)
             .addField(ALS_TRADE_BOL_DRIVER_EMPLOYEES, PayrollConstants.COL_TAB_NUMBER,
                 ALS_TRADE_BOL_DRIVER_TAB_NO)
@@ -2733,6 +2733,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       doc.setTerm(invoice.getDate(COL_TRADE_TERM));
       doc.setCurrency(invoice.getValue(COL_CURRENCY));
       doc.setManager(invoice.getValue(PayrollConstants.COL_TAB_NUMBER));
+      doc.setSaleNote(invoice.getValue(COL_NOTES));
 
       if (Objects.equals(trade, TBL_SALES)) {
         doc.setBolNumber(invoice.getValue(COL_TRADE_BOL_NUMBER));
@@ -2771,10 +2772,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           .addFrom(tradeItems)
           .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, tradeItems, COL_ITEM))
           .setWhere(SqlUtils.equals(tradeItems, itemsRelation, invoice.getLong(itemsRelation)));
-
-      if (BeeUtils.same(tradeItems, TBL_SALE_ITEMS)) {
-        itemsQuery.addFields(tradeItems, COL_TRADE_DISCOUNT);
-      }
 
       SimpleRowSet items = qs.getData(itemsQuery);
 

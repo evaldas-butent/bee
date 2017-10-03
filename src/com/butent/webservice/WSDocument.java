@@ -72,6 +72,7 @@ public class WSDocument {
   private String payer;
   private String currency;
   private String manager;
+  private  String saleNote;
 
   private String bolSeries;
   private String bolNumber;
@@ -175,6 +176,9 @@ public class WSDocument {
 
         }
       }
+      if (!BeeUtils.isEmpty(saleNote)) {
+        sb.append(XmlUtils.tag("pastabos", saleNote));
+      }
       sb.append("</row>");
     }
     return sb.append("</VFPData>").toString();
@@ -247,6 +251,10 @@ public class WSDocument {
 
   public void setPayer(String payer) {
     this.payer = payer;
+  }
+
+  public void setSaleNote(String saleNote) {
+    this.saleNote = saleNote;
   }
 
   public void setSupplier(String supplier) {
