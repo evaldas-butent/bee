@@ -609,14 +609,15 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
     List<String> colNames =
         Lists.newArrayList(COL_TRADE_ACT, COL_TA_ITEM,
-            COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, COL_TRADE_VAT,
-            COL_TRADE_VAT_PERC);
+            COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_ITEM_RENTAL_PRICE,
+            COL_TRADE_DISCOUNT, COL_TRADE_VAT, COL_TRADE_VAT_PERC);
     BeeRowSet rowSet = new BeeRowSet(getViewName(), Data.getColumns(getViewName(), colNames));
 
     int actIndex = rowSet.getColumnIndex(COL_TRADE_ACT);
     int itemIndex = rowSet.getColumnIndex(COL_TA_ITEM);
     int qtyIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
     int priceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_PRICE);
+    int rentalPriceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_RENTAL_PRICE);
     int discountIndex = rowSet.getColumnIndex(COL_TRADE_DISCOUNT);
     int vatIndex = rowSet.getColumnIndex(COL_TRADE_VAT);
     int vatPercIndex = rowSet.getColumnIndex(COL_TRADE_VAT_PERC);
@@ -631,6 +632,8 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
         row.setValue(itemIndex, item.getId());
 
         row.setValue(qtyIndex, qty);
+        row.setValue(rentalPriceIndex, item.getDouble(
+            DataUtils.getColumnIndex(COL_TRADE_ITEM_RENTAL_PRICE, items.getColumns())));
 
         row.setValue(vatIndex, item.getValue(Data.getColumnIndex(VIEW_ITEMS,
           ClassifierConstants.COL_ITEM_VAT_PERCENT)));

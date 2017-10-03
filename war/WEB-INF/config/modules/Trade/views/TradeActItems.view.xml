@@ -70,6 +70,7 @@
 
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Price" />
+    <SimpleColumn name="RentalPrice" />
 
     <SimpleColumn name="VatPlus" />
     <SimpleColumn name="Vat" />

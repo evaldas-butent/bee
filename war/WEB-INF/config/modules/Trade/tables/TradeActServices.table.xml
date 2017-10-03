@@ -22,6 +22,8 @@
     <Numeric name="Quantity" precision="12" scale="3" label="=quantity" notNull="true" />
     <Numeric name="Price" precision="12" scale="2" label="=price" />
 
+    <Boolean name="IsRentalPrice" defValue="false" />
+
     <Boolean name="VatPlus" label="=vatPlus" defValue="true" />
     <Numeric name="Vat" precision="12" scale="2" label="=vat" />
     <Boolean name="VatPercent" label="=vatPercent" />

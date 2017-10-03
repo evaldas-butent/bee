@@ -5121,6 +5121,8 @@ public interface Dictionary {
 
   default String rentalPriceCurrency() {return g("rentalPriceCurrency");}
 
+  default String rentalSum() {return g("rentalSum");}
+
   default String repeatNewPassword() {return g("repeatNewPassword");}
 
   default String report() {return g("report");}

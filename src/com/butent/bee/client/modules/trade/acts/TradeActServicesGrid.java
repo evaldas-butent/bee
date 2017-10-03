@@ -29,6 +29,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
@@ -40,6 +41,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -194,6 +196,9 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
         ? BeeUtils.toDoubleOrNull(newValue)
         : row.getDouble(getDataIndex(COL_TRADE_ITEM_QUANTITY));
 
+      boolean isRentalPrice = BeeUtils.unbox(Data.getBoolean(getViewName(), row,
+          COL_IS_ITEM_RENTAL_PRICE));
+
       if (BeeUtils.isPositive(total) && BeeUtils.isPositive(tariff)) {
         String oldPrice = (row == null)
             ? null : row.getString(getDataIndex(COL_TRADE_ITEM_PRICE));
@@ -203,6 +208,17 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
 
         Double price = calculatePrice(BeeUtils.toDoubleOrNull(oldPrice), dateTo, total,
             tariff, quantity);
+
+        if (BeeUtils.isPositive(price)) {
+          updatePrice(result.getId(), result.getVersion(), oldPrice, price);
+        }
+      } else if (Objects.equals(column.getId(), COL_TRADE_ITEM_QUANTITY)
+          && isRentalPrice && BeeUtils.isPositive(total)) {
+
+        String oldPrice = (row == null)
+            ? null : row.getString(getDataIndex(COL_TRADE_ITEM_PRICE));
+        Double price = BeeUtils.toDouble(oldPrice) * BeeUtils.toDouble(oldValue)
+            / BeeUtils.toDouble(newValue);
 
         if (BeeUtils.isPositive(price)) {
           updatePrice(result.getId(), result.getVersion(), oldPrice, price);
@@ -403,13 +419,21 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
               continue;
             }
 
-            Queries.updateCellAndFire(getViewName(), row.getId(), row.getVersion(),
-                COL_TA_SERVICE_TARIFF,
-                Data.getString(viewName, row, COL_TA_SERVICE_TARIFF), null);
+            Double quantity = Data.getDouble(viewName, row, COL_TRADE_ITEM_QUANTITY);
 
-            Queries.updateCellAndFire(getViewName(), row.getId(), row.getVersion(),
-                COL_ITEM_PRICE,
-                Data.getString(viewName, row, COL_ITEM_PRICE), BeeUtils.toString(rentalAmount));
+            List<String> oldValues = Arrays.asList(
+                Data.getString(viewName, row, COL_TA_SERVICE_TARIFF),
+                Data.getString(viewName, row, COL_ITEM_PRICE), null);
+
+            List<String> newValues = Arrays.asList(null, BeeUtils.toString(rentalAmount / quantity),
+                "1");
+
+            Queries.update(getViewName(), row.getId(), row.getVersion(),
+                Data.getColumns(VIEW_TRADE_ACT_SERVICES,
+                    Arrays.asList(COL_TA_SERVICE_TARIFF, COL_ITEM_PRICE,
+                        COL_IS_ITEM_RENTAL_PRICE)), oldValues, newValues, null, result -> {
+                          RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
+                        });
           }
         }
       });

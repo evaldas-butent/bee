@@ -14,7 +14,7 @@
   <xi:include href="columns/TradeActDiscount.columns.xml" />
 
   <g:columns>
-    <CalcColumn name="Amount" type="decimal" caption="=trdAmountWoVat" scale="2">
+    <CalcColumn name="Amount" type="decimal" caption="=trdAmountWoVat" scale="2" format="0.00">
       <style>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>

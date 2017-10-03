@@ -39,6 +39,8 @@
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Price" />
 
+    <SimpleColumn name="IsRentalPrice" />
+
     <SimpleColumn name="VatPlus" />
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />
