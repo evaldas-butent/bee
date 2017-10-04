@@ -73,7 +73,7 @@ final class PlaceMatcher {
       String info = Places.getUnloadingPlaceInfo(item);
 
       if (!BeeUtils.isEmpty(info)  || !BeeUtils.isEmpty(country)) {
-        if (unloadingCountry!= null && unloadingCountry.contains(country)) {
+        if (unloadingCountry != null && unloadingCountry.contains(country)) {
           return true;
         }
 

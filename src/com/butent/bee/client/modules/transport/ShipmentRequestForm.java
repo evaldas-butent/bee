@@ -454,7 +454,8 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
               fileInfo.setCaption(CustomShipmentRequestForm.createFileName(
                   fileInfo.getDescription(), getOrderNo(getActiveRow())));
-              String emailSubject = CustomShipmentRequestForm.createEmailSubject(fileInfo);sendMail(ShipmentRequestStatus.CONTRACT_SENT, emailSubject, BeeUtils.isEmpty(text)
+              String emailSubject = CustomShipmentRequestForm.createEmailSubject(fileInfo);
+              sendMail(ShipmentRequestStatus.CONTRACT_SENT, emailSubject, BeeUtils.isEmpty(text)
                   ? null : text.replace("[CONTRACT_PATH]", path)
                   .replace("{CONTRACT_PATH}", path), Collections.singleton(fileInfo));
 

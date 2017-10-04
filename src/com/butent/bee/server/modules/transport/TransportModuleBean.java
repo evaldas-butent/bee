@@ -3118,7 +3118,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.response(settings);
   }
 
-  private Table<Long, String, String> getExtremes(IsCondition clause, String keyColumn) {
+  public Table<Long, String, String> getExtremes(IsCondition clause, String keyColumn) {
     Table<Long, String, String> data = HashBasedTable.create();
     Table<Long, String, SimpleRowSet> handle = HashBasedTable.create();
 

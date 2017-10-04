@@ -136,8 +136,9 @@ public class ShipmentRequestsWorker {
           EnumUtils.getLocalizedCaption(ShipmentRequestStatus.class, currentStatus,
               Localized.dictionary())));
       customEl = CustomShipmentRequestsWorker.renderStatusDiv(BeeUtils.join(": ",
-          Localized.dictionary().status(),EnumUtils.getLocalizedCaption(ShipmentRequestStatus.class,
-              currentStatus, Localized.dictionary())));
+          Localized.dictionary().status(),
+          EnumUtils.getLocalizedCaption(ShipmentRequestStatus.class, currentStatus,
+              Localized.dictionary())));
     }
     Document doc = new Document();
     doc.getHead().append(meta().encodingDeclarationUtf8());

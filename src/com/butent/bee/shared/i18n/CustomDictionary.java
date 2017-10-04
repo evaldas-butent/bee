@@ -4,7 +4,9 @@ public interface CustomDictionary {
 
   String g(String key);
 
-  default String customerId() {return g("customerId");}
+  default String customerId() {
+    return g("customerId");
+  }
 
   default String expensesEnteredPerson() {
     return g("expensesEnteredPerson");
@@ -14,17 +16,25 @@ public interface CustomDictionary {
     return g("trCustomerId");
   }
 
-  default String trERPTripCosts() { return g("trERPTripCosts");}
+  default String trERPTripCosts() {
+    return g("trERPTripCosts");
+  }
 
-  default String trInsuranceCertificate() { return g("trInsuranceCertificate");}
+  default String trInsuranceCertificate() {
+    return g("trInsuranceCertificate");
+  }
 
-  default String trMultipleSegments() {return g("trMultipleSegments");}
+  default String trMultipleSegments() {
+    return g("trMultipleSegments");
+  }
 
   default String trOrdersSumWithProforma() {
     return g("trOrdersSumWithProforma");
   }
 
-  default String trSupplierId() { return g("trSupplierId"); }
+  default String trSupplierId() {
+    return g("trSupplierId");
+  }
 
   default String trTotalLiabilities() {
     return g("trTotalLiabilities");
