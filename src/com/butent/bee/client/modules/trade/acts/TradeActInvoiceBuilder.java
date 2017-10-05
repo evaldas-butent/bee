@@ -55,6 +55,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.ListBox;
@@ -67,7 +68,10 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -79,7 +83,6 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -369,7 +372,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
-    if ((COL_TA_COMPANY.equals(name) || COL_TA_CURRENCY.equals(name))
+    if (BeeUtils.inList(name, COL_TA_COMPANY, COL_TA_CURRENCY, COL_OBJECT)
         && widget instanceof DataSelector) {
       ((DataSelector) widget).addSelectorHandler(this);
     }
@@ -389,8 +392,14 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   }
 
   @Override
-  public void configureRelation(String name, Relation relation) {
-    if (COL_TA_COMPANY.equals(name)) {
+  public FormInterceptor getInstance() {
+    return new TradeActInvoiceBuilder();
+  }
+
+  @Override
+  public void onDataSelector(SelectorEvent event) {
+    if (event.hasRelatedView(VIEW_COMPANIES)) {
+
       Set<Long> activeStatuses = TradeActKeeper.getActiveStatuses();
 
       Filter statusFilter;
@@ -403,19 +412,33 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
       Filter actFilter = Filter.and(TradeActKind.getFilterForInvoiceBuilder(), statusFilter);
 
-      relation.setFilter(Filter.in(Data.getIdColumn(VIEW_COMPANIES),
-          VIEW_TRADE_ACTS, COL_TA_COMPANY, actFilter));
-    }
-  }
+      Long trSeries = getSelectedIdByWidgetName(COL_TA_SERIES);
+      if (DataUtils.isId(trSeries)) {
+        JustDate timeFrom = getDateFrom();
+        JustDate timeTo = getDateTo();
 
-  @Override
-  public FormInterceptor getInstance() {
-    return new TradeActInvoiceBuilder();
-  }
+        CompoundFilter filter = Filter.and();
 
-  @Override
-  public void onDataSelector(SelectorEvent event) {
-    if (event.hasRelatedView(VIEW_COMPANIES)) {
+        if (timeFrom != null) {
+          filter.add(Filter.or(Filter.isNull(COL_TA_UNTIL), Filter.isMore(COL_TA_UNTIL,
+              new DateValue(timeFrom))));
+        }
+        if (timeTo != null) {
+          filter.add(Filter.isLess(COL_TA_DATE, new DateValue(timeTo)));
+        }
+
+        filter.add(Filter.equals(COL_TA_SERIES, trSeries));
+        filter.add(actFilter);
+        filter.add(Filter.in("TradeActID", VIEW_TRADE_ACT_SERVICES, COL_TRADE_ACT));
+
+        event.getSelector().setAdditionalFilter(Filter.in(Data.getIdColumn(VIEW_COMPANIES),
+            VIEW_TRADE_ACTS, COL_TA_COMPANY, filter));
+
+      } else {
+        event.getSelector().setAdditionalFilter(Filter.in(Data.getIdColumn(VIEW_COMPANIES),
+            VIEW_TRADE_ACTS, COL_TA_COMPANY, actFilter));
+      }
+
       if (event.isOpened()) {
         event.getSelector().getOracle().clearData();
       } else if (event.isChanged() && event.getRelatedRow() != null) {
@@ -435,6 +458,30 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             refreshTotals();
           }
         }
+      }
+    } else if (event.hasRelatedView(VIEW_COMPANY_OBJECTS)) {
+
+      if (DataUtils.isId(getCompany()) && getDateFrom() != null && getDateTo() != null) {
+
+        Set<Long> activeStatuses = TradeActKeeper.getActiveStatuses();
+
+        Filter statusFilter;
+        if (activeStatuses.isEmpty()) {
+          statusFilter = Filter.isNull(COL_TA_STATUS);
+        } else {
+          statusFilter = Filter.or(Filter.isNull(COL_TA_STATUS),
+              Filter.any(COL_TA_STATUS, activeStatuses));
+        }
+
+        Filter actFilter = Filter.and(TradeActKind.getFilterForInvoiceBuilder(), statusFilter,
+            Filter.equals(COL_TA_COMPANY, getCompany()), Filter.and(
+                Filter.compareWithValue(COL_TA_DATE, Operator.GE, new DateValue(getDateFrom())),
+                Filter.compareWithValue(COL_TA_DATE, Operator.LE, new DateValue(getDateTo()))));
+
+        event.getSelector().setAdditionalFilter(Filter.in(Data.getIdColumn(VIEW_COMPANY_OBJECTS),
+            VIEW_TRADE_ACTS, COL_TA_OBJECT, actFilter));
+      } else {
+        event.getSelector().setEditing(false);
       }
     }
   }
@@ -1161,6 +1208,13 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     }
 
     params.addQueryItem(COL_TA_COMPANY, company);
+    params.addQueryItem(COL_OBJECT, BeeUtils.unbox(getSelectedIdByWidgetName(COL_OBJECT)));
+    params.addQueryItem(COL_TA_MANAGER, BeeUtils.unbox(getSelectedIdByWidgetName(COL_TA_MANAGER)));
+
+    CheckBox allActs = (CheckBox) getFormView().getWidgetByName(COL_TA_ALL_ACTS);
+    if (!allActs.isChecked()) {
+      params.addQueryItem(COL_TA_SERIES, BeeUtils.unbox(getSelectedIdByWidgetName(COL_TA_SERIES)));
+    }
 
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
