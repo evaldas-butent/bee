@@ -14,7 +14,7 @@
     <SimpleJoin joinType="INNER" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />
       <SimpleColumn name="Article" />
-      
+
       <SimpleJoin joinType="INNER" name="Unit">
         <SimpleColumn name="Name" alias="UnitName" />
       </SimpleJoin>
@@ -46,6 +46,12 @@
     <SimpleColumn name="VatPercent" />
 
     <SimpleColumn name="Discount" />
+
+    <SimpleColumn name="Supplier" />
+    <SimpleJoin joinType="LEFT" name="Supplier">
+      <SimpleColumn name="Name" alias="SupplierName" />
+    </SimpleJoin>
+    <SimpleColumn name="CostAmount" />
 
     <SimpleColumn name="Note" />
   </Columns>

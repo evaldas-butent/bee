@@ -12,7 +12,7 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  
+
   name="TradeActServicesReport" caption="=taReportServices"
   >
   <FlowPanel>
@@ -27,7 +27,7 @@
         <Label text="=dateTo" />
       </cell>
       <InputDateTime name="EndDate" style="width: 120px;" />
-      
+
       <cell kind="label">
         <Label text="=currency" />
       </cell>
@@ -46,7 +46,7 @@
             newRowEnabled="false" editPopup="true" style="&multi;" summarize="true"
             choiceColumns="Name TypeName" renderColumns="Name TypeName" />
         </row>
-    
+
         <row>
           <Label text="=managers" />
           <MultiSelector name="Manager" viewName="Users"
@@ -64,13 +64,19 @@
         </row>
         <row>
           <Label text="=services" />
-          <MultiSelector name="Item" viewName="Items" filter="IsService" 
+          <MultiSelector name="Item" viewName="Items" filter="IsService"
             renderColumns="Name Article" newRowEnabled="false" editPopup="true"
             style="&multi;" summarize="true" />
         </row>
+
+        <row>
+          <Label text="=suppliers" />
+          <MultiSelector name="Supplier" viewName="Companies" renderColumns="Name"
+                         newRowEnabled="false" editPopup="true" style="&multi;" summarize="true" />
+        </row>
       </Table>
     </Disclosure>
-    
+
     <br/>
     <HorizontalPanel>
       <cell kind="label">
@@ -90,7 +96,7 @@
         &gitems;
       </ListBox>
     </HorizontalPanel>
-    
+
     <br/>
     <FlowPanel name="DataContainer" />
   </FlowPanel>

@@ -2213,13 +2213,22 @@ public class TradeActBean implements HasTimerService {
     Set<Long> categories = DataUtils.parseIdSet(reqInfo.getParameter(COL_CATEGORY));
     Set<Long> items = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_ITEM));
 
+    Set<Long> suppliers = DataUtils.parseIdSet(reqInfo.getParameter(COL_TRADE_SUPPLIER));
+
     List<String> groupBy = NameUtils.toList(reqInfo.getParameter(Service.VAR_GROUP_BY));
 
     SqlSelect rangeQuery = new SqlSelect()
         .addFields(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_ITEM)
         .addMin(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM)
         .addMax(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_TO)
+        .addMax(TBL_TRADE_ACT_SERVICES, COL_TRADE_SUPPLIER)
+        .addMax(TBL_COMPANIES, COL_COMPANY_NAME, ALS_SUPPLIER_NAME)
+        .addMax(TBL_TRADE_ACT_SERVICES, COL_COST_AMOUNT)
         .addFrom(TBL_TRADE_ACT_INVOICES)
+        .addFromLeft(TBL_TRADE_ACT_SERVICES,
+            sys.joinTables(TBL_TRADE_ACT_SERVICES, TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
+        .addFromLeft(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, TBL_TRADE_ACT_SERVICES, COL_TRADE_SUPPLIER))
         .addGroup(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_ITEM);
 
     String rangeAlias = "rng_" + SqlUtils.uniqueName();
@@ -2227,6 +2236,9 @@ public class TradeActBean implements HasTimerService {
     HasConditions where = SqlUtils.and(SqlUtils.notNull(rangeAlias, COL_TA_INVOICE_FROM),
         SqlUtils.notNull(rangeAlias, COL_TA_INVOICE_TO));
 
+    if (!suppliers.isEmpty()) {
+      where.add(SqlUtils.inList(rangeAlias, COL_TRADE_SUPPLIER, suppliers));
+    }
     if (startDate != null) {
       where.add(SqlUtils.moreEqual(TBL_SALES, COL_TRADE_DATE, startDate));
     }
@@ -2315,6 +2327,7 @@ public class TradeActBean implements HasTimerService {
       query.addField(TBL_ITEMS, COL_ITEM_NAME, ALS_ITEM_NAME);
       query.addFields(TBL_SALE_ITEMS, COL_TRADE_ITEM_ARTICLE);
       query.addField(TBL_UNITS, COL_UNIT_NAME, ALS_UNIT_NAME);
+      query.addFields(rangeAlias, ALS_SUPPLIER_NAME, COL_COST_AMOUNT);
     }
 
     query.addFields(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE);
@@ -2413,6 +2426,7 @@ public class TradeActBean implements HasTimerService {
           COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO, ALS_COMPANY_NAME,
           COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO,
           itemIdName, ALS_ITEM_NAME, COL_TRADE_ITEM_ARTICLE,
+          ALS_SUPPLIER_NAME, COL_COST_AMOUNT,
           COL_TRADE_ITEM_QUANTITY, ALS_UNIT_NAME, COL_TRADE_ITEM_PRICE,
           ALS_WITHOUT_VAT, ALS_VAT_AMOUNT, ALS_TOTAL_AMOUNT);
 
@@ -2436,6 +2450,7 @@ public class TradeActBean implements HasTimerService {
             fields.add(ALS_ITEM_NAME);
             fields.add(COL_TRADE_ITEM_ARTICLE);
             fields.add(ALS_UNIT_NAME);
+            fields.add(ALS_SUPPLIER_NAME);
             break;
 
           case COL_TA_COMPANY:
@@ -2463,7 +2478,9 @@ public class TradeActBean implements HasTimerService {
           query.addOrder(tmp, field);
         }
       }
-
+      if (groupBy.contains(COL_TA_ITEM)) {
+        query.addSum(tmp, COL_COST_AMOUNT);
+      }
       query.addSum(tmp, COL_TRADE_ITEM_QUANTITY);
       query.addSum(tmp, ALS_WITHOUT_VAT);
       query.addSum(tmp, ALS_VAT_AMOUNT);
@@ -3018,6 +3035,8 @@ public class TradeActBean implements HasTimerService {
     Set<Long> categories = DataUtils.parseIdSet(reqInfo.getParameter(COL_CATEGORY));
     Set<Long> services = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_ITEM));
 
+    Set<Long> suppliers = DataUtils.parseIdSet(reqInfo.getParameter(COL_TRADE_SUPPLIER));
+
     Set<Long> operations = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_OPERATION));
     Set<Long> objects = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_OBJECT));
 
@@ -3071,6 +3090,9 @@ public class TradeActBean implements HasTimerService {
     }
     if (!services.isEmpty()) {
       serviceConditions.add(SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TA_ITEM, services));
+    }
+    if (!suppliers.isEmpty()) {
+      serviceConditions.add(SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TRADE_SUPPLIER, suppliers));
     }
     if (!operations.isEmpty()) {
       actConditions.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_OPERATION, operations));
@@ -3213,6 +3235,12 @@ public class TradeActBean implements HasTimerService {
       serviceQuery.addField(TBL_ITEMS, COL_ITEM_NAME, ALS_ITEM_NAME);
       serviceQuery.addFields(TBL_ITEMS, COL_ITEM_ARTICLE);
       serviceQuery.addField(TBL_UNITS, COL_UNIT_NAME, ALS_UNIT_NAME);
+
+      serviceQuery.addFromLeft(TBL_COMPANIES,
+          sys.joinTables(TBL_COMPANIES, TBL_TRADE_ACT_SERVICES, COL_TRADE_SUPPLIER));
+
+      serviceQuery.addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_SUPPLIER_NAME);
+      serviceQuery.addFields(TBL_TRADE_ACT_SERVICES, COL_COST_AMOUNT);
     }
 
     serviceQuery.addEmptyNumeric(ALS_BASE_AMOUNT, amountPrecision, amountScale);
@@ -3253,6 +3281,7 @@ public class TradeActBean implements HasTimerService {
       query.addFields(tmp, ALS_ITEM_TOTAL, COL_TA_SERVICE_TARIFF,
           COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO,
           COL_TA_ITEM, ALS_ITEM_NAME, COL_ITEM_ARTICLE, COL_TIME_UNIT,
+          ALS_SUPPLIER_NAME, COL_COST_AMOUNT,
           COL_TRADE_ITEM_QUANTITY, ALS_UNIT_NAME, COL_TRADE_ITEM_PRICE,
           COL_TA_SERVICE_FACTOR, COL_TA_SERVICE_DAYS, COL_TA_SERVICE_MIN,
           COL_TRADE_DISCOUNT, ALS_BASE_AMOUNT);
@@ -3277,10 +3306,12 @@ public class TradeActBean implements HasTimerService {
             fields.add(COL_TA_ITEM);
             fields.add(ALS_ITEM_NAME);
             fields.add(COL_ITEM_ARTICLE);
+            fields.add(ALS_SUPPLIER_NAME);
 
             order.add(ALS_ITEM_NAME);
             order.add(COL_ITEM_ARTICLE);
             order.add(COL_TA_ITEM);
+            order.add(ALS_SUPPLIER_NAME);
             break;
 
           case COL_TA_COMPANY:
@@ -3308,7 +3339,9 @@ public class TradeActBean implements HasTimerService {
           query.addOrder(tmp, field);
         }
       }
-
+      if (groupBy.contains(COL_TA_ITEM)) {
+        query.addSum(tmp, COL_COST_AMOUNT);
+      }
       query.addSum(tmp, COL_TRADE_ITEM_QUANTITY);
       query.addSum(tmp, ALS_BASE_AMOUNT);
     }
@@ -4002,7 +4035,8 @@ public class TradeActBean implements HasTimerService {
     List<String> fields = Arrays.asList(COL_TRADE_ACT, COL_TA_ITEM, COL_TA_SERVICE_TO,
         COL_TA_SERVICE_TARIFF, COL_TA_SERVICE_FACTOR, COL_TA_SERVICE_DAYS,
         COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
-        COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_DISCOUNT);
+        COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_DISCOUNT,
+        COL_TRADE_SUPPLIER, COL_COST_AMOUNT);
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_ACT_SERVICES, idName)

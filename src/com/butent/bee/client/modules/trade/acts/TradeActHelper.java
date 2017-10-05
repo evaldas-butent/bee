@@ -105,6 +105,11 @@ final class TradeActHelper {
       case COL_ITEM_WEIGHT:
         return Localized.dictionary().weight();
 
+      case ALS_SUPPLIER_NAME:
+        return Localized.dictionary().supplier();
+      case COL_COST_AMOUNT:
+        return "Sav.suma";
+
       case COL_UNIT:
       case ALS_UNIT_NAME:
         return Localized.dictionary().unitShort();
@@ -200,6 +205,9 @@ final class TradeActHelper {
       case COL_TA_ITEM:
         return plural ? Localized.dictionary().goods() : Localized.dictionary().item();
 
+      case COL_TRADE_SUPPLIER:
+        return plural ? Localized.dictionary().suppliers() : Localized.dictionary().supplier();
+
       default:
         logger.warning(NameUtils.getClassName(TradeActHelper.class), name, plural,
             "label not defined");
@@ -231,6 +239,7 @@ final class TradeActHelper {
       case ALS_VAT_AMOUNT:
       case ALS_TOTAL_AMOUNT:
       case ALS_ITEM_TOTAL:
+      case COL_COST_AMOUNT:
         return getAmountFormat();
 
       case COL_ITEM_WEIGHT:
@@ -299,6 +308,7 @@ final class TradeActHelper {
       case ALS_VAT_AMOUNT:
       case ALS_TOTAL_AMOUNT:
       case ALS_ITEM_TOTAL:
+      case COL_COST_AMOUNT:
         return ValueType.NUMBER;
 
       case ALS_WAREHOUSE_CODE:

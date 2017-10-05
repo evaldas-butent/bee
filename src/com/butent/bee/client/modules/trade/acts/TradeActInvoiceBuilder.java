@@ -1439,6 +1439,9 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     int nameIndex = dataInfo.getColumnIndex(ALS_ITEM_NAME);
     int articleIndex = dataInfo.getColumnIndex(COL_ITEM_ARTICLE);
 
+    int supplIndex = dataInfo.getColumnIndex(ALS_SUPPLIER_NAME);
+    int costIndex = dataInfo.getColumnIndex(COL_COST_AMOUNT);
+
     int qtyScale = dataInfo.getColumnScale(COL_TRADE_ITEM_QUANTITY);
     int unitNameIndex = dataInfo.getColumnIndex(ALS_UNIT_NAME);
 
@@ -1486,6 +1489,11 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         STYLE_SVC_NAME_PREFIX + STYLE_LABEL_CELL_SUFFIX);
     table.setText(r, c++, Localized.getLabel(dataInfo.getColumns().get(articleIndex)),
         STYLE_SVC_ARTICLE_PREFIX + STYLE_LABEL_CELL_SUFFIX);
+
+    table.setText(r, c++, Localized.getLabel(dataInfo.getColumn(COL_TRADE_SUPPLIER)),
+        STYLE_SVC_NAME_PREFIX + STYLE_LABEL_CELL_SUFFIX);
+    table.setText(r, c++, Localized.getLabel(dataInfo.getColumns().get(costIndex)),
+        STYLE_SVC_AMOUNT_LABEL);
 
     table.setText(r, c++, Localized.getLabel(dataInfo.getColumn(COL_TIME_UNIT)),
         STYLE_SVC_TIME_UNIT_PREFIX + STYLE_LABEL_CELL_SUFFIX);
@@ -1570,6 +1578,10 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         table.setText(r, c++, svc.row.getString(articleIndex),
             STYLE_SVC_ARTICLE_PREFIX + STYLE_CELL_SUFFIX);
 
+        table.setText(r, c++, svc.row.getString(supplIndex),
+            STYLE_SVC_NAME_PREFIX + STYLE_CELL_SUFFIX);
+        table.setText(r, c++, renderAmount(svc.row.getDouble(costIndex)), STYLE_SVC_AMOUNT_CELL);
+
         table.setText(r, c++, (svc.timeUnit == null) ? null : svc.timeUnit.getCaption(),
             STYLE_SVC_TIME_UNIT_PREFIX + STYLE_CELL_SUFFIX);
 
@@ -1588,14 +1600,14 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
               STYLE_SVC_FACTOR_PREFIX + STYLE_CELL_SUFFIX);
         } else {
           table.setWidget(r, c++, BeeConst.isUndef(idx)
-              ? null
-              : createFactorWidget(svc.factors.get(idx)),
-            STYLE_SVC_FACTOR_PREFIX + STYLE_CELL_SUFFIX);
+                  ? null
+                  : createFactorWidget(svc.factors.get(idx)),
+              STYLE_SVC_FACTOR_PREFIX + STYLE_CELL_SUFFIX);
         }
 
         if (svc.timeUnit == TradeActTimeUnit.DAY) {
           table.setWidget(r, c++, BeeConst.isUndef(idx) ? null : createDpwWidget(svc.dpws.get(idx),
-            holidays),
+              holidays),
               STYLE_SVC_DPW_PREFIX + STYLE_CELL_SUFFIX);
         } else {
           table.setText(r, c++, null, STYLE_SVC_DPW_PREFIX + STYLE_CELL_SUFFIX);
@@ -1605,7 +1617,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             svc.minTermWarn(idx, holidays) ? STYLE_SVC_MIN_TERM_WARN : null);
 
         table.setWidget(r, c++, BeeConst.isUndef(idx) ? null : createDiscountWidget(svc.discounts
-          .get(idx)),
+                .get(idx)),
             STYLE_SVC_DISCOUNT_PREFIX + STYLE_CELL_SUFFIX);
 
         Double amount = null;

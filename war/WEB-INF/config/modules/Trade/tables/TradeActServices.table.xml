@@ -30,6 +30,9 @@
 
     <Numeric name="Discount" precision="7" scale="3" label="=discountPercent" />
 
+    <Relation name="Supplier" relation="Companies" label="=supplier" />
+    <Numeric name="CostAmount" precision="12" scale="2" label="Sav.suma" />
+
     <Text name="Note" label="=note" />
   </Fields>
 </Table>
