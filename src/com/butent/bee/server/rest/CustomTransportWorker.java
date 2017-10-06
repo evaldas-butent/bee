@@ -156,6 +156,7 @@ public class CustomTransportWorker {
 
     return new SqlSelect()
         .addField(TBL_TRIPS, sys.getIdName(TBL_TRIPS), COL_TRIP)
+        .addFields(TBL_TRIPS, COL_TRIP_NO)
         .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
         .addFields(TBL_EMPLOYEES, COL_TAB_NUMBER)
         .addFrom(TBL_TRIPS)
