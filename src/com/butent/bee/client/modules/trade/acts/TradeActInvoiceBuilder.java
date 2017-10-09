@@ -206,7 +206,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         return false;
       } else if (timeUnit == TradeActTimeUnit.DAY) {
         Range<DateTime> range = TradeActUtils.createRange(minTermStart, dateTo(index));
-        int days = TradeActUtils.countServiceDays(range, holidays, dpws.get(index));
+        int days = TradeActUtils.countServiceDays(range, holidays, BeeUtils.unbox(dpws.get(index)));
         return minTerm > days;
       } else {
         Range<DateTime> range = TradeActUtils.createRange(minTermStart, dateTo(index));
