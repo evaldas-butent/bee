@@ -89,6 +89,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -869,32 +870,56 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       invoice.setValue(dataInfo.getColumnIndex(COL_TRADE_NOTES), BeeUtils.buildLines(notes));
     }
 
-    BeeRowSet sales = DataUtils.createRowSetForInsert(dataInfo.getViewName(),
-        dataInfo.getColumns(), invoice);
+    Queries.getRow(VIEW_COMPANIES, Filter.compareId(company),
+        Arrays.asList(COL_COMPANY_CREDIT_DAYS, COL_INVOICE_TRANSFER_TYPE), row -> {
 
-    BeeRowSet saleItems = createInvoiceItems(selectedServices, ss, currency);
+          int creditDays = BeeUtils.unbox(row.getInteger(0));
+          if (creditDays > 0) {
+            JustDate date = TimeUtils.nowMillis().getDate();
+            TimeUtils.addDay(date, creditDays);
 
-    ParameterList params = TradeActKeeper.createArgs(SVC_CREATE_ACT_INVOICE);
+            invoice.setValue(Data.getColumnIndex(VIEW_SALES, COL_TRADE_TERM), date);
+          }
 
-    params.addDataItem(sales.getViewName(), sales.serialize());
-    params.addDataItem(saleItems.getViewName(), saleItems.serialize());
-    params.addDataItem(VAR_ID_LIST, DataUtils.buildIdList(prepareApproveActs));
+          Long transferType = row.getLong(1);
+          if (DataUtils.isId(transferType)) {
+            invoice.setValue(Data.getColumnIndex(VIEW_SALES, COL_INVOICE_TRANSFER_TYPE),
+                transferType);
+          }
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasResponse(BeeRow.class)) {
-          BeeRow result = BeeRow.restore(response.getResponseAsString());
+          Long tradeOperation = Global.getParameterRelation(PRM_DEFAULT_TRADE_OPERATION);
+          if (DataUtils.isId(tradeOperation)) {
+            invoice.setValue(Data.getColumnIndex(VIEW_SALES, COL_TA_OPERATION), tradeOperation);
+            invoice.setValue(Data.getColumnIndex(VIEW_SALES, COL_OPERATION_WAREHOUSE_FROM), true);
+          }
 
-          RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_SALES, result, null);
-          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_INVOICES);
-          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS);
+          BeeRowSet sales = DataUtils.createRowSetForInsert(dataInfo.getViewName(),
+              dataInfo.getColumns(), invoice);
 
-          refresh(false);
-          RowEditor.open(VIEW_SALES, result.getId(), Opener.MODAL);
-        }
-      }
-    });
+          BeeRowSet saleItems = createInvoiceItems(selectedServices, ss, currency);
+
+          ParameterList params = TradeActKeeper.createArgs(SVC_CREATE_ACT_INVOICE);
+
+          params.addDataItem(sales.getViewName(), sales.serialize());
+          params.addDataItem(saleItems.getViewName(), saleItems.serialize());
+          params.addDataItem(VAR_ID_LIST, DataUtils.buildIdList(prepareApproveActs));
+
+          BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+            @Override
+            public void onResponse(ResponseObject response) {
+              if (response.hasResponse(BeeRow.class)) {
+                BeeRow result = BeeRow.restore(response.getResponseAsString());
+
+                RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_SALES, result, null);
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_INVOICES);
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS);
+
+                refresh(false);
+                RowEditor.open(VIEW_SALES, result.getId(), Opener.MODAL);
+              }
+            }
+          });
+        });
   }
 
   private BeeRowSet createInvoiceItems(BeeRowSet selectedServices,

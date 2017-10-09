@@ -47,7 +47,7 @@
 
         <Label for="Customer" />
         <DataSelector source="Customer" name="Customer" required="true" visible="true"
-                      style="&inp;"/>
+                      style="&inp;" renderColumns="CustomerName CustomerTypeName" />
 
         <CheckBox for="IsSentToEmail" source="IsSentToEmail" readOnly="true"/>
       </row>

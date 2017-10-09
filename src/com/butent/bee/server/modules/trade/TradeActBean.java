@@ -65,6 +65,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
@@ -256,6 +257,8 @@ public class TradeActBean implements HasTimerService {
             COL_STATUS_NAME),
         BeeParameter.createRelation(module, PRM_CONTINUOUS_ACT_STATUS, TBL_TRADE_STATUSES,
             COL_STATUS_NAME),
+        BeeParameter.createRelation(module, PRM_DEFAULT_TRADE_OPERATION, TBL_TRADE_OPERATIONS,
+            COL_OPERATION_NAME),
         BeeParameter.createText(module, PRM_SYNC_ERP_DATA),
         BeeParameter.createNumber(module, PRM_SYNC_ERP_STOCK),
         BeeParameter.createText(module, PRM_INVOICE_MAIL_SIGNATURE)
@@ -773,6 +776,23 @@ public class TradeActBean implements HasTimerService {
     BeeRowSet saleItems = BeeRowSet.restore(serialized);
     if (DataUtils.isEmpty(saleItems)) {
       return ResponseObject.error(reqInfo.getService(), saleItems.getViewName(), "is empty");
+    }
+
+    if (sales.containsColumn(COL_TA_OPERATION)) {
+      Long tradeOperation = sales.getLong(0, COL_TA_OPERATION);
+
+      SqlSelect selectWrh = new SqlSelect()
+          .addFields(TBL_TRADE_OPERATIONS, COL_TRADE_WAREHOUSE_FROM)
+          .addFrom(TBL_TRADE_OPERATIONS)
+          .setWhere(sys.idEquals(TBL_TRADE_OPERATIONS, tradeOperation));
+
+      Long warehouse = qs.getLong(selectWrh);
+      if (DataUtils.isId(warehouse)) {
+        sales.setValue(0, DataUtils.getColumnIndex(COL_TRADE_WAREHOUSE_FROM, sales.getColumns()),
+            warehouse);
+      } else {
+        sales.removeColumn(DataUtils.getColumnIndex(COL_TRADE_WAREHOUSE_FROM, sales.getColumns()));
+      }
     }
 
     ResponseObject response = deb.commitRow(sales);

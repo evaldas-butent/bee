@@ -20,10 +20,14 @@ import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
 import com.butent.bee.client.output.ReportUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.InputDate;
+import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -39,6 +43,7 @@ import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -57,6 +62,23 @@ import java.util.function.Consumer;
 public class SalesInvoiceForm extends PrintFormInterceptor {
 
   SalesInvoiceForm() {
+  }
+
+  @Override
+  public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
+
+    if (BeeUtils.same(editableWidget.getColumnId(), COL_TA_DATE)
+        && widget instanceof InputDateTime) {
+
+      ((InputDateTime) widget).addEditStopHandler(event ->
+         setTerm(((InputDateTime) event.getSource()).getDate()));
+
+      ((InputDateTime) widget).addValueChangeHandler(valueChangeEvent ->
+          setTerm(TimeUtils.parseDate(valueChangeEvent.getValue(),
+              BeeKeeper.getUser().getDateTimeFormatInfo().dateOrdering())));
+    }
+
+    super.afterCreateEditableWidget(editableWidget, widget);
   }
 
   @Override
@@ -260,6 +282,18 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
                 }
               });
         }));
+  }
+
+  private void setTerm(JustDate date) {
+    InputDate term = (InputDate) getFormView().getWidgetBySource(COL_TRADE_TERM);
+    int creditDays = BeeUtils.unbox(Data.getInteger(VIEW_SALES, getActiveRow(),
+        COL_COMPANY_CREDIT_DAYS));
+
+    if (term != null && creditDays > 0) {
+      TimeUtils.addDay(date, creditDays);
+      getActiveRow().setValue(Data.getColumnIndex(VIEW_SALES, COL_TRADE_TERM), date);
+      getFormView().refreshBySource(COL_TRADE_TERM);
+    }
   }
 
   private static void fillSaleProperties(boolean forAllSaleItems, BeeRowSet rowSet,

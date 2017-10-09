@@ -288,6 +288,8 @@ public final class TradeConstants {
   public static final String COL_TRADE_ITEM_COST = "Cost";
   public static final String COL_TRADE_ITEM_COST_CURRENCY = "Currency";
 
+  public static final String COL_INVOICE_TRANSFER_TYPE = "InvoiceTransferType";
+
   public static final String ALS_TRADE_BOL_SERIES = "BoLSeriesName";
   public static final String ALS_TRADE_BOL_DRIVER_TAB_NO = "DriverTabNo";
   public static final String ALS_TRADE_BOL_DRIVER_EMPLOYEES = "DriverEmployees";

@@ -163,6 +163,7 @@ public final class TradeActConstants {
   public static final String PRM_SYNC_ERP_DATA = "SyncHours";
   public static final String PRM_SYNC_ERP_STOCK = "SyncStockInMinutes";
   public static final String PRM_INVOICE_MAIL_SIGNATURE = "InvoiceMailSignature";
+  public static final String PRM_DEFAULT_TRADE_OPERATION = "DefaultTradeOperation";
 
   public static final String PRP_INSERT_COLS = "InsertCols";
 
