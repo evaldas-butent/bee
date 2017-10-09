@@ -32,6 +32,7 @@ import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.modules.trade.TotalRenderer;
 import com.butent.bee.client.modules.trade.acts.TradeActItemImporter.ImportEntry;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.ui.Opener;
@@ -892,7 +893,20 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
                   if (ro.hasResponse(Long.class) && DataUtils.isId(ro.getResponseAsLong())) {
                     DataInfo info = Data.getDataInfo(VIEW_TRADE_ACTS);
                     RowEditor.openForm(info.getEditForm(), info, Filter.compareId(ro
-                        .getResponseAsLong()), Opener.MODAL);
+                        .getResponseAsLong()), Opener.MODAL, null, new TradeActForm() {
+                      @Override
+                      public FormInterceptor getInstance() {
+                        return null;
+                      }
+
+                      @Override
+                      public void afterCreatePresenter(Presenter presenter) {
+                        Queries.getRow(f.getViewName(), f.getActiveRowId(),
+                            row -> RowEditor.open(f.getViewName(), row, Opener.MODAL));
+
+                        super.afterCreatePresenter(presenter);
+                      }
+                    });
                   }
                 }
               });

@@ -163,7 +163,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   @Override
   public DeleteMode beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
-                                     Collection<RowInfo> selectedRows) {
+      Collection<RowInfo> selectedRows) {
     List<Long> ids = new ArrayList<>(selectedRows.size());
 
     selectedRows.forEach(info -> ids.add(info.getId()));
@@ -294,6 +294,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
                   () -> {
                     if (DataUtils.sameId(row, getGridView().getActiveRow())) {
                       doCopy(row.getId());
+                      Data.resetLocal(VIEW_TRADE_ACTS);
                     }
                   });
             }
@@ -406,6 +407,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
             } else {
               getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
             }
+
+            Data.resetLocal(VIEW_TRADE_ACTS);
           });
 
       TradeActKeeper.addCommandStyle(returnCommand, "return");
@@ -421,6 +424,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
             IsRow row = getGridView().getActiveRow();
             if (row != null) {
               alterKind(row);
+              Data.resetLocal(VIEW_TRADE_ACTS);
             }
           });
 
@@ -547,7 +551,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
   }
 
   private void createReturnActForm(IsRow parent, String number, BeeRowSet parentActs,
-                                   BeeRowSet parentItems) {
+      BeeRowSet parentItems) {
     DataInfo viewTradeActs = Data.getDataInfo(getViewName());
     BeeRow newRow = RowFactory.createEmptyRow(viewTradeActs, true);
 
@@ -731,6 +735,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
             IsRow row = getGridView().getActiveRow();
             if (row != null) {
               createSupplement(row);
+              Data.resetLocal(VIEW_TRADE_ACTS);
             }
           });
 
@@ -871,6 +876,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
             BeeRow template = BeeRow.restore(response.getResponseAsString());
             DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_TEMPLATES);
 
+            Data.resetLocal(VIEW_TRADE_ACTS);
             RowEditor.open(VIEW_TRADE_ACT_TEMPLATES, template, Opener.MODAL);
           }
         }
