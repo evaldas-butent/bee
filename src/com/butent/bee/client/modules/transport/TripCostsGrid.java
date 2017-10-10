@@ -159,7 +159,7 @@ public class TripCostsGrid extends TransportVatGridInterceptor
 
   @Override
   public GridInterceptor getInstance() {
-    return null;
+    return new TripCostsGrid();
   }
 
   @Override

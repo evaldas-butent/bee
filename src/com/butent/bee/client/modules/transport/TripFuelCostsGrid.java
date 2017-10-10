@@ -11,7 +11,7 @@ public class TripFuelCostsGrid extends TransportVatGridInterceptor {
 
   @Override
   public GridInterceptor getInstance() {
-    return null;
+    return new TripFuelCostsGrid();
   }
 
   @Override
