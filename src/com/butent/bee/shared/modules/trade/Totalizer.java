@@ -21,7 +21,7 @@ public class Totalizer {
   private static final String COL_TRADE_VAT_INCLUSIVE = "VatInclusive";
 
   private static final String[] DOUBLE_COLUMNS = new String[] {
-      COL_TRADE_AMOUNT, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
+      COL_TRADE_AMOUNT, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_ITEM_FULL_PRICE,
       COL_TRADE_VAT, COL_TRADE_DISCOUNT};
 
   private static final String[] BOOLEAN_COLUMNS = new String[] {
@@ -78,10 +78,14 @@ public class Totalizer {
   }
 
   public Double getDiscount(IsRow row) {
+    return getDiscount(row, "");
+  }
+
+  public Double getDiscount(IsRow row, String priceName) {
     if (row == null) {
       return null;
     } else {
-      return getDiscount(row, getAmount(row));
+      return getDiscount(row, getAmount(row, priceName));
     }
   }
 
@@ -99,11 +103,15 @@ public class Totalizer {
   }
 
   public Double getTotal(IsRow row) {
+    return getTotal(row, null);
+  }
+
+  public Double getTotal(IsRow row, String priceName) {
     if (row == null) {
       return null;
     }
 
-    Double amount = getAmount(row);
+    Double amount = getAmount(row, priceName);
     if (!BeeUtils.isDouble(amount)) {
       return null;
     }
@@ -123,10 +131,14 @@ public class Totalizer {
   }
 
   public Double getVat(IsRow row) {
+    return getVat(row, "");
+  }
+
+  public Double getVat(IsRow row, String priceName) {
     if (row == null) {
       return null;
     } else {
-      Double base = getAmount(row);
+      Double base = getAmount(row, priceName);
 
       if (base == null) {
         return null;
@@ -205,14 +217,19 @@ public class Totalizer {
   }
 
   private Double getAmount(IsRow row) {
+    return getAmount(row, null);
+  }
+
+  private Double getAmount(IsRow row, String priceName) {
+    String priceColumn = BeeUtils.isEmpty(priceName) ? COL_TRADE_ITEM_PRICE : priceName;
     if (row == null) {
       return null;
 
     } else if (functions.containsKey(COL_TRADE_AMOUNT)) {
       return getNumber(COL_TRADE_AMOUNT, row);
 
-    } else if (functions.containsKey(COL_TRADE_ITEM_PRICE)) {
-      Double price = getNumber(COL_TRADE_ITEM_PRICE, row);
+    } else if (functions.containsKey(priceColumn)) {
+      Double price = getNumber(priceColumn, row);
 
       if (functions.containsKey(COL_TRADE_ITEM_QUANTITY) && price != null) {
         Double qty = getNumber(COL_TRADE_ITEM_QUANTITY, row);

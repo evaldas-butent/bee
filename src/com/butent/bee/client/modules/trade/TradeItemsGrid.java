@@ -153,8 +153,8 @@ public class TradeItemsGrid extends ParentRowRefreshGrid implements
       Double discount, BeeRowSet items) {
 
     List<String> colNames = Lists.newArrayList(COL_SALE, COL_ITEM, COL_ITEM_ARTICLE,
-        COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, COL_TRADE_VAT,
-        COL_TRADE_VAT_PERC);
+        COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_ITEM_FULL_PRICE,
+        COL_TRADE_DISCOUNT, COL_TRADE_VAT, COL_TRADE_VAT_PERC);
 
     BeeRowSet rowSet = new BeeRowSet(getViewName(), Data.getColumns(getViewName(), colNames));
 
@@ -163,6 +163,7 @@ public class TradeItemsGrid extends ParentRowRefreshGrid implements
     int articleIndex = rowSet.getColumnIndex(COL_ITEM_ARTICLE);
     int qtyIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
     int priceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_PRICE);
+    int fullPriceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_FULL_PRICE);
     int discountIndex = rowSet.getColumnIndex(COL_TRADE_DISCOUNT);
     int vatIndex = rowSet.getColumnIndex(COL_TRADE_VAT);
     int vatPercIndex = rowSet.getColumnIndex(COL_TRADE_VAT_PERC);
@@ -201,6 +202,7 @@ public class TradeItemsGrid extends ParentRowRefreshGrid implements
             }
 
             row.setValue(priceIndex, Data.round(getViewName(), COL_TRADE_ITEM_PRICE, price));
+            row.setValue(fullPriceIndex, Data.round(getViewName(), COL_TRADE_ITEM_PRICE, price));
           }
         }
 

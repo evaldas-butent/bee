@@ -115,9 +115,11 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
               if (response.hasErrors()) {
                 return;
               }
-              Map<String, String> result = Codec.deserializeLinkedHashMap(response.getResponseAsString());
+              Map<String, String> result = Codec.deserializeLinkedHashMap(
+                  response.getResponseAsString());
 
-              double limit = BeeUtils.toDouble(result.get(ClassifierConstants.COL_COMPANY_CREDIT_LIMIT));
+              double limit = BeeUtils.toDouble(
+                  result.get(ClassifierConstants.COL_COMPANY_CREDIT_LIMIT));
               double debt = BeeUtils.toDouble(result.get(TradeConstants.VAR_DEBT));
               double overdue = BeeUtils.toDouble(result.get(TradeConstants.VAR_OVERDUE));
               String financialState = BeeUtils.trim(result.get(COL_COMPANY_FINANCIAL_STATE));
@@ -130,7 +132,8 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
               table.setWidget(0, 1, label);
               table.setText(0, 0, Localized.dictionary().financialState() + ":");
               table.setText(1, 0, Localized.dictionary().creditLimit() + ":");
-              table.setText(1, 1, BeeUtils.joinWords(limit, result.get(AdministrationConstants.COL_CURRENCY)));
+              table.setText(1, 1, BeeUtils.joinWords(limit,
+                  result.get(AdministrationConstants.COL_CURRENCY)));
               table.setText(2, 0, Localized.dictionary().trdDebt() + ":");
               table.setText(2, 1, String.valueOf(debt));
               table.setText(3, 0, Localized.dictionary().trdOverdue() + ":");
