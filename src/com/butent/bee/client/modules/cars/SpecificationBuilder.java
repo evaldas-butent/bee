@@ -672,7 +672,8 @@ public class SpecificationBuilder implements InputCallback {
 
             int packetIdx = rowSelectable;
 
-            for (Option opt : configuration.getPacketOptions(option, specification.getBundle())) {
+            for (Option opt :
+                configuration.getPacketOptions(option, specification.getBundle(), false)) {
               rowSelectable++;
               selectable.getCellFormatter().setStyleName(rowSelectable, 0, STYLE_PACKET);
               selectable.setText(rowSelectable, 1, opt.getCode(), STYLE_PACKET);
@@ -851,7 +852,8 @@ public class SpecificationBuilder implements InputCallback {
       specification.getOptions().forEach(opt -> toggle.putIfAbsent(opt, true));
 
       toggle.keySet().stream().filter(toggle::get).forEach(opt ->
-          packetOptions.addAll(configuration.getPacketOptions(opt, specification.getBundle())));
+          packetOptions.addAll(configuration.getPacketOptions(opt, specification.getBundle(),
+              false)));
 
       for (Iterator<Option> it = toggle.keySet().iterator(); it.hasNext(); ) {
         Option opt = it.next();

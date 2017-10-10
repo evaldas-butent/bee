@@ -942,7 +942,7 @@ public class CarsModuleBean implements BeeModule {
       branchOptions.values().forEach(opt -> optMap.put(opt.getId(), opt));
 
       data = qs.getData(new SqlSelect()
-          .addFields(TBL_CONF_PACKET_OPTIONS, COL_PACKET, COL_OPTION)
+          .addFields(TBL_CONF_PACKET_OPTIONS, COL_PACKET, COL_OPTION, COL_OPTIONAL)
           .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_OPTION_NAME2, COL_CODE,
               COL_CODE2)
           .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_GROUP_NAME2)
@@ -955,7 +955,8 @@ public class CarsModuleBean implements BeeModule {
           .setWhere(SqlUtils.inList(TBL_CONF_PACKET_OPTIONS, COL_PACKET, optMap.keySet())));
 
       data.forEach(simpleRow -> configuration
-          .getPacketOptions(optMap.get(simpleRow.getLong(COL_PACKET))).add(new Option(simpleRow)));
+          .getPacketOptions(optMap.get(simpleRow.getLong(COL_PACKET)))
+          .put(new Option(simpleRow), BeeUtils.unbox(simpleRow.getBoolean(COL_OPTIONAL))));
 
       data = qs.getData(new SqlSelect()
           .addFields(TBL_CONF_RESTRICTIONS, COL_BRANCH_OPTION, COL_OPTION, COL_DENIED)

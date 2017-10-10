@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+        name="ConfPacketOptions" viewName="ConfPacketOptions"
+        caption="=packet" autoFlex="true"
+>
+  <g:columns>
+    <RelColumn name="Option" renderColumns="Code Code2 OptionName" visible="true"
+               newRowEnabled="false" maxWidth="500"
+               choiceColumns="Code Code2 OptionName GroupName TypeName" />
+    <DataColumn name="Optional" width="100" />
+  </g:columns>
+</g:Grid>

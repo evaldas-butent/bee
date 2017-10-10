@@ -4160,6 +4160,8 @@ public interface Dictionary {
 
   default String optionTypes() {return g("optionTypes");}
 
+  default String optional() {return g("optional");}
+
   default String options() {return g("options");}
 
   default String ordApprove() {return g("ordApprove");}
