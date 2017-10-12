@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -338,15 +338,15 @@ public class Configuration implements BeeSerializable {
     return Objects.nonNull(optionInfo) ? optionInfo.getPacketOptions() : null;
   }
 
-  public Set<Option> getPacketOptions(Option option, Bundle bundle, boolean all) {
-    Set<Option> pkg = new LinkedHashSet<>();
+  public Map<Option, Boolean> getPacketOptions(Option option, Bundle bundle) {
+    Map<Option, Boolean> pkg = new LinkedHashMap<>();
     Map<Option, Boolean> packetOptions = getPacketOptions(option);
 
     if (Objects.nonNull(packetOptions)) {
       Set<Long> deniedPacketOptions = DataUtils.parseIdSet(getDeniedPacketOptions(option, bundle));
       packetOptions.forEach((opt, optional) -> {
-        if (!deniedPacketOptions.contains(opt.getId()) && (all || !optional)) {
-          pkg.add(opt);
+        if (!deniedPacketOptions.contains(opt.getId())) {
+          pkg.put(opt, optional);
         }
       });
     }
