@@ -4296,6 +4296,8 @@ public interface Dictionary {
 
   default String parameters() {return g("parameters");}
 
+  default String parent() {return g("parent");}
+
   default String partTime() {return g("partTime");}
 
   default String partial() {return g("partial");}

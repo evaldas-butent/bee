@@ -3,18 +3,18 @@
         xmlns:ui="http://www.butent.com/ui"
 
         name="CarBundleItems" viewName="CarBundleItems" autoFlex="true"
-        filter="!(Job)" newRowCaption="=newItem"
+        newRowForm="NewCarBundleItem" newRowWindow="modal"
 >
   <g:columns>
-    <RelColumn name="Item" viewName="CarItems" choiceColumns="Name Article" renderColumns="ItemName"
-               flexGrow="2" visible="true" newRowEnabled="false" caching="none">
-      <dynStyle>
-        <ui:inline>color:blue;</ui:inline>
-        <ui:expression>row.IsService</ui:expression>
-      </dynStyle>
-    </RelColumn>
-
     <DataColumn name="Article" flexGrow="1" />
+    <DataColumn name="ItemName" flexGrow="2" />
+
+    <DataColumn name="Duration">
+      <editable>
+        <ui:expression>row.Job</ui:expression>
+      </editable>
+      <editor type="time" stepValue="5" />
+    </DataColumn>
 
     <DataColumn name="Quantity" scale="0" visible="true" />
     <DataColumn name="UnitName" label="=unitShort" />
@@ -24,4 +24,13 @@
     </DataColumn>
     <RelColumn name="Currency" newRowEnabled="false" editEnabled="false" />
   </g:columns>
+
+  <g:rowStyle>
+    <ui:inline>color:green;</ui:inline>
+    <ui:expression>row.Job</ui:expression>
+  </g:rowStyle>
+  <g:rowStyle>
+    <ui:inline>color:silver</ui:inline>
+    <ui:expression>row.Parent</ui:expression>
+  </g:rowStyle>
 </g:Grid>

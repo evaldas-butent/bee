@@ -11,7 +11,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.DataChangeCallback;
@@ -57,7 +56,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 public class CarServiceItemsGrid extends ParentRowRefreshGrid implements ClickHandler {
 
@@ -147,14 +145,13 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid implements ClickHa
       filter.add(Filter.or(Filter.isNull(COL_VALID_UNTIL),
           Filter.isMore(COL_VALID_UNTIL, Value.getValue(TimeUtils.today()))));
 
-      Stream.of(COL_MODEL, COL_CUSTOMER).forEach(col -> {
-        Filter subFilter = Filter.isNull(col);
+      Filter sub = Filter.isNull(COL_MODEL);
 
-        if (DataUtils.isId(parentForm.getLongValue(col))) {
-          subFilter = Filter.or(subFilter, Filter.equals(col, parentForm.getLongValue(col)));
-        }
-        filter.add(subFilter);
-      });
+      if (DataUtils.isId(parentForm.getLongValue(COL_MODEL))) {
+        sub = Filter.or(sub, Filter.equals(COL_MODEL, parentForm.getLongValue(COL_MODEL)));
+      }
+      filter.add(sub);
+
       Relation relation = Relation.create(TBL_CAR_BUNDLES,
           Arrays.asList(COL_CODE, COL_BUNDLE_NAME));
       relation.disableNewRow();
@@ -170,82 +167,76 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid implements ClickHa
           addBundle.running();
 
           Queries.getRowSet(TBL_CAR_BUNDLE_ITEMS, null, Filter.equals(COL_BUNDLE, id),
-              new Queries.RowSetCallback() {
-                @Override
-                public void onSuccess(BeeRowSet rs) {
-                  if (rs.isEmpty()) {
-                    getGridView().notifyWarning(Localized.dictionary().noData());
-                    return;
-                  }
-                  DataInfo info = Data.getDataInfo(TBL_SERVICE_ORDER_ITEMS);
-
-                  List<BeeColumn> cols = new ArrayList<>();
-                  cols.add(info.getColumn(COL_SERVICE_ORDER));
-                  cols.add(info.getColumn(COL_TRADE_DOCUMENT_ITEM_DISCOUNT));
-                  cols.add(info.getColumn(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT));
-
-                  rs.getColumns().stream()
-                      .filter(BeeColumn::isEditable)
-                      .map(BeeColumn::getId)
-                      .filter(info::containsColumn)
-                      .forEach(col -> cols.add(info.getColumn(col)));
-
-                  BeeRowSet newRs = new BeeRowSet(info.getViewName(), cols);
-
-                  PriceRecalculator.getPriceAndDiscount(getGridView(), rs.getNumberOfRows(),
-                      (idx, data) -> {
-                        switch (data) {
-                          case ITEM:
-                            return rs.getRow(idx).getString(rs.getColumnIndex(COL_ITEM));
-                          case QUANTITY:
-                            return rs.getRow(idx)
-                                .getString(rs.getColumnIndex(COL_TRADE_ITEM_QUANTITY));
-                          case PRICE:
-                            return rs.getRow(idx).getString(rs.getColumnIndex(COL_PRICE));
-                          case CURRENCY:
-                            return rs.getRow(idx).getString(rs.getColumnIndex(COL_CURRENCY));
-                        }
-                        return null;
-                      },
-                      (idx, price, discount) -> {
-                        BeeRow beeRow = rs.getRow(idx);
-                        BeeRow newRow = newRs.addEmptyRow();
-
-                        for (int i = 0; i < cols.size(); i++) {
-                          String col = cols.get(i).getId();
-
-                          switch (col) {
-                            case COL_SERVICE_ORDER:
-                              newRow.setValue(i, parentId);
-                              break;
-
-                            case COL_PRICE:
-                              newRow.setValue(i, price);
-                              break;
-
-                            case COL_TRADE_DOCUMENT_ITEM_DISCOUNT:
-                              newRow.setValue(i, discount);
-                              break;
-
-                            case COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT:
-                              newRow.setValue(i, BeeUtils.isPositive(discount));
-                              break;
-
-                            default:
-                              newRow.setValue(i, beeRow.getString(rs.getColumnIndex(col)));
-                              break;
-                          }
-                        }
-                      },
-                      () -> Queries.insertRows(newRs, new RpcCallback<RowInfoList>() {
-                        @Override
-                        public void onSuccess(RowInfoList res) {
-                          addBundle.idle();
-                          Queries.getRow(parentForm.getViewName(), parentId,
-                              RowCallback.refreshRow(parentForm.getViewName(), true));
-                        }
-                      }));
+              rs -> {
+                if (rs.isEmpty()) {
+                  getGridView().notifyWarning(Localized.dictionary().noData());
+                  return;
                 }
+                DataInfo info = Data.getDataInfo(TBL_SERVICE_ORDER_ITEMS);
+
+                List<BeeColumn> cols = new ArrayList<>();
+                cols.add(info.getColumn(COL_SERVICE_ORDER));
+                cols.add(info.getColumn(COL_TRADE_DOCUMENT_ITEM_DISCOUNT));
+                cols.add(info.getColumn(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT));
+
+                rs.getColumns().stream()
+                    .filter(BeeColumn::isEditable)
+                    .map(BeeColumn::getId)
+                    .filter(info::containsColumn)
+                    .forEach(col -> cols.add(info.getColumn(col)));
+
+                BeeRowSet newRs = new BeeRowSet(info.getViewName(), cols);
+
+                PriceRecalculator.getPriceAndDiscount(getGridView(), rs.getNumberOfRows(),
+                    (idx, data) -> {
+                      switch (data) {
+                        case ITEM:
+                          return rs.getRow(idx).getString(rs.getColumnIndex(COL_ITEM));
+                        case QUANTITY:
+                          return rs.getRow(idx)
+                              .getString(rs.getColumnIndex(COL_TRADE_ITEM_QUANTITY));
+                        case PRICE:
+                          return rs.getRow(idx).getString(rs.getColumnIndex(COL_PRICE));
+                        case CURRENCY:
+                          return rs.getRow(idx).getString(rs.getColumnIndex(COL_CURRENCY));
+                      }
+                      return null;
+                    },
+                    (idx, price, discount) -> {
+                      BeeRow beeRow = rs.getRow(idx);
+                      BeeRow newRow = newRs.addEmptyRow();
+
+                      for (int i = 0; i < cols.size(); i++) {
+                        String col = cols.get(i).getId();
+
+                        switch (col) {
+                          case COL_SERVICE_ORDER:
+                            newRow.setValue(i, parentId);
+                            break;
+
+                          case COL_PRICE:
+                            newRow.setValue(i, price);
+                            break;
+
+                          case COL_TRADE_DOCUMENT_ITEM_DISCOUNT:
+                            newRow.setValue(i, discount);
+                            break;
+
+                          case COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT:
+                            newRow.setValue(i, BeeUtils.isPositive(discount));
+                            break;
+
+                          default:
+                            newRow.setValue(i, beeRow.getString(rs.getColumnIndex(col)));
+                            break;
+                        }
+                      }
+                    },
+                    () -> Queries.insertRows(newRs, res -> {
+                      addBundle.idle();
+                      Queries.getRow(parentForm.getViewName(), parentId,
+                          RowCallback.refreshRow(parentForm.getViewName(), true));
+                    }));
               });
         }
       });
@@ -272,20 +263,17 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid implements ClickHa
 
     if (Objects.nonNull(vatMode) && DataUtils.isId(operation)) {
       Queries.getValue(VIEW_TRADE_OPERATIONS, operation, COL_OPERATION_VAT_PERCENT,
-          new RpcCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-              Double vatPercent = BeeUtils.toDoubleOrNull(result);
+          result -> {
+            Double vatPercent = BeeUtils.toDoubleOrNull(result);
 
-              if (vatPercent == null) {
-                Number p = Global.getParameterNumber(PRM_VAT_PERCENT);
+            if (vatPercent == null) {
+              Number p = Global.getParameterNumber(PRM_VAT_PERCENT);
 
-                if (p != null) {
-                  vatPercent = p.doubleValue();
-                }
+              if (p != null) {
+                vatPercent = p.doubleValue();
               }
-              vatConsumer.accept(vatPercent);
             }
+            vatConsumer.accept(vatPercent);
           });
     } else {
       vatConsumer.accept(null);

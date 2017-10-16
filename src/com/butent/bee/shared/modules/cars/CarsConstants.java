@@ -67,6 +67,7 @@ public final class CarsConstants {
   public static final String VIEW_CARS = "Cars";
   public static final String VIEW_CAR_FILES = "CarFiles";
   public static final String VIEW_CAR_SERVICE_FILES = "CarServiceFiles";
+  public static final String VIEW_CAR_ITEMS = "CarItems";
 
   public static final String COL_BRANCH = "Branch";
   public static final String COL_BRANCH_NAME = "BranchName";
@@ -108,6 +109,7 @@ public final class CarsConstants {
   public static final String COL_SERVICE_ITEM = "ServiceItem";
 
   public static final String COL_RESERVE = "Reserve";
+  public static final String COL_PARENT = "Parent";
 
   public static final String COL_CHECKED = "Checked";
   public static final String COL_CAR_DISCOUNT = "CarDiscount";
@@ -126,8 +128,8 @@ public final class CarsConstants {
   public static final String FORM_TEMPLATE = "ConfTemplate";
   public static final String FORM_CAR_SERVICE_ORDER = "CarServiceOrder";
   public static final String FORM_CAR_SERVICE_EVENT = "CarServiceEvent";
+  public static final String FORM_NEW_CAR_BUNDLE_ITEM = "NewCarBundleItem";
 
-  public static final String GRID_CAR_BUNDLE_JOBS = "CarBundleJobs";
   public static final String GRID_SERVICE_ORDER_JOBS = "CarServiceJobs";
 
   public static final String FILTER_CAR_DOCUMENTS = "filter_car_trade_documents";

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+
+        name="NewCarBundleItem" viewName="CarBundleItems"
+        caption="=newRow+ (+=itemOrService+, +=serviceJob+)"
+        width="600" widthUnit="px" height="300" heightUnit="px"
+>
+  <FlowPanel class="flexBox-vertical">
+    <Table kind="controls">
+      <col index="0" kind="label" />
+
+      <row>
+        <cell colSpan="3">
+          <TabBar name="Item" style="width:100%;">
+            <tab>
+              <Label text="=itemOrService" />
+            </tab>
+            <tab>
+              <Label text="=serviceJob" />
+            </tab>
+          </TabBar>
+        </cell>
+      </row>
+      <row style="display:none;">
+        <cell colSpan="3">
+          <CheckBox name="Parent" text="=parent" style="color:green;" />
+        </cell>
+      </row>
+      <row style="display:none;">
+        <cell colSpan="3">
+          <UnboundSelector viewName="CarItems" style="width:100%;"
+                           choiceColumns="Article Name UnitName"
+                           newRowEnabled="false" />
+        </cell>
+      </row>
+      <row style="display:none;">
+        <cell colSpan="3">
+          <UnboundSelector viewName="CarJobs" valueSource="Item" style="width:100%;"
+                           choiceColumns="Article ItemName" renderColumns="Article ItemName"
+                           newRowEnabled="false" />
+        </cell>
+      </row>
+      <row style="display:none;">
+        <Label for="Duration" />
+        <InputTime source="Duration" step="5" />
+      </row>
+      <row>
+        <Label for="Quantity" />
+        <InputDecimal source="Quantity" />
+      </row>
+      <row>
+        <Label for="Price" />
+        <InputDecimal source="Price" currencySource="Currency" scale="2" />
+        <DataSelector source="Currency" for="Price" newRowEnabled="false" editEnabled="false"
+                      style="width:50px;" placeholder="=currencyShort" />
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>
