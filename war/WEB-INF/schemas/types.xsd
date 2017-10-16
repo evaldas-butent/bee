@@ -301,6 +301,7 @@
       <xs:enumeration value="CarPlaceCodes" />
       <xs:enumeration value="CarRecalls" />
       <xs:enumeration value="Cars" />
+      <xs:enumeration value="CarServiceComments" />
       <xs:enumeration value="CarServiceEvents" />
       <xs:enumeration value="CarServiceFiles" />
       <xs:enumeration value="CarServiceItems" />

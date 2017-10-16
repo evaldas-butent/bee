@@ -148,6 +148,10 @@
         <GridPanel name="TradeDocuments" child="true" parent="{form}" />
       </page>
       <page>
+        <text>=svcComments</text>
+        <FlowPanel name="CarServiceComments" class="flex-horizontal"/>
+      </page>
+      <page>
         <text>=notes</text>
         <FlowPanel class="flexBox-vertical">
           <HorizontalPanel style="width:100%;" listName="CarServiceSymptoms">
