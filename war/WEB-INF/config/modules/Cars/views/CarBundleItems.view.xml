@@ -31,6 +31,8 @@
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
 
+    <SimpleColumn name="Percent" />
+
     <SimpleColumn name="Parent" />
 
     <IdColumn name="ParentID" hidden="true" />
@@ -41,9 +43,4 @@
       </x:nvl>
     </SimpleColumn>
   </Columns>
-
-  <Order>
-    <OrderBy column="ParentOrder" />
-    <OrderBy column="Job" />
-  </Order>
 </View>

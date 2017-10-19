@@ -16,6 +16,8 @@
     <Numeric name="Price" precision="18" scale="8" label="=price" />
     <Relation name="Currency" relation="Currencies" label="=currency" />
 
+    <Numeric name="Percent" precision="7" scale="3" label="=discountPercent" />
+
     <Relation name="Parent" relation="CarBundleItems" label="=parent" cascade="DELETE" />
   </Fields>
   <Constraints>

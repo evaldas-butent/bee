@@ -128,16 +128,13 @@
     <br />
     <TabbedPages class="flexible">
       <page>
-        <text>=productsServices</text>
-        <ChildGrid name="CarServiceItems" relColumn="ServiceOrder" />
-      </page>
-      <page>
-        <text>=serviceJobs</text>
+        <text>=productsServices+, +=serviceJobs</text>
         <FlowPanel class="flexBox-vertical">
-          <ChildGrid name="CarServiceJobs" relColumn="ServiceOrder" class="flexible" />
+          <ChildGrid name="CarServiceItems" relColumn="ServiceOrder" class="flexible" />
+
           <FlowPanel class="flexible flexBox-horizontal">
             <FlowPanel style="width:100px;" />
-            <ChildGrid name="CarJobProgress" parent="CarServiceJobs" relColumn="ServiceJob"
+            <ChildGrid name="CarJobProgress" parent="CarServiceItems" relColumn="ServiceJob"
                        class="flexible" summarize="false" />
           </FlowPanel>
         </FlowPanel>
@@ -152,7 +149,7 @@
       </page>
       <page>
         <text>=svcComments</text>
-        <FlowPanel name="CarServiceComments" class="flex-horizontal"/>
+        <FlowPanel name="CarServiceComments" class="flex-horizontal" />
       </page>
       <page>
         <text>=notes</text>

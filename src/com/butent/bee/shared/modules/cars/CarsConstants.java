@@ -130,8 +130,6 @@ public final class CarsConstants {
   public static final String FORM_CAR_SERVICE_EVENT = "CarServiceEvent";
   public static final String FORM_NEW_CAR_BUNDLE_ITEM = "NewCarBundleItem";
 
-  public static final String GRID_SERVICE_ORDER_JOBS = "CarServiceJobs";
-
   public static final String FILTER_CAR_DOCUMENTS = "filter_car_trade_documents";
   public static final String FILTER_CAR_SERVICE_DOCUMENTS = "filter_car_service_trade_documents";
 
