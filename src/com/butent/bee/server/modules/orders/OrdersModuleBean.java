@@ -691,19 +691,9 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
     SimpleRowSet rs;
-    SimpleRowSet rsRU;
 
     try {
       rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getGoods("e");
-
-    } catch (BeeException e) {
-      logger.error(e);
-      sys.eventEnd(sys.eventStart(PRM_IMPORT_ERP_ITEMS_TIME), "ERROR", e.getMessage());
-      return;
-    }
-
-    try {
-      rsRU = ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getGoodsR("e");
 
     } catch (BeeException e) {
       logger.error(e);
@@ -758,7 +748,6 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
       Map<String, String> localesMap = new HashMap<>();
       localesMap.put("PAVAD_1", "Name_en");
-      localesMap.put("PAVAD_2", "Name_ru");
       localesMap.put("PAVAD_3", "Name_lv");
       localesMap.put("PAVAD_4", "Name_et");
 
@@ -810,18 +799,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
           Map<String, String> nameMap = new HashMap<>();
           for (String nameCol : localesMap.keySet()) {
-            if (Objects.equals(nameCol, "PAVAD_2")) {
-              SimpleRow r = rsRU.getRowByKey("PREKE", exCode);
+            String value = row.getValue(nameCol);
 
-              if (r != null) {
-                nameMap.put("Name_ru", r.getValue(nameCol));
-              }
-            } else {
-              String value = row.getValue(nameCol);
-
-              if (!BeeUtils.isEmpty(value)) {
-                nameMap.put(localesMap.get(nameCol), value);
-              }
+            if (!BeeUtils.isEmpty(value)) {
+              nameMap.put(localesMap.get(nameCol), value);
             }
           }
 
