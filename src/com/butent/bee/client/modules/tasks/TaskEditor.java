@@ -874,7 +874,8 @@ class TaskEditor extends ProductSupportInterceptor {
     TaskStatus oldStatus = EnumUtils.getEnumByIndex(TaskStatus.class,
         row.getInteger(form.getDataIndex(COL_STATUS)));
 
-    TaskHelper.setWidgetEnabled(form, Objects.equals(owner, userId));
+    TaskHelper.setWidgetEnabled(form, Objects.equals(owner, userId)
+        || Objects.equals(executor, userId));
 
     TaskStatus newStatus = oldStatus;
 
@@ -1181,7 +1182,7 @@ class TaskEditor extends ProductSupportInterceptor {
     }
 
     form.addCellValidationHandler(NAME_PRIVATE_TASK, event -> {
-      boolean canModify = isOwner();
+      boolean canModify = isOwner() || isExecutor();
       IsRow oldRow = form.getOldRow();
       int idxOwner = form.getDataIndex(COL_OWNER);
 

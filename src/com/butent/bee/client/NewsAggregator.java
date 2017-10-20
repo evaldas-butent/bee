@@ -8,6 +8,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
@@ -28,6 +30,8 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
@@ -42,6 +46,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.NewsConstants;
@@ -61,6 +66,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
@@ -882,7 +888,23 @@ public class NewsAggregator implements HandlesAllDataEvents {
     if (feed != null && (!registeredAccessHandlers.containsKey(feed.getHeadlineView())
         || !registeredAccessHandlers.get(feed.getHeadlineView()).read(headlinePanel.getDataId()))) {
 
-      RowEditor.open(feed.getHeadlineView(), headlinePanel.getDataId(), Opener.modeless());
+      if (Objects.equals(TaskConstants.VIEW_TASKS, feed.getHeadlineView())) {
+        Queries.getRow(TaskConstants.VIEW_TASKS, headlinePanel.getDataId(), new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            if (result != null && DataUtils.isId(Data.getLong(TaskConstants.VIEW_TASKS, result,
+                TaskConstants.COL_TASK_ORDER))) {
+              RowEditor.open(TaskConstants.VIEW_TASK_ORDERS, result, Opener.modeless(), null);
+            } else {
+              RowEditor.open(feed.getHeadlineView(), headlinePanel.getDataId(), Opener.modeless());
+            }
+
+            onAccess(feed.getHeadlineView(), headlinePanel.getDataId());
+          }
+        });
+      } else {
+        RowEditor.open(feed.getHeadlineView(), headlinePanel.getDataId(), Opener.modeless());
+      }
     }
   }
 

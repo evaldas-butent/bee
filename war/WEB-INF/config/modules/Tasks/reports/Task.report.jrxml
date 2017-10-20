@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-07-17T13:50:29 -->
+<!-- 2017-10-17T15:39:51 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TaskOrder" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="f61c84c0-32c7-4a4d-a4ff-6f16bae30b57">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="java.util.Objects"/>
@@ -119,6 +119,11 @@
 	<parameter name="Rings" class="java.lang.String"/>
 	<parameter name="OtherMaterial" class="java.lang.String"/>
 	<parameter name="OtherBending" class="java.lang.String"/>
+	<parameter name="InvoiceSupplier" class="java.lang.String"/>
+	<parameter name="InvoiceDate" class="java.lang.String"/>
+	<parameter name="InvoiceSeries" class="java.lang.String"/>
+	<parameter name="InvoiceNumber" class="java.lang.String"/>
+	<parameter name="InvoicePrice" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -510,18 +515,6 @@
 						<leftPen lineWidth="1.0"/>
 					</box>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="0" y="4" width="90" height="12" isRemoveLineWhenBlank="true" uuid="d79cf75f-fb68-45f8-aa31-54e0a7680b88">
-							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-							<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-							<printWhenExpression><![CDATA[$P{Price} != null]]></printWhenExpression>
-						</reportElement>
-						<box leftPadding="2"/>
-						<textElement verticalAlignment="Middle" markup="html">
-							<font fontName="DejaVu Sans" size="9"/>
-						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>Kaina:</b>", $P{Price})]]></textFieldExpression>
-					</textField>
-					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 						<reportElement positionType="Float" x="0" y="20" width="275" height="12" isRemoveLineWhenBlank="true" uuid="51d8b810-810f-4e4f-ba1c-b431620e871c">
 							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 							<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -599,7 +592,7 @@
 						<textFieldExpression><![CDATA["<b>Prabėgimų sk.: </b>" + $P{NumberOfRuns}]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="101" y="4" width="174" height="12" isRemoveLineWhenBlank="true" uuid="9e496f9b-93ce-4a6b-8364-510d235c4e1c">
+						<reportElement positionType="Float" x="1" y="4" width="274" height="12" isRemoveLineWhenBlank="true" uuid="9e496f9b-93ce-4a6b-8364-510d235c4e1c">
 							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 							<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 							<printWhenExpression><![CDATA[$P{SupplierNote} != null]]></printWhenExpression>
@@ -950,18 +943,6 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="0" y="4" width="101" height="12" isRemoveLineWhenBlank="true" uuid="8c0c3b99-ed9e-411f-a5e2-fecb639dc476">
-							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-							<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-							<printWhenExpression><![CDATA[$P{DecorationPrice} != null]]></printWhenExpression>
-						</reportElement>
-						<box leftPadding="2"/>
-						<textElement verticalAlignment="Middle" markup="html">
-							<font fontName="DejaVu Sans" size="9"/>
-						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>Kaina:</b>", $P{DecorationPrice})]]></textFieldExpression>
-					</textField>
-					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 						<reportElement positionType="Float" x="0" y="36" width="275" height="12" isRemoveLineWhenBlank="true" uuid="0c6787cd-43b5-434f-946b-879d46307350">
 							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 							<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -1014,7 +995,7 @@
 						<textFieldExpression><![CDATA[BeeUtils.joinWords("Štancavimas:", $P{Punching})]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="101" y="4" width="174" height="12" isRemoveLineWhenBlank="true" uuid="763746d6-6672-40fe-a308-5d01f1a86553">
+						<reportElement positionType="Float" x="0" y="4" width="275" height="12" isRemoveLineWhenBlank="true" uuid="763746d6-6672-40fe-a308-5d01f1a86553">
 							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 							<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 							<printWhenExpression><![CDATA[$P{DecorationSupplierNote} != null]]></printWhenExpression>
@@ -1125,48 +1106,9 @@
 		</band>
 	</title>
 	<summary>
-		<band height="92" splitType="Stretch">
-			<textField>
-				<reportElement x="0" y="4" width="50" height="12" uuid="abfa3262-f184-4aa6-96b5-45b3bb8ac3f7">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement>
-					<font fontName="DejaVu Sans" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA["KAINA"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="430" y="4" width="125" height="12" isRemoveLineWhenBlank="true" uuid="77f952a2-bbb3-420c-9f08-2d26397c9790">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[$P{PressDate} != null || $P{Date} != null]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font fontName="DejaVu Sans" size="9" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[Objects.equals($V{supplier}, $V{supplier1}) ? BeeUtils.joinWords("<b>Data:</b>", ($P{Date} == null) ? "" : new JustDate(BeeUtils.toInt($P{Date}))) : BeeUtils.joinWords("<b>Data:</b>", ($P{PressDate} == null) ? "" : new JustDate(BeeUtils.toInt($P{PressDate}))) + "<br>" + BeeUtils.joinWords("<b>Data:</b>", ($P{Date} == null) ? "" : new JustDate(BeeUtils.toInt($P{Date})))]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="280" y="4" width="150" height="12" isRemoveLineWhenBlank="true" uuid="8f2d1296-b027-4517-b46d-65832610e797">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[$P{PressSeries} != null || $P{PressNumber} != null || $P{PriceSeries} != null || $P{Number} != null]]></printWhenExpression>
-				</reportElement>
-				<textElement verticalAlignment="Middle" markup="html">
-					<font fontName="DejaVu Sans" size="9" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[Objects.equals($V{supplier}, $V{supplier1}) ? BeeUtils.joinWords("<b>Sąskaitos nr.:</b>", BeeUtils.joinWords($P{PriceSeries}, $P{Number})) : BeeUtils.joinWords("<b>Sąskaitos nr.:</b>",BeeUtils.joinWords($P{PressSeries}, $P{PressNumber})) + "<br>" +  BeeUtils.joinWords("<b>Sąskaitos nr.:</b>", BeeUtils.joinWords($P{PriceSeries}, $P{Number}))]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="50" y="4" width="230" height="12" isRemoveLineWhenBlank="true" uuid="83bb7156-607f-48a6-a957-b3f1045dacac">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[$P{SupplierName} != null || $P{SupplierTypeName} != null || $P{DecorationSupplierName} != null || $P{DecorationSupplierTypeName} != null]]></printWhenExpression>
-				</reportElement>
-				<textElement verticalAlignment="Middle" markup="html">
-					<font fontName="DejaVu Sans" size="9" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[Objects.equals($V{supplier}, $V{supplier1}) ? BeeUtils.joinWords("<b>Tiekėjas:</b>", BeeUtils.joinWords($P{SupplierName}, $P{SupplierTypeName})) :  BeeUtils.joinWords("<b>Tiekėjas:</b>", BeeUtils.joinWords($P{SupplierName}, $P{SupplierTypeName})) + "<br>" + BeeUtils.joinWords("<b>Tiekėjas:</b>",BeeUtils.joinWords($P{DecorationSupplierName}, $P{DecorationSupplierTypeName}))]]></textFieldExpression>
-			</textField>
+		<band height="128" splitType="Stretch">
 			<componentElement>
-				<reportElement positionType="Float" x="0" y="24" width="555" height="46" isRemoveLineWhenBlank="true" uuid="9f93888b-855c-4156-be85-c9d89915a4ad">
+				<reportElement positionType="Float" x="0" y="60" width="555" height="46" isRemoveLineWhenBlank="true" uuid="9f93888b-855c-4156-be85-c9d89915a4ad">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value=""/>
 					<property name="com.jaspersoft.studio.components.autoresize.proportional" value="true"/>
@@ -1415,7 +1357,7 @@
 				</jr:table>
 			</componentElement>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="0" y="80" width="180" height="12" isRemoveLineWhenBlank="true" uuid="d03a459c-659f-43eb-bdce-b7d697e25b7e">
+				<reportElement positionType="Float" x="0" y="116" width="180" height="12" isRemoveLineWhenBlank="true" uuid="d03a459c-659f-43eb-bdce-b7d697e25b7e">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1427,7 +1369,7 @@
 				<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>TRANSPORTAVIMAS:</b>", $P{Transportation})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="180" y="80" width="201" height="12" isRemoveLineWhenBlank="true" uuid="c8adf272-a1d2-450d-856e-d0e3a9a87021">
+				<reportElement positionType="Float" x="180" y="116" width="201" height="12" isRemoveLineWhenBlank="true" uuid="c8adf272-a1d2-450d-856e-d0e3a9a87021">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1439,7 +1381,7 @@
 				<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>Pakuočių kiekis:</b>", $P{PackageQty})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="382" y="80" width="172" height="12" isRemoveLineWhenBlank="true" uuid="1b14a40b-24d8-405d-8326-dbb4dd689e62">
+				<reportElement positionType="Float" x="382" y="116" width="172" height="12" isRemoveLineWhenBlank="true" uuid="1b14a40b-24d8-405d-8326-dbb4dd689e62">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -1450,6 +1392,150 @@
 				</textElement>
 				<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>Svoris:</b>", $P{Weight}, "kg")]]></textFieldExpression>
 			</textField>
+			<frame>
+				<reportElement positionType="Float" x="0" y="20" width="555" height="12" uuid="5be34a43-f9c6-41c4-ad93-6af44aacefbf">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textField>
+					<reportElement stretchType="ContainerBottom" x="0" y="0" width="50" height="12" uuid="3814e625-6ade-487b-9118-0f61067c9362">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement>
+						<font fontName="DejaVu Sans" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["KAINA"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="50" y="0" width="180" height="12" isRemoveLineWhenBlank="true" uuid="81814bda-9fad-43a2-9e87-6b397dd8002f">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<printWhenExpression><![CDATA[$P{SupplierName} != null || $P{SupplierTypeName} != null]]></printWhenExpression>
+					</reportElement>
+					<textElement verticalAlignment="Middle" markup="html">
+						<font fontName="DejaVu Sans" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>Tiekėjas:</b>",BeeUtils.joinWords($P{SupplierName}, $P{SupplierTypeName}))]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="230" y="0" width="140" height="12" isRemoveLineWhenBlank="true" uuid="12e01f45-b138-4edc-a6b1-51138ec4fd65">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<printWhenExpression><![CDATA[$P{PressSeries} != null || $P{PressNumber} != null]]></printWhenExpression>
+					</reportElement>
+					<textElement verticalAlignment="Middle" markup="html">
+						<font fontName="DejaVu Sans" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>Sąskaitos nr.:</b>", BeeUtils.joinWords($P{PressSeries}, $P{PressNumber}))]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="370" y="0" width="100" height="12" isRemoveLineWhenBlank="true" uuid="fcebaff0-1cbe-46fb-9d11-9d6fceb379e0">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<printWhenExpression><![CDATA[$P{PressDate} != null]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html">
+						<font fontName="DejaVu Sans" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>Data:</b>", ($P{PressDate} == null) ? "" : new JustDate(BeeUtils.toInt($P{PressDate})))]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="470" y="0" width="85" height="12" isRemoveLineWhenBlank="true" uuid="e2335dd5-3bae-4ed2-805d-44ea7779ca77">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<printWhenExpression><![CDATA[$P{Price} != null]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html">
+						<font fontName="DejaVu Sans" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>Kaina:</b>", $P{Price})]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="32" width="555" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="072462bb-703f-47a1-81e3-02c7a637adbf">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="50" y="0" width="180" height="12" isRemoveLineWhenBlank="true" uuid="48691ffa-7a81-43eb-8889-6c64e93a4bd2">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<printWhenExpression><![CDATA[($P{DecorationSupplierName} != null || $P{DecorationSupplierTypeName} != null)  && !Objects.equals($V{supplier}, $V{supplier1})]]></printWhenExpression>
+					</reportElement>
+					<textElement verticalAlignment="Middle" markup="html">
+						<font fontName="DejaVu Sans" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>Tiekėjas:</b>",BeeUtils.joinWords($P{DecorationSupplierName}, $P{DecorationSupplierTypeName}))]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="230" y="0" width="140" height="12" isRemoveLineWhenBlank="true" uuid="0ff42eac-0142-4457-9953-fe44c337c912">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<printWhenExpression><![CDATA[($P{PriceSeries} != null || $P{Number} != null)  && !Objects.equals($V{supplier}, $V{supplier1})]]></printWhenExpression>
+					</reportElement>
+					<textElement verticalAlignment="Middle" markup="html">
+						<font fontName="DejaVu Sans" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>Sąskaitos nr.:</b>", BeeUtils.joinWords($P{PriceSeries}, $P{Number}))]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="370" y="0" width="100" height="12" isRemoveLineWhenBlank="true" uuid="4c1337e1-3f81-4113-aab4-6103a7399e26">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<printWhenExpression><![CDATA[$P{Date} != null  && !Objects.equals($V{supplier}, $V{supplier1})]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html">
+						<font fontName="DejaVu Sans" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>Data:</b>", ($P{Date} == null) ? "" : new JustDate(BeeUtils.toInt($P{Date})))]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="470" y="0" width="85" height="12" isRemoveLineWhenBlank="true" uuid="767995b8-2d94-4a46-adec-0702afea14ef">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<printWhenExpression><![CDATA[$P{DecorationPrice} != null  && !Objects.equals($V{supplier}, $V{supplier1})]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html">
+						<font fontName="DejaVu Sans" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>Kaina:</b>", $P{DecorationPrice})]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="44" width="555" height="12" isRemoveLineWhenBlank="true" uuid="0cfca0e1-eebe-493b-99a0-e71f985987f9">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="50" y="0" width="180" height="12" isRemoveLineWhenBlank="true" uuid="394bb9a8-39a4-47b9-82ff-8b61fb853318">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<printWhenExpression><![CDATA[$P{InvoiceSupplier} != null]]></printWhenExpression>
+					</reportElement>
+					<textElement verticalAlignment="Middle" markup="html">
+						<font fontName="DejaVu Sans" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>Sąskaitą išrašė:</b>",$P{InvoiceSupplier})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="230" y="0" width="140" height="12" isRemoveLineWhenBlank="true" uuid="173a0282-6d52-4817-8d49-1cae266d8b25">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<printWhenExpression><![CDATA[$P{InvoiceSeries} != null || $P{InvoiceNumber} != null]]></printWhenExpression>
+					</reportElement>
+					<textElement verticalAlignment="Middle" markup="html">
+						<font fontName="DejaVu Sans" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>Sąskaitos nr.:</b>", BeeUtils.joinWords($P{InvoiceSeries}, $P{InvoiceNumber}))]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="370" y="0" width="100" height="12" isRemoveLineWhenBlank="true" uuid="ebf64871-c5b5-4152-80c9-2ab6b76d565a">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<printWhenExpression><![CDATA[$P{InvoiceDate} != null]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html">
+						<font fontName="DejaVu Sans" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>Data:</b>", ($P{InvoiceDate} == null) ? "" : new JustDate(BeeUtils.toInt($P{InvoiceDate})))]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="470" y="0" width="85" height="12" isRemoveLineWhenBlank="true" uuid="262070c2-354c-43e8-a361-35a29de7d742">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<printWhenExpression><![CDATA[$P{InvoicePrice} != null]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html">
+						<font fontName="DejaVu Sans" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>Kaina:</b>", $P{InvoicePrice})]]></textFieldExpression>
+				</textField>
+			</frame>
 		</band>
 	</summary>
 </jasperReport>

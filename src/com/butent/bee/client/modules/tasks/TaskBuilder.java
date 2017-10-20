@@ -44,6 +44,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputDate;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
@@ -77,6 +78,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -106,6 +108,9 @@ class TaskBuilder extends ProductSupportInterceptor {
       NAME_START_DATE, NAME_START_TIME, NAME_END_DATE, NAME_END_TIME,
       NAME_EXPECTED_DURATION, NAME_EXECUTORS, NAME_USER_GROUP_SETTINGS, COL_PRIVATE_TASK,
       PROP_MAIL, NAME_OBSERVERS, NAME_OBSERVER_GROUPS};
+
+  private final List<String> orderColumns = Arrays.asList("Price", "PressSeries", "PressNumber",
+      "PressDate", "DecorationPrice", "Date", "PriceSeries", "Number");
 
   private InputBoolean mailToggle;
   private InputTime expectedDurationInput;
@@ -177,6 +182,21 @@ class TaskBuilder extends ProductSupportInterceptor {
     } else if (BeeUtils.same(editableWidget.getColumnId(), ProjectConstants.COL_PROJECT_STAGE)
         && widget instanceof DataSelector) {
       stagesSelector = (DataSelector) widget;
+    } else if (BeeUtils.containsSame(orderColumns, editableWidget.getColumnId())) {
+
+      if (widget instanceof InputDate) {
+        ((InputDate) widget).addEditStopHandler(event -> {
+          if (event.isChanged()) {
+            getActiveRow().setValue(Data.getColumnIndex(VIEW_TASK_ORDERS,
+                editableWidget.getColumnId()), ((InputDate) event.getSource()).getDate());
+            getFormView().refreshBySource(editableWidget.getColumnId());
+          }
+        });
+      } else {
+        ((InputText) widget).addValueChangeHandler(valueChangeEvent -> {
+          getFormView().refreshBySource(editableWidget.getColumnId());
+        });
+      }
     }
     super.afterCreateEditableWidget(editableWidget, widget);
   }

@@ -73,17 +73,6 @@
         </row>
 
         <row>
-          <Label for="Price" />
-          <FlowPanel>
-            <InputMoney source="Price" style="width: 100px; &inline;" scale="4" />
-            <Label text="EUR" style="&inline; margin-left: 5px;" />
-          </FlowPanel>
-
-          <Label for="SupplierNote" />
-          <InputText source="SupplierNote" style="width: 285px;" />
-        </row>
-
-        <row>
           <Label for="PressSeries" />
           <InputText source="PressSeries" style="width: 100px;" />
 
@@ -95,6 +84,17 @@
               <InputDate source="PressDate" style="&inline; width: 100px;" />
             </FlowPanel>
           </cell>
+        </row>
+
+        <row>
+          <Label for="Price" />
+          <FlowPanel>
+            <InputMoney source="Price" style="width: 100px; &inline;" scale="4" />
+            <Label text="EUR" style="&inline; margin-left: 5px;" />
+          </FlowPanel>
+
+          <Label for="SupplierNote" />
+          <InputText source="SupplierNote" style="width: 285px;" />
         </row>
 
         <row>
@@ -485,10 +485,13 @@
         <col index="4" cellStyle="&col;" />
 
         <row>
-          <Label for="Supplier" />
-          <cell colSpan="5">
+          <Label text="SPAUDA Tiekėjas" />
+          <cell colSpan="3">
             <DataSelector source="Supplier" readOnly="true" style="width: 100%;" />
           </cell>
+
+          <Label for="Price" />
+          <InputMoney source="Price" readOnly="true" style="width: 100px;" />
         </row>
 
         <row>
@@ -503,10 +506,13 @@
         </row>
 
         <row>
-          <Label for="DecorationSupplier" />
-          <cell colSpan="5">
+          <Label text="APDAILA Tiekėjas" />
+          <cell colSpan="3">
             <DataSelector source="DecorationSupplier" readOnly="true" style="width: 100%;" />
           </cell>
+
+          <Label for="DecorationPrice" />
+          <InputMoney source="DecorationPrice" readOnly="true" style="width: 100px;" />
         </row>
 
         <row>
@@ -518,6 +524,30 @@
 
           <Label for="Date" style="&inline; margin-left: 50px; margin-right: 5px;"/>
           <InputDate source="Date" readOnly="true" style="&inline; width: 100px;" />
+        </row>
+
+        <row>
+          <Label for="InvoiceSupplier" />
+          <cell colSpan="3">
+            <ListBox source="InvoiceSupplier" style="width: 100%;" >
+              <item>DRM</item>
+              <item>QPA</item>
+            </ListBox>
+          </cell>
+
+          <Label for="InvoicePrice" />
+          <InputMoney source="InvoicePrice" style="width: 100px;" />
+        </row>
+
+        <row>
+          <Label for="InvoiceSeries" />
+          <InputText source="InvoiceSeries" style="width: 100px;" />
+
+          <Label for="InvoiceNumber" />
+          <InputText source="InvoiceNumber" style="&inline; width: 100px;" />
+
+          <Label for="InvoiceDate" style="&inline; margin-left: 50px; margin-right: 5px;"/>
+          <InputDate source="InvoiceDate" style="&inline; width: 100px;" />
         </row>
 
         <row>

@@ -78,5 +78,11 @@
     <String name="Transportation" precision="10" label="Transportavimas" />
     <Integer name="PackageQty" label="Pakuočių kiekis" />
     <Numeric name="Weight" precision="7" scale="3" label="Svoris" />
+
+    <String name="InvoiceSupplier" label="Sąskaitą išrašė"  precision="25" />
+    <Numeric name="InvoicePrice" precision="10" scale="4" label="Kaina" />
+    <String name="InvoiceSeries" precision="10" label="Serija" />
+    <String name="InvoiceNumber" precision="10" label="Numeris" />
+    <Date name="InvoiceDate" label="Data" />
   </Fields>
 </Table>

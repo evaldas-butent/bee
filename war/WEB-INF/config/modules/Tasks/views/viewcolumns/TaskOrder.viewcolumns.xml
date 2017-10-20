@@ -122,4 +122,10 @@
   <SimpleColumn name="Transportation" />
   <SimpleColumn name="PackageQty" />
   <SimpleColumn name="Weight" />
+
+  <SimpleColumn name="InvoiceSupplier" />
+  <SimpleColumn name="InvoicePrice" />
+  <SimpleColumn name="InvoiceSeries" />
+  <SimpleColumn name="InvoiceNumber" />
+  <SimpleColumn name="InvoiceDate" />
 </Columns>

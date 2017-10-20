@@ -23,7 +23,7 @@
         xmlns:ui="http://www.butent.com/ui"
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
-        name="TaskOrder" viewName="TaskOrders" caption="=crmTask" showRowId="true" printHeader="true"
+        name="TaskOrder" viewName="TaskOrders" caption="=order" showRowId="true" printHeader="true"
         width="1024" height="768" favorite="Summary"
 >
   <f:properties jasperReports="Task_lt:Užsakymas, InternalTask_lt:Vidinis užsakymas" />
