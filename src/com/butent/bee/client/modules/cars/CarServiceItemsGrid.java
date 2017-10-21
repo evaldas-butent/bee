@@ -23,7 +23,6 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.ParentRowRefreshGrid;
-import com.butent.bee.client.widget.CustomAction;
 import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
@@ -38,8 +37,8 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
-import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
@@ -62,23 +61,11 @@ import java.util.function.Consumer;
 
 public class CarServiceItemsGrid extends ParentRowRefreshGrid {
 
-  private final CustomAction addBundle = new CustomAction(FontAwesome.DROPBOX,
-      e -> getGridView().ensureRelId(this::addBundle));
-
-  private final CustomAction addJob = new CustomAction(FontAwesome.WRENCH,
-      e -> getGridView().ensureRelId(this::addJob));
-
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
     HeaderView header = presenter.getHeader();
 
     if (Objects.nonNull(header) && BeeKeeper.getUser().canEditData(getViewName())) {
-      addBundle.setTitle(Localized.dictionary().newBundle());
-      header.addCommandItem(addBundle);
-
-      addJob.setTitle(Localized.dictionary().newServiceJob());
-      header.addCommandItem(addJob);
-
       header.addCommandItem(new PriceRecalculator(this));
     }
     super.afterCreatePresenter(presenter);
@@ -92,7 +79,7 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid {
 
   @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
-    presenter.getGridView().ensureRelId(this::addItems);
+    addSomething();
     return false;
   }
 
@@ -142,7 +129,7 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid {
     }
   }
 
-  private void addBundle(Long parentId) {
+  private void addBundle(Long orderId) {
     FormView parentForm = ViewHelper.getForm(getGridView());
     CompoundFilter filter = Filter.and();
 
@@ -159,6 +146,7 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid {
     Relation relation = Relation.create(TBL_CAR_BUNDLES, Arrays.asList(COL_CODE, COL_BUNDLE_NAME));
     relation.disableNewRow();
     relation.disableEdit();
+    relation.setCaching(Relation.Caching.NONE);
     relation.setFilter(filter);
     UnboundSelector selector = UnboundSelector.create(relation);
 
@@ -169,7 +157,6 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid {
         UiHelper.getParentPopup(selector).close();
         DateTime validUntil = Data.getDateTime(event.getRelatedViewName(), event.getRelatedRow(),
             COL_VALID_UNTIL);
-        addBundle.running();
 
         Queries.getRowSet(TBL_CAR_BUNDLE_ITEMS, null, Filter.equals(COL_BUNDLE, id),
             rs -> {
@@ -225,7 +212,7 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid {
 
                       switch (col) {
                         case COL_SERVICE_ORDER:
-                          newRow.setValue(i, parentId);
+                          newRow.setValue(i, orderId);
                           break;
 
                         case COL_PRICE:
@@ -249,10 +236,8 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid {
                   () -> {
                     Latch parents = new Latch(parentRs.getNumberOfRows());
 
-                    Runnable requery = () -> {
-                      addBundle.idle();
-                      previewModify(null, true);
-                    };
+                    Runnable requery = () -> previewModify(null, true);
+
                     parentRs.forEach(parentRow -> Queries.insert(parentRs.getViewName(),
                         parentRs.getColumns(), parentRow, result -> {
                           parentRow.setId(result.getId());
@@ -279,7 +264,7 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid {
     Global.showModalWidget(Localized.dictionary().bundle(), selector);
   }
 
-  private void addItems(Long parentId) {
+  private void addItems(Long orderId, Long parent) {
     FormView parentForm = ViewHelper.getForm(getGridView());
 
     OperationType operationType = OperationType.SALE;
@@ -302,8 +287,8 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid {
 
       picker.open((selectedItems, tds) -> {
         List<BeeColumn> columns = DataUtils.getColumns(getDataColumns(),
-            Arrays.asList(COL_SERVICE_ORDER, COL_ITEM, COL_TRADE_ITEM_QUANTITY,
-                COL_TRADE_ITEM_PRICE,
+            Arrays.asList(COL_SERVICE_ORDER, COL_PARENT,
+                COL_ITEM, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
                 COL_TRADE_DOCUMENT_ITEM_DISCOUNT, COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT,
                 COL_TRADE_DOCUMENT_ITEM_VAT, COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT));
 
@@ -324,7 +309,7 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid {
               TradeUtils.normalizeDiscountOrVatInfo(tds.getVatInfo(id));
 
           rowSet.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
-              Queries.asList(parentId, id, quantity, price, discountInfo.getA(),
+              Queries.asList(orderId, parent, id, quantity, price, discountInfo.getA(),
                   discountInfo.getB(), vatInfo.getA(), vatInfo.getB()));
         }
         Queries.insertRows(rowSet, new DataChangeCallback(rowSet.getViewName()) {
@@ -338,7 +323,7 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid {
     });
   }
 
-  private void addJob(Long parentId) {
+  private void addJob(Long orderId) {
     FormView parentForm = ViewHelper.getForm(getGridView());
     Filter filter = Filter.isNull(COL_MODEL);
 
@@ -349,13 +334,13 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid {
         Arrays.asList(COL_ITEM_ARTICLE, ALS_ITEM_NAME));
     relation.disableNewRow();
     relation.disableEdit();
+    relation.setCaching(Relation.Caching.NONE);
     relation.setFilter(filter);
     UnboundSelector selector = UnboundSelector.create(relation);
 
     selector.addSelectorHandler(event -> {
       if (event.isChanged()) {
         UiHelper.getParentPopup(selector).close();
-        addJob.running();
 
         String srcView = event.getRelatedViewName();
         IsRow srcRow = event.getRelatedRow();
@@ -397,7 +382,7 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid {
 
                 switch (col) {
                   case COL_SERVICE_ORDER:
-                    newRow.setValue(i, parentId);
+                    newRow.setValue(i, orderId);
                     break;
 
                   case COL_ITEM:
@@ -430,7 +415,6 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid {
             () -> Queries.insertRows(rs, new DataChangeCallback(rs.getViewName()) {
               @Override
               public void onSuccess(RowInfoList result) {
-                addJob.idle();
                 previewModify(null);
                 super.onSuccess(result);
               }
@@ -438,6 +422,37 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid {
       }
     });
     Global.showModalWidget(Localized.dictionary().serviceJob(), selector);
+  }
+
+  private void addSomething() {
+    List<String> choices = new ArrayList<>(Arrays.asList(Localized.dictionary().bundle(),
+        Localized.dictionary().serviceJob(), Localized.dictionary().itemOrService()));
+
+    if (!DataUtils.isId(getLongValue(COL_BUNDLE)) && !DataUtils.isId(getLongValue(COL_PARENT))
+        && DataUtils.isId(getLongValue(COL_JOB))) {
+
+      choices.add(BeeUtils.joinWords(Localized.dictionary().itemOrService(),
+          BeeUtils.parenthesize(BeeUtils.join(": ", Localized.dictionary().parent(),
+              getStringValue(ClassifierConstants.ALS_ITEM_NAME)))));
+    }
+
+    Global.choice(Localized.dictionary().newRow(), null, choices,
+        choice -> getGridView().ensureRelId(orderId -> {
+          switch (choice) {
+            case 0:
+              addBundle(orderId);
+              break;
+
+            case 1:
+              addJob(orderId);
+              break;
+
+            case 2:
+            case 3:
+              addItems(orderId, choice == 3 ? getActiveRowId() : null);
+              break;
+          }
+        }));
   }
 
   private static void getVatPercent(TradeVatMode vatMode, Consumer<Double> vatConsumer) {

@@ -5,7 +5,7 @@
 
         name="NewCarBundleItem" viewName="CarBundleItems"
         caption="=newRow+ (+=itemOrService+, +=serviceJob+)"
-        width="600" widthUnit="px" height="300" heightUnit="px"
+        width="600" widthUnit="px" height="350" heightUnit="px"
 >
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls">
@@ -55,6 +55,10 @@
         <InputDecimal source="Price" currencySource="Currency" scale="2" />
         <DataSelector source="Currency" for="Price" newRowEnabled="false" editEnabled="false"
                       style="width:50px;" placeholder="=currencyShort" />
+      </row>
+      <row>
+        <Label for="Percent" />
+        <InputDecimal source="Percent" />
       </row>
     </Table>
   </FlowPanel>
