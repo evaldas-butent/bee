@@ -19,7 +19,7 @@
               maxWidth="500" />
   <DataColumn name="Description" visible="false" />
 
-  <RelColumn name="Company" />
+  <RelColumn name="Company" searchBy="CompanyName" />
   <RelColumn name="Contact" visible="false" />
 
   <DataColumn name="Status" visible="true" />

@@ -19,7 +19,7 @@
       <renderToken source="InvoicePrefix" suffix=" " />
       <renderToken source="InvoiceNo" />
     </DataColumn>
-    <RelColumn name="Supplier" filterSupplier="value" />
+    <RelColumn name="Supplier" filterSupplier="value" searchBy="SupplierName" />
     <DataColumn name="Amount" />
     <RelColumn name="Currency" />
     <DataColumn name="Term" />

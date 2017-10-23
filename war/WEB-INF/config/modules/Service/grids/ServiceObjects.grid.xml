@@ -33,7 +33,7 @@
     <DataColumn name="CategoryName" visible="false" />
 
     <RelColumn name="Customer" renderColumns="CustomerName" visible="true" />
-    <RelColumn name="Contractor" />
+    <RelColumn name="Contractor" searchBy="ContractorName" />
     <RelColumn name="ContactPerson" renderColumns="ContactFirstName ContactLastName" visible="true" />
     <PropColumn name="Criterion" type="string" dynamic="true" />
   </g:columns>
