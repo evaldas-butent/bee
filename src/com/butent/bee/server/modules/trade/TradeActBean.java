@@ -134,7 +134,7 @@ public class TradeActBean implements HasTimerService {
   }
 
   public ResponseObject doService(String service, RequestInfo reqInfo) {
-    ResponseObject response;
+    ResponseObject response = null;
 
     String svc = BeeUtils.trim(service);
     switch (svc) {
@@ -232,13 +232,7 @@ public class TradeActBean implements HasTimerService {
       case SVC_REVERT_ACTS_STATUS_BEFORE_DELETE:
         response = restoreActStates(reqInfo);
         break;
-
-      default:
-        String msg = BeeUtils.joinWords("service not recognized:", svc);
-        logger.warning(msg);
-        response = ResponseObject.error(msg);
     }
-
     return response;
   }
 

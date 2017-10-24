@@ -261,7 +261,11 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     String svc = BeeUtils.trim(service);
 
     if (reqInfo.getSubModule() == SubModule.ACTS) {
-      return act.doService(svc, reqInfo);
+      response = act.doService(svc, reqInfo);
+
+      if (Objects.nonNull(response)) {
+        return response;
+      }
     }
     switch (svc) {
       case SVC_ITEMS_INFO:
