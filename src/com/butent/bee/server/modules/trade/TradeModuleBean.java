@@ -260,6 +260,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     String svc = BeeUtils.trim(service);
 
+    if (reqInfo.getSubModule() == SubModule.ACTS) {
+      return act.doService(svc, reqInfo);
+    }
     switch (svc) {
       case SVC_ITEMS_INFO:
         response = getItemsInfo(reqInfo.getParameter("view_name"),
@@ -351,23 +354,19 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         break;
 
       default:
-        if (reqInfo.getSubModule() == SubModule.ACTS) {
-          response = act.doService(svc, reqInfo);
+        if (BeeUtils.same(svc, SVC_GET_SALE_AMOUNTS)) {
+          response = getSaleAmounts(reqInfo.getParameter(VAR_VIEW_NAME),
+            reqInfo.getParameter(Service.VAR_COLUMN),
+            Filter.restore(reqInfo.getParameter(EcConstants.VAR_FILTER)));
 
-        } else if (BeeUtils.same(svc, SVC_GET_SALE_AMOUNTS)) {
-      response = getSaleAmounts(reqInfo.getParameter(VAR_VIEW_NAME),
-          reqInfo.getParameter(Service.VAR_COLUMN),
-          Filter.restore(reqInfo.getParameter(EcConstants.VAR_FILTER)));
-
-    } else if (BeeUtils.same(svc, SVC_SEND_COMPANY_TO_ERP)) {
-      response = sendCompanyToERP(reqInfo.getParameterLong(COL_COMPANY));
-    } else {
+        } else if (BeeUtils.same(svc, SVC_SEND_COMPANY_TO_ERP)) {
+          response = sendCompanyToERP(reqInfo.getParameterLong(COL_COMPANY));
+        } else {
           String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
           logger.warning(msg);
           response = ResponseObject.error(msg);
         }
     }
-
     return response;
   }
 
