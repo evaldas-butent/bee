@@ -76,6 +76,7 @@ import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -614,7 +615,7 @@ public class TradeActBean implements HasTimerService {
     return response;
   }
 
-  private ResponseObject createContinuousAct(BeeRowSet parentActs, long fifoId) {
+  private ResponseObject createContinuousAct(BeeRowSet parentActs, long fifoId, DateTime now) {
     if (parentActs.isEmpty()) {
       return ResponseObject.emptyResponse();
     }
@@ -629,7 +630,7 @@ public class TradeActBean implements HasTimerService {
 
     String number = fifoAct.getString(parentActs.getColumnIndex(COL_TA_NUMBER));
     Long series = fifoAct.getLong(parentActs.getColumnIndex(COL_TA_SERIES));
-    DateTime now = nowMinutes();
+//    DateTime now = nowMinutes();
     Long combStatus = prm.getRelation(PRM_COMBINED_ACT_STATUS);
     Long returnedActStatus = prm.getRelation(PRM_RETURNED_ACT_STATUS);
     Long continuousStatus = prm.getRelation(PRM_CONTINUOUS_ACT_STATUS);
@@ -2005,7 +2006,7 @@ public class TradeActBean implements HasTimerService {
     }
 
 
-    return createContinuousAct(parentActs, fifoAct.getId());
+    return createContinuousAct(parentActs, fifoAct.getId(), TimeUtils.startOfDay(date, -1));
   }
 
   private ResponseObject getItemsForSelection(RequestInfo reqInfo) {
