@@ -63,6 +63,7 @@ import com.butent.bee.shared.modules.trade.TradeConstants;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 
 public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.Handler,
     HandlesUpdateEvents {
@@ -88,6 +89,8 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   private boolean hasInvoicesOrSecondaryActs;
   private DataSelector contractSelector;
   private DataSelector companySelector;
+  private DataSelector objectSelector;
+
   private ChildGrid tradeActItemsGrid;
 
   TradeActForm() {
@@ -160,7 +163,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     }
 
     if (widget instanceof DataSelector && BeeUtils.same(name, TradeActConstants.COL_TA_OBJECT)) {
-      DataSelector objectSelector = (DataSelector) widget;
+      objectSelector = (DataSelector) widget;
       objectSelector.addSelectorHandler(this);
     }
 
@@ -236,6 +239,13 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       return validateBeforeSave(form, row, true);
     }
     return super.beforeAction(action, presenter);
+  }
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    objectSelector.setEnabled(true);
+
+    super.beforeRefresh(form, row);
   }
 
   @Override
@@ -375,6 +385,33 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
       Data.setColumnReadOnly(ClassifierConstants.VIEW_COMPANY_OBJECTS,
           ClassifierConstants.COL_COMPANY);
+    } else if (BeeUtils.same(event.getRelatedViewName(),
+        ClassifierConstants.VIEW_COMPANY_OBJECTS)) {
+
+      TradeActKind actKind = TradeActKeeper.getKind(getActiveRow(), getDataIndex(COL_TA_KIND));
+      if (Objects.equals(TradeActKind.RETURN, actKind)
+          || Objects.equals(TradeActKind.CONTINUOUS, actKind)) {
+
+        event.getSelector().setEnabled(false);
+      } else {
+        Queries.getRowCount(VIEW_TRADE_ACTS, Filter.or(Filter.equals(COL_TA_PARENT,
+            getActiveRowId()), Filter.equals(COL_TA_CONTINUOUS, getActiveRowId()),
+            Filter.equals(COL_TA_RETURN, getActiveRowId())), parentsCount -> {
+
+          Long parentId = getFormView().getLongValue(COL_TA_PARENT);
+          Long returnActId = getFormView().getLongValue(COL_TA_RETURN);
+          Long continuousActId = getFormView().getLongValue(COL_TA_CONTINUOUS);
+
+          boolean isEnabled = true;
+
+          if (DataUtils.isId(parentId) || BeeUtils.isPositive(parentsCount)
+              || BeeUtils.isPositive(returnActId) || BeeUtils.isPositive(continuousActId)) {
+            isEnabled = false;
+          }
+
+          event.getSelector().setEnabled(isEnabled);
+        });
+      }
     }
 
     if (BeeUtils.same(event.getRelatedViewName(), ClassifierConstants.VIEW_COMPANIES)) {

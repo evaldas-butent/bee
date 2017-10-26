@@ -70,7 +70,6 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
@@ -462,27 +461,9 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       }
     } else if (event.hasRelatedView(VIEW_COMPANY_OBJECTS)) {
 
-      if (DataUtils.isId(getCompany()) && getDateFrom() != null && getDateTo() != null) {
-
-        Set<Long> activeStatuses = TradeActKeeper.getActiveStatuses();
-
-        Filter statusFilter;
-        if (activeStatuses.isEmpty()) {
-          statusFilter = Filter.isNull(COL_TA_STATUS);
-        } else {
-          statusFilter = Filter.or(Filter.isNull(COL_TA_STATUS),
-              Filter.any(COL_TA_STATUS, activeStatuses));
-        }
-
-        Filter actFilter = Filter.and(TradeActKind.getFilterForInvoiceBuilder(), statusFilter,
-            Filter.equals(COL_TA_COMPANY, getCompany()), Filter.and(
-                Filter.compareWithValue(COL_TA_DATE, Operator.GE, new DateValue(getDateFrom())),
-                Filter.compareWithValue(COL_TA_DATE, Operator.LE, new DateValue(getDateTo()))));
-
-        event.getSelector().setAdditionalFilter(Filter.in(Data.getIdColumn(VIEW_COMPANY_OBJECTS),
-            VIEW_TRADE_ACTS, COL_TA_OBJECT, actFilter));
-      } else {
-        event.getSelector().setEditing(false);
+      if (DataUtils.isId(getCompany())) {
+        Filter objectFilter = Filter.equals(COL_TA_COMPANY, getCompany());
+        event.getSelector().setAdditionalFilter(objectFilter);
       }
     }
   }
