@@ -1052,6 +1052,23 @@ public class TradeActBean implements HasTimerService {
       }
     }
 
+    int timeUnitIdx = DataUtils.getColumnIndex(COL_TIME_UNIT, services.getColumns());
+
+    if (!BeeConst.isUndef(timeUnitIdx)) {
+      List<Long> oneTimeServices = new ArrayList<>();
+
+      for (BeeRow service : services) {
+        TradeActTimeUnit timeUnit = service.getEnum(timeUnitIdx, TradeActTimeUnit.class);
+        if (timeUnit == null) {
+          oneTimeServices.add(service.getId());
+        }
+      }
+
+      SqlDelete dltServicesFromActs = new SqlDelete(TBL_TRADE_ACT_SERVICES)
+          .setWhere(sys.idInList(TBL_TRADE_ACT_SERVICES, oneTimeServices));
+      qs.updateData(dltServicesFromActs);
+    }
+
     if (!BeeUtils.isEmpty(contServices)) {
 
       SqlUpdate updateService = new SqlUpdate(TBL_TRADE_ACT_SERVICES)
