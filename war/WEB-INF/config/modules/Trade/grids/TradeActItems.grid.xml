@@ -7,7 +7,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="TradeActItems" viewName="TradeActItems"
-  flexGrow="1" renderMode="full"
+  flexGrow="1" renderMode="full" cacheData="false"
   newRowCaption="=newItem" disabledActions="filter"
   >
   <g:columns>
@@ -63,7 +63,7 @@
 
     <CalcColumn name="RentalPrice" visible="true" scale="2" type="double" caption="=rentalSum" >
       <render>
-        <ui:expression>row.Quantity * row.RentalPrice</ui:expression>
+        <ui:expression>row.ItemRentalPrice ? row.Quantity * row.ItemRentalPrice : row.Quantity * row.RentalPrice</ui:expression>
       </render>
       <footer aggregate="sum" scale="2" format="0.00"/>
     </CalcColumn>

@@ -1267,6 +1267,11 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   }
 
   private void renderActs() {
+    if (acts.isEmpty()) {
+      getFormView().notifyWarning(Localized.dictionary().noData());
+      return;
+    }
+
     DataInfo dataInfo = Data.getDataInfo(VIEW_TRADE_ACTS);
     List<BeeColumn> columns = dataInfo.getColumns();
 
@@ -1443,6 +1448,10 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   }
 
   private void renderServices(Collection<Integer> holidays) {
+    if (services.isEmpty()) {
+      return;
+    }
+
     DataInfo dataInfo = Data.getDataInfo(VIEW_TRADE_ACT_SERVICES);
 
     final int actIndex = dataInfo.getColumnIndex(COL_TRADE_ACT);
