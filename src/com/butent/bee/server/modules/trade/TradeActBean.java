@@ -419,12 +419,14 @@ public class TradeActBean implements HasTimerService {
                 BeeRowSet remainItems = getRemainingItems(parentActIds.toArray(new Long[parentActIds
                     .size()]));
 
-                for (int i = 0; i < remainItems.getNumberOfRows(); i++) {
-                  Long item = remainItems.getLong(i, COL_ITEM);
-                  Long act = remainItems.getLong(i, COL_TRADE_ACT);
-                  Double qty = remainItems.getDouble(i, COL_TRADE_ITEM_QUANTITY);
+                if (!DataUtils.isEmpty(remainItems)) {
+                  for (int i = 0; i < remainItems.getNumberOfRows(); i++) {
+                    Long item = remainItems.getLong(i, COL_ITEM);
+                    Long act = remainItems.getLong(i, COL_TRADE_ACT);
+                    Double qty = remainItems.getDouble(i, COL_TRADE_ITEM_QUANTITY);
 
-                  remainData.put(Pair.of(item, act), qty);
+                    remainData.put(Pair.of(item, act), qty);
+                  }
                 }
               }
 
@@ -1969,10 +1971,10 @@ public class TradeActBean implements HasTimerService {
       return actUpdateResponse;
     }
 
-    DateTime date = qs.getDateTime(new SqlSelect()
+    DateTime date = TimeUtils.startOfDay(qs.getDateTime(new SqlSelect()
         .addFields(TBL_TRADE_ACTS, COL_TA_DATE)
         .addFrom(TBL_TRADE_ACTS)
-        .setWhere(sys.idEquals(TBL_TRADE_ACTS, actId)));
+        .setWhere(sys.idEquals(TBL_TRADE_ACTS, actId))), 1);
 
     for (BeeRow parentAct : parentActs) {
       long parentId = parentAct.getId();
@@ -2001,7 +2003,7 @@ public class TradeActBean implements HasTimerService {
         String svcAls = SqlUtils.uniqueName();
         ResponseObject updSvc = qs.updateDataWithResponse(
             new SqlUpdate(TBL_TRADE_ACT_SERVICES)
-                .addConstant(COL_TA_SERVICE_TO, new DateTime(date.getTime()).getDate())
+                .addConstant(COL_TA_SERVICE_TO, date.getDate())
                 .setWhere(SqlUtils.and(
                     SqlUtils.equals(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, parentId),
                     SqlUtils.isNull(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO),
@@ -2046,7 +2048,7 @@ public class TradeActBean implements HasTimerService {
     }
 
 
-    return createContinuousAct(parentActs, fifoAct.getId(), TimeUtils.startOfDay(date, -1));
+    return createContinuousAct(parentActs, fifoAct.getId(), date);
   }
 
   private ResponseObject getItemsForSelection(RequestInfo reqInfo) {
