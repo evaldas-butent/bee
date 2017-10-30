@@ -383,35 +383,27 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
           ClassifierConstants.COL_COMPANY,
           BeeUtils.trim(getStringValue(ClassifierConstants.COL_COMPANY)));
 
-      Data.setColumnReadOnly(ClassifierConstants.VIEW_COMPANY_OBJECTS,
-          ClassifierConstants.COL_COMPANY);
     } else if (BeeUtils.same(event.getRelatedViewName(),
         ClassifierConstants.VIEW_COMPANY_OBJECTS)) {
 
       TradeActKind actKind = TradeActKeeper.getKind(getActiveRow(), getDataIndex(COL_TA_KIND));
-      if (Objects.equals(TradeActKind.RETURN, actKind)
-          || Objects.equals(TradeActKind.CONTINUOUS, actKind)) {
 
-        event.getSelector().setEnabled(false);
-      } else {
-        Queries.getRowCount(VIEW_TRADE_ACTS, Filter.or(Filter.equals(COL_TA_PARENT,
-            getActiveRowId()), Filter.equals(COL_TA_CONTINUOUS, getActiveRowId()),
-            Filter.equals(COL_TA_RETURN, getActiveRowId())), parentsCount -> {
+      Queries.getRowCount(VIEW_TRADE_ACTS, Filter.or(Filter.equals(COL_TA_PARENT,
+          getActiveRowId()), Filter.equals(COL_TA_CONTINUOUS, getActiveRowId()),
+          Filter.equals(COL_TA_RETURN, getActiveRowId())), parentsCount -> {
 
-          Long parentId = getFormView().getLongValue(COL_TA_PARENT);
-          Long returnActId = getFormView().getLongValue(COL_TA_RETURN);
-          Long continuousActId = getFormView().getLongValue(COL_TA_CONTINUOUS);
+        Long parentId = getFormView().getLongValue(COL_TA_PARENT);
+        Long returnActId = getFormView().getLongValue(COL_TA_RETURN);
+        Long continuousActId = getFormView().getLongValue(COL_TA_CONTINUOUS);
 
-          boolean isEnabled = true;
-
-          if (DataUtils.isId(parentId) || BeeUtils.isPositive(parentsCount)
-              || BeeUtils.isPositive(returnActId) || BeeUtils.isPositive(continuousActId)) {
-            isEnabled = false;
-          }
-
-          event.getSelector().setEnabled(isEnabled);
-        });
-      }
+        if (DataUtils.isId(parentId) || BeeUtils.isPositive(parentsCount)
+            || BeeUtils.isPositive(returnActId) || BeeUtils.isPositive(continuousActId)) {
+          objectSelector.setEnabled(false);
+        } else if (Objects.equals(TradeActKind.RETURN, actKind)
+            || Objects.equals(TradeActKind.CONTINUOUS, actKind)) {
+          objectSelector.setEnabled(false);
+        }
+      });
     }
 
     if (BeeUtils.same(event.getRelatedViewName(), ClassifierConstants.VIEW_COMPANIES)) {
