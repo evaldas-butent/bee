@@ -10,7 +10,6 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.PRM_INVOICE_MAIL_SIGNATURE;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -52,6 +51,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -124,21 +124,22 @@ public final class NewMailMessage extends AbstractFormInterceptor
 
   public static void create(Set<String> to, Set<String> cc, Set<String> bcc, String subject,
       String content, Collection<FileInfo> attachments, Long relatedId, boolean isDraft,
-      BiConsumer<Long, Boolean> callback) {
+      BiConsumer<Long, Boolean> callback, String... defaultSignatures) {
 
     MailKeeper.getAccounts((availableAccounts, defaultAccount) -> {
       if (BeeUtils.isEmpty(availableAccounts)) {
         BeeKeeper.getScreen().notifyWarning(Localized.dictionary().mailNoAccountsFound());
       } else {
         create(availableAccounts, defaultAccount, to, cc, bcc, subject, content, attachments,
-            relatedId, isDraft).setCallback(callback);
+            relatedId, isDraft, defaultSignatures).setCallback(callback);
       }
     });
   }
 
   public static NewMailMessage create(List<AccountInfo> availableAccounts,
       AccountInfo defaultAccount, Set<String> to, Set<String> cc, Set<String> bcc, String subject,
-      String content, Collection<FileInfo> attachments, Long relatedId, boolean isDraft) {
+      String content, Collection<FileInfo> attachments, Long relatedId, boolean isDraft,
+      String... defaultSignatures) {
 
     NewMailMessage newMessage = new NewMailMessage(availableAccounts, defaultAccount,
         to, cc, bcc, subject, content, attachments, relatedId, isDraft);
@@ -155,7 +156,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
             if (!modal) {
               dialog.setPreviewEnabled(false);
             }
-            newMessage.initHeader(dialog);
+            newMessage.initHeader(dialog, defaultSignatures);
             dialog.focusOnOpen(newMessage.getFocusWidget());
           }
         });
@@ -350,7 +351,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
     return !BeeUtils.sameElements(defaultAttachments, attachmentsWidget.getFiles());
   }
 
-  private void initHeader(DialogBox dialog) {
+  private void initHeader(DialogBox dialog, String... defaultSignatures) {
     FaLabel send = new FaLabel(FontAwesome.PAPER_PLANE);
     send.setTitle(Localized.dictionary().send());
     send.enableAnimation(Previewer.getActionSensitivityMillis());
@@ -376,10 +377,8 @@ public final class NewMailMessage extends AbstractFormInterceptor
             Long defaultSignature = null;
 
             if (!isDraft) {
-              String invoiceSignature = Global.getParameterText(PRM_INVOICE_MAIL_SIGNATURE);
-
               for (int i = 0; i < signaturesWidget.getItemCount(); i++) {
-                if (BeeUtils.same(signaturesWidget.getItemText(i), invoiceSignature)) {
+                if (ArrayUtils.containsSame(defaultSignatures, signaturesWidget.getItemText(i))) {
                   defaultSignature = BeeUtils.toLongOrNull(signaturesWidget.getValue(i));
                   break;
                 }

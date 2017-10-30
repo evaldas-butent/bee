@@ -617,7 +617,7 @@ public class TradeActBean implements HasTimerService {
     return response;
   }
 
-  private ResponseObject createContinuousAct(BeeRowSet parentActs, long fifoId, DateTime now) {
+  private ResponseObject createContinuousAct(BeeRowSet parentActs, long fifoId, JustDate now) {
     if (parentActs.isEmpty()) {
       return ResponseObject.emptyResponse();
     }
@@ -1008,7 +1008,7 @@ public class TradeActBean implements HasTimerService {
     return ResponseObject.emptyResponse();
   }
 
-  private ResponseObject createServices(Long continuousId, BeeRowSet services, DateTime svcTimes) {
+  private ResponseObject createServices(Long continuousId, BeeRowSet services, JustDate svcTimes) {
     List<BeeColumn> colData = new ArrayList<>();
     int idxSvcActs = services.getColumnIndex(COL_TRADE_ACT);
 
@@ -1066,9 +1066,11 @@ public class TradeActBean implements HasTimerService {
         }
       }
 
-      SqlDelete dltServicesFromActs = new SqlDelete(TBL_TRADE_ACT_SERVICES)
-          .setWhere(sys.idInList(TBL_TRADE_ACT_SERVICES, oneTimeServices));
-      qs.updateData(dltServicesFromActs);
+      if (!oneTimeServices.isEmpty()) {
+        SqlDelete dltServicesFromActs = new SqlDelete(TBL_TRADE_ACT_SERVICES)
+            .setWhere(sys.idInList(TBL_TRADE_ACT_SERVICES, oneTimeServices));
+        qs.updateData(dltServicesFromActs);
+      }
     }
 
     if (!BeeUtils.isEmpty(contServices)) {
@@ -1971,10 +1973,10 @@ public class TradeActBean implements HasTimerService {
       return actUpdateResponse;
     }
 
-    DateTime date = TimeUtils.startOfDay(qs.getDateTime(new SqlSelect()
+    JustDate date = TimeUtils.nextDay(qs.getDateTime(new SqlSelect()
         .addFields(TBL_TRADE_ACTS, COL_TA_DATE)
         .addFrom(TBL_TRADE_ACTS)
-        .setWhere(sys.idEquals(TBL_TRADE_ACTS, actId))), 1);
+        .setWhere(sys.idEquals(TBL_TRADE_ACTS, actId))));
 
     for (BeeRow parentAct : parentActs) {
       long parentId = parentAct.getId();
@@ -2003,7 +2005,7 @@ public class TradeActBean implements HasTimerService {
         String svcAls = SqlUtils.uniqueName();
         ResponseObject updSvc = qs.updateDataWithResponse(
             new SqlUpdate(TBL_TRADE_ACT_SERVICES)
-                .addConstant(COL_TA_SERVICE_TO, date.getDate())
+                .addConstant(COL_TA_SERVICE_TO, date)
                 .setWhere(SqlUtils.and(
                     SqlUtils.equals(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, parentId),
                     SqlUtils.isNull(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO),

@@ -12,6 +12,7 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.COL_CUSTOMER;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowInsertCallback;
@@ -104,7 +105,8 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
     return new TradeDocumentRenderer(VIEW_SALE_ITEMS, COL_SALE) {
       @Override
       public void onLoad(FormView form) {
-        TradeActKeeper.ensureSendMailPrintableForm(form);
+        TradeActKeeper.ensureSendMailPrintableForm(form,
+            Global.getParameterText(PRM_INVOICE_MAIL_SIGNATURE));
         super.afterCreate(form);
       }
     };
@@ -187,7 +189,7 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
                         super.onSuccess(result);
                       }
                     });
-              });
+              }, Global.getParameterText(PRM_INVOICE_MAIL_SIGNATURE));
         });
       }
     };

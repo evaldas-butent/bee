@@ -113,7 +113,7 @@ public final class TradeActKeeper {
     return BeeKeeper.getRpc().createParameters(Module.TRADE, SubModule.ACTS, method);
   }
 
-  public static void ensureSendMailPrintableForm(FormView form) {
+  public static void ensureSendMailPrintableForm(FormView form, String... defaultSignatures) {
     HeaderView header = form.getViewPresenter().getHeader();
 
     if (header != null) {
@@ -147,8 +147,8 @@ public final class TradeActKeeper {
               COL_EMAIL, new RpcCallback<String>() {
                 @Override
                 public void onSuccess(String email) {
-                  NewMailMessage.create(email, invoice, content,
-                      Collections.singleton(fileInfo), (messageId, saveMode) -> {
+                  NewMailMessage.create(Collections.singleton(email), null, null, invoice, content,
+                      Collections.singleton(fileInfo), null, false, (messageId, saveMode) -> {
                         if (!BeeUtils.same(form.getViewName(), VIEW_SALES)) {
                           return;
                         }
@@ -178,7 +178,7 @@ public final class TradeActKeeper {
                                 super.onSuccess(result);
                               }
                             });
-                      });
+                      }, defaultSignatures);
                 }
               });
         });
