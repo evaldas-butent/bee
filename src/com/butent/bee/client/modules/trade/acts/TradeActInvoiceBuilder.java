@@ -1601,7 +1601,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
         table.setText(r, c++, svc.row.getString(supplIndex),
             STYLE_SVC_NAME_PREFIX + STYLE_CELL_SUFFIX);
-        table.setText(r, c++, renderAmount(svc.row.getDouble(costIndex)), STYLE_SVC_AMOUNT_CELL);
+        table.setText(r, c++, renderAmount(svc.row.getDouble(costIndex)),
+            STYLE_SVC_PRICE_PREFIX + STYLE_CELL_SUFFIX);
 
         table.setText(r, c++, (svc.timeUnit == null) ? null : svc.timeUnit.getCaption(),
             STYLE_SVC_TIME_UNIT_PREFIX + STYLE_CELL_SUFFIX);
