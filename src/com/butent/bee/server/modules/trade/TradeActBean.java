@@ -1452,19 +1452,6 @@ public class TradeActBean implements HasTimerService {
       return ResponseObject.emptyResponse();
     }
 
-    SqlSelect selectActServices = new SqlSelect()
-        .addFields(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT)
-        .addCount(TBL_TRADE_ACT_SERVICES, sys.getIdName(TBL_TRADE_ACT_SERVICES),
-            COL_TA_INVOICE_SERVICE)
-        .addCount(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE, COL_SALE)
-        .addFrom(TBL_TRADE_ACT_SERVICES)
-        .addFromLeft(TBL_TRADE_ACT_INVOICES,
-            sys.joinTables(TBL_TRADE_ACT_SERVICES, TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
-        .addGroup(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT)
-        .setWhere(SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, acts.getRowIds()));
-
-    SimpleRowSet actServices = qs.getData(selectActServices);
-
     for (BeeRow act : acts) {
       double total = totalActItems(act.getId());
 
@@ -1476,16 +1463,6 @@ public class TradeActBean implements HasTimerService {
     Double vatPercent = prm.getDouble(AdministrationConstants.PRM_VAT_PERCENT);
     if (BeeUtils.isPositive(vatPercent)) {
       acts.setTableProperty(AdministrationConstants.PRM_VAT_PERCENT, vatPercent.toString());
-    }
-
-    for (SimpleRow actService : actServices) {
-      Long act = actService.getLong(COL_TRADE_ACT);
-      Integer services = actService.getInt(COL_TA_INVOICE_SERVICE);
-      Integer invoices = actService.getInt(COL_SALE);
-
-      if (Objects.equals(services, invoices) && DataUtils.isId(act)) {
-        acts.removeRowById(act);
-      }
     }
 
     return ResponseObject.response(acts);
