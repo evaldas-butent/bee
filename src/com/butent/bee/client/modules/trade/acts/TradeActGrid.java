@@ -424,7 +424,6 @@ public class TradeActGrid extends AbstractGridInterceptor {
             IsRow row = getGridView().getActiveRow();
             if (row != null) {
               alterKind(row);
-              Data.resetLocal(VIEW_TRADE_ACTS);
             }
           });
 
@@ -460,23 +459,21 @@ public class TradeActGrid extends AbstractGridInterceptor {
               params.addQueryItem(COL_TRADE_ACT, actId);
               params.addQueryItem(COL_TA_KIND, targets.get(value).ordinal());
 
-              BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-                @Override
-                public void onResponse(ResponseObject response) {
-                  if (response.hasResponse(BeeRow.class)) {
-                    BeeRow updated = BeeRow.restore(response.getResponseAsString());
-                    RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), updated);
+              BeeKeeper.getRpc().makeRequest(params, response -> {
+                if (response.hasResponse(BeeRow.class)) {
+                  BeeRow updated = BeeRow.restore(response.getResponseAsString());
+                  RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), updated);
 
-                    GridView gridView = getGridView();
+                  GridView gridView = getGridView();
 
-                    if (gridView != null && gridView.asWidget().isAttached()) {
-                      if (DataUtils.idEquals(gridView.getActiveRow(), actId)) {
-                        refreshCommands(updated);
-                      }
-                      maybeOpenAct(gridView, updated);
+                  if (gridView != null && gridView.asWidget().isAttached()) {
+                    if (DataUtils.idEquals(gridView.getActiveRow(), actId)) {
+                      refreshCommands(updated);
                     }
+                    maybeOpenAct(gridView, updated);
                   }
                 }
+                Data.resetLocal(VIEW_TRADE_ACTS);
               });
             }
           }, BeeConst.UNDEF, BeeConst.UNDEF, Localized.dictionary().cancel(), null);
