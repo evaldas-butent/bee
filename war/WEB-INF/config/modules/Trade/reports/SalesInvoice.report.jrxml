@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.4.0.final using JasperReports Library version 6.4.1  -->
+<!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
+<!-- 2017-11-02T10:06:51 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
 	<import value="com.butent.bee.shared.i18n.Localized"/>
 	<import value="com.butent.bee.shared.utils.EnumUtils"/>
+	<import value="com.butent.bee.shared.data.DataUtils"/>
 	<import value="com.butent.bee.shared.i18n.DateTimeFormat"/>
 	<import value="com.butent.bee.shared.modules.trade.Totalizer"/>
 	<import value="com.butent.bee.shared.time.TimeUtils"/>
@@ -566,62 +568,63 @@
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="50" uuid="d4d76f3c-6932-44dd-9683-af15cbf42266">
-						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column6"/>
-						<jr:tableFooter height="45" rowSpan="1"/>
-						<jr:columnHeader style="TableCell" height="30" rowSpan="1">
-							<textField isStretchWithOverflow="true">
-								<reportElement style="TableHeader" x="0" y="0" width="50" height="30" uuid="2c2964dc-20db-4d3b-b816-10eccf3ea4de"/>
-								<textElement verticalAlignment="Bottom">
-									<font size="8" isBold="true"/>
-								</textElement>
-								<textFieldExpression><![CDATA["Mato vnt."]]></textFieldExpression>
-							</textField>
-						</jr:columnHeader>
-						<jr:columnFooter height="15" rowSpan="1"/>
-						<jr:detailCell style="TableCell" height="15">
-							<textField isStretchWithOverflow="true">
-								<reportElement style="TableDetail" x="0" y="0" width="50" height="15" uuid="33bbf48a-7ee2-4af0-a35c-ca23fcc16e56">
-									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-									<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-								</reportElement>
-								<textElement textAlignment="Center" verticalAlignment="Bottom">
-									<font size="8"/>
-								</textElement>
-								<textFieldExpression><![CDATA[$F{UnitName}]]></textFieldExpression>
-							</textField>
-						</jr:detailCell>
-					</jr:column>
-					<jr:columnGroup width="169" uuid="35b0fc61-c9c9-4246-9d87-89e458db3cf0">
-						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Columns [3]"/>
+					<jr:columnGroup width="219" uuid="35b0fc61-c9c9-4246-9d87-89e458db3cf0">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Columns [4]"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-						<jr:tableFooter height="45">
+						<jr:tableFooter height="45" rowSpan="1">
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
-							<textField pattern="">
-								<reportElement style="TableDetail" x="0" y="0" width="169" height="15" uuid="8a0bc1eb-de8e-4a4a-a8ef-347c987d67ad"/>
+							<textField isStretchWithOverflow="true" pattern="">
+								<reportElement style="TableDetail" x="0" y="0" width="219" height="15" uuid="8a0bc1eb-de8e-4a4a-a8ef-347c987d67ad"/>
 								<textElement textAlignment="Right">
 									<font size="8" isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA["Iš viso suma be PVM:"]]></textFieldExpression>
 							</textField>
-							<textField pattern="">
-								<reportElement style="TableDetail" x="0" y="15" width="169" height="15" uuid="f9d118cf-185a-472a-b241-fa67e5cd70bf"/>
+							<textField isStretchWithOverflow="true" pattern="">
+								<reportElement style="TableDetail" x="0" y="15" width="219" height="15" uuid="f9d118cf-185a-472a-b241-fa67e5cd70bf"/>
 								<textElement textAlignment="Right">
 									<font size="8" isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA["PVM (21%) suma:"]]></textFieldExpression>
 							</textField>
-							<textField pattern="">
-								<reportElement style="TableDetail" x="0" y="30" width="169" height="15" uuid="366772e0-a574-459b-99f8-564bbd0dfe36"/>
+							<textField isStretchWithOverflow="true" pattern="">
+								<reportElement style="TableDetail" x="0" y="30" width="219" height="15" uuid="366772e0-a574-459b-99f8-564bbd0dfe36"/>
 								<textElement textAlignment="Right">
 									<font size="8" isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA["Iš viso suma su PVM:"]]></textFieldExpression>
 							</textField>
 						</jr:tableFooter>
+						<jr:column width="50" uuid="d4d76f3c-6932-44dd-9683-af15cbf42266">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column6"/>
+							<jr:tableFooter height="0" rowSpan="1"/>
+							<jr:columnHeader style="TableCell" height="30" rowSpan="1">
+								<textField isStretchWithOverflow="true">
+									<reportElement style="TableHeader" x="0" y="0" width="50" height="30" uuid="2c2964dc-20db-4d3b-b816-10eccf3ea4de"/>
+									<textElement verticalAlignment="Bottom">
+										<font size="8" isBold="true"/>
+									</textElement>
+									<textFieldExpression><![CDATA["Mato vnt."]]></textFieldExpression>
+								</textField>
+							</jr:columnHeader>
+							<jr:columnFooter height="15" rowSpan="1"/>
+							<jr:detailCell style="TableCell" height="15">
+								<textField isStretchWithOverflow="true">
+									<reportElement style="TableDetail" x="0" y="0" width="50" height="15" uuid="33bbf48a-7ee2-4af0-a35c-ca23fcc16e56">
+										<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+										<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+									</reportElement>
+									<textElement textAlignment="Center" verticalAlignment="Bottom">
+										<font size="8"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{UnitName}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
 						<jr:column width="53" uuid="5ca4e871-8457-4980-ab09-083a93b4c979">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column7"/>
 							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+							<printWhenExpression><![CDATA[$P{SaleItemsDataSet}.getRowSet().getDistinctStrings(DataUtils.getColumnIndex("FullPrice", $P{SaleItemsDataSet}.getRowSet().getColumns())).size() > 1]]></printWhenExpression>
 							<jr:tableFooter height="0" rowSpan="1">
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
 							</jr:tableFooter>
