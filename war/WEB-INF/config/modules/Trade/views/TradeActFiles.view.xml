@@ -1,23 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="TradeActFiles" source="TradeActFiles" module="Trade"
-  caption="=files"
-  >
+      name="TradeActFiles" source="TradeActFiles" module="Trade"
+      caption="=files"
+>
   <Columns>
     <SimpleColumn name="TradeAct" />
 
-    <SimpleColumn name="File" />
-    <SimpleJoin name="File" joinType="LEFT">
-      <SimpleColumn alias="FileName" name="Name" />
-      <SimpleColumn alias="FileSize" name="Size" />
-      <SimpleColumn alias="FileType" name="Type" />
-    </SimpleJoin>
-    
-    <SimpleColumn name="Caption" />
+    <xi:include href="../../Administration/views/viewcolumns/Files.viewcolumns.xml" />
   </Columns>
   <Order>
     <OrderBy column="File" />
   </Order>
 </View>
- 
