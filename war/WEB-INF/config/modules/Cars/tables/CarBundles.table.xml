@@ -9,7 +9,6 @@
     <String name="Code" precision="20" unique="true" label="=code" />
 
     <Relation name="Model" relation="VehicleModels" label="=vehicleModel" />
-    <Relation name="Customer" relation="Companies" label="=customer" />
 
     <Date name="ValidUntil" label="=validUntil" />
     <Text name="Notes" label="=notes" />

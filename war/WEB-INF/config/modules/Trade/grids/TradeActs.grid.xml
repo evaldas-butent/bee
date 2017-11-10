@@ -19,7 +19,7 @@
     <RelColumn name="Operation" renderColumns="OperationName" />
     <RelColumn name="Status" renderColumns="StatusName" visible="true" />
 
-    <RelColumn name="Company" visible="true" />
+    <RelColumn name="Company" visible="true" searchBy="CompanyName" />
     <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
       choiceColumns="FirstName LastName CompanyName" />
     <RelColumn name="Object" renderColumns="ObjectName" />

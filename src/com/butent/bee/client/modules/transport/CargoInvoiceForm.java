@@ -21,7 +21,6 @@ import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -31,7 +30,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.IdFilter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -82,9 +80,7 @@ public class CargoInvoiceForm extends CustomCargoInvoiceForm implements ClickHan
 
       @Override
       public Widget getActionWidget() {
-        FaLabel action = new FaLabel(FontAwesome.ENVELOPE_O);
-        action.setTitle(Localized.dictionary().trWriteEmail());
-        return action;
+        return new Button(Localized.dictionary().ecOrderCommandMail());
       }
     };
   }

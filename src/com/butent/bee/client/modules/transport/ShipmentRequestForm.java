@@ -462,9 +462,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
         @Override
         public Widget getActionWidget() {
-          FaLabel action = new FaLabel(FontAwesome.ENVELOPE_O);
-          action.setTitle(Localized.dictionary().trWriteEmail());
-          return action;
+          return new Button(Localized.dictionary().ecOrderCommandMail());
         }
       };
     }

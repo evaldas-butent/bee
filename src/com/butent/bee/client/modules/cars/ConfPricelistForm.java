@@ -279,6 +279,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
   private static final String STYLE_ROW_DEL = STYLE_ROW + "-del";
   public static final String STYLE_PACKET = STYLE_PREFIX + "-packet";
   public static final String STYLE_PACKET_COLLAPSED = STYLE_PACKET + "-collapsed";
+  public static final String STYLE_PACKET_OPTIONAL = STYLE_PACKET + "-optional";
 
   private static final String STYLE_COL = STYLE_PREFIX + "-col";
   private static final String STYLE_COL_HEADER = STYLE_COL + "-hdr";
@@ -994,9 +995,11 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       }
       rIdx++;
       // PACKET OPTIONS
-      for (Option packetOption : configuration.getPacketOptions(option)) {
+      for (Map.Entry<Option, Boolean> pck : configuration.getPacketOptions(option).entrySet()) {
+        Option packetOption = pck.getKey();
         table.setText(rIdx, 0, packetOption.getCode(), STYLE_PACKET);
-        table.setText(rIdx, 1, packetOption.getName(), STYLE_PACKET);
+        table.setText(rIdx, 1, packetOption.getName(), STYLE_PACKET,
+            pck.getValue() ? STYLE_PACKET_OPTIONAL : "");
         table.getCellFormatter().setStyleName(rIdx, 2, STYLE_PACKET);
 
         for (int c = 0; c < cols.size(); c++) {
@@ -1210,21 +1213,23 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
     configuration.setOptionInfo(option, info);
   }
 
-  private void setPackets(Collection<Option> opts) {
-    Queries.getRowSet(TBL_CONF_PACKET_OPTIONS, Arrays.asList(COL_PACKET, COL_OPTION),
-        Filter.any(COL_PACKET, opts.stream().map(Option::getId).collect(Collectors.toSet())),
+  private void setPackets(Collection<Option> packages) {
+    Queries.getRowSet(TBL_CONF_PACKET_OPTIONS, Arrays.asList(COL_PACKET, COL_OPTION, COL_OPTIONAL),
+        Filter.any(COL_PACKET, packages.stream().map(Option::getId).collect(Collectors.toSet())),
         packRs -> {
           if (DataUtils.isEmpty(packRs)) {
             refresh();
           } else {
-            Multimap<Long, Long> packs = HashMultimap.create();
-            packRs.forEach(row -> packs.put(row.getLong(0), row.getLong(1)));
+            Multimap<Long, Pair<Long, Boolean>> packs = HashMultimap.create();
+            packRs.forEach(row -> packs.put(row.getLong(0),
+                Pair.of(row.getLong(1), BeeUtils.unbox(row.getBoolean(2)))));
 
-            Queries.getRowSet(TBL_CONF_OPTIONS, null, Filter.idIn(packs.values()),
+            Queries.getRowSet(TBL_CONF_OPTIONS, null,
+                Filter.idIn(packs.values().stream().map(Pair::getA).collect(Collectors.toSet())),
                 optsRs -> {
-                  opts.forEach(opt -> packs.get(opt.getId()).forEach(pack ->
-                      configuration.getPacketOptions(opt)
-                          .add(new Option(optsRs.getRowById(pack)))));
+                  packages.forEach(pkg -> packs.get(pkg.getId()).forEach(pack ->
+                      configuration.getPacketOptions(pkg)
+                          .put(new Option(optsRs.getRowById(pack.getA())), pack.getB())));
                   refresh();
                 });
           }

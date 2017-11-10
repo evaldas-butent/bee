@@ -22,6 +22,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
@@ -62,6 +63,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Dictionary;
@@ -147,9 +149,6 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
         case TBL_SERVICE_ORDER_ITEMS:
           ((ChildGrid) widget).setGridInterceptor(new CarServiceItemsGrid());
           break;
-        case GRID_SERVICE_ORDER_JOBS:
-          ((ChildGrid) widget).setGridInterceptor(new CarServiceJobsGrid());
-          break;
         case TBL_SERVICE_EVENTS:
           ((ChildGrid) widget).setGridInterceptor(new CarServiceEventsGrid());
           break;
@@ -170,7 +169,11 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
     if (Objects.equals(name, COL_CAR + "Warning") && widget instanceof HasClickHandlers) {
       carWarning = widget.asWidget();
       ((HasClickHandlers) carWarning).addClickHandler(clickEvent ->
-          Global.showInfo(Localized.dictionary().recalls(), carMessages));
+          Global.confirm(Localized.dictionary().checkCancellations(), Icon.QUESTION, carMessages,
+              () -> Queries.update(TBL_CAR_RECALLS,
+                  Filter.and(Filter.equals(COL_VEHICLE, getLongValue(COL_CAR)),
+                      Filter.isNull(COL_CHECKED)), COL_CHECKED, BooleanValue.TRUE,
+                  cnt -> carWarning.setVisible(false))));
     }
     if (Objects.equals(name, TBL_SERVICE_SYMPTOMS) && widget instanceof ChildSelector) {
       ((ChildSelector) widget).addSelectorHandler(event -> {
@@ -599,6 +602,7 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
                 beeRow.getString(result.getColumnIndex(CarsConstants.COL_DESCRIPTION)))));
 
             carWarning.setVisible(!carMessages.isEmpty());
+            carMessages.add(" ");
           });
     } else {
       carWarning.setVisible(false);

@@ -11,7 +11,7 @@
 
 	<DataColumn name="Name" visible="true" />
 	<RelColumn name="Type" />
-	<RelColumn name="Company" label="=client" />
+	<RelColumn name="Company" label="=client" searchBy="CompanyName" />
 	<RelColumn name="Owner" />
 	<DataColumn name="StartDate" />
 	<DataColumn name="EndDate" />

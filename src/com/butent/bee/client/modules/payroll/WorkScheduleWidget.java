@@ -64,6 +64,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.css.values.Display;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -1816,7 +1817,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       InputNumber payrollFund) {
     if (DataUtils.isId(lockId)
       && (BeeKeeper.getUser().isAdministrator()
-      || BeeKeeper.getUser().canDeleteData(VIEW_WORK_SCHEDULE_LOCKS))) {
+        || BeeKeeper.getUser().canDeleteData(VIEW_WORK_SCHEDULE_LOCKS))) {
       Global.confirm(Localized.dictionary().actionChange(), () ->
         Queries.deleteRow(VIEW_WORK_SCHEDULE_LOCKS, lockId, result -> {
           refresh();
@@ -1824,7 +1825,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         })
       );
 
-    } else if (!DataUtils.isId(lockId) && (BeeKeeper.getUser().isAdministrator() || isManager())) {
+    } else if (!DataUtils.isId(lockId) && (BeeKeeper.getUser().isAdministrator()
+        || BeeKeeper.getUser().canCreateData(VIEW_WORK_SCHEDULE_LOCKS))) {
       Global.confirm(Localized.dictionary().actionChange(), () -> {
         List<String> cols = Arrays.asList(COL_WORK_SCHEDULE_KIND,
           scheduleParent.getWorkScheduleRelationColumn(),
@@ -2592,6 +2594,12 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
       Flow wApproved = new Flow();
       FaLabel locker = new FaLabel(DataUtils.isId(lockId) ? FontAwesome.LOCK : FontAwesome.UNLOCK);
+
+      if (!BeeKeeper.getUser().isColumnVisible(Data.getDataInfo(VIEW_WORK_SCHEDULE_LOCKS),
+          COL_WOKR_SCHEDULE_LOCK) && !BeeKeeper.getUser().isAdministrator()) {
+        StyleUtils.setDisplay(locker, Display.NONE);
+      }
+
       locker.addClickHandler(e ->
           onWorkScheduleLockerClick(lockId, partIds.getA(), activeMonth, payrollFund));
       wApproved.add(locker);

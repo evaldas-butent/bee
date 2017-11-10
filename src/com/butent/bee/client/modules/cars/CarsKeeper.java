@@ -43,8 +43,10 @@ public final class CarsKeeper {
     FormFactory.registerFormInterceptor(FORM_CAR_SERVICE_ORDER, new CarServiceOrderForm());
     FormFactory.registerFormInterceptor(FORM_CAR_SERVICE_EVENT, new CarServiceEventForm());
 
+    FormFactory.registerFormInterceptor(FORM_NEW_CAR_BUNDLE_ITEM, new NewCarBundleItemForm());
+
     GridFactory.registerGridInterceptor(VIEW_CARS, new VehiclesGrid());
-    GridFactory.registerGridInterceptor(GRID_CAR_BUNDLE_JOBS, new CarBundleJobsGrid());
+    GridFactory.registerGridInterceptor(TBL_CAR_BUNDLE_ITEMS, new CarBundleItemsGrid());
 
     GridFactory.registerGridInterceptor(VIEW_CAR_FILES, new FileGridInterceptor(COL_CAR,
         AdministrationConstants.COL_FILE, AdministrationConstants.COL_FILE_CAPTION,

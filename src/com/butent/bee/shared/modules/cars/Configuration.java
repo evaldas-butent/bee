@@ -14,12 +14,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -28,7 +28,7 @@ public class Configuration implements BeeSerializable {
   private static final class OptionInfo extends ConfInfo {
     private final Map<String, Pair<ConfInfo, String>> relations = new HashMap<>();
     private final Map<Option, Boolean> restrictions = new HashMap<>();
-    private Set<Option> packetOptions = new TreeSet<>();
+    private final Map<Option, Boolean> packetOptions = new TreeMap<>();
 
     @Override
     public void deserialize(String s) {
@@ -45,9 +45,9 @@ public class Configuration implements BeeSerializable {
           restrictions.put(Option.restore(key), BeeUtils.toBoolean(val)));
 
       packetOptions.clear();
-      for (String opt : Codec.beeDeserializeCollection(dataInfo[2])) {
-        packetOptions.add(Option.restore(opt));
-      }
+      Codec.deserializeHashMap(dataInfo[2]).forEach((key, val) ->
+          packetOptions.put(Option.restore(key), BeeUtils.toBoolean(val)));
+
       super.deserialize(dataInfo[3]);
     }
 
@@ -58,7 +58,7 @@ public class Configuration implements BeeSerializable {
       return null;
     }
 
-    public Set<Option> getPacketOptions() {
+    public Map<Option, Boolean> getPacketOptions() {
       return packetOptions;
     }
 
@@ -333,17 +333,24 @@ public class Configuration implements BeeSerializable {
     return options.keySet();
   }
 
-  public Set<Option> getPacketOptions(Option option) {
+  public Map<Option, Boolean> getPacketOptions(Option option) {
     OptionInfo optionInfo = options.get(option);
     return Objects.nonNull(optionInfo) ? optionInfo.getPacketOptions() : null;
   }
 
-  public Set<Option> getPacketOptions(Option option, Bundle bundle) {
-    Set<Option> packetOptions = getPacketOptions(option);
-    Set<Long> deniedPacketOptions = DataUtils.parseIdSet(getDeniedPacketOptions(option, bundle));
+  public Map<Option, Boolean> getPacketOptions(Option option, Bundle bundle) {
+    Map<Option, Boolean> pkg = new LinkedHashMap<>();
+    Map<Option, Boolean> packetOptions = getPacketOptions(option);
 
-    return Objects.isNull(packetOptions) ? null : packetOptions.stream()
-        .filter(opt -> !deniedPacketOptions.contains(opt.getId())).collect(Collectors.toSet());
+    if (Objects.nonNull(packetOptions)) {
+      Set<Long> deniedPacketOptions = DataUtils.parseIdSet(getDeniedPacketOptions(option, bundle));
+      packetOptions.forEach((opt, optional) -> {
+        if (!deniedPacketOptions.contains(opt.getId())) {
+          pkg.put(opt, optional);
+        }
+      });
+    }
+    return pkg;
   }
 
   public Map<String, String> getRelationCriteria(Option option, Bundle bundle) {

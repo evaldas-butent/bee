@@ -21,10 +21,13 @@
     <Boolean name="VatIsPercent" label="=vatIsPercent" />
 
     <Boolean name="Reserve" label="=reserve" defValue="1" />
+
+    <Relation name="Parent" relation="CarServiceItems" label="=parent" cascade="DELETE" />
+    <Relation name="Bundle" relation="CarBundles" label="=bundle" />
   </Fields>
   <Constraints>
     <Check>
-      <PostgreSql>"Quantity" > 0</PostgreSql>
+      <PostgreSql>"Quantity" > 0 AND "Parent" != "ServiceItemID"</PostgreSql>
       <MsSql />
       <Oracle />
     </Check>

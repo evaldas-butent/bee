@@ -7,7 +7,8 @@
   >
   <g:columns>
     <RelColumn name="Person" visible="true" filterSupplier="value" sortBy="LastName FirstName" flexGrow="1" />
-    <RelColumn name="Company" visible="true" filterSupplier="value" flexGrow="1" />
+    <RelColumn name="Company" visible="true" filterSupplier="value" flexGrow="1"
+               searchBy="CompanyName" />
 
     <RelColumn name="Department" flexGrow="1" />
     <RelColumn name="Position" flexGrow="1" />

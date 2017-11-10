@@ -81,8 +81,9 @@
     <DataColumn name="FinishedCount" />
 
     <RelColumn name="Author" filterSupplier="list" />
-    <DataColumn name="Customer" label="=customerId" filterSupplier="value" />
-    <DataColumn name="CustomerName" renderColumns="CustomerName CustomerTypeName" label="=customer" />
+    <DataColumn name="Customer" label="=customerId" />
+    <DataColumn name="CustomerName" renderColumns="CustomerName CustomerTypeName"
+                label="=customer" searchBy="CustomerName" />
   </g:columns>
 
   <g:rowStyle>

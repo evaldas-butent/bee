@@ -705,6 +705,8 @@ public interface Dictionary extends CustomDictionary{
 
   default String chatsShowAll() {return g("chatsShowAll");}
 
+  default String checkCancellations() {return g("checkCancellations");}
+
   default String checkNo() {return g("checkNo");}
 
   default String checked() {return g("checked");}
@@ -2643,6 +2645,8 @@ public interface Dictionary extends CustomDictionary{
 
   default String executorFullName() {return g("executorFullName");}
 
+  default String expectantCustomer() {return g("expectantCustomer");}
+
   default String expectedDuration() {return g("expectedDuration");}
 
   default String expeditionShort() {return g("expeditionShort");}
@@ -4162,6 +4166,8 @@ public interface Dictionary extends CustomDictionary{
 
   default String optionTypes() {return g("optionTypes");}
 
+  default String optional() {return g("optional");}
+
   default String options() {return g("options");}
 
   default String ordApprove() {return g("ordApprove");}
@@ -4291,6 +4297,8 @@ public interface Dictionary extends CustomDictionary{
   default String parameterType() {return g("parameterType");}
 
   default String parameters() {return g("parameters");}
+
+  default String parent() {return g("parent");}
 
   default String partTime() {return g("partTime");}
 
@@ -5029,6 +5037,8 @@ public interface Dictionary extends CustomDictionary{
 
   default String qrCode() {return g("qrCode");}
 
+  default String qualityCheck() {return g("qualityCheck"); }
+
   default String quantity() {return g("quantity");}
 
   default String quantityFrom() {return g("quantityFrom");}
@@ -5679,6 +5689,10 @@ public interface Dictionary extends CustomDictionary{
   default String svcWarrantyValidTo() {return g("svcWarrantyValidTo");}
 
   default String swift() {return g("swift");}
+
+  default String symptom() {return g("symptom"); }
+
+  default String symptomCode() {return g("symptomCode"); }
 
   default String symptoms() {return g("symptoms");}
 

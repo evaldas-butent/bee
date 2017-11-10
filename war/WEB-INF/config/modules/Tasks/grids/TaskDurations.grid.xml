@@ -18,7 +18,8 @@
 
     <DataColumn name="Comment" flexGrow="1" flexShrink="2" flexBasis="30" flexBasisUnit="%" />
 
-    <RelColumn name="Company" caption="=client" renderColumns="CompanyName CompanyTypeName" />
+    <RelColumn name="Company" caption="=client" renderColumns="CompanyName CompanyTypeName"
+               searchBy="CompanyName" />
 
     <DataColumn name="Summary" editEnabled="true" flexGrow="1" />
 
