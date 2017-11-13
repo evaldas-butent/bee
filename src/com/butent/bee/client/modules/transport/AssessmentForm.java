@@ -756,6 +756,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
               if (forwarders.isEmpty()) {
                 return;
               }
+              forwarders.removeColumn(forwarders.getColumnIndex(COL_CARGO_INCOME));
+
               int cargoTripIdx = forwarders.getColumnIndex(COL_CARGO_TRIP);
 
               TransportUtils.getCargoPlaces(Filter.any(COL_CARGO_TRIP,
