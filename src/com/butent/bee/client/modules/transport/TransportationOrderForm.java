@@ -26,6 +26,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.data.BeeColumn;
@@ -38,6 +39,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -185,6 +187,9 @@ class TransportationOrderForm extends PrintFormInterceptor implements ClickHandl
     HeaderView hdr = form.getViewPresenter().getHeader();
     hdr.clearCommandPanel();
 
+    hdr.addCommandItem(new Button(Localized.dictionary().contract(),
+        event -> form.getViewPresenter().handleAction(Action.PRINT)));
+
     if (Data.isViewEditable(VIEW_CARGO_INVOICES)) {
       hdr.addCommandItem(new InvoiceCreator(VIEW_CARGO_SALES,
           Filter.equals(COL_ORDER, row.getId())));
@@ -206,6 +211,9 @@ class TransportationOrderForm extends PrintFormInterceptor implements ClickHandl
   @Override
   public void onStartNewRow(FormView form, IsRow row) {
     form.getViewPresenter().getHeader().clearCommandPanel();
+
+    form.getViewPresenter().getHeader().addCommandItem(new Button(Localized.dictionary().contract(),
+        event -> form.getViewPresenter().handleAction(Action.PRINT)));
   }
 
   private void checkCreditInfo(final HasHandlers listener, final GwtEvent<?> event, Long customer) {

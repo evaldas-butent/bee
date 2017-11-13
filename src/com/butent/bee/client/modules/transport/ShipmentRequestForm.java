@@ -228,6 +228,11 @@ class ShipmentRequestForm extends PrintFormInterceptor {
     if (widget != null) {
       widget.setVisible(isRegistered());
     }
+    if (isRegistered() && !isSelfService()
+        && !ShipmentRequestStatus.LOST.is(getIntegerValue(COL_QUERY_STATUS))) {
+      header.addCommandItem(new Button(loc.contract(),
+          event -> form.getViewPresenter().handleAction(Action.PRINT)));
+    }
     if (DataUtils.isNewRow(row)) {
       return;
     }
@@ -452,12 +457,12 @@ class ShipmentRequestForm extends PrintFormInterceptor {
             String text = (String) response.getResponse();
             String path = "rest/transport/confirm/" + getActiveRowId();
 
-              fileInfo.setCaption(CustomShipmentRequestForm.createFileName(
-                  fileInfo.getDescription(), getOrderNo(getActiveRow())));
-              String emailSubject = CustomShipmentRequestForm.createEmailSubject(fileInfo);
-              sendMail(ShipmentRequestStatus.CONTRACT_SENT, emailSubject, BeeUtils.isEmpty(text)
-                  ? null : text.replace("[CONTRACT_PATH]", path)
-                  .replace("{CONTRACT_PATH}", path), Collections.singleton(fileInfo));
+            fileInfo.setCaption(CustomShipmentRequestForm.createFileName(
+                fileInfo.getDescription(), getOrderNo(getActiveRow())));
+            String emailSubject = CustomShipmentRequestForm.createEmailSubject(fileInfo);
+            sendMail(ShipmentRequestStatus.CONTRACT_SENT, emailSubject, BeeUtils.isEmpty(text)
+                ? null : text.replace("[CONTRACT_PATH]", path)
+                .replace("{CONTRACT_PATH}", path), Collections.singleton(fileInfo));
 
           });
         }
