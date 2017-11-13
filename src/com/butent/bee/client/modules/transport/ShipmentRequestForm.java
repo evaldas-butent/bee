@@ -228,6 +228,11 @@ class ShipmentRequestForm extends PrintFormInterceptor {
     if (widget != null) {
       widget.setVisible(isRegistered());
     }
+    if (isRegistered() && !isSelfService()
+        && !ShipmentRequestStatus.LOST.is(getIntegerValue(COL_QUERY_STATUS))) {
+      header.addCommandItem(new Button(loc.contract(),
+          event -> form.getViewPresenter().handleAction(Action.PRINT)));
+    }
     if (DataUtils.isNewRow(row)) {
       return;
     }
@@ -237,11 +242,6 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
     if (!isSelfService() && !ShipmentRequestStatus.LOST.is(status)
         && !ShipmentRequestStatus.COMPLETED.is(status)) {
-
-      if (isRegistered()) {
-        header.addCommandItem(new Button(loc.contract(),
-            event -> form.getViewPresenter().handleAction(Action.PRINT)));
-      }
       header.addCommandItem(mailCommand);
 
       if (!ShipmentRequestStatus.CONFIRMED.is(status)) {

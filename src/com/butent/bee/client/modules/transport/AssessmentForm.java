@@ -976,6 +976,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
               filters.put(TBL_CARGO_UNLOADING, flt);
               filters.put(TBL_CARGO_INCOMES, flt);
 
+              forwarders.clearRows();
+
               Runnable onCloneChildren = new Runnable() {
                 Latch copiedGrids = new Latch(forwarders.getNumberOfRows() * 2 + filters.size());
 

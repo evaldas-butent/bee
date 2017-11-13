@@ -14,7 +14,6 @@
 
   name="Assessment" viewName="Assessments" showRowId="true"
         width="70" widthUnit="%" height="80" heightUnit="%"
-        disabledActions="print"
 >
   <f:properties jasperReports="LogisticsOrderContract" />
 
