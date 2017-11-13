@@ -684,6 +684,9 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         statusLabel.add(lbl);
       }
     }
+    header.addCommandItem(new Button(loc.contract(),
+        event -> formView.getViewPresenter().handleAction(Action.PRINT)));
+
     if (executor && !newRecord) {
       header.addCommandItem(new Button(loc.trWriteEmail(), event -> createLetter()));
 

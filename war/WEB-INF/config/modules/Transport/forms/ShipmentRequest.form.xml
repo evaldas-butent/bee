@@ -14,6 +14,7 @@
 
         name="ShipmentRequest" viewName="ShipmentRequests"
         showRowId="true" width="70" widthUnit="%" height="80" heightUnit="%"
+        disabledActions="print"
 >
   <f:properties jasperReports="OrderContract" />
 
