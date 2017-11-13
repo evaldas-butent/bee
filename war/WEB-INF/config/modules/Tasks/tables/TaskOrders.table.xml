@@ -10,7 +10,7 @@
     <String name="Model" precision="10" label="Maketas" />
     <String name="ModelNote" precision="100" label="Pastaba" />
     <String name="PrintFormat" precision="15" label="Spaudos formatas" />
-    <String name="OtherPrintFormat" precision="10" />
+    <String name="OtherPrintFormat" precision="100" />
     <Integer name="ArcNumber" label="Skaičius lanke" />
     <Integer name="PageNumber" label="Psl. skaičius" />
     <Integer name="Tin" label="Skardos" />

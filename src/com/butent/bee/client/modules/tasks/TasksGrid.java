@@ -925,15 +925,12 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
                     Queries.insertRows(insertRows, new RpcCallback<RowInfoList>() {
                       @Override
                       public void onSuccess(RowInfoList rowInfo) {
-                        RowEditor.openForm(FORM_TASK_ORDER, VIEW_TASKS, result, Opener.MODAL,
-                            new RowCallback() {
-                              @Override
-                              public void onSuccess(BeeRow result) {
-                                getGridPresenter().handleAction(Action.REFRESH);
-                              }
-                            });
+                        RowEditor.openForm(FORM_TASK_ORDER, VIEW_TASKS, result, Opener.MODAL, null);
+                        getGridPresenter().handleAction(Action.REFRESH);
                       }
                     });
+                  } else {
+                    getGridPresenter().handleAction(Action.REFRESH);
                   }
                 }
               });
