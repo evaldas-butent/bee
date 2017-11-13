@@ -12,13 +12,13 @@
 
     <DataColumn name="Status" visible="true" maxWidth="80" />
 
-    <RelColumn name="Client" visible="true">
+    <RelColumn name="Client" visible="true" searchBy="ClientLastName" >
       <renderToken source="ClientFirstName" />
       <renderToken source="ClientLastName" />
       <renderToken source="ClientCompanyName" prefix=", " />
     </RelColumn>
 
-    <RelColumn name="Manager" visible="true">
+    <RelColumn name="Manager" visible="true" searchBy="ManagerLastName" >
       <renderToken source="ManagerFirstName" />
       <renderToken source="ManagerLastName" />
       <renderToken source="ManagerCompanyName" prefix=", " />

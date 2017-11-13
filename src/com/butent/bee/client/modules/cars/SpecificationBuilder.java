@@ -672,11 +672,16 @@ public class SpecificationBuilder implements InputCallback {
 
             int packetIdx = rowSelectable;
 
-            for (Option opt : configuration.getPacketOptions(option, specification.getBundle())) {
+            for (Map.Entry<Option, Boolean> pck
+                    :configuration.getPacketOptions(option, specification.getBundle()).entrySet()) {
+              Option opt = pck.getKey();
+              boolean optional = pck.getValue();
               rowSelectable++;
               selectable.getCellFormatter().setStyleName(rowSelectable, 0, STYLE_PACKET);
-              selectable.setText(rowSelectable, 1, opt.getCode(), STYLE_PACKET);
-              selectable.setText(rowSelectable, 2, opt.getName(), STYLE_PACKET);
+              selectable.setText(rowSelectable, 1, opt.getCode(), STYLE_PACKET,
+                  optional ? STYLE_PACKET_OPTIONAL : "");
+              selectable.setText(rowSelectable, 2, opt.getName(), STYLE_PACKET,
+                  optional ? STYLE_PACKET_OPTIONAL : "");
               selectable.getCellFormatter().setStyleName(rowSelectable, 3, STYLE_PACKET);
               DomUtils.setDataProperty(selectable.getRow(rowSelectable), DATA_PKG, packetIdx);
               DomUtils.setDataProperty(selectable.getRow(rowSelectable), DATA_GRP, groupIdx);
@@ -850,9 +855,13 @@ public class SpecificationBuilder implements InputCallback {
 
       specification.getOptions().forEach(opt -> toggle.putIfAbsent(opt, true));
 
+      // Collect all not optional active packets options
       toggle.keySet().stream().filter(toggle::get).forEach(opt ->
-          packetOptions.addAll(configuration.getPacketOptions(opt, specification.getBundle())));
+          packetOptions.addAll(configuration.getPacketOptions(opt, specification.getBundle())
+              .entrySet().stream().filter(entry -> !entry.getValue()).map(Map.Entry::getKey)
+              .collect(Collectors.toSet())));
 
+      // Switch off all not optional active packets options
       for (Iterator<Option> it = toggle.keySet().iterator(); it.hasNext(); ) {
         Option opt = it.next();
 
@@ -861,6 +870,22 @@ public class SpecificationBuilder implements InputCallback {
           it.remove();
         }
       }
+      // Restore packects, switched off by optional options
+      toggle.entrySet().stream()
+          .filter(entry -> !entry.getValue() && specification.getOptions().contains(entry.getKey()))
+          .forEach(entry -> {
+            Set<Option> optionals = configuration.getPacketOptions(entry.getKey(),
+                specification.getBundle()).entrySet().stream().filter(Map.Entry::getValue)
+                .map(Map.Entry::getKey).collect(Collectors.toSet());
+
+            for (Option optional : optionals) {
+              if (BeeUtils.unbox(toggle.get(optional))
+                  && !specification.getOptions().contains(optional)) {
+                entry.setValue(true);
+                break;
+              }
+            }
+          });
       List<String> msgs = new ArrayList<>();
       Dimension dimension = option.getDimension();
 

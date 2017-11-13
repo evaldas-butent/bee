@@ -26,6 +26,6 @@
     <Numeric name="InsuranceCertificate" precision="1" label="=trInsuranceCertificate" />
     <Relation name="Trip" relation="Trips" cascade="SET_NULL" label="=trip" />
 
-    <Relation name="CargoTrip" relation="CargoTrips" cascade="SET_NULL" label="=trip" />
+    <Relation name="CargoTrip" relation="CargoTrips" cascade="SET_NULL" label="=trTripNo" />
   </Fields>
 </Table>

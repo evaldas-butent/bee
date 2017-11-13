@@ -8,6 +8,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
@@ -216,6 +217,22 @@ public final class Dimensions implements BeeSerializable {
 
     for (int i = 0; i < values.length; i++) {
       values[i] = DataUtils.getLong(columns, row, RELATION_COLUMNS[i]);
+    }
+
+    return new Dimensions(values);
+  }
+
+  public static Dimensions create(SimpleRow row) {
+    Assert.notNull(row);
+
+    Long[] values = new Long[observed];
+
+    for (int i = 0; i < values.length; i++) {
+      if (row.hasColumn(RELATION_COLUMNS[i])) {
+        values[i] = row.getLong(RELATION_COLUMNS[i]);
+      } else {
+        values[i] = null;
+      }
     }
 
     return new Dimensions(values);

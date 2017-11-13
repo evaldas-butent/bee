@@ -15,9 +15,18 @@ public final class CarsConstants {
   public static final String SVC_GET_OBJECT = "GetObject";
   public static final String SVC_GET_CALENDAR = "GetCalendar";
   public static final String SVC_CREATE_INVOICE = "CreateInvoice";
+  public static final String SVC_INFORM_CUSTOMER = "InformCustomer";
 
   public static final String PRM_SERVICE_WAREHOUSE = "ServiceWarehouse";
   public static final String PRM_SERVICE_TRADE_OPERATION = "ServiceTradeOperation";
+  public static final String PRM_CARS_SMS_REQUEST_CONTACT_INFO_FROM
+      = "CarsSmsRequestContactInfoFrom";
+  public static final String PRM_CARS_SMS_REQUEST_SERVICE_ADDRESS = "CarsSmsRequestServiceAddress";
+  public static final String PRM_CARS_SMS_REQUEST_SERVICE_USER_NAME
+      = "CarsSmsRequestServiceUserName";
+  public static final String PRM_CARS_SMS_REQUEST_SERVICE_PASSWORD
+      = "CarsSmsRequestServicePassword";
+  public static final String PRM_CARS_SMS_REQUEST_SERVICE_FROM = "CarsSmsRequestServiceFrom";
 
   public static final String TBL_CONF_TYPES = "ConfTypes";
   public static final String TBL_CONF_GROUPS = "ConfGroups";
@@ -45,6 +54,9 @@ public final class CarsConstants {
   public static final String TBL_CAR_RECALLS = "CarRecalls";
   public static final String TBL_CAR_JOBS = "CarJobs";
 
+  public static final String TBL_CAR_MESSAGE_TEMPLATES = "CarMessageTemplates";
+  public static final String TBL_CAR_SERVICE_COMMENTS = "CarServiceComments";
+
   public static final String TBL_SERVICE_ORDERS = "CarServiceOrders";
   public static final String TBL_SERVICE_ORDER_ITEMS = "CarServiceItems";
   public static final String TBL_SERVICE_JOB_PROGRESS = "CarJobProgress";
@@ -55,6 +67,7 @@ public final class CarsConstants {
   public static final String VIEW_CARS = "Cars";
   public static final String VIEW_CAR_FILES = "CarFiles";
   public static final String VIEW_CAR_SERVICE_FILES = "CarServiceFiles";
+  public static final String VIEW_CAR_ITEMS = "CarItems";
 
   public static final String COL_BRANCH = "Branch";
   public static final String COL_BRANCH_NAME = "BranchName";
@@ -82,6 +95,7 @@ public final class CarsConstants {
   public static final String COL_OBJECT = "Object";
   public static final String COL_PHOTO_CODE = "PhotoCode";
   public static final String COL_PACKET = "Packet";
+  public static final String COL_OPTIONAL = "Optional";
 
   public static final String COL_ORDER = "Order";
   public static final String COL_CAR = "Car";
@@ -95,13 +109,18 @@ public final class CarsConstants {
   public static final String COL_SERVICE_ITEM = "ServiceItem";
 
   public static final String COL_RESERVE = "Reserve";
+  public static final String COL_PARENT = "Parent";
 
   public static final String COL_CHECKED = "Checked";
   public static final String COL_CAR_DISCOUNT = "CarDiscount";
   public static final String COL_PRODUCED_FROM = "ProducedFrom";
   public static final String COL_PRODUCED_TO = "ProducedTo";
 
+  public static final String COL_SEND_EMAIL = "SentEmail";
+  public static final String COL_SEND_SMS = "SentSms";
+
   public static final String ALS_COMPLETED = "Completed";
+  public static final String ALS_STAGE_NAME = "StageName";
 
   public static final String FORM_CONF_OPTION = "ConfOption";
   public static final String FORM_CAR_ORDER = "CarOrder";
@@ -109,9 +128,7 @@ public final class CarsConstants {
   public static final String FORM_TEMPLATE = "ConfTemplate";
   public static final String FORM_CAR_SERVICE_ORDER = "CarServiceOrder";
   public static final String FORM_CAR_SERVICE_EVENT = "CarServiceEvent";
-
-  public static final String GRID_CAR_BUNDLE_JOBS = "CarBundleJobs";
-  public static final String GRID_SERVICE_ORDER_JOBS = "CarServiceJobs";
+  public static final String FORM_NEW_CAR_BUNDLE_ITEM = "NewCarBundleItem";
 
   public static final String FILTER_CAR_DOCUMENTS = "filter_car_trade_documents";
   public static final String FILTER_CAR_SERVICE_DOCUMENTS = "filter_car_service_trade_documents";

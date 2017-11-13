@@ -12,7 +12,7 @@
         </ui:function>
       </render>
     </DataColumn>
-    <DataColumn name="Customer" caption="=company" label="=company" searchBy="CustomerName PayerName">
+    <DataColumn name="Customer" caption="=company" label="=company" searchBy="CustomerName" >
       <render>
         <ui:function>
           var name = row.Payer ? row.PayerName : row.CustomerName;

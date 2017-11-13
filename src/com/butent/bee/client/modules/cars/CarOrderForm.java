@@ -45,8 +45,8 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomAction;
-import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.css.CssUnit;
@@ -385,9 +385,7 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
 
       @Override
       public Widget getActionWidget() {
-        FaLabel action = new FaLabel(FontAwesome.ENVELOPE_O);
-        action.setTitle(Localized.dictionary().trWriteEmail());
-        return action;
+        return new Button(Localized.dictionary().ecOrderCommandMail());
       }
     };
   }

@@ -8,8 +8,9 @@
   <g:columns>
     <DataColumn name="OrderNo" caption="=orderNumber" />
     <DataColumn name="Status" caption="=trOrderStatus" />
-    <DataColumn name="Customer" label="=customerId" filterSupplier="value" />
-    <DataColumn name="CustomerName" label="=customer" renderColumns="CustomerName TypeName"/>
+    <DataColumn name="Customer" label="=customerId" />
+    <DataColumn name="CustomerName" label="=customer" renderColumns="CustomerName TypeName"
+                searchBy="CustomerName" />
     <RelColumn name="Manager" caption="=manager" filterSupplier="list" />
 
     <RelColumn name="Cargo" viewName="OrderCargo" renderColumns="Cargo" label="=captionId"

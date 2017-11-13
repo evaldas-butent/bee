@@ -71,7 +71,8 @@
 
     <DataColumn name="Log" visible="false" />
 
-    <RelColumn name="Customer" renderColumns="CustomerName CustomerTypeName" />
+    <RelColumn name="Customer" renderColumns="CustomerName CustomerTypeName"
+               searchBy="CustomerName" />
   </g:columns>
 
   <g:rowStyle>

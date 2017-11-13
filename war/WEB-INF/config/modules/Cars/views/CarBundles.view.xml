@@ -17,15 +17,6 @@
       <SimpleColumn name="Name" alias="ModelName" />
     </SimpleJoin>
 
-    <SimpleColumn name="Customer" />
-    <SimpleJoin name="Customer" joinType="LEFT">
-      <SimpleColumn name="Name" alias="CustomerName" />
-
-      <SimpleJoin joinType="LEFT" name="CompanyType">
-        <SimpleColumn name="Name" alias="CustomerTypeName" />
-      </SimpleJoin>
-    </SimpleJoin>
-
     <SimpleColumn name="ValidUntil" />
     <SimpleColumn name="Notes" />
   </Columns>

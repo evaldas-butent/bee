@@ -295,11 +295,13 @@
       <xs:enumeration value="CarJobModels" />
       <xs:enumeration value="CarJobProgress" />
       <xs:enumeration value="CarJobs" />
+      <xs:enumeration value="CarMessageTemplates" />
       <xs:enumeration value="CarOrderItems" />
       <xs:enumeration value="CarOrders" />
       <xs:enumeration value="CarPlaceCodes" />
       <xs:enumeration value="CarRecalls" />
       <xs:enumeration value="Cars" />
+      <xs:enumeration value="CarServiceComments" />
       <xs:enumeration value="CarServiceEvents" />
       <xs:enumeration value="CarServiceFiles" />
       <xs:enumeration value="CarServiceItems" />

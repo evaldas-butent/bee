@@ -522,6 +522,9 @@
 .bee-conf-packet {
   color: silver;
 }
+.bee-conf-packet-optional {
+  color: burlywood;
+}
 .bee-conf-packet-collapsed {
   color: blue;
   cursor: pointer;

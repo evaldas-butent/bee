@@ -60,12 +60,9 @@
       </cell>
     </row>
     <row data="ConfPacketOptions" listName="ConfPacketOptions">
-      <Label text="=packet" listName="ConfPacketOptions" />
-      <cell colSpan="3">
-        <ChildSelector childTable="ConfPacketOptions" targetRelColumn="Packet"
-                       viewName="ConfOptions" sourceRelColumn="Option" newRowEnabled="false"
-                       style="width:100%;" choiceColumns="Code Code2 OptionName GroupName TypeName"
-                       renderColumns="Code Code2 OptionName" label="=packet" />
+      <cell colSpan="4">
+        <ChildGrid name="ConfPacketOptions" relColumn="Packet"
+                   style="width:100%; height: 250px; text-align:left;" />
       </cell>
     </row>
   </Table>

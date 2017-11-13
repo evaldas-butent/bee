@@ -19,6 +19,7 @@ public final class ClassifierConstants {
   public static final String TIMER_REMIND_TASKS_SUMMARY = "timer_remind_tasks_summary_";
   public static final String TIMER_REMIND_CALENDAR_EVENTS = "timer_remind_calendar_events";
   public static final String TIMER_REMIND_USER_TASKS = "timer_remind_user_tasks";
+  public static final String TIMER_REMIND_SERVICE_COMMENT = "timer_remind_service_comment";
   public static final String TIMER_REMIND_DOCUMENT_END = "timer_remind_document_end_";
   public static final String TIMER_REMIND_PROJECT_DATES = "timer_remind_project_dates";
 

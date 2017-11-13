@@ -8,6 +8,7 @@
     <Relation name="Packet" relation="ConfOptions" notNull="true" cascade="DELETE"
               label="=packet" />
     <Relation name="Option" relation="ConfOptions" notNull="true" label="=option" />
+    <Boolean name="Optional" label="=optional" />
   </Fields>
   <Constraints>
     <Unique fields="Packet Option" />

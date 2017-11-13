@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+    <!ENTITY inp2x "max-width: 480px; min-width: 480px;">
+    ]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+
+        name="CarServiceComment" viewName="CarServiceComments" caption="=comment"
+        width="610" height="400">
+
+  <FlowPanel style="margin:5px; overflow:scroll;">
+    <Table kind="controls" cellStyle="vertical-align: top">
+      <col index="0" kind="label" />
+
+      <row>
+        <Label text="=template" />
+        <UnboundSelector viewName="CarMessageTemplates" choiceColumns="Name" newRowEnabled="false"
+                         style="width: 200px;" name="CommentTemplate" />
+      </row>
+      <row>
+        <Label for="Subject" name="SubjectLabel" />
+        <InputText source="Subject" style="width: 200px;" />
+      </row>
+      <row>
+        <Label for="Comment" class="bee-required" />
+        <RichTextEditor source="Comment" style="&inp2x; height: 120px; max-height: 150px;"
+                        required="true" />
+      </row>
+      <row>
+        <Label />
+        <CheckBox source="SentEmail" />
+      </row>
+      <row>
+        <Label />
+        <CheckBox source="SentSms" />
+      </row>
+      <row>
+        <Label for="Term" />
+        <InputDateTime source="Term" />
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

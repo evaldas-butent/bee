@@ -14,9 +14,10 @@
     <DataColumn name="Outsized" caption="=outsizedShort" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="=dangerousShort" width="15" sortable="false" />
 
-    <DataColumn name="Customer" label="=customerId" filterSupplier="value" />
-    <DataColumn name="CustomerName" label="=customer" renderColumns="CustomerName CustomerTypeName"/>
-    <RelColumn name="Payer" />
+    <DataColumn name="Customer" label="=customerId" />
+    <DataColumn name="CustomerName" label="=customer" renderColumns="CustomerName CustomerTypeName"
+                searchBy="CustomerName"/>
+    <RelColumn name="Payer" searchBy="PayerName" />
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName"
                filterSupplier="list" />
     <CalcColumn name="Cargo" type="string" caption="=cargos" maxWidth="300" searchBy="MinCargo MaxCargo">
