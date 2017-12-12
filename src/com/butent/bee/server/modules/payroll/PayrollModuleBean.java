@@ -241,7 +241,7 @@ public class PayrollModuleBean implements BeeModule, ConcurrencyBean.HasTimerSer
 
     Long currency = prm.getRelation(PRM_CURRENCY);
 
-    Table<Integer, String, Double> table = HashBasedTable.create();
+    Table<Integer, String, Pair<Double, Integer>> table = HashBasedTable.create();
 
     Map<Long, String> locationNames = new HashMap<>();
 
@@ -290,6 +290,7 @@ public class PayrollModuleBean implements BeeModule, ConcurrencyBean.HasTimerSer
         if (!BeeUtils.isEmpty(earnings)) {
           for (Earnings item : earnings) {
             Double amount = fundsOnly ? item.getSalaryFund() : item.total();
+            Integer days = BeeUtils.positive(item.getActualDays(), BeeConst.INT_FALSE);
 
             if (BeeUtils.isPositive(amount)) {
               Long objectId = item.getObjectId();
@@ -304,10 +305,11 @@ public class PayrollModuleBean implements BeeModule, ConcurrencyBean.HasTimerSer
 
               if (!BeeUtils.isEmpty(objectName)) {
                 if (table.contains(tnr, objectName)) {
-                  amount += table.get(tnr, objectName);
+                  amount += table.get(tnr, objectName).getA();
+                  days += table.get(tnr, objectName).getB();
                 }
 
-                table.put(tnr, objectName, amount);
+                table.put(tnr, objectName, Pair.of(amount, days));
               }
             }
           }
