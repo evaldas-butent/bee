@@ -63,7 +63,7 @@
 
 .bee-trade-print-document-title {
   /*font-family: Tahoma; Transrifus NOT SUPPORTED PDF*/
-  font-size: 16pt;
+  font-size: 14pt;
   font-style: italic;
   text-align: center;
 }
@@ -380,8 +380,8 @@
 }
 
 .bee-trade-print-item-price {
-    max-width: 5ex;
-    width: 5ex;
+    max-width: 8ex;
+    width: 8ex;
 }
 
 .bee-trade-print-item-ordinal {
@@ -604,4 +604,8 @@
 .bee-trade-payment-updating .bee-trade-prepayment-command-discharge {
   opacity: 0.5;
   cursor: wait;
+}
+
+.bee-trade-print-item-amount {
+  width: 80px;
 }
