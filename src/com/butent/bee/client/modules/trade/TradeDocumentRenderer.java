@@ -1,5 +1,8 @@
 package com.butent.bee.client.modules.trade;
 
+import com.butent.bee.shared.css.values.FontWeight;
+import com.butent.bee.shared.data.*;
+import com.butent.bee.shared.time.JustDate;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
@@ -25,10 +28,6 @@ import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -576,12 +575,6 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
     if (widget instanceof HtmlTable && !DataUtils.isEmpty(tdd.getItems())) {
       renderItems(tdd.getItems(), (HtmlTable) widget);
     }
-
-    widget = namedWidgets.get(NAME_TOTAL_IN_WORDS);
-    if (widget != null) {
-      TradeUtils.getTotalInWords(form.getDoubleValue(COL_TRADE_AMOUNT),
-          form.getLongValue(AdministrationConstants.COL_CURRENCY), widget);
-    }
   }
 
   private String renderDocNumber(IsRow row) {
@@ -619,8 +612,28 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     String currencyName = getStringValue(AdministrationConstants.ALS_CURRENCY_NAME);
 
-    for (int j = 0; j < columns.size(); j++) {
+    int discountIdx = items.getColumnIndex(COL_TRADE_DISCOUNT);
+    boolean discountVisible = false;
+
+    if (discountIdx >= 0) {
+      for (BeeRow row : items) {
+        if (BeeUtils.isPositive(row.getDouble(discountIdx))) {
+          discountVisible = true;
+          break;
+        }
+      }
+    }
+
+    int columnSize = columns.size();
+
+    for (int j = 0; j < columnSize; j++) {
       ItemColumn itemColumn = columns.get(j);
+
+      if (itemColumn.ordinal() == 12 && !discountVisible) {
+        columns.remove(itemColumn);
+        itemColumn = columns.get(j+1);
+        columnSize -= 1;
+      }
 
       String label = itemColumn.hasCurency
           ? BeeUtils.joinWords(itemColumn.getCaption(), currencyName) : itemColumn.getCaption();
@@ -637,7 +650,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       double total = getItemTotal(items, i);
 
       r++;
-      for (int j = 0; j < columns.size(); j++) {
+      for (int j = 0; j < columnSize; j++) {
         ItemColumn itemColumn = columns.get(j);
         table.setText(r, j, itemColumn.render(items, i, vat, total),
             STYLE_PREFIX + "item-" + itemColumn.styleSuffix);
@@ -648,23 +661,43 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
     }
 
     if (columns.size() > 1) {
-      r++;
-      table.setText(r, columns.size() - 2, Localized.dictionary().printDocumentSubtotal(),
-          STYLE_PREFIX + "items-total-label");
-      table.setText(r, columns.size() - 1, AMOUNT_FORMAT.format(totSum - vatSum),
-          STYLE_PREFIX + "items-total-value");
+      Map<String, Widget> namedWidgets = getFormView().getNamedWidgets();
 
       r++;
-      table.setText(r, columns.size() - 2, Localized.dictionary().printDocumentVat(),
+      table.setText(r, columns.size() - 3, Localized.dictionary().printDocumentSubtotal(),
           STYLE_PREFIX + "items-total-label");
-      table.setText(r, columns.size() - 1, AMOUNT_FORMAT.format(vatSum),
+      table.setText(r, columns.size() - 2, AMOUNT_FORMAT.format(totSum - vatSum),
           STYLE_PREFIX + "items-total-value");
 
+      table.getCellFormatter().setColSpan(r, 0, 2);
+      table.setText(r, 0, "Suma žodžiais:");
+
       r++;
-      table.setText(r, columns.size() - 2, Localized.dictionary().printDocumentTotal(),
+      table.setText(r, 1, Localized.dictionary().printDocumentVat(),
           STYLE_PREFIX + "items-total-label");
-      table.setText(r, columns.size() - 1, AMOUNT_FORMAT.format(totSum),
+      table.setText(r, 2, AMOUNT_FORMAT.format(vatSum),
           STYLE_PREFIX + "items-total-value");
+      table.getCellFormatter().setColSpan(r, 0, columnSize - 2);
+
+      Widget widget = namedWidgets.get(NAME_TOTAL_IN_WORDS);
+      if (widget != null) {
+        TradeUtils.getTotalInWords(getFormView().getDoubleValue(COL_TRADE_AMOUNT),
+                getFormView().getLongValue(AdministrationConstants.COL_CURRENCY), widget);
+      }
+      table.setWidget(r, 0, widget);
+
+      r++;
+      table.setText(r, 1, Localized.dictionary().printDocumentTotal(),
+          STYLE_PREFIX + "items-total-label");
+      table.setText(r, 2, AMOUNT_FORMAT.format(totSum),
+          STYLE_PREFIX + "items-total-value");
+      table.getCellFormatter().setColSpan(r, 0, columnSize - 2);
+
+      JustDate term = getFormView().getDateValue(COL_TRADE_TERM);
+      if (term != null) {
+        table.setText(r, 0, Localized.dictionary().printDueDate() + " " + Format.renderDateLong(term),
+                StyleUtils.className(FontWeight.BOLD));
+      }
     }
   }
 
