@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-12-18T21:25:38 -->
+<!-- 2018-01-02T18:57:19 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -628,7 +628,7 @@
 						<jr:column width="53" uuid="5ca4e871-8457-4980-ab09-083a93b4c979">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column7"/>
 							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-							<printWhenExpression><![CDATA[$P{SaleItemsDataSet}.getRowSet().getDistinctStrings(DataUtils.getColumnIndex("FullPrice", $P{SaleItemsDataSet}.getRowSet().getColumns())).size() > 1]]></printWhenExpression>
+							<printWhenExpression><![CDATA[$P{SaleItemsDataSet}.getRowSet().getDistinctStrings(DataUtils.getColumnIndex("FullPrice", $P{SaleItemsDataSet}.getRowSet().getColumns())).size() >= 1]]></printWhenExpression>
 							<jr:tableFooter height="0" rowSpan="1">
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
 							</jr:tableFooter>
@@ -648,7 +648,7 @@
 									<textElement textAlignment="Right" verticalAlignment="Bottom">
 										<font size="8"/>
 									</textElement>
-									<textFieldExpression><![CDATA[BeeUtils.round(($V{totalizer}.getTotal($P{SaleItemsDataSet}.getRowValue(), "FullPrice") - ($V{totalizer}.getVat($P{SaleItemsDataSet}.getRowValue(), "FullPrice"))) / $F{Quantity}.doubleValue(), 1)]]></textFieldExpression>
+									<textFieldExpression><![CDATA[BeeUtils.round(($V{totalizer}.getTotal($P{SaleItemsDataSet}.getRowValue(), "FullPrice") - ($V{totalizer}.getVat($P{SaleItemsDataSet}.getRowValue(), "FullPrice"))) / $F{Quantity}.doubleValue(), 4)]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>

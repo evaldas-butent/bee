@@ -299,13 +299,11 @@ public final class TradeActUtils {
         int size = 0;
 
         for (int d = ym.getDate().getDays(); d <= ym.getLast().getDays(); d++) {
-          if (holidays == null || !holidays.contains(d)) {
-            if (d >= minDay && d <= maxDay) {
-              days++;
-            }
-
-            size++;
+          if (d >= minDay && d <= maxDay) {
+            days++;
           }
+
+          size++;
         }
 
         if (days > 0) {

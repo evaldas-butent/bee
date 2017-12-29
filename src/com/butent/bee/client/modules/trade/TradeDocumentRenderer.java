@@ -147,7 +147,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
         }
           price -= itemVat;
 
-        return PRICE_FORMAT.format(price);
+        return BeeUtils.toString(price);
       }
     },
 
