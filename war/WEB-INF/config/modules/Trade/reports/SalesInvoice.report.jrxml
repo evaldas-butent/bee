@@ -648,7 +648,7 @@
 									<textElement textAlignment="Right" verticalAlignment="Bottom">
 										<font size="8"/>
 									</textElement>
-									<textFieldExpression><![CDATA[BeeUtils.round(($V{totalizer}.getTotal($P{SaleItemsDataSet}.getRowValue(), "FullPrice") - ($V{totalizer}.getVat($P{SaleItemsDataSet}.getRowValue(), "FullPrice"))) / $F{Quantity}.doubleValue(), 1)]]></textFieldExpression>
+									<textFieldExpression><![CDATA[BeeUtils.round(($V{totalizer}.getTotal($P{SaleItemsDataSet}.getRowValue(), "FullPrice") - ($V{totalizer}.getVat($P{SaleItemsDataSet}.getRowValue(), "FullPrice"))) / $F{Quantity}.doubleValue(), 4)]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
