@@ -30,5 +30,8 @@
     <!-- } Transrifus -->
 
     <String name="ArticleNo" precision="50" label="=ecItemCode" />
+    <Boolean name="ExportWebsite" label="=exportToWebsite" defValue="null" />
+    <Date name="AcquireDate" label="=trdAcquireDate" />
+    <Text name="Notes" label="=trdNotes" />
   </Fields>
 </Table>
