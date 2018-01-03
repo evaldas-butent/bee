@@ -80,6 +80,17 @@
             <Relations relColumn="ServiceObject" inline="true"
                        defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
           </page>
+          <page>
+            <text>=pictures</text>
+            <Gallery viewName="SvcObjectGraphics" relColumn="ServiceObject" pictureColumn="Picture"
+                     orderColumn="Ordinal" summarize="true" />
+          </page>
+          <page>
+            <text>=trdNotes</text>
+            <SimplePanel>
+              <InputArea source="Notes" class="occupy-1" summarize="true" />
+            </SimplePanel>
+          </page>
         </TabbedPages>
       </FlowPanel>
     </center>

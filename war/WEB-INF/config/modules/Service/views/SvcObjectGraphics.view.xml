@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="SvcObjectGraphics" source="SvcObjectGraphics"
+      caption="=itemGraphics"
+>
+    <Columns>
+        <SimpleColumn name="ServiceObject" />
+        <SimpleColumn name="Ordinal" />
+        <SimpleColumn name="Picture" />
+    </Columns>
+
+    <Order>
+        <OrderBy column="Ordinal" />
+    </Order>
+</View>

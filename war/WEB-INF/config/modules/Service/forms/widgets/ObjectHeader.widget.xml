@@ -9,9 +9,17 @@
 <SplitPanel xmlns="http://www.butent.com/widget" splitterSize="4" name="MainInfoSplit" style="position: initial;">
   <east size="400">
     <FlowPanel class="bee-svc-contact-panel">
+      <FlowPanel class="&mrcl;" style="&mrst;" for="ExportWebsite">
+        <FlowPanel style="width: 50em;" >
+          <Label />
+        </FlowPanel>
+        <FlowPanel style="&mfld;&finp;width: 41em;" >
+          <CheckBox source="ExportWebsite" />
+        </FlowPanel>
+      </FlowPanel>
       <FlowPanel class="&mrcl;" style="&mrst;" for="Customer">
         <FlowPanel style="&mfld;&finp;width: 41em;" >
-          <Label text="=client" style="&flbl;" />
+          <Label text="=svcUser" style="&flbl;" />
           <DataSelector name="Customer" source="Customer" renderColumns="CustomerName"
                         style="&finp;"/>
         </FlowPanel>
@@ -37,7 +45,7 @@
 
       <FlowPanel class="&mrcl;" style="&mrst;" for="ContactPerson">
         <FlowPanel  style="&mfld;width: 20em;">
-          <Label text="=phone" style="&flbl;" />
+          <Label text="=mobile" style="&flbl;" />
           <DataSelector source="ContactPerson" options="Customer"
                         choiceColumns="FirstName LastName Phone Email Address CompanyName"
                         renderColumns="ContactPhone"
@@ -51,7 +59,14 @@
                         renderColumns="ContactEmail"
                         style="&finp;"/>
         </FlowPanel>
+      </FlowPanel>
 
+      <FlowPanel>
+        <FlowPanel style="&mfld; width: 29em;" for="Contractor">
+          <Label for="Contractor" style="&flbl;" />
+          <DataSelector source="Contractor" viewName="Companies" renderColumns="ContractorName"
+                        style="&finp;"/>
+        </FlowPanel>
       </FlowPanel>
     </FlowPanel>
   </east>
@@ -65,9 +80,9 @@
                         choiceColumns="ParentName Name" style="&finp;"/>
         </FlowPanel>
 
-        <FlowPanel style="&mfld; width: 20em;" for="ArticleNo">
-          <Label for="ArticleNo" style="&flbl;" />
-          <InputText source="ArticleNo" style="&finp;" />
+        <FlowPanel style="&mfld; width: 20em;" for="Item">
+          <Label for="Item" style="&flbl;" />
+          <DataSelector source="Item" viewName="Items" style="&finp;"/>
         </FlowPanel>
       </FlowPanel>
 
@@ -90,10 +105,9 @@
       </FlowPanel>
 
       <FlowPanel class="&mrcl;" style="&mrst;">
-        <FlowPanel style="&mfld; width: 19em;" for="Contractor">
-          <Label for="Contractor" style="&flbl;" />
-          <DataSelector source="Contractor" viewName="Companies" renderColumns="ContractorName"
-                        style="&finp;"/>
+        <FlowPanel style="&mfld; width: 19em;" for="AcquireDate">
+          <Label for="AcquireDate" style="&flbl;" />
+          <InputDate source="AcquireDate" style="&finp;" />
         </FlowPanel>
 
         <FlowPanel style="&mfld; width: 41em;" for="Address">
@@ -120,23 +134,14 @@
       </FlowPanel>
 
       <FlowPanel class="&mrcl;" style="&mrst;">
-        <FlowPanel style="&mfld; width: 19em;" for="Seller">
+        <FlowPanel style="&mfld; width: 40em;" for="Seller">
           <Label for="Seller" style="&flbl;" />
           <InputText source="Seller" style="&finp;"/>
         </FlowPanel>
 
-        <FlowPanel style="&mfld; width: 41em;" for="ItemInButenta">
+        <FlowPanel style="&mfld; width: 20em;" for="ItemInButenta">
           <Label for="ItemInButenta" style="&flbl;" />
           <InputText source="ItemInButenta" style="&finp;" />
-        </FlowPanel>
-      </FlowPanel>
-
-      <FlowPanel class="&mrcl;" style="&mrst;">
-        <FlowPanel style="&mfld; width: 19em;" />
-
-        <FlowPanel style="&mfld; width: 41em;" for="Item">
-          <Label for="Item" style="&flbl;" />
-          <DataSelector source="Item" viewName="Items" style="&finp;"/>
         </FlowPanel>
       </FlowPanel>
       <!-- } Transrifus -->

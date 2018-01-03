@@ -69,5 +69,8 @@
     </SimpleJoin>
     <!-- } Transrifus -->
     <SimpleColumn name="ArticleNo" />
+    <SimpleColumn name="ExportWebsite" />
+    <SimpleColumn name="AcquireDate" />
+    <SimpleColumn name="Notes" />
   </Columns>
 </View>
