@@ -2,7 +2,7 @@
 <!DOCTYPE Form [
   <!ENTITY section "margin-top: 5px;">
   <!ENTITY bold "font-weight:bold;">
-  <!ENTITY form "PrintTradeActReturn">
+  <!ENTITY form "PrintTradeActReturnExtra">
   <!ENTITY hdr ".bee-form-PrintTradeActSalePhysical .bee-trade-itemsInfo-header .bee-trade-itemsInfo-">
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
