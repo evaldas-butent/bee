@@ -394,3 +394,16 @@
   color: #e3e3e3;
   cursor: pointer;
 }
+
+.bee-ta-report-trf-body-innerTb td{
+    border: none;
+}
+
+.bee-ta-report-trf-body-innerTbRow:hover {
+    text-decoration:underline;
+    cursor:pointer;
+}
+
+.bee-ta-report-trf-body-innerTbRow {
+
+}

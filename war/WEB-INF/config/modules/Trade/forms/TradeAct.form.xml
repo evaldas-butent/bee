@@ -15,10 +15,10 @@
   caption="=tradeAct" showRowId="true" enabledActions="save close"
   width="1050" height="700"
   >
-  <f:properties reports="PrintTradeActSalePhysical, PrintTradeActReturn, PrintTASaleNoStock,
+  <f:properties reports="PrintTradeActSalePhysical, PrintTradeActReturn, PrintTradeActReturnExtra, PrintTASaleNoStock,
      PrintTASaleRent, PrintTASaleAddition, PrintTASaleSuggestion, PrintTASaleProforma,
 
-     PrintTradeActSalePhysicalPRent, PrintTradeActReturnPRent, PrintTASaleNoStockPRent,
+     PrintTradeActSalePhysicalPRent, PrintTradeActReturnPRent, PrintTradeActReturnExtraPRent, PrintTASaleNoStockPRent,
      PrintTASaleRentPRent, PrintTASaleAdditionPRent, PrintTASaleSuggestionPRent, PrintTASaleProformaPRent" />
 
   <FlowPanel>
