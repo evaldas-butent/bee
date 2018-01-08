@@ -578,6 +578,7 @@
       <xs:enumeration value="ServiceSettings" />
       <xs:enumeration value="ServiceTree" />
       <xs:enumeration value="ServiceTypes" />
+      <xs:enumeration value="ServicePlace" />
       <xs:enumeration value="SvcObjectGraphics" />
       <xs:enumeration value="ShipmentRequests" />
       <xs:enumeration value="ShippingTerms" />
