@@ -9,7 +9,7 @@
     <String name="Address" precision="100" label="=address" />
 
     <Relation name="Customer" relation="Companies" label="=customer" />
-    <Relation name="Contractor" relation="Companies" label="=svcContractor" />
+    <Relation name="Contractor" relation="Companies" label="=owner" />
 
     <Relation name="ContactPerson" relation="CompanyPersons" label="=contact" />
     <!--TODO: remove Manufacturer deprecated-->
