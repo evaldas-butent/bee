@@ -145,8 +145,10 @@ final class TradeActHelper {
       case COL_SALE:
         return Localized.dictionary().trdInvoiceId();
 
+      case "Arr" + COL_TRADE_INVOICE_PREFIX:
       case COL_TRADE_INVOICE_PREFIX:
         return Localized.dictionary().trdInvoicePrefix();
+      case "Arr" + COL_TRADE_INVOICE_NO:
       case COL_TRADE_INVOICE_NO:
         return Localized.dictionary().trdInvoiceNo();
 
@@ -166,6 +168,19 @@ final class TradeActHelper {
         return Localized.dictionary().taDaysPerWeekShort();
       case COL_TA_SERVICE_MIN:
         return Localized.dictionary().taMinTermShort();
+
+      case "Arr" + COL_TRADE_AMOUNT:
+        return "Suma EUR sąsk.";
+
+      case "ArrInvoiceDate" :
+        return "Sąsk. data";
+
+      case "ArrSaleItemDiscount":
+        return "Nuolaida sąsk. %";
+
+      case "SaleFactor":
+        return "Sąsk. tarifas %";
+
 
       default:
         logger.warning(NameUtils.getClassName(TradeActHelper.class), name, "label not defined");
@@ -228,9 +243,11 @@ final class TradeActHelper {
         return getQuantityFormat();
 
       case COL_TRADE_ITEM_PRICE:
+      case "SaleFactor":
         return getPriceFormat();
 
       case COL_TRADE_DISCOUNT:
+        case "SaleItemDiscount":
         return getDiscountPercentFormat();
 
       case ALS_BASE_AMOUNT:
@@ -240,6 +257,7 @@ final class TradeActHelper {
       case ALS_TOTAL_AMOUNT:
       case ALS_ITEM_TOTAL:
       case COL_COST_AMOUNT:
+      case COL_TRADE_AMOUNT:
         return getAmountFormat();
 
       case COL_ITEM_WEIGHT:
@@ -309,6 +327,9 @@ final class TradeActHelper {
       case ALS_TOTAL_AMOUNT:
       case ALS_ITEM_TOTAL:
       case COL_COST_AMOUNT:
+      case COL_TRADE_AMOUNT:
+      case "SaleItemDiscount":
+      case "SaleFactor":
         return ValueType.NUMBER;
 
       case ALS_WAREHOUSE_CODE:
@@ -317,7 +338,13 @@ final class TradeActHelper {
       case ALS_COMPANY_NAME:
       case COL_FIRST_NAME:
       case COL_LAST_NAME:
+      case COL_TRADE_SALE_SERIES:
+      case COL_TRADE_INVOICE_PREFIX:
+      case COL_TRADE_INVOICE_NO:
         return ValueType.TEXT;
+
+      case "InvoiceDate":
+        return ValueType.DATE;
     }
 
     if (colName.startsWith(PFX_START_STOCK)

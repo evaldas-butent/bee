@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.trade;
 
+import com.butent.bee.shared.i18n.Formatter;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -3090,12 +3091,6 @@ public class TradeActBean implements HasTimerService {
       }
     }
     actConditions.add(kindConditions);
-
-    actConditions.add(
-        SqlUtils.or(
-            SqlUtils.isNull(TBL_TRADE_ACTS, COL_TA_STATUS),
-            SqlUtils.notNull(TBL_TRADE_STATUSES, COL_STATUS_ACTIVE)));
-
     actConditions.add(
         SqlUtils.or(
             SqlUtils.isNull(TBL_TRADE_ACTS, COL_TA_UNTIL),
@@ -3109,7 +3104,9 @@ public class TradeActBean implements HasTimerService {
     serviceConditions.add(
         SqlUtils.or(
             SqlUtils.isNull(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM),
-            SqlUtils.less(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM, endDate)));
+            SqlUtils.less(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM, endDate)
+        )
+    );
 
     if (!companies.isEmpty()) {
       actConditions.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_COMPANY, companies));
@@ -3196,8 +3193,13 @@ public class TradeActBean implements HasTimerService {
     }
 
     actQuery.setWhere(SqlUtils.and(actConditions,
-        SqlUtils.in(TBL_TRADE_ACTS, actIdName, TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT,
-            serviceConditions)));
+        SqlUtils.in(TBL_TRADE_ACTS, actIdName,
+                new SqlSelect().addFields(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT)
+                        .addFrom(TBL_TRADE_ACT_SERVICES)
+                        .addFromLeft(TBL_ITEMS,
+                                sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_SERVICES, COL_TA_ITEM))
+                        .setWhere(serviceConditions)
+        )));
 
     String acts = qs.sqlCreateTemp(actQuery);
 
@@ -3241,6 +3243,15 @@ public class TradeActBean implements HasTimerService {
         COL_TA_SERVICE_FACTOR, COL_TA_SERVICE_DAYS, COL_TA_SERVICE_MIN, COL_TRADE_DISCOUNT);
 
     serviceQuery.addFields(TBL_ITEMS, COL_TIME_UNIT);
+    serviceQuery.addEmptyText("Arr" + COL_TRADE_AMOUNT);
+
+    serviceQuery.addEmptyText("ArrInvoiceDate");
+    serviceQuery.addEmptyText("ArrSaleItemDiscount");
+    serviceQuery.addEmptyText("Arr" + COL_TRADE_INVOICE_PREFIX);
+    serviceQuery.addEmptyText("Arr" + COL_TRADE_INVOICE_NO);
+    serviceQuery.addEmptyText("Arr" + COL_SALE);
+    serviceQuery.addEmptyDouble("ArrTotalAmount");
+    serviceQuery.addEmptyDouble("SaleFactor");
 
     serviceQuery.addFrom(acts)
         .addFromLeft(TBL_TRADE_ACT_SERVICES,
@@ -3305,23 +3316,25 @@ public class TradeActBean implements HasTimerService {
     SqlSelect query = new SqlSelect();
 
     if (groupBy.isEmpty()) {
-      query.addFields(tmp, COL_TRADE_ACT, COL_TRADE_ACT_NAME, COL_TA_DATE, COL_TA_UNTIL,
-          COL_SERIES_NAME, COL_TA_NUMBER, COL_OPERATION_NAME, COL_STATUS_NAME,
+      query.addFields(tmp, COL_TRADE_ACT, COL_TRADE_ACT_NAME, COL_OPERATION_NAME, COL_STATUS_NAME ,COL_TA_DATE,
+              COL_TA_UNTIL,  COL_SERIES_NAME, COL_TA_NUMBER,
           ALS_COMPANY_NAME, COL_COMPANY_OBJECT_NAME);
 
       if (hasManager) {
         query.addFields(tmp, COL_FIRST_NAME, COL_LAST_NAME);
       }
 
-      query.addFields(tmp, ALS_ITEM_TOTAL, COL_TA_SERVICE_TARIFF,
-          COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO,
-          COL_TA_ITEM, ALS_ITEM_NAME, COL_ITEM_ARTICLE, COL_TIME_UNIT,
-          ALS_SUPPLIER_NAME, COL_COST_AMOUNT,
-          COL_TRADE_ITEM_QUANTITY, ALS_UNIT_NAME, COL_TRADE_ITEM_PRICE,
-          COL_TA_SERVICE_FACTOR, COL_TA_SERVICE_DAYS, COL_TA_SERVICE_MIN,
-          COL_TRADE_DISCOUNT, ALS_BASE_AMOUNT);
+      query.addFields(tmp, COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO, COL_TA_ITEM, ALS_ITEM_NAME,
+              COL_ITEM_ARTICLE, COL_TIME_UNIT, ALS_SUPPLIER_NAME, COL_COST_AMOUNT, COL_TRADE_ITEM_QUANTITY,
+              ALS_UNIT_NAME, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, COL_TA_SERVICE_FACTOR,
+              ALS_BASE_AMOUNT, "Arr" + COL_TRADE_INVOICE_PREFIX, "Arr" + COL_TRADE_INVOICE_NO, "ArrInvoiceDate", "ArrSaleItemDiscount",
+              "Arr" + COL_TRADE_AMOUNT, ALS_ITEM_TOTAL, "SaleFactor", COL_TA_SERVICE_TARIFF, COL_TA_SERVICE_DAYS,
+              COL_TA_SERVICE_MIN,
+              "Arr" + COL_SALE, "ArrTotalAmount" // hidden column
+      );
 
-      query.addOrder(tmp, COL_TA_DATE, COL_TRADE_ACT, ALS_ITEM_NAME, COL_ITEM_ARTICLE, COL_TA_ITEM);
+     // query.addOrder(tmp, COL_TA_DATE, COL_TRADE_ACT, ALS_ITEM_NAME, COL_ITEM_ARTICLE, COL_TA_ITEM);
+      query.addOrder(tmp, COL_TA_SERVICE_FROM, ALS_COMPANY_NAME);
 
     } else {
       for (String group : groupBy) {
@@ -3382,8 +3395,25 @@ public class TradeActBean implements HasTimerService {
     }
 
     query.addFrom(tmp);
-    query.setWhere(SqlUtils.and(SqlUtils.positive(tmp, ALS_BASE_AMOUNT),
-            SqlUtils.notNull(tmp, COL_TA_SERVICE_FROM)));
+
+    // ID 2 Don't add empty single time service
+    query.setWhere(
+            SqlUtils.and(
+              SqlUtils.and(
+              SqlUtils.notNull(
+                      SqlUtils.sqlIf(
+                        SqlUtils.isNull(tmp, COL_TA_SERVICE_FROM),
+                        SqlUtils.sqlIf(SqlUtils.notNull(tmp, COL_TIME_UNIT), SqlUtils.sqlTrue(), null),
+                        SqlUtils.sqlTrue()
+                      )
+              ),
+              SqlUtils.or(SqlUtils.positive(tmp, COL_TRADE_ITEM_QUANTITY), SqlUtils.notNull(tmp, COL_TIME_UNIT))
+            ),
+                    SqlUtils.or(SqlUtils.isNull(tmp, COL_TA_SERVICE_FROM),
+                            SqlUtils.moreEqual(tmp, COL_TA_SERVICE_FROM, startDate)),
+                    SqlUtils.or(SqlUtils.isNull(tmp, COL_TA_SERVICE_TO), SqlUtils.lessEqual(tmp, COL_TA_SERVICE_TO, endDate))
+          )
+    );
 
     SimpleRowSet data = qs.getData(query);
     qs.sqlDropTemp(tmp);
@@ -3505,6 +3535,7 @@ public class TradeActBean implements HasTimerService {
   }
 
   private void prepareTransferReport(String tmp, Long startDate, Long endDate, String idName) {
+    logger.debug("prepareTransferReport >>>");
     SqlSelect query = new SqlSelect()
         .addFields(tmp, idName, COL_TA_DATE, COL_TA_UNTIL, COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO,
             COL_TIME_UNIT, COL_TRADE_ITEM_QUANTITY, ALS_ITEM_TOTAL, COL_TA_SERVICE_TARIFF,
@@ -3512,7 +3543,94 @@ public class TradeActBean implements HasTimerService {
             COL_TRADE_DISCOUNT)
         .addFrom(tmp);
 
+    String saleId = sys.getIdName(TBL_SALES);
+
+    SqlSelect invoicesQuery = new SqlSelect()
+            .addFields(TBL_TRADE_ACT_SERVICES, idName)
+            .addFields(TBL_SALES, COL_TRADE_INVOICE_NO, saleId)
+            .addField(TBL_SALES, COL_TRADE_DATE, "InvoiceDate")
+            .addExpr(SqlUtils.minus(
+                    TradeModuleBean.getAmountExpression(TBL_SALE_ITEMS),
+                    SqlUtils.multiply(TradeModuleBean.getAmountExpression(TBL_SALE_ITEMS),
+                            SqlUtils.divide(SqlUtils.nvl(SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_DISCOUNT), 0),
+                            100))
+            ),COL_TRADE_AMOUNT)
+//            .addFields(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_ITEM_PRICE, COL_TRADE_VAT_PLUS, COL_TRADE_VAT,
+//                    COL_TRADE_VAT_PERC)
+            .addField(TBL_SALE_ITEMS, COL_TRADE_DISCOUNT, "SaleItemDiscount")
+            .addField(TBL_SALES_SERIES, COL_SERIES_NAME, COL_TRADE_INVOICE_PREFIX)
+            .addFrom(TBL_TRADE_ACT_SERVICES)
+            .addFromInner(TBL_TRADE_ACT_INVOICES,
+                    sys.joinTables(TBL_TRADE_ACT_SERVICES, TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
+            .addFromLeft(TBL_SALE_ITEMS,
+                    sys.joinTables(TBL_SALE_ITEMS, TBL_TRADE_ACT_INVOICES, "SaleItem"))
+            .addFromLeft(TBL_SALES,
+                    sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+            .addFromLeft(TBL_SALES_SERIES,
+                    sys.joinTables(TBL_SALES_SERIES, TBL_SALES, COL_TRADE_SALE_SERIES));
+
+
     SimpleRowSet data = qs.getData(query);
+    SimpleRowSet invoicesData = qs.getData(invoicesQuery
+              .setWhere(SqlUtils.and(
+                      SqlUtils.inList(TBL_TRADE_ACT_SERVICES, idName, (Object[]) data.getLongColumn(idName)),
+                      SqlUtils.more(TBL_SALES, COL_TRADE_DATE, startDate),
+                      SqlUtils.less(TBL_SALES, COL_TRADE_DATE, endDate)
+                      )
+              )
+    );
+
+    Map<String, Map<String, String>> collectedInvoicesData = new HashMap<>();
+
+    for (SimpleRow row : invoicesData) {
+      Map<String, String> collData = collectedInvoicesData.get(row.getValue(idName));
+
+
+      if (collData == null){
+        collData = new HashMap<>();
+        collectedInvoicesData.put(row.getValue(idName), collData);
+        collData.put("Arr" + COL_TRADE_AMOUNT, "");
+        collData.put("ArrTotalAmount", "");
+        collData.put("ArrInvoiceDate", "");
+        collData.put("ArrSaleItemDiscount", "");
+        collData.put("Arr" + COL_TRADE_INVOICE_PREFIX, "");
+        collData.put("Arr" + COL_TRADE_INVOICE_NO, "");
+        collData.put("Arr" + COL_SALE, "");
+//        collData.put("HasData", BeeConst.STRING_FALSE);
+      }
+
+      boolean hasData = collData.containsKey("HasData");
+      String sale = row.getValue(saleId);
+
+      collData.put("Arr" + COL_TRADE_AMOUNT, (hasData ? collData.get("Arr" + COL_TRADE_AMOUNT) + "\n" : "")
+              + BeeUtils.toString(BeeUtils.unbox(row.getDouble(COL_TRADE_AMOUNT)), 2));
+
+      collData.put("ArrInvoiceDate", (hasData ? collData.get("ArrInvoiceDate") + "\n" : "")
+              + row.getDate("InvoiceDate").toString());
+
+      if (row.getDouble("SaleItemDiscount") != null) {
+        collData.put("ArrSaleItemDiscount", (hasData ? collData.get("ArrSaleItemDiscount") + "\n" : "")
+                + BeeUtils.toString(row.getDouble("SaleItemDiscount"), 2));
+      } else {
+        collData.put("ArrSaleItemDiscount", (hasData ? collData.get("ArrSaleItemDiscount") + "\n" : "")
+                + "");
+      }
+
+      collData.put("Arr" + COL_TRADE_INVOICE_PREFIX, (hasData ? collData.get("Arr" + COL_TRADE_INVOICE_PREFIX) + "\n" : "")
+              + (BeeUtils.isEmpty(row.getValue(COL_TRADE_INVOICE_PREFIX)) ? "" : row.getValue(COL_TRADE_INVOICE_PREFIX))
+      );
+
+      collData.put("Arr" + COL_TRADE_INVOICE_NO, (hasData ? collData.get("Arr" + COL_TRADE_INVOICE_NO) + "\n" : "")
+              + (BeeUtils.isEmpty(row.getValue(COL_TRADE_INVOICE_NO)) ? "" : row.getValue(COL_TRADE_INVOICE_NO)));
+
+      collData.put("Arr" + COL_SALE, (hasData ? collData.get("Arr" + COL_SALE) + "\n" : "")
+        + (BeeUtils.isEmpty(sale) ? "" : sale));
+
+      collData.put("ArrTotalAmount", BeeUtils.toString(BeeUtils.toDouble(collData.get("ArrTotalAmount"))
+              + BeeUtils.unbox(row.getDouble(COL_TRADE_AMOUNT))));
+
+      collData.put("HasData", BeeConst.STRING_TRUE);
+    }
 
     Set<Integer> holidays = new HashSet<>();
 
@@ -3557,8 +3675,6 @@ public class TradeActBean implements HasTimerService {
       Range<DateTime> serviceRange = TradeActUtils.createServiceRange(
         dateFrom, dateTo, tu, reportRange, actRange);
 
-      if (serviceRange != null || (serviceRange == null && tu == null && dateFrom == null
-        && dateTo == null)) {
         SqlUpdate update = new SqlUpdate(tmp);
 
         if (serviceRange != null) {
@@ -3582,6 +3698,8 @@ public class TradeActBean implements HasTimerService {
         }
 
         Double factor = row.getDouble(COL_TA_SERVICE_FACTOR);
+        Double continuousFactor = 1D;  // jei mėn, tai 1 jei diena 30
+
 
         if (tu != null && serviceRange != null) {
           boolean ok = true;
@@ -3601,6 +3719,7 @@ public class TradeActBean implements HasTimerService {
                   }
                 }
               }
+              continuousFactor = 30D;
               break;
 
             case MONTH:
@@ -3628,13 +3747,34 @@ public class TradeActBean implements HasTimerService {
           update.addConstant(ALS_BASE_AMOUNT, amount);
         }
 
+        Double saleTotals = null;
+        Map<String, String> collInvoices = collectedInvoicesData.get(row.getValue(idName));
+        if (collInvoices != null) {
+          saleTotals = BeeUtils.toDoubleOrNull(collInvoices.get("ArrTotalAmount"));
+          for (String colName : collInvoices.keySet()) {
+            if (colName == idName || colName == "HasData") {
+              continue;
+            }
+
+            update.addConstant(colName, collInvoices.get(colName));
+          }
+        }
+
+        Double saleFactor = null;
+
+        if (tu != null && BeeUtils.unbox(saleTotals) > 0 && BeeUtils.unbox(factor) > 0 && BeeUtils.unbox(row.getDouble(ALS_ITEM_TOTAL)) > 0) {
+          saleFactor = BeeUtils.unbox(saleTotals) / factor / row.getDouble(ALS_ITEM_TOTAL) * 100 * continuousFactor;
+          update.addConstant("SaleFactor", saleFactor);
+        }
+
         update.setWhere(SqlUtils.equals(tmp, idName, row.getLong(idName)));
 
         if (!update.isEmpty()) {
           qs.updateData(update);
         }
-      }
+
     }
+    logger.debug("<<< prepareTransferReport");
   }
 
   private void addStockColumns(SqlSelect query, String tmp, String prefix,

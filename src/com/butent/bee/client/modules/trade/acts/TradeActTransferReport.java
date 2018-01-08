@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.trade.acts;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.dom.client.TableElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.i18n.client.NumberFormat;
 
@@ -76,7 +77,11 @@ public class TradeActTransferReport extends ReportInterceptor {
       COL_ITEM_TYPE, COL_ITEM_GROUP, COL_TA_ITEM);
 
   private static final List<String> TOTAL_COLUMNS = Arrays.asList(COL_TRADE_ITEM_QUANTITY,
-      ALS_BASE_AMOUNT, COL_COST_AMOUNT);
+      ALS_BASE_AMOUNT, COL_COST_AMOUNT, "Arr" + COL_TRADE_AMOUNT);
+
+  private static final List<String> HIDDEN_COLUMNS = Arrays.asList("Arr" + COL_SALE, "ArrTotalAmount");
+
+  private static final List<String> AVG_COLUMNS = Arrays.asList("SaleFactor");
 
   private static final List<String> MONEY_COLUMNS = Arrays.asList(COL_TRADE_ITEM_PRICE,
       ALS_BASE_AMOUNT);
@@ -91,6 +96,7 @@ public class TradeActTransferReport extends ReportInterceptor {
 
   private static final String KEY_ACT = "act";
   private static final String KEY_SERVICE = "svc";
+  private static final String KEY_INVOICE = "inv";
 
   private static String getColumnStyle(String colName) {
     return STYLE_PREFIX + colName;
@@ -291,6 +297,7 @@ public class TradeActTransferReport extends ReportInterceptor {
     List<ValueType> types = TradeActHelper.getTypes(viewNames, data);
 
     Map<Integer, Double> totals = new HashMap<>();
+    Map<Integer, Integer> avgCnt = new HashMap<>();
 
     final boolean hasAct = data.hasColumn(COL_TRADE_ACT);
     final boolean hasService = data.hasColumn(COL_TA_ITEM);
@@ -308,9 +315,14 @@ public class TradeActTransferReport extends ReportInterceptor {
     xs.setFontRef(boldRef);
 
     int headerStyleRef = sheet.registerStyle(xs);
+    int numberHiddenColumns = HIDDEN_COLUMNS.size();
 
-    for (int j = 0; j < data.getNumberOfColumns(); j++) {
+    for (int j = 0; j < data.getNumberOfColumns() - numberHiddenColumns; j++) {
       String colName = data.getColumnName(j);
+
+      if (HIDDEN_COLUMNS.contains(colName)) {
+        continue;
+      }
 
       if (COL_TA_ITEM.equals(colName)) {
         text = Localized.dictionary().service();
@@ -325,6 +337,9 @@ public class TradeActTransferReport extends ReportInterceptor {
 
       if (TOTAL_COLUMNS.contains(colName)) {
         totals.put(j, BeeConst.DOUBLE_ZERO);
+      } else if (AVG_COLUMNS.contains(colName)) {
+          totals.put(j, BeeConst.DOUBLE_ZERO);
+          avgCnt.put(j, 0);
       }
     }
 
@@ -348,8 +363,13 @@ public class TradeActTransferReport extends ReportInterceptor {
     for (int i = 0; i < data.getNumberOfRows(); i++) {
       xr = new XRow(r);
 
-      for (int j = 0; j < data.getNumberOfColumns(); j++) {
+      for (int j = 0; j < data.getNumberOfColumns() - numberHiddenColumns; j++) {
         String colName = data.getColumnName(j);
+
+        if (HIDDEN_COLUMNS.contains(colName)) {
+          continue;
+        }
+
         ValueType type = types.get(j);
 
         text = null;
@@ -369,8 +389,14 @@ public class TradeActTransferReport extends ReportInterceptor {
             text = (format == null) ? data.getValue(i, j) : format.format(value);
             styleName = styleRightAlign;
 
-            if (totals.containsKey(j)) {
-              totals.put(j, totals.get(j) + value);
+            if (totals.containsKey(j) && data.getColumnIndex("Arr" + COL_TRADE_AMOUNT) != j) {
+
+                totals.put(j, totals.get(j) + value);
+
+
+              if (avgCnt.containsKey(j)) {
+                  avgCnt.put(j, avgCnt.get(j) + 1);
+              }
             }
 
             int styleRef = MONEY_COLUMNS.contains(colName) ? moneyStyleRef : numberStyleRef;
@@ -394,7 +420,32 @@ public class TradeActTransferReport extends ReportInterceptor {
           export = !BeeUtils.isEmpty(text);
         }
 
-        table.setText(r, j, text, getColumnStyle(colName), styleName);
+        if (data.getColumnIndex("Arr" + COL_TRADE_AMOUNT) == j) {
+          totals.put(j, totals.get(j) + BeeUtils.unbox(data.getDouble(i, "ArrTotalAmount")));
+        }
+
+        if (BeeUtils.isPrefix(colName, "Arr") && !BeeUtils.isEmpty(text)) {
+          if (BeeUtils.isSuffix(colName, COL_TRADE_INVOICE_PREFIX)
+                  || BeeUtils.isSuffix(colName, COL_TRADE_INVOICE_NO)) {
+            HtmlTable inv = new HtmlTable(STYLE_BODY + "-innerTb");
+            String ids [] = BeeUtils.split(data.getValue(i, "Arr" + COL_SALE), '\n');
+
+            int itemRow = 0;
+            for (String item : BeeUtils.split(text, '\n')) {
+              inv.setText(itemRow, 0, item);
+              inv.getRowFormatter().addStyleName(itemRow, STYLE_BODY + "-innerTbRow");
+              DomUtils.setDataProperty(inv.getRow(itemRow), KEY_INVOICE, ids[itemRow]);
+              itemRow++;
+            }
+
+            table.setWidget(r, j, inv);
+
+          } else {
+            table.setHtml(r, j, BeeUtils.replace(text, "\n", "<br />"), getColumnStyle(colName), styleName);
+          }
+        } else {
+          table.setText(r, j, text, getColumnStyle(colName), styleName);
+        }
         if (export) {
           xr.add(new XCell(j, text));
         }
@@ -440,9 +491,16 @@ public class TradeActTransferReport extends ReportInterceptor {
       for (int index : indexes) {
         String colName = data.getColumnName(index);
         Double value = totals.get(index);
+        if (avgCnt.containsKey(index) && BeeUtils.isPositive(avgCnt.get(index))) {
+            value = value / avgCnt.get(index);
+        }
 
         NumberFormat format = TradeActHelper.getNumberFormat(colName);
         text = (format == null) ? BeeUtils.toString(value) : format.format(value);
+
+        if (data.getColumnIndex("Arr" + COL_TRADE_AMOUNT) == index) {
+          text = TradeActHelper.getPriceFormat().format(value);
+        }
 
         table.setText(r, index, text, getColumnStyle(colName), styleRightAlign);
         xr.add(new XCell(index, text, footerStyleRef));
@@ -475,6 +533,9 @@ public class TradeActTransferReport extends ReportInterceptor {
           if (DataUtils.isId(itemId)) {
             RowEditor.open(VIEW_ITEMS, itemId, Opener.MODAL);
           }
+        } else if (DataUtils.isId(DomUtils.getDataPropertyLong(row, KEY_INVOICE))) {
+          long saleId = DomUtils.getDataPropertyLong(row, KEY_INVOICE);
+          RowEditor.open(VIEW_SALES, saleId, Opener.MODAL);
         }
       });
     }

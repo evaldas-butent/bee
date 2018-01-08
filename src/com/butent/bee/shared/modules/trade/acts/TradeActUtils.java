@@ -255,6 +255,10 @@ public final class TradeActUtils {
   }
 
   public static Map<Long, Double> getItemQuantities(BeeRowSet rowSet) {
+    return getItemQuantities(rowSet, false);
+  }
+
+  public static Map<Long, Double> getItemQuantities(BeeRowSet rowSet, boolean sum) {
     Map<Long, Double> result = new HashMap<>();
 
     if (!DataUtils.isEmpty(rowSet)) {
@@ -266,7 +270,11 @@ public final class TradeActUtils {
         Double qty = row.getDouble(qtyIndex);
 
         if (DataUtils.isId(item) && BeeUtils.isPositive(qty)) {
-          result.put(item, qty);
+          if (sum) {
+            result.put(item, BeeUtils.unbox(result.get(item)) + qty);
+          } else {
+            result.put(item, qty);
+          }
         }
       }
     }
