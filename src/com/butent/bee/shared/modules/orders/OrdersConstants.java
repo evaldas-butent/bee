@@ -52,7 +52,7 @@ public final class OrdersConstants {
   public static final String SVC_FILL_RESERVED_REMAINDERS = "FillReservedRemainders";
   public static final String SVC_GET_ERP_STOCKS = "GetERPStocks";
   public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
-
+  public static final String SVC_GET_SUPPLIER_TERM_VALUES = "GetSupplierTermValues";
   public static final String SVC_ADD_COMPLECTS_TO_ORDER = "AddComplectsToOrder";
   public static final String SVC_CHECK_FOR_COMPLECTS = "CheckForComplects";
   public static final String SVC_FILTER_COMPONENTS = "FilterComponents";
@@ -133,6 +133,8 @@ public final class OrdersConstants {
   public static final String PRM_CHECK_DEBT = "CheckDebt";
   public static final String PRM_NOTIFY_ABOUT_DEBTS = "NotifyAboutDebts";
   public static final String PRP_EMPTY_REMAINDER = "EmptyRemainder";
+  public static final String PRM_SUPPLIER_TERM_COMPANY = "SupplierTermCompany";
+  public static final String PRM_SUPPLIER_TERM_ADDRESS = "SupplierTermAddress";
 
   public static final String STYLE_ITEM_PRICE_PICKER_DISABLED = BeeConst.CSS_CLASS_PREFIX
       + "ItemPricePicker-disabled";
