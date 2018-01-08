@@ -1,5 +1,11 @@
 package com.butent.bee.server.modules.orders;
 
+import com.butent.bee.server.modules.transport.ShipmentRequestsWorker;
+import com.butent.bee.server.rest.RestResponse;
+import com.butent.bee.server.utils.XmlUtils;
+import com.butent.bee.shared.css.values.Rest;
+import com.butent.bee.shared.i18n.DateOrdering;
+import com.butent.bee.shared.time.JustDate;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -72,6 +78,13 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.webservice.ButentWS;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -90,6 +103,7 @@ import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
+import javax.net.ssl.HttpsURLConnection;
 
 @Stateless
 @LocalBean
@@ -186,6 +200,9 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       case SVC_ORDER_REPORTS:
         response = getReportData(reqInfo);
         break;
+      case SVC_GET_SUPPLIER_TERM_VALUES:
+        response = getSupplierTermValues(reqInfo);
+        break;
 
       default:
         String msg = BeeUtils.joinWords("service not recognized:", svc);
@@ -228,7 +245,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createRelation(module, PRM_MANAGER_WAREHOUSE, true, VIEW_WAREHOUSES,
             COL_WAREHOUSE_CODE),
         BeeParameter.createBoolean(module, PRM_CHECK_DEBT),
-        BeeParameter.createBoolean(module, PRM_NOTIFY_ABOUT_DEBTS));
+        BeeParameter.createBoolean(module, PRM_NOTIFY_ABOUT_DEBTS),
+        BeeParameter.createRelation(module, PRM_SUPPLIER_TERM_COMPANY, false, VIEW_COMPANIES,
+                COL_COMPANY_NAME, COL_COMPANY_CODE),
+        BeeParameter.createText(module, PRM_SUPPLIER_TERM_ADDRESS));
 
     return params;
   }
@@ -551,6 +571,98 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         .setWhere(SqlUtils.and(clause, SqlUtils.isNull(TBL_ORDER_ITEMS, COL_TRADE_ITEM_PARENT)));
 
     return ResponseObject.response(qs.getData(select));
+  }
+
+  private ResponseObject getSupplierTermValues(RequestInfo reqInfo) {
+    Multimap<String, String> orderItems = Codec.deserializeMultiMap(reqInfo.getParameter(VAR_ID_LIST));
+
+    if (orderItems.isEmpty()) {
+      return ResponseObject.error("Supplier list is empty");
+    }
+
+    StringBuilder xml = new StringBuilder("<SalesPricesRequest>")
+            .append(XmlUtils.tag("MemberID", 12238))
+            .append(XmlUtils.tag("MemberSerial", 65839434))
+            .append(XmlUtils.tag("ServiceID", ""));
+            for (String item : orderItems.values()) {
+              xml.append("<Item>")
+                      .append(XmlUtils.tag("ID", "10"))
+                      .append(XmlUtils.tag("ProductID", item))
+                      .append(XmlUtils.tag("Quantity", ""))
+                      .append(XmlUtils.tag("Date", ""))
+                      .append(XmlUtils.tag("PlantID", 0200))
+                      .append(XmlUtils.tag("Price", ""))
+                      .append("</Item>");
+            }
+            xml.append("</SalesPricesRequest>");
+
+    String address = prm.getText(PRM_SUPPLIER_TERM_ADDRESS);
+    if (BeeUtils.isEmpty(address)) {
+      return ResponseObject.error("Empty WEB SERVICE address");
+    }
+
+    HttpsURLConnection connection = null;
+
+    try {
+      URL url = new URL(address);
+      connection = (HttpsURLConnection) url.openConnection();
+
+      connection.setRequestMethod("POST");
+      connection.setDoInput(true);
+      connection.setDoOutput(true);
+      connection.setConnectTimeout( 20000 );
+      connection.setReadTimeout( 20000 );
+      connection.setUseCaches (false);
+      connection.setDefaultUseCaches (false);
+      connection.setRequestProperty ( "Content-Type", "text/xml" );
+
+      OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+      writer.write(String.valueOf(xml));
+      writer.flush();
+      writer.close();
+
+      BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+      String inputLine;
+      StringBuilder response = new StringBuilder();
+
+      while ((inputLine = in.readLine()) != null) {
+        response.append(inputLine);
+      }
+      in.close();
+
+      SimpleRowSet rowSet = ButentWS.xmlToSimpleRowSet(response.toString(), "ProductID", "Date");
+      Map<String, String> terms = new HashMap<>();
+
+      if (!rowSet.isEmpty()) {
+        for (SimpleRow row : rowSet) {
+          String itemId = row.getValue("ProductID");
+
+          JustDate date = TimeUtils.parseDate(row.getValue("Date"), DateOrdering.YMD);
+          int days = date == null ? new JustDate().getDays() : date.getDays();
+
+          if (!BeeUtils.isEmpty(itemId)) {
+
+            for (Entry<String, String> entry : orderItems.entries()) {
+              if (Objects.equals(entry.getValue(), itemId)) {
+                terms.put(entry.getKey(), BeeUtils.toString(days));
+              }
+            }
+          }
+        }
+
+        return ResponseObject.response(terms);
+      }
+    } catch (IOException e) {
+      return ResponseObject.error("Error connecting via WEB SERVICE");
+    } catch (BeeException e) {
+      return ResponseObject.error("Can not convert data from WEB SERVICE");
+    } finally {
+      if (connection != null) {
+        connection.disconnect();
+      }
+    }
+
+    return ResponseObject.emptyResponse();
   }
 
   private ResponseObject createInvoiceItems(RequestInfo reqInfo) {
