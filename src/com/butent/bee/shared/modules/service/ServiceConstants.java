@@ -80,6 +80,8 @@ public final class ServiceConstants {
 
   public static final String VIEW_SERVICE_DISTINCT_CRITERIA = "ServiceDistinctCriteria";
   public static final String VIEW_SERVICE_DISTINCT_VALUES = "ServiceDistinctCritValues";
+  public static final String VIEW_SERVICE_MAIN_CRITERIA = "ServiceMainCriteria";
+
 
   public static final String VIEW_SERVICE_OBJECT_CRITERIA = "ServiceObjectCriteria";
 
@@ -159,6 +161,7 @@ public final class ServiceConstants {
   public static final String COL_MAINTENANCE_NOTES = "Notes";
   public static final String COL_MAINTENANCE_TYPE = "MaintenanceType";
   public static final String COL_MAINTENANCE_URGENT = "Urgent";
+  public static final String COL_MAIN_CRITERIA = "MainCriteria";
   public static final String COL_MODEL = "Model";
   public static final String COL_PUBLISH_TIME = "PublishTime";
   public static final String COL_SERIAL_NO = "SerialNo";
