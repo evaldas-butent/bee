@@ -3555,8 +3555,6 @@ public class TradeActBean implements HasTimerService {
                             SqlUtils.divide(SqlUtils.nvl(SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_DISCOUNT), 0),
                             100))
             ),COL_TRADE_AMOUNT)
-//            .addFields(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_ITEM_PRICE, COL_TRADE_VAT_PLUS, COL_TRADE_VAT,
-//                    COL_TRADE_VAT_PERC)
             .addField(TBL_SALE_ITEMS, COL_TRADE_DISCOUNT, "SaleItemDiscount")
             .addField(TBL_SALES_SERIES, COL_SERIES_NAME, COL_TRADE_INVOICE_PREFIX)
             .addFrom(TBL_TRADE_ACT_SERVICES)
@@ -3596,7 +3594,6 @@ public class TradeActBean implements HasTimerService {
         collData.put("Arr" + COL_TRADE_INVOICE_PREFIX, "");
         collData.put("Arr" + COL_TRADE_INVOICE_NO, "");
         collData.put("Arr" + COL_SALE, "");
-//        collData.put("HasData", BeeConst.STRING_FALSE);
       }
 
       boolean hasData = collData.containsKey("HasData");
@@ -3683,20 +3680,9 @@ public class TradeActBean implements HasTimerService {
         }
 
         Double quantity = row.getDouble(COL_TRADE_ITEM_QUANTITY);
-        Double tariff = row.getDouble(COL_TA_SERVICE_TARIFF);
         Double price = row.getDouble(COL_TRADE_ITEM_PRICE);
         Double discount = row.getDouble(COL_TRADE_DISCOUNT);
-
-        if (BeeUtils.isPositive(tariff)) {
-          Double p = TradeActUtils.calculateServicePrice(price, dateTo,
-              row.getDouble(ALS_ITEM_TOTAL), tariff, quantity, priceScale);
-
-          if (BeeUtils.isPositive(p) && !p.equals(price)) {
-            price = p;
-            update.addConstant(COL_TRADE_ITEM_PRICE, p);
-          }
-        }
-
+        Double itemTotal = row.getDouble(ALS_ITEM_TOTAL);
         Double factor = row.getDouble(COL_TA_SERVICE_FACTOR);
         Double continuousFactor = 1D;  // jei mėn, tai 1 jei diena 30
 
@@ -3766,6 +3752,13 @@ public class TradeActBean implements HasTimerService {
           saleFactor = BeeUtils.unbox(saleTotals) / factor / row.getDouble(ALS_ITEM_TOTAL) * 100 * continuousFactor;
           update.addConstant("SaleFactor", saleFactor);
         }
+
+        Double tariff = null;
+        if (tu != null && BeeUtils.isPositive(factor) && BeeUtils.isPositive(itemTotal)) {
+            tariff = BeeUtils.unbox(amount) / factor / itemTotal * 100;
+        }
+
+        update.addConstant(COL_TA_SERVICE_TARIFF, tariff);
 
         update.setWhere(SqlUtils.equals(tmp, idName, row.getLong(idName)));
 
