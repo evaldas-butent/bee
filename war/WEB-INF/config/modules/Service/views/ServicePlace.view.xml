@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="ServicePlace" source="TradeActItems" caption="=svcServicePlace"
+>
+  <Columns>
+
+    <SimpleColumn name="Item" />
+    <SimpleColumn name="TradeAct" />
+    <SimpleJoin name="TradeAct" joinType="LEFT">
+      <AggregateColumn name="TradeActID" aggregate="MAX" alias = "Act"/>
+    </SimpleJoin>
+<!--    <SimpleJoin joinType="LEFT" name="TradeAct">
+      
+      <SimpleColumn name="Name" />
+      <SimpleJoin joinType="LEFT" name="Name">
+        <SimpleColumn name="ActName" />
+      </SimpleJoin>
+  
+      <ExternalJoin name="TradeActID" source="TradeActs" targetName="Name" joinType="LEFT">
+        <AggregateColumn name="Date" aggregate="MAX" />
+      </ExternalJoin>
+      
+      <SimpleColumn name="Number" />
+      
+      <SimpleColumn name="Series" />
+      <SimpleJoin joinType="LEFT" name="Series">
+        <SimpleColumn name="SeriesName" />
+      </SimpleJoin>
+  
+      <SimpleJoin joinType="LEFT" name="Company">
+        <SimpleColumn name="Name" alias="CompanyName" />
+        <SimpleJoin joinType="LEFT" name="CompanyType">
+          <SimpleColumn name="Name" alias="TypeName" />
+        </SimpleJoin>
+      </SimpleJoin>
+  
+      <SimpleColumn name="Status" />
+      <SimpleJoin joinType="LEFT" name="Status">
+        <SimpleColumn name="StatusName" />
+      </SimpleJoin>
+    </SimpleJoin>-->
+  </Columns>
+</View>
