@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="SvcObjMainCriteria"
+       idName="SvcObjMainCriteriaID"
+>
+  <Fields>
+    <Relation name="ServiceObject" notNull="true" relation="ServiceObjects" cascade="DELETE" label="=svcObject"/>
+    <Relation name="MainCriteria" relation="ServiceMainCriteria" label="=criterionName" cascade="DELETE" />
+    <String name="Value" precision="200" label="=criterionValue"/>
+  </Fields>
+  
+  <Constraints>
+    <Unique fields="ServiceObject MainCriteria"/>
+  </Constraints>
+</Table>

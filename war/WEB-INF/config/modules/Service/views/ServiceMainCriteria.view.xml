@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="ServiceMainCriteria" source="ServiceMainCriteria" module="Service"
+      caption="=mainCriteria"
+>
+    <Columns>
+      <SimpleColumn name="Ordinal" />
+      <SimpleColumn name="MainCriteria" />
+    </Columns>
+
+    <Order>
+      <OrderBy column="Ordinal" />
+    </Order>
+</View>

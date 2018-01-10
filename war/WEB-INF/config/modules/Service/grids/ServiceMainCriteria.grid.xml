@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+
+        name="ServiceMainCriteria" viewName="ServiceMainCriteria" caption="=mainCriteria"
+>
+  <g:columns>
+    <DataColumn name="Ordinal" visible="true"/>
+    <DataColumn name="MainCriteria" visible="true" />
+  </g:columns>
+</g:Grid>

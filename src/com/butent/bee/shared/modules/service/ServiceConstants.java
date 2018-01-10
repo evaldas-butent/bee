@@ -74,7 +74,9 @@ public final class ServiceConstants {
   public static final String VIEW_SERVICE_OBJECTS = "ServiceObjects";
 
   public static final String VIEW_SERVICE_CRITERIA_GROUPS = "ServiceCritGroups";
+  public static final String VIEW_SERVICE_MAIN_CRITERIA = "ServiceMainCriteria";
   public static final String VIEW_SERVICE_CRITERIA = "ServiceCriteria";
+  public static final String VIEW_SERVICE_OBJECT_MAIN_CRITERIA = "SvcObjMainCriteria";
 
   public static final String VIEW_SERVICE_DISTINCT_CRITERIA = "ServiceDistinctCriteria";
   public static final String VIEW_SERVICE_DISTINCT_VALUES = "ServiceDistinctCritValues";
@@ -120,6 +122,7 @@ public final class ServiceConstants {
   public static final String COL_SERVICE_ADDRESS = "Address";
   public static final String COL_SERVICE_CUSTOMER = "Customer";
   public static final String COL_SERVICE_CONTRACTOR = "Contractor";
+  public static final String COL_SERVICE_MAIN_CRITERIA = "MainCriteria";
 
   public static final String COL_SERVICE_MODEL = "Model";
   public static final String COL_SERVICE_YEAR_OF_MANUFACTURE = "YearOfManufacture";
