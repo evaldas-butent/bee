@@ -1,7 +1,9 @@
 package com.butent.bee.client.modules.orders;
 
 import com.butent.bee.shared.data.value.TextValue;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -1017,8 +1019,8 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
       return;
     }
 
-    Map<Long, Long> hettichItems = new HashMap<>();
-    Map<Long, String> notHettichSuppliers = new HashMap<>();
+    Multimap<Long, Long> hettichItems = HashMultimap.create();
+    Multimap<Long, String> notHettichSuppliers = HashMultimap.create();
 
     for (IsRow row : getGridView().getRowData()) {
       if (OrdersKeeper.isComplect(row)) {
@@ -1050,15 +1052,15 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
 
       BeeKeeper.getRpc().makeRequest(params, response -> {
         if (!response.isEmpty() && !response.hasErrors()) {
-          Map<String, String> map = Codec.deserializeHashMap(response.getResponseAsString());
-          Map<Long, String> newMap = new HashMap<>();
+          Multimap<String, String> map = Codec.deserializeMultiMap(response.getResponseAsString());
+          Multimap<Long, String> newMap = HashMultimap.create();
 
-          for (Map.Entry<String, String> entry : map.entrySet()) {
+          for (Map.Entry<String, String> entry : map.entries()) {
             Long id = BeeUtils.toLong(entry.getKey());
             String date = entry.getValue();
 
             if (DataUtils.isId(id)) {
-              newMap.put(id, date == null ? BeeUtils.toString(new JustDate().getDays()) : date);
+              newMap.put(id, date);
             }
           }
 
@@ -1123,14 +1125,14 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
             }));
   }
 
-  private static void fillTermsData(Map<Long, String> data, BeeRowSet rowSet) {
+  private static void fillTermsData(Multimap<Long, String> data, BeeRowSet rowSet) {
 
     if (!data.isEmpty()) {
-      for (Long key : data.keySet()) {
+      for (Map.Entry<Long, String> entry : data.entries()) {
         BeeRow row = rowSet.addEmptyRow();
-        row.setId(key);
+        row.setId(entry.getKey());
 
-        String date = data.get(key);
+        String date = entry.getValue();
         if (date == null) {
           date = BeeUtils.toString(new JustDate().getDays() + 28);
         }

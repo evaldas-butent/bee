@@ -574,9 +574,9 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   }
 
   private ResponseObject getSupplierTermValues(RequestInfo reqInfo) {
-    Map<String, String> orderItems = Codec.deserializeHashMap(reqInfo.getParameter(VAR_ID_LIST));
+    Multimap<String, String> orderItems = Codec.deserializeMultiMap(reqInfo.getParameter(VAR_ID_LIST));
 
-    if (BeeUtils.isEmpty(orderItems)) {
+    if (orderItems.isEmpty()) {
       return ResponseObject.error("Supplier list is empty");
     }
 
@@ -586,7 +586,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
             .append(XmlUtils.tag("ServiceID", ""));
             for (String item : orderItems.values()) {
               xml.append("<Item>")
-                      .append(XmlUtils.tag("ID", ""))
+                      .append(XmlUtils.tag("ID", "10"))
                       .append(XmlUtils.tag("ProductID", item))
                       .append(XmlUtils.tag("Quantity", ""))
                       .append(XmlUtils.tag("Date", ""))
@@ -636,13 +636,15 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       if (!rowSet.isEmpty()) {
         for (SimpleRow row : rowSet) {
           String itemId = row.getValue("ProductID");
-          String date = row.getValue("Date");
+
+          JustDate date = TimeUtils.parseDate(row.getValue("Date"), DateOrdering.YMD);
+          int days = date == null ? new JustDate().getDays() : date.getDays();
 
           if (!BeeUtils.isEmpty(itemId)) {
-            for (String key : orderItems.keySet()) {
-              if (Objects.equals(orderItems.get(key), itemId)) {
-                terms.put(key, date);
-                break;
+
+            for (Entry<String, String> entry : orderItems.entries()) {
+              if (Objects.equals(entry.getValue(), itemId)) {
+                terms.put(entry.getKey(), BeeUtils.toString(days));
               }
             }
           }
