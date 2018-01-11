@@ -4,6 +4,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.css.values.FontWeight;
+import com.butent.bee.shared.css.values.Overflow;
 import com.butent.bee.shared.data.*;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -440,6 +441,8 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
         table.setText(rNo.get(), cNo++, row.getString(0));
         table.setText(rNo.get(), cNo++, row.getString(1));
       }
+
+      StyleUtils.setOverflow(table, StyleUtils.ScrollBars.VERTICAL, Overflow.AUTO);
 
       Global.inputWidget(d.mainCriteria(), table, () -> {
 

@@ -486,6 +486,17 @@ public class ServiceModuleBean implements BeeModule {
           }
         }
       }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void filterBiggestAct(ViewQueryEvent event) {
+        if (event.isAfter("ServicePlace")) {
+          BeeRowSet rowSet = event.getRowset();
+          if (rowSet.getNumberOfRows() > 1) {
+            rowSet.removeRows(0, rowSet.getNumberOfRows() - 1);
+          }
+        }
+      }
     });
   }
 
