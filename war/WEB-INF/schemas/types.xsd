@@ -560,12 +560,14 @@
       <xs:enumeration value="SeriesManagers" />
       <xs:enumeration value="ServiceCriteria" />
       <xs:enumeration value="ServiceCritGroups" />
+      <xs:enumeration value="ServiceMainCriteria" />
       <xs:enumeration value="ServiceDates" />
       <xs:enumeration value="ServiceDefects" />
       <xs:enumeration value="ServiceDefectItems" />
       <xs:enumeration value="ServiceDistinctCriteria" />
       <xs:enumeration value="ServiceDistinctCritGroups" />
       <xs:enumeration value="ServiceDistinctCritValues" />
+      <xs:enumeration value="SvcObjMainCriteria" />
       <xs:enumeration value="ServiceFiles" />
       <xs:enumeration value="ServiceInvoices" />
       <xs:enumeration value="ServiceItems" />
@@ -578,6 +580,7 @@
       <xs:enumeration value="ServiceSettings" />
       <xs:enumeration value="ServiceTree" />
       <xs:enumeration value="ServiceTypes" />
+      <xs:enumeration value="ServicePlace" />
       <xs:enumeration value="SvcObjectGraphics" />
       <xs:enumeration value="ShipmentRequests" />
       <xs:enumeration value="ShippingTerms" />
