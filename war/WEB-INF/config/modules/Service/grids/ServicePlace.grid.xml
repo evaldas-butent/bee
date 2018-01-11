@@ -3,15 +3,14 @@
 
         name="ServicePlace" viewName="ServicePlace"
         caption="=svcServicePlace"
-        flexGrow="1" flexShrink="1" filter=""
+        flexGrow="1" flexShrink="1"
+        readOnly="true"
 >
     <g:columns>
-      <DataColumn name="Item" />
-      <!--<RelColumn name="Company" />&ndash;&gt;-->
-     <!--<RelColumn name="TradeAct" renderColumns="ActName" editPopup="true" visible="true"-->
-                 <!--readOnly="true" />-->
-<!--      <DataColumn name="SeriesName" />
+      <RelColumn name="TradeAct" renderColumns="ActName" editPopup="true" visible="true" readOnly="true" />
+      <RelColumn name="Company" />
+      <DataColumn name="SeriesName" />
       <DataColumn name="Number" />
-      <DataColumn name="StatusName" />-->
+      <DataColumn name="StatusName" />
     </g:columns>
 </g:Grid>

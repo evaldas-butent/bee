@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="SvcObjMainCriteria" source="SvcObjMainCriteria"
+>
+    <Columns>
+      <SimpleColumn name="ServiceObject" />
+      <SimpleColumn name="MainCriteria" />
+      <SimpleJoin name="MainCriteria" joinType="LEFT">
+        <SimpleColumn name="MainCriteria" alias="MainCriteriaName" />
+      </SimpleJoin>
+      <SimpleColumn name="Value" />
+    </Columns>
+</View>

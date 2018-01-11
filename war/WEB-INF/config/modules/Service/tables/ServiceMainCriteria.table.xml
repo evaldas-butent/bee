@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="ServiceMainCriteria"
+       idName="MainCriteriaID"
+>
+    <Fields>
+      <Integer name="Ordinal" label="=ordinal" />
+      <String precision="50" notNull="true" name="MainCriteria" label="=criterionName" />
+    </Fields>
+</Table>

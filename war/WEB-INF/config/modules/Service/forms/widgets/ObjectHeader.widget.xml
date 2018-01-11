@@ -61,12 +61,16 @@
         </FlowPanel>
       </FlowPanel>
 
-      <FlowPanel>
-        <FlowPanel style="&mfld; width: 29em;" for="Contractor">
+      <FlowPanel style="&mrst;">
+        <FlowPanel style="&mfld;" for="Contractor">
           <Label for="Contractor" style="&flbl;" />
           <DataSelector source="Contractor" viewName="Companies" renderColumns="ContractorName"
                         style="&finp;"/>
         </FlowPanel>
+      </FlowPanel>
+  
+      <FlowPanel >
+        <ChildGrid name="ServicePlace" relColumn="Item" source="Item" style="&mrst;" />
       </FlowPanel>
     </FlowPanel>
   </east>
