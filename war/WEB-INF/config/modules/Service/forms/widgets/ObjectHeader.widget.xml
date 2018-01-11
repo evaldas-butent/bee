@@ -148,11 +148,6 @@
           <InputText source="ItemInButenta" style="&finp;" />
         </FlowPanel>
       </FlowPanel>
-
-      <FlowPanel>
-        <ChildGrid name="ServicePlace" relColumn="Item" source="Item" />
-      </FlowPanel>
-
       <!-- } Transrifus -->
     </FlowPanel>
   </center>
