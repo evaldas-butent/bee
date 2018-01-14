@@ -29,7 +29,7 @@
         <FlowPanel style="&mfld;width: 20em;">
           <Label text="=contact" style="&flbl;" />
           <DataSelector name="ContactPerson" source="ContactPerson" options="Customer"
-                        choiceColumns="FirstName LastName Phone Email Address CompanyName"
+                        choiceColumns="FirstName LastName Mobile Email Address CompanyName"
                         renderColumns="ContactFirstName ContactLastName"
                         style="&finp;"/>
         </FlowPanel>
@@ -37,7 +37,7 @@
         <FlowPanel  style="&mfld;width: 20em;" for="ContactPerson">
           <Label text="=address" style="&flbl;" />
           <DataSelector source="ContactPerson" options="Customer"
-                        choiceColumns="FirstName LastName Phone Email Address CompanyName"
+                        choiceColumns="FirstName LastName Mobile Email Address CompanyName"
                         renderColumns="ContactAddress"
                         style="&finp;"/>
         </FlowPanel>
@@ -47,15 +47,15 @@
         <FlowPanel  style="&mfld;width: 20em;">
           <Label text="=mobile" style="&flbl;" />
           <DataSelector source="ContactPerson" options="Customer"
-                        choiceColumns="FirstName LastName Phone Email Address CompanyName"
-                        renderColumns="ContactPhone"
+                        choiceColumns="FirstName LastName Mobile Email Address CompanyName"
+                        renderColumns="ContactMobile"
                         style="&finp;"/>
         </FlowPanel>
 
         <FlowPanel style="&mfld;width: 20em;" for="ContactPerson">
           <Label text="=email" style="&flbl;" />
           <DataSelector source="ContactPerson" options="Customer"
-                        choiceColumns="FirstName LastName Phone Email Address CompanyName"
+                        choiceColumns="FirstName LastName Mobile Email Address CompanyName"
                         renderColumns="ContactEmail"
                         style="&finp;"/>
         </FlowPanel>

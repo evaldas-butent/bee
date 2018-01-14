@@ -624,19 +624,30 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       }
     }
 
+    if (!discountVisible) {
+      ItemColumn discount = null;
+      ItemColumn discountPrice = null;
+
+      for (ItemColumn column : columns) {
+        if (column.ordinal() == ItemColumn.DISCOUNT.ordinal()) {
+          discount = column;
+        } else if (column.ordinal() == ItemColumn.PRICE_DISCOUNT.ordinal()) {
+          discountPrice = column;
+        }
+      }
+
+      if (discount != null) {
+        columns.remove(discount);
+      }
+      if (discountPrice != null) {
+        columns.remove(discountPrice);
+      }
+    }
+
     int columnSize = columns.size();
 
     for (int j = 0; j < columnSize; j++) {
       ItemColumn itemColumn = columns.get(j);
-
-      if (itemColumn.ordinal() == 12 && !discountVisible) {
-        ItemColumn discount = columns.get(j);
-        ItemColumn discountPrice = columns.get(j+1);
-        columns.remove(discount);
-        columns.remove(discountPrice);
-        j -=2 ;
-        columnSize -= 2;
-      }
 
       String label = itemColumn.hasCurency
           ? BeeUtils.joinWords(itemColumn.getCaption(), currencyName) : itemColumn.getCaption();

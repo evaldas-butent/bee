@@ -8,7 +8,8 @@
 >
     <g:columns>
       <RelColumn name="TradeAct" renderColumns="ActName" editPopup="true" visible="true" readOnly="true" />
-      <RelColumn name="Company" />
+      <DataColumn name="Date" />
+      <DataColumn name="CompanyName" />
       <DataColumn name="SeriesName" />
       <DataColumn name="Number" />
       <DataColumn name="StatusName" />

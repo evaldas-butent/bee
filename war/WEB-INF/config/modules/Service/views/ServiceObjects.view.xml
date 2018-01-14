@@ -41,6 +41,7 @@
       </SimpleJoin>
       <SimpleJoin name="Contact" joinType="LEFT">
         <SimpleColumn name="Phone" alias="ContactPhone"/>
+        <SimpleColumn name="Mobile" alias="ContactMobile"/>
         <SimpleColumn name="Email"/>
         <SimpleJoin name="Email" joinType="LEFT">
           <SimpleColumn name="Email" alias="ContactEmail"/>
