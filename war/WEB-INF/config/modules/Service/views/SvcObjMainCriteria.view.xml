@@ -7,8 +7,12 @@
       <SimpleColumn name="ServiceObject" />
       <SimpleColumn name="MainCriteria" />
       <SimpleJoin name="MainCriteria" joinType="LEFT">
+        <SimpleColumn name="Ordinal" />
         <SimpleColumn name="MainCriteria" alias="MainCriteriaName" />
       </SimpleJoin>
       <SimpleColumn name="Value" />
     </Columns>
+  <Order>
+    <OrderBy column="Ordinal" />
+  </Order>
 </View>
