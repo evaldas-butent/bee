@@ -6,6 +6,6 @@
 >
     <Fields>
       <Integer name="Ordinal" label="=ordinal" />
-      <String precision="50" notNull="true" name="MainCriteria" label="=criterionName" />
+      <String precision="50" notNull="true" name="MainCriteria" unique="true" label="=criterionName" />
     </Fields>
 </Table>
