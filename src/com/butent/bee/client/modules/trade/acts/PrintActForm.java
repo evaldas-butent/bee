@@ -467,13 +467,17 @@ public class PrintActForm extends AbstractFormInterceptor {
     }
   }
 
-  private static void addDataToTable(Map<String, Map<String, String>> data, String id, String cell,
+  private void addDataToTable(Map<String, Map<String, String>> data, String id, String cell,
                                      String value) {
     switch (cell) {
       case "RemainingQty":
         BigDecimal val = BigDecimal.valueOf(BeeUtils.toDouble(getDataValue(data, id, cell))
             + BeeUtils.toDouble(value));
 
+        if (BeeUtils.same(FORM_PRINT_TA_RETURN,
+                BeeUtils.removeSuffix(getFormView().getFormName(), VAR_PRINT_RENTAL))) {
+          val = BigDecimal.valueOf(BeeUtils.toDouble(value));
+        }
 
         addDataEntry(data, id, cell, val.toPlainString());
         break;
