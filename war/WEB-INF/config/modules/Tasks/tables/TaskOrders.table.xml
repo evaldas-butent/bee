@@ -78,7 +78,7 @@
     <String name="Transportation" precision="10" label="Transportavimas" />
     <String name="TransportationNote" precision="100" label="Pastaba" />
     <Integer name="PackageQty" label="Pakuočių kiekis" />
-    <Numeric name="Weight" precision="7" scale="3" label="Svoris" />
+    <Numeric name="Weight" precision="9" scale="3" label="Svoris" />
 
     <String name="InvoiceSupplier" label="Sąskaitą išrašė"  precision="25" />
     <Numeric name="InvoicePrice" precision="10" scale="4" label="Kaina" />

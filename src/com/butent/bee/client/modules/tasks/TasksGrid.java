@@ -904,36 +904,61 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
         }
       }
 
-      newRow.setValue(Data.getColumnIndex(VIEW_TASKS, COL_EXECUTOR), executor);
+      newRow.setProperty(PROP_EXECUTORS, executor);
 
       for (String column : new String[]{COL_START_TIME, COL_FINISH_TIME}) {
         int index = Data.getColumnIndex(VIEW_TASKS, column);
-        newRow.setValue(index, oldRow.getDateTime(index));
+
+        if (DataUtils.isId(Data.getLong(VIEW_TASKS, oldRow, COL_TASK_ORDER))
+          && Objects.equals(column, COL_START_TIME)) {
+          newRow.setValue(index, TimeUtils.nowMinutes());
+        } else {
+          newRow.setValue(index, oldRow.getDateTime(index));
+        }
       }
 
-      Queries.insert(VIEW_TASKS, Data.getColumns(VIEW_TASKS), newRow, new RowCallback() {
+      ParameterList params = TasksKeeper.createArgs(SVC_COPY_TASK_ORDER);
+
+      List<BeeColumn> cols = Data.getColumns(VIEW_TASKS);
+
+      BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_TASKS, cols,
+        newRow, Sets.newHashSet(COL_EXECUTOR, COL_STATUS), true);
+      rowSet.addRow(newRow);
+
+      params.addDataItem(VAR_TASK_DATA, rowSet.serialize());
+
+      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
         @Override
-        public void onSuccess(BeeRow result) {
-          Queries.getRowSet(VIEW_TASK_ORDER_ITEMS, null, Filter.equals(COL_TASK, oldRow.getId()),
-              new RowSetCallback() {
-                @Override
-                public void onSuccess(BeeRowSet rowSet) {
-                  if (!DataUtils.isEmpty(rowSet)) {
-                    BeeRowSet insertRows = DataUtils.createRowSetForInsert(rowSet);
-                    insertRows.forEach(row -> Data.setValue(VIEW_TASK_ORDER_ITEMS, row, COL_TASK,
-                        result.getId()));
-                    Queries.insertRows(insertRows, new RpcCallback<RowInfoList>() {
-                      @Override
-                      public void onSuccess(RowInfoList rowInfo) {
-                        RowEditor.openForm(FORM_TASK_ORDER, VIEW_TASKS, result, Opener.MODAL, null);
-                        getGridPresenter().handleAction(Action.REFRESH);
-                      }
-                    });
-                  } else {
-                    getGridPresenter().handleAction(Action.REFRESH);
-                  }
+        public void onResponse(ResponseObject response) {
+          if (!response.hasErrors() && !response.isEmpty()) {
+            Long newTaskID = response.getResponseAsLong();
+
+            if (!DataUtils.isId(newTaskID)) {
+              return;
+            }
+
+            Queries.getRowSet(VIEW_TASK_ORDER_ITEMS, null, Filter.equals(COL_TASK, oldRow.getId()), new RowSetCallback() {
+              @Override
+              public void onSuccess(BeeRowSet result) {
+                if (!DataUtils.isEmpty(result)) {
+
+                  BeeRowSet insertRows = DataUtils.createRowSetForInsert(result);
+                  insertRows.forEach(row -> Data.setValue(VIEW_TASK_ORDER_ITEMS, row, COL_TASK, newTaskID));
+
+                  Queries.insertRows(insertRows, new RpcCallback<RowInfoList>() {
+                    @Override
+                    public void onSuccess(RowInfoList rowInfo) {
+                      RowEditor.openForm(FORM_TASK_ORDER, Data.getDataInfo(VIEW_TASKS), Filter.compareId(newTaskID),
+                        Opener.MODAL, null);
+                      getGridPresenter().handleAction(Action.REFRESH);
+                    }
+                  });
+                } else {
+                  getGridPresenter().handleAction(Action.REFRESH);
                 }
-              });
+              }
+            });
+          }
         }
       });
     } else {

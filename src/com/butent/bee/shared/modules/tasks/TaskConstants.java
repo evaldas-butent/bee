@@ -738,6 +738,7 @@ public final class TaskConstants {
   public static final String SVC_RT_COPY = "rt_copy";
 
   public static final String SVC_TASK_REPORT = "TaskReport";
+  public static final String SVC_COPY_TASK_ORDER = "CopyTaskOrder";
 
   public static final String VAR_TASK_DATA = Service.RPC_VAR_PREFIX + "task_data";
   public static final String VAR_TASK_ID = Service.RPC_VAR_PREFIX + "task_id";

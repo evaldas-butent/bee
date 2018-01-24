@@ -287,6 +287,10 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_TASK_REPORT)) {
         response = getReportData(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_COPY_TASK_ORDER)) {
+      BeeRowSet taskData = BeeRowSet.restore(reqInfo.getParameter(VAR_TASK_DATA));
+      response = createTasks(taskData, taskData.getRow(0), usr.getCurrentUserId());
+
     } else {
       String msg = BeeUtils.joinWords("CRM service not recognized:", svc);
       logger.warning(msg);

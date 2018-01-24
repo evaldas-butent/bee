@@ -89,12 +89,13 @@
         <row>
           <Label for="Price" />
           <FlowPanel>
-            <InputMoney source="Price" style="width: 100px; &inline;" scale="4" />
+            <InputMoney maxLength="11" source="Price" style="width: 100px; &inline;" scale="4"
+                        minValue="0" maxValue="999999.9999" placeholder="999999.9999" />
             <Label text="EUR" style="&inline; margin-left: 5px;" />
           </FlowPanel>
 
           <Label for="SupplierNote" />
-          <InputText source="SupplierNote" style="width: 285px;" />
+          <InputText source="SupplierNote" style="width: 285px;" placeholder="123" />
         </row>
 
         <row>
@@ -200,17 +201,15 @@
 
         <row>
           <Label for="Counter" />
-          <InputInteger source="Counter" minValue="0" maxValue="9999999" format="0000000"
+          <InputInteger source="Counter" minValue="0" maxLength="7" maxValue="9999999" format="0000000"
                         style="width: 80px;" />
 
           <Label for="Waster" />
           <FlowPanel>
-            <InputInteger source="Waster" minValue="0" maxValue="999999"
-                          style="width: 70px; &inline;" />
+            <InputInteger source="Waster" minValue="0" maxValue="999999" maxLength="6" style="width: 70px; &inline;" />
             <Label text="vnt" style="&inline; margin-left: 5px;" />
             <Label for="Good" style="&inline; margin-left: 50px; margin-right: 5px;" />
-            <InputInteger source="Good" minValue="0" maxValue="999999"
-                          style="width: 70px; &inline;" />
+            <InputInteger source="Good" minValue="0" maxValue="999999" maxLength="6" style="width: 70px; &inline;" />
             <Label text="vnt" style="&inline; margin-left: 5px;" />
           </FlowPanel>
         </row>
@@ -298,7 +297,8 @@
         <row>
           <Label for="DecorationPrice" />
           <FlowPanel>
-            <InputMoney source="DecorationPrice" style="width: 100px; &inline;" scale="4" />
+            <InputMoney source="DecorationPrice" maxValue="999999.9999" maxLength="11" style="width: 100px; &inline;"
+                        scale="4" placeholder="999999.9999" />
             <Label text="EUR" style="&inline; margin-left: 5px;" />
           </FlowPanel>
 
@@ -565,10 +565,11 @@
           </ListBox>
 
           <Label for="PackageQty" />
-          <InputInteger source="PackageQty" minValue="0" maxValue="999999" style="width: 100px;" />
+          <InputInteger source="PackageQty" minValue="0" maxValue="999999" maxLength="6" style="width: 100px;" />
 
           <Label for="Weight" />
-          <InputDouble source="Weight" minValue="0" maxValue="999999.999" style="width: 100px;" />
+          <InputDouble source="Weight" maxLength="10" placeholder="999999.999" minValue="0" maxValue="999999.999"
+                       style="width: 100px;" />
         </row>
 
         <row>
