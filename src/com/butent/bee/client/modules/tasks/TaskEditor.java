@@ -167,8 +167,6 @@ class TaskEditor extends ProductSupportInterceptor {
   private Split split;
 
   private MultiSelector observersSelector;
-  private MultiSelector companyObjectsSelector;
-
   private DataSelector ownerSelector;
   private DataSelector stagesSelector;
 

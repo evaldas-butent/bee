@@ -21,7 +21,6 @@
   </Fields>
 
   <Constraints>
-    
     <Unique fields="Company ObjectName" />
   </Constraints>
 </Table>

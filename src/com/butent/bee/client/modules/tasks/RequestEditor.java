@@ -128,11 +128,6 @@ public class RequestEditor extends ProductSupportInterceptor {
   }
 
   @Override
-  public void afterCreatePresenter(Presenter presenter) {
-    super.afterCreatePresenter(presenter);
-  }
-
-  @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
