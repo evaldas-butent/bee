@@ -167,6 +167,8 @@ class TaskEditor extends ProductSupportInterceptor {
   private Split split;
 
   private MultiSelector observersSelector;
+  private MultiSelector companyObjectsSelector;
+
   private DataSelector ownerSelector;
   private DataSelector stagesSelector;
 
@@ -793,6 +795,13 @@ class TaskEditor extends ProductSupportInterceptor {
   public void beforeRefresh(FormView form, IsRow row) {
     TaskHelper.setWidgetEnabled(relations, isExecutor() || isOwner());
     setLateIndicatorHtml(null);
+
+    MultiSelector objectSelector = relations.getMultiSelector("CompanyObject");
+    if (objectSelector != null) {
+      Filter filter = Filter.equals(COL_COMPANY, Data.getLong(VIEW_TASKS, row, COL_COMPANY));
+      objectSelector.setAdditionalFilter(filter);
+    }
+
     super.beforeRefresh(form, row);
   }
 

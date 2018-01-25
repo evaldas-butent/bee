@@ -561,6 +561,17 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     id = null;
   }
 
+  public MultiSelector getMultiSelector(String name) {
+
+    for (String key : widgetMap.keySet()) {
+      if (Objects.equals(key, name)) {
+        return widgetMap.get(key);
+      }
+    }
+
+    return null;
+  }
+
   @Override
   public void setAccessKey(char key) {
   }

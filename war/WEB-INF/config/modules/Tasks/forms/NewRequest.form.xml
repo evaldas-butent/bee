@@ -59,7 +59,12 @@
         <Label for="Priority" />
         <Radio source="Priority" tabIndex="80"/>
       </row>
-
+  
+      <row>
+        <Label for="Status" />
+        <ListBox source="Status" style="&inp2x;" />
+      </row>
+      
       <row>
         <Label for="RequestType" class="bee-required" />
         <DataSelector source="RequestType" name="RequestType"
@@ -83,7 +88,12 @@
         <DataSelector source="CustomerPerson" style="&inp2x;"
           options="Customer" choiceColumns="FirstName LastName CompanyName"  tabIndex="30"/>
       </row>
-
+  
+      <row>
+        <Label for="TradeAct" />
+        <DataSelector source="TradeAct" style="&inp2x;" tabIndex="30"/>
+      </row>
+      
       <row>
         <Label for="Date" />
         <InputDateTime source="Date" style="&dateStyle;" tabIndex="100"/>

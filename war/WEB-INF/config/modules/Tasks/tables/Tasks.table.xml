@@ -11,7 +11,7 @@
     <Enum name="Priority" key="TaskPriority" notNull="true" defValue="1" label="=crmTaskPriority" />
     <Relation name="Type" relation="TaskTypes" label="=crmTaskType" />
 
-    <DateTime name="Created" label="=crmTaskCreated" />
+    <DateTime name="Created" label="=createdOn"  defExpr="CURRENT_TIME" />
     <DateTime name="StartTime" label="=crmStartDate" />
     <DateTime name="FinishTime" label="=crmFinishDate" />
     <DateTime name="Completed" label="=crmTaskCompleteDate" />
@@ -30,8 +30,6 @@
     <Relation name="Reminder" relation="ReminderTypes" cascade="SET_NULL" label="=crmReminder" />
     <DateTime name="ReminderTime" label="=crmReminderDate" />
     <DateTime name="ReminderSent" label="=crmReminderSent" />
-
-    <Enum name="Status" key="TaskStatus" notNull="true" defValue="0" label="=crmTaskStatus" />
 
     <Relation name="RecurringTask" relation="RecurringTasks" cascade="SET_NULL"
       label="=crmRecurringTask" />

@@ -10,6 +10,7 @@
     <editor type="time" />
   </DataColumn>
   <DataColumn name="Description" />
+  <DataColumn name="ProductName" />
 
   <RelColumn name="Company" />
   <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName ContactCompanyName"

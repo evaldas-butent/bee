@@ -5,6 +5,7 @@
   name="Sales" source="Sales" caption="=trdSales"
   editForm="SalesInvoice" module="Trade Transport Orders Service"
   >
+  <Relation renderColumns="SeriesName InvoiceNo" />
   <Columns>
     <SimpleColumn name="Date" />
     <SimpleColumn name="Number" />
