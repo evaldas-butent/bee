@@ -17,6 +17,7 @@
     <SimpleColumn name="Result" />
     <SimpleColumn name="ResultProperties" />
     <SimpleColumn name="Priority" />
+    <SimpleColumn name="Status" />
       
     <SimpleColumn name="Customer" />
     <SimpleJoin joinType="LEFT" name="Customer">
@@ -74,6 +75,14 @@
       <SimpleColumn name="Name" alias="ProductName"/>
       <SimpleColumn name="Background" alias="ProductBackground"/>
       <SimpleColumn name="Foreground" alias="ProductForeground"/>
+    </SimpleJoin>
+    
+    <SimpleColumn name="TradeAct" />
+    <SimpleJoin name="TradeAct" joinType="LEFT">
+      <SimpleColumn name="Name" alias="TradeActName" />
+      <SimpleJoin name="Name" joinType="LEFT">
+        <SimpleColumn name="ActName" />
+      </SimpleJoin>
     </SimpleJoin>
   </Columns>
 </View>

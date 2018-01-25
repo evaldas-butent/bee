@@ -5,6 +5,7 @@
   caption="=tradeActs" newRowCaption="=tradeActNew"
   editForm="TradeAct" newRowForm="TradeAct"
   >
+  <Relation renderColumns="ActName SeriesName Number" />
   <Columns>
     <IdColumn name="Id" />
     <SimpleColumn name="Name" />

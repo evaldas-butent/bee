@@ -36,6 +36,10 @@
         </ui:inline>
       </dynStyle>
     </RelColumn>
+    
+    <DataColumn name="ActName" />
+    <DataColumn name="Priority" />
+    <DataColumn name="Status" />
   </g:columns>
   
   <g:predefinedFilter name="request_registred" label="=requestShowRegistered" initial="true" >

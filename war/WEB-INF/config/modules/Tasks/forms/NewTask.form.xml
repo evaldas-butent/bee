@@ -49,7 +49,12 @@
         <Label />
         <CheckBox name="NotScheduledTask" text="=crmTasksNotScheduledTask"/>
       </row>
-
+  
+      <row>
+        <Label for="Owner" />
+        <DataSelector source="Owner" editSource="OwnerPerson" style="&inp2x;"/>
+      </row>
+      
       <row>
         <Label name="ExecutorsLabel" text="=crmTaskExecutors" />
         <MultiSelector name="Executors" viewName="Users" property="Executors" renderColumns="FirstName LastName"

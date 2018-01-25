@@ -105,6 +105,10 @@
                 </row>
 
                 <row>
+                  <Label for="Created" />
+                  <InputDateTime source="Created" readOnly="true" />
+                </row>
+                <row>
                   <Label for="Type" />
                   <DataSelector source="Type" name="Type" renderColumns="TypeName"
                                 newRowEnabled="true" style="&inp2x;" disablable="true" />
@@ -204,6 +208,9 @@
             <Relation viewName="ServiceMaintenance"
                       renderColumns="ID" choiceColumns="ID TypeName StateName"
                       newRowEnabled="false" editPopup="true" />
+            <Relation viewName="TradeActs" renderColumns="ActName" newRowEnabled="false"/>
+            <Relation viewName="Sales" renderColumns="SeriesName InvoiceNo" newRowEnabled="false" label="Sąskaitos" />
+            <Relation name="CompanyObjectRel" viewName="CompanyObjects" renderColumns="ObjectName" newRowEnabled="false" />
           </Relations>
         </page>
       </TabbedPages>

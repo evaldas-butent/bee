@@ -714,6 +714,8 @@ public final class TaskConstants {
 
   public static final String CRM_TASK_PREFIX = "task_";
 
+  public static final String TIMER_REMIND_REQUEST_END = "timer_remind_request_end_";
+
   public static final String SVC_GET_TASK_DATA = "get_task_data";
   public static final String SVC_GET_CHANGED_TASKS = "get_changed_tasks";
   public static final String SVC_ACCESS_TASK = "access_task";
@@ -804,6 +806,7 @@ public final class TaskConstants {
 
   public static final String VIEW_REQUEST_DURATION_TYPES = "RequestDurationTypes";
   public static final String VIEW_REQUEST_FILES = "RequestFiles";
+  public static final String VIEW_REQUEST_REMINDERS = "RequestReminders";
 
   public static final String VIEW_RELATED_TASKS = "RelatedTasks";
   public static final String VIEW_RELATED_RECURRING_TASKS = "RelatedRecurringTasks";
@@ -894,6 +897,10 @@ public final class TaskConstants {
   public static final String COL_REQUEST_RESULT_PROPERTIES = "ResultProperties";
   public static final String COL_REQUEST_FINISHED = "Finished";
   public static final String COL_REQUEST_TYPE = "RequestType";
+  public static final String COL_REQUEST_REMINDER_ACTIVE = "Active";
+  public static final String COL_REQUEST_REMINDER_DATE = "ReminderDate";
+  public static final String COL_REQUEST_REMINDER_USER = "User";
+  public static final String COL_REQUEST_REMINDER_USER_DATE = "UserDate";
 
   public static final String COL_RECURRING_TASK = "RecurringTask";
 

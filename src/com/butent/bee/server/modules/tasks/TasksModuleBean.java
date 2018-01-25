@@ -475,6 +475,19 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
                 ((DataEvent.ViewInsertEvent) event).getRow().getId());
           }
         }
+
+        if (event.isAfter(VIEW_REQUEST_REMINDERS)) {
+          if (event instanceof DataEvent.ViewUpdateEvent) {
+            DataEvent.ViewUpdateEvent ev = (DataEvent.ViewUpdateEvent) event;
+            if (DataUtils.contains(ev.getColumns(), COL_REQUEST_REMINDER_DATE)
+              || DataUtils.contains(ev.getColumns(), COL_REQUEST_REMINDER_ACTIVE)) {
+              createOrUpdateTimers(TIMER_REMIND_REQUEST_END, VIEW_REQUEST_REMINDERS, ev.getRow().getId());
+            }
+          } else if (event instanceof DataEvent.ViewInsertEvent) {
+            createOrUpdateTimers(TIMER_REMIND_REQUEST_END, VIEW_REQUEST_REMINDERS,
+              ((DataEvent.ViewInsertEvent) event).getRow().getId());
+            }
+        }
       }
 
       @Subscribe

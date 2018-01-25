@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="RequestReminders"
+       idName="RequestReminderID"
+>
+  <Fields>
+    <Relation name="User" relation="Users" />
+    <Relation name="Request" relation="Requests" unique="true" />
+    <DateTime name="ReminderDate" />
+    <Boolean name="Active" />
+    <Boolean name="UserDate" />
+  </Fields>
+</Table>

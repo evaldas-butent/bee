@@ -17,13 +17,17 @@
     <row>
       <Label for="Name" />
       <InputText source="Name" style="&inp;" />
+  
+      <Label for="Priority" />
+      <Radio source="Priority" />
     </row>
 
     <row>
       <Label for="Type" />
       <DataSelector source="Type" renderColumns="TypeName" style="&inp;" newRowEnabled="false" />
-      <Label for="Priority" />
-      <Radio source="Priority" />
+  
+      <Label for="Product" />
+      <DataSelector source="Product" renderColumns="ProductName" style="&inp;" newRowEnabled="false" />
     </row>
 
     <row>

@@ -21,5 +21,7 @@
     <DateTime name="Created" notNull="true" defExpr="CURRENT_TIME" label="=createdOn" />
     <DateTime name="Finished" label="=crmRequestCompleted" />
     <Relation name="Product" relation="TaskProducts" label="=crmTaskProduct" />
+    <Relation name="TradeAct" relation="TradeActs" label="=tradeAct" />
+    <Enum name="Status" key="TaskStatus" defValue="0" label="=crmTaskStatus" />
   </Fields>
 </Table>

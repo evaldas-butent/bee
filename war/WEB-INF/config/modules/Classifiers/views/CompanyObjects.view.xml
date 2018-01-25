@@ -4,6 +4,7 @@
   name="CompanyObjects" source="CompanyObjects" module="Classifiers.Contacts"
   caption="=companyObjects" newRowCaption="=newObject"
   >
+  <Relation renderColumns="ObjectName" />
   <Columns>
     <SimpleColumn name="Company" />
     <SimpleJoin name="Company" joinType="LEFT">

@@ -202,6 +202,13 @@ public class RequestEditor extends ProductSupportInterceptor {
     drawComments(row);
     header.addCommandItem(createMenuLabel());
 
+    final RequestReminder requestReminder = new RequestReminder(row.getId());
+    requestReminder.getReminderLabel().addClickHandler(event -> {
+      requestReminder.showDialog();
+    });
+
+    header.addCommandItem(requestReminder.getReminderLabel());
+
     super.afterRefresh(form, row);
   }
 

@@ -41,7 +41,7 @@
   </CalcColumn>
 
   <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
-    sortBy="OwnerLastName OwnerFirstName" minWidth="100" />
+    sortBy="OwnerLastName OwnerFirstName" minWidth="100" filterSupplier="list" />
   <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName"
     sortBy="ExecutorLastName ExecutorFirstName" minWidth="100" />
 
@@ -51,7 +51,7 @@
 
   <DataColumn name="ExpectedDuration" visible="false" />
 
-  <DataColumn name="Created" visible="false" />
+  <DataColumn name="Created" />
   <DataColumn name="Completed" visible="false" />
   <DataColumn name="Approved" visible="false" />
   <RelColumn name="Project" renderColumns="ProjectName" visible="false" autoFit="true"
@@ -61,7 +61,7 @@
   <DataColumn name="ReminderTime" visible="false" />
   <DataColumn name="ReminderSent" visible="false" />
 
-  <RelColumn name="Product" renderColumns="ProductName" visible="false">
+  <RelColumn name="Product" renderColumns="ProductName" visible="false" filterSupplier="list" >
     <dynStyle>
       <ui:inline>color:[row.ProductForeground];
         background-color:[row.ProductBackground];
