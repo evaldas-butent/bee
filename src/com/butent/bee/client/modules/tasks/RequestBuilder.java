@@ -1,5 +1,11 @@
 package com.butent.bee.client.modules.tasks;
 
+import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.view.edit.EditableWidget;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
+import com.butent.bee.shared.modules.trade.acts.TradeActKind;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -19,11 +25,32 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 public class RequestBuilder extends ProductSupportInterceptor {
 
   @Override
+  public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
+    if (widget instanceof DataSelector && BeeUtils.same(editableWidget.getColumnId(),
+      TradeActConstants.COL_TRADE_ACT)) {
+      ((DataSelector) widget).addSelectorHandler(event -> {
+        if (event.isNewRow()) {
+          Data.setValue(TradeActConstants.VIEW_TRADE_ACTS, event.getNewRow(), TradeActConstants.COL_TA_KIND,
+            TradeActKind.SALE.ordinal());
+        }
+      });
+      super.afterCreateEditableWidget(editableWidget, widget);
+    }
+  }
+
+  @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
     if (widget instanceof FileCollector) {
       ((FileCollector) widget).bindDnd(getFormView());
+    } else if (widget instanceof DataSelector && BeeUtils.same(name, TradeActConstants.COL_TRADE_ACT)) {
+      ((DataSelector) widget).addSelectorHandler(event -> {
+        if (event.isNewRow()) {
+          Data.setValue(TradeActConstants.VIEW_TRADE_ACTS, event.getNewRow(), TradeActConstants.COL_TA_KIND,
+            TradeActKind.SUPPLEMENT.ordinal());
+        }
+      });
     }
   }
 

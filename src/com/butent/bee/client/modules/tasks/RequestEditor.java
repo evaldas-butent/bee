@@ -1,5 +1,10 @@
 package com.butent.bee.client.modules.tasks;
 
+import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.view.edit.EditableWidget;
+import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
+import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -124,6 +129,20 @@ public class RequestEditor extends ProductSupportInterceptor {
       super.onSuccess(result);
       formView.updateRow(result, true);
       formView.refresh();
+    }
+  }
+
+  @Override
+  public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
+    if (widget instanceof DataSelector && BeeUtils.same(editableWidget.getColumnId(),
+      TradeActConstants.COL_TRADE_ACT)) {
+      ((DataSelector) widget).addSelectorHandler(event -> {
+        if (event.isNewRow()) {
+          Data.setValue(TradeActConstants.VIEW_TRADE_ACTS, event.getNewRow(), TradeActConstants.COL_TA_KIND,
+            TradeActKind.SALE.ordinal());
+        }
+      });
+      super.afterCreateEditableWidget(editableWidget, widget);
     }
   }
 
