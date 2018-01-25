@@ -37,7 +37,7 @@
       </dynStyle>
     </RelColumn>
     
-    <DataColumn name="ActName" />
+    <DataColumn name="ActName" caption="=tradeAct"/>
     <DataColumn name="Priority" />
     <DataColumn name="Status" />
   </g:columns>
