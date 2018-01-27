@@ -900,7 +900,6 @@ public final class TaskConstants {
   public static final String COL_REQUEST_REMINDER_ACTIVE = "Active";
   public static final String COL_REQUEST_REMINDER_DATE = "ReminderDate";
   public static final String COL_REQUEST_REMINDER_USER = "User";
-  public static final String COL_REQUEST_REMINDER_USER_DATE = "UserDate";
 
   public static final String COL_RECURRING_TASK = "RecurringTask";
 

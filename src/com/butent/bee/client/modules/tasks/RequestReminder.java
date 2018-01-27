@@ -169,10 +169,10 @@ public class RequestReminder extends DialogBox {
         if (time != null && System.currentTimeMillis() < time) {
 
           final List<String> columns = Lists.newArrayList(COL_REQUEST_REMINDER_USER, COL_REQUEST_REMINDER_DATE,
-            COL_REQUEST_REMINDER_ACTIVE, COL_REQUEST_REMINDER_USER_DATE);
+            COL_REQUEST_REMINDER_ACTIVE);
 
           List<String> values = Lists.newArrayList(BeeUtils.toString(BeeKeeper.getUser().getUserId()),
-            BeeUtils.toString(time), BeeConst.STRING_TRUE, BeeConst.STRING_TRUE);
+            BeeUtils.toString(time), BeeConst.STRING_TRUE);
 
           Queries.update(VIEW_REQUEST_REMINDERS, Filter.equals(COL_REQUEST, requestID),
             columns, values, result -> {
@@ -243,10 +243,10 @@ public class RequestReminder extends DialogBox {
 
         final List<BeeColumn> columns = Data.getColumns(VIEW_REQUEST_REMINDERS,
           Lists.newArrayList(COL_REQUEST_REMINDER_USER, COL_REQUEST, COL_REQUEST_REMINDER_DATE,
-            COL_REQUEST_REMINDER_ACTIVE, COL_REQUEST_REMINDER_USER_DATE));
+            COL_REQUEST_REMINDER_ACTIVE));
 
         List<String> values = Lists.newArrayList(BeeUtils.toString(BeeKeeper.getUser().getUserId()),
-          BeeUtils.toString(requestID), BeeUtils.toString(time), BeeConst.STRING_TRUE, BeeConst.STRING_TRUE);
+          BeeUtils.toString(requestID), BeeUtils.toString(time), BeeConst.STRING_TRUE);
 
         Queries.insert(VIEW_REQUEST_REMINDERS, columns, values, null, row -> {
           close();
