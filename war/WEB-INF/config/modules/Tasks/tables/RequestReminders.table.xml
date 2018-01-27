@@ -9,6 +9,5 @@
     <Relation name="Request" relation="Requests" unique="true" />
     <DateTime name="ReminderDate" />
     <Boolean name="Active" />
-    <Boolean name="UserDate" />
   </Fields>
 </Table>

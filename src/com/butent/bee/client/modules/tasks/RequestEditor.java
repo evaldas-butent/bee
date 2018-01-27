@@ -188,8 +188,15 @@ public class RequestEditor extends ProductSupportInterceptor {
 
     setCommentsLayout();
 
+    final RequestReminder requestReminder = new RequestReminder(row.getId());
+    requestReminder.getReminderLabel().addClickHandler(event -> {
+      requestReminder.showDialog();
+    });
+
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
+
+    header.addCommandItem(requestReminder.getReminderLabel());
 
     eventsHandler = new RequestEventsHandler(header, !readStorage(NAME_ORDER));
 
@@ -220,13 +227,6 @@ public class RequestEditor extends ProductSupportInterceptor {
 
     drawComments(row);
     header.addCommandItem(createMenuLabel());
-
-    final RequestReminder requestReminder = new RequestReminder(row.getId());
-    requestReminder.getReminderLabel().addClickHandler(event -> {
-      requestReminder.showDialog();
-    });
-
-    header.addCommandItem(requestReminder.getReminderLabel());
 
     super.afterRefresh(form, row);
   }

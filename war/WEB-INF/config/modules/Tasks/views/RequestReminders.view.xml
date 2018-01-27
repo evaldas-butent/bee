@@ -18,6 +18,5 @@
     <SimpleColumn name="Request" />
     <SimpleColumn name="ReminderDate" />
     <SimpleColumn name="Active" />
-    <SimpleColumn name="UserDate" />
   </Columns>
 </View>
