@@ -30,7 +30,11 @@
           <MultiSelector name="Resources" viewName="Attendees" property="AppointmentAttendees"
                          renderColumns="Name" choiceColumns="Name TypeName" newRowEnabled="false"
                          style="&absolute; left: 80px; top: 40px; width: 240px; max-height: 100px; overflow: auto;" />
-
+  
+          <Label for="TradeAct" style="&absolute; left: 0px; top: 80px; width: 76px;" />
+  
+          <DataSelector source="TradeAct" style="&absolute; left: 80px; top: 80px; width: 240px;" />
+          
           <InputArea source="Description" placeholder="=description" visibleLines="5"
                      style="&absolute; left: 360px; top: 55px; width: 400px;" />
 
