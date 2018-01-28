@@ -1,5 +1,13 @@
 package com.butent.bee.client.modules.mail;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.font.FontAwesome;
 import com.google.common.collect.Lists;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
@@ -116,23 +124,23 @@ public class NewsletterForm extends AbstractFormInterceptor {
 
                         case 1:
                           GridFactory.openGrid(VIEW_SELECT_COMPANIES, new ContactsCreator(result,
-                              true), null, ModalGrid.opener(800, CssUnit.PX, 600, CssUnit.PX));
+                              true, VIEW_COMPANIES), null, ModalGrid.opener(800, CssUnit.PX, 600, CssUnit.PX));
                           break;
 
                         case 2:
                           GridFactory.openGrid(VIEW_SELECT_PERSONS, new ContactsCreator(result,
-                              true), null, ModalGrid.opener(800, CssUnit.PX, 600, CssUnit.PX));
+                              true, VIEW_PERSONS), null, ModalGrid.opener(800, CssUnit.PX, 600, CssUnit.PX));
                           break;
 
                         case 3:
                           GridFactory.openGrid(VIEW_SELECT_COMPANY_PERSONS, new ContactsCreator(
-                              result, true), null, ModalGrid.opener(800, CssUnit.PX, 600,
+                              result, true, VIEW_COMPANY_PERSONS), null, ModalGrid.opener(800, CssUnit.PX, 600,
                               CssUnit.PX));
                           break;
 
                         case 4:
                           GridFactory.openGrid(VIEW_SELECT_COMPANY_CONTACTS, new ContactsCreator(
-                              result, true), null, ModalGrid.opener(800, CssUnit.PX, 600,
+                              result, true, VIEW_COMPANY_CONTACTS), null, ModalGrid.opener(800, CssUnit.PX, 600,
                               CssUnit.PX));
                           break;
                       }
@@ -142,6 +150,20 @@ public class NewsletterForm extends AbstractFormInterceptor {
           });
           return false;
         }
+
+        @Override
+        public void afterCreatePresenter(GridPresenter presenter) {
+          HeaderView header = presenter.getHeader();
+          header.clearCommandPanel();
+
+          FaLabel delete = new FaLabel(FontAwesome.WINDOW_CLOSE);
+          delete.setTitle(Localized.dictionary().removeAll());
+          delete.addClickHandler(clickEvent -> deleteContacts());
+
+          header.addCommandItem(delete);
+
+          super.afterCreatePresenter(presenter);
+        }
       });
     }
   }
@@ -149,5 +171,16 @@ public class NewsletterForm extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new NewsletterForm();
+  }
+
+  private void deleteContacts() {
+    Global.confirm(Localized.dictionary().askDeleteAll(), () -> {
+      Long newsletterID = getActiveRowId();
+
+      if (DataUtils.isId(newsletterID)) {
+        Queries.delete(VIEW_NEWSLETTER_CONTACTS, Filter.equals(COL_NEWSLETTER, newsletterID),
+          result -> Data.refreshLocal(VIEW_NEWSLETTER_CONTACTS));
+      }
+    });
   }
 }
