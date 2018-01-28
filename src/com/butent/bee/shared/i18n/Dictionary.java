@@ -146,6 +146,10 @@ public interface Dictionary {
 
   default String address() {return g("address");}
 
+  default String addAll() {return g("addAll");}
+
+  default String addMarked() {return g("addMarked");}
+
   default String adjustmentDutyOrder() {return g("adjustmentDutyOrder");}
 
   default String administration() {return g("administration");}
@@ -202,6 +206,8 @@ public interface Dictionary {
   default String article4() {return g("article4");}
 
   default String askDeleteAll() {return g("askDeleteAll");}
+
+  default String askAddAll() {return g("askAddAll");}
 
   default String assessments() {return g("assessments");}
 
@@ -5154,6 +5160,8 @@ public interface Dictionary {
   }
 
   default String remuneration() {return g("remuneration");}
+
+  default String removeAll() {return g("removeAll");}
 
   default String repeatNewPassword() {return g("repeatNewPassword");}
 
