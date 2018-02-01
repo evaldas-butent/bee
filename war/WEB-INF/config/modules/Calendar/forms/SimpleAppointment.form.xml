@@ -101,8 +101,11 @@
       <page>
         <text>=relatedInformation</text>
         <FlowPanel>
-          <Relations relColumn="Appointment" inline="true" defaultRelations="Tasks Projects"
-                     summarize="true"/>
+          <Relations relColumn="Appointment" inline="true" defaultRelations="Tasks Projects TradeActs Sales
+            CompanyObjects ServiceMaintenance" summarize="true" >
+            <Relation viewName="ServiceObjects" renderColumns="Address" newRowEnabled="false" editPopup="true"
+                      choiceColumns="Address"/>
+          </Relations>
         </FlowPanel>
       </page>
     </TabbedPages>

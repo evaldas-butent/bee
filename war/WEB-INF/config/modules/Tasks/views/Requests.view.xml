@@ -76,13 +76,13 @@
       <SimpleColumn name="Background" alias="ProductBackground"/>
       <SimpleColumn name="Foreground" alias="ProductForeground"/>
     </SimpleJoin>
-    
+
     <SimpleColumn name="TradeAct" />
     <SimpleJoin name="TradeAct" joinType="LEFT">
-      <SimpleColumn name="Name" alias="TradeActName" />
-      <SimpleJoin name="Name" joinType="LEFT">
-        <SimpleColumn name="ActName" />
+      <SimpleJoin joinType="LEFT" name="Series">
+        <SimpleColumn name="SeriesName" />
       </SimpleJoin>
+      <SimpleColumn name="Number" alias="TradeNumber" />
     </SimpleJoin>
   </Columns>
 </View>
