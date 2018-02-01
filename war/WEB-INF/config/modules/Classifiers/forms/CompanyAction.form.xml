@@ -6,7 +6,7 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
 	xmlns:ui="http://www.butent.com/ui" name="CompanyAction" viewName="Appointments"
-	caption="=calAppointment" showRowId="true" width="660" height="300">
+	caption="=calAppointment" showRowId="true" width="660" height="500">
 
 	<FlowPanel class="flexBox-vertical">
 		<Table kind="controls"
@@ -67,6 +67,13 @@
 				<Label for="Creator" />
 				<DataSelector source="Creator" editSource="CreatorCompanyPerson"
 					renderColumns="CreatorFirstName CreatorLastName" style="&inp1;" />
+			</row>
+
+			<row>
+				<Label for="Description"/>
+				<cell colSpan="3">
+					<InputArea source="Description" style="&inp2;" visibleLines="3" />
+				</cell>
 			</row>
 
 			<row>

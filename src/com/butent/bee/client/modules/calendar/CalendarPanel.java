@@ -197,7 +197,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     header.setViewPresenter(this);
 
     if (BeeKeeper.getUser().isDataVisible(TaskConstants.VIEW_TODO_LIST)) {
-      Button todoListCommand = new Button("Vykdomos užduotys");
+      Button todoListCommand = new Button(Localized.dictionary().crmTodoList());
       todoListCommand.addClickHandler(event -> showTodoList());
       header.addCommandItem(todoListCommand);
     }

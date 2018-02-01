@@ -208,7 +208,8 @@
             <Relation viewName="ServiceMaintenance"
                       renderColumns="ID" choiceColumns="ID TypeName StateName"
                       newRowEnabled="false" editPopup="true" />
-            <Relation viewName="TradeActs" renderColumns="ActName" newRowEnabled="false"/>
+            <Relation viewName="TradeActs" choiceColumns="SeriesName Number" renderColumns="SeriesName Number"
+                      newRowEnabled="false"/>
             <Relation viewName="Sales" renderColumns="SeriesName InvoiceNo" newRowEnabled="false" label="Sąskaitos" />
             <Relation name="CompanyObjectRel" viewName="CompanyObjects" renderColumns="ObjectName" newRowEnabled="false" />
           </Relations>

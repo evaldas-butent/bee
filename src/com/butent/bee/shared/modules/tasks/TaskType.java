@@ -58,8 +58,7 @@ public enum TaskType implements HasCaption, HasWidgetSupplier {
 
       @Override
       public Filter getFilter(LongValue userValue) {
-        return Filter.and(Filter.isEqual(COL_OWNER, userValue),
-            Filter.isEqual(COL_STATUS, Value.getValue(TaskStatus.NOT_SCHEDULED.ordinal())));
+        return Filter.isEqual(COL_STATUS, Value.getValue(TaskStatus.NOT_SCHEDULED.ordinal()));
       }
 
     };

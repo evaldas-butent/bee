@@ -132,12 +132,13 @@
     <ExternalJoin name="Appointment" joinType="LEFT" source="CarServiceEvents">
       <IdColumn name="ServiceEvent" />
     </ExternalJoin>
-    
+
     <SimpleColumn name="TradeAct" />
     <SimpleJoin name="TradeAct" joinType="LEFT">
-      <SimpleJoin name="Name" joinType="LEFT">
-        <SimpleColumn name="ActName" />
+      <SimpleJoin joinType="LEFT" name="Series">
+        <SimpleColumn name="SeriesName" />
       </SimpleJoin>
+      <SimpleColumn name="Number" alias="TradeNumber" />
     </SimpleJoin>
   </Columns>
 
