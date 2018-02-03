@@ -35,5 +35,6 @@
     <Relation name="Project" relation="Projects" label="=project" />
   
     <Relation name="TradeAct" relation="TradeActs" label="=tradeAct" />
+    <Relation name="ServiceObject" relation="ServiceObjects" label="=svcDevice" />
   </Fields>
 </Table>

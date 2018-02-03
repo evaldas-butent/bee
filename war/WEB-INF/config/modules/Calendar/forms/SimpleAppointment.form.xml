@@ -9,7 +9,7 @@
 
         name="SimpleAppointment" viewName="Appointments" caption="=calAppointment"
         disabledActions="add delete" enabledActions="save" width="790" height="535" >
-  <FlowPanel style="&relative; width: 780px; height: 490px;">
+  <FlowPanel style="&relative; width: 780px; height: 510px;">
     <TabbedPages resizable="false" style="height: 100%; margin-left: 10px;">
       <page>
         <text>=mainInformation</text>
@@ -34,6 +34,10 @@
           <Label for="TradeAct" style="&absolute; left: 0px; top: 80px; width: 76px;" />
   
           <DataSelector source="TradeAct" style="&absolute; left: 80px; top: 80px; width: 240px;" />
+
+          <Label for="ServiceObject" style="&absolute; left: 0px; top: 120px; width: 76px;" />
+
+          <DataSelector source="ServiceObject" style="&absolute; left: 80px; top: 120px; width: 240px;" />
           
           <InputArea source="Description" placeholder="=description" visibleLines="5"
                      style="&absolute; left: 360px; top: 55px; width: 400px;" />
@@ -72,18 +76,6 @@
           <DataSelector source="CompanyName" choiceColumns="Name Phone Email"
                         style="&absolute; left: 460px; top: 280px; width: 300px;" />
 
-          <Label for="Project" style="&absolute; left: 380px; top: 320px; width: 76px;" />
-
-          <DataSelector source="Project" choiceColumns="Name"
-                        style="&absolute; left: 460px; top: 320px; width: 300px;" />
-
-          <Label text="=responsiblePersons" style="&absolute; left: 380px; top: 360px; width: 76px;" />
-
-          <MultiSelector name="Owners" property="AppointmentOwners" viewName="Users"
-                         newRowEnabled="false" renderColumns="FirstName LastName"
-                         choiceColumns="FirstName LastName CompanyName PositionName"
-                         style="&absolute; left: 460px; top: 360px; width: 300px;" />
-
           <!-- Transrifus {-->
           <Label for="CompanyPerson" style="&absolute; left: 380px; top: 320px; width: 76px;" />
           <DataSelector source="CompanyPerson" renderColumns="PersonFirstName PersonLastName"
@@ -91,9 +83,21 @@
                         style="&absolute; left: 460px; top: 320px; width: 300px;" />
           <!-- } Transrifus -->
 
-          <Label text="=creator" style="&absolute; left: 380px; top: 400px; width: 76px;" />
+          <Label for="Project" style="&absolute; left: 380px; top: 360px; width: 76px;" />
 
-          <DataSelector source="Creator" style="&absolute; left: 460px; top: 400px; width: 300px;"
+          <DataSelector source="Project" choiceColumns="Name"
+                        style="&absolute; left: 460px; top: 360px; width: 300px;" />
+
+          <Label text="=responsiblePersons" style="&absolute; left: 380px; top: 400px; width: 76px;" />
+
+          <MultiSelector name="Owners" property="AppointmentOwners" viewName="Users"
+                         newRowEnabled="false" renderColumns="FirstName LastName"
+                         choiceColumns="FirstName LastName CompanyName PositionName"
+                         style="&absolute; left: 460px; top: 400px; width: 300px;" />
+
+          <Label text="=creator" style="&absolute; left: 380px; top: 440px; width: 76px;" />
+
+          <DataSelector source="Creator" style="&absolute; left: 460px; top: 440px; width: 300px;"
                         readOnly="true"/>
         </FlowPanel>
       </page>

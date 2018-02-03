@@ -140,6 +140,11 @@
       </SimpleJoin>
       <SimpleColumn name="Number" alias="TradeNumber" />
     </SimpleJoin>
+
+    <SimpleColumn name="ServiceObject" />
+    <SimpleJoin name="ServiceObject" joinType="LEFT">
+      <SimpleColumn name="Address" />
+    </SimpleJoin>
   </Columns>
 
   <Order>
