@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
-  name="CalendarTodo" viewName="TodoList" caption="=crmTodoList"
+  name="CalendarTodo" viewName="TodoList" caption="Vykdomos užduotys"
   newRowPopup="true" editPopup="true" headerMode="grid"
   disabledActions="delete filter export auto_fit" 
   filter="Creator={u} or Visibility = 0"
