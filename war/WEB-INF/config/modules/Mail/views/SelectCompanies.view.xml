@@ -45,6 +45,13 @@
     <SimpleJoin joinType="LEFT" name="InformationSource">
       <SimpleColumn alias="InformationSourceName" name="Name" />
     </SimpleJoin>
+
+    <SimpleJoin name="Contact" joinType="LEFT">
+      <SimpleColumn name="City" />
+      <SimpleJoin name="City" joinType="LEFT">
+        <SimpleColumn alias="CityName" name="Name" />
+      </SimpleJoin>
+    </SimpleJoin>
   </Columns>
   <Order>
     <OrderBy column="Name" />

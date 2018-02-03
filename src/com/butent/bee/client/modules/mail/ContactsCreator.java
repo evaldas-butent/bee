@@ -27,8 +27,9 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.utils.Codec;
+import com.google.gwt.event.dom.client.ClickEvent;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -70,14 +71,23 @@ public class ContactsCreator extends AbstractGridInterceptor {
       addContacts(ids);
     });
 
-    addAll.addClickHandler(clickEvent -> Global.confirm(Localized.dictionary().askAddAll(),
-            () -> Queries.getRowSet(viewName, Arrays.asList(Data.getColumns(viewName).get(0).getId()),
-              Filter.notNull(COL_EMAIL), result -> {
-      if (!result.isEmpty()) {
-        Set<Long> ids = new HashSet<>(result.getRowIds());
-        addContacts(ids);
-      }
-    })));
+    addAll.addClickHandler((ClickEvent clickEvent) -> {
+      Global.confirm(Localized.dictionary().askAddAll(),
+        () -> {
+
+        Filter filter = Filter.notNull(COL_EMAIL);
+        if (presenter.getUserFilter() != null) {
+          filter = Filter.and(presenter.getUserFilter(), filter);
+        }
+          Queries.getRowSet(viewName, Collections.singletonList(Data.getColumns(viewName).get(0).getId()),
+            filter, (BeeRowSet result) -> {
+              if (!result.isEmpty()) {
+                Set<Long> ids = new HashSet<>(result.getRowIds());
+                addContacts(ids);
+              }
+            });
+        });
+    });
 
     header.addCommandItem(addChecked);
     header.addCommandItem(addAll);

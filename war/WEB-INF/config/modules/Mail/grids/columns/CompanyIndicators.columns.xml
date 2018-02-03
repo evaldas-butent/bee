@@ -2,9 +2,12 @@
 <g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
 
   <RelColumn name="EmailId" />
-  <DataColumn name="GroupName" />
+  <DataColumn name="GroupName" label="=clientGroup" />
   <DataColumn name="PriorityName" />
   <DataColumn name="CompanySizeName" />
   <DataColumn name="RelationTypeStateName" />
   <RelColumn name="InformationSourceName" />
+  <DataColumn name="CityName" />
+  <PropColumn name="Activity" type="string"  caption="=companyActivities" filterSupplier="custom"
+              filterOptions="company_activities"/>
 </g:columns>

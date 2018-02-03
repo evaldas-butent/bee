@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.classifiers;
 
+import com.butent.bee.shared.modules.mail.MailConstants;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -307,7 +308,7 @@ public class ClassifiersModuleBean implements BeeModule {
       @Subscribe
       @AllowConcurrentEvents
       public void setCompanyActivities(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_COMPANIES) && event.hasData()) {
+        if ((event.isAfter(VIEW_COMPANIES) || event.isAfter(MailConstants.VIEW_SELECT_COMPANIES)) && event.hasData()) {
           SimpleRowSet data = qs.getData(new SqlSelect()
               .addFields(VIEW_COMPANY_ACTIVITIES, COL_ACTIVITY_NAME)
               .addFields(TBL_COMPANY_ACTIVITY_STORE, COL_COMPANY)
