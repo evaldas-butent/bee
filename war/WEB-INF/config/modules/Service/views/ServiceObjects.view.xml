@@ -6,7 +6,7 @@
   editForm="ServiceObject" newRowForm="ServiceObject"
   rowCaption="CategoryName Address CustomerName"
   >
-  <Relation renderColumns="Model CategoryName ArticleNo" choiceColumns="Model CategoryName ArticleNo" />
+  <Relation renderColumns="Model CategoryName Address" choiceColumns="Model CategoryName Address" />
   <Columns>
     <SimpleColumn name="Category" />
     <SimpleJoin joinType="LEFT" name="Category">
