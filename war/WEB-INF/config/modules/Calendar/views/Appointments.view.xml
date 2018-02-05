@@ -139,6 +139,9 @@
         <SimpleColumn name="SeriesName" />
       </SimpleJoin>
       <SimpleColumn name="Number" alias="TradeNumber" />
+      <SimpleJoin joinType="LEFT" name="Company">
+        <SimpleColumn name="Name" alias="TradeCompanyName" />
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="ServiceObject" />
