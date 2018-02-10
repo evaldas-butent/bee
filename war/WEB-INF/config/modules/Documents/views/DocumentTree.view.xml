@@ -19,5 +19,6 @@
   <Order>
     <OrderBy column="ParentOrdinal" />
     <OrderBy column="Ordinal" />
+    <OrderBy column="CategoryName" />
   </Order>
 </View>
