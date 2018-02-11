@@ -77,8 +77,15 @@
           </page>
           <page>
             <text>=relatedInformation</text>
-            <Relations relColumn="ServiceObject" inline="true"
-                       defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
+            <Relations relColumn="ServiceObject" inline="true" name="Relations"
+                       defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" >
+              <Relation viewName="ServiceObjects" renderColumns="Model CategoryName ArticleNo"
+                        newRowEnabled="false" editPopup="true" choiceColumns="Model CategoryName ArticleNo"/>
+              <Relation viewName="TradeActs" choiceColumns="SeriesName Number CompanyName OperationName"
+                        renderColumns="SeriesName Number CompanyName" newRowEnabled="false" filter="StatusName != Baigtas"
+                        order="Id desc"/>
+              <Relation name="CompanyObjectRel" viewName="CompanyObjects" renderColumns="ObjectName" newRowEnabled="false" />
+            </Relations>
           </page>
           <page>
             <text>=pictures</text>

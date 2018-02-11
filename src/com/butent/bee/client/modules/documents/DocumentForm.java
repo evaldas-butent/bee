@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.documents;
 
+import com.butent.bee.client.composite.MultiSelector;
 import com.google.common.base.Splitter;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
@@ -171,6 +172,17 @@ public class DocumentForm extends DocumentDataForm {
     } else if (BeeUtils.same(name, VIEW_DOCUMENT_ITEMS) && widget instanceof ChildGrid) {
       itemsGrid = (ChildGrid) widget;
     }
+  }
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    MultiSelector objectSelector = rel.getMultiSelector("CompanyObject");
+    if (objectSelector != null) {
+      Filter filter = Filter.equals(COL_COMPANY, Data.getLong(VIEW_DOCUMENTS, row, COL_COMPANY));
+      objectSelector.setAdditionalFilter(filter);
+    }
+
+    super.beforeRefresh(form, row);
   }
 
   @Override

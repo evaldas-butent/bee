@@ -196,8 +196,6 @@
                       newRowEnabled="false" editPopup="true"/>
             <Relation viewName="Discussions" renderColumns="Subject"
                       newRowEnabled="false" editPopup="true"/>
-            <Relation viewName="ServiceObjects" renderColumns="Model CategoryName ArticleNo"
-                      newRowEnabled="false" editPopup="true" choiceColumns="Model CategoryName ArticleNo"/>
             <Relation viewName="Tasks"
                       renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
                       newRowEnabled="false" editPopup="true"
@@ -208,10 +206,13 @@
             <Relation viewName="ServiceMaintenance"
                       renderColumns="ID" choiceColumns="ID TypeName StateName"
                       newRowEnabled="false" editPopup="true" />
-            <Relation viewName="TradeActs" choiceColumns="SeriesName Number CompanyName"
-                      renderColumns="SeriesName Number CompanyName" newRowEnabled="false"/>
-            <Relation viewName="Sales" renderColumns="SeriesName InvoiceNo" newRowEnabled="false" label="Sąskaitos" />
+            <Relation viewName="ServiceObjects" renderColumns="Model CategoryName ArticleNo"
+                      newRowEnabled="false" editPopup="true" choiceColumns="Model CategoryName ArticleNo"/>
+            <Relation viewName="TradeActs" choiceColumns="SeriesName Number CompanyName OperationName"
+                      renderColumns="SeriesName Number CompanyName" newRowEnabled="false" filter="StatusName != Baigtas"
+                      order="Id desc"/>
             <Relation name="CompanyObjectRel" viewName="CompanyObjects" renderColumns="ObjectName" newRowEnabled="false" />
+            <Relation viewName="Sales" renderColumns="SeriesName InvoiceNo" newRowEnabled="false" label="Sąskaitos" />
           </Relations>
         </page>
       </TabbedPages>

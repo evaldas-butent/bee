@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.tasks;
 
+import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.shared.modules.trade.TradeConstants;
@@ -15,6 +17,7 @@ import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.client.composite.Relations.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -111,6 +114,8 @@ public class RequestEditor extends ProductSupportInterceptor {
   private com.google.gwt.xml.client.Element west;
   private boolean isDefaultLayout;
 
+  private Relations relations;
+
   public RequestEditor() {
     this.isDefaultLayout = BeeKeeper.getUser().getCommentsLayout();
   }
@@ -169,6 +174,8 @@ public class RequestEditor extends ProductSupportInterceptor {
       requestComments.clear();
     } else if (BeeUtils.same(name, "TabbedPages") && widget instanceof TabbedPages) {
       requestWidget = widget;
+    } else if (BeeUtils.same(name, AdministrationConstants.TBL_RELATIONS) && widget instanceof Relations) {
+        relations = (Relations) widget;
     }
     super.afterCreateWidget(name, widget, callback);
   }
@@ -255,6 +262,15 @@ public class RequestEditor extends ProductSupportInterceptor {
       return false;
     }
     return true;
+  }
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    MultiSelector objectSelector = relations.getMultiSelector("CompanyObject");
+    if (objectSelector != null) {
+      Filter filter = Filter.equals(COL_COMPANY, Data.getLong(VIEW_REQUESTS, row, COL_REQUEST_CUSTOMER));
+      objectSelector.setAdditionalFilter(filter);
+    }
   }
 
   @Override

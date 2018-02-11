@@ -16,17 +16,24 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
+import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 
 import java.util.Objects;
 
-public class AppointmentForm extends AbstractFormInterceptor {
+public class AppointmentForm extends AbstractFormInterceptor implements ClickHandler {
 
   private DataSelector prjSelector;
+  private static final String NEW_ACT_LABEL = "NewActLabel";
 
   private class RelationsHandler implements SelectorEvent.Handler {
 
@@ -97,6 +104,8 @@ public class AppointmentForm extends AbstractFormInterceptor {
 
     if (widget instanceof Relations) {
       ((Relations) widget).setSelectorHandler(new RelationsHandler());
+    } else if (BeeUtils.same(NEW_ACT_LABEL, name)) {
+      ((FaLabel)widget).addClickHandler(this);
     }
 
     super.afterCreateWidget(name, widget, callback);
@@ -105,6 +114,24 @@ public class AppointmentForm extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new AppointmentForm();
+  }
+
+
+  @Override
+  public void onClick(ClickEvent clickEvent) {
+    DataSelector tradeAct = (DataSelector) getFormView().getWidgetBySource(TradeActConstants.COL_TRADE_ACT);
+
+    if (tradeAct != null) {
+      DataInfo dataInfo = tradeAct.getOracle().getDataInfo();
+      BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
+      SelectorEvent event = SelectorEvent.fireNewRow(tradeAct, row, tradeAct.getNewRowForm(),
+        tradeAct.getDisplayValue());
+
+      Data.setValue(TradeActConstants.VIEW_TRADE_ACTS, row, TradeActConstants.COL_TA_KIND,
+        TradeActKind.SALE.ordinal());
+
+      RowFactory.createRelatedRow(tradeAct.getNewRowForm(), row, tradeAct, event.getOnOpenNewRow());
+    }
   }
 
   public DataSelector getProjectSelector() {

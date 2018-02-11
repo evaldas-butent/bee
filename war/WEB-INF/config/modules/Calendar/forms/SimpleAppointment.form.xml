@@ -32,8 +32,13 @@
                          style="&absolute; left: 80px; top: 40px; width: 240px; max-height: 100px; overflow: auto;" />
   
           <Label for="TradeAct" style="&absolute; left: 0px; top: 80px; width: 76px;" />
+
+          <FaLabel name="NewActLabel" style="&absolute; left: 330px; top: 87px;" class = "bee-Relations-newRel"
+                   char="plus_circle"/>
   
-          <DataSelector source="TradeAct" style="&absolute; left: 80px; top: 80px; width: 240px;" />
+          <DataSelector source="TradeAct" style="&absolute; left: 80px; top: 80px; width: 240px;"
+                        choiceColumns="SeriesName Number ActName OperationName" renderColumns="SeriesName TradeNumber
+                        ActName" viewName="RequestsActs" newRowEnabled="false" />
 
           <Label for="ServiceObject" style="&absolute; left: 0px; top: 120px; width: 76px;" />
 
@@ -105,8 +110,12 @@
       <page>
         <text>=relatedInformation</text>
         <FlowPanel>
-          <Relations relColumn="Appointment" inline="true" defaultRelations="Tasks Projects TradeActs Sales
-            CompanyObjects ServiceMaintenance" summarize="true" >
+          <Relations relColumn="Appointment" inline="true" defaultRelations="Tasks Projects Sales CompanyObjects
+          ServiceMaintenance" summarize="true" >
+            <Relation viewName="TradeActs" choiceColumns="SeriesName Number CompanyName OperationName"
+                      renderColumns="SeriesName Number CompanyName" newRowEnabled="false" filter="StatusName != Baigtas"
+                      order="Id desc"/>
+
             <Relation viewName="ServiceObjects" renderColumns="Address" newRowEnabled="false" editPopup="true"
                       choiceColumns="Address"/>
           </Relations>

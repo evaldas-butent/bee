@@ -8,6 +8,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.COL_OWNER;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.GRID_CHILD_TASKS;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.TabBar;
@@ -197,7 +199,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     header.setViewPresenter(this);
 
     if (BeeKeeper.getUser().isDataVisible(TaskConstants.VIEW_TODO_LIST)) {
-      Button todoListCommand = new Button(Localized.dictionary().crmTodoList());
+      Button todoListCommand = new Button(Localized.dictionary().crmTasks());
       todoListCommand.addClickHandler(event -> showTodoList());
       header.addCommandItem(todoListCommand);
     }
@@ -795,11 +797,12 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
         return;
       }
 
-      GridInterceptor interceptor = GridFactory.getGridInterceptor(GRID_CALENDAR_TODO);
-      String supplierKey = GridFactory.getSupplierKey(GRID_CALENDAR_TODO, interceptor);
+      GridInterceptor interceptor = GridFactory.getGridInterceptor(GRID_CHILD_TASKS);
+      String supplierKey = GridFactory.getSupplierKey(GRID_CHILD_TASKS, interceptor);
 
-      GridFactory.createGrid(GRID_CALENDAR_TODO, supplierKey, interceptor,
-          EnumSet.of(UiOption.EMBEDDED), null, presenter -> {
+      GridFactory.createGrid(GRID_CHILD_TASKS, supplierKey, interceptor,
+          EnumSet.of(UiOption.EMBEDDED), GridFactory.GridOptions.forFilter(Filter.equals(COL_OWNER,
+          BeeKeeper.getUser().getUserId())), presenter -> {
             if (!todoContainer.isEmpty()) {
               todoContainer.clear();
             }

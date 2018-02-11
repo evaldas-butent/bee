@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.service;
 
+import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.CheckBox;
@@ -88,6 +90,8 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
   private ChildGrid groupsGrid;
   private ChildGrid criteriaGrid;
 
+  private Relations relations;
+
   private final List<HandlerRegistration> registry = new ArrayList<>();
 
   ServiceObjectForm() {
@@ -160,6 +164,8 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
     } else if (widget instanceof DataSelector
         && BeeUtils.in(name, COL_SERVICE_CUSTOMER, ALS_CONTACT_PERSON)) {
       ((DataSelector) widget).addSelectorHandler(this);
+    } else if (widget instanceof Relations) {
+      relations = (Relations) widget;
     }
   }
 
@@ -190,6 +196,17 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
         });
       }
     });
+  }
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    MultiSelector objectSelector = relations.getMultiSelector("CompanyObject");
+    if (objectSelector != null) {
+      Filter filter = Filter.equals(COL_COMPANY, Data.getLong(VIEW_SERVICE_OBJECTS, row, COL_SERVICE_CUSTOMER));
+      objectSelector.setAdditionalFilter(filter);
+    }
+
+    super.beforeRefresh(form, row);
   }
 
   @Override

@@ -535,6 +535,7 @@
       <xs:enumeration value="RequestEvents" />
       <xs:enumeration value="RequestFiles" />
       <xs:enumeration value="Requests" />
+      <xs:enumeration value="RequestsActs" />
       <xs:enumeration value="RequestReminders" />
       <xs:enumeration value="RequestTypes" />
       <xs:enumeration value="RequestForms" />

@@ -93,7 +93,9 @@
   
               <row>
                 <Label for="TradeAct" />
-                <DataSelector source="TradeAct" style="&inp2x;" />
+                <DataSelector source="TradeAct" choiceColumns="SeriesName Number ActName OperationName"
+                              renderColumns="SeriesName TradeNumber ActName" style="&inp2x;" viewName="RequestsActs"
+                              newRowEnabled="false" />
               </row>
             </Table>
 
@@ -121,8 +123,15 @@
         <page>
           <text>=relatedInformation</text>
           <FlowPanel style="max-width: 97%;">
-            <Relations relColumn="Request" inline="true" defaultRelations="Companies Persons Tasks" 
-              style="margin-left: 15px; min-width:300px;" />
+            <Relations name="Relations" relColumn="Request" inline="true" defaultRelations="Companies Persons Tasks"
+              style="margin-left: 15px; min-width:300px;" >
+            <Relation viewName="ServiceObjects" renderColumns="Model CategoryName ArticleNo"
+                      newRowEnabled="false" editPopup="true" choiceColumns="Model CategoryName ArticleNo"/>
+              <Relation viewName="TradeActs" choiceColumns="SeriesName Number CompanyName OperationName"
+                        renderColumns="SeriesName Number CompanyName" newRowEnabled="false" filter="StatusName != Baigtas"
+                        order="Id desc"/>
+            <Relation name="CompanyObjectRel" viewName="CompanyObjects" renderColumns="ObjectName" newRowEnabled="false" />
+            </Relations>
           </FlowPanel>
         </page>
       </TabbedPages>
