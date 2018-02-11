@@ -3,7 +3,7 @@
 
       name="RequestsActs" source="TradeActs" module="Trade.Acts"
       caption="=tradeActs" newRowCaption="=tradeActNew"
-      editForm="TradeAct" newRowForm="TradeAct"
+      editForm="TradeAct" newRowForm="TradeAct" filter="StatusName != Baigtas"
 >
   <Relation renderColumns="ActName SeriesName Number" />
   <Columns>
