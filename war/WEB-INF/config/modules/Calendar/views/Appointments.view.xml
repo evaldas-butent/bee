@@ -142,6 +142,12 @@
       <SimpleJoin joinType="LEFT" name="Company">
         <SimpleColumn name="Name" alias="TradeCompanyName" />
       </SimpleJoin>
+      <SimpleJoin joinType="LEFT" name="Operation">
+        <SimpleColumn name="OperationName" />
+      </SimpleJoin>
+      <SimpleJoin name="Status" joinType="LEFT">
+        <SimpleColumn name="StatusName" />
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="ServiceObject" />

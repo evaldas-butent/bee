@@ -14,8 +14,15 @@
         <FlowPanel class="flexBox-horizontal" style="overflow:auto;">
           <xi:include href="widgets/DocumentFields.widget.xml" />
           <FlowPanel style="max-width: 40%;" >
-            <Relations relColumn="Document" inline="true"
-              defaultRelations="Companies Persons Requests Tasks" style="margin-left: 15px; min-width:300px;" />
+            <Relations relColumn="Document" name="Relations" inline="true"
+              defaultRelations="Companies Persons Requests Tasks" style="margin-left: 15px; min-width:300px;" >
+              <Relation viewName="ServiceObjects" renderColumns="Model CategoryName ArticleNo"
+                        newRowEnabled="false" editPopup="true" choiceColumns="Model CategoryName ArticleNo"/>
+              <Relation viewName="TradeActs" choiceColumns="SeriesName Number CompanyName OperationName"
+                        renderColumns="SeriesName Number CompanyName" newRowEnabled="false" filter="StatusName != Baigtas"
+                        order="Id desc"/>
+              <Relation name="CompanyObjectRel" viewName="CompanyObjects" renderColumns="ObjectName" newRowEnabled="false" />
+            </Relations>
           </FlowPanel>
         </FlowPanel>
         <ChildGrid name="DocumentFiles" relColumn="Document" style="margin-top: 1ex; height: 400px;" />

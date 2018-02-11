@@ -78,13 +78,22 @@
   </SimpleJoin>
 
   <SimpleColumn name="TradeAct" />
-  <SimpleJoin name="TradeAct" joinType="LEFT">
+  <SimpleJoin name="TradeAct" joinType="LEFT" >
+    <SimpleJoin name="Name" joinType="LEFT">
+      <SimpleColumn name="ActName" />
+    </SimpleJoin>
     <SimpleJoin joinType="LEFT" name="Series">
       <SimpleColumn name="SeriesName" />
+    </SimpleJoin>
+    <SimpleJoin name="Status" joinType="LEFT">
+      <SimpleColumn name="StatusName" />
     </SimpleJoin>
     <SimpleColumn name="Number" alias="TradeNumber" />
     <SimpleJoin joinType="LEFT" name="Company">
       <SimpleColumn name="Name" alias="CompanyName" />
+    </SimpleJoin>
+    <SimpleJoin joinType="LEFT" name="Operation">
+      <SimpleColumn name="OperationName" />
     </SimpleJoin>
   </SimpleJoin>
 </Columns>
