@@ -638,13 +638,16 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
           String itemId = row.getValue("ProductID");
 
           JustDate date = TimeUtils.parseDate(row.getValue("Date"), DateOrdering.YMD);
-          int days = date == null ? new JustDate().getDays() : date.getDays();
 
-          if (!BeeUtils.isEmpty(itemId)) {
+          if (date.getYear() == 9999) {
+            continue;
+          }
+
+          if (!BeeUtils.isEmpty(itemId) && date != null) {
 
             for (Entry<String, String> entry : orderItems.entries()) {
               if (Objects.equals(entry.getValue(), itemId)) {
-                terms.put(entry.getKey(), BeeUtils.toString(days));
+                terms.put(entry.getKey(), BeeUtils.toString(date.getDays()));
               }
             }
           }
