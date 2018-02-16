@@ -45,6 +45,8 @@ public final class ClassifierConstants {
   public static final String TBL_COMPANY_ACTIVITY_STORE = "CompActStore";
   public static final String TBL_COMPANY_DEPARTMENTS = "CompanyDepartments";
 
+  public static final String TBL_COMPANY_LICENCES = "CompanyLicences";
+
   public static final String TBL_PERSONS = "Persons";
   public static final String TBL_POSITIONS = "Positions";
 
@@ -153,6 +155,9 @@ public final class ClassifierConstants {
   public static final String COL_COMPANY_TOLERATED_DAYS = "ToleratedDays";
   public static final String COL_COMPANY_TYPE_PERSON = "TypePerson";
   public static final String COL_COMPANY_TURNOVER = "Turnover";
+
+  public static final String COL_LICENCE = "Licence";
+  public static final String COL_LICENCE_ENDPOINT = "Endpoint";
 
   public static final String COL_PERSON = "Person";
   public static final String COL_FIRST_NAME = "FirstName";

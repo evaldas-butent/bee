@@ -1038,6 +1038,8 @@ public final class TaskConstants {
   public static final String PRM_START_OF_WORK_DAY = "StartOfWorkDay";
   public static final String PRM_DEFAULT_DBA_TEMPLATE = "DefaultDBATemplate";
   public static final String PRM_DEFAULT_DBA_DOCUMENT_TYPE = "DefaultDBADocumentType";
+  public static final String PRM_DEFAULT_REST_REQUEST_TYPE = "DefaultRestRequestType";
+  public static final String PRM_DEFAULT_REST_REQUEST_FORM = "DefaultRestRequestForm";
   public static final String PRM_CREATE_PRIVATE_TASK_FIRST = "CreatePrivateTaskFirst";
   public static final String PRM_SUMMARY_EXPIRED_TASK_PERCENT = "SummaryExpiredTaskPercent";
   public static final String PRM_AUTO_TASK_USER = "AutoTaskUser";

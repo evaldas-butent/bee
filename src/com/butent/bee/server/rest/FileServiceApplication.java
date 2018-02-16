@@ -28,6 +28,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.ejb.EJB;
+import javax.ejb.Stateless;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -45,6 +46,7 @@ import javax.ws.rs.core.StreamingOutput;
 @Path("/")
 @Produces(MediaType.APPLICATION_OCTET_STREAM)
 @Authorized
+@Stateless
 public class FileServiceApplication {
 
   private static BeeLogger logger = LogUtils.getLogger(FileServiceApplication.class);
