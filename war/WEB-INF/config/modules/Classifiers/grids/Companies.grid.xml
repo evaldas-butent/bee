@@ -8,52 +8,66 @@
         editForm="Company:=inputFull, NewCompany:=inputSimple"
         editShowId="true" favorite="Name" flexGrow="1"
 >
-  <g:columns>
-    <IdColumn name="Id" visible="false" />
-    <DataColumn name="Name" visible="true" />
+<g:columns>
+  <IdColumn name="Id" visible="false" />
+  <DataColumn name="Name" visible="true" />
 
-    <RelColumn name="CompanyType" renderColumns="TypeName"/>
-    <RelColumn name="CompanyGroup" filterSupplier="value" />
-    <RelColumn name="CompanyPriority" />
-    <DataColumn name="Code" />
-    <DataColumn name="VATCode" visible="false" />
-    <DataColumn name="Phone" />
-    <DataColumn name="Mobile" />
-    <DataColumn name="Fax" visible="false" />
-    <RelColumn name="EmailId" editEnabled="true" filterSupplier="value" />
+  <RelColumn name="CompanyType" renderColumns="TypeName"/>
+  <RelColumn name="CompanyGroup" filterSupplier="value" />
+  <RelColumn name="CompanyPriority" />
+  <DataColumn name="Code" />
+  <DataColumn name="VATCode" visible="false" />
+  <DataColumn name="Phone" />
+  <DataColumn name="Mobile" />
+  <DataColumn name="Fax" visible="false" />
+  <RelColumn name="EmailId" editEnabled="true" filterSupplier="value" />
 
-    <DataColumn name="Address" />
-    <DataColumn name="PostIndex" />
+  <DataColumn name="Address" />
+  <DataColumn name="PostIndex" />
 
-    <DataColumn name="CityName" />
-    <DataColumn name="CountryName" />
-    <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
-                caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
-                filterOptions="-" exportWidthFactor="0.5" visible="false">
-      <renderer type="flag" />
-    </CalcColumn>
-    <RelColumn name="DefaultCompanyUser" visible="false" filterSupplier="value" />
+  <DataColumn name="CityName" />
+  <DataColumn name="CountryName" />
+  <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
+              caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
+              filterOptions="-" exportWidthFactor="0.5" visible="false">
+    <renderer type="flag" />
+  </CalcColumn>
+  <RelColumn name="DefaultCompanyUser" visible="false" filterSupplier="value" />
 
-    <DataColumn name="CreditLimit" visible="false" />
-    <DataColumn name="CreditTolerance" visible="false" />
-    <DataColumn name="CreditDays" visible="false" />
-    <DataColumn name="SupplierCreditDays" visible="false" />
+  <DataColumn name="CreditLimit" visible="false" />
+  <DataColumn name="CreditTolerance" visible="false" />
+  <DataColumn name="CreditDays" visible="false" />
+  <DataColumn name="SupplierCreditDays" visible="false" />
 
-    <RelColumn name="Turnover" visible="false" />
-    <RelColumn name="InformationSource" visible="false" />
-    <RelColumn name="CompanySize" visible="false" />
+  <RelColumn name="Turnover" visible="false" />
+  <RelColumn name="InformationSource" visible="false" />
+  <RelColumn name="CompanySize" visible="false" />
 
-    <DataColumn name="DiscountPercent" visible="false" />
-    <DataColumn name="DiscountParent" renderColumns="DiscountParentName" visible="false" />
-    <DataColumn name="PriceName" visible="false" />
+  <DataColumn name="DiscountPercent" visible="false" />
+  <DataColumn name="DiscountParent" renderColumns="DiscountParentName" visible="false" />
+  <DataColumn name="PriceName" visible="false" />
 
-    <PropColumn name="Activity" type="string"  caption="=companyActivities" filterSupplier="custom" filterOptions="company_activities"/>
-  </g:columns>
+  <PropColumn name="Activity" type="string"  caption="=companyActivities" filterSupplier="custom" filterOptions="company_activities"/>
 
-  <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
-  <xi:include href="columns/HiddenTradeAccounts.columns.xml" />
+  <DataColumn name="ContractNumber" visible="false" />
+  <DataColumn name="TakeEffectFrom" visible="false" />
+  <DataColumn name="CancelDate" visible="false" />
+  <DataColumn name="ValidUntil" visible="false" />
+  <DataColumn name="GPsum" visible="false" />
+  <DataColumn name="APsum" visible="false" />
+  <DataColumn name="ConsultationRate" visible="false" />
+  <DataColumn name="ConsultationRateInClient" visible="false" />
+  <DataColumn name="ProgrammingRate" visible="false" />
+  <DataColumn name="HourPerMonth" visible="false" />
+  <DataColumn name="ReactionTime" visible="false" />
+  <DataColumn name="LevelName" visible="false" />
+  <RelColumn name="InvoiceEmail" editEnabled="true" />
+</g:columns>
 
-  <g:columns>
-    <DataColumn name="Notes" visible="false" />
-  </g:columns>
+<xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
+<xi:include href="columns/HiddenTradeAccounts.columns.xml" />
+
+<g:columns>
+  <DataColumn name="Notes" visible="false" />
+</g:columns>
 </g:Grid>

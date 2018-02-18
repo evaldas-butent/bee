@@ -238,6 +238,7 @@
       <xs:enumeration value="AccountUsers" />
       <xs:enumeration value="ActiveTrips" />
       <xs:enumeration value="Addressbook" />
+      <xs:enumeration value="AdditionalCompanies" />
       <xs:enumeration value="AdsTopics" />
       <xs:enumeration value="AllCargo" />
       <xs:enumeration value="AnalysisColumns" />
@@ -458,6 +459,7 @@
       <xs:enumeration value="ItemSuppliers" />
       <xs:enumeration value="Items" />
       <xs:enumeration value="Journals" />
+      <xs:enumeration value="Levels" />
       <xs:enumeration value="Locations" />
       <xs:enumeration value="LossReasons" />
       <xs:enumeration value="Maintenance" />

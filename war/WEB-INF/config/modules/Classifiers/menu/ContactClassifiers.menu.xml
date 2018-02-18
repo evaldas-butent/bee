@@ -13,4 +13,5 @@ name="ContactClassifiers" label="=settings" parent="Contacts" order="20" separat
   <Item name="Turnovers" label="=clientTurnovers" service="grid" parameters="Turnovers" />
   <Item name="CompanyRelationTypes" label="=clientsRelationTypes" service="grid" parameters="CompanyRelationTypes" />
   <Item name="RelationTypeStates" label="=clientsRelationTypeStates" service="grid" parameters="RelationTypeStates" />
+  <Item name="Levels" label="=crmLevels" service="grid" parameters="Levels" />
 </Entry>

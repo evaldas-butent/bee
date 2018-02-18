@@ -48,5 +48,20 @@
               label="=finTradeAccounts" />
 
     <Text name="Notes" label="=notes" />
+
+    <String name="ContractNumber" precision="254" label="=crmContractNumber" />
+    <Date name="TakeEffectFrom" label="=crmTakeEffectFrom" />
+    <Date name="CancelDate" label="=crmCancelDate" />
+    <Date name="ValidUntil" label="=crmValidUntil" />
+    <Relation name="InvoiceEmail" relation="Emails" label="=crmInvoiceEmail" />
+    <Double name="GPsum" label="=crmGPsum"/>
+    <Double name="APsum" label="=crmAPsum"/>
+    <Numeric name="ConsultationRate" precision="20" scale="2" label="=crmConsultationRate" />
+    <Numeric name="ConsultationRateInClient" precision="20" scale="2" label="=crmConsultationRateInClient" />
+    <Numeric name="ProgrammingRate" precision="20" scale="2" label="=crmProgrammingRate" />
+    <Relation name="Level" relation="Levels" />
+    <String name="HourPerMonth" precision="10" label="=crmHourPerMonth" />
+    <String name="ReactionTime" precision="10" label="=crmReactionTime" />
+    <Text name="Comment" label="=comment" />
   </Fields>
 </Table>

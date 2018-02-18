@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="AdditionalCompanies" source="AdditionalCompanies"
+>
+  <Columns>
+    <SimpleColumn name="Company" />
+    <SimpleColumn name="AdditionalCompany" />
+    <SimpleJoin name="AdditionalCompany" joinType="INNER">
+      <SimpleColumn alias="AdditionalName" name="Name" />
+      <SimpleJoin name="CompanyType" joinType="LEFT">
+        <SimpleColumn name="Name" alias="AdditionalType" />
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+</View>

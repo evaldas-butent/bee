@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="AdditionalCompanies"
+       idName="AdditionalCompanyID"
+>
+  <Fields>
+    <Relation name="AdditionalCompany" notNull="true" relation="Companies" cascade="DELETE" />
+    <Relation name="Company" notNull="true" relation="Companies" />
+  </Fields>
+</Table>
