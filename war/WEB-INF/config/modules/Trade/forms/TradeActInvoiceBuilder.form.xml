@@ -51,6 +51,10 @@
         <Label text="=currency" />
         <UnboundSelector name="Currency" viewName="Currencies" renderColumns="Name" 
           style="width: 5em;" newRowEnabled="false" />
+
+        <Label text="=svcDevice" />
+        <UnboundSelector name="ServiceObject" viewName="ServiceObjects" renderColumns="Model Address"
+                         style="width: 150px;" newRowEnabled="false" choiceColumns="Model Address"/>
       </row>
     </Table>
     

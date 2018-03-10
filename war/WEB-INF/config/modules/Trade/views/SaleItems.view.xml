@@ -5,6 +5,10 @@
     >
   <Columns>
     <SimpleColumn name="Sale" />
+    <SimpleJoin name="Sale" joinType="LEFT">
+      <SimpleColumn name="Customer" />
+    </SimpleJoin>
+
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="INNER" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />
@@ -28,6 +32,22 @@
     <SimpleColumn name="Note" />
     <SimpleColumn name="Parent" />
     <SimpleColumn name="Ordinal" />
+
+    <SimpleColumn name="DateFrom" />
+    <SimpleColumn name="DateTo" />
+    <SimpleColumn name="Object" />
+    <SimpleJoin joinType="LEFT" name="Object">
+      <SimpleColumn name="ObjectName" />
+      <SimpleColumn name="ObjectAddress" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ServiceObject" />
+    <SimpleJoin joinType="LEFT" name="ServiceObject">
+      <SimpleColumn name="Model" />
+      <SimpleColumn name="Address" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Factor" />
   </Columns>
   <Order>
     <OrderBy column="Ordinal" />

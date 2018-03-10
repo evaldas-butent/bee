@@ -1,5 +1,6 @@
 package com.butent.bee.shared.modules.trade;
 
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.shared.BeeConst;
@@ -20,9 +21,8 @@ public class Totalizer {
 
   private static final String COL_TRADE_VAT_INCLUSIVE = "VatInclusive";
 
-  private static final String[] DOUBLE_COLUMNS = new String[] {
-      COL_TRADE_AMOUNT, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_ITEM_FULL_PRICE,
-      COL_TRADE_VAT, COL_TRADE_DISCOUNT};
+  private static final String[] DOUBLE_COLUMNS = new String[] {COL_TRADE_AMOUNT, COL_TRADE_ITEM_QUANTITY,
+    COL_TRADE_ITEM_PRICE, COL_TA_SERVICE_FACTOR, COL_TRADE_VAT, COL_TRADE_DISCOUNT};
 
   private static final String[] BOOLEAN_COLUMNS = new String[] {
       COL_TRADE_VAT_PLUS, COL_TRADE_VAT_PERC};
@@ -78,14 +78,14 @@ public class Totalizer {
   }
 
   public Double getDiscount(IsRow row) {
-    return getDiscount(row, "");
+    return getDiscount(row, false);
   }
 
-  public Double getDiscount(IsRow row, String priceName) {
+  public Double getDiscount(IsRow row, boolean fullPrice) {
     if (row == null) {
       return null;
     } else {
-      return getDiscount(row, getAmount(row, priceName));
+      return getDiscount(row, getAmount(row, fullPrice));
     }
   }
 
@@ -103,15 +103,15 @@ public class Totalizer {
   }
 
   public Double getTotal(IsRow row) {
-    return getTotal(row, null);
+    return getTotal(row, false);
   }
 
-  public Double getTotal(IsRow row, String priceName) {
+  public Double getTotal(IsRow row, boolean fullPrice) {
     if (row == null) {
       return null;
     }
 
-    Double amount = getAmount(row, priceName);
+    Double amount = getAmount(row, fullPrice);
     if (!BeeUtils.isDouble(amount)) {
       return null;
     }
@@ -131,14 +131,14 @@ public class Totalizer {
   }
 
   public Double getVat(IsRow row) {
-    return getVat(row, "");
+    return getVat(row, false);
   }
 
-  public Double getVat(IsRow row, String priceName) {
+  public Double getVat(IsRow row, boolean fullPrice) {
     if (row == null) {
       return null;
     } else {
-      Double base = getAmount(row, priceName);
+      Double base = getAmount(row, fullPrice);
 
       if (base == null) {
         return null;
@@ -217,23 +217,28 @@ public class Totalizer {
   }
 
   private Double getAmount(IsRow row) {
-    return getAmount(row, null);
+    return getAmount(row, false);
   }
 
-  private Double getAmount(IsRow row, String priceName) {
-    String priceColumn = BeeUtils.isEmpty(priceName) ? COL_TRADE_ITEM_PRICE : priceName;
+  private Double getAmount(IsRow row, boolean fullPrice) {
     if (row == null) {
       return null;
 
     } else if (functions.containsKey(COL_TRADE_AMOUNT)) {
       return getNumber(COL_TRADE_AMOUNT, row);
 
-    } else if (functions.containsKey(priceColumn)) {
-      Double price = getNumber(priceColumn, row);
+    } else if (functions.containsKey(COL_TRADE_ITEM_PRICE)) {
+      Double price = getNumber(COL_TRADE_ITEM_PRICE, row);
 
       if (functions.containsKey(COL_TRADE_ITEM_QUANTITY) && price != null) {
+
         Double qty = getNumber(COL_TRADE_ITEM_QUANTITY, row);
+        if (functions.containsKey(COL_TA_SERVICE_FACTOR) && !fullPrice) {
+          Double factor = getNumber(COL_TA_SERVICE_FACTOR, row);
+          return (qty == null) ? null : (price * qty * factor);
+        }
         return (qty == null) ? null : (price * qty);
+
       } else {
         return price;
       }

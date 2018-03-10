@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT_DATE;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
@@ -42,13 +41,11 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
-import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -301,60 +298,25 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
 
   private static void fillSaleProperties(boolean forAllSaleItems, BeeRowSet rowSet,
       BeeRowSet saleItems) {
-    int objNameIdx = rowSet.getColumnIndex(ALS_OBJECT_NAME);
     int tradeSeriesIdx = rowSet.getColumnIndex("Trade" + COL_SERIES_NAME);
     int tradeNumberIdx = rowSet.getColumnIndex("Trade" + COL_TRADE_NUMBER);
 
-    String obj;
     String tradeAct;
 
     if (forAllSaleItems) {
       for (BeeRow row : rowSet) {
-        obj = row.getString(objNameIdx);
         tradeAct = BeeUtils.joinWords(row.getString(tradeSeriesIdx), row.getString(tradeNumberIdx));
-        if (!BeeUtils.isEmpty(obj)) {
-          saleItems.setTableProperty(COL_OBJECT, COL_OBJECT);
-        }
 
         BeeRow saleItem = saleItems.getRowById(row.getLong(rowSet.getColumnIndex("SaleItem")));
 
-        saleItem.setProperty(ALS_OBJECT_NAME, obj);
         saleItem.setProperty(TradeActConstants.COL_TRADE_ACT, tradeAct);
         saleItem.setProperty(COL_ITEM_IS_SERVICE, COL_ITEM_IS_SERVICE);
-
-        saleItem.setProperty(PRP_TA_SERVICE_FROM, BeeUtils.toString(row.getInteger(
-            rowSet.getColumnIndex("DateFrom"))));
-        saleItem.setProperty(PRP_TA_SERVICE_TO, BeeUtils.toString(row.getInteger(
-            rowSet.getColumnIndex("DateTo"))));
-
-        if (row.getInteger(rowSet.getColumnIndex("DateFrom")) != null
-            || row.getInteger(rowSet.getColumnIndex("DateTo")) != null) {
-
-          saleItems.setTableProperty("HasDate", "HasDate");
-        }
-
-        if (row.getInteger(rowSet.getColumnIndex(COL_TIME_UNIT)) != null) {
-          saleItems.setTableProperty("HasTimeUnit", "HasTimeUnit");
-          saleItem.setProperty(COL_TIME_UNIT, EnumUtils.getCaption(TradeActTimeUnit.class,
-              row.getInteger(rowSet.getColumnIndex(COL_TIME_UNIT))));
-        }
-
-        if (row.getDouble(rowSet.getColumnIndex(COL_TA_SERVICE_FACTOR)) != null) {
-          saleItem.setProperty(COL_TA_SERVICE_FACTOR,
-              BeeUtils.toString(row.getDouble(rowSet.getColumnIndex(COL_TA_SERVICE_FACTOR)), 3));
-        }
       }
     } else {
       BeeRow row = rowSet.getRow(0);
-      obj = row.getString(objNameIdx);
       tradeAct = BeeUtils.joinWords(row.getString(tradeSeriesIdx), row.getString(tradeNumberIdx));
 
-      if (!BeeUtils.isEmpty(obj)) {
-        saleItems.setTableProperty(COL_OBJECT, COL_OBJECT);
-      }
-
       for (BeeRow saleItem : saleItems) {
-        saleItem.setProperty(ALS_OBJECT_NAME, obj);
         saleItem.setProperty(TradeActConstants.COL_TRADE_ACT, tradeAct);
       }
     }

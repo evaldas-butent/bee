@@ -10,9 +10,9 @@
 
     <Relation name="Item" notNull="true" relation="Items" label="=service" />
 
+
     <Date name="DateFrom" label="=dateFrom" />
     <Date name="DateTo" label="=dateTo" />
-
     <Numeric name="Tariff" precision="12" scale="3" label="=taTariff" />
     <Numeric name="Factor" precision="12" scale="3" label="=taFactor" />
 
@@ -32,6 +32,7 @@
 
     <Relation name="Supplier" relation="Companies" label="=supplier" />
     <Numeric name="CostAmount" precision="12" scale="2" label="Sav.suma" />
+    <Relation name="ServiceObject" relation="ServiceObjects" label="=svcDevice" />
 
     <Text name="Note" label="=note" />
   </Fields>

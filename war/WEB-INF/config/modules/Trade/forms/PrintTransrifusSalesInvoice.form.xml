@@ -7,7 +7,8 @@
   xmlns:ui="http://www.butent.com/ui"
     >
 
-  <FlowPanel class="bee-PrintableForm bee-trade-print-document" style="padding: 10px; background-color: white; font-size: 10pt">
+  <FlowPanel class="bee-PrintableForm bee-trade-print-document" style="padding: 10px; background-color: white; font-size: 10pt"
+             contentEditable="true">
     <br/>
     <FlowPanel>
       <FlowPanel>

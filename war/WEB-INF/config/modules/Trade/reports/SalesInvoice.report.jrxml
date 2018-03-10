@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2018-01-02T18:57:19 -->
+<!-- 2018-03-28T20:26:15 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -57,6 +57,10 @@
 		<field name="MinTerm" class="java.math.BigDecimal"/>
 		<field name="DaysPerWeek" class="java.math.BigDecimal"/>
 		<field name="FullPrice" class="java.math.BigDecimal"/>
+		<field name="ObjectName" class="java.lang.String"/>
+		<field name="DateFrom" class="java.lang.Long"/>
+		<field name="DateTo" class="java.lang.Long"/>
+		<field name="Factor" class="java.math.BigDecimal"/>
 		<variable name="counter" class="java.lang.Integer" calculation="Count">
 			<variableExpression><![CDATA[1]]></variableExpression>
 		</variable>
@@ -514,13 +518,13 @@
 						<jr:column width="91" uuid="4543ccf0-bd7a-4de0-bcd2-d8735ffd3333">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
 							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-							<printWhenExpression><![CDATA[Objects.equals($P{SaleItemsDataSet}.getRowSet().getTableProperty("Object"), "Object")]]></printWhenExpression>
+							<printWhenExpression><![CDATA[!BeeUtils.joinWords($P{SaleItemsDataSet}.getRowSet().getDistinctStrings(DataUtils.getColumnIndex("ObjectName", $P{SaleItemsDataSet}.getRowSet().getColumns()))).isEmpty()]]></printWhenExpression>
 							<jr:tableFooter height="0" rowSpan="1">
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
 							</jr:tableFooter>
 							<jr:columnHeader style="TableCell" height="30" rowSpan="1">
 								<textField isStretchWithOverflow="true">
-									<reportElement style="TableHeader" x="0" y="0" width="91" height="30" uuid="28a6dee6-f014-473c-a966-6c2becba1c85"/>
+									<reportElement style="TableHeader" x="0" y="0" width="91" height="30" isRemoveLineWhenBlank="true" uuid="28a6dee6-f014-473c-a966-6c2becba1c85"/>
 									<textElement verticalAlignment="Bottom">
 										<font size="8" isBold="true"/>
 									</textElement>
@@ -530,20 +534,20 @@
 							<jr:columnFooter height="15" rowSpan="1"/>
 							<jr:detailCell style="TableCell" height="15">
 								<textField isStretchWithOverflow="true">
-									<reportElement style="TableDetail" x="0" y="0" width="91" height="15" uuid="5bf867ea-515c-4dd8-86a5-ef16fcc5d385">
+									<reportElement style="TableDetail" x="0" y="0" width="91" height="15" isRemoveLineWhenBlank="true" uuid="5bf867ea-515c-4dd8-86a5-ef16fcc5d385">
 										<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 										<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 									</reportElement>
 									<textElement textAlignment="Center" verticalAlignment="Bottom">
 										<font size="8"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$P{SaleItemsDataSet}.getRowValue().getProperty("ObjectName")]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{ObjectName}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
 						<jr:column width="99" uuid="8c040ab1-cacc-4825-b71e-16778df9f5ff">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column4"/>
-							<printWhenExpression><![CDATA[Objects.equals($P{SaleItemsDataSet}.getRowSet().getTableProperty("HasDate"), "HasDate")]]></printWhenExpression>
+							<printWhenExpression><![CDATA[!BeeUtils.joinWords($P{SaleItemsDataSet}.getRowSet().getDistinctStrings(DataUtils.getColumnIndex("DateTo", $P{SaleItemsDataSet}.getRowSet().getColumns()))).isEmpty() || !BeeUtils.joinWords($P{SaleItemsDataSet}.getRowSet().getDistinctStrings(DataUtils.getColumnIndex("DateFrom", $P{SaleItemsDataSet}.getRowSet().getColumns()))).isEmpty()]]></printWhenExpression>
 							<jr:tableFooter height="0" rowSpan="1"/>
 							<jr:columnHeader style="TableCell" height="30" rowSpan="1">
 								<textField isStretchWithOverflow="true">
@@ -561,7 +565,7 @@
 									<textElement textAlignment="Center" verticalAlignment="Bottom">
 										<font fontName="DejaVu Sans" size="8"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$P{SaleItemsDataSet}.getRowValue().hasPropertyValue("IsService") ? $P{SaleItemsDataSet}.getRowValue().hasPropertyValue("TimeUnit") ? BeeUtils.joinWords(new JustDate(BeeUtils.toInt($P{SaleItemsDataSet}.getRowValue().getProperty("service_from"))), new JustDate(BeeUtils.toInt($P{SaleItemsDataSet}.getRowValue().getProperty("service_to")))) :  new JustDate(BeeUtils.toInt($P{SaleItemsDataSet}.getRowValue().getProperty("service_to"))) :  ""]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$P{SaleItemsDataSet}.getRowValue().hasPropertyValue("IsService") ? $F{TimeUnit} != null ? BeeUtils.joinWords($F{DateFrom} == null ? "" : new JustDate($F{DateFrom}.intValue()), $F{DateTo} == null ? "" : new JustDate($F{DateTo}.intValue())) :  $F{DateTo} == null ? "" : new JustDate($F{DateTo}.intValue()) :  ""]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -648,13 +652,13 @@
 									<textElement textAlignment="Right" verticalAlignment="Bottom">
 										<font size="8"/>
 									</textElement>
-									<textFieldExpression><![CDATA[BeeUtils.round(($V{totalizer}.getTotal($P{SaleItemsDataSet}.getRowValue(), "FullPrice") - ($V{totalizer}.getVat($P{SaleItemsDataSet}.getRowValue(), "FullPrice"))) / $F{Quantity}.doubleValue(), 4)]]></textFieldExpression>
+									<textFieldExpression><![CDATA[BeeUtils.round($V{totalizer}.getTotal($P{SaleItemsDataSet}.getRowValue(), true) - ($V{totalizer}.getVat($P{SaleItemsDataSet}.getRowValue(), true)) / $F{Quantity}.doubleValue(), 4)]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
 						<jr:column width="62" uuid="956c523a-7e4e-4ab6-89d4-eeb5e88a0b2a">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column8"/>
-							<printWhenExpression><![CDATA[Objects.equals($P{SaleItemsDataSet}.getRowSet().getTableProperty("HasTimeUnit"), "HasTimeUnit")]]></printWhenExpression>
+							<printWhenExpression><![CDATA[$P{SaleItemsDataSet}.getRowSet().getDistinctStrings(DataUtils.getColumnIndex("TimeUnit", $P{SaleItemsDataSet}.getRowSet().getColumns())).size() > 0]]></printWhenExpression>
 							<jr:tableFooter height="0" rowSpan="1"/>
 							<jr:columnHeader style="TableCell" height="30" rowSpan="1">
 								<textField isStretchWithOverflow="true">
@@ -673,7 +677,7 @@
 										<font fontName="DejaVu Sans" size="8"/>
 									</textElement>
 									<textFieldExpression><![CDATA[BeeUtils.joinWords(
-BeeUtils.round($P{SaleItemsDataSet}.getRowValue().getProperty("Factor"), 2),
+BeeUtils.round($F{Factor}.doubleValue(), 4),
 $P{SaleItemsDataSet}.getRowValue().getProperty("TimeUnit"))]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
