@@ -552,6 +552,9 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
             Autocomplete box = createAutocomplete(VIEW_SERVICE_OBJECT_MAIN_CRITERIA,
                 COL_SERVICE_CRITERION_VALUE);
 
+            box.setAdditionalFilter(Filter.equals(COL_SERVICE_MAIN_CRITERIA,
+              DataUtils.getLong(result, crit, COL_SERVICE_MAIN_CRITERIA)));
+
             box.setValue(value);
 
             criteriaHistory.put(name, value);

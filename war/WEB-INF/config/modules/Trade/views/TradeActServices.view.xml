@@ -8,6 +8,7 @@
     <SimpleColumn name="TradeAct" />
     <SimpleJoin name="TradeAct" joinType="LEFT">
       <SimpleColumn name="ContinuousAct" />
+      <SimpleColumn name="Object" />
     </SimpleJoin>
 
     <SimpleColumn name="Item" />
@@ -54,6 +55,12 @@
     <SimpleColumn name="CostAmount" />
 
     <SimpleColumn name="Note" />
+
+    <SimpleColumn name="ServiceObject" />
+    <SimpleJoin name="ServiceObject" joinType="LEFT">
+      <SimpleColumn name="Model" />
+      <SimpleColumn name="Address" />
+    </SimpleJoin>
   </Columns>
   <Order>
     <OrderBy column="ItemOrdinal"/>

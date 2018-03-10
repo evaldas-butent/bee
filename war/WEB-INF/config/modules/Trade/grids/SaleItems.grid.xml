@@ -18,12 +18,16 @@
     </DataColumn>
     <DataColumn name="UnitName" flexGrow="0" caption="=unitShort" />
 
-    <DataColumn name="Price" label="=taPeriodPrice" >
-      <footer expression="row.Quantity * row.Price" />
-    </DataColumn>
+    <DataColumn name="Factor" />
 
-    <DataColumn name="FullPrice" >
-      <footer expression="row.Quantity * row.FullPrice" />
+    <CalcColumn name="PeriodPrice" type="double" scale="4" label="=taPeriodPrice" >
+      <render>
+        <ui:expression>row.Price * (row.Factor == null ? 1 : row.Factor)</ui:expression>
+      </render>
+    </CalcColumn>
+
+    <DataColumn name="Price" >
+      <footer expression="row.Quantity * row.Price * (row.Factor == null ? 1 : row.Factor)" />
     </DataColumn>
 
     <DataColumn name="Discount" flexGrow="0">
@@ -50,5 +54,10 @@
     </CalcColumn>
 
     <DataColumn name="Note" maxWidth="300" visible="false" />
+
+    <DataColumn name="DateFrom" />
+    <DataColumn name="DateTo" />
+    <RelColumn name="Object" choiceColumns="ObjectName ObjectAddress" renderColumns="ObjectName ObjectAddress" />
+    <RelColumn name="ServiceObject" choiceColumns="Model Address" renderColumns="Model Address" />
   </g:columns>
 </g:Grid>

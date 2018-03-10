@@ -18,6 +18,12 @@
     <Text name="Note" label="=trdNote" />
     <Relation name="Parent" relation="PurchaseItems" />
     <Numeric name="Ordinal" precision="2" label="=ordinal" />
+
+    <Date name="DateFrom" label="=dateFrom" />
+    <Date name="DateTo" label="=dateTo" />
+    <Relation name="Object" relation="CompanyObjects" label="=object" />
+    <Relation name="ServiceObject" relation="ServiceObjects" label="=svcDevice" />
+    <Double name="Factor" label="Laiko kiekis" />
   </Fields>
   <Triggers>
     <Trigger events="INSERT UPDATE DELETE" scope="ROW" timing="AFTER">
@@ -31,10 +37,10 @@ BEGIN
     _id:=NEW."Sale";
   END IF;
   UPDATE "Sales" SET "Amount"=(SELECT
-    SUM(("Quantity"*"Price"-"Quantity"*"Price"/100*COALESCE("Discount",0))+
+    SUM(("Quantity"*"Price"*"Factor"-"Quantity"*"Price"*"Factor"/100*COALESCE("Discount",0))+
       CASE WHEN "VatPlus" IS NULL OR "Vat" IS NULL THEN 0
            WHEN "VatPercent" IS NOT NULL
-             THEN ("Quantity"*"Price"-"Quantity"*"Price"/100*COALESCE("Discount",0))/100*"Vat"
+             THEN ("Quantity"*"Price"*"Factor"-"Quantity"*"Price"*"Factor"/100*COALESCE("Discount",0))/100*"Vat"
            ELSE "Vat" END)
     FROM "SaleItems" WHERE "Sale"=_id)
   WHERE "SaleID"=_id;

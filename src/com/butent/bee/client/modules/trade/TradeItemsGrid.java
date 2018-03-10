@@ -1,5 +1,8 @@
 package com.butent.bee.client.modules.trade;
 
+import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.shared.data.filter.Filter;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -46,6 +49,20 @@ public class TradeItemsGrid extends ParentRowRefreshGrid implements
     this.refresher = createRefresher();
   }
 
+  @Override
+  public void afterCreateEditor(String source, Editor editor, boolean embedded) {
+    if (BeeUtils.same(source, COL_TA_OBJECT) && editor instanceof DataSelector) {
+      ((DataSelector) editor).addSelectorHandler(event -> {
+        if (event.isOpened()) {
+          event.getSelector().setAdditionalFilter(Filter.equals(COL_COMPANY,
+            Data.getLong(VIEW_SALE_ITEMS, getActiveRow(), COL_TRADE_CUSTOMER)));
+        }
+      });
+    }
+
+    super.afterCreateEditor(source, editor, embedded);
+  }
+  
   @Override
   public void afterDeleteRow(long rowId) {
     refresher.execute();
@@ -153,8 +170,7 @@ public class TradeItemsGrid extends ParentRowRefreshGrid implements
       Double discount, BeeRowSet items) {
 
     List<String> colNames = Lists.newArrayList(COL_SALE, COL_ITEM, COL_ITEM_ARTICLE,
-        COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_ITEM_FULL_PRICE,
-        COL_TRADE_DISCOUNT, COL_TRADE_VAT, COL_TRADE_VAT_PERC);
+        COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, COL_TRADE_VAT, COL_TRADE_VAT_PERC);
 
     BeeRowSet rowSet = new BeeRowSet(getViewName(), Data.getColumns(getViewName(), colNames));
 
@@ -163,7 +179,6 @@ public class TradeItemsGrid extends ParentRowRefreshGrid implements
     int articleIndex = rowSet.getColumnIndex(COL_ITEM_ARTICLE);
     int qtyIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
     int priceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_PRICE);
-    int fullPriceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_FULL_PRICE);
     int discountIndex = rowSet.getColumnIndex(COL_TRADE_DISCOUNT);
     int vatIndex = rowSet.getColumnIndex(COL_TRADE_VAT);
     int vatPercIndex = rowSet.getColumnIndex(COL_TRADE_VAT_PERC);
@@ -202,7 +217,6 @@ public class TradeItemsGrid extends ParentRowRefreshGrid implements
             }
 
             row.setValue(priceIndex, Data.round(getViewName(), COL_TRADE_ITEM_PRICE, price));
-            row.setValue(fullPriceIndex, Data.round(getViewName(), COL_TRADE_ITEM_PRICE, price));
           }
         }
 

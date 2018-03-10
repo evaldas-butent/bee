@@ -1,5 +1,7 @@
 package com.butent.bee.server.modules.trade;
 
+import com.butent.bee.client.data.Data;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.Formatter;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
@@ -792,6 +794,27 @@ public class TradeActBean implements HasTimerService {
       }
     }
 
+    if (sales.containsColumn(COL_TRADE_NOTES)) {
+      Set<Long> objects = DataUtils.parseIdSet(sales.getString(0, COL_TRADE_NOTES));
+
+      SqlSelect selectObjUsers = new SqlSelect()
+        .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
+        .addFrom(TBL_COMPANY_OBJECTS)
+        .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_OBJECTS, "ObjectPerson"))
+        .setWhere(sys.idInList(TBL_COMPANY_OBJECTS, objects));
+
+      String persons = "";
+      for (SimpleRow row : qs.getData(selectObjUsers)) {
+        if (!BeeUtils.isEmpty(row.getValue(0)) && !BeeUtils.isEmpty(row.getValue(1))) {
+          persons = BeeUtils.joinWords(row.getValue(0), row.getValue(1) + "\n");
+        }
+      }
+
+      if (!BeeUtils.isEmpty(persons)) {
+        sales.setValue(0, DataUtils.getColumnIndex(COL_TRADE_NOTES, sales.getColumns()), persons);
+      }
+    }
+
     ResponseObject response = deb.commitRow(sales);
     if (response.hasErrors() || !response.hasResponse(BeeRow.class)) {
       return response;
@@ -1406,6 +1429,7 @@ public class TradeActBean implements HasTimerService {
     Long actId = reqInfo.getParameterLong(COL_TA_ACT);
 
     Long object = reqInfo.getParameterLong(COL_OBJECT);
+    Long serviceObject = reqInfo.getParameterLong(COL_SERVICE_OBJECT);
     Long manager = reqInfo.getParameterLong(COL_TA_MANAGER);
     Long trSeries = reqInfo.getParameterLong(COL_TA_SERIES);
 
@@ -1415,6 +1439,7 @@ public class TradeActBean implements HasTimerService {
         BeeUtils.isDigit(dTo) ? new LongValue(daysToTime(BeeUtils.toInt(dTo))) : null;
 
     CompoundFilter filter = Filter.and();
+    Filter svcObjectFilter = Filter.and();
     filter.add(TradeActKind.getFilterForInvoiceBuilder());
 
     filter.add(Filter.or(Filter.isNull(COL_TA_STATUS), Filter.notNull(COL_STATUS_ACTIVE)));
@@ -1446,7 +1471,11 @@ public class TradeActBean implements HasTimerService {
       filter.add(Filter.compareId(actId));
     }
 
-    filter.add(Filter.in(sys.getIdName(VIEW_TRADE_ACTS), VIEW_TRADE_ACT_SERVICES, COL_TRADE_ACT));
+    if (DataUtils.isId(serviceObject)) {
+      svcObjectFilter = Filter.equals(COL_SERVICE_OBJECT, serviceObject);
+    }
+
+    filter.add(Filter.in(sys.getIdName(VIEW_TRADE_ACTS), VIEW_TRADE_ACT_SERVICES, COL_TRADE_ACT, svcObjectFilter));
 
     BeeRowSet acts = qs.getViewData(VIEW_TRADE_ACTS, filter);
     if (DataUtils.isEmpty(acts)) {

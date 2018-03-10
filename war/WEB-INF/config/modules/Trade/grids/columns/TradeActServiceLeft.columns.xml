@@ -26,4 +26,5 @@
   <DataColumn name="TimeUnit" flexGrow="0" />
 
   <DataColumn name="Tariff" flexGrow="0" />
+  <RelColumn name="ServiceObject" choiceColumns="Model Address" renderColumns="Model Address"/>
 </g:columns>

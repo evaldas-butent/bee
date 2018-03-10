@@ -21,6 +21,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
@@ -804,8 +805,6 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     BeeRowSet selectedServices = new BeeRowSet(VIEW_TRADE_ACT_SERVICES, serviceColumns);
 
-    List<String> notes = new ArrayList<>();
-
     int actIndex = selectedServices.getColumnIndex(COL_TRADE_ACT);
     Set<Long> prepareApproveActs = Sets.newLinkedHashSet();
 
@@ -847,10 +846,6 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     invoice.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER), BeeKeeper.getUser().getUserId());
 
-    if (!notes.isEmpty()) {
-      invoice.setValue(dataInfo.getColumnIndex(COL_TRADE_NOTES), BeeUtils.buildLines(notes));
-    }
-
     Queries.getRow(VIEW_COMPANIES, Filter.compareId(company),
         Arrays.asList(COL_COMPANY_CREDIT_DAYS, COL_INVOICE_TRANSFER_TYPE), row -> {
 
@@ -874,10 +869,14 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             invoice.setValue(Data.getColumnIndex(VIEW_SALES, COL_OPERATION_WAREHOUSE_FROM), true);
           }
 
-          BeeRowSet sales = DataUtils.createRowSetForInsert(dataInfo.getViewName(),
-              dataInfo.getColumns(), invoice);
-
           BeeRowSet saleItems = createInvoiceItems(selectedServices, ss, currency);
+
+          Set<Long> objects = saleItems.getDistinctLongs(DataUtils.getColumnIndex(COL_OBJECT, saleItems.getColumns()));
+          if (!BeeUtils.isEmpty(objects)) {
+           invoice.setValue(Data.getColumnIndex(VIEW_SALES, COL_TRADE_NOTES), DataUtils.buildIdList(objects));
+          }
+
+          BeeRowSet sales = DataUtils.createRowSetForInsert(dataInfo.getViewName(), dataInfo.getColumns(), invoice);
 
           ParameterList params = TradeActKeeper.createArgs(SVC_CREATE_ACT_INVOICE);
 
@@ -909,7 +908,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     List<String> colNames = Lists.newArrayList(COL_SALE, COL_ITEM, COL_TRADE_ITEM_ARTICLE,
         COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_ITEM_FULL_PRICE,
         COL_TRADE_DISCOUNT, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
-        COL_TRADE_ITEM_NOTE);
+        COL_TRADE_ITEM_NOTE, COL_DATE_FROM, COL_DATE_TO, COL_OBJECT, COL_SERVICE_OBJECT, COL_TA_SERVICE_FACTOR);
 
     List<BeeColumn> columns = Data.getColumns(VIEW_SALE_ITEMS, colNames);
 
@@ -936,6 +935,11 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     int vatIndex = invoiceItems.getColumnIndex(COL_TRADE_VAT);
     int vatPercentIndex = invoiceItems.getColumnIndex(COL_TRADE_VAT_PERC);
     int discountIndex = invoiceItems.getColumnIndex(COL_TRADE_DISCOUNT);
+    int dateFromIndex = invoiceItems.getColumnIndex(COL_DATE_FROM);
+    int dateToIndex = invoiceItems.getColumnIndex(COL_DATE_TO);
+    int objectIndex = invoiceItems.getColumnIndex(COL_OBJECT);
+    int svcObjectIndex = invoiceItems.getColumnIndex(COL_SERVICE_OBJECT);
+    int factorIndex = invoiceItems.getColumnIndex(COL_TA_SERVICE_FACTOR);
 
     DateTime date = TimeUtils.nowMinutes();
 
@@ -961,12 +965,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
               selectedServices.getColumns()));
           if (BeeUtils.isPositive(price)) {
             inv.setValue(fullPriceIdx, price);
-          }
-
-          if (BeeUtils.isPositive(amount) && BeeUtils.isPositive(svc.quantity)) {
-            inv.setValue(priceIndex, BeeUtils.round(amount / svc.quantity, priceScale));
-          } else {
-            inv.clearCell(priceIndex);
+            inv.setValue(priceIndex, price);
           }
 
           if (BeeUtils.isPositive(discount)) {
@@ -981,19 +980,36 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             inv.setValue(vatPercentIndex, true);
           }
 
+          Long object = row.getLong(DataUtils.getColumnIndex(COL_OBJECT,
+            selectedServices.getColumns()));
+
+          if(BeeUtils.isPositive(object)) {
+            inv.setValue(objectIndex, object);
+          }
+
+          Long svcObject = row.getLong(DataUtils.getColumnIndex(COL_SERVICE_OBJECT,
+            selectedServices.getColumns()));
+
+          if(BeeUtils.isPositive(svcObject)) {
+            inv.setValue(svcObjectIndex, svcObject);
+          }
+
           JustDate from = svc.dateFrom(idx);
           JustDate to = svc.dateTo(idx);
           Double factor = svc.factors.get(idx);
 
           if (from != null) {
+            inv.setValue(dateFromIndex, from);
             inv.setProperty(PRP_TA_SERVICE_FROM, BeeUtils.toString(from.getDays()));
           }
           if (to != null) {
+            inv.setValue(dateToIndex, to);
             inv.setProperty(PRP_TA_SERVICE_TO, BeeUtils.toString(to.getDays()));
           }
 
           if (factor != null) {
             inv.setProperty(COL_TA_SERVICE_FACTOR, factor);
+            inv.setValue(factorIndex, factor);
           }
 
           invoiceItems.addRow(inv);
@@ -1221,6 +1237,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     params.addQueryItem(COL_TA_COMPANY, company);
     params.addQueryItem(COL_OBJECT, BeeUtils.unbox(getSelectedIdByWidgetName(COL_OBJECT)));
+    params.addQueryItem(COL_SERVICE_OBJECT, BeeUtils.unbox(getSelectedIdByWidgetName(COL_SERVICE_OBJECT)));
     params.addQueryItem(COL_TA_MANAGER, BeeUtils.unbox(getSelectedIdByWidgetName(COL_TA_MANAGER)));
 
     CheckBox allActs = (CheckBox) getFormView().getWidgetByName(COL_TA_ALL_ACTS);
@@ -1457,6 +1474,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     int articleIndex = dataInfo.getColumnIndex(COL_ITEM_ARTICLE);
 
     int supplIndex = dataInfo.getColumnIndex(ALS_SUPPLIER_NAME);
+    int svcObjectIndex = dataInfo.getColumnIndex(COL_MODEL);
     int costIndex = dataInfo.getColumnIndex(COL_COST_AMOUNT);
 
     int qtyScale = dataInfo.getColumnScale(COL_TRADE_ITEM_QUANTITY);
@@ -1509,6 +1527,10 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     table.setText(r, c++, Localized.getLabel(dataInfo.getColumn(COL_TRADE_SUPPLIER)),
         STYLE_SVC_NAME_PREFIX + STYLE_LABEL_CELL_SUFFIX);
+
+    table.setText(r, c++, Localized.getLabel(dataInfo.getColumn(COL_SERVICE_OBJECT)),
+      STYLE_SVC_NAME_PREFIX + STYLE_LABEL_CELL_SUFFIX);
+
     table.setText(r, c++, Localized.getLabel(dataInfo.getColumns().get(costIndex)),
         STYLE_SVC_AMOUNT_LABEL);
 
@@ -1597,6 +1619,9 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
         table.setText(r, c++, svc.row.getString(supplIndex),
             STYLE_SVC_NAME_PREFIX + STYLE_CELL_SUFFIX);
+        table.setText(r, c++, svc.row.getString(svcObjectIndex),
+          STYLE_SVC_NAME_PREFIX + STYLE_CELL_SUFFIX);
+
         table.setText(r, c++, renderAmount(svc.row.getDouble(costIndex)),
             STYLE_SVC_PRICE_PREFIX + STYLE_CELL_SUFFIX);
 
