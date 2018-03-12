@@ -396,6 +396,75 @@
         </Table>
       </FlowPanel>
     </page>
+
+    <page>
+      <text>=licences</text>
+      <FlowPanel class="flexBox-horizontal">
+        <FlowPanel>
+          <Table kind="controls" style="margin-top: 5px;">
+            <row>
+              <Label text="=licence"/>
+              <Label text="=softwareVersion"/>
+              <Label text="=comment"/>
+            </row>
+
+            <row>
+              <InputArea source="Licence" visibleLines="5" style="width: 200px; max-width: 450px;" summarize="true" />
+
+              <ChildSelector childTable="CompanyVersions" targetRelColumn="Company"
+                             viewName="Versions" sourceRelColumn="CompanyVersion" newRowEnabled="false"
+                             style="width: 200px; height: 95px;" summarize="true" />
+
+              <InputArea source="LicenceComment" visibleLines="5" style="width: 200px; max-width: 450px;"
+                         summarize="true"/>
+            </row>
+          </Table>
+
+          <Label text="Programinės įrangos informacija" style="font-weight: bold;"/>
+          <Label text="Darbo vietų skaičius" style="margin-top: 10px;"/>
+
+          <Table kind="controls" >
+            <row>
+              <Label for="Terminal" style="&lbl;" />
+              <InputDecimal source="Terminal" summarize="true" />
+
+              <Label for="Network" style="&lbl;" />
+              <InputDecimal source="Network" summarize="true" />
+            </row>
+
+            <row>
+              <Label for="DBNumber" style="&lbl;" />
+              <cell colSpan="3">
+                <InputDecimal source="DBNumber" summarize="true" />
+              </cell>
+            </row>
+          </Table>
+
+          <Table kind="controls" style="margin-top: 15px;" >
+            <row>
+              <Label text="=connections" style="text-align: left; width: 280px;" />
+              <Label text="=modules" style="text-align: left; width: 280px;" />
+            </row>
+
+            <row>
+              <cell colSpan="2">
+                <FlowPanel class="flexBox-horizontal flexible" >
+                  <ChildSelector name="CompanyConnections" childTable="CompanyConnections" targetRelColumn="Company"
+                                 viewName="Connections" sourceRelColumn="CompanyConnection" newRowEnabled="false"
+                                 summarize="true" style="width: 280px;" />
+                  <ChildSelector name="CompanyModules" childTable="CompanyModules" targetRelColumn="Company"
+                                 viewName="Modules" sourceRelColumn="CompanyModule" newRowEnabled="false"
+                                 summarize="true" style="width: 280px;" />
+                </FlowPanel>
+              </cell>
+            </row>
+          </Table>
+        </FlowPanel>
+        <FlowPanel class="flexBox-vertical flexible" style="margin-left: 1em;">
+          <ChildGrid name="CompanyHistory" relColumn="Company" class="flexible" style="height:200px;" />
+        </FlowPanel>
+      </FlowPanel>
+    </page>
   </TabbedPages>
 </FlowPanel>
 </f:Form>

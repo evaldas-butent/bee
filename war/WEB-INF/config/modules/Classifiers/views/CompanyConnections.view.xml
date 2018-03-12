@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+      name="CompanyConnections" source="CompanyConnections" caption="=connections" module="Classifiers"
+>
+  <Columns>
+    <SimpleColumn name="Company" />
+    <SimpleColumn name="CompanyConnection" />
+    <SimpleJoin name="CompanyConnection" joinType="LEFT">
+      <SimpleColumn name="Name" alias="ConnectionName" />
+    </SimpleJoin>
+  </Columns>
+</View>

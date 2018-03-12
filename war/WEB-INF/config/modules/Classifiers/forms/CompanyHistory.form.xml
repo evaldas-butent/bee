@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+
+        name="CompanyHistory" viewName="CompanyHistory" caption="=comment" height="340" width="680"
+>
+  <FlowPanel>
+    <Table kind="controls">
+      <col index="0" kind="label" />
+
+      <row>
+        <Label for="SystemComment" />
+        <InputArea source="SystemComment" readOnly="true" contentEditable="false" disablable="true"
+                   style="width: 490px; height: 120px;"/>
+      </row>
+
+      <row>
+        <Label for="Comment" />
+        <InputArea source="Comment" style="width: 490px; height: 120px;"/>
+      </row>
+    </Table>
+
+  </FlowPanel>
+</f:Form>

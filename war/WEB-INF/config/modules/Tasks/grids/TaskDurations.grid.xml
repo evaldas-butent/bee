@@ -19,7 +19,8 @@
     <DataColumn name="Comment" flexGrow="1" flexShrink="2" flexBasis="30" flexBasisUnit="%" />
 
     <RelColumn name="Company" caption="=client" renderColumns="CompanyName CompanyTypeName" />
-
+    <DataColumn name="CompanyGroupName" label="=clientGroup" />
+    <DataColumn name="HourPerMonth" />
     <DataColumn name="Summary" editEnabled="true" flexGrow="1" />
 
     <RelColumn name="Publisher" renderColumns="PublisherFirstName PublisherLastName" />

@@ -18,6 +18,11 @@
     <SimpleJoin joinType="LEFT" name="CompanyType">
       <SimpleColumn name="Name" alias="CompanyTypeName" />
     </SimpleJoin>
+    <SimpleColumn name="CompanyGroup" />
+    <SimpleJoin name="CompanyGroup" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CompanyGroupName"/>
+    </SimpleJoin>
+    <SimpleColumn name="HourPerMonth" />
   </SimpleJoin>
 
   <SimpleColumn name="Contact" />

@@ -4,7 +4,7 @@ var BeeSettings = {
   "licence": "",
   "build": "4892",
   "releaseDate": "2017.09.29",
-  "logoImage": "images/logo_white.png",
+  "logoImage": "images/butenta.png",
   "logoOpen": "http://www.b-novo.lt",
   "providerSensitivityMillis": 300,
   "providerRepeatMillis": 200,

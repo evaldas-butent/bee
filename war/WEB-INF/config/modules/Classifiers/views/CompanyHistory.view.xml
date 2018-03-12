@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+      name="CompanyHistory" source="CompanyHistory" caption="=history" module="Classifiers.Contacts"
+      editForm="CompanyHistory" newRowForm="CompanyHistory"
+>
+  <Columns>
+    <SimpleColumn name="Company" />
+    <SimpleColumn name="Date" />
+
+    <SimpleColumn name="User" />
+    <SimpleJoin name="User" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" />
+          <SimpleColumn name="LastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Comment" />
+    <SimpleColumn name="SystemComment" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Date" descending="true" />
+  </Order>
+</View>

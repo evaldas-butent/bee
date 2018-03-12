@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+        name="Versions" viewName="Versions" caption="=softwareVersions" flexGrow="1"
+>
+  <g:columns>
+    <DataColumn name="Name" />
+  </g:columns>
+</g:Grid>

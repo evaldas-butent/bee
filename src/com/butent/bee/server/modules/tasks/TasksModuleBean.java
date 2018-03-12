@@ -2046,6 +2046,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         ALS_TASK_TYPE_NAME));
     clause.add(report.getCondition(SqlUtils.field(VIEW_COMPANIES, COL_COMPANY_NAME),
         ALS_COMPANY_NAME));
+    clause.add(report.getCondition(SqlUtils.field(VIEW_COMPANY_GROUPS, "Name"),
+      COL_COMPANY_GROUP + "Name"));
+    clause.add(report.getCondition(VIEW_COMPANIES, "HourPerMonth"));
     clause.add(report.getCondition(SqlUtils.field(VIEW_TASK_PRODUCTS, COL_PRODUCT_NAME),
         ALS_TASK_PRODUCT_NAME));
     clause.add(report.getCondition(SqlUtils.field(ProjectConstants.VIEW_PROJECTS,
@@ -2071,6 +2074,8 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
         .addField(VIEW_TASK_TYPES, COL_TASK_TYPE_NAME, ALS_TASK_TYPE_NAME)
         .addField(VIEW_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
+        .addField(VIEW_COMPANY_GROUPS, "Name", COL_COMPANY_GROUP + "Name")
+        .addFields(VIEW_COMPANIES, "HourPerMonth")
         .addField(VIEW_TASK_PRODUCTS, COL_PRODUCT_NAME, ALS_TASK_PRODUCT_NAME)
         .addField(ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_NAME,
             ProjectConstants.ALS_PROJECT_NAME)
@@ -2086,6 +2091,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         .addFromLeft(VIEW_TASK_TYPES, sys.joinTables(VIEW_TASK_TYPES, TBL_TASKS, COL_TASK_TYPE))
 
         .addFromLeft(VIEW_COMPANIES, sys.joinTables(VIEW_COMPANIES, TBL_TASKS, COL_COMPANY))
+        .addFromLeft(VIEW_COMPANY_GROUPS, sys.joinTables(VIEW_COMPANY_GROUPS, VIEW_COMPANIES, COL_COMPANY_GROUP))
         .addFromLeft(VIEW_TASK_PRODUCTS, sys.joinTables(VIEW_TASK_PRODUCTS, TBL_TASKS,
             COL_PRODUCT))
         .addFromLeft(ProjectConstants.VIEW_PROJECTS, sys.joinTables(ProjectConstants.VIEW_PROJECTS,

@@ -81,7 +81,7 @@ public class LoginServlet extends HttpServlet {
 
   protected static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "SignIn-";
 
-  private static final String FAV_ICON = "favicon.ico";
+  private static final String FAV_ICON = "butent.gif";
   private static final String LOGO = "bs-logo.png";
 
   private static final String USER_NAME_LABEL_ID = "user-name-label";

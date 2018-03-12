@@ -325,6 +325,10 @@
       <xs:enumeration value="CompanyContacts" />
       <xs:enumeration value="CompanyDepartments" />
       <xs:enumeration value="CompanyGroups" />
+      <xs:enumeration value="CompanyHistory" />
+      <xs:enumeration value="CompanyModules" />
+      <xs:enumeration value="CompanyConnections" />
+      <xs:enumeration value="CompanyVersions" />
       <xs:enumeration value="CompanyObjects" />
       <xs:enumeration value="CompanyPersons" />
       <xs:enumeration value="CompanyPriorities" />
@@ -343,6 +347,7 @@
       <xs:enumeration value="Countries" />
       <xs:enumeration value="CountryDailyCosts" />
       <xs:enumeration value="CountryNorms" />
+      <xs:enumeration value="Connections" />
       <xs:enumeration value="Criteria" />
       <xs:enumeration value="CriteriaGroups" />
       <xs:enumeration value="Currencies" />
@@ -468,6 +473,7 @@
       <xs:enumeration value="MaintenanceTariffs" />
       <xs:enumeration value="MaintenanceTypes" />
       <xs:enumeration value="Messages" />
+      <xs:enumeration value="Modules" />
       <xs:enumeration value="Newsletters" />
       <xs:enumeration value="NewsletterContacts" />
       <xs:enumeration value="NewsCompanies" />
@@ -699,6 +705,7 @@
       <xs:enumeration value="VehicleServices" />
       <xs:enumeration value="VehicleTypes" />
       <xs:enumeration value="VehicleTracking" />
+      <xs:enumeration value="Versions" />
       <xs:enumeration value="WaitingCargo" />
       <xs:enumeration value="Warehouses" />
       <xs:enumeration value="WarrantyTypes" />

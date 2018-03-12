@@ -626,6 +626,8 @@ public enum Report implements HasWidgetSupplier {
           new ReportTextItem(COL_EXECUTOR + COL_DEPARTMENT, Data.getColumnLabel(VIEW_TASKS,
               COL_EXECUTOR) + BeeUtils.parenthesize(loc.department())),
           new ReportTextItem(ALS_COMPANY_NAME, Data.getColumnLabel(VIEW_TASKS, COL_COMPANY)),
+          new ReportTextItem(COL_COMPANY_GROUP + "Name", Data.getColumnLabel(VIEW_TASKS, COL_COMPANY_GROUP)),
+          new ReportTextItem("HourPerMonth", Data.getColumnLabel(VIEW_TASKS, "HourPerMonth")),
           new ReportTextItem(ALS_TASK_PRODUCT_NAME, Data.getColumnLabel(VIEW_TASKS, COL_PRODUCT)),
           new ReportTextItem(ProjectConstants.ALS_PROJECT_NAME,
               Data.getColumnLabel(VIEW_TASKS, ProjectConstants.COL_PROJECT)),
@@ -665,8 +667,8 @@ public enum Report implements HasWidgetSupplier {
       Stream.of(COL_TASK, COL_SUMMARY, COL_PRIORITY, COL_START_TIME, COL_FINISH_TIME,
           COL_EXPECTED_DURATION, COL_EXPECTED_EXPENSES, TaskConstants.COL_STATUS,
           ALS_TASK_TYPE_NAME, TaskConstants.COL_OWNER, COL_EXECUTOR, COL_EXECUTOR + COL_DEPARTMENT,
-          ALS_COMPANY_NAME, ALS_TASK_PRODUCT_NAME, ProjectConstants.ALS_PROJECT_NAME,
-          ProjectConstants.ALS_STAGE_NAME)
+          ALS_COMPANY_NAME, COL_COMPANY_GROUP + "Name", "HourPerMonth", ALS_TASK_PRODUCT_NAME,
+        ProjectConstants.ALS_PROJECT_NAME, ProjectConstants.ALS_STAGE_NAME)
           .forEach(item -> tasks.addRowItem(items.get(item)));
 
       tasks.setColGrouping(items.get(TaskConstants.COL_EVENT));

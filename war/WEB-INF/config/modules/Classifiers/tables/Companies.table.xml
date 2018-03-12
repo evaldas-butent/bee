@@ -63,5 +63,11 @@
     <String name="HourPerMonth" precision="10" label="=crmHourPerMonth" />
     <String name="ReactionTime" precision="10" label="=crmReactionTime" />
     <Text name="Comment" label="=comment" />
+
+    <Text name="Licence" />
+    <Text name="LicenceComment" label="=comment" />
+    <Numeric name="Terminal" precision="20" scale="2" label="Terminalinių" />
+    <Numeric name="Network" precision="20" scale="2" label="Tinklinių" />
+    <Numeric name="DBNumber" precision="20" scale="2" label="Duomenų bazių skaičius" />
   </Fields>
 </Table>

@@ -142,6 +142,12 @@
     </SimpleJoin>
 
     <SimpleColumn name="Notes" />
+
+    <SimpleColumn name="Licence" />
+    <SimpleColumn name="LicenceComment" />
+    <SimpleColumn name="Terminal" />
+    <SimpleColumn name="Network" />
+    <SimpleColumn name="DBNumber" />
   </Columns>
   <Order>
     <OrderBy column="Name" />

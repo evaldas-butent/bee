@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+        name="CompanyHistory" viewName="CompanyHistory" caption="=history" flexGrow="1"
+        disabledActions="add"
+>
+  <g:columns>
+    <DataColumn name="Date" />
+    <RelColumn name="User" />
+    <DataColumn name="Comment" />
+    <DataColumn name="SystemComment" readOnly="true" />
+  </g:columns>
+</g:Grid>

@@ -1,5 +1,10 @@
 package com.butent.bee.client.modules.classifiers;
 
+import com.butent.bee.client.composite.ChildSelector;
+import com.butent.bee.client.data.*;
+import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.time.TimeUtils;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -11,11 +16,6 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
-import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowEditor;
-import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
@@ -59,15 +59,14 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 class CompanyForm extends AbstractFormInterceptor {
 
   private FaLabel switchAction;
-
+  private static List<String> columns = Arrays.asList(COL_COMPANY_TERMINAL, COL_COMPANY_NETWORK, COL_COMPANY_DBNUMBER);
   CompanyForm() {
   }
 
@@ -279,6 +278,31 @@ class CompanyForm extends AbstractFormInterceptor {
             .fieldRequired(Localized.dictionary().companyStatus()));
       }
     }
+
+    String historyComment = maybeCreateHistoryComment();
+    if (!BeeUtils.isEmpty(historyComment)) {
+      event.consume();
+
+      DataInfo dataInfo = Data.getDataInfo(TBL_COMPANY_HISTORY);
+      BeeRow historyRow = RowFactory.createEmptyRow(dataInfo);
+
+      setDateAndUser(historyRow);
+      Data.setValue(TBL_COMPANY_HISTORY, historyRow, COL_SYSTEM_COMMENT, historyComment);
+      Data.setValue(TBL_COMPANY_HISTORY, historyRow, COL_COMPANY, getActiveRowId());
+
+      RowFactory.createRow(TBL_COMPANY_HISTORY, null, dataInfo, historyRow, Opener.MODAL, new AbstractFormInterceptor() {
+        @Override
+        public FormInterceptor getInstance() {
+          return null;
+        }
+
+        @Override
+        public void afterInsertRow(IsRow result, boolean forced) {
+          listener.fireEvent(event);
+        }
+      }, result -> {
+      });
+    }
   }
 
   private static void createQrButton(FormView form, IsRow row) {
@@ -402,5 +426,56 @@ class CompanyForm extends AbstractFormInterceptor {
 
       RowEditor.openForm(switchTo, viewName, newRow, opener, null);
     }
+  }
+
+  private String maybeCreateHistoryComment() {
+    IsRow oldRow = getFormView().getOldRow();
+    IsRow newRow = getFormView().getActiveRow();
+
+    String comment = "";
+
+    for (String column : columns) {
+      int index = Data.getColumnIndex(VIEW_COMPANIES, column);
+
+      if (!BeeConst.isUndef(index)) {
+        String oldValue = oldRow.getString(index);
+        String newValue = newRow.getString(index);
+
+        if (!Objects.equals(oldValue, newValue)) {
+          oldValue = BeeUtils.isEmpty(oldValue) ? Localized.dictionary().filterNullLabel() : oldValue;
+          newValue = BeeUtils.isEmpty(newValue) ? Localized.dictionary().filterNullLabel() : newValue;
+
+          comment += Data.getColumnLabel(VIEW_COMPANIES, column) + ": " + oldValue + " -> " + newValue + "\n";
+        }
+      }
+    }
+
+    for (String multiName : Arrays.asList("CompanyConnections", "CompanyModules")) {
+      ChildSelector multi = (ChildSelector) getFormView().getWidgetByName(multiName);
+
+      List<Long> ids = multi.getIds();
+      List<Long> oldIds = DataUtils.parseIdList(multi.getOldValue());
+
+      for (Long id : ids) {
+        if (!oldIds.contains(id)) {
+          comment += multi.getLabel() + ": " + Localized.dictionary().crmAdded() + " " + multi.getRowLabel(id)
+            + "\n";
+        }
+      }
+      for (Long id : oldIds) {
+        if (!ids.contains(id)) {
+          comment += multi.getLabel() + ": " + Localized.dictionary().crmDeleted() + " " + multi.getRowLabel(id)
+            + "\n";
+        }
+      }
+    }
+
+    return comment;
+  }
+
+  private static void setDateAndUser(IsRow row) {
+    row.setValue(Data.getColumnIndex(TBL_COMPANY_HISTORY, MailConstants.COL_DATE),
+      TimeUtils.nowMinutes());
+    row.setValue(Data.getColumnIndex(TBL_COMPANY_HISTORY, COL_COMPANY_USER_USER), BeeKeeper.getUser().getUserId());
   }
 }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="CompanyHistory"
+       idName="CompanyHistoryID"
+>
+  <Fields>
+    <Relation name="Company" relation="Companies" />
+    <DateTime name="Date" label="=date" />
+    <Relation name="USer" relation="Users" label="=historyUser" />
+    <Text name="Comment" label="=comment" />
+    <Text name="SystemComment" label="=commentSystem" />
+  </Fields>
+</Table>

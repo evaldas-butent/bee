@@ -71,6 +71,8 @@ public final class ClassifierConstants {
 
   public static final String TBL_LOSS_REASONS = "LossReasons";
 
+  public static final String TBL_COMPANY_HISTORY = "CompanyHistory";
+
   public static final String TBL_VEHICLE_TYPES = "VehicleTypes";
   public static final String TBL_VEHICLE_BRANDS = "VehicleBrands";
   public static final String TBL_VEHICLE_MODELS = "VehicleModels";
@@ -155,6 +157,11 @@ public final class ClassifierConstants {
   public static final String COL_COMPANY_TOLERATED_DAYS = "ToleratedDays";
   public static final String COL_COMPANY_TYPE_PERSON = "TypePerson";
   public static final String COL_COMPANY_TURNOVER = "Turnover";
+
+  public static final String COL_COMPANY_TERMINAL = "Terminal";
+  public static final String COL_COMPANY_NETWORK = "Network";
+  public static final String COL_COMPANY_DBNUMBER = "DBNumber";
+  public static final String COL_SYSTEM_COMMENT = "SystemComment";
 
   public static final String COL_LICENCE = "Licence";
   public static final String COL_LICENCE_ENDPOINT = "Endpoint";
