@@ -522,6 +522,103 @@ public enum Report implements HasWidgetSupplier {
 
   },
 
+  TASK_REPORT2(ModuleAndSub.of(Module.TASKS), TaskConstants.SVC_TASK_REPORT + 2) {
+    @Override
+    public List<ReportItem> getItems() {
+      Dictionary loc = Localized.dictionary();
+      return Arrays.asList(
+        new ReportTextItem(COL_ORDER_NO, loc.order()),
+        new ReportTextItem(TaskConstants.COL_TASK_ID, loc.captionId()),
+        new ReportDateTimeItem(TaskConstants.COL_START_TIME, Data.getColumnLabel(
+          TaskConstants.VIEW_TASKS, TaskConstants.COL_START_TIME)),
+        new ReportDateTimeItem(TaskConstants.COL_FINISH_TIME, Data.getColumnLabel(
+          TaskConstants.VIEW_TASKS, TaskConstants.COL_FINISH_TIME)),
+        new ReportTextItem("InvoiceSupplier", "Sąskaitą išrašė"),
+        new ReportTextItem(TaskConstants.COL_OWNER, Data.getColumnLabel(
+          TaskConstants.VIEW_TASKS, TaskConstants.COL_OWNER)),
+        new ReportTextItem(ALS_COMPANY_NAME, loc.company()),
+        new ReportTextItem(TaskConstants.COL_SUMMARY, "Darbo aprašymas"),
+        new ReportTextItem("Supplier", "SPAUDA Tiekėjas"),
+        new ReportNumericItem("Price", "SPAUDA Tiekėjo kaina").setPrecision(4),
+        new ReportTextItem("DecorationSupplier", "APDAILA Tiekėjas"),
+        new ReportNumericItem("DecorationPrice", "APDAILA Tiekėjo kaina").setPrecision(4),
+        new ReportTextItem("ProductFormat", "Gaminio formatas"),
+        new ReportNumericItem("PageNumber", "Psl. skaičius"),
+        new ReportTextItem("PrintFormat", "Spaudos formatas"),
+        new ReportNumericItem("NumberOfRuns", "Prabėgimų sk."),
+        new ReportNumericItem("ArcNumber", "Skaičius lanke"),
+        new ReportTextItem("PaperEnvelope", "Žaliava"),
+        new ReportTextItem("PaperEnvelopeNote", "Žaliava pastaba"),
+        new ReportTextItem("InvoiceSeries", "Sąskaitos serija"),
+        new ReportTextItem("InvoiceNumber", "Sąskaitos numeris"),
+        new ReportDateItem("InvoiceDate", "Sąskaitos data"),
+        new ReportTextItem("TransportationNote", "Transp. pastaba"),
+        new ReportTextItem("From", "Numeracija (Nr. nuo)"),
+        new ReportTextItem("To", "Numeracija (Nr. iki)"),
+        new ReportTextItem("Series", "Numeracija (Serija)"),
+        new ReportNumericItem("Color1", "Spalvingumas1"),
+        new ReportNumericItem("Color2", "Spalvingumas2"),
+        new ReportTextItem(ALS_ITEM_NAME, "Produktas"),
+        new ReportNumericItem(COL_CURRENCY_RATE_QUANTITY, "Kiekis"),
+        new ReportNumericItem(COL_ITEM + COL_ITEM_PRICE, "Vieneto kaina").setPrecision(4)
+      );
+    }
+
+    @Override
+    public Collection<ReportInfo> getReports() {
+      Map<String, ReportItem> items = new HashMap<>();
+      for (ReportItem item : getItems()) {
+        items.put(item.getExpression(), item);
+      }
+      ReportInfo report = new ReportInfo(getReportCaption());
+
+      report.addRowItem(items.get(ALS_ITEM_NAME));
+
+      for (String item : new String[]{
+        COL_ORDER_NO,
+        COL_TASK_ID,
+        COL_START_TIME,
+        COL_FINISH_TIME,
+        "InvoiceSupplier",
+        TaskConstants.COL_OWNER,
+        ALS_COMPANY_NAME,
+        COL_SUMMARY,
+        "Supplier",
+        "Price",
+        "DecorationSupplier",
+        "DecorationPrice",
+        "ProductFormat",
+        "PageNumber",
+        "PrintFormat",
+        "NumberOfRuns",
+        "ArcNumber",
+        "PaperEnvelope",
+        "PaperEnvelopeNote",
+        "InvoiceSeries",
+        "InvoiceNumber",
+        "InvoiceDate",
+        "TransportationNote",
+        "From",
+        "To",
+        "Series",
+        "Color1",
+        "Color2",
+        ALS_ITEM_NAME,
+        COL_CURRENCY_RATE_QUANTITY,
+        COL_ITEM + COL_ITEM_PRICE
+
+      }) {
+        report.addColItem(items.get(item));
+      }
+      return Collections.singletonList(report);
+    }
+
+    @Override
+    public String getReportCaption() {
+      return"Užsakymų ataskaita";
+    }
+  },
+
   SERVICE_PAYROLL_REPORT(ModuleAndSub.of(Module.SERVICE), SVC_SERVICE_PAYROLL_REPORT) {
     @Override
     public List<ReportItem> getItems() {

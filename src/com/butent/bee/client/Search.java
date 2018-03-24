@@ -1,5 +1,6 @@
 package com.butent.bee.client;
 
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -66,6 +67,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 
 public class Search {
 
@@ -390,7 +392,14 @@ public class Search {
     @Override
     public void onBrowserEvent(Event event) {
       if (EventUtils.isClick(event)) {
-        RowEditor.open(getViewName(), getRow(), Opener.NEW_TAB);
+        if (Objects.equals(getViewName(), TaskConstants.VIEW_TASKS)) {
+          if (DataUtils.isId(Data.getLong(TaskConstants.VIEW_TASKS, getRow(),
+            TaskConstants.COL_TASK_ORDER))) {
+            RowEditor.open(TaskConstants.VIEW_TASK_ORDERS, getRow(), Opener.NEW_TAB);
+          }
+        } else {
+          RowEditor.open(getViewName(), getRow(), Opener.NEW_TAB);
+        }
       }
       super.onBrowserEvent(event);
     }
@@ -514,7 +523,14 @@ public class Search {
       ViewCallback callback) {
 
     if (results.size() == 1 && callback == null) {
-      RowEditor.open(results.get(0).getViewName(), results.get(0).getRow(), Opener.modeless());
+      if (Objects.equals(results.get(0).getViewName(), TaskConstants.VIEW_TASKS)) {
+        if (DataUtils.isId(Data.getLong(TaskConstants.VIEW_TASKS, results.get(0).getRow(),
+          TaskConstants.COL_TASK_ORDER))) {
+          RowEditor.open(TaskConstants.VIEW_TASK_ORDERS, results.get(0).getRow(), Opener.modeless());
+        }
+      } else {
+        RowEditor.open(results.get(0).getViewName(), results.get(0).getRow(), Opener.modeless());
+      }
     } else {
       showResults(query, results, callback);
     }

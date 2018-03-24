@@ -1,5 +1,7 @@
 package com.butent.bee.server.modules.tasks;
 
+import com.butent.bee.client.output.ReportDateItem;
+import com.butent.bee.client.output.ReportTextItem;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -286,6 +288,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_TASK_REPORT)) {
         response = getReportData(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_TASK_REPORT + 2)) {
+        response = getReportData2(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_COPY_TASK_ORDER)) {
       BeeRowSet taskData = BeeRowSet.restore(reqInfo.getParameter(VAR_TASK_DATA));
@@ -2058,6 +2063,95 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         .addAllFields(tmp)
         .addFrom(tmp)
         .setWhere(SqlUtils.sqlFalse())).getColumnNames()) {
+
+      if (report.requiresField(column)) {
+        select.addFields(tmp, column);
+      }
+    }
+    SimpleRowSet data = qs.getData(select);
+    qs.sqlDropTemp(tmp);
+    return ResponseObject.response(data);
+  }
+
+  private ResponseObject getReportData2(RequestInfo reqInfo) {
+    String ownerPerson = SqlUtils.uniqueName();
+    String supplier = SqlUtils.uniqueName();
+    String decorationSupplier = SqlUtils.uniqueName();
+
+    SqlSelect select = new SqlSelect();
+    select.addField(VIEW_TASKS, sys.getIdName(VIEW_TASKS), COL_TASK_ID);
+    select.addFields(VIEW_TASKS, COL_START_TIME, COL_FINISH_TIME, COL_SUMMARY);
+    select.addField(VIEW_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME);
+    select.addField(supplier, COL_COMPANY_NAME, "Supplier");
+    select.addField(decorationSupplier, COL_COMPANY_NAME, "DecorationSupplier");
+    select.addFields(VIEW_TASK_ORDERS, TransportConstants.COL_ORDER_NO, "InvoiceSeries", "InvoiceNumber",
+      "InvoiceDate", "TransportationNote", "PrintFormat", "ProductFormat", "PaperEnvelope", "PaperEnvelopeNote",
+      "NumberOfRuns", "ArcNumber", "Price", "DecorationPrice", "PageNumber", "From", "To", "Series", "Color1",
+      "Color2","InvoiceSupplier");
+    select.addFields(VIEW_TASK_ORDER_ITEMS, COL_CURRENCY_RATE_QUANTITY);
+    select.addField(VIEW_TASK_ORDER_ITEMS, COL_ITEM_PRICE, COL_ITEM + COL_ITEM_PRICE);
+    select.addField(VIEW_ITEMS, COL_ITEM_NAME, ALS_ITEM_NAME);
+    addExprForUserFirstLastNames(select, ownerPerson, TaskConstants.COL_OWNER);
+    select.addFrom(VIEW_TASKS);
+
+    addJoinsForUserFirstLastNames(select, ownerPerson, TBL_TASKS, COL_OWNER);
+
+    select.addFromLeft(VIEW_TASK_ORDERS, sys.joinTables(VIEW_TASK_ORDERS, TBL_TASKS, COL_TASK_ORDER));
+    select.addFromLeft(VIEW_TASK_ORDER_ITEMS, sys.joinTables(TBL_TASKS, VIEW_TASK_ORDER_ITEMS, COL_TASK));
+    select.addFromLeft(VIEW_ITEMS, sys.joinTables(VIEW_ITEMS, VIEW_TASK_ORDER_ITEMS, COL_ITEM));
+    select.addFromLeft(VIEW_COMPANIES, sys.joinTables(VIEW_COMPANIES, TBL_TASKS, COL_COMPANY));
+    select.addFromLeft(VIEW_COMPANIES, supplier, sys.joinTables(VIEW_COMPANIES, supplier,
+      VIEW_TASK_ORDERS, "Supplier"));
+    select.addFromLeft(VIEW_COMPANIES, decorationSupplier, sys.joinTables(VIEW_COMPANIES, decorationSupplier,
+      VIEW_TASK_ORDERS, "DecorationSupplier"));
+
+    ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
+    HasConditions clause = SqlUtils.and();
+    clause.add(report.getCondition(TBL_TASKS, COL_START_TIME));
+    clause.add(report.getCondition(TBL_TASKS, COL_FINISH_TIME));
+    clause.add(report.getCondition(TBL_TASKS, COL_SUMMARY));
+    clause.add(report.getCondition(SqlUtils.field(VIEW_COMPANIES, COL_COMPANY_NAME), ALS_COMPANY_NAME));
+    clause.add(report.getCondition(SqlUtils.field(supplier, COL_COMPANY_NAME), "Supplier"));
+    clause.add(report.getCondition(SqlUtils.field(decorationSupplier, COL_COMPANY_NAME), "DecorationSupplier"));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, "InvoiceSupplier"));
+    clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_TASKS,
+      sys.getIdName(TBL_TASKS)), SqlConstants.SqlDataType.STRING, 20, 0), COL_TASK_ID));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, TransportConstants.COL_ORDER_NO));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, "InvoiceSeries"));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, "InvoiceNumber"));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, "InvoiceDate"));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, "TransportationNote"));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, "PrintFormat"));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, "ProductFormat"));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, "PaperEnvelope"));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, "PaperEnvelopeNote"));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, "NumberOfRuns"));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, "ArcNumber"));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, "Price"));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, "DecorationPrice"));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, "PageNumber"));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, "From"));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, "To"));
+    clause.add(report.getCondition(VIEW_TASK_ORDERS, "Series"));
+    clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(VIEW_TASK_ORDERS,
+      "Color1"), SqlConstants.SqlDataType.STRING, 20, 0), "Color1"));
+    clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(VIEW_TASK_ORDERS,
+      "Color2"), SqlConstants.SqlDataType.STRING, 20, 0), "Color2"));
+    clause.add(report.getCondition(SqlUtils.concat(SqlUtils.field(ownerPerson, COL_FIRST_NAME), "' '",
+      SqlUtils.nvl(SqlUtils.field(ownerPerson, COL_LAST_NAME), "''")), COL_OWNER));
+    clause.add(report.getCondition(VIEW_TASK_ORDER_ITEMS, COL_CURRENCY_RATE_QUANTITY));
+    clause.add(report.getCondition(SqlUtils.field(VIEW_TASK_ORDER_ITEMS, COL_ITEM_PRICE),
+      COL_ITEM + COL_ITEM_PRICE));
+    clause.add(report.getCondition(SqlUtils.field(VIEW_ITEMS, COL_ITEM_NAME), ALS_ITEM_NAME));
+    select.setWhere(clause);
+
+    String tmp = qs.sqlCreateTemp(select);
+    select = new SqlSelect().addFrom(tmp);
+
+    for (String column : qs.getData(new SqlSelect()
+      .addAllFields(tmp)
+      .addFrom(tmp)
+      .setWhere(SqlUtils.sqlFalse())).getColumnNames()) {
 
       if (report.requiresField(column)) {
         select.addFields(tmp, column);

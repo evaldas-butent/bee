@@ -14,9 +14,9 @@
         <row>
           <Label for="Model" />
           <ListBox source="Model" style="width: 120px;">
-            <item>Senas</item>
-            <item>Naujas</item>
-            <item>Užsakovo</item>
+            <item>senas</item>
+            <item>naujas</item>
+            <item>užsakovo</item>
           </ListBox>
 
           <Label for="ModelNote" />
@@ -95,22 +95,22 @@
           </FlowPanel>
 
           <Label for="SupplierNote" />
-          <InputText source="SupplierNote" style="width: 285px;" placeholder="123" />
+          <InputText source="SupplierNote" style="width: 285px;" />
         </row>
 
         <row>
           <Label for="PaperEnvelope" />
           <ListBox source="PaperEnvelope" style="width: 175px;" >
-            <item>Popierius</item>
-            <item>Vokai</item>
-            <item>Plastikas</item>
-            <item>Plėvelė</item>
-            <item>Tentas</item>
-            <item>Drobė</item>
-            <item>Kompozitas</item>
-            <item>Interjerinės medžiagos</item>
-            <item>Užsakovo</item>
-            <item>Kita</item>
+            <item>popierius</item>
+            <item>vokai</item>
+            <item>plastikas</item>
+            <item>plėvelė</item>
+            <item>tentas</item>
+            <item>drobė</item>
+            <item>kompozitas</item>
+            <item>interjerinės medžiagos</item>
+            <item>užsakovo</item>
+            <item>kita</item>
           </ListBox>
 
           <Label for="PaperEnvelopeNote" />
@@ -145,15 +145,15 @@
         <row>
           <Label for="Laminate1" />
           <ListBox source="Laminate1" style="width: 175px;" >
-            <item>Vienpusis</item>
-            <item>Abipusis</item>
+            <item>vienpusis</item>
+            <item>abipusis</item>
           </ListBox>
 
           <Label />
           <ListBox source="Laminate2" style="width: 175px;" >
-            <item>MATINIS</item>
-            <item>BLIZGUS</item>
-            <item>AKSOMAS</item>
+            <item>matinis</item>
+            <item>blizgus</item>
+            <item>aksomas</item>
           </ListBox>
         </row>
 
@@ -311,21 +311,21 @@
         <row>
           <Label for="Cut" />
           <ListBox source="Cut" style="width: 150px;" >
-            <item>Į formatą</item>
-            <item>BE baltų kraštų</item>
-            <item>SU baltais kraštais</item>
-            <item>Užlenkti kraštus</item>
-            <item>Neužlenkti kraštų</item>
-            <item>Nekirpti</item>
+            <item>į formatą</item>
+            <item>be baltų kraštų</item>
+            <item>su baltais kraštais</item>
+            <item>užlenkti kraštus</item>
+            <item>neužlenkti kraštų</item>
+            <item>nekirpti</item>
           </ListBox>
 
           <Label for="Stitching" />
           <cell colSpan="4">
             <FlowPanel>
               <ListBox source="Stitching" style="width: 165px; &inline;" >
-                <item>Kabės</item>
-                <item>Kniedės</item>
-                <item>Kita</item>
+                <item>kabės</item>
+                <item>kniedės</item>
+                <item>kita</item>
               </ListBox>
 
               <InputText source="OtherStitching" style="&inline; width: 90px; margin-left: 5px;" />
@@ -344,13 +344,13 @@
           <cell colSpan="4">
             <FlowPanel>
               <ListBox source="Spiral" style="width: 165px; &inline;" >
-                <item>Kieta</item>
-                <item>Minkšta</item>
-                <item>B/J</item>
+                <item>kieta</item>
+                <item>minkšta</item>
+                <item>balta</item>
+                <item>juoda</item>
               </ListBox>
 
-              <InputInteger source="OtherSpiral" minValue="0" maxValue="999999"
-                            style="&inline; width: 90px; margin-left: 5px;" />
+              <InputText source="OtherSpiral" style="&inline; width: 90px; margin-left: 5px;" />
             </FlowPanel>
           </cell>
         </row>
@@ -370,8 +370,7 @@
                 <item>kita</item>
               </ListBox>
 
-              <InputInteger source="OtherHoles" minValue="0" maxValue="999999"
-                            style="&inline; width: 90px; margin-left: 5px;" />
+              <InputText source="OtherHoles" style="&inline; width: 90px; margin-left: 5px;" />
             </FlowPanel>
           </cell>
         </row>
@@ -384,13 +383,12 @@
           <cell colSpan="4">
             <FlowPanel>
               <ListBox source="Bending" style="width: 165px;" >
-                <item>Lenkimas</item>
-                <item>Bigas</item>
-                <item>Ploteriavimas</item>
+                <item>lenkimas</item>
+                <item>bigas</item>
+                <item>ploteriavimas</item>
               </ListBox>
 
-              <InputInteger source="OtherBending" minValue="0" maxValue="999999"
-                            style="&inline; width: 90px; margin-left: 5px;" />
+              <InputText source="OtherBending" style="&inline; width: 90px; margin-left: 5px;" />
             </FlowPanel>
           </cell>
         </row>
@@ -562,13 +560,15 @@
             <item>Diremta</item>
             <item>užsakovas</item>
             <item>kurjeriai</item>
+            <item>QPA</item>
+            <item>kita</item>
           </ListBox>
 
           <Label for="PackageQty" />
           <InputInteger source="PackageQty" minValue="0" maxValue="999999" maxLength="6" style="width: 100px;" />
 
           <Label for="Weight" />
-          <InputDouble source="Weight" maxLength="10" placeholder="999999.999" minValue="0" maxValue="999999.999"
+          <InputDouble source="Weight" maxLength="10" placeholder="9999.999" minValue="0" maxValue="9999.999"
                        style="width: 100px;" />
         </row>
 

@@ -7,5 +7,6 @@ name="TaskReports" label="=crmTaskReports" order="10" parent="Tasks" data="TaskD
   <Item name="TypeHoursReport" label="=hoursByTypes" service="task_reports" parameters="typehours" />
   <Item name="CompanyTimesReport" label="=hoursByCompanies" service="task_reports" parameters="companytimes" />
   <Item name="UsersHoursReport" label="=hoursByExecutors" service="task_reports" parameters="usershours" />
-  <Item name="TaskReports" label="=report" service="report"  parameters="TaskReport" module="Administration"/>
+  <Item name="TaskReports" label="Užduočių ataskaita" service="report"  parameters="TaskReport" module="Administration"/>
+  <Item name="TaskReport2" label="Užsakymų ataskaita" service="report"  parameters="TaskReport2" />
 </Entry>
