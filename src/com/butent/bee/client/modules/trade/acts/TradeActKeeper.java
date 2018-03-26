@@ -653,12 +653,24 @@ public final class TradeActKeeper {
     }
 
     boolean hasContinuousTa = DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_CONTINUOUS)));
+    boolean hasRentProjectTa = DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_RENT_PROJECT)));
     boolean isContinuousTa = kind == TradeActKind.CONTINUOUS;
+    boolean isRentProjectTa = kind == TradeActKind.RENT_PROJECT;
+    boolean isReturnTa = kind == TradeActKind.RETURN;
+    boolean isSupplementTa = kind == TradeActKind.SUPPLEMENT;
+    boolean isSaleTa = kind == TradeActKind.SALE;
     boolean hasMultiReturn = DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_RETURN)));
     boolean hasReturn = BeeUtils.isPositive(row.getLong(form.getDataIndex(ALS_RETURNED_COUNT)));
 
-    return  !hasContinuousTa && !isContinuousTa && !TradeActKeeper.isClientArea()
-        && !hasMultiReturn && !hasReturn;
+    boolean defEnabled = !(hasContinuousTa || hasRentProjectTa)
+            && !(isContinuousTa || isRentProjectTa) && !TradeActKeeper.isClientArea()
+            && !hasMultiReturn && !hasReturn;
+
+    boolean isReturnActItemsEnabled = hasRentProjectTa && isReturnTa;
+    boolean isSaleAndHasRentProject = hasRentProjectTa && !isRentProjectTa && (hasReturn || isSaleTa);
+    boolean isSupplementAndHasRentProject = hasRentProjectTa && !isRentProjectTa && isSupplementTa;
+
+    return  defEnabled || isReturnActItemsEnabled || isSaleAndHasRentProject || isSupplementAndHasRentProject;
   }
 
   static boolean isUserSeries(Long series) {

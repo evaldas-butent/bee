@@ -8,6 +8,12 @@
     <SimpleColumn name="TradeAct" />
     <SimpleJoin name="TradeAct" joinType="LEFT">
       <SimpleColumn name="ContinuousAct" />
+      <SimpleColumn name="RentProject" />
+
+      <SimpleJoin joinType="LEFT" name="Series">
+        <SimpleColumn name="SeriesName" alias="TradeSeriesName" />
+      </SimpleJoin>
+      <SimpleColumn name="Number" alias="TradeNumber" />
     </SimpleJoin>
 
     <SimpleColumn name="Item" />

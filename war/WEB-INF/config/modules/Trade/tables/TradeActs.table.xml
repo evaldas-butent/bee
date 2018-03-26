@@ -37,6 +37,7 @@
     <Relation name="Parent" relation="TradeActs" label="=taParent" />
     <Relation name="ContinuousAct" relation="TradeActs" label="=taKindContinuous" cascade="SET_NULL"/>
     <Relation name="ReturnAct" relation="TradeActs" label="=taKindReturn" cascade="SET_NULL" />
+    <Relation name="RentProject" relation="TradeActs" label="Nuomos projektas" />
 
     <String name="RegistrationNo" label="=taRegistrationNo" precision="30" />
   </Fields>
