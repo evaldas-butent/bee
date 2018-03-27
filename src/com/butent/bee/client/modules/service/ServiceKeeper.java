@@ -58,6 +58,10 @@ public final class ServiceKeeper {
         new FileGridInterceptor(COL_SERVICE_OBJECT, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
+    GridFactory.registerGridInterceptor(VIEW_MAINTENANCE_FILES,
+        new FileGridInterceptor(COL_SERVICE_MAINTENANCE, AdministrationConstants.COL_FILE,
+            AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
+
     GridFactory.registerGridInterceptor(VIEW_MAINTENANCE, new MaintenanceGrid());
 
     GridFactory.registerGridInterceptor(GRID_OBJECT_INVOICES, new ObjectInvoicesGrid());

@@ -12,7 +12,11 @@
     <Text name="Description" label="=svcFaultInfo" />
     <Boolean name="Urgent" label="=svcUrgent" />
     <Relation name="WarrantyType" relation="WarrantyTypes" label="=svcWarrantyType" />
+
     <Relation name="Repairer" relation="Users" label="=svcMaster" />
+    <Relation name="Repairer2" relation="Users" label="=svcMaster+2" />
+    <Relation name="Transport" relation="ServiceObjects" label="Transportas" />
+
     <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" label="=creator" />
     <Relation name="WarrantyMaintenance" relation="ServiceMaintenance" label="=svcWarrantyBasis" />
     <DateTime name="WarrantyValidTo"  label="=svcWarrantyValidTo" />

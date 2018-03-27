@@ -50,6 +50,12 @@
         <SimpleColumn name="Name" alias="ContractorName" />
       </SimpleJoin>
 
+      <SimpleColumn name="Object" />
+      <SimpleJoin joinType="LEFT" name="Object">
+        <SimpleColumn name="ObjectName" />
+        <SimpleColumn name="ObjectAddress" />
+      </SimpleJoin>
+
       <SimpleColumn name="Category" />
       <SimpleJoin joinType="LEFT" name="Category">
         <SimpleColumn name="Name" alias="CategoryName" />
@@ -58,6 +64,7 @@
       <SimpleColumn name="Model" />
       <SimpleColumn name="SerialNo" />
       <SimpleColumn name="ArticleNo" />
+      <SimpleColumn name="Address" />
       <SimpleColumn name="Customer" />
     </SimpleJoin>
 
@@ -80,6 +87,28 @@
           <SimpleColumn alias="RepairerLastName" name="LastName" />
         </SimpleJoin>
       </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Repairer2" />
+    <SimpleJoin name="Repairer2" joinType="LEFT">
+      <SimpleColumn alias="Repairer2CompanyPerson" name="CompanyPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn alias="Repairer2FirstName" name="FirstName" />
+          <SimpleColumn alias="Repairer2LastName" name="LastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Transport"/>
+    <SimpleJoin name="Transport" joinType="LEFT">
+      <SimpleColumn name="Model" alias="TransportModel" />
+
+      <SimpleJoin joinType="LEFT" name="Category">
+        <SimpleColumn name="Name" alias="TransportCategoryName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Address" alias="TransportAddress" />
     </SimpleJoin>
 
     <SimpleColumn name="Creator" />

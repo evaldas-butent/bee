@@ -86,6 +86,8 @@ public final class ServiceConstants {
   public static final String VIEW_SERVICE_FILES = "ServiceFiles";
   public static final String VIEW_SERVICE_DATES = "ServiceDates";
 
+  public static final String VIEW_MAINTENANCE_FILES = "MaintenanceFiles";
+
   public static final String VIEW_MAINTENANCE = "Maintenance";
   public static final String VIEW_MAINTENANCE_STATES = "MaintenanceStates";
   public static final String VIEW_MAINTENANCE_TYPES = "MaintenanceTypes";

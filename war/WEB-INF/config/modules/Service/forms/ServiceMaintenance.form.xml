@@ -47,6 +47,10 @@
             <text>=payroll</text>
             <ChildGrid name="MaintenancePayroll" relColumn="ServiceMaintenance" />
           </page>
+          <page>
+            <text>=files</text>
+            <ChildGrid name="MaintenanceFiles" relColumn="ServiceMaintenance" />
+          </page>
         </TabbedPages>
       </FlowPanel>
     </south>
@@ -76,8 +80,8 @@
               <FlowPanel style="&mfld; width: 31em;" for="ServiceObject">
                 <Label text="=svcDevice" class="bee-required bee-svc-panel-title" style="&flbl;"/>
                 <DataSelector name="ServiceObject" source="ServiceObject" updateMode="row"
-                              choiceColumns="SerialNo ArticleNo CategoryName ManufacturerName Model CustomerName ContactPersonFirstName ContactPersonLastName ContactPersonPhone"
-                              renderColumns="Model CategoryName ArticleNo" style="&finp;" tabIndex="50"/>
+                              choiceColumns="SerialNo Address CategoryName ManufacturerName Model CustomerName ContactPersonFirstName ContactPersonLastName ContactPersonPhone"
+                              renderColumns="Model CategoryName Address" style="&finp;" tabIndex="50"/>
               </FlowPanel>
               <FlowPanel for="ServiceObject">
                 <FaLabel name="ServiceObjectAdd" char="plus_circle" class="bee-MultiSelector-plus bee-svc-add-button"/>
@@ -129,20 +133,8 @@
                   <Label for="Model" />
                   <TextLabel source="Model"/>
                 </row>
-                <row for="ServiceManufacturer" data="ServiceObjects">
-                  <Label text="=tcdBrand" />
-                  <TextLabel source="ManufacturerName"/>
-                </row>
-                <row for="SerialNo" data="ServiceObjects">
-                  <Label text="=svcSerialNo"/>
-                  <TextLabel source="SerialNo"/>
-                </row>
-                <row for="ArticleNo" data="ServiceObjects">
-                  <Label text="=ecItemCode"/>
-                  <TextLabel source="ArticleNo"/>
-                </row>
                 <row for="Contractor" data="ServiceObjects">
-                  <Label for="Contractor" text="=svcContractor" />
+                  <Label for="Contractor" />
                   <TextLabel source="ContractorName"/>
                 </row>
               </Table>
@@ -153,16 +145,19 @@
                 <col index="0" cellClass="bee-svc-maintenance-info-label" />
                 <col index="1" cellClass="bee-svc-maintenance-info-field" />
                 <row>
-                  <Label text="=phone" />
-                  <TextLabel name="Phone" source="ContactPhone"/>
+                  <Label for="ContactMobile" />
+                  <TextLabel name="Mobile" source="ContactMobile"/>
                 </row>
                 <row>
                   <Label text="=email" />
                   <TextLabel name="Email" source="ContactEmail"/>
                 </row>
                 <row>
-                  <Label name="AddressLabel" text="=address" />
-                  <TextLabel name="Address" source="ContactAddress"/>
+                  <Label name="AddressLabel" for="Object" />
+                  <TextLabel name="Address" source="Object">
+                    <renderToken source="ObjectName" />
+                    <renderToken source="ObjectAddress" />
+                  </TextLabel>
                 </row>
               </Table>
             </FlowPanel>
@@ -246,7 +241,8 @@
               <FlowPanel style="&mfld; width: 21em;" >
                 <Label for="Repairer" style="&flbl;"/>
                 <DataSelector source="Repairer" renderColumns="RepairerFirstName RepairerLastName"
-                              style="&finp;" tabIndex="120"/>
+                              style="&finp;" tabIndex="120" editSource="RepairerCompanyPerson"
+                              newRowEnabled="false" />
               </FlowPanel>
             </FlowPanel>
           </FlowPanel>
@@ -263,6 +259,22 @@
                 <Label for="WarrantyValidTo" style="&flbl;"/>
                 <InputDateTime name="WarrantyValidTo" source="WarrantyValidTo" style="&finp;"
                                format="DATE_SHORT" tabIndex="150"/>
+              </FlowPanel>
+            </FlowPanel>
+
+            <FlowPanel class="&mrcl;" style="&mrst;" for="Transport">
+              <FlowPanel style="&mfld; width: 21em;" >
+                <Label for="Transport" style="&flbl;"/>
+                <DataSelector source="Transport" style="&finp;" tabIndex="160" newRowEnabled="false" />
+              </FlowPanel>
+            </FlowPanel>
+
+            <FlowPanel class="&mrcl;" style="&mrst;" for="Repairer2">
+              <FlowPanel style="&mfld; width: 21em;" >
+                <Label for="Repairer2" style="&flbl;"/>
+                <DataSelector source="Repairer2" renderColumns="Repairer2FirstName Repairer2LastName"
+                              style="&finp;" tabIndex="170" editSource="Repairer2CompanyPerson"
+                              newRowEnabled="false" />
               </FlowPanel>
             </FlowPanel>
           </FlowPanel>
