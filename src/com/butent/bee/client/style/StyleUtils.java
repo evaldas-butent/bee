@@ -949,15 +949,20 @@ public final class StyleUtils {
       if (sheet == null) {
         continue;
       }
+      JsCSSRuleList rules;
 
-      JsCSSRuleList rules = sheet.getCssRules();
-      if (rules == null) {
-        rules = sheet.getRules();
+      try {
+        rules = sheet.getCssRules();
+
         if (rules == null) {
-          continue;
+          rules = sheet.getRules();
         }
+      } catch (Throwable e) {
+        rules = null;
       }
-
+      if (rules == null) {
+        continue;
+      }
       for (int j = 0; j < rules.length(); j++) {
         String text = rules.item(j).getCssText();
         if (!BeeUtils.isEmpty(text)) {
