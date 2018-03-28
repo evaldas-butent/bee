@@ -54,6 +54,12 @@
       <SimpleColumn name="ManufacturerName" />
     </SimpleJoin>
 
+    <SimpleColumn name="Object" />
+    <SimpleJoin joinType="LEFT" name="Object">
+      <SimpleColumn name="ObjectName" />
+      <SimpleColumn name="ObjectAddress" />
+    </SimpleJoin>
+
     <SimpleColumn name="Model" />
     <SimpleColumn name="SerialNo" />
 

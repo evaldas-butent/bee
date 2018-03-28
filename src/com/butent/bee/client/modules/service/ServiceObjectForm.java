@@ -1,14 +1,5 @@
 package com.butent.bee.client.modules.service;
 
-import com.butent.bee.client.composite.MultiSelector;
-import com.butent.bee.client.composite.Relations;
-import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.widget.CheckBox;
-import com.butent.bee.shared.Latch;
-import com.butent.bee.shared.css.values.FontWeight;
-import com.butent.bee.shared.css.values.Overflow;
-import com.butent.bee.shared.data.*;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
@@ -23,12 +14,15 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TA_OBJECT;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.composite.Autocomplete;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
@@ -39,11 +33,14 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -51,9 +48,18 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.Latch;
+import com.butent.bee.shared.css.values.FontWeight;
+import com.butent.bee.shared.css.values.Overflow;
 import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
@@ -65,8 +71,14 @@ import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickHandler,
     RowActionEvent.Handler, SelectorEvent.Handler, RowUpdateEvent.Handler, DataChangeEvent.Handler {
@@ -96,6 +108,30 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
 
   ServiceObjectForm() {
     super();
+  }
+
+  @Override
+  public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
+    if (widget instanceof DataSelector && editableWidget.hasSource(COL_TA_OBJECT)) {
+      ((DataSelector) widget).addSelectorHandler(event -> {
+        if (event.isOpened()) {
+          String columnName = event.getSelector().getOptions();
+
+          if (!BeeUtils.isEmpty(columnName)) {
+            Long company = getLongValue(columnName);
+
+            Filter filter;
+            if (company == null) {
+              filter = null;
+            } else {
+              filter = Filter.equals(COL_COMPANY, company);
+            }
+            event.getSelector().setAdditionalFilter(filter, filter != null);
+          }
+        }
+      });
+    }
+    super.afterCreateEditableWidget(editableWidget, widget);
   }
 
   @Override
@@ -202,7 +238,8 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
   public void beforeRefresh(FormView form, IsRow row) {
     MultiSelector objectSelector = relations.getMultiSelector("CompanyObject");
     if (objectSelector != null) {
-      Filter filter = Filter.equals(COL_COMPANY, Data.getLong(VIEW_SERVICE_OBJECTS, row, COL_SERVICE_CUSTOMER));
+      Filter filter =
+          Filter.equals(COL_COMPANY, Data.getLong(VIEW_SERVICE_OBJECTS, row, COL_SERVICE_CUSTOMER));
       objectSelector.setAdditionalFilter(filter);
     }
 
@@ -240,27 +277,27 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
         && BeeUtils.isTrue(getActiveRow().getBoolean(getDataIndex(COL_COMPANY_TYPE_PERSON)))) {
       Long companyId = getActiveRow().getLong(getDataIndex(COL_SERVICE_CUSTOMER));
       Queries.getRow(VIEW_COMPANY_PERSONS, Filter.equals(COL_COMPANY, companyId), null,
-              companyPersonRow -> {
-                if (companyPersonRow != null && DataUtils.isId(companyPersonRow.getId())) {
-                  DataInfo targetDataInfo = Data.getDataInfo(getViewName());
-                  DataInfo sourceDataInfo = Data.getDataInfo(VIEW_COMPANY_PERSONS);
+          companyPersonRow -> {
+            if (companyPersonRow != null && DataUtils.isId(companyPersonRow.getId())) {
+              DataInfo targetDataInfo = Data.getDataInfo(getViewName());
+              DataInfo sourceDataInfo = Data.getDataInfo(VIEW_COMPANY_PERSONS);
 
-                  getActiveRow().setValue(targetDataInfo.getColumnIndex(ALS_CONTACT_PERSON),
-                      companyPersonRow.getId());
-                  RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_PHONE, getActiveRow(),
-                      sourceDataInfo, COL_PHONE, companyPersonRow);
-                  RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_FIRST_NAME,
-                      getActiveRow(), sourceDataInfo, COL_FIRST_NAME, companyPersonRow);
-                  RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_LAST_NAME,
-                      getActiveRow(), sourceDataInfo, COL_LAST_NAME, companyPersonRow);
-                  RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_EMAIL, getActiveRow(),
-                      sourceDataInfo, COL_EMAIL, companyPersonRow);
-                  RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_ADDRESS, getActiveRow(),
-                      sourceDataInfo, COL_ADDRESS, companyPersonRow);
+              getActiveRow().setValue(targetDataInfo.getColumnIndex(ALS_CONTACT_PERSON),
+                  companyPersonRow.getId());
+              RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_PHONE, getActiveRow(),
+                  sourceDataInfo, COL_PHONE, companyPersonRow);
+              RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_FIRST_NAME,
+                  getActiveRow(), sourceDataInfo, COL_FIRST_NAME, companyPersonRow);
+              RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_LAST_NAME,
+                  getActiveRow(), sourceDataInfo, COL_LAST_NAME, companyPersonRow);
+              RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_EMAIL, getActiveRow(),
+                  sourceDataInfo, COL_EMAIL, companyPersonRow);
+              RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_ADDRESS, getActiveRow(),
+                  sourceDataInfo, COL_ADDRESS, companyPersonRow);
 
-                  getFormView().refreshBySource(ALS_CONTACT_PERSON);
-                }
-              });
+              getFormView().refreshBySource(ALS_CONTACT_PERSON);
+            }
+          });
     }
   }
 
@@ -468,8 +505,8 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
       Global.inputWidget(d.mainCriteria(), container, () -> {
 
         BeeRowSet rowSet = new BeeRowSet(VIEW_SERVICE_OBJECT_MAIN_CRITERIA,
-          Data.getColumns(VIEW_SERVICE_OBJECT_MAIN_CRITERIA,
-            Arrays.asList(COL_SERVICE_OBJECT, COL_SERVICE_MAIN_CRITERIA)));
+            Data.getColumns(VIEW_SERVICE_OBJECT_MAIN_CRITERIA,
+                Arrays.asList(COL_SERVICE_OBJECT, COL_SERVICE_MAIN_CRITERIA)));
 
         List<Long> delete = new ArrayList<>();
 
@@ -505,6 +542,7 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
 
     Runnable runnable = new Runnable() {
       int index;
+
       @Override
       public void run() {
         if (Objects.equals(actions, ++index)) {
@@ -514,8 +552,9 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
     };
 
     if (delete.size() > 0) {
-      Queries.delete(VIEW_SERVICE_OBJECT_MAIN_CRITERIA, Filter.and(Filter.equals(COL_SERVICE_OBJECT, getActiveRowId()),
-        Filter.any(COL_SERVICE_MAIN_CRITERIA, delete)), result -> runnable.run());
+      Queries.delete(VIEW_SERVICE_OBJECT_MAIN_CRITERIA,
+          Filter.and(Filter.equals(COL_SERVICE_OBJECT, getActiveRowId()),
+              Filter.any(COL_SERVICE_MAIN_CRITERIA, delete)), result -> runnable.run());
     }
 
     if (rowSet.getNumberOfRows() > 0) {
@@ -615,7 +654,8 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
     if (!BeeUtils.isEmpty(changedValues)) {
       for (Entry<Long, String> entry : changedValues.entrySet()) {
         Queries.update(VIEW_SERVICE_OBJECT_MAIN_CRITERIA, Filter.compareId(entry.getKey()),
-            COL_SERVICE_CRITERION_VALUE, new TextValue(entry.getValue()), result -> scheduler.execute());
+            COL_SERVICE_CRITERION_VALUE, new TextValue(entry.getValue()),
+            result -> scheduler.execute());
       }
     }
 

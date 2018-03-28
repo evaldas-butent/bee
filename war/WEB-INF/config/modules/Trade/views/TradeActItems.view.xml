@@ -25,6 +25,8 @@
         <SimpleColumn name="Name" alias="ContractName" />
         <SimpleColumn name="Number" alias="ContractNumber" />
       </SimpleJoin>
+
+      <SimpleColumn name="RentProject" />
     </SimpleJoin>
 
     <SimpleColumn name="Parent" />

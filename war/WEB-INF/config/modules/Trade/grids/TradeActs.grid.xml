@@ -10,7 +10,7 @@
     <RelColumn name="Company" visible="true" renderColumns="CompanyName TypeName" />
     <RelColumn name="Series" visible="true" filterSupplier="list" />
     <DataColumn name="Number" visible="true" />
-    <!-- DataColumn name="ReturnedCount" / -->
+    <RelColumn name="RentProject" visible="true" renderColumns="RentProjectSeriesName RentProjectNumber" editEnabled="true"> </RelColumn>
     <CalcColumn name="ReturnedCount" type="integer" caption="=tradeActReturnedCountShort"
                 source="ReturnedCount">
       <render>

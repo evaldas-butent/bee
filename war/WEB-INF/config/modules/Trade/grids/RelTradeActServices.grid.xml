@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+
+  name="RelTradeActServices" viewName="TradeActServices"
+  flexGrow="1"
+  newRowCaption="=newService" disabledActions="filter"
+  >
+  <xi:include href="columns/TradeActServiceLeft.columns.xml" />
+
+  <g:columns>
+      <RelColumn name="TradeAct" editEnabled="true">
+          <renderToken source="TradeSeriesName"  suffix=" " />
+          <renderToken source="TradeNumber" suffix="/" />
+          <renderToken source="TradeAct" prefix="=captionId" />
+      </RelColumn>
+  </g:columns>
+
+  <xi:include href="columns/TradeActPrice.columns.xml" />
+
+  <xi:include href="columns/TradeActDiscount.columns.xml" />
+
+  <g:columns>
+    <CalcColumn name="Amount" type="decimal" caption="=trdAmountWoVat" scale="2" format="0.00">
+      <style>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+      <render>
+        <ui:function>
+          var sum = row.Price * row.Quantity;
+          var dscSum =  sum / 100 * row.Discount;
+          var vat = row.Vat;
+
+          sum -= dscSum;
+
+          if (Boolean(row.VatPlus)) {
+          if(Boolean(row.VatPercent)) {
+          vat = sum / 100 * vat;
+          }
+          } else {
+
+          if (Boolean(row.VatPercent)) {
+          vat = sum - (sum / (1 + vat / 100));
+          }
+          sum -= vat;
+          }
+
+          return sum;
+        </ui:function>
+      </render>
+      <footer aggregate="sum"/>
+    </CalcColumn>
+
+    <RelColumn name="Supplier" newRowEnabled="false" caching="none" />
+    <DataColumn name="CostAmount" />
+  </g:columns>
+  <xi:include href="columns/TradeActVat.columns.xml" />
+  <xi:include href="columns/TradeActTotal.columns.xml" />
+
+  <xi:include href="columns/TradeActServiceRight.columns.xml" />
+</g:Grid>

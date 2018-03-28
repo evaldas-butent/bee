@@ -34,12 +34,12 @@
                         style="&finp;"/>
         </FlowPanel>
 
-        <FlowPanel  style="&mfld;width: 20em;" for="ContactPerson">
-          <Label text="=address" style="&flbl;" />
-          <DataSelector source="ContactPerson" options="Customer"
-                        choiceColumns="FirstName LastName Mobile Email Address CompanyName"
-                        renderColumns="ContactAddress"
-                        style="&finp;"/>
+        <FlowPanel  style="&mfld;width: 20em;" for="Object">
+          <Label for="Object" style="&flbl;" />
+          <DataSelector source="Object" options="Customer"
+                        choiceColumns="CompanyName ObjectName ObjectAddress"
+                        renderColumns="ObjectName ObjectAddress"
+                        style="&finp;" />
         </FlowPanel>
       </FlowPanel>
 
@@ -68,7 +68,7 @@
                         style="&finp;"/>
         </FlowPanel>
       </FlowPanel>
-  
+
       <FlowPanel >
         <ChildGrid name="ServicePlace" relColumn="Item" source="Item" style="&mrst;" />
       </FlowPanel>

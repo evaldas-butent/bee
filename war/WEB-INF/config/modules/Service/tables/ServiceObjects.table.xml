@@ -12,6 +12,7 @@
     <Relation name="Contractor" relation="Companies" label="=owner" />
 
     <Relation name="ContactPerson" relation="CompanyPersons" label="=contact" />
+    <Relation name="Object" relation="CompanyObjects" label="=object" />
     <!--TODO: remove Manufacturer deprecated-->
     <Relation name="Manufacturer" relation="Companies" label="=tcdBrand" />
     <Relation name="ServiceManufacturer" relation="TcdManufacturers" label="=tcdBrand" />

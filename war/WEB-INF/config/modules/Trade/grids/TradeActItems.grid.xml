@@ -22,6 +22,11 @@
       <renderToken source="ParentNumber" suffix="/" />
       <renderToken source="ParentId" prefix="=captionId" />
     </RelColumn>
+    <RelColumn name="TradeAct" editEnabled="true">
+      <renderToken source="TradeSeriesName"  suffix=" " />
+      <renderToken source="TradeNumber" suffix="/" />
+      <renderToken source="TradeAct" prefix="=captionId" />
+    </RelColumn>
 
   </g:columns>
 

@@ -1,5 +1,9 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.butent.bee.client.grid.ColumnFooter;
+import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.column.AbstractColumn;
+import com.butent.bee.client.view.edit.EditableColumn;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
