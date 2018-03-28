@@ -66,6 +66,8 @@
       <SimpleColumn name="ArticleNo" />
       <SimpleColumn name="Address" />
       <SimpleColumn name="Customer" />
+      <SimpleColumn name="BodyNo" />
+      <SimpleColumn name="YearOfManufacture" />
     </SimpleJoin>
 
     <SimpleColumn name="Date"/>
@@ -82,6 +84,9 @@
     <SimpleJoin name="Repairer" joinType="LEFT">
       <SimpleColumn alias="RepairerCompanyPerson" name="CompanyPerson" />
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Contact" joinType="LEFT">
+          <SimpleColumn alias="RepairerMobile" name="Mobile" />
+        </SimpleJoin>
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn alias="RepairerFirstName" name="FirstName" />
           <SimpleColumn alias="RepairerLastName" name="LastName" />
@@ -93,6 +98,9 @@
     <SimpleJoin name="Repairer2" joinType="LEFT">
       <SimpleColumn alias="Repairer2CompanyPerson" name="CompanyPerson" />
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Contact" joinType="LEFT">
+          <SimpleColumn alias="Repairer2Mobile" name="Mobile" />
+        </SimpleJoin>
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn alias="Repairer2FirstName" name="FirstName" />
           <SimpleColumn alias="Repairer2LastName" name="LastName" />
@@ -115,6 +123,9 @@
     <SimpleJoin name="Creator" joinType="LEFT">
       <SimpleColumn alias="CreatorCompanyPerson" name="CompanyPerson" />
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Contact" joinType="LEFT">
+          <SimpleColumn alias="CreatorMobile" name="Mobile" />
+        </SimpleJoin>
         <SimpleColumn name="Company" alias="CreatorCompany" />
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn alias="CreatorFirstName" name="FirstName" />
