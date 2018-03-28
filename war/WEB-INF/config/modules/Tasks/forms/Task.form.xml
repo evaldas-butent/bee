@@ -126,7 +126,7 @@
                 <row>
                   <Label for="Type" />
                   <DataSelector source="Type" name="Type" renderColumns="TypeName"
-                                newRowEnabled="true" style="&inp2x;" disablable="true" />
+                                newRowEnabled="false" style="&inp2x;" disablable="true" />
                 </row>
               </Table>
 
