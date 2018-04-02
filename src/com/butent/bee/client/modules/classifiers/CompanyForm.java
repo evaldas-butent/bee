@@ -345,7 +345,7 @@ class CompanyForm extends AbstractFormInterceptor {
           NumberFormat numberFormat = Format.getDecimalFormat(2);
           Double amount = BeeUtils.toDouble(result.get(VAR_DEBT));
 
-          if (BeeUtils.isPositive(amount)) {
+          if (amount > 0.01) {
             table.setHtml(c, 0, Localized.dictionary().trdDebt());
             table.setHtml(c, 1, numberFormat.format(amount));
             double limit = BeeUtils.toDouble(result.get(COL_COMPANY_CREDIT_LIMIT));

@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.trade;
 
+import com.butent.bee.shared.data.value.NumberValue;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
@@ -204,7 +205,7 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
                       Filter.isNull(TradeConstants.COL_SALE_PAYER)),
                   Filter.equals(TradeConstants.COL_SALE_PAYER, activeRow.getLong(idxCompany))),
               Filter.equals(AdministrationConstants.COL_CURRENCY, activeRow.getLong(idxCurrency)),
-              Filter.isPositive(TradeConstants.COL_TRADE_DEBT)));
+              Filter.isMore(TradeConstants.COL_TRADE_DEBT, new NumberValue(0.01))));
 
       GridFactory.openGrid(TradeConstants.GRID_SALES,
           GridFactory.getGridInterceptor(TradeConstants.GRID_SALES),
