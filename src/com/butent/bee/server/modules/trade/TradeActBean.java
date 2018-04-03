@@ -803,14 +803,16 @@ public class TradeActBean implements HasTimerService {
         .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_OBJECTS, "ObjectPerson"))
         .setWhere(sys.idInList(TBL_COMPANY_OBJECTS, objects));
 
-      String persons = "";
-      for (SimpleRow row : qs.getData(selectObjUsers)) {
-        if (!BeeUtils.isEmpty(row.getValue(0)) && !BeeUtils.isEmpty(row.getValue(1))) {
-          persons = BeeUtils.joinWords(row.getValue(0), row.getValue(1) + "\n");
+      SimpleRowSet rowSet = qs.getData(selectObjUsers);
+      int count = rowSet.getNumberOfRows();
+      if (count > 0) {
+        String persons = "Atsakingas asmuo";
+        for (int i = 0; i < count; i++) {
+          persons = BeeUtils.joinWords(persons, rowSet.getRow(i).getValue(0), rowSet.getRow(i).getValue(1));
+          if (i < count - 1) {
+             persons += ", ";
+          }
         }
-      }
-
-      if (!BeeUtils.isEmpty(persons)) {
         sales.setValue(0, DataUtils.getColumnIndex(COL_TRADE_NOTES, sales.getColumns()), persons);
       }
     }

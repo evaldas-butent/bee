@@ -129,7 +129,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
             return PRICE_FORMAT.format(BeeUtils.unbox(price) * factor);
           }
         }
-        return PRICE_FORMAT.format(BeeUtils.unbox(price));
+        return PRICE_FORMAT.format(BeeUtils.round(BeeUtils.unbox(price), 2));
       }
     },
 
@@ -256,6 +256,15 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       @Override
       String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
         double price = BeeUtils.unbox(rowSet.getDouble(rowIndex, COL_TRADE_ITEM_PRICE));
+        int factorIdx = rowSet.getColumnIndex(COL_ITEM_FACTOR);
+
+        if (!BeeConst.isUndef(factorIdx)) {
+          Double factor = rowSet.getDouble(rowIndex, COL_ITEM_FACTOR);
+
+          if (BeeUtils.isPositive(factor)) {
+            price = price * factor;
+          }
+        }
 
         double disc = BeeUtils.unbox(rowSet.getDouble(rowIndex, COL_TRADE_DISCOUNT));
         double itemVat = BeeUtils.unbox(rowSet.getDouble(rowIndex, COL_TRADE_VAT));
