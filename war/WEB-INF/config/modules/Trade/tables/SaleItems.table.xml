@@ -37,10 +37,10 @@ BEGIN
     _id:=NEW."Sale";
   END IF;
   UPDATE "Sales" SET "Amount"=(SELECT
-    SUM(("Quantity"*"Price"*"Factor"-"Quantity"*"Price"*"Factor"/100*COALESCE("Discount",0))+
+    SUM(("Quantity"*"Price"*COALESCE("Factor",1)-"Quantity"*"Price"*COALESCE("Factor",1)/100*COALESCE("Discount",0))+
       CASE WHEN "VatPlus" IS NULL OR "Vat" IS NULL THEN 0
            WHEN "VatPercent" IS NOT NULL
-             THEN ("Quantity"*"Price"*"Factor"-"Quantity"*"Price"*"Factor"/100*COALESCE("Discount",0))/100*"Vat"
+             THEN ("Quantity"*"Price"*COALESCE("Factor",1)-"Quantity"*"Price"*COALESCE("Factor",1)/100*COALESCE("Discount",0))/100*"Vat"
            ELSE "Vat" END)
     FROM "SaleItems" WHERE "Sale"=_id)
   WHERE "SaleID"=_id;

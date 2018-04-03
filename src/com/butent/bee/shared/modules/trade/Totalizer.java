@@ -235,7 +235,9 @@ public class Totalizer {
         Double qty = getNumber(COL_TRADE_ITEM_QUANTITY, row);
         if (functions.containsKey(COL_TA_SERVICE_FACTOR) && !fullPrice) {
           Double factor = getNumber(COL_TA_SERVICE_FACTOR, row);
-          return (qty == null) ? null : (price * qty * factor);
+          if (factor != null) {
+            return (qty == null) ? null : (price * qty * factor);
+          }
         }
         return (qty == null) ? null : (price * qty);
 

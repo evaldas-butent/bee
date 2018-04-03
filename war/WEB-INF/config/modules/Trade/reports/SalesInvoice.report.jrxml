@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2018-03-28T20:26:15 -->
+<!-- 2018-04-03T19:37:06 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -815,7 +815,7 @@ $P{SaleItemsDataSet}.getRowValue().getProperty("TimeUnit"))]]></textFieldExpress
 					<printWhenExpression><![CDATA[$P{Notes} != null]]></printWhenExpression>
 				</reportElement>
 				<textElement verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA["Pastabos:" + "\n" + $P{Notes}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Pastabos:" + " Atsakingas asmuo " + $P{Notes}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement positionType="Float" x="0" y="135" width="798" height="12" isRemoveLineWhenBlank="true" uuid="d11f34c2-ba7e-4ebe-b0b0-6d682c64717b">

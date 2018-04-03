@@ -120,6 +120,15 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       @Override
       String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
         Double price = rowSet.getDouble(rowIndex, COL_TRADE_ITEM_PRICE);
+        int factorIdx = rowSet.getColumnIndex(COL_ITEM_FACTOR);
+
+        if (!BeeConst.isUndef(factorIdx)) {
+          Double factor = rowSet.getDouble(rowIndex, COL_ITEM_FACTOR);
+
+          if (BeeUtils.isPositive(factor)) {
+            return PRICE_FORMAT.format(BeeUtils.unbox(price) * factor);
+          }
+        }
         return PRICE_FORMAT.format(BeeUtils.unbox(price));
       }
     },

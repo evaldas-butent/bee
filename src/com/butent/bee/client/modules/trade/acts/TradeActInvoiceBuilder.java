@@ -1002,7 +1002,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             inv.setValue(dateFromIndex, from);
             inv.setProperty(PRP_TA_SERVICE_FROM, BeeUtils.toString(from.getDays()));
           }
-          if (to != null) {
+          if (to != null && svc.timeUnit != null) {
             inv.setValue(dateToIndex, to);
             inv.setProperty(PRP_TA_SERVICE_TO, BeeUtils.toString(to.getDays()));
           }

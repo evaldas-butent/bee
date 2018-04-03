@@ -126,7 +126,7 @@
 
     <Table name="Items" class="bee-trade-print-items" kind="output">
       <properties
-              columns="Ordinal, Name, Article, Quantity, Unit, PriceVatRev, Discount, PriceDiscount,
+              columns="Ordinal, Name, Article, Quantity, Unit, Price, Discount, PriceDiscount,
               Amount" />
     </Table>
 
@@ -135,7 +135,9 @@
         <Label name="TotalInWords" class="bee-trade-print-words-value" />
       </HorizontalPanel>
 
-      <TextLabel source="Notes" class="bee-trade-print-notes" />
+      <TextLabel source="Notes" class="bee-trade-print-notes">
+        <renderToken source="Notes" prefix="Atsakingas asmuo " />
+      </TextLabel>
 
       <br/>
       <Table kind="output" class="bee-trade-print-dispenser-receiver" >
