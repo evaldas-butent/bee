@@ -126,7 +126,7 @@
 
     <Table name="Items" class="bee-trade-print-items" kind="output">
       <properties
-              columns="Ordinal, Name, Article, Quantity, Unit, PriceVatRev, Discount, PriceDiscount,
+              columns="Ordinal, Name, Article, Quantity, Unit, Price, Discount, PriceDiscount,
               Amount" />
     </Table>
 

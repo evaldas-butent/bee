@@ -20,7 +20,7 @@
 
     <DataColumn name="Factor" />
 
-    <CalcColumn name="PeriodPrice" type="double" scale="4" label="=taPeriodPrice" >
+    <CalcColumn name="PeriodPrice" type="double" scale="2" label="=taPeriodPrice" >
       <render>
         <ui:expression>row.Price * (row.Factor == null ? 1 : row.Factor)</ui:expression>
       </render>
