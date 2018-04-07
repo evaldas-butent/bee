@@ -163,6 +163,7 @@
       </SimpleJoin>
       <SimpleColumn name="Number" alias="RentProjectNumber"/>
       <SimpleColumn name="Kind" alias="RentProjectKind"/>
+      <SimpleColumn name="Company" alias="RentProjectCompany" />
     </SimpleJoin>
 
     <ExternalJoin name="Parent" joinType="LEFT" source="TradeActItems">

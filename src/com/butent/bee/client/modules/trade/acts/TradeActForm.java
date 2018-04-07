@@ -16,6 +16,7 @@ import com.google.gwt.xml.client.Element;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_BACKGROUND;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_FINANCIAL_STATE;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_CONTACT;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
@@ -161,7 +162,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
           break;
         case "RPTradeActs" :
           rpTradeActsGrid = (ChildGrid) widget;
-          rpTradeActsGrid.setGridInterceptor(new TradeActGrid(TradeActKind.SUPPLEMENT));
+          rpTradeActsGrid.setGridInterceptor(new TradeActGrid(null));
           break;
         case "RelTradeActServices" :
           relTradeActServices = (ChildGrid) widget;
@@ -185,6 +186,12 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     clearUnboundSelectorValues(form);
 
     if (companySelector != null) {
+      if (DataUtils.isId(getRentProjectCompany(row))) {
+        companySelector.getOracle().setAdditionalFilter(Filter.idIn(Arrays.asList(getRentProjectCompany(row))), true);
+      } else {
+        companySelector.getOracle().setAdditionalFilter(Filter.isTrue(), true);
+      }
+
       contractSelector.getOracle().setAdditionalFilter(getRelatedDocumentsFilter(), true);
     }
 
@@ -204,10 +211,6 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
     if (!TradeActKeeper.isClientArea() && !header.isActionEnabled(Action.SAVE)) {
       header.showAction(Action.SAVE, true);
-    }
-
-    if (relTradeActServices != null) {
-      relTradeActServices.setEnabled(false);
     }
 
     super.afterRefresh(form, row);
@@ -572,6 +575,10 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
             .equals(ClassifierConstants.COL_COMPANY, getCompany()));
   }
 
+  private Long getRentProjectCompany(IsRow row) {
+    return row != null ? Data.getLong(VIEW_TRADE_ACTS, row, ALS_RENT_PROJECT_COMPANY) : null;
+  }
+
   private Long getSeries() {
     return getSeries(getActiveRow());
   }
@@ -782,6 +789,10 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
       boolean hasServices = kind != null && kind.enableServices();
       boolean hasRelatedServices = kind != null && kind.enableRelatedServices();
+
+      if (tabbedPages != null) {
+        tabbedPages.selectPage(0, TabbedPages.SelectionOrigin.CLICK);
+      }
 
       if (getTabWidgetByKey(GRID_TRADE_ACT_SERVICES) != null) {
         getTabWidgetByKey(GRID_TRADE_ACT_SERVICES).setVisible(hasServices);
