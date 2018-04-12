@@ -172,8 +172,8 @@
       </page>
       
       <page class="bee-ta-services-tab" key="RelTradeActServices">
-        <text>Susijusios paslaugos</text>
-        <ChildGrid relColumn="RentProject" name="RelTradeActServices">
+        <text>Proj. paslaugos</text>
+        <ChildGrid relColumn="RelRentAct" name="RelTradeActServices">
         </ChildGrid>
       </page>
 

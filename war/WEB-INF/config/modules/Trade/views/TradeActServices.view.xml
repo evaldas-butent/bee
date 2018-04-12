@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+      xmlns:x="http://www.butent.com/expression"
 
   name="TradeActServices" source="TradeActServices" module="Trade.Acts"
   caption="=tradeActServices"
@@ -16,6 +17,13 @@
       <SimpleColumn name="Number" alias="TradeNumber" />
       <SimpleColumn name="Object" />
     </SimpleJoin>
+
+    <SimpleColumn name="RelRentAct">
+      <x:nvl type="LONG">
+        <x:number>"RentProject"</x:number>
+        <x:number>"TradeAct"</x:number>
+      </x:nvl>
+    </SimpleColumn>
 
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="INNER" name="Item">

@@ -130,10 +130,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
   @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
     newActKind = kind;
-    IsRow parentRow = ViewHelper.getParentRow(presenter.getMainView().asWidget(), VIEW_TRADE_ACTS);
-
     if (kind == null) {
-
       List<String> options = new ArrayList<>();
       for (TradeActKind k : NEW_ROW_ACT_KINDS) {
         options.add(k.getCaption());
@@ -145,12 +142,6 @@ public class TradeActGrid extends AbstractGridInterceptor {
           getGridView().startNewRow(false);
         }
       });
-
-      return false;
-
-    } else if (parentRow != null) {
-      createSupplement(parentRow);
-      //getGridView().startNewRow(false);
 
       return false;
     } else {
@@ -268,7 +259,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   @Override
   public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
-    TradeActKeeper.prepareNewTradeAct(newRow, newActKind);
+    IsRow parentRow = ViewHelper.getParentRow(getGridPresenter().getMainView().asWidget(), VIEW_TRADE_ACTS);
+    TradeActKeeper.prepareNewTradeAct(newRow, parentRow, newActKind);
     return super.onStartNewRow(gridView, oldRow, newRow, copy);
   }
 
@@ -435,7 +427,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
           return;
         }
 
-        if (!Objects.equals(getSeries(firstRow), getSeries(row))) {
+        if (!Objects.equals(getSeries(firstRow), getSeries(row))
+                || !Objects.equals(getCompany(firstRow), getCompany(row)) ) {
           getGridView().notifyWarning(Localized.dictionary().taIsDifferent());
           return;
         }
@@ -541,7 +534,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
     relation.setChoiceColumns(Arrays.asList("Id", "OperationName", "CompanyName", "TypeName", "Series",
             "Number", "Name", "Date"));
     relation.setFilter(Filter.and(Filter.equals(COL_TA_KIND, TradeActKind.RENT_PROJECT.ordinal()),
-            Filter.or(Filter.notEquals(COL_TA_STATUS, combinedActStatus), Filter.isNull(COL_TA_STATUS))));
+            Filter.or(Filter.notEquals(COL_TA_STATUS, combinedActStatus), Filter.isNull(COL_TA_STATUS)
+                    ), Filter.equals(COL_TA_COMPANY, getCompany(selectedRows.get(0)))));
 
     UnboundSelector selector = UnboundSelector.create(relation);
     selector.setNullable(false);

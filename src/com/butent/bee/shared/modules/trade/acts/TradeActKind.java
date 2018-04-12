@@ -119,7 +119,7 @@ public enum TradeActKind implements HasLocalizedCaption {
 
   },
   /* 8 */
-  RENT_PROJECT(null, Option.AUTO_NUMBER, Option.HAS_SERVICES, Option.SHOW_STOCK, Option.ENABLE_RETURN,
+  RENT_PROJECT(null, Option.AUTO_NUMBER, Option.SHOW_STOCK, Option.ENABLE_RETURN,
           Option.BUILD_INVOICES, Option.HAS_RELATED_SERVICES) {
     @Override
     public boolean enableMultiReturn(TradeActKind other) {
