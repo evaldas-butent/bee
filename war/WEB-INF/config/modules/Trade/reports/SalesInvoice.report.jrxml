@@ -565,7 +565,7 @@
 									<textElement textAlignment="Center" verticalAlignment="Bottom">
 										<font fontName="DejaVu Sans" size="8"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$P{SaleItemsDataSet}.getRowValue().hasPropertyValue("IsService") ? $F{TimeUnit} != null ? BeeUtils.joinWords($F{DateFrom} == null ? "" : new JustDate($F{DateFrom}.intValue()), $F{DateTo} == null ? "" : new JustDate($F{DateTo}.intValue())) :  $F{DateTo} == null ? "" : new JustDate($F{DateTo}.intValue()) :  ""]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$P{SaleItemsDataSet}.getRowValue().hasPropertyValue("IsService") ? $F{TimeUnit} != null ? BeeUtils.joinWords($F{DateFrom} == null ? "" : new JustDate($F{DateFrom}.intValue()), $F{DateTo} == null ? "" : new JustDate($F{DateTo}.intValue())) :  $F{DateFrom} == null ? "" : new JustDate($F{DateFrom}.intValue()) :  ""]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
