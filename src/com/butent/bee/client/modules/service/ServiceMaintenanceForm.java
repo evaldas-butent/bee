@@ -341,6 +341,10 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     BeeKeeper.getRpc().makePostRequest(params, response -> {
       if (!response.isEmpty() && !response.hasErrors()) {
         BeeRowSet items = BeeRowSet.restore((String) response.getResponse());
+
+        for (int i = 0; i < 4; i++) {
+          items.addEmptyRow();
+        }
         dataConsumer.accept(new BeeRowSet[] {items});
       }
     });

@@ -105,10 +105,8 @@
 	<parameter name="Date" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="RepairerFirstName" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="RepairerLastName" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="RepairerMobile" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Repairer2FirstName" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Repairer2LastName" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="Repairer2Mobile" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Address" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="ContractorName" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="BodyNo" class="java.lang.String" isForPrompting="false"/>
@@ -514,7 +512,7 @@
 					<textElement markup="html">
 						<font fontName="DejaVu Sans"/>
 					</textElement>
-					<textFieldExpression><![CDATA["<b>Meistras: "+ "</b>" + BeeUtils.joinWords($P{RepairerFirstName}, $P{RepairerLastName}, $P{RepairerMobile})]]></textFieldExpression>
+					<textFieldExpression><![CDATA["<b>Meistras: "+ "</b>" + BeeUtils.joinWords($P{RepairerFirstName}, $P{RepairerLastName})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="280" y="100" width="276" height="13" uuid="0794da94-42d4-485c-b8ad-20e09baf3ac6">
@@ -523,7 +521,7 @@
 					<textElement markup="html">
 						<font fontName="DejaVu Sans"/>
 					</textElement>
-					<textFieldExpression><![CDATA["<b>Meistras: "+ "</b>" + BeeUtils.joinWords($P{Repairer2FirstName}, $P{Repairer2LastName}, $P{Repairer2Mobile})]]></textFieldExpression>
+					<textFieldExpression><![CDATA["<b>Meistras: "+ "</b>" + BeeUtils.joinWords($P{Repairer2FirstName}, $P{Repairer2LastName})]]></textFieldExpression>
 				</textField>
 				<frame>
 					<reportElement positionType="Float" x="0" y="210" width="556" height="53" uuid="0d292d10-175d-4caf-b26d-caf131fede9b"/>
@@ -615,7 +613,7 @@
 			</staticText>
 			<staticText>
 				<reportElement x="1" y="50" width="550" height="18" uuid="e34e20d6-0490-4cd3-a70d-3b6ae8e327cf"/>
-				<text><![CDATA[Darbus priėmė___________________________________         Kaip jus aptarnavo                             (įvertinimas)]]></text>
+				<text><![CDATA[Darbus priėmė___________________________________         Kliento pastaba______________________________________]]></text>
 			</staticText>
 		</band>
 	</summary>
