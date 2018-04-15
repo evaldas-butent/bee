@@ -84,9 +84,6 @@
     <SimpleJoin name="Repairer" joinType="LEFT">
       <SimpleColumn alias="RepairerCompanyPerson" name="CompanyPerson" />
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
-        <SimpleJoin name="Contact" joinType="LEFT">
-          <SimpleColumn alias="RepairerMobile" name="Mobile" />
-        </SimpleJoin>
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn alias="RepairerFirstName" name="FirstName" />
           <SimpleColumn alias="RepairerLastName" name="LastName" />
@@ -98,9 +95,6 @@
     <SimpleJoin name="Repairer2" joinType="LEFT">
       <SimpleColumn alias="Repairer2CompanyPerson" name="CompanyPerson" />
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
-        <SimpleJoin name="Contact" joinType="LEFT">
-          <SimpleColumn alias="Repairer2Mobile" name="Mobile" />
-        </SimpleJoin>
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn alias="Repairer2FirstName" name="FirstName" />
           <SimpleColumn alias="Repairer2LastName" name="LastName" />
