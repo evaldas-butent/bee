@@ -51,6 +51,10 @@
             <text>=files</text>
             <ChildGrid name="MaintenanceFiles" relColumn="ServiceMaintenance" />
           </page>
+          <page>
+            <text>=calAppointments</text>
+            <ChildGrid name="Appointments" relColumn="ServiceMaintenance" />
+          </page>
         </TabbedPages>
       </FlowPanel>
     </south>
