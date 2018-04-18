@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Appointments" source="Appointments" newRowForm="Appointment"
-  caption="=calAppointments" newRowCaption="=calNewAppointment"
-  >
+      name="Appointments" source="Appointments" newRowForm="Appointment"
+      caption="=calAppointments" newRowCaption="=calNewAppointment"
+>
   <Relation renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime" />
   <Columns>
     <SimpleColumn name="AppointmentType" />
@@ -52,9 +52,9 @@
     <SimpleColumn name="Company" />
     <SimpleJoin name="Company" joinType="LEFT">
       <SimpleColumn alias="CompanyName" name="Name" />
-        <SimpleJoin joinType="LEFT" name="CompanyType">
-          <SimpleColumn name="Name" alias="CompanyTypeName" />
-        </SimpleJoin>
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="CompanyTypeName" />
+      </SimpleJoin>
       <SimpleJoin name="Contact" joinType="LEFT">
         <SimpleColumn alias="CompanyPhone" name="Phone" />
         <SimpleColumn alias="CompanyMobile" name="Mobile" />
@@ -64,7 +64,7 @@
         </SimpleJoin>
       </SimpleJoin>
 
-      <SimpleJoin name="CompanyType" joinType="LEFT" >
+      <SimpleJoin name="CompanyType" joinType="LEFT">
         <SimpleColumn name="Name" alias="CompanyType" />
       </SimpleJoin>
     </SimpleJoin>
@@ -80,13 +80,13 @@
         <SimpleColumn alias="PersonFirstName" name="FirstName" />
         <SimpleColumn alias="PersonLastName" name="LastName" />
         <SimpleJoin name="Contact" joinType="LEFT">
-        <SimpleColumn alias="PersonPhone" name="Phone" />
-        <SimpleColumn alias="PersonMobile" name="Mobile" />
+          <SimpleColumn alias="PersonPhone" name="Phone" />
+          <SimpleColumn alias="PersonMobile" name="Mobile" />
 
-        <SimpleJoin name="Email" joinType="LEFT">
-          <SimpleColumn name="Email" alias="PersonEmail" />
+          <SimpleJoin name="Email" joinType="LEFT">
+            <SimpleColumn name="Email" alias="PersonEmail" />
+          </SimpleJoin>
         </SimpleJoin>
-      </SimpleJoin>
       </SimpleJoin>
 
       <SimpleColumn name="Company" alias="PersonCompany" />
@@ -153,6 +153,20 @@
     <SimpleColumn name="ServiceObject" />
     <SimpleJoin name="ServiceObject" joinType="LEFT">
       <SimpleColumn name="Address" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ServiceMaintenance" />
+    <SimpleJoin name="ServiceMaintenance" joinType="LEFT">
+      <IdColumn name="ID" />
+
+      <SimpleJoin name="ServiceObject" joinType="LEFT">
+        <SimpleColumn name="Model" />
+
+        <SimpleJoin joinType="LEFT" name="Object">
+          <SimpleColumn name="ObjectName" />
+          <SimpleColumn name="ObjectAddress" />
+        </SimpleJoin>
+      </SimpleJoin>
     </SimpleJoin>
   </Columns>
 

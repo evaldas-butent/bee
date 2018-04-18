@@ -7,64 +7,74 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_COMPANY_TYPE_NAME;
+import static com.butent.bee.shared.modules.service.ServiceConstants.*;
+import static com.butent.bee.shared.modules.service.ServiceConstants.COL_CREATOR;
+import static com.butent.bee.shared.modules.service.ServiceConstants.COL_MESSAGE;
+
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.validation.CellValidation;
+import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
+import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Link;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Latch;
-import com.butent.bee.shared.data.*;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.orders.OrdersConstants;
-import com.butent.bee.shared.ui.HasCheckedness;
-import com.butent.bee.client.grid.ChildGrid;
-import com.butent.bee.client.view.ViewHelper;
-import com.butent.bee.client.view.add.ReadyForInsertEvent;
-import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_COMPANY_TYPE_NAME;
-import static com.butent.bee.shared.modules.service.ServiceConstants.*;
-
-import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.composite.DataSelector;
-import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.view.edit.SaveChangesEvent;
-import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.event.ModificationEvent;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.orders.OrdersConstants;
+import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -171,7 +181,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
           FormView parentForm = ViewHelper.getForm(gridView.getViewPresenter().getMainView());
 
           if (parentForm != null
-                  && BeeUtils.same(parentForm.getViewName(), TBL_SERVICE_MAINTENANCE)) {
+              && BeeUtils.same(parentForm.getViewName(), TBL_SERVICE_MAINTENANCE)) {
             event.getColumns().add(Data.getColumn(getViewName(), COL_SERVICE_OBJECT));
             event.getValues().add(parentForm.getActiveRow()
                 .getString(Data.getColumnIndex(parentForm.getViewName(), COL_SERVICE_OBJECT)));
@@ -240,8 +250,57 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     } else if (BeeUtils.same(name, WIDGET_SEARCH_ALL_DEVICES) && widget instanceof InputBoolean) {
       searchAllDevices = (InputBoolean) widget;
       searchAllDevices.addValueChangeHandler(event -> updateDeviceFilter());
-    }
 
+    } else if (BeeUtils.same(name, TBL_APPOINTMENTS) && widget instanceof ChildGrid) {
+      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+        @Override
+        public void onEditStart(EditStartEvent event) {
+          event.consume();
+          CalendarKeeper.openAppointment(Appointment.create(getActiveRow()), null, null);
+        }
+
+        @Override
+        public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
+          FormView form = ServiceMaintenanceForm.this.getFormView();
+
+          Queries.getRowSet(TBL_ATTENDEES, Collections.singletonList(COL_COMPANY_PERSON),
+              Filter.any(COL_COMPANY_PERSON,
+                  Arrays.asList(form.getLongValue("RepairerCompanyPerson"),
+                      form.getLongValue("Repairer2CompanyPerson"))),
+              att -> CalendarKeeper.createAppointment(beeRow -> {
+                String viewName = gridView.getViewName();
+                DataInfo targetInfo = Data.getDataInfo(viewName);
+
+                beeRow.setProperty(TBL_APPOINTMENT_ATTENDEES, DataUtils.buildIdList(att));
+
+                beeRow.setValue(targetInfo.getColumnIndex(COL_SUMMARY),
+                    BeeUtils.joinWords(form.getStringValue(ALS_COMPANY_NAME),
+                        form.getStringValue(COL_COMPANY_OBJECT_ADDRESS)));
+
+                beeRow.setValue(targetInfo.getColumnIndex(COL_DESCRIPTION),
+                    BeeUtils.join(BeeConst.STRING_EOL, form.getStringValue(COL_DESCRIPTION),
+                        form.getStringValue(COL_COMPANY_OBJECT_ADDRESS)));
+
+                DataInfo sourceInfo = Data.getDataInfo(form.getViewName());
+                IsRow sourceRow = form.getActiveRow();
+
+                RelationUtils.copyWithDescendants(sourceInfo, COL_COMPANY, sourceRow,
+                    targetInfo, COL_COMPANY, beeRow);
+
+                RelationUtils.copyWithDescendants(sourceInfo, COL_CONTACT, sourceRow,
+                    targetInfo, COL_COMPANY_PERSON, beeRow);
+
+                RelationUtils.copyWithDescendants(sourceInfo, COL_SERVICE_OBJECT, sourceRow,
+                    targetInfo, COL_SERVICE_OBJECT, beeRow);
+
+                RelationUtils.updateRow(targetInfo, COL_SERVICE_MAINTENANCE, beeRow,
+                    sourceInfo, sourceRow, true);
+
+              }, null, result -> Data.refreshLocal(gridView.getViewName())));
+          return false;
+        }
+      });
+    }
     super.afterCreateWidget(name, widget, callback);
   }
 
@@ -319,7 +378,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     super.afterUpdateRow(result);
 
     updateServiceObject(result.getId(),
-            result.getLong(getDataIndex(COL_SERVICE_OBJECT)));
+        result.getLong(getDataIndex(COL_SERVICE_OBJECT)));
 
     createClientChangeComment(result);
   }
@@ -515,7 +574,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
         case VIEW_SERVICE_OBJECTS:
           ServiceUtils.onClientOrObjectUpdate(event, getFormView(), comment ->
-            reasonComment = comment);
+              reasonComment = comment);
           break;
 
         case TBL_WARRANTY_TYPES:
@@ -526,7 +585,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
         case VIEW_COMPANIES:
           updateDeviceFilter();
-          ServiceUtils.onClientOrObjectUpdate(event, getFormView(),  comment ->
+          ServiceUtils.onClientOrObjectUpdate(event, getFormView(), comment ->
               reasonComment = comment);
           break;
       }

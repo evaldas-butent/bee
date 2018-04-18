@@ -18,7 +18,7 @@
     <Relation name="Color" relation="Colors" label="=color" />
     <Relation name="Style" relation="AppointmentStyles" label="=style" />
 
-    <Enum name="Status" key="AppointmentStatus" defValue="0" notNull="true" 
+    <Enum name="Status" key="AppointmentStatus" defValue="0" notNull="true"
       label="=calAppointmentStatus" />
 
     <DateTime name="Created" defExpr="CURRENT_TIME" label="=registered" />
@@ -33,8 +33,9 @@
     <Relation name="CompanyPerson" relation="CompanyPersons" label="=contact" />
     <Relation name="Vehicle" relation="Vehicles" label="=calCar" />
     <Relation name="Project" relation="Projects" label="=project" />
-  
+
     <Relation name="TradeAct" relation="TradeActs" label="=tradeAct" />
     <Relation name="ServiceObject" relation="ServiceObjects" label="=svcDevice" />
+    <Relation name="ServiceMaintenance" relation="ServiceMaintenance" label="=svcRepair" />
   </Fields>
 </Table>

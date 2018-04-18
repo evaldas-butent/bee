@@ -37,6 +37,7 @@
     <DataColumn name="BodyNo" caption="=svcBodyNo" />
     <DataColumn name="Seller" caption="=svcSeller" />
     <DataColumn name="ItemInButenta" caption="=svcItemInButenta" />
+    <DataColumn name="ExportWebsite" />
 
     <RelColumn name="Customer" renderColumns="CustomerName" visible="true" />
     <RelColumn name="Contractor" />
