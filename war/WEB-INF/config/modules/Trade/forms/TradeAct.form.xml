@@ -53,11 +53,20 @@
          viewName="Documents" disablable="false"
          caching="none" module="Documents" newRowEnabled="false" />
 
-        <Label for="RentProject"></Label>
+        <Label for="RentProject">
+          <dynStyle>
+            <ui:inline>display:none</ui:inline>
+            <ui:expression>row.Kind == 8</ui:expression>
+          </dynStyle>
+        </Label>
         <DataSelector name="RentProject" source="RentProject" style="&inpw;"
                       renderColumns="RentProjectName RentProjectSeriesName RentProjectNumber"
                       choiceColumns="ActName SeriesName Number" disablable="false"
                       newRowEnabled="false" filter="Kind = 8" caching="none">
+          <dynStyle>
+            <ui:inline>display:none</ui:inline>
+            <ui:expression>row.Kind == 8</ui:expression>
+          </dynStyle>
         </DataSelector>
       </row>
 

@@ -11,6 +11,11 @@
 
   <g:columns>
       <RelColumn name="TradeAct" editEnabled="true">
+        <dynStyle>
+          <ui:inline>display:none;</ui:inline>
+          <ui:expression>row.RelRentAct != row.RentProject</ui:expression>
+        </dynStyle>
+
           <renderToken source="TradeSeriesName"  suffix=" " />
           <renderToken source="TradeNumber" suffix="/" />
           <renderToken source="TradeAct" prefix="=captionId" />
@@ -59,4 +64,7 @@
   <xi:include href="columns/TradeActTotal.columns.xml" />
 
   <xi:include href="columns/TradeActServiceRight.columns.xml" />
+  <g:rowEditable>
+    <ui:expression>row.RelRentAct != row.RentProject</ui:expression>
+  </g:rowEditable>
 </g:Grid>

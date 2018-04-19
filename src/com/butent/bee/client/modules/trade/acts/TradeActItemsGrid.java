@@ -151,8 +151,8 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
   private TradeActItemPicker picker;
   private FileCollector collector;
-  private Button commandSale;
-  private Button commandImportItems;
+  protected Button commandSale;
+  protected Button commandImportItems;
 
   TradeActItemsGrid() {
   }
@@ -377,7 +377,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
   }
 
-  private static HeaderView getFormHeader(GridView g) {
+  protected static HeaderView getFormHeader(GridView g) {
     FormView form = ViewHelper.getForm(g);
     if (form != null && form.getViewPresenter() != null) {
       return form.getViewPresenter().getHeader();
@@ -590,7 +590,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     }
   }
 
-  private void createSale() {
+  protected void createSale() {
     final GridPresenter presenter = getGridPresenter();
     final Set<Long> ids = new HashSet<>();
 
@@ -770,7 +770,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     return row.getDateTime(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_UNTIL));
   }
 
-  private boolean hasContinuousAct(IsRow row) {
+  protected boolean hasContinuousAct(IsRow row) {
     return DataUtils.isId(getContinuousAct(row));
   }
 
@@ -794,7 +794,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     return getKind(row) == TradeActKind.RETURN;
   }
 
-  private  boolean isSaleTradeAct(IsRow row) {
+  protected  boolean isSaleTradeAct(IsRow row) {
     return getKind(row) == TradeActKind.SALE;
   }
 
@@ -916,7 +916,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     }
   }
 
-  private void renderHeader(IsRow parentRow, GridView gridView){
+  protected void renderHeader(IsRow parentRow, GridView gridView){
     if (commandSale != null) {
       commandSale.removeFromParent();
     }
@@ -929,9 +929,11 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
     if (formHeader != null && isSaleTradeAct(parentRow) && BeeKeeper.getUser().canCreateData(
             VIEW_SALES) && !TradeActKeeper.isClientArea() && !hasContinuousAct(parentRow)) {
-      formHeader.addCommandItem(commandSale);
-    } else if (!isReturnAct(parentRow)) {
-      gridView.getViewPresenter().getHeader();
+      if (!TradeActKind.RENT_PROJECT.equals(getKind(parentRow))) {
+        formHeader.addCommandItem(commandSale);
+      } else {
+        gridView.getViewPresenter().getHeader().addCommandItem(commandSale);
+      }
     }
 
     if (commandImportItems != null) {
