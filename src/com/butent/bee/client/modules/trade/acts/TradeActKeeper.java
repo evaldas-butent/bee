@@ -723,6 +723,8 @@ public final class TradeActKeeper {
     if (parent != null && TradeActKind.RENT_PROJECT.equals(getKind(VIEW_TRADE_ACTS, parent))) {
       RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_RENT_PROJECT, row, parent);
       RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_COMPANY, row, parent);
+      RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_CONTACT, row, parent);
+      RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_OBJECT, row, parent);
       Data.setValue(VIEW_TRADE_ACTS, row, ALS_RENT_PROJECT_COMPANY, Data.getLong(VIEW_TRADE_ACTS, parent,
               COL_TA_COMPANY));
     }

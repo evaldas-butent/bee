@@ -2,6 +2,8 @@ package com.butent.bee.client.modules.trade.acts;
 
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.TabbedPages;
+import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Pair;
@@ -93,6 +95,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   private boolean hasInvoicesOrSecondaryActs;
   private DataSelector contractSelector;
   private DataSelector companySelector;
+  private DataSelector rentProject;
 
   private Button commandCompose;
   private HeaderView headerView;
@@ -120,6 +123,9 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         case COL_TRADE_SERIES:
           ((DataSelector) widget).addSelectorHandler(this);
           break;
+        case COL_TA_RENT_PROJECT:
+          rentProject = (DataSelector) widget;
+          rentProject.addSelectorHandler(this);
       }
     }
 
@@ -155,7 +161,29 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         case "RPTradeActItems":
           rpTradeActItemsGrid = (ChildGrid) widget;
           rpTradeActItemsGrid.setGridInterceptor(new TradeActItemsGrid() {
+            @Override
+            protected void renderHeader(IsRow parentRow, GridView gridView) {
+              if (commandSale != null) {
+                commandSale.removeFromParent();
+              }
 
+              commandSale = new Button(Localized.dictionary().trdTypeSale());
+
+              commandSale.addClickHandler(arg0 -> createSale());
+
+              HeaderView formHeader = getFormHeader(gridView);
+
+              if (formHeader != null && isSaleTradeAct(parentRow) && BeeKeeper.getUser().canCreateData(
+                      VIEW_SALES) && !TradeActKeeper.isClientArea() && !hasContinuousAct(parentRow)) {
+
+                  gridView.getViewPresenter().getHeader().addCommandItem(commandSale);
+              }
+
+              if (commandImportItems != null) {
+                commandImportItems.setVisible(TradeActKeeper.isEnabledItemsGrid(getKind(parentRow),
+                        ViewHelper.getForm(gridView), parentRow));
+              }
+            }
           });
         case GRID_TRADE_ACTS :
           tradeActsGrid = (ChildGrid) widget;
@@ -423,6 +451,10 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         Long returnActId = getFormView().getLongValue(COL_TA_RETURN);
         Long continuousActId = getFormView().getLongValue(COL_TA_CONTINUOUS);
 
+        if (objectSelector != null && DataUtils.isId(getCompany())) {
+          objectSelector.getOracle().setAdditionalFilter(Filter.equals(COL_TA_COMPANY, getCompany()), true);
+        }
+
         if (DataUtils.isId(parentId) || BeeUtils.isPositive(parentsCount)
             || BeeUtils.isPositive(returnActId) || BeeUtils.isPositive(continuousActId)) {
           objectSelector.setEnabled(false);
@@ -483,6 +515,12 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
             }
           });
         }
+      }
+    }
+
+    if (BeeUtils.same(event.getRelatedViewName(), VIEW_TRADE_ACTS)) {
+      if (rentProject != null && DataUtils.isId(getCompany())) {
+        rentProject.getOracle().setAdditionalFilter(Filter.equals(COL_TA_COMPANY, getCompany()), true);
       }
     }
   }
@@ -610,7 +648,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   }
 
   private TradeActInvoiceBuilder getTradeActInvoiceBuilder(IsRow row) {
-    return new TradeActInvoiceBuilder(getCompany(row), row.getId());
+    return new TradeActInvoiceBuilder(getCompany(row), isProjectRentAct(row) ? null : row.getId());
   }
 
   private Collection<UnboundSelector> getUnboundSelectors(FormView formView) {
