@@ -14,9 +14,9 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_CONTACT_FIRST_NAME;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_CONTACT_LAST_NAME;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
-import static com.butent.bee.shared.modules.ec.EcConstants.COL_TCD_MANUFACTURER_NAME;
-import static com.butent.bee.shared.modules.ec.EcConstants.TBL_TCD_MANUFACTURERS;
+import static com.butent.bee.shared.modules.ec.EcConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.orders.OrdersConstants.TBL_ORDER_ITEMS;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.COL_INCOME_ITEM;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_COMMENT;
@@ -25,6 +25,7 @@ import static com.butent.bee.shared.modules.service.ServiceConstants.COL_PUBLISH
 import static com.butent.bee.shared.modules.service.ServiceConstants.SVC_CREATE_INVOICE_ITEMS;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
@@ -101,6 +102,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -494,6 +496,67 @@ public class ServiceModuleBean implements BeeModule {
           BeeRowSet rowSet = event.getRowset();
           if (rowSet.getNumberOfRows() > 1) {
             rowSet.removeRows(0, rowSet.getNumberOfRows() - 1);
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void updateServiceObjectByTradeAct(DataEvent.ViewModifyEvent event) {
+        if (event.isBefore(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS)
+            && event instanceof DataEvent.ViewDeleteEvent) {
+
+          Set<Long> ids = ((DataEvent.ViewDeleteEvent) event).getIds();
+
+          Set<Long> itemIds = qs.getDistinctLongs(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM,
+              event.isTarget(TBL_TRADE_ACTS)
+                  ? SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, ids)
+                  : sys.idInList(TBL_TRADE_ACT_ITEMS, ids));
+
+          if (!BeeUtils.isEmpty(itemIds)) {
+            event.setAttribute(TBL_TRADE_ACT_ITEMS, itemIds);
+          }
+        } else if (event.isAfter(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS)) {
+          Set<Long> itemIds = new HashSet<>();
+
+          if (event instanceof DataEvent.ViewInsertEvent && event.isTarget(TBL_TRADE_ACT_ITEMS)) {
+            itemIds.add(((DataEvent.ViewInsertEvent) event).getRow()
+                .getLong(DataUtils.getColumnIndex(COL_ITEM,
+                    ((DataEvent.ViewInsertEvent) event).getColumns())));
+
+          } else if (event instanceof DataEvent.ViewUpdateEvent && event.isTarget(TBL_TRADE_ACTS)) {
+            itemIds = qs.getDistinctLongs(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM,
+                SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT,
+                    ((DataEvent.ViewUpdateEvent) event).getRow().getId()));
+
+          } else if (event.hasAttribute(TBL_TRADE_ACT_ITEMS)) {
+            itemIds = DataUtils.asIdSet(event.getAttribute(TBL_TRADE_ACT_ITEMS));
+          }
+          if (!BeeUtils.isEmpty(itemIds)) {
+            SimpleRowSet rs = qs.getData(new SqlSelect()
+                .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
+                .addFields(TBL_TRADE_ACTS, COL_TA_COMPANY)
+                .addFields(TBL_SERVICE_STATES, sys.getIdName(TBL_SERVICE_STATES))
+                .addFrom(TBL_TRADE_ACTS)
+                .addFromInner(TBL_TRADE_ACT_ITEMS,
+                    sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
+                .addFromInner(TBL_SERVICE_STATES,
+                    SqlUtils.joinUsing(TBL_TRADE_ACTS, TBL_SERVICE_STATES, COL_TA_OPERATION))
+                .setWhere(SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM, itemIds))
+                .addOrder(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
+                .addOrderDesc(TBL_TRADE_ACTS, COL_TA_DATE));
+
+            Map<Long, Pair<Long, Long>> map = new HashMap<>();
+
+            rs.forEach(row -> map.putIfAbsent(row.getLong(COL_TA_ITEM),
+                Pair.of(row.getLong(COL_TA_COMPANY),
+                    row.getLong(sys.getIdName(TBL_SERVICE_STATES)))));
+
+            map.forEach((item, pair) ->
+                qs.updateData(new SqlUpdate(TBL_SERVICE_OBJECTS)
+                    .addConstant(COL_SERVICE_CUSTOMER, pair.getA())
+                    .addConstant(COL_STATE, pair.getB())
+                    .setWhere(SqlUtils.equals(TBL_SERVICE_OBJECTS, COL_ITEM, item))));
           }
         }
       }

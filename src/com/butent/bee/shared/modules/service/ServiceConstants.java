@@ -68,6 +68,7 @@ public final class ServiceConstants {
   public static final String TBL_SERVICE_CRITERIA_GROUPS = "ServiceCritGroups";
   public static final String TBL_SERVICE_CRITERIA = "ServiceCriteria";
   public static final String TBL_SERVICE_MAINTENANCE = "ServiceMaintenance";
+  public static final String TBL_SERVICE_STATES = "ServiceStates";
   public static final String TBL_STATE_PROCESS = "StateProcess";
   public static final String TBL_WARRANTY_TYPES = "WarrantyTypes";
 

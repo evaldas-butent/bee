@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="ServiceStates" source="ServiceStates" module="Service" caption="Įrenginių būsenos"
+>
+  <Columns>
+    <SimpleColumn name="Name" />
+
+    <SimpleColumn name="Operation" />
+    <SimpleJoin joinType="LEFT" name="Operation">
+      <SimpleColumn name="OperationName" />
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="Name" />
+  </Order>
+</View>

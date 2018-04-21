@@ -25,6 +25,7 @@
 
   <g:columns>
     <IdColumn name="Id" />
+    <RelColumn name="State" filterSupplier="list" />
     <DataColumn name="ArticleNo" visible="true"/>
     <DataColumn name="Model" visible="true"/>
     <RelColumn name="ServiceManufacturer" renderColumns="ManufacturerName" visible="true"/>

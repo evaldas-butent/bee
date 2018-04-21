@@ -74,6 +74,11 @@
     <SimpleJoin name="Item" joinType="LEFT">
       <SimpleColumn name="Name" alias="ItemName" />
     </SimpleJoin>
+
+    <SimpleColumn name="State"/>
+    <SimpleJoin joinType="LEFT" name="State">
+      <SimpleColumn name="Name" alias="StateName" />
+    </SimpleJoin>
     <!-- } Transrifus -->
     <SimpleColumn name="ArticleNo" />
     <SimpleColumn name="ExportWebsite" />
