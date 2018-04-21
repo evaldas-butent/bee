@@ -166,11 +166,6 @@
       <SimpleColumn name="Company" alias="RentProjectCompany" />
     </SimpleJoin>
 
-    <ExternalJoin name="Parent" joinType="LEFT" source="TradeActItems">
-      <AggregateColumn name="TradeAct" alias="ReturnedCount" aggregate="COUNT_DISTINCT"
-        label="=tradeActReturnedCountShort" />
-    </ExternalJoin>
-
     <SimpleColumn name="RegistrationNo" />
   </Columns>
 

@@ -655,7 +655,7 @@ public final class TradeActKeeper {
     boolean isSupplementTa = kind == TradeActKind.SUPPLEMENT;
     boolean isSaleTa = kind == TradeActKind.SALE;
     boolean hasMultiReturn = DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_RETURN)));
-    boolean hasReturn = BeeUtils.isPositive(row.getLong(form.getDataIndex(ALS_RETURNED_COUNT)));
+    boolean hasReturn = BeeUtils.isPositive(row.getPropertyLong(ALS_RETURNED_COUNT));
 
     boolean defEnabled = !(hasContinuousTa || hasRentProjectTa)
             && !(isContinuousTa || isRentProjectTa) && !TradeActKeeper.isClientArea()

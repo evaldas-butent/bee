@@ -126,6 +126,8 @@ public class TradeActBean implements HasTimerService {
   @EJB
   AdministrationModuleBean adm;
 
+  @EJB TradeActDataEventHandler dataHandler;
+
   @EJB
   ConcurrencyBean cb;
   @Resource
@@ -278,6 +280,10 @@ public class TradeActBean implements HasTimerService {
   public void init() {
     cb.createCalendarTimer(this.getClass(), PRM_SYNC_ERP_DATA);
     cb.createIntervalTimer(this.getClass(), PRM_SYNC_ERP_STOCK);
+
+    sys.registerDataEventHandler(dataHandler);
+
+    dataHandler.initConditions();
 
     sys.registerDataEventHandler(new DataEventHandler() {
 
