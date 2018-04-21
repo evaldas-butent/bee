@@ -28,6 +28,7 @@
     <String name="ItemInButenta" precision="100" label="=svcItemInButenta" />
 
     <Relation name="Item" relation="Items" unique="true" label="=item" />
+    <Relation name="State" relation="ServiceStates" label="Būsena" />
     <!-- } Transrifus -->
 
     <String name="ArticleNo" precision="50" label="=ecItemCode" />

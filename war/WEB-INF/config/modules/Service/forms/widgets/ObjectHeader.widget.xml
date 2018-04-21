@@ -9,12 +9,11 @@
 <SplitPanel xmlns="http://www.butent.com/widget" splitterSize="4" name="MainInfoSplit" style="position: initial;">
   <east size="400">
     <FlowPanel class="bee-svc-contact-panel">
-      <FlowPanel class="&mrcl;" style="&mrst;" for="ExportWebsite">
-        <FlowPanel style="width: 50em;" >
-          <Label />
-        </FlowPanel>
-        <FlowPanel style="&mfld;&finp;width: 41em;" >
-          <CheckBox source="ExportWebsite" />
+      <FlowPanel class="&mrcl;" style="&mrst;" for="State">
+        <FlowPanel style="&mfld;width: 30em;">
+          <Label for="State" style="&flbl;" />
+          <DataSelector source="State" style="width:50%"/>
+          <CheckBox source="ExportWebsite" style="margin-left:20px" />
         </FlowPanel>
       </FlowPanel>
       <FlowPanel class="&mrcl;" style="&mrst;" for="Customer">

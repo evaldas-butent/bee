@@ -11,5 +11,8 @@ name="ServiceClassifiers" label="=classifiers" order="50" parent="Service" modul
   <Item name="MaintenanceTariffs" label="=svcTariffs" service="grid" parameters="MaintenanceTariffs" />
   <Item name="ServiceManufacturers" label="=manufacturers" service="grid" parameters="ServiceManufacturers"  />
   <Item name="ServiceMainCriteria" label="=mainCriteria" service="grid" parameters="ServiceMainCriteria" />
+
+  <Item name="ServiceStates" label="Įrenginių būsenos" service="grid" parameters="ServiceStates" />
+
   <Item name="ServiceParameters" label="=parameters" service="parameters" parameters="Service" separator="true"/>
 </Entry>
