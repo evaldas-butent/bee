@@ -10,9 +10,7 @@
     <RelColumn name="Company" visible="true" renderColumns="CompanyName TypeName" />
     <RelColumn name="Series" visible="true" filterSupplier="list" />
     <DataColumn name="Number" visible="true" />
-    <!-- DataColumn name="ReturnedCount" / -->
-    <CalcColumn name="ReturnedCount" type="integer" caption="=tradeActReturnedCountShort"
-                source="ReturnedCount">
+    <CalcColumn name="ReturnedCount" type="integer" caption="=tradeActReturnedCountShort">
       <render>
         <ui:expression>row.ReturnedCount - (row.ContinuousCount ? row.ContinuousCount
         : 0)</ui:expression>
@@ -34,6 +32,10 @@
 
     <RelColumn name="InputVehicle" />
     <RelColumn name="InputDriver"  />
+
+    <PropColumn type="datetime" name="LastInvoiceDate" caption="Paskutinė sąskaita"
+                filterSupplier="customDateTime" filterOptions="LastInvoiceDate"
+                label="Neišrašytos sąskaitos" />
 
     <DataColumn name="Notes" />
 

@@ -655,7 +655,7 @@ public final class TradeActKeeper {
     boolean hasContinuousTa = DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_CONTINUOUS)));
     boolean isContinuousTa = kind == TradeActKind.CONTINUOUS;
     boolean hasMultiReturn = DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_RETURN)));
-    boolean hasReturn = BeeUtils.isPositive(row.getLong(form.getDataIndex(ALS_RETURNED_COUNT)));
+    boolean hasReturn = BeeUtils.isPositive(row.getPropertyLong(ALS_RETURNED_COUNT));
 
     return  !hasContinuousTa && !isContinuousTa && !TradeActKeeper.isClientArea()
         && !hasMultiReturn && !hasReturn;
