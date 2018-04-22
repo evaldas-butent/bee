@@ -135,9 +135,7 @@
         <Label name="TotalInWords" class="bee-trade-print-words-value" />
       </HorizontalPanel>
 
-      <TextLabel source="Notes" class="bee-trade-print-notes">
-        <renderToken source="Notes" prefix="Atsakingas asmuo " />
-      </TextLabel>
+      <TextLabel source="Notes" class="bee-trade-print-notes" />
 
       <br/>
       <Table kind="output" class="bee-trade-print-dispenser-receiver" >
