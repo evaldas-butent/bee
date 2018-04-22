@@ -835,7 +835,8 @@ public class TradeActBean implements HasTimerService {
         .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
         .addFrom(TBL_COMPANY_OBJECTS)
         .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_OBJECTS, "ObjectPerson"))
-        .setWhere(sys.idInList(TBL_COMPANY_OBJECTS, objects));
+        .setWhere(SqlUtils.and(sys.idInList(TBL_COMPANY_OBJECTS, objects), SqlUtils.or(SqlUtils.notNull(TBL_PERSONS,
+          COL_FIRST_NAME), SqlUtils.notNull(TBL_PERSONS, COL_LAST_NAME))));
 
       SimpleRowSet rowSet = qs.getData(selectObjUsers);
       int count = rowSet.getNumberOfRows();
