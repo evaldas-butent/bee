@@ -293,9 +293,12 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
                 RelationUtils.copyWithDescendants(sourceInfo, COL_SERVICE_OBJECT, sourceRow,
                     targetInfo, COL_SERVICE_OBJECT, beeRow);
 
-                RelationUtils.updateRow(targetInfo, COL_SERVICE_MAINTENANCE, beeRow,
-                    sourceInfo, sourceRow, true);
+                gridView.ensureRelId(relId -> {
+                  beeRow.setValue(targetInfo.getColumnIndex(COL_SERVICE_MAINTENANCE), relId);
 
+                  RelationUtils.updateRow(targetInfo, COL_SERVICE_MAINTENANCE, beeRow,
+                      sourceInfo, sourceRow, false);
+                });
               }, null, result -> Data.refreshLocal(gridView.getViewName())));
           return false;
         }
