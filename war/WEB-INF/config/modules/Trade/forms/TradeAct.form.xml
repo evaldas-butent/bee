@@ -165,7 +165,7 @@
           </ChildGrid>
 
           <ChildGrid style="height:100%" name="RPTradeActItems" gridName="TradeActItems" relColumn="RentProject"
-                     filter="Kind != 2" disablable="true" contentEditable="false">
+                     filter="Kind = 0 OR Kind = 1" disablable="true" contentEditable="false">
             <dynStyle>
               <ui:inline>display: none;</ui:inline>
               <ui:expression>row.Kind != 8 </ui:expression>
