@@ -656,6 +656,7 @@ public final class TradeActKeeper {
     boolean isSaleTa = kind == TradeActKind.SALE;
     boolean hasMultiReturn = DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_RETURN)));
     boolean hasReturn = BeeUtils.isPositive(row.getPropertyLong(ALS_RETURNED_COUNT));
+    boolean isReservedAct = kind == TradeActKind.RESERVE;
 
     boolean defEnabled = !(hasContinuousTa || hasRentProjectTa)
             && !(isContinuousTa || isRentProjectTa) && !TradeActKeeper.isClientArea()
@@ -665,7 +666,9 @@ public final class TradeActKeeper {
     boolean isSaleAndHasRentProject = hasRentProjectTa && !isRentProjectTa && (hasReturn || isSaleTa);
     boolean isSupplementAndHasRentProject = hasRentProjectTa && !isRentProjectTa && isSupplementTa;
 
-    return  defEnabled || isReturnActItemsEnabled || isSaleAndHasRentProject || isSupplementAndHasRentProject;
+
+    return  defEnabled || isReturnActItemsEnabled || isSaleAndHasRentProject || isSupplementAndHasRentProject
+            || isReservedAct;
   }
 
   static boolean isUserSeries(Long series) {
@@ -721,10 +724,18 @@ public final class TradeActKeeper {
     }
 
     if (parent != null && TradeActKind.RENT_PROJECT.equals(getKind(VIEW_TRADE_ACTS, parent))) {
+      RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_NAME, row, parent);
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_NAME, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_NAME));
+
       RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_RENT_PROJECT, row, parent);
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_RENT_PROJECT));
       RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_COMPANY, row, parent);
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_COMPANY, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_COMPANY));
       RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_CONTACT, row, parent);
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_CONTACT, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_CONTACT));
       RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_OBJECT, row, parent);
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_OBJECT, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_OBJECT));
+
       Data.setValue(VIEW_TRADE_ACTS, row, ALS_RENT_PROJECT_COMPANY, Data.getLong(VIEW_TRADE_ACTS, parent,
               COL_TA_COMPANY));
     }

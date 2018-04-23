@@ -130,9 +130,13 @@ public class TradeActGrid extends AbstractGridInterceptor {
   @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
     newActKind = kind;
+    IsRow parentRow = ViewHelper.getParentRow(getGridPresenter().getMainView().asWidget(), VIEW_TRADE_ACTS);
     if (kind == null) {
       List<String> options = new ArrayList<>();
       for (TradeActKind k : NEW_ROW_ACT_KINDS) {
+        if (k == TradeActKind.RENT_PROJECT && k.equals(getKind(parentRow))) {
+          continue;
+        }
         options.add(k.getCaption());
       }
 
@@ -143,6 +147,14 @@ public class TradeActGrid extends AbstractGridInterceptor {
         }
       });
 
+      return false;
+    } else if (kind == TradeActKind.SALE) {
+      Global.choice(Localized.dictionary().tradeActNew(), null,
+              Arrays.asList(TradeActKind.SALE.getCaption(), TradeActKind.RENT_PROJECT.getCaption()),
+              value -> {
+                newActKind = value == 0 ? TradeActKind.SALE : TradeActKind.RENT_PROJECT;
+                getGridView().startNewRow(false);
+              });
       return false;
     } else {
       return super.beforeAddRow(presenter, copy);
@@ -696,7 +708,12 @@ public class TradeActGrid extends AbstractGridInterceptor {
         case COL_TA_RENT_PROJECT:
           if (parent != null && isRentProjectAct(parent)) {
             newRow.setValue(i, parent.getId());
+          } else {
+            RelationUtils.updateRow(viewTradeActs, colId, newRow, viewTradeActs,
+                    parent, false);
+            newRow.setValue(i, parent.getLong(i));
           }
+          break;
         case COL_TA_UNTIL:
         case COL_TA_NOTES:
         case COL_TA_RETURN:

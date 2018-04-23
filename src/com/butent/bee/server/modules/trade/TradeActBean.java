@@ -1077,6 +1077,33 @@ public class TradeActBean implements HasTimerService {
 
     BeeRowSet items = getRemainingItems(actIds.toArray(new Long[actIds.size()]));
     List<Long> contServices = new ArrayList<>();
+    double itemValue = 0.0;
+
+   for (BeeRow row : items) {
+      double price = BeeUtils.unbox(row.getDouble(items.getColumnIndex(COL_ITEM_PRICE)));
+      double qty = BeeUtils.unbox(row.getDouble(items.getColumnIndex("Quantity"))) /*-
+              (row.hasPropertyValue("returned_qty") ? BeeUtils.unbox(row.getPropertyDouble("returned_qty")) : 0D)*/;
+
+      double sum = price * qty;
+      double dscSum = sum / 100 * BeeUtils.unbox(row.getDouble(items.getColumnIndex(COL_TRADE_DISCOUNT)));
+      double vat = BeeUtils.unbox(row.getDouble(items.getColumnIndex(COL_TRADE_VAT)));
+
+      sum -= dscSum;
+
+      if (BeeUtils.unbox(row.getBoolean(items.getColumnIndex(COL_TRADE_VAT_PLUS)))) {
+        if (BeeUtils.unbox(row.getBoolean(items.getColumnIndex(COL_TRADE_VAT_PERC)))) {
+            vat = sum /100 * vat;
+        }
+      } else {
+        if (BeeUtils.unbox(row.getBoolean(items.getColumnIndex(COL_TRADE_VAT_PERC)))) {
+          vat = sum - (sum / (1 + vat / 100));
+        }
+        sum -= vat;
+      }
+
+      itemValue += sum;
+
+    }
 
     if (!DataUtils.isEmpty(items)) {
       Set<Long> notReturnedActs = items.getDistinctLongs(items.getColumnIndex(COL_TRADE_ACT));
@@ -1102,11 +1129,16 @@ public class TradeActBean implements HasTimerService {
         }
 
 
+
         appendInsertConstants(svcInsert, services, service.getId(), colData);
 
         if (!BeeUtils.isEmpty(service.getString(services.getColumnIndex(COL_TIME_UNIT)))) {
           contServices.add(service.getLong(services.getColumnIndex(COL_ITEM)));
         }
+
+//        if (BeeUtils.isPositive(itemValue)) {
+//          svcInsert.addConstant("ItemValue", itemValue);
+//        }
 
         ResponseObject serviceResponse = qs.insertDataWithResponse(svcInsert);
         if (serviceResponse.hasErrors()) {
@@ -1137,8 +1169,12 @@ public class TradeActBean implements HasTimerService {
     if (!BeeUtils.isEmpty(contServices)) {
 
       SqlUpdate updateService = new SqlUpdate(TBL_TRADE_ACT_SERVICES)
-          .addConstant(COL_TA_SERVICE_TO, svcTimes)
-          .setWhere(SqlUtils.and(
+          .addConstant(COL_TA_SERVICE_TO, svcTimes);
+
+      if (BeeUtils.isPositive(itemValue)) {
+        updateService.addConstant("ItemValue", itemValue);
+      }
+          updateService.setWhere(SqlUtils.and(
               SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, actIds),
               SqlUtils.isNull(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO),
               SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_ITEM, contServices)

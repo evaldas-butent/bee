@@ -67,6 +67,7 @@
       <SimpleColumn name="Name" alias="SupplierName" />
     </SimpleJoin>
     <SimpleColumn name="CostAmount" />
+    <SimpleColumn name="ItemValue" />
 
     <SimpleColumn name="Note" />
 
