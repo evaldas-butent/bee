@@ -126,7 +126,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
           Double factor = rowSet.getDouble(rowIndex, COL_ITEM_FACTOR);
 
           if (BeeUtils.isPositive(factor)) {
-            return PRICE_FORMAT.format(BeeUtils.unbox(price) * factor);
+            return PRICE_FORMAT.format(BeeUtils.round(BeeUtils.unbox(price) * factor, 3));
           }
         }
         return PRICE_FORMAT.format(BeeUtils.round(BeeUtils.unbox(price), 2));
@@ -321,7 +321,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
   private static final String ATTRIBUTE_CURRENCIES = "currencies";
   private static final String ATTRIBUTE_COLUMNS = "columns";
 
-  private static final NumberFormat PRICE_FORMAT = Format.getDecimalFormat(2);
+  private static final NumberFormat PRICE_FORMAT = Format.getDecimalFormat(3);
   private static final NumberFormat AMOUNT_FORMAT = Format.getDecimalFormat(2);
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "trade-print-";
