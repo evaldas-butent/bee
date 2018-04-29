@@ -1,5 +1,9 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.butent.bee.client.grid.ColumnFooter;
+import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.column.AbstractColumn;
+import com.butent.bee.client.view.edit.EditableColumn;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
@@ -26,7 +30,6 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -278,6 +281,10 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     int count = 0;
 
     for (IsRow row : gridView.getRowData()) {
+//      if (!gridView.isRowSelected(row.getId())) {
+//        continue;
+//      }
+
       Double tariff = row.getDouble(tariffIndex);
 
       if (BeeUtils.isPositive(tariff)) {
@@ -415,41 +422,47 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
       return;
     }
 
+    if (gridView.getActiveRow() == null) {
+      gridView.notifyWarning(Localized.dictionary().selectAtLeastOneRow());
+      return;
+    }
+
     gridView.ensureRelId(relId -> {
       ParameterList prm = TradeActKeeper.createArgs(SVC_GET_ACT_ITEMS_RENTAL_AMOUNT);
       prm.addDataItem(COL_TRADE_ACT, relId);
 
-      BeeKeeper.getRpc().makePostRequest(prm, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          if (!response.hasResponse(Double.class)) {
-            return;
+      BeeKeeper.getRpc().makePostRequest(prm, response -> {
+        if (!response.hasResponse(Double.class)) {
+          return;
+        }
+
+        String viewName = gridView.getViewName();
+        double rentalAmount = BeeUtils.toDouble(response.getResponseAsString());
+
+        for (IsRow row : gridView.getRowData()) {
+          if (getGridView().getActiveRowId() != row.getId()) {
+            continue;
           }
 
-          String viewName = gridView.getViewName();
-          double rentalAmount = BeeUtils.toDouble(response.getResponseAsString());
-
-          for (IsRow row : gridView.getRowData()) {
-            if (Data.getInteger(viewName, row, COL_TIME_UNIT) == null) {
-              continue;
-            }
-
-            Double quantity = Data.getDouble(viewName, row, COL_TRADE_ITEM_QUANTITY);
-
-            List<String> oldValues = Arrays.asList(
-                Data.getString(viewName, row, COL_TA_SERVICE_TARIFF),
-                Data.getString(viewName, row, COL_ITEM_PRICE), null);
-
-            List<String> newValues = Arrays.asList(null, BeeUtils.toString(rentalAmount / quantity),
-                "1");
-
-            Queries.update(getViewName(), row.getId(), row.getVersion(),
-                Data.getColumns(VIEW_TRADE_ACT_SERVICES,
-                    Arrays.asList(COL_TA_SERVICE_TARIFF, COL_ITEM_PRICE,
-                        COL_IS_ITEM_RENTAL_PRICE)), oldValues, newValues, null, result -> {
-                  RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
-                });
+          if (Data.getInteger(viewName, row, COL_TIME_UNIT) == null) {
+            continue;
           }
+
+          Double quantity = Data.getDouble(viewName, row, COL_TRADE_ITEM_QUANTITY);
+
+          List<String> oldValues = Arrays.asList(
+              Data.getString(viewName, row, COL_TA_SERVICE_TARIFF),
+              Data.getString(viewName, row, COL_ITEM_PRICE), null);
+
+          List<String> newValues = Arrays.asList(null, BeeUtils.toString(rentalAmount / quantity),
+              "1");
+
+          Queries.update(getViewName(), row.getId(), row.getVersion(),
+              Data.getColumns(VIEW_TRADE_ACT_SERVICES,
+                  Arrays.asList(COL_TA_SERVICE_TARIFF, COL_ITEM_PRICE,
+                      COL_IS_ITEM_RENTAL_PRICE)), oldValues, newValues, null, result -> {
+                RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
+              });
         }
       });
     });

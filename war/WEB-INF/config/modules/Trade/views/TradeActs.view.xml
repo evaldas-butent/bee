@@ -153,6 +153,18 @@
 
     <SimpleColumn name="ContinuousAct" />
     <SimpleColumn name="ReturnAct" />
+    <SimpleColumn name="RentProject" />
+    <SimpleJoin name="RentProject" joinType="LEFT">
+      <SimpleJoin joinType="LEFT" name="Name">
+        <SimpleColumn name="ActName" alias="RentProjectName"/>
+      </SimpleJoin>
+      <SimpleJoin joinType="LEFT" name="Series">
+        <SimpleColumn name="SeriesName" alias="RentProjectSeriesName"/>
+      </SimpleJoin>
+      <SimpleColumn name="Number" alias="RentProjectNumber"/>
+      <SimpleColumn name="Kind" alias="RentProjectKind"/>
+      <SimpleColumn name="Company" alias="RentProjectCompany" />
+    </SimpleJoin>
 
     <SimpleColumn name="RegistrationNo" />
   </Columns>

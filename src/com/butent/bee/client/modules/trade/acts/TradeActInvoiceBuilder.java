@@ -508,16 +508,9 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     dateFrom = form.getWidgetByName(COL_TA_SERVICE_FROM);
     if (from != null && ((UnboundSelector) widget).isEnabled() && dateFrom instanceof InputDate) {
       ((InputDate) dateFrom).setDate(from);
-    } else if (!((UnboundSelector) widget).isEnabled()) {
-      Queries.getRow(VIEW_TRADE_ACTS, actId, new RowCallback() {
-
-        @Override
-        public void onSuccess(BeeRow result) {
-          ((InputDate) dateFrom).setDate(result.getDateTime(Data
-              .getColumnIndex(VIEW_TRADE_ACTS,
-                  COL_TA_DATE)));
-        }
-      });
+    } else if (!((UnboundSelector) widget).isEnabled() && DataUtils.isId(actId)) {
+      Queries.getRow(VIEW_TRADE_ACTS, actId, result -> ((InputDate) dateFrom).setDate(result.getDateTime(Data
+          .getColumnIndex(VIEW_TRADE_ACTS,  COL_TA_DATE))));
     }
 
     JustDate to = BeeKeeper.getStorage().getDate(storageKey(COL_TA_SERVICE_TO));

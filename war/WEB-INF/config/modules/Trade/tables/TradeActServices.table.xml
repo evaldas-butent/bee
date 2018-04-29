@@ -32,8 +32,18 @@
 
     <Relation name="Supplier" relation="Companies" label="=supplier" />
     <Numeric name="CostAmount" precision="12" scale="2" label="Sav.suma" />
+    <Numeric name="ItemValue" precision="12" scale="2" label="Prek. vertė" />
     <Relation name="ServiceObject" relation="ServiceObjects" label="=svcDevice" />
 
     <Text name="Note" label="=note" />
   </Fields>
+  <Indexes>
+    <Index>
+      <PostgreSql><![CDATA[
+        NVL("RentProject", "TradeAct")
+      ]]></PostgreSql>
+      <MsSql></MsSql>
+      <Oracle></Oracle>
+    </Index>
+  </Indexes>
 </Table>
