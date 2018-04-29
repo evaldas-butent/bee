@@ -121,11 +121,11 @@ import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.websocket.messages.LogMessage;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -134,6 +134,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -151,6 +152,11 @@ import javax.ejb.TimerService;
 import javax.imageio.ImageIO;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 @Stateless
 @LocalBean
@@ -270,6 +276,9 @@ public class ClassifiersModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_COMPANY_SOURCE_REPORT)) {
       response = getCompanySourceReport(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_COMPANY_INFO_FROM_CLOUD)) {
+      response = getCompanyInfoFromCloud(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
       logger.warning(msg);
@@ -279,6 +288,60 @@ public class ClassifiersModuleBean implements BeeModule {
       ctx.setRollbackOnly();
     }
     return response;
+  }
+
+  private ResponseObject getCompanyInfoFromCloud(RequestInfo reqInfo) {
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client.target(prm.getText(PRM_URL));
+    String code = reqInfo.getParameter(COL_COMPANY_CODE);
+
+    if (BeeUtils.isEmpty(code)) {
+      target = target.queryParam("method", "search")
+          .queryParam("query", reqInfo.getParameter(COL_COMPANY_NAME));
+    } else {
+      target = target.queryParam("method", "companyDetails")
+          .queryParam("code", code);
+    }
+    Response resp = target.request(MediaType.APPLICATION_XML).get();
+
+    if (Response.Status.OK != Response.Status.fromStatusCode(resp.getStatus())) {
+      return ResponseObject.error(resp.getStatusInfo().getReasonPhrase());
+    }
+    CloudResponse response = resp.readEntity(CloudResponse.class);
+
+    if (!BeeUtils.isEmpty(response.error)) {
+      return ResponseObject.error(response.error);
+    }
+    Map<String, Object> map = new LinkedHashMap<>();
+
+    if (BeeUtils.isEmpty(code)) {
+      response.companies.forEach(company -> map.put(company.name, company.code));
+    } else {
+      response.companies.forEach(company -> {
+        if (!BeeUtils.isEmpty(company.email)) {
+          company.email = BeeUtils.normalize(company.email);
+          Long emailId = qs.getId(TBL_EMAILS, COL_EMAIL_ADDRESS, company.email);
+
+          if (!DataUtils.isId(emailId)) {
+            emailId = qs.insertData(new SqlInsert(TBL_EMAILS)
+                .addConstant(COL_EMAIL_ADDRESS, company.email));
+          }
+          company.emailId = emailId;
+        }
+        for (Field field : company.getClass().getFields()) {
+          try {
+            Object value = field.get(company);
+
+            if (!Objects.isNull(value)) {
+              map.put(field.getName(), value);
+            }
+          } catch (IllegalAccessException e) {
+            logger.error(e);
+          }
+        }
+      });
+    }
+    return ResponseObject.response(map);
   }
 
   @Override

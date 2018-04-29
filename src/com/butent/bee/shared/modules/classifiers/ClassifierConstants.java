@@ -7,6 +7,7 @@ public final class ClassifierConstants {
   public static final String SVC_CREATE_COMPANY = "create_company";
   public static final String SVC_CREATE_COMPANY_PERSON = "create_company_person";
   public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
+  public static final String SVC_COMPANY_INFO_FROM_CLOUD = "GetCompanyInfoFromCloud";
   public static final String SVC_GENERATE_QR_CODE = "GenerateQrCode";
   public static final String SVC_GENERATE_QR_CODE_PERSON = "GenerateQrCodePerson";
   public static final String SVC_GET_COMPANY_TYPE_REPORT = "get_company_type_report";
