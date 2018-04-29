@@ -388,7 +388,8 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       }
     }
 
-    if (form != null && !row.hasPropertyValue(PRP_MULTI_RETURN_DATA)) {
+    if (form != null && !row.hasPropertyValue(PRP_MULTI_RETURN_DATA)
+            && DataUtils.isId(row.getLong(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_RENT_PROJECT)))) {
       DataInfo dataInfo = Data.getDataInfo(VIEW_TRADE_ACTS);
       Queries.getRowSet(VIEW_TRADE_ACTS, dataInfo.getColumnNames(false),
               Filter.and(Filter.equals(COL_TA_RENT_PROJECT, row.getLong(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_RENT_PROJECT))),
@@ -399,6 +400,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
                 List<IsRow> rows = new ArrayList<>(result.getRows());
                 ParameterList params = TradeActKeeper.createArgs(SVC_GET_ITEMS_FOR_MULTI_RETURN);
                 params.addQueryItem(Service.VAR_LIST, DataUtils.buildIdList(DataUtils.getRowIds(rows)));
+                params.addQueryItem("DEBUG", "[TradeActFrom][onStartEdit]");
 
                 BeeKeeper.getRpc().makePostRequest(params, response -> {
                   if (response.hasResponse(BeeRowSet.class)) {

@@ -37,13 +37,4 @@
 
     <Text name="Note" label="=note" />
   </Fields>
-  <Indexes>
-    <Index>
-      <PostgreSql><![CDATA[
-        NVL("RentProject", "TradeAct")
-      ]]></PostgreSql>
-      <MsSql></MsSql>
-      <Oracle></Oracle>
-    </Index>
-  </Indexes>
 </Table>

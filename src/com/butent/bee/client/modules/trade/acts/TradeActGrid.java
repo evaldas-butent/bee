@@ -849,6 +849,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
   private void multiReturn(IsRow activeRow, final Collection<IsRow> parents) {
     ParameterList params = TradeActKeeper.createArgs(SVC_GET_ITEMS_FOR_MULTI_RETURN);
     params.addQueryItem(Service.VAR_LIST, DataUtils.buildIdList(DataUtils.getRowIds(parents)));
+    params.addQueryItem("DEBUG", "[TradeActGrid][multiReturn]");
 
     BeeKeeper.getRpc().makeRequest(params, response -> {
       if (response.hasResponse(BeeRowSet.class)) {

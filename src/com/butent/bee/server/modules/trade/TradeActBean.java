@@ -1991,11 +1991,20 @@ public class TradeActBean implements HasTimerService {
 
   private ResponseObject getItemsForMultiReturn(RequestInfo reqInfo) {
     List<Long> acts = DataUtils.parseIdList(reqInfo.getParameter(Service.VAR_LIST));
+
     if (BeeUtils.isEmpty(acts)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_LIST);
     }
 
+    if (reqInfo.hasParameter("DEBUG")) {
+      logger.debug(reqInfo.getParameter("DEBUG"), "START" ,acts.size());
+    }
+
     BeeRowSet items = getRemainingItems(acts.toArray(new Long[acts.size()]));
+
+    if (reqInfo.hasParameter("DEBUG")) {
+      logger.debug(reqInfo.getParameter("DEBUG"), "END",acts.size());
+    }
 
     if (DataUtils.isEmpty(items)) {
       return ResponseObject.emptyResponse();
