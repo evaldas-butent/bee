@@ -821,6 +821,8 @@ public class TradeActBean implements HasTimerService {
           }
         }
         sales.setValue(0, DataUtils.getColumnIndex(COL_TRADE_NOTES, sales.getColumns()), persons);
+      } else {
+        sales.clearCell(0, DataUtils.getColumnIndex(COL_TRADE_NOTES, sales.getColumns()));
       }
     }
 
