@@ -2868,6 +2868,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, tradeItems, COL_ITEM))
           .setWhere(SqlUtils.equals(tradeItems, itemsRelation, invoice.getLong(itemsRelation)));
 
+      if (Objects.equals(TBL_SALE_ITEMS, tradeItems)) {
+        itemsQuery.addFields(tradeItems, COL_ITEM_FACTOR);
+      }
+
       SimpleRowSet items = qs.getData(itemsQuery);
 
       for (SimpleRow item : items) {
@@ -2884,6 +2888,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
         if (BeeUtils.same(tradeItems, TBL_SALE_ITEMS)) {
           double p = BeeUtils.unbox(item.getDouble(COL_TRADE_ITEM_PRICE));
+          double factor = BeeUtils.unbox(item.getDouble(COL_ITEM_FACTOR));
+
+          if (BeeUtils.isPositive(factor)) {
+            p = p * factor;
+          }
+
           double d = BeeUtils.unbox(item.getDouble(COL_TRADE_DISCOUNT));
 
           wsItem.setPrice(BeeUtils.toString(p - (p * d / 100D), sys.getFieldScale(TBL_SALE_ITEMS,
