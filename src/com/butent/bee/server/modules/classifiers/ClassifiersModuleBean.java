@@ -317,7 +317,28 @@ public class ClassifiersModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(code)) {
       response.companies.forEach(company -> map.put(company.name, company.code));
     } else {
+      SimpleRowSet types = qs.getData(new SqlSelect()
+          .addFields(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, sys.getIdName(TBL_COMPANY_TYPES))
+          .addFrom(TBL_COMPANY_TYPES));
+
       response.companies.forEach(company -> {
+        for (SimpleRow row : types) {
+          String type = row.getValue(COL_COMPANY_TYPE_NAME);
+
+          if (BeeUtils.isPrefix(company.name + " ", type)) {
+            company.name = BeeUtils.trim(BeeUtils.removePrefix(company.name, type));
+
+          } else if (BeeUtils.isSuffix(" " + company.name, type)) {
+            company.name = BeeUtils.removeSuffix(BeeUtils.trim(BeeUtils.removeSuffix(company.name,
+                type)), BeeConst.CHAR_COMMA);
+
+          } else {
+            continue;
+          }
+          company.typeName = type;
+          company.companyType = row.getLong(sys.getIdName(TBL_COMPANY_TYPES));
+          break;
+        }
         if (!BeeUtils.isEmpty(company.email)) {
           company.email = BeeUtils.normalize(company.email);
           Long emailId = qs.getId(TBL_EMAILS, COL_EMAIL_ADDRESS, company.email);
@@ -328,6 +349,36 @@ public class ClassifiersModuleBean implements BeeModule {
           }
           company.emailId = emailId;
         }
+        if (!BeeUtils.isEmpty(company.cityName)) {
+          Pair<Long, String> country = prm.getRelationInfo(PRM_COUNTRY);
+          company.country = country.getA();
+
+          if (DataUtils.isId(company.country)) {
+            company.countryName = country.getB();
+
+            SimpleRow city = qs.getRow(new SqlSelect()
+                .addFields(TBL_CITIES, sys.getIdName(TBL_CITIES), COL_CITY_NAME)
+                .addFrom(TBL_CITIES)
+                .setWhere(SqlUtils.and(SqlUtils.equals(TBL_CITIES, COL_COUNTRY, company.country),
+                    SqlUtils.same(TBL_CITIES, COL_CITY_NAME, company.cityName))));
+
+            Long cityId;
+
+            if (Objects.nonNull(city)) {
+              company.cityName = city.getValue(COL_CITY_NAME);
+              cityId = city.getLong(sys.getIdName(TBL_CITIES));
+            } else {
+              cityId = qs.insertData(new SqlInsert(TBL_CITIES)
+                  .addConstant(COL_COUNTRY, company.country)
+                  .addConstant(COL_CITY_NAME, company.cityName));
+            }
+            company.city = cityId;
+          }
+        }
+        company.address = BeeUtils.joinWords(company.address,
+            BeeUtils.join(BeeUtils.isDigit(company.addressRest) ? "-" : ", ",
+                company.houseNo, company.addressRest));
+
         for (Field field : company.getClass().getFields()) {
           try {
             Object value = field.get(company);

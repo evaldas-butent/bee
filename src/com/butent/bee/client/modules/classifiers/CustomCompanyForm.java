@@ -9,6 +9,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.CustomAction;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -69,7 +70,11 @@ public class CustomCompanyForm extends CompanyForm {
         Map<String, String> map = Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
         if (map.containsKey("code")) {
-          map.forEach((s, s2) -> getFormView().updateCell(s, s2));
+          map.forEach((s, s2) -> {
+            if (!BeeConst.isUndef(getFormView().getDataIndex(s))) {
+              getFormView().updateCell(s, s2);
+            }
+          });
         } else {
           List<String> values = new ArrayList<>(map.keySet());
 
