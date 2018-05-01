@@ -704,7 +704,7 @@ $P{SaleItemsDataSet}.getRowValue().getProperty("TimeUnit"))]]></textFieldExpress
 									<textElement textAlignment="Right" verticalAlignment="Bottom">
 										<font size="8"/>
 									</textElement>
-									<textFieldExpression><![CDATA[BeeUtils.round($V{amount} / $F{Quantity}.doubleValue(), 3)]]></textFieldExpression>
+									<textFieldExpression><![CDATA[BeeUtils.round($V{amount} / $F{Quantity}.doubleValue(), 4)]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
