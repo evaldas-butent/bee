@@ -67,11 +67,11 @@
 			<variableExpression><![CDATA[$V{totalizer}]]></variableExpression>
 			<initialValueExpression><![CDATA[new com.butent.bee.shared.modules.trade.Totalizer($P{SaleItemsDataSet}.getRowSet().getColumns())]]></initialValueExpression>
 		</variable>
+		<variable name="amount" class="java.lang.Double">
+			<variableExpression><![CDATA[$V{totalizer}.getTotal($P{SaleItemsDataSet}.getRowValue())]]></variableExpression>
+		</variable>
 		<variable name="vatAmount" class="java.lang.Double">
 			<variableExpression><![CDATA[BeeUtils.unbox($V{totalizer}.getVat($P{SaleItemsDataSet}.getRowValue()))]]></variableExpression>
-		</variable>
-		<variable name="amount" class="java.lang.Double">
-			<variableExpression><![CDATA[$V{totalizer}.getTotal($P{SaleItemsDataSet}.getRowValue()) - $V{vatAmount}]]></variableExpression>
 		</variable>
 		<variable name="totalVatAmount" class="java.lang.Double" calculation="Sum">
 			<variableExpression><![CDATA[$V{vatAmount}]]></variableExpression>
@@ -452,7 +452,7 @@
 								</textField>
 								<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 									<reportElement positionType="Float" x="0" y="0" width="552" height="44" uuid="fb42ee82-7ab6-4fc3-8275-f6d71fa256d9"/>
-									<textFieldExpression><![CDATA["Mokama suma žodžiais: " + $P{amb}.getTotalInWords(BeeUtils.toDouble($P{Amount}), BeeUtils.toLongOrNull($P{Currency}), null)]]></textFieldExpression>
+									<textFieldExpression><![CDATA["Mokama suma žodžiais: " + $P{amb}.getTotalInWords(BeeUtils.round($V{totalAmount}, 2), BeeUtils.toLongOrNull($P{Currency}), null)]]></textFieldExpression>
 								</textField>
 							</frame>
 						</jr:tableFooter>
@@ -704,7 +704,7 @@ $P{SaleItemsDataSet}.getRowValue().getProperty("TimeUnit"))]]></textFieldExpress
 									<textElement textAlignment="Right" verticalAlignment="Bottom">
 										<font size="8"/>
 									</textElement>
-									<textFieldExpression><![CDATA[BeeUtils.round($V{amount} / $F{Quantity}.doubleValue(), 4)]]></textFieldExpression>
+									<textFieldExpression><![CDATA[BeeUtils.round(($V{amount} - $V{vatAmount}) / $F{Quantity}.doubleValue(), 4)]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -718,7 +718,7 @@ $P{SaleItemsDataSet}.getRowValue().getProperty("TimeUnit"))]]></textFieldExpress
 								<textElement textAlignment="Right">
 									<font size="8" isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[BeeUtils.round($V{totalAmount}, 2)]]></textFieldExpression>
+								<textFieldExpression><![CDATA[BeeUtils.round($V{totalAmount}, 2) - BeeUtils.round($V{totalVatAmount}, 2)]]></textFieldExpression>
 							</textField>
 							<textField pattern="0.00">
 								<reportElement style="TableDetail" x="0" y="15" width="82" height="15" uuid="a139e1e3-8449-46d2-b6fc-3d2e007d7118"/>
@@ -732,7 +732,7 @@ $P{SaleItemsDataSet}.getRowValue().getProperty("TimeUnit"))]]></textFieldExpress
 								<textElement textAlignment="Right">
 									<font size="8" isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[BeeUtils.round($V{totalAmount} + $V{totalVatAmount}, 2)]]></textFieldExpression>
+								<textFieldExpression><![CDATA[BeeUtils.round($V{totalAmount}, 2)]]></textFieldExpression>
 							</textField>
 						</jr:tableFooter>
 						<jr:columnHeader style="TableCell" height="30" rowSpan="1">
@@ -746,12 +746,12 @@ $P{SaleItemsDataSet}.getRowValue().getProperty("TimeUnit"))]]></textFieldExpress
 						</jr:columnHeader>
 						<jr:columnFooter height="15" rowSpan="1"/>
 						<jr:detailCell style="TableCell" height="15">
-							<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">
+							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 								<reportElement key="" style="TableDetail" x="0" y="0" width="82" height="15" uuid="634b6238-06e3-45b7-a0f0-b6a427cab2f8"/>
 								<textElement textAlignment="Right" verticalAlignment="Bottom">
 									<font size="8"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$V{amount}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[BeeUtils.round($V{amount} - $V{vatAmount}, 4)]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>

@@ -41,19 +41,19 @@ public class SearchBean {
 
   /**
    * Builds search SQL builder compatible filter by query using search operators.
-   * 
+   *
    * @param viewName view name of system where to search
    * @param columns set of view columns where to search
    * @param query search phrases or operations used to search
-   * 
+   *
    * @return SQL builder compatible Filter object
-   * 
+   *
    *         <p>
    *         {@code query} can consist words or digits separated in spaces or search operators ("" -
    *         exact string search, or * - any string search)
    *         </p>
    *         <p>
-   * 
+   *
    *         Examples: <br />
    *         {@code String viewName = "Tasks"; } <br />
    *         {@code Set<String> columns = Sets.newHashSet("Id", // ID column type of view } <br />
@@ -65,7 +65,7 @@ public class SearchBean {
    *         {@code Filter f = buildSearchFilter(viewName, columns, query); } <br />
    *         </p>
    *         <p>
-   * 
+   *
    *         SQL builder f filter query like be: (Tasks.Subject LIKE '%System%' OR
    *         Tasks.OwnerFirstName LIKE '%System%' OR Tasks.OwnerLastName LIKE '%System%') OR
    *         (Tasks.Subject LIKE '%supp%' OR Tasks.OwnerFirstName LIKE '%supp%' OR
@@ -76,7 +76,7 @@ public class SearchBean {
    *         {@code f = buildSearchFilter(viewName, columns, query); } <br />
    *         </p>
    *         <p>
-   * 
+   *
    *         SQL builder f filter query like be: (Tasks.Subject LIKE '%System%' OR
    *         Tasks.OwnerFirstName LIKE '%System%' OR Tasks.OwnerLastName LIKE '%System%') OR
    *         (Tasks.Id = 109 Tasks.Subject LIKE '%109%' OR Tasks.OwnerFirstName LIKE '%109%' OR
@@ -87,10 +87,10 @@ public class SearchBean {
    *         {@code f = buildSearchFilter(viewName, columns, query); } <br />
    *         </p>
    *         <p>
-   * 
+   *
    *         SQL builder f filter query like be: (Tasks.Subject LIKE 'System 109' OR
    *         Tasks.OwnerFirstName LIKE 'System 109' OR Tasks.OwnerLastName LIKE 'System 109')
-   * 
+   *
    *         </p>
    */
   public Filter buildSearchFilter(String viewName, Set<String> columns, String query) {
@@ -162,8 +162,7 @@ public class SearchBean {
             sub = Filter.or(sub, Filter.compareWithValue(col, op, part, dateOrdering));
         }
       }
-
-      filter = Filter.or(filter, sub);
+      filter = Filter.and(filter, sub);
     }
     return filter;
   }
@@ -241,7 +240,7 @@ public class SearchBean {
       String t = BeeUtils.unquote(text);
 
       if (!BeeUtils.isEmpty(t)) {
-        filter = Filter.equals(col.getId(), t);
+        filter = Filter.contains(col.getId(), t);
       }
     }
 
