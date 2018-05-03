@@ -4967,25 +4967,39 @@ public class TradeActBean implements HasTimerService {
 
   private ResponseObject totalActItemsRentalPrice(RequestInfo req) {
     Long actId = req.getParameterLong(COL_TRADE_ACT);
+    String table = req.hasParameter(Service.VAR_TABLE)
+            ? req.getParameter(Service.VAR_TABLE) : TBL_TRADE_ACT_ITEMS;
+    String colName = req.hasParameter(Service.VAR_COLUMN)
+            ? req.getParameter(Service.VAR_COLUMN) : COL_TRADE_ACT;
 
-    return ResponseObject.response(totalActItemsRentalPrice(actId));
+    return ResponseObject.response(totalActItemsRentalPrice(actId, table, colName));
   }
 
-  private double totalActItemsRentalPrice(Long actId) {
+  private double totalActItemsRentalPrice(Long actId, String table, String colName) {
     double result = BeeConst.DOUBLE_ZERO;
 
     if (!DataUtils.isId(actId)) {
       return result;
     }
 
+    IsCondition condition = SqlUtils.sqlTrue();
+
     SqlSelect query = new SqlSelect();
+
+    if (COL_TA_RENT_PROJECT.equals(colName)) {
+      condition = SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.SALE, TradeActKind.SUPPLEMENT);
+    }
+
     query.addFrom(TBL_TRADE_ACT_ITEMS)
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_ITEMS, COL_ITEM))
         .addFromInner(TBL_TRADE_ACTS, sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS,
             COL_TRADE_ACT))
         .setWhere(SqlUtils.and(SqlUtils.positive(TBL_ITEMS, COL_ITEM_RENTAL_PRICE),
             SqlUtils.positive(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY),
-            SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, actId)));
+            //SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, actId)));
+                SqlUtils.equals(table, colName, actId), condition));
+
+
 
     query.addSum(ExchangeUtils.exchangeField(query,
         SqlUtils.multiply(SqlUtils.field(TBL_ITEMS, COL_ITEM_RENTAL_PRICE),
