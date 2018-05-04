@@ -5,7 +5,7 @@
   <!ENTITY forparent "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>!row.Parent</ui:expression></dynStyle>">
   <!ENTITY forRegistrationNo "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>row.Kind != 2</ui:expression></dynStyle>">
   <!ENTITY forOperation
-          "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>row.Kind == 7 </ui:expression></dynStyle>">
+          "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>row.Kind == 7 || row.Kind == 8 </ui:expression></dynStyle>">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -52,6 +52,22 @@
          choiceColumns="Name Number DocumentDate Expires StatusName"
          viewName="Documents" disablable="false"
          caching="none" module="Documents" newRowEnabled="false" />
+
+        <Label for="RentProject">
+          <dynStyle>
+            <ui:inline>display:none</ui:inline>
+            <ui:expression>row.Kind == 8</ui:expression>
+          </dynStyle>
+        </Label>
+        <DataSelector name="RentProject" source="RentProject" style="&inpw;"
+                      renderColumns="RentProjectName RentProjectSeriesName RentProjectNumber"
+                      choiceColumns="ActName SeriesName Number" disablable="false"
+                      newRowEnabled="false" filter="Kind = 8" caching="none">
+          <dynStyle>
+            <ui:inline>display:none</ui:inline>
+            <ui:expression>row.Kind == 8</ui:expression>
+          </dynStyle>
+        </DataSelector>
       </row>
 
       <row>
@@ -77,7 +93,7 @@
           &forOperation;
         </Label>
         <DataSelector source="Operation" renderColumns="OperationName" newRowEnabled="false"
-          style="&inpw;" required="true" disablable="true">
+          style="&inpw;" disablable="true">
           &forOperation;
         </DataSelector>
 
@@ -122,19 +138,6 @@
           newRowEnabled="true" style="&inpw;" disablable="false"/>
       </row>
 
-      <!-- @DEPRECATED By Transrifus {
-      <row>
-        <FlowPanel/>
-        <DataSelector source="Vehicle"
-          renderColumns="VehicleBrand VehicleModel VehicleNumber" newRowEnabled="true"
-          style="&inpw;" />
-
-        <FlowPanel />
-        <DataSelector source="Driver" renderColumns="DriverFirstName DriverLastName"
-          newRowEnabled="true" style="&inpw;" />
-      </row>
-      }-->
-
       <row>
         <Label for="Currency" />
         <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false"
@@ -150,15 +153,37 @@
     </Table>
 
     <br />
-    <TabbedPages style="min-height: 400px;">
+    <TabbedPages style="min-height: 400px;" name="TabbedPages">
       <page>
         <text>=goods</text>
-        <ChildGrid name="TradeActItems" relColumn="TradeAct" disablable="true" />
+        <FlowPanel>
+          <ChildGrid style="height:100%" name="TradeActItems" relColumn="TradeAct" disablable="true">
+            <dynStyle>
+              <ui:inline>display: none;</ui:inline>
+              <ui:expression>row.Kind == 8 </ui:expression>
+            </dynStyle>
+          </ChildGrid>
+
+          <ChildGrid style="height:100%" name="RPTradeActItems" gridName="TradeActItems" relColumn="RentProject"
+                     filter="Kind = 0 OR Kind = 1" disablable="true" contentEditable="false">
+            <dynStyle>
+              <ui:inline>display: none;</ui:inline>
+              <ui:expression>row.Kind != 8 </ui:expression>
+            </dynStyle>
+          </ChildGrid>
+        </FlowPanel>
       </page>
 
-      <page class="bee-ta-services-tab">
+
+      <page class="bee-ta-services-tab" key="TradeActServices">
         <text>=services</text>
         <ChildGrid name="TradeActServices" relColumn="TradeAct" disablable="false"/>
+      </page>
+
+      <page class="bee-ta-services-tab" key="RelTradeActServices">
+        <text>Proj. paslaugos</text>
+        <ChildGrid relColumn="RelRentAct" name="RelTradeActServices">
+        </ChildGrid>
       </page>
 
       <page class="bee-ta-invoices-tab">
@@ -175,6 +200,10 @@
         <text>=tradeActsContinuous</text>
         <ChildGrid name="TradeActs" gridName="TradeActs" relColumn="ContinuousAct"
                    filter="Kind = 7"/>
+      </page>
+      <page class="bee-ta-rpr-tab">
+        <text>Susiję aktai</text>
+        <ChildGrid name="RPTradeActs" gridName="TradeActs" relColumn="RentProject"/>
       </page>
       <page>
         <text>=notes</text>

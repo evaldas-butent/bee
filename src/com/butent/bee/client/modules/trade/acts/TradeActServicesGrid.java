@@ -1,5 +1,12 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.butent.bee.client.grid.ColumnFooter;
+import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.column.AbstractColumn;
+import com.butent.bee.client.view.View;
+import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
@@ -26,7 +33,6 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -57,7 +63,17 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
 
   private static double getItemTotal(GridView gridView) {
     double total = BeeConst.DOUBLE_ZERO;
-    GridView items = ViewHelper.getSiblingGrid(gridView.asWidget(), GRID_TRADE_ACT_ITEMS);
+
+    if (gridView == null) {
+      return total;
+    }
+
+    IsRow formRow = ViewHelper.getFormRow(gridView.asWidget());
+    TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, formRow);
+
+    GridView items = TradeActKind.RENT_PROJECT.equals(kind)
+            ? ViewHelper.getSiblingGrid(gridView.asWidget(), "RPTradeActItems")
+            : ViewHelper.getSiblingGrid(gridView.asWidget(), GRID_TRADE_ACT_ITEMS);
 
     if (items != null && !items.isEmpty()) {
       Totalizer totalizer = new Totalizer(items.getDataColumns());
@@ -278,6 +294,10 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     int count = 0;
 
     for (IsRow row : gridView.getRowData()) {
+//      if (!gridView.isRowSelected(row.getId())) {
+//        continue;
+//      }
+
       Double tariff = row.getDouble(tariffIndex);
 
       if (BeeUtils.isPositive(tariff)) {
@@ -415,13 +435,26 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
       return;
     }
 
+    if (gridView.getActiveRow() == null) {
+      gridView.notifyWarning(Localized.dictionary().selectAtLeastOneRow());
+      return;
+    }
+
     gridView.ensureRelId(relId -> {
       ParameterList prm = TradeActKeeper.createArgs(SVC_GET_ACT_ITEMS_RENTAL_AMOUNT);
-      prm.addDataItem(COL_TRADE_ACT, relId);
 
-      BeeKeeper.getRpc().makePostRequest(prm, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
+
+      Queries.getRow(VIEW_TRADE_ACTS, relId, parentActRow -> {
+        TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentActRow);
+
+        if (TradeActKind.RENT_PROJECT.equals(kind)) {
+          prm.addDataItem(Service.VAR_TABLE, TBL_TRADE_ACTS);
+          prm.addDataItem(Service.VAR_COLUMN, COL_TA_RENT_PROJECT);
+        }
+
+        prm.addDataItem(COL_TRADE_ACT, relId);
+
+        BeeKeeper.getRpc().makePostRequest(prm, response -> {
           if (!response.hasResponse(Double.class)) {
             return;
           }
@@ -430,6 +463,10 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
           double rentalAmount = BeeUtils.toDouble(response.getResponseAsString());
 
           for (IsRow row : gridView.getRowData()) {
+            if (getGridView().getActiveRowId() != row.getId()) {
+              continue;
+            }
+
             if (Data.getInteger(viewName, row, COL_TIME_UNIT) == null) {
               continue;
             }
@@ -450,7 +487,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
                   RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
                 });
           }
-        }
+        });
       });
     });
   }

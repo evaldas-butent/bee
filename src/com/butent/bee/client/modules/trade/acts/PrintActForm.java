@@ -186,17 +186,15 @@ public class PrintActForm extends AbstractFormInterceptor {
                 }
                 ParameterList params = TradeActKeeper.createArgs(SVC_GET_ITEMS_FOR_MULTI_RETURN);
                 params.addQueryItem(Service.VAR_LIST, DataUtils.buildIdList(acts));
-                BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-                  @Override
-                  public void onResponse(ResponseObject response) {
-                    if (response != null && response.hasResponse(BeeRowSet.class)) {
-                      BeeRowSet parentItems = BeeRowSet.restore(response.getResponseAsString());
-                      remainQty.putAll(TradeActUtils.getItemQuantities(parentItems));
-                    }
-
-                    renderItems(ITEMS_WIDGET_NAME);
-                    renderItems(SERVICES_WIDGET_NAME);
+                params.addQueryItem("DEBUG", "[PrintActFrorm][BeforeRefresh]");
+                BeeKeeper.getRpc().makeRequest(params, response -> {
+                  if (response != null && response.hasResponse(BeeRowSet.class)) {
+                    BeeRowSet parentItems = BeeRowSet.restore(response.getResponseAsString());
+                    remainQty.putAll(TradeActUtils.getItemQuantities(parentItems));
                   }
+
+                  renderItems(ITEMS_WIDGET_NAME);
+                  renderItems(SERVICES_WIDGET_NAME);
                 });
               });
     } else {

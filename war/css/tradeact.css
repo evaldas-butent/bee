@@ -9,15 +9,10 @@
   display: none;
 }
 
-.bee-ta-form-no-services .bee-ta-until-label,
-.bee-ta-form-no-services .bee-ta-until-input,
-.bee-ta-form-no-services .bee-ta-services-tab,
-.bee-ta-form-no-services .bee-grid-TradeActServices {
-  display: none;
-}
-
 .bee-ta-form-no-cta .bee-ta-cta-tab,
-.bee-ta-form-no-cta .bee-grid-TradeActs {
+.bee-ta-form-no-cta .bee-grid-grid_TradeActs_ContinuousAct,
+.bee-ta-form-no-rpr .bee-ta-rpr-tab,
+.bee-ta-form-no-rpr .bee-grid-grid_TradeActs_RentProject {
   display: none;
 }
 

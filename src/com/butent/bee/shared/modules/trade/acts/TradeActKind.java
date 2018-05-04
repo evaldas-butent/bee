@@ -14,7 +14,7 @@ import java.util.EnumSet;
 
 public enum TradeActKind implements HasLocalizedCaption {
   /* 0 */
-  SALE(new String[] {COL_TA_INPUT_DRIVER, COL_TA_INPUT_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS},
+  SALE(new String[] {COL_TA_INPUT_DRIVER, COL_TA_INPUT_VEHICLE, COL_TA_OBJECT, COL_TA_OPERATION, COL_TA_STATUS},
       Option.ALTER_TO,
       Option.AUTO_NUMBER, Option.BUILD_INVOICES,
       Option.ENABLE_COPY,
@@ -28,12 +28,12 @@ public enum TradeActKind implements HasLocalizedCaption {
     @Override
     public Filter getFilter() {
       return Filter.or(Lists.newArrayList(super.getFilter(), SUPPLEMENT.getFilter(),
-          RETURN.getFilter(), CONTINUOUS.getFilter()));
+          RETURN.getFilter(), CONTINUOUS.getFilter(), RENT_PROJECT.getFilter()));
     }
   },
 
   /* 1 */
-  SUPPLEMENT(new String[] {COL_TA_INPUT_DRIVER, COL_TA_INPUT_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS},
+  SUPPLEMENT(new String[] {COL_TA_INPUT_DRIVER, COL_TA_INPUT_VEHICLE, COL_TA_OBJECT, COL_TA_OPERATION, COL_TA_STATUS},
       Option.BUILD_INVOICES, Option.ENABLE_RETURN, Option.HAS_SERVICES,
       Option.SHOW_STOCK, Option.HAS_PARENT_ACT) {
     @Override
@@ -49,7 +49,7 @@ public enum TradeActKind implements HasLocalizedCaption {
 
   /* 2 */
   RETURN(new String[] {COL_TA_INPUT_DRIVER, COL_TA_INPUT_VEHICLE,
-    COL_TA_OBJECT, COL_TA_STATUS, COL_TA_DATE},
+    COL_TA_OBJECT, COL_TA_STATUS, COL_TA_OPERATION, COL_TA_DATE},
       Option.AUTO_NUMBER, Option.HAS_PARENT_ACT) {
     @Override
     public String getCaption(Dictionary constants) {
@@ -63,7 +63,7 @@ public enum TradeActKind implements HasLocalizedCaption {
   },
 
   /* 3 */
-  TENDER(null, Option.ALTER_TO, Option.ALTER_FROM, Option.ENABLE_COPY,
+  TENDER(new String[] {COL_TA_OPERATION}, Option.ALTER_TO, Option.ALTER_FROM, Option.ENABLE_COPY,
       Option.HAS_SERVICES,
       Option.SAVE_AS_TEMPLATE, Option.SHOW_STOCK) {
     @Override
@@ -73,7 +73,7 @@ public enum TradeActKind implements HasLocalizedCaption {
   },
 
   /* 4 */
-  PURCHASE(null, Option.ALTER_TO, Option.AUTO_NUMBER, Option.ENABLE_COPY,
+  PURCHASE(new String[] {COL_TA_OPERATION}, Option.ALTER_TO, Option.AUTO_NUMBER, Option.ENABLE_COPY,
       Option.SAVE_AS_TEMPLATE) {
     @Override
     public String getCaption(Dictionary constants) {
@@ -82,7 +82,7 @@ public enum TradeActKind implements HasLocalizedCaption {
   },
 
   /* 5 */
-  WRITE_OFF(null, Option.ALTER_TO, Option.AUTO_NUMBER, Option.SHOW_STOCK) {
+  WRITE_OFF(new String[] {COL_TA_OPERATION}, Option.ALTER_TO, Option.AUTO_NUMBER, Option.SHOW_STOCK) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.taKindWriteOff();
@@ -95,7 +95,7 @@ public enum TradeActKind implements HasLocalizedCaption {
   },
 
   /* 6 */
-  RESERVE(null, Option.ALTER_TO, Option.ALTER_FROM, Option.HAS_SERVICES,
+  RESERVE(new String[] {COL_TA_OPERATION}, Option.ALTER_TO, Option.ALTER_FROM, Option.HAS_SERVICES,
       Option.SHOW_STOCK) {
     @Override
     public String getCaption(Dictionary constants) {
@@ -115,6 +115,20 @@ public enum TradeActKind implements HasLocalizedCaption {
     public boolean enableMultiReturn(TradeActKind other) {
       return super.enableMultiReturn(other);
     }
+
+  },
+  /* 8 */
+  RENT_PROJECT(null, Option.AUTO_NUMBER, Option.SHOW_STOCK, Option.ENABLE_RETURN,
+          Option.BUILD_INVOICES, Option.HAS_RELATED_SERVICES) {
+    @Override
+    public boolean enableMultiReturn(TradeActKind other) {
+      return false;
+    }
+
+    @Override
+    public String getCaption(Dictionary constants) {
+      return "Nuomos projektas";
+    }
   };
 
   private enum Option {
@@ -128,7 +142,8 @@ public enum TradeActKind implements HasLocalizedCaption {
     HAS_SERVICES,
     SAVE_AS_TEMPLATE,
     SHOW_STOCK,
-    HAS_PARENT_ACT
+    HAS_PARENT_ACT,
+    HAS_RELATED_SERVICES
   }
 
   public static Filter getFilterForInvoiceBuilder() {
@@ -145,12 +160,8 @@ public enum TradeActKind implements HasLocalizedCaption {
   private final EnumSet<Option> options;
   private String[] reqFields;
 
-  TradeActKind(EnumSet<Option> options) {
-    this.options = options;
-  }
-
   TradeActKind(String[] reqFields, Option first, Option... rest) {
-    this.reqFields = reqFields;
+    this.reqFields = reqFields == null ? new String [] {} : reqFields;
     if (rest == null) {
       this.options = EnumSet.of(first);
     } else {
@@ -180,6 +191,10 @@ public enum TradeActKind implements HasLocalizedCaption {
 
   public boolean enableReturn() {
     return options.contains(Option.ENABLE_RETURN);
+  }
+
+  public boolean enableRelatedServices() {
+    return options.contains(Option.HAS_RELATED_SERVICES);
   }
 
   public boolean enableMultiReturn(TradeActKind other) {

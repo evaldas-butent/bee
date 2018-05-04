@@ -1,5 +1,8 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.butent.bee.client.view.*;
+import com.butent.bee.shared.data.*;
+import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -34,10 +37,6 @@ import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.view.HeaderView;
-import com.butent.bee.client.view.ViewCallback;
-import com.butent.bee.client.view.ViewFactory;
-import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -48,10 +47,6 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
@@ -653,12 +648,27 @@ public final class TradeActKeeper {
     }
 
     boolean hasContinuousTa = DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_CONTINUOUS)));
+    boolean hasRentProjectTa = DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_RENT_PROJECT)));
     boolean isContinuousTa = kind == TradeActKind.CONTINUOUS;
+    boolean isRentProjectTa = kind == TradeActKind.RENT_PROJECT;
+    boolean isReturnTa = kind == TradeActKind.RETURN;
+    boolean isSupplementTa = kind == TradeActKind.SUPPLEMENT;
+    boolean isSaleTa = kind == TradeActKind.SALE;
     boolean hasMultiReturn = DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_RETURN)));
     boolean hasReturn = BeeUtils.isPositive(row.getPropertyLong(ALS_RETURNED_COUNT));
+    boolean isReservedAct = kind == TradeActKind.RESERVE;
 
-    return  !hasContinuousTa && !isContinuousTa && !TradeActKeeper.isClientArea()
-        && !hasMultiReturn && !hasReturn;
+    boolean defEnabled = !(hasContinuousTa || hasRentProjectTa)
+            && !(isContinuousTa || isRentProjectTa) && !TradeActKeeper.isClientArea()
+            && !hasMultiReturn && !hasReturn;
+
+    boolean isReturnActItemsEnabled = hasRentProjectTa && isReturnTa;
+    boolean isSaleAndHasRentProject = hasRentProjectTa && !isRentProjectTa && (hasReturn || isSaleTa);
+    boolean isSupplementAndHasRentProject = hasRentProjectTa && !isRentProjectTa && isSupplementTa;
+
+
+    return  defEnabled || isReturnActItemsEnabled || isSaleAndHasRentProject || isSupplementAndHasRentProject
+            || isReservedAct;
   }
 
   static boolean isUserSeries(Long series) {
@@ -688,6 +698,10 @@ public final class TradeActKeeper {
   }
 
   static void prepareNewTradeAct(IsRow row, TradeActKind kind) {
+    prepareNewTradeAct(row, null, kind);
+  }
+
+  static void prepareNewTradeAct(IsRow row, IsRow parent, TradeActKind kind) {
     if (kind != null) {
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_KIND, kind.ordinal());
       setDefaultOperation(row, kind);
@@ -707,6 +721,23 @@ public final class TradeActKeeper {
         Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_SERIES, seriesId);
         Data.setValue(VIEW_TRADE_ACTS, row, COL_SERIES_NAME, seriesName);
       }
+    }
+
+    if (parent != null && TradeActKind.RENT_PROJECT.equals(getKind(VIEW_TRADE_ACTS, parent))) {
+      RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_NAME, row, parent);
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_NAME, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_NAME));
+
+      RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_RENT_PROJECT, row, parent);
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_RENT_PROJECT));
+      RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_COMPANY, row, parent);
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_COMPANY, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_COMPANY));
+      RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_CONTACT, row, parent);
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_CONTACT, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_CONTACT));
+      RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_OBJECT, row, parent);
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_OBJECT, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_OBJECT));
+
+      Data.setValue(VIEW_TRADE_ACTS, row, ALS_RENT_PROJECT_COMPANY, Data.getLong(VIEW_TRADE_ACTS, parent,
+              COL_TA_COMPANY));
     }
   }
 

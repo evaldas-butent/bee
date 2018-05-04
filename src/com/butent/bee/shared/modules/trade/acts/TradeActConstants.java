@@ -36,6 +36,7 @@ public final class TradeActConstants {
   public static final String SVC_HAS_INVOICES_OR_SECONDARY_ACTS = "HasInvoicesOrSecondaryActs";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_REVERT_ACTS_STATUS_BEFORE_DELETE = "RevertActsStatusBeforeDelete";
+  public static final String SVC_ASSIGN_RENT_PROJECT = "AssignRentProject";
 
   public static final String TBL_TRADE_ACTS = "TradeActs";
   public static final String TBL_TRADE_ACT_ITEMS = "TradeActItems";
@@ -90,6 +91,7 @@ public final class TradeActConstants {
   public static final String COL_TA_REGISTRATION_NO = "RegistrationNo";
   public static final String COL_TA_RETURNED_QTY = "ReturnedQty";
   public static final String COL_TA_RETURN = "ReturnAct";
+  public static final String COL_TA_RENT_PROJECT = "RentProject";
   public static final String COL_TA_CONTINUOUS = "ContinuousAct";
 
   public static final String COL_TA_TEMPLATE_NAME = "Template";
@@ -115,6 +117,7 @@ public final class TradeActConstants {
 
   public static final String ALS_RETURNED_QTY = "ReturnedQty";
   public static final String ALS_REMAINING_QTY = "RemainingQty";
+  public static final String ALS_RENT_PROJECT_COMPANY = "RentProjectCompany";
   public static final String ALS_RETURNED_COUNT = "ReturnedCount";
 
   public static final String ALS_BASE_AMOUNT = "BaseAmount";
