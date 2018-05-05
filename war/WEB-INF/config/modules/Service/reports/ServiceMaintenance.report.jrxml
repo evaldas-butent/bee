@@ -18,10 +18,10 @@
 	<style name="TableHeader" style="Font" hTextAlign="Center" vTextAlign="Middle" isBold="true"/>
 	<style name="TableCell">
 		<box>
-			<topPen lineWidth="0.5" lineColor="#CFCFCF"/>
-			<leftPen lineWidth="0.5" lineColor="#CFCFCF"/>
-			<bottomPen lineWidth="0.5" lineColor="#CFCFCF"/>
-			<rightPen lineWidth="0.5" lineColor="#CFCFCF"/>
+			<topPen lineWidth="0.5"/>
+			<leftPen lineWidth="0.5"/>
+			<bottomPen lineWidth="0.5"/>
+			<rightPen lineWidth="0.5"/>
 		</box>
 	</style>
 	<subDataset name="MaintenanceComments" uuid="e24d1dd8-8cfa-44bf-90b0-5402fa27839a">

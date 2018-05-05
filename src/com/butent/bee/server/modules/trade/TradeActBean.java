@@ -3116,6 +3116,8 @@ public class TradeActBean implements HasTimerService {
 
       query.addField(TBL_UNITS, COL_UNIT_NAME, ALS_UNIT_NAME);
 
+      query.addFields(TBL_ITEMS, COL_EXTERNAL_STOCK);
+
       query.addOrder(TBL_ITEMS, COL_ITEM_ORDINAL);
       query.addOrder(null, ALS_ITEM_TYPE_NAME);
       query.addOrder(null, ALS_ITEM_GROUP_NAME);

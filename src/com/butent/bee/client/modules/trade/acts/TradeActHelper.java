@@ -181,6 +181,8 @@ final class TradeActHelper {
       case "SaleFactor":
         return "Sąsk. tarifas %";
 
+      case COL_EXTERNAL_STOCK:
+        return "ERP likutis";
 
       default:
         logger.warning(NameUtils.getClassName(TradeActHelper.class), name, "label not defined");
@@ -240,6 +242,7 @@ final class TradeActHelper {
       case COL_TRADE_ITEM_QUANTITY:
       case ALS_RETURNED_QTY:
       case ALS_REMAINING_QTY:
+      case COL_EXTERNAL_STOCK:
         return getQuantityFormat();
 
       case COL_TRADE_ITEM_PRICE:
