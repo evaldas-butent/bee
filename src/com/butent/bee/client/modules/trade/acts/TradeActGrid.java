@@ -706,7 +706,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
         case COL_TA_RENT_PROJECT:
           if (parent != null && isRentProjectAct(parent)) {
             newRow.setValue(i, parent.getId());
-          } else {
+          } else if (parent != null && DataUtils.isId(parent.getLong(i))) {
             RelationUtils.updateRow(viewTradeActs, colId, newRow, viewTradeActs,
                     parent, false);
             newRow.setValue(i, parent.getLong(i));
