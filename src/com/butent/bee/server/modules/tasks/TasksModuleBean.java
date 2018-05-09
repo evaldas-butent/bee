@@ -2107,6 +2107,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
     HasConditions clause = SqlUtils.and();
+    clause.add(SqlUtils.notNull(VIEW_TASKS, COL_TASK_ORDER));
     clause.add(report.getCondition(TBL_TASKS, COL_START_TIME));
     clause.add(report.getCondition(TBL_TASKS, COL_FINISH_TIME));
     clause.add(report.getCondition(TBL_TASKS, COL_SUMMARY));

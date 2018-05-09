@@ -8,9 +8,9 @@
     <String name="OrderNo" precision="25" defExpr="NEXT_NUMBER" label="=orderNumber" />
 
     <String name="Model" precision="10" label="Maketas" />
-    <String name="ModelNote" precision="24" label="Pastaba" />
+    <String name="ModelNote" precision="100" label="Pastaba" />
     <String name="PrintFormat" precision="15" label="Spaudos formatas" />
-    <String name="OtherPrintFormat" precision="21" />
+    <String name="OtherPrintFormat" precision="100" />
     <Integer name="ArcNumber" label="Skaičius lanke" />
     <Integer name="PageNumber" label="Psl. skaičius" />
     <Integer name="Tin" label="Skardos" />
@@ -20,54 +20,54 @@
     <String name="PressSeries" precision="10" label="Serija" />
     <String name="PressNumber" precision="10" label="Numeris" />
     <Date name="PressDate" label="Data" />
-    <String name="SupplierNote" precision="88" label="Pastaba" />
+    <String name="SupplierNote" precision="114" label="Pastaba" />
     <String name="PaperEnvelope" precision="25" label="Žaliava" />
-    <String name="PaperEnvelopeNote" precision="44" label="Pastaba" />
+    <String name="PaperEnvelopeNote" precision="100" label="Pastaba" />
     <Integer name="Color1" label="Spalvingumas" />
     <Integer name="Color2" label="Spalvingumas" />
-    <String name="ColorNote" precision="44" label="Pastaba" />
+    <String name="ColorNote" precision="100" label="Pastaba" />
     <String name="Offset" precision="10" label="Ofsetinis lakas" />
     <Boolean name="UV" label="UV lakas" />
     <String name="Laminate1" precision="10" label="Laminavimas" />
     <String name="Laminate2" precision="10" label="Laminavimas" />
     <Relation name="Printed" relation="CompanyPersons" label="Spaudė" />
-    <String name="ProductFormat" precision="72" label="Gaminio formatas" />
+    <String name="ProductFormat" precision="200" label="Gaminio formatas" />
     <Integer name="NumberOfRuns" label="Prabėgimų sk." />
     <Integer name="Quantity" label="Kiekis" />
     <Integer name="Counter" label="Skaitliukas" />
     <Integer name="Waster" label="Brokas" />
     <Integer name="Good" label="Geri" />
-    <String name="Note" label="Pastaba"  precision="88"/>
+    <Text name="Note" label="Pastaba" />
 
     <Numeric name="Material" label="Žaliava" precision="10" scale="4" />
     <Numeric name="Paints" label="Dažai" precision="10" scale="4" />
     <Integer name="Pores" label="Porėmis" />
     <Integer name="Rings" label="Žiedai" />
-    <String name="OtherMaterial" precision="85" label="Kita" />
+    <String name="OtherMaterial" precision="107" label="Kita" />
 
     <Relation name="DecorationSupplier" relation="Companies" label="Tiekėjas" />
     <Numeric name="DecorationPrice" precision="10" scale="4" label="Kaina" />
-    <String name="DecorationSupplierNote" precision="88" label="Pastaba" />
+    <String name="DecorationSupplierNote" precision="113" label="Pastaba" />
     <Relation name="Made" relation="CompanyPersons" label="Mantavo" />
     <String name="Cut" precision="25" label="Kirpti" />
     <String name="Stitching" precision="10" label="Segimas" />
-    <String name="OtherStitching" precision="30" />
+    <String name="OtherStitching" precision="38" />
     <String name="Spiral" precision="10" label="Spiralės" />
-    <String name="OtherSpiral"  precision="15"/>
+    <String name="OtherSpiral"  precision="38"/>
     <String name="Holes" precision="25" label="Skylės" />
-    <String name="OtherHoles"  precision="22"/>
+    <String name="OtherHoles"  precision="27"/>
     <String name="Punching" precision="10" label="Štancavimas" />
     <String name="Bending" precision="15" label="Apdaila" />
-    <String name="OtherBending"  precision="26"/>
+    <String name="OtherBending"  precision="33"/>
     <String name="Selection" label="Parink. / perfor."  precision="100" />
-    <String name="Glue" precision="35" label="Klijavimas" />
-    <String name="GlueNote" precision="88" label="Pastaba" />
-    <String name="Mounting" precision="76" label="Montavimas" />
+    <String name="Glue" precision="45" label="Klijavimas" />
+    <String name="GlueNote" precision="114" label="Pastaba" />
+    <String name="Mounting" precision="100" label="Montavimas" />
     <String name="Series" precision="3" label="Serija" />
     <String name="From" precision="32" label="Nr. nuo" />
     <String name="To" precision="33" label="Nr. iki" />
     <Relation name="Packed" relation="CompanyPersons" label="Numeravo/pakavo" />
-    <String name="MarkOnPack" precision="25" label="Žymė ant pakuotės" />
+    <String name="MarkOnPack" precision="200" label="Žymė ant pakuotės" />
     <String name="Packing" precision="10" label="Pakavimas" />
     <String name="OtherPacking" precision="45" />
     <String name="Total" precision="15" label="Viso:" />
@@ -76,13 +76,13 @@
     <String name="Number" precision="10" label="Numeris" />
     <Date name="Date" label="Data" />
     <String name="Transportation" precision="10" label="Transportavimas" />
-    <String name="TransportationNote" precision="90" label="Pastaba" />
+    <String name="TransportationNote" precision="115" label="Pastaba" />
     <Integer name="PackageQty" label="Pakuočių kiekis" />
     <Numeric name="Weight" precision="9" scale="3" label="Svoris" />
 
     <String name="InvoiceSupplier" label="Sąskaitą išrašė"  precision="25" />
     <Numeric name="InvoicePrice" precision="10" scale="4" label="Kaina" />
-    <String name="InvoiceNote" precision="89" label="Pastaba" />
+    <String name="InvoiceNote" precision="115" label="Pastaba" />
     <String name="InvoiceSeries" precision="10" label="Serija" />
     <String name="InvoiceNumber" precision="10" label="Numeris" />
     <Date name="InvoiceDate" label="Data" />
