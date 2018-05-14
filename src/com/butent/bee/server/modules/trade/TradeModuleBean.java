@@ -1,6 +1,5 @@
 package com.butent.bee.server.modules.trade;
 
-import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ArrayListMultimap;
@@ -122,6 +121,7 @@ import com.butent.bee.shared.modules.trade.TradeDocumentItem;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
+import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
@@ -361,8 +361,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       default:
         if (BeeUtils.same(svc, SVC_GET_SALE_AMOUNTS)) {
           response = getSaleAmounts(reqInfo.getParameter(VAR_VIEW_NAME),
-            reqInfo.getParameter(Service.VAR_COLUMN),
-            Filter.restore(reqInfo.getParameter(EcConstants.VAR_FILTER)));
+              reqInfo.getParameter(Service.VAR_COLUMN),
+              Filter.restore(reqInfo.getParameter(EcConstants.VAR_FILTER)));
 
         } else if (BeeUtils.same(svc, SVC_SEND_COMPANY_TO_ERP)) {
           response = sendCompanyToERP(reqInfo.getParameterLong(COL_COMPANY));
@@ -387,7 +387,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     CompoundFilter filter = Filter.and();
 
     Set<Long> saleItems =
-        BeeUtils.same(source, TBL_SALE_ITEMS) ? new HashSet<>()  : getSaleItems(saleId);
+        BeeUtils.same(source, TBL_SALE_ITEMS) ? new HashSet<>() : getSaleItems(saleId);
     if (!saleItems.isEmpty()) {
       filter.add(Filter.idNotIn(saleItems));
     }
@@ -467,17 +467,17 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         .setDistinctMode(true);
 
     SimpleRowSet companiesEmails = qs.getData(select);
-//    transrifus -> {
+    //    transrifus -> {
     SqlSelect selectMain = new SqlSelect()
-      .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
-      .addField(TBL_EMAILS, sys.getIdName(TBL_EMAILS), COL_EMAIL_ID)
-      .addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS)
-      .addFrom(TBL_COMPANIES)
-      .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
-      .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
-      .setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
-        companyIds),
-        SqlUtils.notNull(TBL_CONTACTS, COL_REMIND_EMAIL)));
+        .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
+        .addField(TBL_EMAILS, sys.getIdName(TBL_EMAILS), COL_EMAIL_ID)
+        .addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS)
+        .addFrom(TBL_COMPANIES)
+        .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+        .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+        .setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
+            companyIds),
+            SqlUtils.notNull(TBL_CONTACTS, COL_REMIND_EMAIL)));
 
     SimpleRowSet mainEmails = qs.getData(selectMain);
 
@@ -487,7 +487,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       emails.put(companyId, email);
     }
-//    } <- transrifus
+    //    } <- transrifus
 
     for (String[] row : companiesEmails.getRows()) {
       Long companyId = BeeUtils.toLong(row[companiesEmails.getColumnIndex(COL_COMPANY)]);
@@ -1211,7 +1211,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
           for (String[] row : salesCountResult.getRows()) {
             salesCountData.put(BeeUtils.toLong(row[salesCountResult
-                .getColumnIndex(COL_TRADE_CUSTOMER)]),
+                    .getColumnIndex(COL_TRADE_CUSTOMER)]),
                 row);
           }
 
@@ -1220,7 +1220,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
           for (String[] row : salesSumResult.getRows()) {
             salesSumData.put(BeeUtils.toLong(row[salesSumResult
-                .getColumnIndex(COL_TRADE_CUSTOMER)]),
+                    .getColumnIndex(COL_TRADE_CUSTOMER)]),
                 row);
           }
 
@@ -1733,15 +1733,15 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       articleSource = TBL_ITEMS;
 
       actData = qs.getData(new SqlSelect()
-      .addFields(trade, COL_TA_PARENT, COL_TA_CONTINUOUS)
-      .addFrom(trade)
-      .setWhere(SqlUtils.and(sys.idEquals(trade, id),
+          .addFields(trade, COL_TA_PARENT, COL_TA_CONTINUOUS)
+          .addFrom(trade)
+          .setWhere(SqlUtils.and(sys.idEquals(trade, id),
               SqlUtils.equals(trade, COL_TA_KIND, TradeActKind.RETURN))));
 
       if (!actData.isEmpty()) {
         continuousAct = DataUtils.isId(actData.getLong(0, COL_TA_CONTINUOUS))
-                ? actData.getLong(0, COL_TA_CONTINUOUS)
-                : actData.getLong(0, COL_TA_PARENT);
+            ? actData.getLong(0, COL_TA_CONTINUOUS)
+            : actData.getLong(0, COL_TA_PARENT);
       }
     } else {
       return ResponseObject.error("View source not supported:", trade);
@@ -1811,8 +1811,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       if (DataUtils.isId(continuousAct)) {
         query.setWhere(SqlUtils.and(
-                SqlUtils.equals(tradeItems, itemsRelation, continuousAct),
-                SqlUtils.not(SqlUtils.inList(tradeItems, COL_ITEM, (Object []) simpleRowSet.getLongColumn(COL_ITEM)))
+            SqlUtils.equals(tradeItems, itemsRelation, continuousAct),
+            SqlUtils.not(SqlUtils.inList(tradeItems, COL_ITEM,
+                (Object[]) simpleRowSet.getLongColumn(COL_ITEM)))
         ));
 
         contItems = qs.getData(query);
@@ -1875,39 +1876,39 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return qs.getData(select);
   }
 
-//  private static Integer getOverdueInDays(BeeRowSet rs, IsRow row) {
-//    Integer overdue = null;
-//
-//    if (rs == null || row == null) {
-//      return overdue;
-//    }
-//
-//    int idxDate = rs.getColumnIndex(COL_TRADE_DATE);
-//    int idxTerm = rs.getColumnIndex(COL_TRADE_TERM);
-//
-//    if (idxDate < 0) {
-//      return overdue;
-//    }
-//
-//    if (idxTerm < 0) {
-//      idxTerm = idxDate;
-//    }
-//
-//    int start = 0;
-//    int end = (new JustDate()).getDays();
-//
-//    if (row.getDate(idxTerm) != null) {
-//      start = row.getDate(idxTerm).getDays();
-//    } else if (row.getDateTime(idxDate) != null) {
-//      start = row.getDateTime(idxDate).getDate().getDays();
-//    } else {
-//      return overdue;
-//    }
-//
-//    overdue = Integer.valueOf(end - start);
-//
-//    return overdue;
-//  }
+  //  private static Integer getOverdueInDays(BeeRowSet rs, IsRow row) {
+  //    Integer overdue = null;
+  //
+  //    if (rs == null || row == null) {
+  //      return overdue;
+  //    }
+  //
+  //    int idxDate = rs.getColumnIndex(COL_TRADE_DATE);
+  //    int idxTerm = rs.getColumnIndex(COL_TRADE_TERM);
+  //
+  //    if (idxDate < 0) {
+  //      return overdue;
+  //    }
+  //
+  //    if (idxTerm < 0) {
+  //      idxTerm = idxDate;
+  //    }
+  //
+  //    int start = 0;
+  //    int end = (new JustDate()).getDays();
+  //
+  //    if (row.getDate(idxTerm) != null) {
+  //      start = row.getDate(idxTerm).getDays();
+  //    } else if (row.getDateTime(idxDate) != null) {
+  //      start = row.getDateTime(idxDate).getDate().getDays();
+  //    } else {
+  //      return overdue;
+  //    }
+  //
+  //    overdue = Integer.valueOf(end - start);
+  //
+  //    return overdue;
+  //  }
 
   private SimpleRowSet getERPSalesCount(List<Long> companyIds) {
     SqlSelect select = new SqlSelect().addFields(TBL_ERP_SALES, COL_TRADE_CUSTOMER);
@@ -2087,179 +2088,179 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return ResponseObject.response(tdd);
   }
 
-//  private Document renderCompanyDebtMail(String subject, String p1,
-//      String p2, Long companyId) {
-//    Document doc = new Document();
-//    doc.getHead().append(meta().encodingDeclarationUtf8(), title().text(subject));
-//    doc.getBody().setColor("black");
-//
-//    Pre pre = pre().text(p1);
-//    pre.setWordWrap(WordWrap.BREAK_WORD);
-//    pre.setFontFamily("sans-serif");
-//    pre.setFontSize(11, CssUnit.PT);
-//    String first = pre.build();
-//
-//    pre = pre().text(p2);
-//    pre.setWordWrap(WordWrap.BREAK_WORD);
-//    pre.setFontFamily("sans-serif");
-//    pre.setFontSize(11, CssUnit.PT);
-//    String last = pre.build();
-//
-//    Filter filter = Filter.and(
-//        Filter.or(Filter.and(
-//            Filter.isEqual(COL_TRADE_CUSTOMER, Value.getValue(companyId)), Filter.isNull(
-//                COL_SALE_PAYER)),
-//            Filter.isEqual(COL_SALE_PAYER, Value.getValue(companyId))),
-//        Filter.compareWithValue(COL_TRADE_DEBT, Operator.GT, Value.getValue(0)));
-//
-//    if (BeeUtils.unbox(prm.getBoolean(PRM_OVERDUE_INVOICES))) {
-//      filter =
-//          Filter.and(filter, Filter.compareWithValue(COL_TRADE_TERM, Operator.LT, Value
-//              .getValue(TimeUtils.nowMillis())));
-//    }
-//
-//    BeeRowSet rs = qs.getViewData(VIEW_DEBTS, filter, null,
-//        Lists.newArrayList(COL_TRADE_INVOICE_NO, COL_TRADE_DATE,
-//            COL_TRADE_TERM, COL_TRADE_AMOUNT, COL_TRADE_DEBT, ALS_CURRENCY_NAME,
-//            ALS_CUSTOMER_NAME, ALS_PAYER_NAME, COL_SERIES_NAME));
-//
-//    if (rs.isEmpty()) {
-//      return null;
-//    }
-//
-//    Map<String, Object> creditInfo = Maps.newHashMap();
-//    ResponseObject resp = getCreditInfo(companyId);
-//    Double debt = null;
-//
-//    if (resp.getResponse() instanceof Map) {
-//      creditInfo = resp.getResponse(creditInfo, logger);
-//      if (creditInfo.get(VAR_DEBT) instanceof Double) {
-//        debt = (Double) creditInfo.get(VAR_DEBT);
-//      }
-//    }
-//
-//    int ignoreLast = 3;
-//
-//    Table table = table();
-//    Caption caption = caption()
-//        .text(BeeUtils.nvl(rs.getRows().get(0).getString(rs.getColumnIndex(ALS_CUSTOMER_NAME)), rs
-//            .getRows().get(0).getString(rs.getColumnIndex(ALS_PAYER_NAME))));
-//
-//    caption.setTextAlign(TextAlign.LEFT);
-//    table.append(caption);
-//    Tr trHead = tr();
-//
-//    for (int i = 0; i < rs.getNumberOfColumns() - ignoreLast; i++) {
-//      String label = Localized.maybeTranslate(rs.getColumnLabel(i), usr.getGlossary());
-//
-//      if (BeeUtils.same(rs.getColumnId(i), COL_TRADE_INVOICE_NO)) {
-//        label = usr.getDictionary().trdInvoice();
-//      }
-//
-//      if (BeeUtils.same(rs.getColumnId(i), COL_TRADE_AMOUNT)) {
-//        label = usr.getDictionary().trdAmount();
-//      }
-//      Th th = th().text(label);
-//      th.setBorderWidth("1px");
-//      th.setBorderStyle(BorderStyle.SOLID);
-//      th.setBorderColor("black");
-//      trHead.append(th);
-//    }
-//
-//    Th th = th().text(usr.getDictionary().trdOverdueInDays());
-//    th.setBorderWidth("1px");
-//    th.setBorderStyle(BorderStyle.SOLID);
-//    th.setBorderColor("black");
-//    trHead.insert(rs.getColumnIndex(COL_TRADE_TERM) + 1, th);
-//
-//    table.append(trHead);
-//
-//    Range<Long> maybeTime = Range.closed(
-//        TimeUtils.startOfYear(TimeUtils.today(), -10).getTime(),
-//        TimeUtils.startOfYear(TimeUtils.today(), 100).getTime());
-//
-//    for (IsRow row : rs) {
-//      Tr tr = tr();
-//
-//      for (int i = 0; i < rs.getNumberOfColumns() - ignoreLast; i++) {
-//        if (row.isNull(i)) {
-//          tr.append(td());
-//          continue;
-//        }
-//
-//        ValueType type = rs.getColumnType(i);
-//        String value = DataUtils.render(rs.getColumn(i), row, i);
-//
-//        if (type == ValueType.LONG) {
-//          Long x = row.getLong(i);
-//          if (x != null && maybeTime.contains(x)) {
-//            type = ValueType.DATE_TIME;
-//            value = new JustDate(x).toString();
-//          }
-//        }
-//
-//        if (type == ValueType.DATE_TIME) {
-//          value = new JustDate(row.getLong(i)).toString();
-//        }
-//
-//        if (BeeUtils.same(rs.getColumnId(i), COL_TRADE_INVOICE_NO)) {
-//          type = ValueType.TEXT;
-//
-//          int idxInvoicePref = rs.getColumnIndex(COL_SERIES_NAME);
-//
-//          if (idxInvoicePref > -1
-//              && !BeeUtils.isEmpty(row.getString(idxInvoicePref))) {
-//            value = BeeUtils.joinWords(row.getString(idxInvoicePref),
-//                row.getString(i));
-//          }
-//        }
-//
-//        Td td = td();
-//        tr.append(td);
-//        td.text(value);
-//        td.setPadding("0 5px 0 5px");
-//
-//        if (ValueType.isNumeric(type) || ValueType.TEXT == type
-//            && CharMatcher.digit().matchesAnyOf(value) && BeeUtils.isDouble(value)) {
-//          if (!BeeUtils.same(rs.getColumnId(i), COL_TRADE_INVOICE_NO)) {
-//            td.setTextAlign(TextAlign.RIGHT);
-//          }
-//        }
-//
-//      }
-//
-//      Integer overdue = getOverdueInDays(rs, row);
-//      Td td = td();
-//      tr.insert(rs.getColumnIndex(COL_TRADE_TERM) + 1, td);
-//      td.text(overdue == null ? BeeConst.STRING_EMPTY : BeeUtils.toString(overdue));
-//      td.setPadding("0 5px 0 5px");
-//      td.setTextAlign(TextAlign.RIGHT);
-//
-//      table.append(tr);
-//    }
-//
-//    Tr footer = tr();
-//    for (int i = 0; i < rs.getNumberOfColumns() - ignoreLast - 3; i++) {
-//      footer.append(td());
-//    }
-//    footer.append(td());
-//
-//    footer.append(td().append(b().text(usr.getDictionary().total())));
-//    footer.append(td().text(BeeUtils.notEmpty(BeeUtils.toString(debt), BeeConst.STRING_EMPTY)));
-//    table.append(footer);
-//    footer.append(td());
-//
-//    table.setBorderWidth("1px;");
-//    table.setBorderStyle(BorderStyle.NONE);
-//    table.setBorderSpacing("0px;");
-//    table.setFontFamily("sans-serif");
-//    table.setFontSize(10, CssUnit.PT);
-//
-//    doc.getBody().append(p().text(first));
-//    doc.getBody().append(table);
-//    doc.getBody().append(p().text(last));
-//    return doc;
-//  }
+  //  private Document renderCompanyDebtMail(String subject, String p1,
+  //      String p2, Long companyId) {
+  //    Document doc = new Document();
+  //    doc.getHead().append(meta().encodingDeclarationUtf8(), title().text(subject));
+  //    doc.getBody().setColor("black");
+  //
+  //    Pre pre = pre().text(p1);
+  //    pre.setWordWrap(WordWrap.BREAK_WORD);
+  //    pre.setFontFamily("sans-serif");
+  //    pre.setFontSize(11, CssUnit.PT);
+  //    String first = pre.build();
+  //
+  //    pre = pre().text(p2);
+  //    pre.setWordWrap(WordWrap.BREAK_WORD);
+  //    pre.setFontFamily("sans-serif");
+  //    pre.setFontSize(11, CssUnit.PT);
+  //    String last = pre.build();
+  //
+  //    Filter filter = Filter.and(
+  //        Filter.or(Filter.and(
+  //            Filter.isEqual(COL_TRADE_CUSTOMER, Value.getValue(companyId)), Filter.isNull(
+  //                COL_SALE_PAYER)),
+  //            Filter.isEqual(COL_SALE_PAYER, Value.getValue(companyId))),
+  //        Filter.compareWithValue(COL_TRADE_DEBT, Operator.GT, Value.getValue(0)));
+  //
+  //    if (BeeUtils.unbox(prm.getBoolean(PRM_OVERDUE_INVOICES))) {
+  //      filter =
+  //          Filter.and(filter, Filter.compareWithValue(COL_TRADE_TERM, Operator.LT, Value
+  //              .getValue(TimeUtils.nowMillis())));
+  //    }
+  //
+  //    BeeRowSet rs = qs.getViewData(VIEW_DEBTS, filter, null,
+  //        Lists.newArrayList(COL_TRADE_INVOICE_NO, COL_TRADE_DATE,
+  //            COL_TRADE_TERM, COL_TRADE_AMOUNT, COL_TRADE_DEBT, ALS_CURRENCY_NAME,
+  //            ALS_CUSTOMER_NAME, ALS_PAYER_NAME, COL_SERIES_NAME));
+  //
+  //    if (rs.isEmpty()) {
+  //      return null;
+  //    }
+  //
+  //    Map<String, Object> creditInfo = Maps.newHashMap();
+  //    ResponseObject resp = getCreditInfo(companyId);
+  //    Double debt = null;
+  //
+  //    if (resp.getResponse() instanceof Map) {
+  //      creditInfo = resp.getResponse(creditInfo, logger);
+  //      if (creditInfo.get(VAR_DEBT) instanceof Double) {
+  //        debt = (Double) creditInfo.get(VAR_DEBT);
+  //      }
+  //    }
+  //
+  //    int ignoreLast = 3;
+  //
+  //    Table table = table();
+  //    Caption caption = caption()
+  //        .text(BeeUtils.nvl(rs.getRows().get(0).getString(rs.getColumnIndex(ALS_CUSTOMER_NAME)), rs
+  //            .getRows().get(0).getString(rs.getColumnIndex(ALS_PAYER_NAME))));
+  //
+  //    caption.setTextAlign(TextAlign.LEFT);
+  //    table.append(caption);
+  //    Tr trHead = tr();
+  //
+  //    for (int i = 0; i < rs.getNumberOfColumns() - ignoreLast; i++) {
+  //      String label = Localized.maybeTranslate(rs.getColumnLabel(i), usr.getGlossary());
+  //
+  //      if (BeeUtils.same(rs.getColumnId(i), COL_TRADE_INVOICE_NO)) {
+  //        label = usr.getDictionary().trdInvoice();
+  //      }
+  //
+  //      if (BeeUtils.same(rs.getColumnId(i), COL_TRADE_AMOUNT)) {
+  //        label = usr.getDictionary().trdAmount();
+  //      }
+  //      Th th = th().text(label);
+  //      th.setBorderWidth("1px");
+  //      th.setBorderStyle(BorderStyle.SOLID);
+  //      th.setBorderColor("black");
+  //      trHead.append(th);
+  //    }
+  //
+  //    Th th = th().text(usr.getDictionary().trdOverdueInDays());
+  //    th.setBorderWidth("1px");
+  //    th.setBorderStyle(BorderStyle.SOLID);
+  //    th.setBorderColor("black");
+  //    trHead.insert(rs.getColumnIndex(COL_TRADE_TERM) + 1, th);
+  //
+  //    table.append(trHead);
+  //
+  //    Range<Long> maybeTime = Range.closed(
+  //        TimeUtils.startOfYear(TimeUtils.today(), -10).getTime(),
+  //        TimeUtils.startOfYear(TimeUtils.today(), 100).getTime());
+  //
+  //    for (IsRow row : rs) {
+  //      Tr tr = tr();
+  //
+  //      for (int i = 0; i < rs.getNumberOfColumns() - ignoreLast; i++) {
+  //        if (row.isNull(i)) {
+  //          tr.append(td());
+  //          continue;
+  //        }
+  //
+  //        ValueType type = rs.getColumnType(i);
+  //        String value = DataUtils.render(rs.getColumn(i), row, i);
+  //
+  //        if (type == ValueType.LONG) {
+  //          Long x = row.getLong(i);
+  //          if (x != null && maybeTime.contains(x)) {
+  //            type = ValueType.DATE_TIME;
+  //            value = new JustDate(x).toString();
+  //          }
+  //        }
+  //
+  //        if (type == ValueType.DATE_TIME) {
+  //          value = new JustDate(row.getLong(i)).toString();
+  //        }
+  //
+  //        if (BeeUtils.same(rs.getColumnId(i), COL_TRADE_INVOICE_NO)) {
+  //          type = ValueType.TEXT;
+  //
+  //          int idxInvoicePref = rs.getColumnIndex(COL_SERIES_NAME);
+  //
+  //          if (idxInvoicePref > -1
+  //              && !BeeUtils.isEmpty(row.getString(idxInvoicePref))) {
+  //            value = BeeUtils.joinWords(row.getString(idxInvoicePref),
+  //                row.getString(i));
+  //          }
+  //        }
+  //
+  //        Td td = td();
+  //        tr.append(td);
+  //        td.text(value);
+  //        td.setPadding("0 5px 0 5px");
+  //
+  //        if (ValueType.isNumeric(type) || ValueType.TEXT == type
+  //            && CharMatcher.digit().matchesAnyOf(value) && BeeUtils.isDouble(value)) {
+  //          if (!BeeUtils.same(rs.getColumnId(i), COL_TRADE_INVOICE_NO)) {
+  //            td.setTextAlign(TextAlign.RIGHT);
+  //          }
+  //        }
+  //
+  //      }
+  //
+  //      Integer overdue = getOverdueInDays(rs, row);
+  //      Td td = td();
+  //      tr.insert(rs.getColumnIndex(COL_TRADE_TERM) + 1, td);
+  //      td.text(overdue == null ? BeeConst.STRING_EMPTY : BeeUtils.toString(overdue));
+  //      td.setPadding("0 5px 0 5px");
+  //      td.setTextAlign(TextAlign.RIGHT);
+  //
+  //      table.append(tr);
+  //    }
+  //
+  //    Tr footer = tr();
+  //    for (int i = 0; i < rs.getNumberOfColumns() - ignoreLast - 3; i++) {
+  //      footer.append(td());
+  //    }
+  //    footer.append(td());
+  //
+  //    footer.append(td().append(b().text(usr.getDictionary().total())));
+  //    footer.append(td().text(BeeUtils.notEmpty(BeeUtils.toString(debt), BeeConst.STRING_EMPTY)));
+  //    table.append(footer);
+  //    footer.append(td());
+  //
+  //    table.setBorderWidth("1px;");
+  //    table.setBorderStyle(BorderStyle.NONE);
+  //    table.setBorderSpacing("0px;");
+  //    table.setFontFamily("sans-serif");
+  //    table.setFontSize(10, CssUnit.PT);
+  //
+  //    doc.getBody().append(p().text(first));
+  //    doc.getBody().append(table);
+  //    doc.getBody().append(p().text(last));
+  //    return doc;
+  //  }
 
   private ResponseObject sendDebtsRemindEmail(RequestInfo req) {
     Long senderMailAccountId = mail.getSenderAccountId(SVC_REMIND_DEBTS_EMAIL);
@@ -2595,7 +2596,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
         company = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .importClient(BeeUtils.toString(companyId), company,
-              data.getValue(COL_COMPANY_CODE),
+                data.getValue(COL_COMPANY_CODE),
                 data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
                 data.getValue(COL_POST_INDEX), data.getValue(COL_CITY),
                 data.getValue(COL_COUNTRY));
@@ -2611,83 +2612,83 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return response;
   }
 
-//  private ResponseObject sendDebtsRemindEmail(RequestInfo req) {
-//    Long senderMailAccountId = mail.getSenderAccountId(SVC_REMIND_DEBTS_EMAIL);
-//    ResponseObject resp = ResponseObject.emptyResponse();
-//
-//    if (!DataUtils.isId(senderMailAccountId)) {
-//      return ResponseObject.error(usr.getDictionary().mailAccountNotFound());
-//    }
-//
-//    String subject = req.getParameter(VAR_SUBJECT);
-//    String p1 = req.getParameter(VAR_HEADER);
-//    String p2 = req.getParameter(VAR_FOOTER);
-//    List<Long> ids = DataUtils.parseIdList(req.getParameter(VAR_ID_LIST));
-//
-//    Map<Long, Map<Long, String>> emails = cls.getCompaniesRemindEmailAddresses(ids);
-//    Map<Long, String> errorMails = Maps.newHashMap();
-//    Set<Long> sentEmailCompanyIds = Sets.newHashSet();
-//
-//    for (Long companyId : emails.keySet()) {
-//      if (BeeUtils.isEmpty(emails.get(companyId).values())) {
-//        errorMails.put(companyId, usr.getDictionary().mailRecipientAddressNotFound());
-//        continue;
-//      }
-//
-//      Document mailDocument = renderCompanyDebtMail(subject, p1, p2, companyId);
-//
-//      if (mailDocument == null) {
-//        errorMails.put(companyId, usr.getDictionary().noData());
-//        continue;
-//      }
-//
-//      try {
-//        // logger.info(mailDocument.buildLines());
-//        MailAccount account = mailStore.getAccount(senderMailAccountId);
-//        MimeMessage message = mail.sendMail(account,
-//            ArrayUtils.toArray(
-//                Lists.newArrayList(emails.get(companyId).values())), null, null, subject,
-//            mailDocument
-//                .buildLines(),
-//            null, null);
-//
-//        mail.storeMessage(account, message, account.getSentFolder());
-//        sentEmailCompanyIds.add(companyId);
-//      } catch (MessagingException | BeeRuntimeException ex) {
-//        logger.error(ex);
-//        errorMails.put(companyId, ex.getMessage());
-//      }
-//    }
-//
-//    String message = BeeUtils.joinWords(usr.getDictionary().mailMessageSentCount(),
-//        sentEmailCompanyIds.size(), br().build());
-//
-//    if (!BeeUtils.isEmpty(errorMails.keySet())) {
-//      message = BeeUtils.joinWords(message, usr.getDictionary().errors(), br().build());
-//
-//      Filter filter = Filter.idIn(errorMails.keySet());
-//      BeeRowSet rs =
-//          qs.getViewData(VIEW_COMPANIES, filter, null, Lists.newArrayList(COL_COMPANY_NAME));
-//      int i = 0;
-//      for (Long id : errorMails.keySet()) {
-//
-//        message = BeeUtils.joinWords(message,
-//            rs.getRowById(id).getString(rs.getColumnIndex(COL_COMPANY_NAME)), errorMails.get(id),
-//            br().build());
-//
-//        if (i > 5) {
-//          message = BeeUtils.joinWords(message, br().build(),
-//              BeeUtils.bracket(BeeConst.ELLIPSIS), errorMails.keySet().size() - i);
-//          break;
-//        }
-//        i++;
-//      }
-//    }
-//
-//    resp.setResponse(message);
-//
-//    return resp;
-//  }
+  //  private ResponseObject sendDebtsRemindEmail(RequestInfo req) {
+  //    Long senderMailAccountId = mail.getSenderAccountId(SVC_REMIND_DEBTS_EMAIL);
+  //    ResponseObject resp = ResponseObject.emptyResponse();
+  //
+  //    if (!DataUtils.isId(senderMailAccountId)) {
+  //      return ResponseObject.error(usr.getDictionary().mailAccountNotFound());
+  //    }
+  //
+  //    String subject = req.getParameter(VAR_SUBJECT);
+  //    String p1 = req.getParameter(VAR_HEADER);
+  //    String p2 = req.getParameter(VAR_FOOTER);
+  //    List<Long> ids = DataUtils.parseIdList(req.getParameter(VAR_ID_LIST));
+  //
+  //    Map<Long, Map<Long, String>> emails = cls.getCompaniesRemindEmailAddresses(ids);
+  //    Map<Long, String> errorMails = Maps.newHashMap();
+  //    Set<Long> sentEmailCompanyIds = Sets.newHashSet();
+  //
+  //    for (Long companyId : emails.keySet()) {
+  //      if (BeeUtils.isEmpty(emails.get(companyId).values())) {
+  //        errorMails.put(companyId, usr.getDictionary().mailRecipientAddressNotFound());
+  //        continue;
+  //      }
+  //
+  //      Document mailDocument = renderCompanyDebtMail(subject, p1, p2, companyId);
+  //
+  //      if (mailDocument == null) {
+  //        errorMails.put(companyId, usr.getDictionary().noData());
+  //        continue;
+  //      }
+  //
+  //      try {
+  //        // logger.info(mailDocument.buildLines());
+  //        MailAccount account = mailStore.getAccount(senderMailAccountId);
+  //        MimeMessage message = mail.sendMail(account,
+  //            ArrayUtils.toArray(
+  //                Lists.newArrayList(emails.get(companyId).values())), null, null, subject,
+  //            mailDocument
+  //                .buildLines(),
+  //            null, null);
+  //
+  //        mail.storeMessage(account, message, account.getSentFolder());
+  //        sentEmailCompanyIds.add(companyId);
+  //      } catch (MessagingException | BeeRuntimeException ex) {
+  //        logger.error(ex);
+  //        errorMails.put(companyId, ex.getMessage());
+  //      }
+  //    }
+  //
+  //    String message = BeeUtils.joinWords(usr.getDictionary().mailMessageSentCount(),
+  //        sentEmailCompanyIds.size(), br().build());
+  //
+  //    if (!BeeUtils.isEmpty(errorMails.keySet())) {
+  //      message = BeeUtils.joinWords(message, usr.getDictionary().errors(), br().build());
+  //
+  //      Filter filter = Filter.idIn(errorMails.keySet());
+  //      BeeRowSet rs =
+  //          qs.getViewData(VIEW_COMPANIES, filter, null, Lists.newArrayList(COL_COMPANY_NAME));
+  //      int i = 0;
+  //      for (Long id : errorMails.keySet()) {
+  //
+  //        message = BeeUtils.joinWords(message,
+  //            rs.getRowById(id).getString(rs.getColumnIndex(COL_COMPANY_NAME)), errorMails.get(id),
+  //            br().build());
+  //
+  //        if (i > 5) {
+  //          message = BeeUtils.joinWords(message, br().build(),
+  //              BeeUtils.bracket(BeeConst.ELLIPSIS), errorMails.keySet().size() - i);
+  //          break;
+  //        }
+  //        i++;
+  //      }
+  //    }
+  //
+  //    resp.setResponse(message);
+  //
+  //    return resp;
+  //  }
 
   private ResponseObject sendToERP(String viewName, Set<Long> ids) {
     if (!sys.isView(viewName)) {
@@ -4927,7 +4928,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
 
     List<Triplet<String, Double, Double>> result = new ArrayList<>();
-
+/*
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE)
         .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
@@ -4942,8 +4943,48 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         .addGroup(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE)
         .addGroup(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
         .addOrder(TBL_WAREHOUSES, COL_WAREHOUSE_CODE);
+*/
+    SqlSelect union = new SqlSelect()
+        .addField(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO, COL_STOCK_WAREHOUSE)
+        .addSum(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(TBL_TRADE_ACT_ITEMS)
+        .addFromInner(TBL_TRADE_ACTS,
+            sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
+        .addFromInner(TBL_TRADE_OPERATIONS,
+            sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION))
+        .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO),
+            SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_ITEM, item)))
+        .addGroup(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO)
+        .addUnion(new SqlSelect()
+            .addField(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM, COL_STOCK_WAREHOUSE)
+            .addSum(SqlUtils.multiply(SqlUtils.field(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY),
+                SqlUtils.constant(-1)), COL_TRADE_ITEM_QUANTITY)
+            .addFrom(TBL_TRADE_ACT_ITEMS)
+            .addFromInner(TBL_TRADE_ACTS,
+                sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
+            .addFromInner(TBL_TRADE_OPERATIONS,
+                sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION))
+            .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_TRADE_OPERATIONS,
+                COL_OPERATION_WAREHOUSE_FROM),
+                SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_ITEM, item)))
+            .addGroup(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM));
+
+    String subq = SqlUtils.uniqueName();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(subq, COL_STOCK_WAREHOUSE)
+        .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+        .addSum(subq, COL_TRADE_ITEM_QUANTITY, COL_STOCK_QUANTITY)
+        .addFrom(union, subq)
+        .addFromInner(TBL_WAREHOUSES, sys.joinTables(TBL_WAREHOUSES, subq, COL_STOCK_WAREHOUSE))
+        .addGroup(subq, COL_STOCK_WAREHOUSE)
+        .addGroup(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+        .addOrder(TBL_WAREHOUSES, COL_WAREHOUSE_CODE);
 
     SimpleRowSet data = qs.getData(query);
+
+    data.addRow(new String[] {
+        "0", "ERP likutis", qs.getValueById(TBL_ITEMS, item, COL_EXTERNAL_STOCK)});
 
     if (!DataUtils.isEmpty(data)) {
       Collection<Long> items = Collections.singleton(item);
