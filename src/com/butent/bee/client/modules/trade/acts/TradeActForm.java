@@ -393,7 +393,8 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       DataInfo dataInfo = Data.getDataInfo(VIEW_TRADE_ACTS);
       Queries.getRowSet(VIEW_TRADE_ACTS, dataInfo.getColumnNames(false),
               Filter.and(Filter.equals(COL_TA_RENT_PROJECT, row.getLong(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_RENT_PROJECT))),
-                      Filter.isNot(Filter.equals(COL_TA_KIND, TradeActKind.RETURN.ordinal()))),
+                      Filter.or(Filter.equals(COL_TA_KIND, TradeActKind.SALE),
+                              Filter.equals(COL_TA_KIND, TradeActKind.SUPPLEMENT))),
 
               result -> {
 

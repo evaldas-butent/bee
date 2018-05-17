@@ -294,9 +294,13 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     int count = 0;
 
     for (IsRow row : gridView.getRowData()) {
-//      if (!gridView.isRowSelected(row.getId())) {
-//        continue;
-//      }
+      if (gridView.getActiveRowId() != row.getId()) {
+        continue;
+      }
+
+      if (!gridView.isRowEditable(row, gridView)) {
+        continue;
+      }
 
       Double tariff = row.getDouble(tariffIndex);
 
@@ -440,6 +444,10 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
       return;
     }
 
+    if (!gridView.isRowEditable(gridView.getActiveRow(), gridView)){
+      return;
+    }
+
     gridView.ensureRelId(relId -> {
       ParameterList prm = TradeActKeeper.createArgs(SVC_GET_ACT_ITEMS_RENTAL_AMOUNT);
 
@@ -461,32 +469,33 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
 
           String viewName = gridView.getViewName();
           double rentalAmount = BeeUtils.toDouble(response.getResponseAsString());
+          IsRow row = gridView.getActiveRow();
 
-          for (IsRow row : gridView.getRowData()) {
-            if (getGridView().getActiveRowId() != row.getId()) {
-              continue;
-            }
+         // for (IsRow row : gridView.getRowData()) {
+//            if (getGridView().getActiveRowId() != row.getId()) {
+//              continue;
+//            }
+//
+//            if (Data.getInteger(viewName, row, COL_TIME_UNIT) == null) {
+//              continue;
+//            }
 
-            if (Data.getInteger(viewName, row, COL_TIME_UNIT) == null) {
-              continue;
-            }
+          Double quantity = Data.getDouble(viewName, row, COL_TRADE_ITEM_QUANTITY);
 
-            Double quantity = Data.getDouble(viewName, row, COL_TRADE_ITEM_QUANTITY);
+          List<String> oldValues = Arrays.asList(
+              Data.getString(viewName, row, COL_TA_SERVICE_TARIFF),
+              Data.getString(viewName, row, COL_ITEM_PRICE), null);
 
-            List<String> oldValues = Arrays.asList(
-                Data.getString(viewName, row, COL_TA_SERVICE_TARIFF),
-                Data.getString(viewName, row, COL_ITEM_PRICE), null);
+          List<String> newValues = Arrays.asList(null, BeeUtils.toString(rentalAmount / quantity),
+              "1");
 
-            List<String> newValues = Arrays.asList(null, BeeUtils.toString(rentalAmount / quantity),
-                "1");
-
-            Queries.update(getViewName(), row.getId(), row.getVersion(),
-                Data.getColumns(VIEW_TRADE_ACT_SERVICES,
-                    Arrays.asList(COL_TA_SERVICE_TARIFF, COL_ITEM_PRICE,
-                        COL_IS_ITEM_RENTAL_PRICE)), oldValues, newValues, null, result -> {
-                  RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
-                });
-          }
+          Queries.update(getViewName(), row.getId(), row.getVersion(),
+              Data.getColumns(VIEW_TRADE_ACT_SERVICES,
+                  Arrays.asList(COL_TA_SERVICE_TARIFF, COL_ITEM_PRICE,
+                      COL_IS_ITEM_RENTAL_PRICE)), oldValues, newValues, null, result -> {
+                RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
+              });
+         // }
         });
       });
     });

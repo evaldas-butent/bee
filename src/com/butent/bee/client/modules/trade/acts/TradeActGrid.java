@@ -73,6 +73,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
   private Button copyCommand;
   private Button templateCommand;
   private Button toRentProjectCommand;
+  private Button removeFromRentCommand;
 
   private TradeActKind newActKind;
 
@@ -100,6 +101,10 @@ public class TradeActGrid extends AbstractGridInterceptor {
       }
       if (BeeKeeper.getUser().canCreateData(VIEW_TRADE_ACT_TEMPLATES)) {
         presenter.getHeader().addCommandItem(ensureTemplateCommand());
+      }
+
+      if (BeeKeeper.getUser().canDeleteData(VIEW_TRADE_ACTS)) {
+        presenter.getHeader().addCommandItem(ensureRemoveFromRent());
       }
     }
 
@@ -407,6 +412,35 @@ public class TradeActGrid extends AbstractGridInterceptor {
       TradeActKeeper.setCommandEnabled(returnCommand, false);
     }
     return returnCommand;
+  }
+
+  private Button ensureRemoveFromRent() {
+    if (removeFromRentCommand != null) {
+      return removeFromRentCommand;
+    }
+
+    removeFromRentCommand = new Button("Pašalinti iš nuomos proj.", e->{
+      IsRow row = getGridView().getActiveRow();
+
+      if (row == null) {
+        getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
+        return;
+      }
+      Global.confirm("Ar norite aktą pašalinti iš nuomos projekto ? ", () -> {
+
+
+        Queries.updateCellAndFire(VIEW_TRADE_ACTS, row.getId(), row.getVersion(),
+                COL_TA_RENT_PROJECT, Data.getString(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT),
+                null);
+
+        Data.resetLocal(VIEW_TRADE_ACTS);
+      });
+    });
+
+    TradeActKeeper.addCommandStyle(removeFromRentCommand, "projectCommand");
+    TradeActKeeper.setCommandEnabled(removeFromRentCommand, false);
+
+    return removeFromRentCommand;
   }
 
   private Button ensureToRentProject() {
@@ -815,7 +849,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
     Queries.getRowSet(VIEW_TRADE_ACTS, taInfo.getColumnNames(false),
             Filter.and(Filter.equals(COL_TA_RENT_PROJECT, activeRow.getId()),
-                    Filter.notEquals(COL_TA_KIND, TradeActKind.RETURN)),
+                    Filter.or(Filter.equals(COL_TA_KIND, TradeActKind.SALE),
+                    Filter.equals(COL_TA_KIND, TradeActKind.SUPPLEMENT))),
             result -> {
               List<IsRow> rows = new ArrayList<>(result.getRows());
               multiReturn(activeRow, rows);
@@ -1006,6 +1041,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
     TradeActKeeper.setCommandEnabled(alterCommand, k != null && k.enableAlter());
     TradeActKeeper.setCommandEnabled(copyCommand, k != null && k.enableCopy());
     TradeActKeeper.setCommandEnabled(templateCommand, k != null && k.enableTemplate());
+    TradeActKeeper.setCommandEnabled(removeFromRentCommand, BeeKeeper.getUser().canCreateData(VIEW_TRADE_ACTS)
+      && row != null && DataUtils.isId(getRentProject(row)));
   }
 
   private void saveAsTemplate(String name) {
