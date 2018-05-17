@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="FileParts"
-  idName="PartID"
-  audit="false"
-  >
+       name="FileParts"
+       idName="PartID"
+       audit="false"
+>
   <Fields>
     <Relation name="File" relation="Files" notNull="true" cascade="DELETE" />
     <Blob name="Part" />
+    <Integer name="PartSize" />
   </Fields>
 </Table>

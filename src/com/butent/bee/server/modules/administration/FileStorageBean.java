@@ -182,8 +182,13 @@ public class FileStorageBean {
         int bytesRead = in.read(buffer);
 
         while (bytesRead > 0) {
-          long recId = qs.insertData(new SqlInsert(TBL_FILE_PARTS).addConstant(COL_FILE, id.get()));
-          qs.updateBlob(TBL_FILE_PARTS, recId, COL_FILE_PART, new ByteArrayInputStream(buffer));
+          long recId = qs.insertData(new SqlInsert(TBL_FILE_PARTS)
+              .addConstant(COL_FILE, id.get())
+              .addConstant("PartSize", bytesRead));
+
+          qs.updateBlob(TBL_FILE_PARTS, recId, COL_FILE_PART,
+              new ByteArrayInputStream(bytesRead < buffer.length
+                  ? Arrays.copyOf(buffer, bytesRead) : buffer));
           bytesRead = in.read(buffer);
         }
       } catch (SQLException e) {
