@@ -3,6 +3,7 @@
 
   name="ERPSales"
   idName="SaleID"
+  audit="false"
   >
   <Fields>
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=trdDate" />
