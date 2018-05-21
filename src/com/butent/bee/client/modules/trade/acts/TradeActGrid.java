@@ -1,24 +1,28 @@
 package com.butent.bee.client.modules.trade.acts;
 
-import com.butent.bee.client.composite.UnboundSelector;
-import com.butent.bee.client.dialog.*;
-import com.butent.bee.client.view.ViewHelper;
-import com.butent.bee.shared.ui.Relation;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.shared.GwtEvent;
 
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.MessageBoxes;
+import com.butent.bee.client.dialog.Modality;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -50,19 +54,27 @@ import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.StringList;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 public class TradeActGrid extends AbstractGridInterceptor {
 
   private static final BeeLogger logger = LogUtils.getLogger(TradeActGrid.class);
 
   private static final List<TradeActKind> NEW_ROW_ACT_KINDS = Lists.newArrayList(
-          TradeActKind.SALE, TradeActKind.TENDER, TradeActKind.PURCHASE, TradeActKind.WRITE_OFF, TradeActKind.RESERVE,
-          TradeActKind.RENT_PROJECT
+      TradeActKind.SALE, TradeActKind.TENDER, TradeActKind.PURCHASE, TradeActKind.WRITE_OFF,
+      TradeActKind.RESERVE,
+      TradeActKind.RENT_PROJECT
   );
 
   private final TradeActKind kind;
@@ -106,6 +118,10 @@ public class TradeActGrid extends AbstractGridInterceptor {
       if (BeeKeeper.getUser().canDeleteData(VIEW_TRADE_ACTS)) {
         presenter.getHeader().addCommandItem(ensureRemoveFromRent());
       }
+      if (!TradeActKeeper.isClientArea()) {
+        presenter.getHeader().addCommandItem(new Button(Localized.dictionary().taInvoiceCompose(),
+            e -> buildInvoice()));
+      }
     }
 
     super.afterCreatePresenter(presenter);
@@ -129,13 +145,15 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   @Override
   public boolean beforeAction(Action action, GridPresenter presenter) {
-    return (!TradeActKeeper.isClientArea() || Action.AUDIT != action) && super.beforeAction(action, presenter);
+    return (!TradeActKeeper.isClientArea() || Action.AUDIT != action) && super
+        .beforeAction(action, presenter);
   }
 
   @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
     newActKind = kind;
-    IsRow parentRow = ViewHelper.getParentRow(getGridPresenter().getMainView().asWidget(), VIEW_TRADE_ACTS);
+    IsRow parentRow =
+        ViewHelper.getParentRow(getGridPresenter().getMainView().asWidget(), VIEW_TRADE_ACTS);
     if (kind == null) {
       List<String> options = new ArrayList<>();
       for (TradeActKind k : NEW_ROW_ACT_KINDS) {
@@ -155,11 +173,11 @@ public class TradeActGrid extends AbstractGridInterceptor {
       return false;
     } else if (kind == TradeActKind.SALE) {
       Global.choice(Localized.dictionary().tradeActNew(), null,
-              Arrays.asList(TradeActKind.SALE.getCaption(), TradeActKind.RENT_PROJECT.getCaption()),
-              value -> {
-                newActKind = value == 0 ? TradeActKind.SALE : TradeActKind.RENT_PROJECT;
-                getGridView().startNewRow(false);
-              });
+          Arrays.asList(TradeActKind.SALE.getCaption(), TradeActKind.RENT_PROJECT.getCaption()),
+          value -> {
+            newActKind = value == 0 ? TradeActKind.SALE : TradeActKind.RENT_PROJECT;
+            getGridView().startNewRow(false);
+          });
       return false;
     } else {
       return super.beforeAddRow(presenter, copy);
@@ -221,6 +239,38 @@ public class TradeActGrid extends AbstractGridInterceptor {
     return result;
   }
 
+  private void buildInvoice() {
+    final Set<Long> ids = new HashSet<>();
+    GridView gridView = getGridView();
+
+    for (RowInfo row : gridView.getSelectedRows(GridView.SelectedRows.ALL)) {
+      ids.add(row.getId());
+    }
+    if (ids.isEmpty()) {
+      gridView.notifyWarning(Localized.dictionary().selectAtLeastOneRow());
+      return;
+    }
+    Queries.getRowSet(getViewName(), null, Filter.and(Filter.idIn(ids),
+        Filter.notEquals(COL_TA_KIND, TradeActKind.RETURN), Filter.isNull(COL_TA_CONTINUOUS),
+        Filter.notNull(COL_TA_COMPANY)), result -> {
+      if (DataUtils.isEmpty(result)) {
+        gridView.notifyWarning(Localized.dictionary().noData());
+        return;
+      }
+      List<Long> company = DataUtils.getDistinct(result, COL_TA_COMPANY);
+
+      if (BeeUtils.size(company) > 1) {
+        gridView.notifySevere("Pažymėti galima tik vieno kliento aktus");
+        return;
+      }
+      gridView.getGrid().clearSelection();
+      ViewHelper.refresh(gridView);
+
+      FormFactory.openForm(FORM_INVOICE_BUILDER,
+          new TradeActInvoiceBuilder(BeeUtils.peek(company), DataUtils.getRowIds(result), true));
+    });
+  }
+
   private static FilterComponent getInitialSeriesFilter() {
     BeeRowSet series = TradeActKeeper.getUserSeries(false);
 
@@ -276,7 +326,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   @Override
   public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
-    IsRow parentRow = ViewHelper.getParentRow(getGridPresenter().getMainView().asWidget(), VIEW_TRADE_ACTS);
+    IsRow parentRow =
+        ViewHelper.getParentRow(getGridPresenter().getMainView().asWidget(), VIEW_TRADE_ACTS);
     TradeActKeeper.prepareNewTradeAct(newRow, parentRow, newActKind);
     return super.onStartNewRow(gridView, oldRow, newRow, copy);
   }
@@ -329,16 +380,16 @@ public class TradeActGrid extends AbstractGridInterceptor {
         DataInfo tradeActsView = Data.getDataInfo(VIEW_TRADE_ACTS);
 
         Queries.update(VIEW_TRADE_ACTS, tradeActsView.getColumns(), row, newRow, null,
-                updatedRow -> {
-                  RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TRADE_ACTS, updatedRow);
+            updatedRow -> {
+              RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TRADE_ACTS, updatedRow);
 
-                  GridView gridView = getGridView();
+              GridView gridView = getGridView();
 
-                  if (gridView != null && gridView.asWidget().isAttached()) {
-                    gridView.ensureRow(updatedRow, true);
-                    maybeOpenAct(gridView, updatedRow);
-                  }
-                });
+              if (gridView != null && gridView.asWidget().isAttached()) {
+                gridView.ensureRow(updatedRow, true);
+                maybeOpenAct(gridView, updatedRow);
+              }
+            });
       }
     });
   }
@@ -378,8 +429,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
                 TradeActKind taKind = getKind(row);
 
-
-                if (activeRow.getId() != row.getId() && !getKind(activeRow).enableMultiReturn(taKind)) {
+                if (activeRow.getId() != row.getId() && !getKind(activeRow)
+                    .enableMultiReturn(taKind)) {
                   getGridView().notifyWarning(Localized.dictionary().taIsDifferent());
                   return;
                 }
@@ -393,7 +444,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
             if (isContinuousAct(activeRow) && !mixedReturn) {
               multiReturnContinuousAct(rows);
-            }  else if (rows.size() == 1 && isRentProjectAct(rows.get(0))) {
+            } else if (rows.size() == 1 && isRentProjectAct(rows.get(0))) {
               multiReturnRentProject(rows.get(0));
             } else if (rows.size() == 1) {
               checkItemsBeforeReturn(rows.get(0));
@@ -419,7 +470,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
       return removeFromRentCommand;
     }
 
-    removeFromRentCommand = new Button("Pašalinti iš nuomos proj.", e->{
+    removeFromRentCommand = new Button("Pašalinti iš nuomos proj.", e -> {
       IsRow row = getGridView().getActiveRow();
 
       if (row == null) {
@@ -428,10 +479,9 @@ public class TradeActGrid extends AbstractGridInterceptor {
       }
       Global.confirm("Ar norite aktą pašalinti iš nuomos projekto ? ", () -> {
 
-
         Queries.updateCellAndFire(VIEW_TRADE_ACTS, row.getId(), row.getVersion(),
-                COL_TA_RENT_PROJECT, Data.getString(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT),
-                null);
+            COL_TA_RENT_PROJECT, Data.getString(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT),
+            null);
 
         Data.resetLocal(VIEW_TRADE_ACTS);
       });
@@ -448,7 +498,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
       return toRentProjectCommand;
     }
 
-    toRentProjectCommand = new Button("Priskirti nuomos proj.", e-> {
+    toRentProjectCommand = new Button("Priskirti nuomos proj.", e -> {
       List<IsRow> rows = new ArrayList<>();
       IsRow firstRow = null;
 
@@ -468,25 +518,25 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
         if (DataUtils.isId(getRentProject(row))) {
           getGridView().notifyWarning("Aktas " + row.getId() + "priskirtas nuomos projektui "
-                  + getRentProject(row));
+              + getRentProject(row));
           return;
         }
 
         if (!Objects.equals(getSeries(firstRow), getSeries(row))
-                || !Objects.equals(getCompany(firstRow), getCompany(row)) ) {
+            || !Objects.equals(getCompany(firstRow), getCompany(row))) {
           getGridView().notifyWarning(Localized.dictionary().taIsDifferent());
           return;
         }
 
         if (DataUtils.isId(getContinuousAct(row))) {
           getGridView().notifyWarning("Aktas " + row.getId() + " susietas su tęstiniu "
-                  + getContinuousAct(row));
+              + getContinuousAct(row));
           return;
         }
 
         if (getKind(row) == null || isContinuousAct(row) || isRentProjectAct(row)) {
           getGridView().notifyWarning("Aktas " + row.getId()
-                  + (getKind(row) != null ? " yra " + getKind(row).getCaption() : ""));
+              + (getKind(row) != null ? " yra " + getKind(row).getCaption() : ""));
         }
 
         rows.add(row);
@@ -576,11 +626,12 @@ public class TradeActGrid extends AbstractGridInterceptor {
     Long combinedActStatus = Global.getParameterRelation(PRM_COMBINED_ACT_STATUS);
     Relation relation = Relation.create();
     relation.setViewName(VIEW_TRADE_ACTS);
-    relation.setChoiceColumns(Arrays.asList("Id", "OperationName", "CompanyName", "TypeName", "Series",
+    relation
+        .setChoiceColumns(Arrays.asList("Id", "OperationName", "CompanyName", "TypeName", "Series",
             "Number", "Name", "Date"));
     relation.setFilter(Filter.and(Filter.equals(COL_TA_KIND, TradeActKind.RENT_PROJECT.ordinal()),
-            Filter.or(Filter.notEquals(COL_TA_STATUS, combinedActStatus), Filter.isNull(COL_TA_STATUS)
-                    ), Filter.equals(COL_TA_COMPANY, getCompany(selectedRows.get(0)))));
+        Filter.or(Filter.notEquals(COL_TA_STATUS, combinedActStatus), Filter.isNull(COL_TA_STATUS)
+        ), Filter.equals(COL_TA_COMPANY, getCompany(selectedRows.get(0)))));
 
     UnboundSelector selector = UnboundSelector.create(relation);
     selector.setNullable(false);
@@ -590,7 +641,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
         return;
       }
 
-      Set<Long> ids= new HashSet<>();
+      Set<Long> ids = new HashSet<>();
 
       selectedRows.forEach(row -> ids.add(row.getId()));
       assignToRentProject(ids, selector.getRelatedId());
@@ -644,7 +695,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   private void createReturn(final IsRow parent, BeeRowSet parentActs, BeeRowSet parentItems) {
 
-    if (!DataUtils.isEmpty(parentActs) && !DataUtils.isEmpty(parentItems) && !isRentProjectAct(parent)) {
+    if (!DataUtils.isEmpty(parentActs) && !DataUtils.isEmpty(parentItems) && !isRentProjectAct(
+        parent)) {
       createReturnActForm(parentActs, parentItems);
       return;
     } else if (parent == null) {
@@ -670,7 +722,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
     });
   }
 
-  private void createReturnActForm(BeeRowSet parentActs,  BeeRowSet parentItems) {
+  private void createReturnActForm(BeeRowSet parentActs, BeeRowSet parentItems) {
     createReturnActForm(null, null, parentActs, parentItems);
   }
 
@@ -726,13 +778,13 @@ public class TradeActGrid extends AbstractGridInterceptor {
           if (parentActs != null) {
             if (viewTradeActs.hasRelation(colId)) {
               RelationUtils.updateRow(viewTradeActs, colId, newRow, viewTradeActs,
-                parentActs.getRow(0), false);
+                  parentActs.getRow(0), false);
             }
             newRow.setValue(i, parentActs.getString(0, i));
           } else if (parent != null) {
             if (viewTradeActs.hasRelation(colId)) {
               RelationUtils.updateRow(viewTradeActs, colId, newRow, viewTradeActs,
-                parent, false);
+                  parent, false);
             }
             newRow.setValue(i, parent.getString(i));
           }
@@ -742,7 +794,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
             newRow.setValue(i, parent.getId());
           } else if (parent != null && DataUtils.isId(parent.getLong(i))) {
             RelationUtils.updateRow(viewTradeActs, colId, newRow, viewTradeActs,
-                    parent, false);
+                parent, false);
             newRow.setValue(i, parent.getLong(i));
           }
           break;
@@ -762,7 +814,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
               && !colId.startsWith(COL_TA_OPERATION)) {
             if (viewTradeActs.hasRelation(colId)) {
               RelationUtils.updateRow(viewTradeActs, colId, newRow, viewTradeActs,
-                parent, false);
+                  parent, false);
             }
 
             if (viewTradeActs.getColumn(colId).getLevel() == 0) {
@@ -790,7 +842,6 @@ public class TradeActGrid extends AbstractGridInterceptor {
       }
     });
   }
-
 
   private String getActName(IsRow row) {
     return row.getString(getDataIndex(COL_TRADE_ACT_NAME));
@@ -838,23 +889,23 @@ public class TradeActGrid extends AbstractGridInterceptor {
     Queries.getRowSet(VIEW_TRADE_ACTS, taInfo.getColumnNames(false),
         Filter.in(Data.getIdColumn(VIEW_TRADE_ACTS), VIEW_TRADE_ACT_ITEMS, COL_TA_PARENT,
             Filter.any(COL_TRADE_ACT, DataUtils.getRowIds(ctActs))),
-            result -> {
-              List<IsRow> rows = new ArrayList<>(result.getRows());
-              multiReturn(rows);
-            });
+        result -> {
+          List<IsRow> rows = new ArrayList<>(result.getRows());
+          multiReturn(rows);
+        });
   }
 
   private void multiReturnRentProject(IsRow activeRow) {
     DataInfo taInfo = Data.getDataInfo(VIEW_TRADE_ACTS);
 
     Queries.getRowSet(VIEW_TRADE_ACTS, taInfo.getColumnNames(false),
-            Filter.and(Filter.equals(COL_TA_RENT_PROJECT, activeRow.getId()),
-                    Filter.or(Filter.equals(COL_TA_KIND, TradeActKind.SALE),
-                    Filter.equals(COL_TA_KIND, TradeActKind.SUPPLEMENT))),
-            result -> {
-              List<IsRow> rows = new ArrayList<>(result.getRows());
-              multiReturn(activeRow, rows);
-            });
+        Filter.and(Filter.equals(COL_TA_RENT_PROJECT, activeRow.getId()),
+            Filter.or(Filter.equals(COL_TA_KIND, TradeActKind.SALE),
+                Filter.equals(COL_TA_KIND, TradeActKind.SUPPLEMENT))),
+        result -> {
+          List<IsRow> rows = new ArrayList<>(result.getRows());
+          multiReturn(activeRow, rows);
+        });
   }
 
   private void multiMixedReturn(final Collection<IsRow> mixedActs) {
@@ -871,7 +922,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
                 )
             )
         ), result -> {
-              List<IsRow> rows = new ArrayList<>(result.getRows());
+          List<IsRow> rows = new ArrayList<>(result.getRows());
           multiReturn(rows);
         });
 
@@ -968,7 +1019,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
             if (TradeActKind.RENT_PROJECT.equals(getKind(parent))) {
               newRow.setValue(i, parent.getId());
               RelationUtils.updateRow(Data.getDataInfo(VIEW_TRADE_ACTS), colId, newRow,
-                      Data.getDataInfo(VIEW_TRADE_ACTS), parent, true);
+                  Data.getDataInfo(VIEW_TRADE_ACTS), parent, true);
               break;
             }
 
@@ -994,7 +1045,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
       TradeActKeeper.setDefaultOperation(newRow, TradeActKind.SUPPLEMENT);
 
-      RowFactory.createRow(dataInfo, newRow, Modality.ENABLED, result -> getGridView().ensureRow(result, true));
+      RowFactory.createRow(dataInfo, newRow, Modality.ENABLED,
+          result -> getGridView().ensureRow(result, true));
     });
   }
 
@@ -1035,14 +1087,15 @@ public class TradeActGrid extends AbstractGridInterceptor {
     }
     TradeActKeeper.setCommandEnabled(supplementCommand, k != null && k.enableSupplement());
     TradeActKeeper.setCommandEnabled(returnCommand, k != null && k.enableReturn()
-      && !DataUtils.isId(getContinuousAct(row)));
+        && !DataUtils.isId(getContinuousAct(row)));
     TradeActKeeper.setCommandEnabled(toRentProjectCommand, k != null && k.enableReturn()
-            && !(isRentProjectAct(row) || DataUtils.isId(getRentProject(row))));
+        && !(isRentProjectAct(row) || DataUtils.isId(getRentProject(row))));
     TradeActKeeper.setCommandEnabled(alterCommand, k != null && k.enableAlter());
     TradeActKeeper.setCommandEnabled(copyCommand, k != null && k.enableCopy());
     TradeActKeeper.setCommandEnabled(templateCommand, k != null && k.enableTemplate());
-    TradeActKeeper.setCommandEnabled(removeFromRentCommand, BeeKeeper.getUser().canCreateData(VIEW_TRADE_ACTS)
-      && row != null && DataUtils.isId(getRentProject(row)));
+    TradeActKeeper
+        .setCommandEnabled(removeFromRentCommand, BeeKeeper.getUser().canCreateData(VIEW_TRADE_ACTS)
+            && row != null && DataUtils.isId(getRentProject(row)));
   }
 
   private void saveAsTemplate(String name) {
@@ -1092,7 +1145,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
     }
   }
 
-  private void revertStatuses(Long ... acts) {
+  private void revertStatuses(Long... acts) {
     ParameterList prm = TradeActKeeper.createArgs(SVC_REVERT_ACTS_STATUS_BEFORE_DELETE);
     prm.addDataItem(TradeConstants.VAR_ID_LIST, DataUtils.buildIdList(acts));
 
@@ -1107,7 +1160,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
       }
 
       Queries.delete(VIEW_TRADE_ACTS, Filter.idIn(Lists.newArrayList(acts)),
-              result -> DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS));
+          result -> DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS));
     });
   }
 }

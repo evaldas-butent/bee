@@ -1499,7 +1499,7 @@ public class TradeActBean implements HasTimerService {
     String dTo = reqInfo.getParameter(COL_TA_SERVICE_TO);
 
     Long company = reqInfo.getParameterLong(COL_TA_COMPANY);
-    Long actId = reqInfo.getParameterLong(COL_TA_ACT);
+    List<Long> actId = DataUtils.parseIdList(reqInfo.getParameter(COL_TA_ACT));
 
     Long object = reqInfo.getParameterLong(COL_OBJECT);
     Long serviceObject = reqInfo.getParameterLong(COL_SERVICE_OBJECT);
@@ -1540,8 +1540,8 @@ public class TradeActBean implements HasTimerService {
       filter.add(Filter.equals(COL_TA_SERIES, trSeries));
     }
 
-    if (DataUtils.isId(actId)) {
-      filter.add(Filter.compareId(actId));
+    if (!BeeUtils.isEmpty(actId)) {
+      filter.add(Filter.idIn(actId));
     }
 
     if (DataUtils.isId(serviceObject)) {

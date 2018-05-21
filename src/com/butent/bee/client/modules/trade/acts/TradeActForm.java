@@ -649,7 +649,8 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   }
 
   private TradeActInvoiceBuilder getTradeActInvoiceBuilder(IsRow row) {
-    return new TradeActInvoiceBuilder(getCompany(row), isProjectRentAct(row) ? null : row.getId());
+    return new TradeActInvoiceBuilder(getCompany(row),
+        isProjectRentAct(row) ? null : Collections.singletonList(row.getId()), false);
   }
 
   private Collection<UnboundSelector> getUnboundSelectors(FormView formView) {

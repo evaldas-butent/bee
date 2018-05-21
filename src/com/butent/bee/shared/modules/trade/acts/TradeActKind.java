@@ -74,7 +74,7 @@ public enum TradeActKind implements HasLocalizedCaption {
 
   /* 4 */
   PURCHASE(new String[] {COL_TA_OPERATION}, Option.ALTER_TO, Option.AUTO_NUMBER, Option.ENABLE_COPY,
-      Option.SAVE_AS_TEMPLATE) {
+      Option.SAVE_AS_TEMPLATE, Option.SHOW_STOCK) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.taKindPurchase();

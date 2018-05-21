@@ -34,7 +34,6 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.DomUtils;
@@ -98,7 +97,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
 
 public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     SelectorEvent.Handler {
@@ -357,16 +355,17 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
   private Double defVatPercent;
   private final Long companyId;
-  private final Long actId;
+  private List<Long> actId;
+  private boolean multiple;
 
   TradeActInvoiceBuilder() {
     this.companyId = null;
-    this.actId = null;
   }
 
-  TradeActInvoiceBuilder(Long companyId, Long actId) {
+  TradeActInvoiceBuilder(Long companyId, List<Long> actId, boolean multiple) {
     this.companyId = companyId;
     this.actId = actId;
+    this.multiple = multiple;
   }
 
   @Override
@@ -491,14 +490,11 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         ((UnboundSelector) widget).setValue(currency, false);
       }
     }
-
     widget = form.getWidgetByName(COL_TA_COMPANY);
-    if (widget instanceof UnboundSelector
-        && getCompanyId() != null) {
-      ((UnboundSelector) widget).setValue(
-          getCompanyId(), true);
+
+    if (widget instanceof UnboundSelector && getCompanyId() != null) {
+      ((UnboundSelector) widget).setValue(getCompanyId(), true);
       ((UnboundSelector) widget).setEnabled(false);
-      refresh(true);
     } else {
       ((UnboundSelector) widget).clearValue();
       ((UnboundSelector) widget).setEnabled(true);
@@ -506,21 +502,22 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     JustDate from = BeeKeeper.getStorage().getDate(storageKey(COL_TA_SERVICE_FROM));
     dateFrom = form.getWidgetByName(COL_TA_SERVICE_FROM);
-    if (from != null && ((UnboundSelector) widget).isEnabled() && dateFrom instanceof InputDate) {
-      ((InputDate) dateFrom).setDate(from);
-    } else if (!((UnboundSelector) widget).isEnabled() && DataUtils.isId(actId)) {
-      Queries.getRow(VIEW_TRADE_ACTS, actId, result -> ((InputDate) dateFrom).setDate(result.getDateTime(Data
-          .getColumnIndex(VIEW_TRADE_ACTS,  COL_TA_DATE))));
-    }
 
+    if (from != null) {
+      ((InputDate) dateFrom).setDate(from);
+
+    } else if (!multiple && !BeeUtils.isEmpty(actId)) {
+      Queries.getRow(VIEW_TRADE_ACTS, BeeUtils.peek(actId), result -> ((InputDate) dateFrom)
+          .setDate(result.getDateTime(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_DATE))));
+    }
     JustDate to = BeeKeeper.getStorage().getDate(storageKey(COL_TA_SERVICE_TO));
     dateTo = form.getWidgetByName(COL_TA_SERVICE_TO);
-    if (to != null && ((UnboundSelector) widget).isEnabled() && dateTo instanceof InputDate) {
+
+    if (to != null) {
       ((InputDate) dateTo).setDate(to);
-    } else if (!((UnboundSelector) widget).isEnabled()) {
-      JustDate date = new JustDate();
-      TimeUtils.addDay(date, 1);
-      ((InputDate) dateTo).setDate(date);
+
+    } else {
+      ((InputDate) dateTo).setDate(TimeUtils.nextDay(new JustDate()));
     }
   }
 
@@ -530,18 +527,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     if (header != null && !header.hasCommands()) {
       if (commandCompose == null) {
-        commandCompose =
-            new Button(Localized.dictionary().taInvoiceCompose(), new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent event) {
-                ClassifierKeeper.getHolidays(new Consumer<Set<Integer>>() {
-                  @Override
-                  public void accept(Set<Integer> input) {
-                    doCompose(input);
-                  }
-                });
-              }
-            });
+        commandCompose = new Button(Localized.dictionary().taInvoiceCompose(),
+            clickEvent -> this.doCompose());
 
         commandCompose.addStyleName(STYLE_COMMAND_COMPOSE);
         commandCompose.addStyleName(STYLE_COMMAND_DISABLED);
@@ -567,12 +554,15 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     super.afterCreatePresenter(presenter);
   }
 
+  private void doCompose() {
+    ClassifierKeeper.getHolidays(this::doCompose);
+  }
+
   private void doCompose(final Collection<Integer> holidays) {
     Range<JustDate> range = getRange();
     if (range == null) {
       return;
     }
-
     final Range<DateTime> builderRange = TradeActUtils.convertRange(range);
     final int builderDays = TradeActUtils.countServiceDays(builderRange, holidays);
     if (builderDays <= 0) {
@@ -864,12 +854,15 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
           BeeRowSet saleItems = createInvoiceItems(selectedServices, ss, currency);
 
-          Set<Long> objects = saleItems.getDistinctLongs(DataUtils.getColumnIndex(COL_OBJECT, saleItems.getColumns()));
+          Set<Long> objects = saleItems
+              .getDistinctLongs(DataUtils.getColumnIndex(COL_OBJECT, saleItems.getColumns()));
           if (!BeeUtils.isEmpty(objects)) {
-           invoice.setValue(Data.getColumnIndex(VIEW_SALES, COL_TRADE_NOTES), DataUtils.buildIdList(objects));
+            invoice.setValue(Data.getColumnIndex(VIEW_SALES, COL_TRADE_NOTES),
+                DataUtils.buildIdList(objects));
           }
 
-          BeeRowSet sales = DataUtils.createRowSetForInsert(dataInfo.getViewName(), dataInfo.getColumns(), invoice);
+          BeeRowSet sales = DataUtils
+              .createRowSetForInsert(dataInfo.getViewName(), dataInfo.getColumns(), invoice);
 
           ParameterList params = TradeActKeeper.createArgs(SVC_CREATE_ACT_INVOICE);
 
@@ -901,7 +894,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     List<String> colNames = Lists.newArrayList(COL_SALE, COL_ITEM, COL_TRADE_ITEM_ARTICLE,
         COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_ITEM_FULL_PRICE,
         COL_TRADE_DISCOUNT, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
-        COL_TRADE_ITEM_NOTE, COL_DATE_FROM, COL_DATE_TO, COL_OBJECT, COL_SERVICE_OBJECT, COL_TA_SERVICE_FACTOR);
+        COL_TRADE_ITEM_NOTE, COL_DATE_FROM, COL_DATE_TO, COL_OBJECT, COL_SERVICE_OBJECT,
+        COL_TA_SERVICE_FACTOR);
 
     List<BeeColumn> columns = Data.getColumns(VIEW_SALE_ITEMS, colNames);
 
@@ -974,16 +968,16 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           }
 
           Long object = row.getLong(DataUtils.getColumnIndex(COL_OBJECT,
-            selectedServices.getColumns()));
+              selectedServices.getColumns()));
 
-          if(BeeUtils.isPositive(object)) {
+          if (BeeUtils.isPositive(object)) {
             inv.setValue(objectIndex, object);
           }
 
           Long svcObject = row.getLong(DataUtils.getColumnIndex(COL_SERVICE_OBJECT,
-            selectedServices.getColumns()));
+              selectedServices.getColumns()));
 
-          if(BeeUtils.isPositive(svcObject)) {
+          if (BeeUtils.isPositive(svcObject)) {
             inv.setValue(svcObjectIndex, svcObject);
           }
 
@@ -1052,10 +1046,6 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
   private Flow getActContainer() {
     return getContainerByWidgetName(VIEW_TRADE_ACTS);
-  }
-
-  private Long getActId() {
-    return actId;
   }
 
   private JustDate getDateFrom() {
@@ -1227,13 +1217,14 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       params.addQueryItem(COL_TA_SERVICE_TO, end.getDays());
     }
 
-    if (getActId() != null) {
-      params.addQueryItem(COL_TA_ACT, getActId());
+    if (!BeeUtils.isEmpty(actId)) {
+      params.addQueryItem(COL_TA_ACT, DataUtils.buildIdList(actId));
     }
 
     params.addQueryItem(COL_TA_COMPANY, company);
     params.addQueryItem(COL_OBJECT, BeeUtils.unbox(getSelectedIdByWidgetName(COL_OBJECT)));
-    params.addQueryItem(COL_SERVICE_OBJECT, BeeUtils.unbox(getSelectedIdByWidgetName(COL_SERVICE_OBJECT)));
+    params.addQueryItem(COL_SERVICE_OBJECT,
+        BeeUtils.unbox(getSelectedIdByWidgetName(COL_SERVICE_OBJECT)));
     params.addQueryItem(COL_TA_MANAGER, BeeUtils.unbox(getSelectedIdByWidgetName(COL_TA_MANAGER)));
 
     CheckBox allActs = (CheckBox) getFormView().getWidgetByName(COL_TA_ALL_ACTS);
@@ -1309,6 +1300,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     int r = 0;
     int c = 0;
 
+    Toggle toggleAll = null;
+
     if (hasEnabledActs) {
       Toggle toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
           STYLE_ACT_TOGGLE_WIDGET, false);
@@ -1331,7 +1324,9 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           }
         }
       });
-
+      if (multiple) {
+        toggleAll = toggle;
+      }
       table.setWidget(r, c++, toggle, STYLE_ACT_TOGGLE_PREFIX + STYLE_LABEL_CELL_SUFFIX);
 
     } else {
@@ -1453,6 +1448,11 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     }
 
     container.add(table);
+
+    if (Objects.nonNull(toggleAll)) {
+      toggleAll.click();
+      doCompose();
+    }
   }
 
   private void renderServices(Collection<Integer> holidays) {
@@ -1525,7 +1525,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         STYLE_SVC_NAME_PREFIX + STYLE_LABEL_CELL_SUFFIX);
 
     table.setText(r, c++, Localized.getLabel(dataInfo.getColumn(COL_SERVICE_OBJECT)),
-      STYLE_SVC_NAME_PREFIX + STYLE_LABEL_CELL_SUFFIX);
+        STYLE_SVC_NAME_PREFIX + STYLE_LABEL_CELL_SUFFIX);
 
     table.setText(r, c++, Localized.getLabel(dataInfo.getColumns().get(costIndex)),
         STYLE_SVC_AMOUNT_LABEL);
@@ -1616,7 +1616,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         table.setText(r, c++, svc.row.getString(supplIndex),
             STYLE_SVC_NAME_PREFIX + STYLE_CELL_SUFFIX);
         table.setText(r, c++, svc.row.getString(svcObjectIndex),
-          STYLE_SVC_NAME_PREFIX + STYLE_CELL_SUFFIX);
+            STYLE_SVC_NAME_PREFIX + STYLE_CELL_SUFFIX);
 
         table.setText(r, c++, renderAmount(svc.row.getDouble(costIndex)),
             STYLE_SVC_PRICE_PREFIX + STYLE_CELL_SUFFIX);
