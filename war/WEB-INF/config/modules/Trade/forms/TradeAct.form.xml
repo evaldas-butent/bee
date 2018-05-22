@@ -21,7 +21,7 @@
      PrintTradeActSalePhysicalPRent, PrintTradeActReturnPRent, PrintTradeActReturnExtraPRent, PrintTASaleNoStockPRent,
      PrintTASaleRentPRent, PrintTASaleAdditionPRent, PrintTASaleSuggestionPRent, PrintTASaleProformaPRent" />
 
-  <FlowPanel>
+  <FlowPanel class="flexBox-vertical">
     <br />
     <Table kind="controls">
       <col index="0" kind="label" />
@@ -153,7 +153,7 @@
     </Table>
 
     <br />
-    <TabbedPages style="min-height: 400px;" name="TabbedPages">
+    <TabbedPages class="flexible" name="TabbedPages">
       <page>
         <text>=goods</text>
         <FlowPanel>
@@ -208,7 +208,6 @@
       <page>
         <text>=notes</text>
         <FlowPanel class="flexBox-vertical">
-          <br />
           <HorizontalPanel data="TradeNotes">
             <cell kind="label">
               <Label text="=trdNoteTemplate" />
@@ -216,11 +215,8 @@
             <UnboundSelector viewName="TradeNotes" choiceColumns="Name"
               newRowEnabled="false" style="&inpw;" disablable="false" />
           </HorizontalPanel>
-
-          <br />
-          <SimplePanel class="flexible" style="position: relative;">
-            <InputArea source="Notes" class="occupy-1" summarize="true" disablable="false"/>
-          </SimplePanel>
+          <br/>
+          <RichTextEditor source="Notes" class="flexible" summarize="true" disablable="false"/>
         </FlowPanel>
       </page>
     </TabbedPages>

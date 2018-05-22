@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  
+        xmlns:ui="http://www.butent.com/ui"
+
   name="TradeNotes" viewName="TradeNotes" caption="=trdNoteTemplates"
   minColumnWidth="100"
   >
@@ -10,6 +11,9 @@
     <DataColumn name="Name" visible="true" />
     <RelColumn name="Series" module="Trade.Acts" />
 
-    <DataColumn name="Notes" whiteSpace="pre-line" visible="true" flexGrow="1" />
+    <DataColumn name="Notes" cellType="html" visible="true" flexGrow="1">
+      <style><bodyStyle><ui:inline>overflow:auto;</ui:inline></bodyStyle></style>
+      <editor type="rich" />
+    </DataColumn>
   </g:columns>
 </g:Grid>
