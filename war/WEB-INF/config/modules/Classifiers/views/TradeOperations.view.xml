@@ -35,6 +35,11 @@
 
     <SimpleColumn name="CashRegisterNo" />
 
+    <SimpleColumn name="Series" />
+    <SimpleJoin joinType="LEFT" name="Series">
+      <SimpleColumn name="SeriesName" />
+    </SimpleJoin>
+
     <SimpleColumn name="IsDefault" />
 
     <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
@@ -46,7 +51,7 @@
     <SimpleColumn name="Foreground" />
 
     <SimpleColumn name="Description" />
-    
+
     <SimpleColumn name="TradeStatus" />
     <SimpleJoin joinType="LEFT" name="TradeStatus">
       <SimpleColumn alias="TradeStatusName" name="StatusName" />

@@ -499,21 +499,22 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       ((UnboundSelector) widget).clearValue();
       ((UnboundSelector) widget).setEnabled(true);
     }
+    boolean single = !multiple && !BeeUtils.isEmpty(actId);
 
     JustDate from = BeeKeeper.getStorage().getDate(storageKey(COL_TA_SERVICE_FROM));
     dateFrom = form.getWidgetByName(COL_TA_SERVICE_FROM);
 
-    if (from != null) {
+    if (from != null && !single) {
       ((InputDate) dateFrom).setDate(from);
 
-    } else if (!multiple && !BeeUtils.isEmpty(actId)) {
+    } else if (single) {
       Queries.getRow(VIEW_TRADE_ACTS, BeeUtils.peek(actId), result -> ((InputDate) dateFrom)
           .setDate(result.getDateTime(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_DATE))));
     }
     JustDate to = BeeKeeper.getStorage().getDate(storageKey(COL_TA_SERVICE_TO));
     dateTo = form.getWidgetByName(COL_TA_SERVICE_TO);
 
-    if (to != null) {
+    if (to != null && !single) {
       ((InputDate) dateTo).setDate(to);
 
     } else {
@@ -1324,7 +1325,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           }
         }
       });
-      if (multiple) {
+      if (multiple || !BeeUtils.isEmpty(actId)) {
         toggleAll = toggle;
       }
       table.setWidget(r, c++, toggle, STYLE_ACT_TOGGLE_PREFIX + STYLE_LABEL_CELL_SUFFIX);

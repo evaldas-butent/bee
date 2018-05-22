@@ -434,7 +434,7 @@ public final class TradeActKeeper {
     return result;
   }
 
-  static Pair<Long, String> getDefaultOperation(TradeActKind kind) {
+  static Pair<Long, String> getDefaultOperation(TradeActKind kind, Long seriesId) {
     if (kind == null) {
       return null;
     }
@@ -445,26 +445,27 @@ public final class TradeActKeeper {
 
     Long id = null;
     String name = null;
+    boolean found = false;
 
     int nameIndex = rowSet.getColumnIndex(COL_OPERATION_NAME);
     int kindIndex = rowSet.getColumnIndex(COL_OPERATION_KIND);
+    int serIndex = rowSet.getColumnIndex(COL_TA_SERIES);
     int defIndex = rowSet.getColumnIndex(COL_OPERATION_DEFAULT);
     int statusIndex = rowSet.getColumnIndex(ALS_TRADE_STATUS_NAME);
     int statusIdIndex = rowSet.getColumnIndex(ALS_TRADE_STATUS);
 
     for (BeeRow row : rowSet) {
       if (getKind(row, kindIndex) == kind) {
-        if (BeeUtils.isTrue(row.getBoolean(defIndex))) {
+        if (row.isEqual(serIndex, seriesId)) {
+          found = true;
           id = row.getId();
           name = row.getString(nameIndex);
           tradeActStatus = Pair.of(row.getString(statusIdIndex), row.getString(statusIndex));
-          break;
 
-        } else if (DataUtils.isId(id)) {
-          id = null;
-          break;
-
-        } else {
+          if (row.isTrue(defIndex)) {
+            break;
+          }
+        } else if (!found && row.isNull(serIndex) && row.isTrue(defIndex)) {
           id = row.getId();
           name = row.getString(nameIndex);
           tradeActStatus = Pair.of(row.getString(statusIdIndex), row.getString(statusIndex));
@@ -475,7 +476,7 @@ public final class TradeActKeeper {
     if (DataUtils.isId(id)) {
       return Pair.of(id, name);
     } else if (kind == TradeActKind.SUPPLEMENT) {
-      return getDefaultOperation(TradeActKind.SALE);
+      return getDefaultOperation(TradeActKind.SALE, seriesId);
     } else {
       return null;
     }
@@ -704,7 +705,6 @@ public final class TradeActKeeper {
   static void prepareNewTradeAct(IsRow row, IsRow parent, TradeActKind kind) {
     if (kind != null) {
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_KIND, kind.ordinal());
-      setDefaultOperation(row, kind);
     }
 
     if (kind != TradeActKind.WRITE_OFF && kind != TradeActKind.PURCHASE) {
@@ -722,6 +722,7 @@ public final class TradeActKeeper {
         Data.setValue(VIEW_TRADE_ACTS, row, COL_SERIES_NAME, seriesName);
       }
     }
+    setDefaultOperation(row, kind);
 
     if (parent != null && TradeActKind.RENT_PROJECT.equals(getKind(VIEW_TRADE_ACTS, parent))) {
       RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_NAME, row, parent);
@@ -750,7 +751,9 @@ public final class TradeActKeeper {
   }
 
   static void setDefaultOperation(IsRow row, TradeActKind kind) {
-    Pair<Long, String> operation = getDefaultOperation(kind);
+    Pair<Long, String> operation = getDefaultOperation(kind,
+        Data.getLong(VIEW_TRADE_ACTS, row, COL_TA_SERIES));
+
     if (operation != null) {
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_OPERATION, operation.getA());
       Data.setValue(VIEW_TRADE_ACTS, row, COL_OPERATION_NAME, operation.getB());

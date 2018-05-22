@@ -558,9 +558,9 @@ public class TradeActBean implements HasTimerService {
     BeeRow newRow = DataUtils.cloneRow(oldRow);
 
     newRow.setValue(rowSet.getColumnIndex(COL_TA_KIND), kind.ordinal());
+    Long series = oldRow.getLong(rowSet.getColumnIndex(COL_TA_SERIES));
 
     if (kind.autoNumber()) {
-      Long series = oldRow.getLong(rowSet.getColumnIndex(COL_TA_SERIES));
       int numberIndex = rowSet.getColumnIndex(COL_TA_NUMBER);
 
       if (DataUtils.isId(series) && oldRow.isNull(numberIndex)) {
@@ -572,7 +572,7 @@ public class TradeActBean implements HasTimerService {
       }
     }
 
-    Long operation = getDefaultOperation(kind);
+    Long operation = getDefaultOperation(kind, series);
     newRow.setValue(rowSet.getColumnIndex(COL_TA_OPERATION), operation);
 
     BeeRowSet updated = DataUtils.getUpdated(rowSet.getViewName(), rowSet.getColumns(),
@@ -1278,21 +1278,31 @@ public class TradeActBean implements HasTimerService {
 
   }
 
-  private Long getDefaultOperation(TradeActKind kind) {
-    IsCondition where = SqlUtils.equals(TBL_TRADE_OPERATIONS, COL_OPERATION_KIND, kind.ordinal());
+  private Long getDefaultOperation(TradeActKind kind, Long seriesId) {
+    IsCondition whKind = SqlUtils.equals(TBL_TRADE_OPERATIONS, COL_OPERATION_KIND, kind.ordinal());
+
+    IsCondition whSer = DataUtils.isId(seriesId)
+        ? SqlUtils.equals(TBL_TRADE_OPERATIONS, COL_TA_SERIES, seriesId)
+        : SqlUtils.isNull(TBL_TRADE_OPERATIONS, COL_TA_SERIES);
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_OPERATIONS, sys.getIdName(TBL_TRADE_OPERATIONS))
         .addFrom(TBL_TRADE_OPERATIONS)
-        .setWhere(SqlUtils.and(where,
+        .setWhere(SqlUtils.and(whKind, whSer,
             SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_DEFAULT)));
 
     List<Long> operations = qs.getLongList(query);
+
     if (operations.size() == 1) {
       return operations.get(0);
     }
+    query.setWhere(SqlUtils.and(whKind, whSer));
+    operations = qs.getLongList(query);
 
-    query.setWhere(where);
+    if (operations.size() == 1) {
+      return operations.get(0);
+    }
+    query.setWhere(whKind);
     operations = qs.getLongList(query);
 
     return (operations.size() == 1) ? operations.get(0) : null;
@@ -5081,8 +5091,8 @@ public class TradeActBean implements HasTimerService {
     int idxNumber = parentActs.getColumnIndex(COL_TA_NUMBER);
     long sourceId = fifoAct.getId();
 
-    Long operation = getDefaultOperation(TradeActKind.RETURN);
     Long series = fifoAct.getLong(idxSeries);
+    Long operation = getDefaultOperation(TradeActKind.RETURN, series);
     String number = fifoAct.getString(idxNumber);
 
     Set<BeeColumn> copyColIndexes = new HashSet<>();

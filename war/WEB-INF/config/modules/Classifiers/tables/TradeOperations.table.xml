@@ -27,6 +27,7 @@
 
     <Boolean name="Join" label="=join" />
 
+    <Relation name="Series" relation="TradeSeries" label="=trdSeries" />
     <Boolean name="IsDefault" label="=trdOperationDefault" />
 
     <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"

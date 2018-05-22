@@ -9,9 +9,9 @@
   <g:columns>
     <DataColumn name="OperationType" readOnly="true" carry="true" visible="true" />
     <DataColumn name="OperationName" minWidth="100" visible="true" />
-    
+
     <RelColumn name="TradeStatus" visible="true"/>
-    
+
     <DataColumn name="Kind" module="Trade.Acts" minWidth="100" />
     <DataColumn name="Price" minWidth="100" carry="true" />
 
@@ -26,6 +26,7 @@
 
     <DataColumn name="Join" module="Orders" />
 
+    <RelColumn name="Series" visible="true" filterSupplier="list" editInPlace="true" />
     <DataColumn name="IsDefault" module="Trade.Acts" />
   </g:columns>
 
