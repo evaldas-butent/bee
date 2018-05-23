@@ -449,7 +449,7 @@ public final class TradeUtils {
   }
 
   public static Widget renderItemStockByWarehouse(long item,
-      List<Triplet<String, Double, Double>> data) {
+      List<Triplet<String, Double, Double>> data, String erpStock) {
 
     if (BeeUtils.isEmpty(data)) {
       return null;
@@ -545,6 +545,11 @@ public final class TradeUtils {
       }
 
       table.getRowFormatter().addStyleName(r, STYLE_ITEM_STOCK_FOOTER);
+    }
+    if (!BeeUtils.isEmpty(erpStock)) {
+      r++;
+      table.setText(r, 0, "ERP likutis", STYLE_ITEM_STOCK_WAREHOUSE);
+      table.setText(r, 1, erpStock, STYLE_ITEM_STOCK_QUANTITY);
     }
 
     return table;

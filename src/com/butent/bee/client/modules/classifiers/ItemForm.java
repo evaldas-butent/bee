@@ -3,6 +3,8 @@ package com.butent.bee.client.modules.classifiers;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_EXTERNAL_STOCK;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.modules.trade.TradeKeeper;
@@ -71,7 +73,8 @@ class ItemForm extends AbstractFormInterceptor {
 
         TradeKeeper.getItemStockByWarehouse(id, list -> {
           if (!BeeUtils.isEmpty(list) && Objects.equals(getActiveRowId(), id)) {
-            Widget widget = TradeUtils.renderItemStockByWarehouse(id, list);
+            Widget widget = TradeUtils.renderItemStockByWarehouse(id, list,
+                getStringValue(COL_EXTERNAL_STOCK));
 
             if (widget != null) {
               panel.clear();

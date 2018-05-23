@@ -3939,6 +3939,17 @@ public class TradeActBean implements HasTimerService {
         }
       }
     }
+    if (quantity) {
+      String als = prefix + "viso" + SFX_QUANTITY;
+      IsExpression xxx = SqlUtils.plus((Object[]) SqlUtils.fields(tmp,
+          columns.toArray(new String[0])));
+
+      if (sum) {
+        query.addSum(xxx, als);
+      } else {
+        query.addExpr(xxx, als);
+      }
+    }
   }
 
   private void addMovementColumns(SqlSelect query, String tmp, boolean quantity, boolean weight,

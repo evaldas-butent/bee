@@ -4983,9 +4983,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     SimpleRowSet data = qs.getData(query);
 
-    data.addRow(new String[] {
-        "0", "ERP likutis", qs.getValueById(TBL_ITEMS, item, COL_EXTERNAL_STOCK)});
-
     if (!DataUtils.isEmpty(data)) {
       Collection<Long> items = Collections.singleton(item);
 
