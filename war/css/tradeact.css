@@ -399,6 +399,7 @@
     cursor:pointer;
 }
 
-.bee-ta-report-trf-body-innerTbRow {
-
+.bee-grid-TradeActs .bee-Header-caption,
+.bee-grid-TradeActs .bee-Header-commandPanel .bee-Button {
+  font-size: smaller !important;
 }

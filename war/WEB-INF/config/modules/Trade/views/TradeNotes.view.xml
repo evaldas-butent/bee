@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="TradeNotes" source="TradeNotes"
-  caption="=trdNoteTemplates" newRowCaption="=trdNewNoteTemplate"
-  >
+      name="TradeNotes" source="TradeNotes"
+      caption="=trdNoteTemplates" newRowCaption="=trdNewNoteTemplate"
+      newRowForm="TradeNote" editForm="TradeNote"
+>
   <Columns>
     <SimpleColumn name="Name" />
 
@@ -14,9 +15,8 @@
 
     <SimpleColumn name="Notes" />
   </Columns>
-  
+
   <Order>
     <OrderBy column="Name" />
   </Order>
 </View>
- 

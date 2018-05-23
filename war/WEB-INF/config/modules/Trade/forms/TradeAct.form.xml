@@ -21,7 +21,7 @@
      PrintTradeActSalePhysicalPRent, PrintTradeActReturnPRent, PrintTradeActReturnExtraPRent, PrintTASaleNoStockPRent,
      PrintTASaleRentPRent, PrintTASaleAdditionPRent, PrintTASaleSuggestionPRent, PrintTASaleProformaPRent" />
 
-  <FlowPanel class="flexBox-vertical">
+  <FlowPanel>
     <br />
     <Table kind="controls">
       <col index="0" kind="label" />
@@ -153,7 +153,7 @@
     </Table>
 
     <br />
-    <TabbedPages class="flexible" name="TabbedPages">
+    <TabbedPages style="min-height: 400px;" name="TabbedPages">
       <page>
         <text>=goods</text>
         <FlowPanel>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+
+        name="TradeNote" caption="Pastabų šablonas" width="520" height="420"
+>
+  <Table kind="controls" style="width:100%">
+    <col index="0" kind="label" />
+    <row>
+      <Label for="Name" />
+      <InputText source="Name" style="width:200px" />
+    </row>
+    <row module="Trade.Acts">
+      <Label for="Series" />
+      <DataSelector source="Series" style="width:100px" newRowEnabled="false" />
+    </row>
+    <row>
+      <Label for="Notes" />
+      <RichTextEditor source="Notes" style="width:100%; height:400px" />
+    </row>
+  </Table>
+</f:Form>

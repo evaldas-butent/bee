@@ -11,9 +11,8 @@
     <DataColumn name="Name" visible="true" />
     <RelColumn name="Series" module="Trade.Acts" />
 
-    <DataColumn name="Notes" cellType="html" visible="true" flexGrow="1">
+    <DataColumn name="Notes" cellType="html" visible="true" maxWidth="600" flexGrow="1" flexShrink="1">
       <style><bodyStyle><ui:inline>overflow:auto;</ui:inline></bodyStyle></style>
-      <editor type="rich" />
     </DataColumn>
   </g:columns>
 </g:Grid>
