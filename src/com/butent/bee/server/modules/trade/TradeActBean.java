@@ -3939,7 +3939,7 @@ public class TradeActBean implements HasTimerService {
         }
       }
     }
-    if (quantity) {
+    if (quantity && columns.size() > 1) {
       String als = prefix + "viso" + SFX_QUANTITY;
       IsExpression xxx = SqlUtils.plus((Object[]) SqlUtils.fields(tmp,
           columns.toArray(new String[0])));
