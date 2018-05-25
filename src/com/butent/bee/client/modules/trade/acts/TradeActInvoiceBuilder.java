@@ -1301,8 +1301,6 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     int r = 0;
     int c = 0;
 
-    Toggle toggleAll = null;
-
     if (hasEnabledActs) {
       Toggle toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
           STYLE_ACT_TOGGLE_WIDGET, false);
@@ -1325,9 +1323,6 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           }
         }
       });
-      if (multiple || !BeeUtils.isEmpty(actId)) {
-        toggleAll = toggle;
-      }
       table.setWidget(r, c++, toggle, STYLE_ACT_TOGGLE_PREFIX + STYLE_LABEL_CELL_SUFFIX);
 
     } else {
@@ -1450,8 +1445,18 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     container.add(table);
 
-    if (Objects.nonNull(toggleAll)) {
-      toggleAll.click();
+    if (!BeeUtils.isEmpty(actId)) {
+      boolean checked;
+
+      for (Toggle t : UiHelper.getChildren(table, Toggle.class)) {
+        Long act = DomUtils.getDataIndexLong(DomUtils.getParentRow(t.getElement(), false));
+
+        if (!t.isChecked() && actId.contains(act)) {
+          checked = true;
+          t.setChecked(checked);
+          onToggle(t, STYLE_ACT_SELECTED);
+        }
+      }
       doCompose();
     }
   }

@@ -1551,7 +1551,15 @@ public class TradeActBean implements HasTimerService {
     }
 
     if (!BeeUtils.isEmpty(actId)) {
-      filter.add(Filter.idIn(actId));
+      Filter flt = Filter.idIn(actId);
+      Set<Long> objects = qs.getDistinctLongs(TBL_TRADE_ACTS, COL_OBJECT,
+          SqlUtils.and(sys.idInList(TBL_TRADE_ACTS, actId),
+              SqlUtils.notNull(TBL_TRADE_ACTS, COL_OBJECT)));
+
+      if (!BeeUtils.isEmpty(objects)) {
+        flt = Filter.or(flt, Filter.any(COL_OBJECT, objects));
+      }
+      filter.add(flt);
     }
 
     if (DataUtils.isId(serviceObject)) {
