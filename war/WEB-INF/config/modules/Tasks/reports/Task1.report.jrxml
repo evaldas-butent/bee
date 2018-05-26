@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2018-05-01T02:11:21 -->
+<!-- 2018-05-24T21:06:57 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TaskOrder" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="f61c84c0-32c7-4a4d-a4ff-6f16bae30b57">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="java.util.Objects"/>
@@ -251,10 +251,11 @@
 						<textFieldExpression><![CDATA[Formatter.render(PredefinedFormat.DATE_TIME_SHORT, $P{USB}.getDateTimeFormatInfo(), new DateTime(BeeUtils.toLong($P{StartTime})))]]></textFieldExpression>
 					</textField>
 					<textField>
-						<reportElement positionType="Float" x="175" y="6" width="15" height="10" uuid="96a323f1-b8df-4cd7-90ec-980125d4f12f">
+						<reportElement positionType="Float" x="175" y="4" width="15" height="10" uuid="96a323f1-b8df-4cd7-90ec-980125d4f12f">
 							<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 							<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 							<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						</reportElement>
 						<textElement textAlignment="Center" verticalAlignment="Bottom">
 							<font fontName="DejaVu Sans" size="5"/>
@@ -262,9 +263,10 @@
 						<textFieldExpression><![CDATA["iki"]]></textFieldExpression>
 					</textField>
 					<textField>
-						<reportElement positionType="Float" x="71" y="6" width="15" height="10" uuid="2ff122cf-841f-4feb-af15-fec8e45bd74f">
+						<reportElement positionType="Float" x="71" y="4" width="15" height="10" uuid="2ff122cf-841f-4feb-af15-fec8e45bd74f">
 							<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 							<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						</reportElement>
 						<textElement textAlignment="Center" verticalAlignment="Bottom">
 							<font fontName="DejaVu Sans" size="5"/>
