@@ -819,10 +819,10 @@ class TaskBuilder extends ProductSupportInterceptor {
         return;
       }
 
-      clearValue(NAME_START_DATE);
+/*      clearValue(NAME_START_DATE);
       clearValue(NAME_START_TIME);
       clearValue(NAME_END_DATE);
-      clearValue(NAME_END_TIME);
+      clearValue(NAME_END_TIME);*/
 
       updateAndCreateFiles(tasks.getRowIds());
 
@@ -834,6 +834,7 @@ class TaskBuilder extends ProductSupportInterceptor {
       String message = Localized.dictionary().crmCreatedNewTasks(tasks.getNumberOfRows());
       BeeKeeper.getScreen().notifyInfo(message);
 
+      tasks.getRow(0).setProperty(PROP_EXECUTORS, getActiveRow().getProperty(PROP_EXECUTORS));
       if (!taskIdsCallback && tasks.getNumberOfRows() == 1) {
         callback.onSuccess(tasks.getRow(0));
       } else {
