@@ -67,7 +67,6 @@
       <SimpleColumn name="Price3" alias="ItemPrice3" />
       <SimpleColumn name="Currency3" alias="ItemCurrency3" />
       <SimpleColumn name="Ordinal" alias="ItemOrdinal" />
-      <SimpleColumn name="ExternalStock"/>
     </SimpleJoin>
 
     <SimpleColumn name="Quantity" />

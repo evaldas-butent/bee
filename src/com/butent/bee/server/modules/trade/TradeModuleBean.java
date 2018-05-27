@@ -37,10 +37,8 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.AdministrationModuleBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
-import com.butent.bee.server.modules.classifiers.ClassifiersModuleBean;
 import com.butent.bee.server.modules.finance.FinanceModuleBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
-import com.butent.bee.server.modules.mail.MailStorageBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
@@ -189,11 +187,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   AdministrationModuleBean adm;
   @EJB
   FinanceModuleBean fin;
-  @EJB
-  MailStorageBean mailStore;
 
-  @EJB
-  ClassifiersModuleBean cls;
+  @EJB TradeActDataEventHandler taHandler;
 
   @Resource
   TimerService timerService;
@@ -4943,43 +4938,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         .addGroup(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE)
         .addGroup(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
         .addOrder(TBL_WAREHOUSES, COL_WAREHOUSE_CODE);
-*/
-    SqlSelect union = new SqlSelect()
-        .addField(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO, COL_STOCK_WAREHOUSE)
-        .addSum(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY)
-        .addFrom(TBL_TRADE_ACT_ITEMS)
-        .addFromInner(TBL_TRADE_ACTS,
-            sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
-        .addFromInner(TBL_TRADE_OPERATIONS,
-            sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION))
-        .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO),
-            SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_ITEM, item)))
-        .addGroup(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO)
-        .addUnion(new SqlSelect()
-            .addField(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM, COL_STOCK_WAREHOUSE)
-            .addSum(SqlUtils.multiply(SqlUtils.field(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY),
-                SqlUtils.constant(-1)), COL_TRADE_ITEM_QUANTITY)
-            .addFrom(TBL_TRADE_ACT_ITEMS)
-            .addFromInner(TBL_TRADE_ACTS,
-                sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
-            .addFromInner(TBL_TRADE_OPERATIONS,
-                sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION))
-            .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_TRADE_OPERATIONS,
-                COL_OPERATION_WAREHOUSE_FROM),
-                SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_ITEM, item)))
-            .addGroup(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM));
-
-    String subq = SqlUtils.uniqueName();
-
-    SqlSelect query = new SqlSelect()
-        .addFields(subq, COL_STOCK_WAREHOUSE)
-        .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
-        .addSum(subq, COL_TRADE_ITEM_QUANTITY, COL_STOCK_QUANTITY)
-        .addFrom(union, subq)
-        .addFromInner(TBL_WAREHOUSES, sys.joinTables(TBL_WAREHOUSES, subq, COL_STOCK_WAREHOUSE))
-        .addGroup(subq, COL_STOCK_WAREHOUSE)
-        .addGroup(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
-        .addOrder(TBL_WAREHOUSES, COL_WAREHOUSE_CODE);
 
     SimpleRowSet data = qs.getData(query);
 
@@ -5005,7 +4963,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         }
       }
     }
+*/
+    com.google.common.collect.Table<Long, String, Double> data =
+        taHandler.getStock(Collections.singleton(item));
 
+    if (!data.isEmpty()) {
+      data.row(item).forEach((w, s) -> result.add(Triplet.of(w, s, null)));
+    }
     if (result.isEmpty()) {
       return ResponseObject.emptyResponse();
     } else {

@@ -33,7 +33,6 @@
   <xi:include href="columns/TradeActQuantity.columns.xml" />
 
   <g:columns>
-    <DataColumn name="ExternalStock" />
     <PropColumn name="returned_qty" type="double" label="=taQuantityReturned" visible="true">
       <style>
         <bodyStyle><ui:inline>color: red;</ui:inline></bodyStyle>
@@ -41,14 +40,14 @@
       </style>
       <footer aggregate="sum" />
     </PropColumn>
-    
+
     <CalcColumn name="remaining_qty" type="double" label="=taQuantityRemained" visible="true">
       <render>
         <ui:expression>&qty;</ui:expression>
       </render>
       <footer aggregate="sum" />
     </CalcColumn>
-    
+
     <DataColumn name="Weight">
       <footer expression="&qty; * row.Weight" />
     </DataColumn>
@@ -110,15 +109,15 @@
   <xi:include href="columns/TradeActDiscount.columns.xml" />
   <xi:include href="columns/TradeActVat.columns.xml" />
   <xi:include href="columns/TradeActTotal.columns.xml" />
- 
+
   <g:columns>
     <RelColumn name="Sale" caption="=trdInvoiceId" readOnly="true" renderColumns="Sale"
       editEnabled="true" editForm="SalesInvoice" editViewName="Sales"/>
     <DataColumn name="Note" visible="false" />
   </g:columns>
-  
+
   <g:rowEditable>
     <ui:expression>!row.Sale</ui:expression>
   </g:rowEditable>
-  
+
 </g:Grid>

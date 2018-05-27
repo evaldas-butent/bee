@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
-  <DataColumn name="Quantity" visible="true">
-    <footer aggregate="sum" />
+<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+           xmlns:ui="http://www.butent.com/ui">
+
+  <DataColumn name="Quantity" visible="true" cellType="html" updateMode="row"
+              horizontalAlignment="right">
+    <dynStyle>
+      <ui:inline>color: red;</ui:inline>
+      <ui:expression>(+row.Remainder||0) &lt; 0 &amp;&amp; !row.returned_qty</ui:expression>
+    </dynStyle>
+    <render>
+      <ui:expression>"&lt;div title=" + ((+row.Remainder||0) + (+row.Quantity||0) - (+row.returned_qty||0)) + "&gt;"
+        + row.Quantity + "&lt;/div&gt;"
+      </ui:expression>
+    </render>
+    <footer aggregate="sum" expression="row.Quantity" />
   </DataColumn>
 
   <DataColumn name="UnitName" caption="=unitShort" flexGrow="0" />
