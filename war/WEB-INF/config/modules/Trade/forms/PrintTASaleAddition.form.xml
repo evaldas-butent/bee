@@ -71,7 +71,7 @@
     <FlowPanel name="TradeActServices" class="TradeActServices" style="&section;" />
 
     <FlowPanel style="&section;">
-      <TextLabel source="Notes" style="display:block; white-space:pre-wrap; border:1px solid silver;
+      <TextLabel source="Notes" style="display:block; border:1px solid silver;
         margin-top: 20px; min-height: 2em;">
         <dynStyle>
           <ui:inline>display: none;</ui:inline>
@@ -86,7 +86,7 @@
       <row style="text-align: center; border:1px solid silver;" >
         <cell style="border:1px solid silver;">
           <br />
-        </cell> 
+        </cell>
          <cell style="border:1px solid silver;">
             <Label html="Vardas"/>
         </cell>
@@ -103,7 +103,7 @@
        <row style="text-align: center; border:1px solid silver;" >
         <cell style="border:1px solid silver;">
           <Label html="1."/>
-        </cell> 
+        </cell>
          <cell style="border:1px solid silver;">
              <br />
         </cell>
@@ -120,7 +120,7 @@
       <row style="text-align: center; border:1px solid silver;" >
         <cell style="border:1px solid silver;">
          <Label html="2."/>
-        </cell> 
+        </cell>
          <cell style="border:1px solid silver;">
              <br />
         </cell>
@@ -132,12 +132,12 @@
         </cell>
         <cell style="border:1px solid silver;">
            <br />
-        </cell> 
+        </cell>
       </row>
       <row style="text-align: center; border:1px solid silver;" >
         <cell style="border:1px solid silver;">
          <Label html="3."/>
-        </cell> 
+        </cell>
          <cell style="border:1px solid silver;">
              <br />
         </cell>
@@ -149,12 +149,12 @@
         </cell>
         <cell style="border:1px solid silver;">
            <br />
-        </cell> 
+        </cell>
       </row>
       <row style="text-align: center; border:1px solid silver;" >
        <cell style="border:1px solid silver;">
         <Label html="4."/>
-        </cell> 
+        </cell>
          <cell style="border:1px solid silver;">
              <br />
         </cell>
@@ -166,7 +166,7 @@
         </cell>
         <cell style="border:1px solid silver;">
            <br />
-        </cell> 
+        </cell>
       </row>
     </Table>
 

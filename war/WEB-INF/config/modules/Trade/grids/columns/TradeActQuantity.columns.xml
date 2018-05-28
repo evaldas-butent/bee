@@ -9,8 +9,7 @@
       <ui:expression>(+row.Remainder||0) &lt; 0 &amp;&amp; !row.returned_qty</ui:expression>
     </dynStyle>
     <render>
-      <ui:expression>"&lt;div title=" + ((+row.Remainder||0) + (+row.Quantity||0) - (+row.returned_qty||0)) + "&gt;"
-        + row.Quantity + "&lt;/div&gt;"
+      <ui:expression>"&lt;div title=" + (+row.Remainder||0) + "&gt;" + row.Quantity + "&lt;/div&gt;"
       </ui:expression>
     </render>
     <footer aggregate="sum" expression="row.Quantity" />

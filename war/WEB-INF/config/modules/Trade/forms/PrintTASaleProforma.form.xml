@@ -75,7 +75,7 @@
     </FlowPanel>
 
     <FlowPanel style="&section;">
-      <TextLabel source="Notes" style="display:block; white-space:pre-wrap; border:1px solid silver;
+      <TextLabel source="Notes" style="display:block; border:1px solid silver;
         margin-top: 20px; min-height: 2em;">
         <dynStyle>
           <ui:inline>display: none;</ui:inline>
@@ -88,7 +88,7 @@
     <Table style="margin-top:10px;" kind="output">
       <row >
         <cell style="text-align: right;">
-          <Label html="Išrašė:" /> 
+          <Label html="Išrašė:" />
         </cell>
         <cell style="border-bottom: 1px solid black; width:230px;">
           <TextLabel source="Manager" style="margin-left:1ex;">
