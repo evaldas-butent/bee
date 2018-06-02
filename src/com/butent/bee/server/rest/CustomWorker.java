@@ -13,12 +13,15 @@ import com.butent.bee.server.rest.annotations.Trusted;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.FiresModificationEvents;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -43,12 +46,17 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @Path("/")
 @Stateless
 public class CustomWorker {
 
   final BeeLogger logger = LogUtils.getLogger(CustomWorker.class);
+  private static final String REQUEST_TARGET = "Reg. id:";
+  private static final String COMPANY_UNKNOWN = "NEŽINOMAS";
 
   @EJB
   QueryServiceBean qs;
@@ -104,30 +112,68 @@ public class CustomWorker {
   public String entry(@FormParam("name") String companyName,
                       @FormParam("code") String companyCode, @FormParam("message") String message) {
 
+
     Long companyId = null;
+    int targetIdx = message.indexOf(REQUEST_TARGET);
 
-    if (BeeUtils.isEmpty(companyName) && BeeUtils.isEmpty(companyCode)) {
-      return "Bad request: Company or Code required"; /*
-       * CRM MUST RETURN company code or name or
-       * "NEŽINOMAS" value
-       */
-    }
-    if (!BeeUtils.isEmpty(companyCode)) {
-      companyId = qs.getId(ClassifierConstants.TBL_COMPANIES, ClassifierConstants.COL_COMPANY_CODE,
-        companyCode);
-    }
-    if (!DataUtils.isId(companyId) && !BeeUtils.isEmpty(companyName)) {
+    if (BeeConst.isUndef(targetIdx)) {
+      if (BeeUtils.isEmpty(companyName) && BeeUtils.isEmpty(companyCode)) {
+        return "Bad request: Company or Code required";
+      }
+
+      if (!BeeUtils.isEmpty(companyCode)) {
+        companyId = qs.getId(ClassifierConstants.TBL_COMPANIES, ClassifierConstants.COL_COMPANY_CODE,
+          companyCode);
+      }
+      if (!DataUtils.isId(companyId) && !BeeUtils.isEmpty(companyName)) {
+        companyId = qs.getId(ClassifierConstants.TBL_COMPANIES, ClassifierConstants.COL_COMPANY_NAME,
+          companyName);
+      }
+
+      if (!DataUtils.isId(companyId)) {
+        logger.warning("Rest company ", companyName, companyCode, "not found");
+        companyId = prm.getRelation(AdministrationConstants.PRM_COMPANY);
+      }
+
+      if (!DataUtils.isId(companyId)) {
+        return "Rest Unknown request";
+      }
+
+    } else {
       companyId = qs.getId(ClassifierConstants.TBL_COMPANIES, ClassifierConstants.COL_COMPANY_NAME,
-        companyName);
-    }
-    if (!DataUtils.isId(companyId)) {
-      logger.warning("Rest company ", companyName, companyCode, "not found");
-      companyId = prm.getRelation(AdministrationConstants.PRM_COMPANY);
+        COMPANY_UNKNOWN);
 
+      if (!DataUtils.isId(companyId)) {
+        return "Nežinomas klientas nerastas";
+      }
+
+      String nanoNumber = message.substring(targetIdx + 8, message.length()).trim();
+
+      SqlSelect selectCompanies = new SqlSelect()
+        .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
+        .addFields(TBL_COMPANIES, COL_COMPANY_NANO_NUMBER)
+        .addFrom(TBL_COMPANIES)
+        .setWhere(SqlUtils.compare(TBL_COMPANIES, COL_COMPANY_NANO_NUMBER, Operator.CONTAINS, nanoNumber));
+
+      SimpleRowSet rowSet = qs.getData(selectCompanies);
+      List<Long> nanoNrList = new ArrayList<>();
+
+      for (SimpleRowSet.SimpleRow row : rowSet) {
+        String companyNanoNumber = row.getValue(COL_COMPANY_NANO_NUMBER);
+        String[] nanoNumbers = companyNanoNumber.split(";");
+
+        for (String nr : nanoNumbers) {
+          if (Objects.equals(nr, nanoNumber)) {
+            nanoNrList.add(row.getLong(COL_COMPANY));
+          }
+        }
+      }
+
+      if (nanoNrList.size() == 1) {
+        companyId = nanoNrList.get(0);
+      }
     }
-    if (!DataUtils.isId(companyId)) {
-      return "Rest Unknown request";
-    }
+
     DataInfo reqDataInfo = sys.getDataInfo(TaskConstants.VIEW_REQUESTS);
 
     BeeRow row = DataUtils.createEmptyRow(reqDataInfo.getColumns().size());

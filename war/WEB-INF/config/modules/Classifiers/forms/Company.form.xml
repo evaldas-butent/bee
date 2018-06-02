@@ -182,6 +182,8 @@
             <DataSelector source="CompanySize" summarize="true" />
             <Label style="margin-left: 8px; margin-right: 8px;" for="InformationSource" />
             <DataSelector source="InformationSource" summarize="true" />
+            <Label for="NanoNumber" style="&lbl;" />
+            <InputText source="NanoNumber" summarize="true" />
           </row>
           <row data="CompActStore" listName="CompActStore">
             <Label text="=companyActivities" listName="CompActStore" style="&lbl;" />
@@ -434,9 +436,10 @@
 
             <row>
               <Label for="DBNumber" style="&lbl;" />
-              <cell colSpan="3">
-                <InputDecimal source="DBNumber" summarize="true" />
-              </cell>
+              <InputDecimal source="DBNumber" summarize="true" />
+
+              <Label for="PosPlaces" style="&lbl;" />
+              <InputText source="PosPlaces" summarize="true" />
             </row>
           </Table>
 

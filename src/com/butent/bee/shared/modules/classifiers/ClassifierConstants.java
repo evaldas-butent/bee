@@ -162,6 +162,8 @@ public final class ClassifierConstants {
   public static final String COL_COMPANY_NETWORK = "Network";
   public static final String COL_COMPANY_DBNUMBER = "DBNumber";
   public static final String COL_SYSTEM_COMMENT = "SystemComment";
+  public static final String COL_COMPANY_POS_PLACES = "PosPlaces";
+  public static final String COL_COMPANY_NANO_NUMBER = "NanoNumber";
 
   public static final String COL_LICENCE = "Licence";
   public static final String COL_LICENCE_ENDPOINT = "Endpoint";
