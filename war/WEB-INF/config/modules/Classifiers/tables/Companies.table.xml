@@ -64,6 +64,8 @@
     <String name="ReactionTime" precision="10" label="=crmReactionTime" />
     <Text name="Comment" label="=comment" />
 
+    <String name="NanoNumber" precision="100" label="Nano reg. ID" />
+    <String name="PosPlaces" precision="100" label="POS vietų" />
     <Text name="Licence" />
     <Text name="LicenceComment" label="=comment" />
     <Numeric name="Terminal" precision="20" scale="2" label="Terminalinių" />

@@ -2,7 +2,6 @@ package com.butent.bee.client.modules.classifiers;
 
 import com.butent.bee.client.composite.ChildSelector;
 import com.butent.bee.client.data.*;
-import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.google.gwt.event.shared.HasHandlers;
@@ -66,7 +65,9 @@ import java.util.stream.Stream;
 class CompanyForm extends AbstractFormInterceptor {
 
   private FaLabel switchAction;
-  private static List<String> columns = Arrays.asList(COL_COMPANY_TERMINAL, COL_COMPANY_NETWORK, COL_COMPANY_DBNUMBER);
+  private static List<String> columns = Arrays.asList(COL_COMPANY_TERMINAL, COL_COMPANY_NETWORK, COL_COMPANY_DBNUMBER,
+    COL_COMPANY_POS_PLACES);
+
   CompanyForm() {
   }
 

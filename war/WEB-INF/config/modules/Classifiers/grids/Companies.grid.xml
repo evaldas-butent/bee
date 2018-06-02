@@ -49,6 +49,7 @@
 
   <PropColumn name="Activity" type="string"  caption="=companyActivities" filterSupplier="custom" filterOptions="company_activities"/>
 
+  <DataColumn name="NanoNumber" visible="false" />
   <DataColumn name="ContractNumber" visible="false" />
   <DataColumn name="TakeEffectFrom" visible="false" />
   <DataColumn name="CancelDate" visible="false" />

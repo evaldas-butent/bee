@@ -143,6 +143,8 @@
 
     <SimpleColumn name="Notes" />
 
+    <SimpleColumn name="NanoNumber" />
+    <SimpleColumn name="PosPlaces" />
     <SimpleColumn name="Licence" />
     <SimpleColumn name="LicenceComment" />
     <SimpleColumn name="Terminal" />
