@@ -1302,7 +1302,8 @@ public class TradeActBean implements HasTimerService {
     if (operations.size() == 1) {
       return operations.get(0);
     }
-    query.setWhere(whKind);
+    query.setWhere(SqlUtils.and(whKind, SqlUtils.isNull(TBL_TRADE_OPERATIONS, COL_TA_SERIES),
+        SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_DEFAULT)));
     operations = qs.getLongList(query);
 
     return (operations.size() == 1) ? operations.get(0) : null;
