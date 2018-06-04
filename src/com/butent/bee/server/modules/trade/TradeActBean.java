@@ -2228,6 +2228,7 @@ public class TradeActBean implements HasTimerService {
               }
             }
           }
+          has = false;
 
           if (warehouse != null) {
             if (has) {

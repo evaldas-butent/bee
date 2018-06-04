@@ -152,6 +152,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     private final TradeActTimeUnit timeUnit;
 
+    private boolean skipped;
+
     private Double quantity;
 
     private Double tariff;
@@ -664,6 +666,13 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             }
 
             Service svc = new Service(row, tu);
+
+            Range<DateTime> checkRange = TradeActUtils.createServiceRange(dateFrom, dateTo, tu,
+                TradeActUtils.createRange(TimeUtils.previousDay(getDateFrom()), getDateTo()),
+                act.range);
+
+            svc.skipped = !Objects.equals(BeeUtils.peek(ranges),
+                BeeUtils.peek(TradeActUtils.buildRanges(checkRange, invoiceRanges, tu)));
 
             svc.quantity = row.getDouble(qtyIndex);
 
@@ -1680,7 +1689,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         Element rowElement = table.getRow(r);
         rowElement.addClassName(STYLE_SVC_ROW);
 
-        if (svc.ranges.size() > 1 && idx < svc.ranges.size() - 1) {
+        if (svc.skipped && idx < 1) {
           rowElement.addClassName(STYLE_SVC_ROW_MISSED);
         }
 
