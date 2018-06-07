@@ -574,6 +574,7 @@ public class TradeActBean implements HasTimerService {
 
     Long operation = getDefaultOperation(kind, series);
     newRow.setValue(rowSet.getColumnIndex(COL_TA_OPERATION), operation);
+    newRow.setValue(rowSet.getColumnIndex(COL_TA_DATE), TimeUtils.nowMinutes());
 
     BeeRowSet updated = DataUtils.getUpdated(rowSet.getViewName(), rowSet.getColumns(),
         oldRow, newRow, null);
