@@ -15,6 +15,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowInsertCallback;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
@@ -59,6 +60,8 @@ import java.util.function.Consumer;
 
 public class SalesInvoiceForm extends PrintFormInterceptor {
 
+  private String legacyReports;
+
   SalesInvoiceForm() {
   }
 
@@ -69,7 +72,7 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
         && widget instanceof InputDateTime) {
 
       ((InputDateTime) widget).addEditStopHandler(event ->
-         setTerm(((InputDateTime) event.getSource()).getDate()));
+          setTerm(((InputDateTime) event.getSource()).getDate()));
 
       ((InputDateTime) widget).addValueChangeHandler(valueChangeEvent ->
           setTerm(TimeUtils.parseDate(valueChangeEvent.getValue(),
@@ -110,6 +113,26 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
   }
 
   @Override
+  public void onLoad(FormView form) {
+    super.onLoad(form);
+
+    String reports = "reports";
+    this.legacyReports = form.getProperties().get(reports);
+
+    FaLabel print = new FaLabel(FontAwesome.PRINT);
+
+    print.addClickHandler(clickEvent -> {
+      if (EventUtils.hasModifierKey(clickEvent)) {
+        form.getProperties().put(reports, legacyReports);
+      } else {
+        form.getProperties().remove(reports);
+      }
+      form.getViewPresenter().handleAction(Action.PRINT);
+    });
+    getHeaderView().addCommandItem(print);
+  }
+
+  @Override
   protected ReportUtils.ReportCallback getReportCallback() {
     return new ReportUtils.ReportCallback() {
       @Override
@@ -126,8 +149,8 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
 
         String invoice = BeeUtils.same(form.getViewName(), VIEW_SALES)
             ? BeeUtils.join("_", Localized.dictionary().trdInvoice(),
-                BeeUtils.join("", form.getStringValue(COL_TRADE_INVOICE_PREFIX),
-                  form.getStringValue(COL_TRADE_INVOICE_NO)))
+            BeeUtils.join("", form.getStringValue(COL_TRADE_INVOICE_PREFIX),
+                form.getStringValue(COL_TRADE_INVOICE_NO)))
             : BeeUtils.join("_", form.getCaption(), form.getActiveRowId());
 
         if (!BeeUtils.isEmpty(invoice)) {

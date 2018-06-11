@@ -48,8 +48,7 @@ public enum TradeActKind implements HasLocalizedCaption {
   },
 
   /* 2 */
-  RETURN(new String[] {COL_TA_INPUT_DRIVER, COL_TA_INPUT_VEHICLE,
-    COL_TA_OBJECT, COL_TA_STATUS, COL_TA_OPERATION, COL_TA_DATE},
+  RETURN(new String[] {COL_TA_OBJECT, COL_TA_STATUS, COL_TA_OPERATION, COL_TA_DATE},
       Option.AUTO_NUMBER, Option.HAS_PARENT_ACT) {
     @Override
     public String getCaption(Dictionary constants) {

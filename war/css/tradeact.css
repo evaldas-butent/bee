@@ -403,3 +403,7 @@
 .bee-grid-TradeActs .bee-Header-commandPanel .bee-Button {
   font-size: smaller !important;
 }
+
+.bee-form-SalesInvoice-container .bee-Action-print {
+  display:none;
+}

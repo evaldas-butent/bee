@@ -5,6 +5,8 @@ import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.InputTimeOfDay;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
@@ -57,6 +59,8 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation.Caching;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -199,7 +203,26 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     if (widget instanceof TabbedPages && name == "TabbedPages") {
       tabbedPages = (TabbedPages) widget;
     }
+    if (widget instanceof FaLabel && Objects.equals(name,"InputTime")) {
+      ((FaLabel) widget).addClickHandler(clickEvent -> {
+        DateTime current = getDateTimeValue(COL_TA_DATE);
 
+        if (Objects.isNull(current)) {
+          getFormView().notifyWarning("Įveskite datą");
+          return;
+        }
+        InputTimeOfDay inputTime = new InputTimeOfDay();
+        inputTime.setStepValue(10);
+        inputTime.setValue(current.toTimeString());
+
+        Global.inputWidget("Įveskite laiką", inputTime, () -> {
+          getActiveRow().setValue(getDataIndex(COL_TA_DATE),
+              TimeUtils.combine(current, inputTime.getMillis()));
+
+          getFormView().refreshBySource(COL_TA_DATE);
+        });
+      });
+    }
     super.afterCreateWidget(name, widget, callback);
   }
 

@@ -72,7 +72,10 @@
 
       <row>
         <Label for="Date" name="labelDate" visible="true" />
-        <InputDateTime source="Date" style="&inpdt;" visible="true" disablable="false" />
+        <FlowPanel>
+          <InputDateTime source="Date" style="&inpdt;" visible="true" disablable="false" />
+          <FaLabel name="InputTime" char="clock_o" style="display:inline; margin-left:5px" />
+        </FlowPanel>
 
         <Label for="Until" class="bee-ta-until-label" name="labelUntil" />
         <InputDateTime source="Until" name="Until" class="bee-ta-until-input" style="&inpdt;"
