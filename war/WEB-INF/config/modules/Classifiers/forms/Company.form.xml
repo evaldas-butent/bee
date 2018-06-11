@@ -439,7 +439,7 @@
               <InputDecimal source="DBNumber" summarize="true" />
 
               <Label for="PosPlaces" style="&lbl;" />
-              <InputText source="PosPlaces" summarize="true" />
+              <InputText source="PosPlaces" summarize="true" horizontalAlignment="right" />
             </row>
           </Table>
 

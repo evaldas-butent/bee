@@ -47,8 +47,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Path("/")
 @Stateless
@@ -160,7 +162,8 @@ public class CustomWorker {
 
       for (SimpleRowSet.SimpleRow row : rowSet) {
         String companyNanoNumber = row.getValue(COL_COMPANY_NANO_NUMBER);
-        String[] nanoNumbers = companyNanoNumber.split(";");
+        List<String> nanoNumbers = Arrays.stream(companyNanoNumber.split(";"))
+          .filter(s -> !s.trim().isEmpty()).collect(Collectors.toList());
 
         for (String nr : nanoNumbers) {
           if (Objects.equals(nr, nanoNumber)) {
