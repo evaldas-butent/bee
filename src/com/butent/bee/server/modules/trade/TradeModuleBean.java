@@ -1713,6 +1713,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     String articleSource;
     SimpleRowSet actData = null;
     Long continuousAct = null;
+    TradeActKind kind = null;
 
     if (BeeUtils.same(trade, TBL_SALES)) {
       tradeItems = TBL_SALE_ITEMS;
@@ -1723,20 +1724,25 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       itemsRelation = COL_PURCHASE;
       articleSource = TBL_PURCHASE_ITEMS;
     } else if (BeeUtils.same(trade, TBL_TRADE_ACTS)) {
-      itemsRelation = COL_TRADE_ACT;
+      kind = act.getActKind(id);
+
       tradeItems = typeTable;
+      itemsRelation = COL_TRADE_ACT;
+
       articleSource = TBL_ITEMS;
 
-      actData = qs.getData(new SqlSelect()
-          .addFields(trade, COL_TA_PARENT, COL_TA_CONTINUOUS)
-          .addFrom(trade)
-          .setWhere(SqlUtils.and(sys.idEquals(trade, id),
-              SqlUtils.equals(trade, COL_TA_KIND, TradeActKind.RETURN))));
+      if (!TradeActKind.RENT_PROJECT.equals(kind)) {
+        actData = qs.getData(new SqlSelect()
+                .addFields(trade, COL_TA_PARENT, COL_TA_CONTINUOUS)
+                .addFrom(trade)
+                .setWhere(SqlUtils.and(sys.idEquals(trade, id),
+                        SqlUtils.equals(trade, COL_TA_KIND, TradeActKind.RETURN))));
 
-      if (!actData.isEmpty()) {
-        continuousAct = DataUtils.isId(actData.getLong(0, COL_TA_CONTINUOUS))
-            ? actData.getLong(0, COL_TA_CONTINUOUS)
-            : actData.getLong(0, COL_TA_PARENT);
+        if (!actData.isEmpty()) {
+          continuousAct = DataUtils.isId(actData.getLong(0, COL_TA_CONTINUOUS))
+                  ? actData.getLong(0, COL_TA_CONTINUOUS)
+                  : actData.getLong(0, COL_TA_PARENT);
+        }
       }
     } else {
       return ResponseObject.error("View source not supported:", trade);
@@ -1768,6 +1774,11 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         query.addFields(TBL_TRADE_ACT_ITEMS, sys.getIdName(tradeItems))
             .addFields(TBL_ITEMS, COL_TRADE_WEIGHT, COL_ITEM_AREA);
         query.addOrder(TBL_ITEMS, COL_TRADE_ITEM_ORDINAL, sys.getIdName(TBL_ITEMS));
+
+        if (TradeActKind.RENT_PROJECT.equals(kind)) {
+          query.setWhere(SqlUtils.and(SqlUtils.equals(trade, COL_TA_RENT_PROJECT, id),
+                  SqlUtils.inList(trade, COL_TA_KIND, TradeActKind.SALE, TradeActKind.SUPPLEMENT)));
+        }
       }
       if (BeeUtils.same(tradeItems, TBL_TRADE_ACT_SERVICES)) {
         query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO,
@@ -1798,7 +1809,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     if (simpleRowSet.hasColumn("TradeActItemID")) {
       BeeRowSet beeRowSet =
-          qs.getViewData(VIEW_TRADE_ACT_ITEMS, Filter.equals(COL_TRADE_ACT, id));
+              TradeActKind.RENT_PROJECT.equals(kind)
+              ? qs.getViewData(VIEW_TRADE_ACT_ITEMS, Filter.equals(COL_TA_RENT_PROJECT, id))
+                      : qs.getViewData(VIEW_TRADE_ACT_ITEMS, Filter.equals(COL_TRADE_ACT, id));
 
       Map<Long, String> itemsRetQty = new LinkedHashMap<>();
       int colListLength = simpleRowSet.getColumnNames().length;
