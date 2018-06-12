@@ -166,7 +166,7 @@ public class CustomWorker {
           .filter(s -> !s.trim().isEmpty()).collect(Collectors.toList());
 
         for (String nr : nanoNumbers) {
-          if (Objects.equals(nr, nanoNumber)) {
+          if (Objects.equals(nr, nanoNumber.trim())) {
             nanoNrList.add(row.getLong(COL_COMPANY));
           }
         }
