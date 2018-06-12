@@ -1236,7 +1236,7 @@ public class TradeActBean implements HasTimerService {
     }
   }
 
-  private TradeActKind getActKind(Long actId) {
+  public TradeActKind getActKind(Long actId) {
     if (DataUtils.isId(actId)) {
       Integer value = qs.getInt(new SqlSelect()
           .addFields(TBL_TRADE_ACTS, COL_TA_KIND)
