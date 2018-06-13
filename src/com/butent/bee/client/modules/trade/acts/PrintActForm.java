@@ -40,14 +40,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class PrintActForm extends AbstractFormInterceptor {
@@ -186,7 +179,6 @@ public class PrintActForm extends AbstractFormInterceptor {
                 }
                 ParameterList params = TradeActKeeper.createArgs(SVC_GET_ITEMS_FOR_MULTI_RETURN);
                 params.addQueryItem(Service.VAR_LIST, DataUtils.buildIdList(acts));
-                params.addQueryItem("DEBUG", "[PrintActFrorm][BeforeRefresh]");
                 BeeKeeper.getRpc().makeRequest(params, response -> {
                   if (response != null && response.hasResponse(BeeRowSet.class)) {
                     BeeRowSet parentItems = BeeRowSet.restore(response.getResponseAsString());
