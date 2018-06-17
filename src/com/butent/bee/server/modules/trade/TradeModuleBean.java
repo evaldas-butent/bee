@@ -15,10 +15,14 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_DOCUMENT_TYPE;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_DOCUMENT_TYPE_NAME;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
+import com.butent.bee.server.SystemServiceBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
@@ -95,6 +99,7 @@ import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Formatter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
@@ -106,6 +111,7 @@ import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.PrepaymentKind;
 import com.butent.bee.shared.modules.finance.TradeAccounts;
+import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.modules.trade.DebtKind;
@@ -189,6 +195,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   FinanceModuleBean fin;
 
   @EJB TradeActDataEventHandler taHandler;
+  @EJB SystemServiceBean srv;
 
   @Resource
   TimerService timerService;
@@ -276,6 +283,11 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       case SVC_GET_DOCUMENT_DATA:
         response = getTradeDocumentData(reqInfo);
+        break;
+
+      case SVC_SEND_INVOICES:
+        response = sendInvoices(DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID_LIST)),
+            reqInfo.getParameter(MailConstants.COL_CONTENT));
         break;
 
       case SVC_SEND_TO_ERP:
@@ -2697,6 +2709,207 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   //
   //    return resp;
   //  }
+
+  private ResponseObject sendInvoices(Set<Long> ids, String content) {
+    Long senderMailAccountId = mail.getSenderAccountId(SVC_SEND_INVOICES);
+
+    if (!DataUtils.isId(senderMailAccountId)) {
+      return ResponseObject.error(usr.getDictionary().mailAccountNotFound());
+    }
+    ResponseObject response = ResponseObject.emptyResponse();
+    BeeRowSet invoices = qs.getViewData(VIEW_SALES,
+        Filter.and(Filter.idIn(ids), Filter.notNull(COL_TRADE_CUSTOMER)));
+
+    int idxSupplier = invoices.getColumnIndex(COL_TRADE_SUPPLIER);
+    int idxCustomer = invoices.getColumnIndex(COL_TRADE_CUSTOMER);
+    int idxPrefix = invoices.getColumnIndex(COL_TRADE_INVOICE_PREFIX);
+    int idxNumber = invoices.getColumnIndex(COL_TRADE_INVOICE_NO);
+    int count = 0;
+
+    //////////////// EMAILS
+    Set<Long> customerIds = invoices.getDistinctLongs(idxCustomer);
+    Multimap<Long, String> emails = HashMultimap.create();
+
+    SimpleRowSet data = qs.getData(new SqlSelect().setUnionAllMode(false)
+        .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
+        .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+        .addFrom(TBL_COMPANIES)
+        .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+        .addFromInner(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+        .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_CONTACTS, COL_EMAIL_INVOICES),
+            sys.idInList(TBL_COMPANIES, customerIds)))
+        .addUnion(new SqlSelect()
+            .addFields(TBL_COMPANY_CONTACTS, COL_COMPANY)
+            .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+            .addFrom(TBL_COMPANY_CONTACTS)
+            .addFromInner(TBL_CONTACTS,
+                sys.joinTables(TBL_CONTACTS, TBL_COMPANY_CONTACTS, COL_CONTACT))
+            .addFromInner(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+            .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_CONTACTS, COL_EMAIL_INVOICES),
+                SqlUtils.inList(TBL_COMPANY_CONTACTS, COL_COMPANY, customerIds))))
+        .addUnion(new SqlSelect()
+            .addFields(TBL_COMPANY_PERSONS, COL_COMPANY)
+            .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+            .addFrom(TBL_COMPANY_PERSONS)
+            .addFromInner(TBL_CONTACTS,
+                sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
+            .addFromInner(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+            .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_CONTACTS, COL_EMAIL_INVOICES),
+                SqlUtils.inList(TBL_COMPANY_PERSONS, COL_COMPANY, customerIds)))));
+
+    data.forEach(row -> emails.put(row.getLong(COL_COMPANY), row.getValue(COL_EMAIL_ADDRESS)));
+
+    customerIds.removeAll(emails.keySet());
+
+    if (!customerIds.isEmpty()) {
+      data = qs.getData(new SqlSelect()
+          .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
+          .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+          .addFrom(TBL_COMPANIES)
+          .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+          .addFromInner(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+          .setWhere(sys.idInList(TBL_COMPANIES, customerIds)));
+
+      data.forEach(row -> emails.put(row.getLong(COL_COMPANY), row.getValue(COL_EMAIL_ADDRESS)));
+    }
+    //////////////// CONTRACTS
+    Map<Long, String> contracts = new HashMap<>();
+
+    SimpleRowSet rs = qs.getData(new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_SALE_ITEMS, COL_SALE)
+        .addFields(TBL_DOCUMENTS, COL_DOCUMENT_NUMBER, COL_DOCUMENT_DATE)
+        .addFrom(TBL_TRADE_ACT_INVOICES)
+        .addFromInner(TBL_SALE_ITEMS,
+            sys.joinTables(TBL_SALE_ITEMS, TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_ITEM))
+        .addFromInner(TBL_TRADE_ACT_SERVICES,
+            sys.joinTables(TBL_TRADE_ACT_SERVICES, TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
+        .addFromInner(TBL_TRADE_ACTS,
+            sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT))
+        .addFromInner(TBL_DOCUMENTS, sys.joinTables(TBL_DOCUMENTS, TBL_TRADE_ACTS, COL_TA_CONTRACT))
+        .setWhere(SqlUtils.inList(TBL_SALE_ITEMS, COL_SALE, ids))
+        .addOrder(TBL_SALE_ITEMS, COL_SALE)
+        .addOrder(TBL_DOCUMENTS, COL_DOCUMENT_DATE));
+
+    rs.forEach(row -> contracts.put(row.getLong(COL_SALE), row.getValue(COL_DOCUMENT_NUMBER)));
+
+    //////////////// COMPANIES
+    Map<Long, Map<String, String>> companies = new HashMap<>();
+    Set<Long> companyIds = invoices.getDistinctLongs(idxSupplier);
+    companyIds.addAll(invoices.getDistinctLongs(idxCustomer));
+    companyIds.add(prm.getRelation(PRM_COMPANY));
+
+    BeeRowSet companyRs = qs.getViewData(VIEW_COMPANIES, Filter.idIn(companyIds));
+
+    for (BeeRow company : companyRs) {
+      Map<String, String> map = new HashMap<>();
+      companies.put(company.getId(), map);
+
+      for (int i = 0; i < companyRs.getNumberOfColumns(); i++) {
+        String value = company.getString(i);
+
+        if (!BeeUtils.isEmpty(value)) {
+          map.put(companyRs.getColumnId(i), value);
+        }
+      }
+      map.put(VIEW_COMPANY_BANK_ACCOUNTS, qs.getViewData(VIEW_COMPANY_BANK_ACCOUNTS,
+          Filter.equals(COL_COMPANY, company.getId())).serialize());
+    }
+    ////////////////
+    for (BeeRow invoice : invoices) {
+      Long invoiceId = invoice.getId();
+      Map<String, String> params = new HashMap<>();
+      params.put(COL_TA_CONTRACT, contracts.get(invoiceId));
+
+      /////////////////// INVOICE PROPERTIES
+      for (int i = 0; i < invoices.getNumberOfColumns(); i++) {
+        String value = invoice.getString(i);
+
+        if (!BeeUtils.isEmpty(value)) {
+          params.put(invoices.getColumnId(i), value);
+        }
+      }
+      if (!BeeUtils.isEmpty(invoice.getProperties())) {
+        invoice.getProperties().forEach((key, value) -> {
+          if (!BeeUtils.isEmpty(value)) {
+            params.put(key, value);
+          }
+        });
+      }
+      /////////////////// CUSTOMER, SUPPLIER
+      Long customerId = invoice.getLong(idxCustomer);
+
+      if (!emails.containsKey(customerId)) {
+        response.addWarning("Nėra email adreso: ", companies.get(customerId).get(COL_COMPANY_NAME));
+       continue;
+      }
+      Map<String, Long> info = new HashMap<>();
+      info.put(COL_TRADE_CUSTOMER, customerId);
+      info.put(COL_TRADE_SUPPLIER, BeeUtils.nvl(invoice.getLong(idxSupplier),
+          prm.getRelation(PRM_COMPANY)));
+
+      info.forEach((key, company) -> {
+        if (companies.containsKey(company)) {
+          companies.get(company).forEach((k, v) -> params.put(key + k, v));
+        }
+      });
+      /////////////////// MUD
+      BeeRowSet items = qs.getViewData(VIEW_SALE_ITEMS, Filter.equals(COL_SALE, invoiceId));
+
+      SimpleRowSet mud = qs.getData(new SqlSelect()
+          .addFields(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_ITEM)
+          .addFields(TBL_TRADE_SERIES, COL_SERIES_NAME)
+          .addFields(TBL_TRADE_ACTS, COL_TA_NUMBER)
+          .addFrom(TBL_TRADE_ACT_INVOICES)
+          .addFromInner(TBL_SALE_ITEMS,
+              sys.joinTables(TBL_SALE_ITEMS, TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_ITEM))
+          .addFromInner(TBL_TRADE_ACT_SERVICES, sys.joinTables(TBL_TRADE_ACT_SERVICES,
+              TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
+          .addFromInner(TBL_TRADE_ACTS,
+              sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT))
+          .addFromLeft(TBL_TRADE_SERIES,
+              sys.joinTables(TBL_TRADE_SERIES, TBL_TRADE_ACTS, COL_TA_SERIES))
+          .setWhere(SqlUtils.equals(TBL_SALE_ITEMS, COL_SALE, invoiceId)));
+
+      mud.forEach(row -> {
+        BeeRow item = items.getRowById(row.getLong(COL_TA_INVOICE_ITEM));
+
+        if (Objects.nonNull(item)) {
+          item.setProperty(COL_TRADE_ACT,
+              BeeUtils.joinWords(row.getValue(COL_SERIES_NAME), row.getValue(COL_TA_NUMBER)));
+          item.setProperty(COL_ITEM_IS_SERVICE, COL_ITEM_IS_SERVICE);
+        }
+      });
+      ///////////////////
+
+      ResponseObject resp = srv.getReport("SalesInvoice_lt", "pdf", params, items);
+
+      FileInfo fileInfo = resp.getResponse(FileInfo.class);
+
+      if (Objects.isNull(fileInfo)) {
+        return resp;
+      }
+      String subject = BeeUtils.join("_", Localized.dictionary().trdInvoice(),
+          BeeUtils.join("", invoice.getString(idxPrefix), invoice.getString(idxNumber)));
+
+      resp = mail.sendMail(senderMailAccountId, emails.get(customerId).toArray(new String[0]),
+          null, null, subject, BeeUtils.notEmpty(content, ""),
+          Collections.singletonMap(fileInfo.getId(), subject + ".pdf"), false);
+
+      if (resp.hasErrors()) {
+        return resp;
+      }
+      qs.insertData(new SqlInsert(VIEW_SALE_FILES)
+          .addConstant(COL_SALE, invoiceId)
+          .addConstant(COL_FILE, fileInfo.getId())
+          .addConstant(COL_NOTES, TimeUtils.nowMinutes().toString()));
+
+      qs.updateData(new SqlUpdate(TBL_SALES)
+          .addConstant("IsSentToEmail", true)
+          .setWhere(sys.idEquals(TBL_SALES, invoiceId)));
+      count++;
+    }
+    return response.addInfo("Išsiųsta sąskaitų: ", count);
+  }
 
   private ResponseObject sendToERP(String viewName, Set<Long> ids) {
     if (!sys.isView(viewName)) {

@@ -141,98 +141,7 @@ public class SystemServiceBean {
     return response;
   }
 
-  private static ResponseObject classInfo(RequestInfo reqInfo) {
-    String cnm = reqInfo.getContent();
-
-    if (BeeUtils.isEmpty(cnm)) {
-      return ResponseObject.error(reqInfo.getService(), "class name not specified");
-    }
-
-    Set<Class<?>> classes = JvmUtils.findClass(cnm);
-    if (BeeUtils.isEmpty(classes)) {
-      return ResponseObject.warning("class not found", cnm);
-    }
-    int c = classes.size();
-
-    List<ExtendedProperty> result = new ArrayList<>();
-    result.add(new ExtendedProperty(cnm, BeeUtils.bracket(c)));
-
-    int i = 0;
-    if (c > 1) {
-      for (Class<?> cls : classes) {
-        i++;
-        result.add(new ExtendedProperty(cls.getName(), null, BeeUtils.progress(i, c)));
-      }
-    }
-
-    i = 0;
-    for (Class<?> cls : classes) {
-      i++;
-      if (c > 1) {
-        result.add(new ExtendedProperty(cls.getName(), null, BeeUtils.progress(i, c)));
-      }
-      result.addAll(ClassUtils.getClassInfo(cls));
-    }
-
-    return ResponseObject.collection(result, ExtendedProperty.class);
-  }
-
-  private static ResponseObject getDigest(RequestInfo reqInfo) {
-    String src = reqInfo.getContent();
-
-    if (BeeUtils.length(src) <= 0) {
-      return ResponseObject.error(reqInfo.getService(), "source not found");
-    }
-
-    ResponseObject response = new ResponseObject();
-
-    if (src.length() < 100) {
-      response.addInfo(BeeConst.SERVER, src);
-    }
-    response.addInfo(BeeConst.SERVER, "source length", src.length());
-    response.addInfo(BeeConst.SERVER, Codec.md5(src));
-
-    return response;
-  }
-
-  private ResponseObject getFiles(List<Long> fileIds) {
-    return ResponseObject.response(fs.getFileInfos(fileIds));
-  }
-
-  private static ResponseObject getFlags() {
-    Map<String, String> flags = new HashMap<>();
-
-    File dir = new File(Config.IMAGE_DIR, Paths.FLAG_DIR);
-    File[] files = dir.listFiles();
-
-    if (files != null) {
-      for (File file : files) {
-        String name = file.getName();
-
-        String key = BeeUtils.normalize(FileNameUtils.getBaseName(name));
-        String ext = BeeUtils.normalize(FileNameUtils.getExtension(name));
-
-        if (BeeUtils.anyEmpty(key, ext)) {
-          logger.warning("invalid flag file:", file.getPath());
-          continue;
-        }
-
-        byte[] bytes = FileUtils.getBytes(file);
-        if (bytes == null) {
-          logger.severe("error loading flag:", file.getPath());
-          break;
-        }
-
-        String uri = "data:image/" + ext + ";base64," + Codec.toBase64(bytes);
-        flags.put(key, uri);
-      }
-    }
-
-    logger.info("loaded", flags.size(), "flags");
-    return ResponseObject.response(flags);
-  }
-
-  private ResponseObject getReport(String reportName, String format, Map<String, String> parameters,
+  public ResponseObject getReport(String reportName, String format, Map<String, String> parameters,
       BeeRowSet... dataSets) {
 
     long start = System.currentTimeMillis();
@@ -348,6 +257,97 @@ public class SystemServiceBean {
       response = ResponseObject.error(e);
     }
     return response;
+  }
+
+  private static ResponseObject classInfo(RequestInfo reqInfo) {
+    String cnm = reqInfo.getContent();
+
+    if (BeeUtils.isEmpty(cnm)) {
+      return ResponseObject.error(reqInfo.getService(), "class name not specified");
+    }
+
+    Set<Class<?>> classes = JvmUtils.findClass(cnm);
+    if (BeeUtils.isEmpty(classes)) {
+      return ResponseObject.warning("class not found", cnm);
+    }
+    int c = classes.size();
+
+    List<ExtendedProperty> result = new ArrayList<>();
+    result.add(new ExtendedProperty(cnm, BeeUtils.bracket(c)));
+
+    int i = 0;
+    if (c > 1) {
+      for (Class<?> cls : classes) {
+        i++;
+        result.add(new ExtendedProperty(cls.getName(), null, BeeUtils.progress(i, c)));
+      }
+    }
+
+    i = 0;
+    for (Class<?> cls : classes) {
+      i++;
+      if (c > 1) {
+        result.add(new ExtendedProperty(cls.getName(), null, BeeUtils.progress(i, c)));
+      }
+      result.addAll(ClassUtils.getClassInfo(cls));
+    }
+
+    return ResponseObject.collection(result, ExtendedProperty.class);
+  }
+
+  private static ResponseObject getDigest(RequestInfo reqInfo) {
+    String src = reqInfo.getContent();
+
+    if (BeeUtils.length(src) <= 0) {
+      return ResponseObject.error(reqInfo.getService(), "source not found");
+    }
+
+    ResponseObject response = new ResponseObject();
+
+    if (src.length() < 100) {
+      response.addInfo(BeeConst.SERVER, src);
+    }
+    response.addInfo(BeeConst.SERVER, "source length", src.length());
+    response.addInfo(BeeConst.SERVER, Codec.md5(src));
+
+    return response;
+  }
+
+  private ResponseObject getFiles(List<Long> fileIds) {
+    return ResponseObject.response(fs.getFileInfos(fileIds));
+  }
+
+  private static ResponseObject getFlags() {
+    Map<String, String> flags = new HashMap<>();
+
+    File dir = new File(Config.IMAGE_DIR, Paths.FLAG_DIR);
+    File[] files = dir.listFiles();
+
+    if (files != null) {
+      for (File file : files) {
+        String name = file.getName();
+
+        String key = BeeUtils.normalize(FileNameUtils.getBaseName(name));
+        String ext = BeeUtils.normalize(FileNameUtils.getExtension(name));
+
+        if (BeeUtils.anyEmpty(key, ext)) {
+          logger.warning("invalid flag file:", file.getPath());
+          continue;
+        }
+
+        byte[] bytes = FileUtils.getBytes(file);
+        if (bytes == null) {
+          logger.severe("error loading flag:", file.getPath());
+          break;
+        }
+
+        String uri = "data:image/" + ext + ";base64," + Codec.toBase64(bytes);
+        flags.put(key, uri);
+      }
+    }
+
+    logger.info("loaded", flags.size(), "flags");
+    return ResponseObject.response(flags);
   }
 
   private static ResponseObject getResource(RequestInfo reqInfo) {

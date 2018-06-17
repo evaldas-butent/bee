@@ -200,6 +200,16 @@ public class ResponseObject implements BeeSerializable {
   }
 
   @SuppressWarnings("unchecked")
+  public <T> T getResponse(Class<?> clazz) {
+    Assert.notNull(clazz);
+
+    if (!hasErrors() && hasResponse(clazz)) {
+      return (T) getResponse();
+    }
+    return null;
+  }
+
+  @SuppressWarnings("unchecked")
   public <T> T getResponse(T def, BeeLogger logger) {
     Assert.notNull(def);
     T res = def;
