@@ -31,7 +31,7 @@
           </page>
           <page>
             <text>=svcInvoices</text>
-            <GridPanel name="ObjectInvoices" parent="{form}" child="true" />
+            <ChildGrid name="ObjectInvoices" relColumn="ServiceObject" />
           </page>
           <page>
             <text>=svcDefects</text>
