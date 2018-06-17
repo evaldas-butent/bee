@@ -47,10 +47,27 @@ public class PrintActForm extends AbstractFormInterceptor {
 
   private static final String ITEMS_WIDGET_NAME = "TradeActItems";
   private static final String SERVICES_WIDGET_NAME = "TradeActServices";
+
+  /**
+   * Perdavimo aktas (be liko)
+   */
   private static final String FORM_PRINT_TA_NO_STOCK = "PrintTASaleNoStock";
+
+  /**
+   * Perdavimo aktas
+   */
   private static final String FORM_PRINT_TA_SALE_PHYSICAL = "PrintTradeActSalePhysical";
+
+  /**
+   * Grąžinimo aktas
+   */
   private static final String FORM_PRINT_TA_RETURN = "PrintTradeActReturn";
+
+  /**
+   * Grąžinimo aktas (be liko)
+   */
   private static final String FORM_PRINT_TA_RETURN_EXTRA = "PrintTradeActReturnExtra";
+
   private static final String FORM_PRINT_TA_SALE_RENT = "PrintTASaleRent";
   private static final String FORM_PRINT_TA_SALE_ADDITION = "PrintTASaleAddition";
   private static final String FORM_PRINT_TA_SALE_PROFORMA = "PrintTASaleProforma";
@@ -535,12 +552,38 @@ public class PrintActForm extends AbstractFormInterceptor {
     return result;
   }
 
-  private boolean isVisibleColumn(String widgetName, String col) {
-
-    final String formName = getFormView().getFormName();
+  private boolean isDataRowVisible(String widgetName, FormView form, Map<String, Map<String, String>> data, String id) {
+    TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, getActiveRow());
+    String formName = getFormView().getFormName();
 
     switch (widgetName) {
       case ITEMS_WIDGET_NAME:
+        if (TradeActKind.RENT_PROJECT.equals(kind)
+                && BeeUtils.same(FORM_PRINT_TA_NO_STOCK, BeeUtils.removeSuffix(formName, VAR_PRINT_RENTAL))) {
+          return BeeUtils.unbox(BeeUtils.toDoubleOrNull(getDataValue(data, id, "RemainingQty"))) > 0.0;
+        }
+
+       break;
+      case SERVICES_WIDGET_NAME:
+        break;
+    }
+
+    return true;
+  }
+
+  private boolean isVisibleColumn(String widgetName, String col) {
+
+    String formName = getFormView().getFormName();
+    TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, getActiveRow());
+
+    switch (widgetName) {
+      case ITEMS_WIDGET_NAME:
+        if (TradeActKind.RENT_PROJECT.equals(kind)
+                && BeeUtils.same(col, "RemainingQty")
+                && BeeUtils.same(FORM_PRINT_TA_NO_STOCK, BeeUtils.removeSuffix(formName, VAR_PRINT_RENTAL))) {
+          return true;
+        }
+
         return BeeUtils.isTrue(visibleItemsCols.get(formName, col));
       case SERVICES_WIDGET_NAME:
         return BeeUtils.isTrue(visibleServiceCols.get(formName, col));
@@ -551,6 +594,8 @@ public class PrintActForm extends AbstractFormInterceptor {
 
   private String [] getColumnList(String formName) {
     ArrayList<String> cols = Lists.newArrayList(COLUMN_LIST);
+    TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, getActiveRow());
+
     switch (formName) {
       case FORM_PRINT_TA_RETURN:
       case FORM_PRINT_TA_RETURN + VAR_PRINT_RENTAL:
@@ -561,6 +606,20 @@ public class PrintActForm extends AbstractFormInterceptor {
       case FORM_PRINT_TA_RETURN_EXTRA:
       case FORM_PRINT_TA_RETURN_EXTRA + VAR_PRINT_RENTAL:
         return COLUMN_LIST;
+      case FORM_PRINT_TA_NO_STOCK:
+      case FORM_PRINT_TA_NO_STOCK + VAR_PRINT_RENTAL:
+        if (TradeActKind.RENT_PROJECT.equals(kind)){
+          if (cols.indexOf("Quantity") > 0) {
+            cols.remove("RemainingQty");
+            cols.add(cols.indexOf("Quantity"), "RemainingQty");
+          } else {
+            cols.add("RemainingQty");
+          }
+          cols.remove("Quantity");
+          cols.remove(COL_TA_RETURNED_QTY);
+          return cols.toArray(new String[cols.size()]);
+        }
+        break;
         default:
     }
 
@@ -568,6 +627,7 @@ public class PrintActForm extends AbstractFormInterceptor {
   }
 
   private String getTableHeader(FormView form, String widgetName, String column) {
+    TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, form.getActiveRow());
     switch (column) {
       case "Name":
         if (SERVICES_WIDGET_NAME.equals(widgetName)) {
@@ -595,6 +655,13 @@ public class PrintActForm extends AbstractFormInterceptor {
                 || BeeUtils.same(BeeUtils.removeSuffix(form.getFormName(), VAR_PRINT_RENTAL),
                 FORM_PRINT_TA_RETURN_EXTRA)) {
           return "Grąžinta";
+        }
+        break;
+      case "RemainingQty":
+        if (ITEMS_WIDGET_NAME.equals(widgetName) && BeeUtils.same(
+                BeeUtils.removeSuffix(form.getFormName(), VAR_PRINT_RENTAL),
+                FORM_PRINT_TA_NO_STOCK) && TradeActKind.RENT_PROJECT.equals(kind)) {
+          return "Kiekis";
         }
         break;
       default:
@@ -814,6 +881,9 @@ public class PrintActForm extends AbstractFormInterceptor {
           BigDecimal sum = BigDecimal.ZERO;
 
           for (String id : data.keySet()) {
+            if (!isDataRowVisible(typeTable, getFormView(), data, id)) {
+              continue;
+            }
             String value = getDataValue(data, id, col);
 
             if (calc.contains(col)) {
@@ -856,9 +926,10 @@ public class PrintActForm extends AbstractFormInterceptor {
 
   private String getDataTableId(String typeTable, SimpleRowSet.SimpleRow row) {
     switch (BeeUtils.removeSuffix(getFormView().getFormName(), VAR_PRINT_RENTAL)) {
-      case FORM_PRINT_TA_NO_STOCK:
-      case FORM_PRINT_TA_RETURN:
-      case FORM_PRINT_TA_RETURN_EXTRA:
+      default:
+//      case FORM_PRINT_TA_NO_STOCK:
+//      case FORM_PRINT_TA_RETURN:
+//      case FORM_PRINT_TA_RETURN_EXTRA:
         return BeeUtils.same(SERVICES_WIDGET_NAME, typeTable) ? row.getValue(typeTable)
             : BeeUtils.toString(Objects.hash(row.getLong(COL_ITEM),
             row.getDouble(COL_TRADE_ITEM_PRICE),
@@ -866,7 +937,7 @@ public class PrintActForm extends AbstractFormInterceptor {
             row.getDouble(COL_TRADE_VAT), row.getBoolean(COL_TRADE_VAT_PERC),
             row.getDouble(COL_TRADE_DISCOUNT), row.getValue(COL_TRADE_ITEM_NOTE)));
 
-      default: return  row.getValue(typeTable);
+//      default: return  row.getValue(typeTable);
     }
   }
 
