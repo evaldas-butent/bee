@@ -3694,16 +3694,15 @@ public class TradeActBean implements HasTimerService {
 
     String saleId = sys.getIdName(TBL_SALES);
 
+    IsExpression amountExpression = SqlUtils.multiply(SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY), SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_ITEM_PRICE),
+      SqlUtils.field(TBL_SALE_ITEMS, COL_TA_SERVICE_FACTOR));
+
     SqlSelect invoicesQuery = new SqlSelect()
             .addFields(TBL_TRADE_ACT_SERVICES, idName)
             .addFields(TBL_SALES, COL_TRADE_INVOICE_NO, saleId)
             .addField(TBL_SALES, COL_TRADE_DATE, "InvoiceDate")
-            .addExpr(SqlUtils.minus(
-                    TradeModuleBean.getAmountExpression(TBL_SALE_ITEMS),
-                    SqlUtils.multiply(TradeModuleBean.getAmountExpression(TBL_SALE_ITEMS),
-                            SqlUtils.divide(SqlUtils.nvl(SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_DISCOUNT), 0),
-                            100))
-            ),COL_TRADE_AMOUNT)
+            .addExpr(SqlUtils.minus(amountExpression, SqlUtils.multiply(amountExpression, SqlUtils.divide(SqlUtils.nvl(
+              SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_DISCOUNT), 0), 100))),COL_TRADE_AMOUNT)
             .addField(TBL_SALE_ITEMS, COL_TRADE_DISCOUNT, "SaleItemDiscount")
             .addField(TBL_SALES_SERIES, COL_SERIES_NAME, COL_TRADE_INVOICE_PREFIX)
             .addFrom(TBL_TRADE_ACT_SERVICES)
