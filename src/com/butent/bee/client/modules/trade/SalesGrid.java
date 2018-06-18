@@ -35,11 +35,12 @@ public class SalesGrid extends InvoicesGrid {
   public void afterCreatePresenter(final GridPresenter presenter) {
     mailAction.setTitle(Localized.dictionary().trWriteEmail());
     presenter.getHeader().addCommandItem(mailAction);
+
+    super.afterCreatePresenter(presenter);
   }
 
   @Override
   public GridInterceptor getInstance() {
-
     return new SalesGrid();
   }
 
