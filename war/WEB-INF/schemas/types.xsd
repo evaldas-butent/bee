@@ -578,7 +578,6 @@
       <xs:enumeration value="MaintenanceComments" />
       <xs:enumeration value="ServiceObjectCriteria" />
       <xs:enumeration value="ServiceObjects" />
-      <xs:enumeration value="ObjectInvoices" />
       <xs:enumeration value="Services" />
       <xs:enumeration value="ServiceSales" />
       <xs:enumeration value="ServiceSettings" />
