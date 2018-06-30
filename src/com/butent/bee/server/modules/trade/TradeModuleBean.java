@@ -17,6 +17,7 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
+import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.COL_DOCUMENT_TYPE;
 import static com.butent.bee.shared.modules.trade.TradeConstants.COL_DOCUMENT_TYPE_NAME;
@@ -1774,15 +1775,15 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       if (!TradeActKind.RENT_PROJECT.equals(kind)) {
         actData = qs.getData(new SqlSelect()
-                .addFields(trade, COL_TA_PARENT, COL_TA_CONTINUOUS)
-                .addFrom(trade)
-                .setWhere(SqlUtils.and(sys.idEquals(trade, id),
-                        SqlUtils.equals(trade, COL_TA_KIND, TradeActKind.RETURN))));
+            .addFields(trade, COL_TA_PARENT, COL_TA_CONTINUOUS)
+            .addFrom(trade)
+            .setWhere(SqlUtils.and(sys.idEquals(trade, id),
+                SqlUtils.equals(trade, COL_TA_KIND, TradeActKind.RETURN))));
 
         if (!actData.isEmpty()) {
           continuousAct = DataUtils.isId(actData.getLong(0, COL_TA_CONTINUOUS))
-                  ? actData.getLong(0, COL_TA_CONTINUOUS)
-                  : actData.getLong(0, COL_TA_PARENT);
+              ? actData.getLong(0, COL_TA_CONTINUOUS)
+              : actData.getLong(0, COL_TA_PARENT);
         }
       }
     } else {
@@ -1818,7 +1819,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
         if (TradeActKind.RENT_PROJECT.equals(kind)) {
           query.setWhere(SqlUtils.and(SqlUtils.equals(trade, COL_TA_RENT_PROJECT, id),
-                  SqlUtils.inList(trade, COL_TA_KIND, TradeActKind.SALE, TradeActKind.SUPPLEMENT)));
+              SqlUtils.inList(trade, COL_TA_KIND, TradeActKind.SALE, TradeActKind.SUPPLEMENT)));
         }
       }
       if (BeeUtils.same(tradeItems, TBL_TRADE_ACT_SERVICES)) {
@@ -1850,9 +1851,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     if (simpleRowSet.hasColumn("TradeActItemID")) {
       BeeRowSet beeRowSet =
-              TradeActKind.RENT_PROJECT.equals(kind)
+          TradeActKind.RENT_PROJECT.equals(kind)
               ? qs.getViewData(VIEW_TRADE_ACT_ITEMS, Filter.equals(COL_TA_RENT_PROJECT, id))
-                      : qs.getViewData(VIEW_TRADE_ACT_ITEMS, Filter.equals(COL_TRADE_ACT, id));
+              : qs.getViewData(VIEW_TRADE_ACT_ITEMS, Filter.equals(COL_TRADE_ACT, id));
 
       Map<Long, String> itemsRetQty = new LinkedHashMap<>();
       int colListLength = simpleRowSet.getColumnNames().length;
@@ -2869,7 +2870,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       if (!emails.containsKey(customerId)) {
         response.addWarning("Nėra email adreso: ", companies.get(customerId).get(COL_COMPANY_NAME));
-       continue;
+        continue;
       }
       Map<String, Long> info = new HashMap<>();
       info.put(COL_TRADE_CUSTOMER, customerId);
@@ -3120,7 +3121,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           .setWhere(SqlUtils.equals(tradeItems, itemsRelation, invoice.getLong(itemsRelation)));
 
       if (Objects.equals(TBL_SALE_ITEMS, tradeItems)) {
-        itemsQuery.addFields(tradeItems, COL_ITEM_FACTOR);
+        itemsQuery.addFields(tradeItems, COL_ITEM_FACTOR)
+            .addFields(TBL_SERVICE_OBJECTS, COL_SERVICE_ADDRESS)
+            .addFromLeft(TBL_SERVICE_OBJECTS,
+                sys.joinTables(TBL_SERVICE_OBJECTS, tradeItems, COL_SERVICE_OBJECT));
       }
 
       SimpleRowSet items = qs.getData(itemsQuery);
@@ -3153,7 +3157,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         wsItem.setVat(item.getValue(COL_TRADE_VAT), item.getBoolean(COL_TRADE_VAT_PERC),
             item.getBoolean(COL_TRADE_VAT_PLUS));
         wsItem.setArticle(item.getValue(COL_TRADE_ITEM_ARTICLE));
-        wsItem.setNote(item.getValue(COL_TRADE_ITEM_NOTE));
+        wsItem.setNote(item.getValue(COL_SERVICE_ADDRESS));
       }
       if (response.hasErrors()) {
         break;
