@@ -19,7 +19,7 @@
 
   <row for="CreditTolerance">
     <Label text="=creditTolerance" style="&lbl;" />
-    <InputInteger source="CreditTolerance" style="width: 60px;" summarize="true" />
+    <InputInteger source="CreditTolerance" summarize="true" />
   </row>
 
   <row for="CreditDays">

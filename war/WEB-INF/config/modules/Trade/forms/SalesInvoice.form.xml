@@ -70,6 +70,9 @@
 
         <Label for="WarehouseFrom" />
         <DataSelector source="WarehouseFrom" style="&inp;"/>
+        <cell colSpan="2">
+          <FlowPanel name="CreditInfo" />
+        </cell>
       </row>
     </Table>
 
