@@ -584,12 +584,16 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       if (!rs.isEmpty()) {
         resp.put(COL_TRADE_DATE, rs.getDateTime(0, COL_TRADE_DATE).getDate().toString());
 
-        SimpleRow row = qs.getRow(new SqlSelect().setLimit(1)
-            .addFields(TBL_ERP_SALES, COL_TRADE_PAYMENT_TIME, COL_TRADE_PAID)
+        SimpleRow row = qs.getRow(new SqlSelect()
+            .addMax("subq", COL_TRADE_PAYMENT_TIME)
+            .addSum(TBL_ERP_SALES, COL_TRADE_PAID)
             .addFrom(TBL_ERP_SALES)
-            .setWhere(SqlUtils.and(customerClause,
-                SqlUtils.notNull(TBL_ERP_SALES, COL_TRADE_PAYMENT_TIME)))
-            .addOrderDesc(TBL_ERP_SALES, COL_TRADE_PAYMENT_TIME));
+            .addFromInner(new SqlSelect()
+                    .addMax(TBL_ERP_SALES, COL_TRADE_PAYMENT_TIME)
+                    .addFrom(TBL_ERP_SALES)
+                    .setWhere(customerClause), "subq",
+                SqlUtils.joinUsing(TBL_ERP_SALES, "subq", COL_TRADE_PAYMENT_TIME))
+            .setWhere(customerClause));
 
         if (Objects.nonNull(row)) {
           resp.put(COL_TRADE_PAYMENT_TIME,
