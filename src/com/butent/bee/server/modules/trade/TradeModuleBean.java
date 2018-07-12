@@ -595,7 +595,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                 SqlUtils.joinUsing(TBL_ERP_SALES, "subq", COL_TRADE_PAYMENT_TIME))
             .setWhere(customerClause));
 
-        if (Objects.nonNull(row)) {
+        if (Objects.nonNull(row) && Objects.nonNull(row.getDateTime(COL_TRADE_PAYMENT_TIME))) {
           resp.put(COL_TRADE_PAYMENT_TIME,
               row.getDateTime(COL_TRADE_PAYMENT_TIME).getDate().toString());
           resp.put(COL_TRADE_PAID, row.getValue(COL_TRADE_PAID));

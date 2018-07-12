@@ -23,10 +23,21 @@
         <InputDateTime source="Date" visible="true" />
 
         <Label for="SaleSeries" />
-        <DataSelector source="SaleSeries" renderColumns="SeriesName"
-                      upperCase="true" style="width: 7em;" />
-        <Label for="InvoiceNo" />
-        <InputText source="InvoiceNo" />
+
+        <cell colSpan="3">
+          <FlowPanel class="flexBox-horizontal-space-between">
+            <DataSelector source="SaleSeries" renderColumns="SeriesName"
+                          upperCase="true" style="width: 7em;" />
+            <Table kind="custom">
+              <row>
+                <Label text="Nr" />
+                <InputText source="InvoiceNo" />
+              </row>
+            </Table>
+            <CheckBox for="IsSentToEmail" source="IsSentToEmail" readOnly="true"/>
+            <div/>
+          </FlowPanel>
+        </cell>
       </row>
 
       <row>
@@ -35,13 +46,17 @@
 
         <Label text="=trdTotal" />
         <cell>
-          <HorizontalPanel>
+          <FlowPanel class="flexBox-horizontal-space-between">
             <DecimalLabel source="Amount" format="0.00" style="font-weight: bold;" />
 
-            <Label for="Currency" />
-            <DataSelector source="Currency" renderColumns="CurrencyName"
-                          style="width: 50px;" editEnabled="false" newRowEnabled="false" />
-          </HorizontalPanel>
+            <Table kind="custom">
+              <row>
+                <Label for="Currency" />
+                <DataSelector source="Currency" renderColumns="CurrencyName"
+                              style="width: 50px;" editEnabled="false" newRowEnabled="false" />
+              </row>
+            </Table>
+          </FlowPanel>
         </cell>
 
         <Label for="InvoiceTransferType" />
@@ -57,10 +72,7 @@
                       style="&inp;" renderColumns="CustomerName CustomerTypeName" />
 
         <cell colSpan="2" rowSpan="3">
-          <FlowPanel style="text-align:left;">
-            <CheckBox for="IsSentToEmail" source="IsSentToEmail" readOnly="true"/>
-            <FlowPanel name="CreditInfo" />
-          </FlowPanel>
+          <FlowPanel name="CreditInfo" />
         </cell>
       </row>
 
