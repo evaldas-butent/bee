@@ -3161,7 +3161,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         wsItem.setVat(item.getValue(COL_TRADE_VAT), item.getBoolean(COL_TRADE_VAT_PERC),
             item.getBoolean(COL_TRADE_VAT_PLUS));
         wsItem.setArticle(item.getValue(COL_TRADE_ITEM_ARTICLE));
-        wsItem.setNote(item.getValue(COL_SERVICE_ADDRESS));
+        wsItem.setNote(BeeUtils.joinItems(item.getValue(COL_TRADE_ITEM_NOTE),
+            item.hasColumn(COL_SERVICE_ADDRESS) ? item.getValue(COL_SERVICE_ADDRESS) : null));
       }
       if (response.hasErrors()) {
         break;

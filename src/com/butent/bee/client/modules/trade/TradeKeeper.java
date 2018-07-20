@@ -194,7 +194,8 @@ public final class TradeKeeper implements HandlesAllDataEvents {
               Double stock = BeeUtils.toDoubleOrNull(triplet.getB());
               Double reserved = BeeUtils.toDoubleOrNull(triplet.getC());
 
-              if (!BeeUtils.isEmpty(warehouse) && BeeUtils.isPositive(stock)) {
+              if (!BeeUtils.isEmpty(warehouse)
+                  && (BeeUtils.isPositive(stock) || BeeUtils.isNegative(stock))) {
                 result.add(Triplet.of(warehouse, stock, reserved));
               }
             }

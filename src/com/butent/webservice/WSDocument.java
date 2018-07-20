@@ -109,6 +109,8 @@ public class WSDocument {
     for (WSDocumentItem item : items) {
       sb.append("<row>")
           .append(XmlUtils.tag("apyv_id", documentId))
+          .append(XmlUtils.tag("isaf", 1))
+          .append(XmlUtils.tag("pvm_kl_kod", "PVM1"))
           .append(XmlUtils.tag("data", date))
           .append(XmlUtils.tag("operacija", operation))
           .append(XmlUtils.tag("sandelis", warehouse))
