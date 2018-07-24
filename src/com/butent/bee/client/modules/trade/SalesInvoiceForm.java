@@ -8,16 +8,18 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT_DATE;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
-import static com.butent.bee.shared.modules.transport.TransportConstants.COL_CUSTOMER;
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
+import com.butent.bee.client.modules.classifiers.CompanyForm;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
 import com.butent.bee.client.output.ReportUtils;
@@ -33,6 +35,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
@@ -78,8 +81,22 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
           setTerm(TimeUtils.parseDate(valueChangeEvent.getValue(),
               BeeKeeper.getUser().getDateTimeFormatInfo().dateOrdering())));
     }
-
+    if (BeeUtils.inList(editableWidget.getColumnId(), COL_CUSTOMER, COL_PAYER)
+        && widget instanceof DataSelector) {
+      ((DataSelector) widget).addSelectorHandler(event -> {
+        if (event.isChanged()) {
+          afterRefresh(getFormView(), getActiveRow());
+        }
+      });
+    }
     super.afterCreateEditableWidget(editableWidget, widget);
+  }
+
+  @Override
+  public void afterRefresh(FormView form, IsRow row) {
+    CompanyForm.refreshCreditInfo(form, BeeUtils.nvl(row.getLong(form.getDataIndex(COL_PAYER)),
+        row.getLong(form.getDataIndex(COL_CUSTOMER))));
+    super.afterRefresh(form, row);
   }
 
   @Override

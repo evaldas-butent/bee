@@ -900,6 +900,8 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
                 result.get(ClassifierConstants.COL_COMPANY_CREDIT_LIMIT));
         double debt = BeeUtils.toDouble(result.get(TradeConstants.VAR_DEBT));
         double overdue = BeeUtils.toDouble(result.get(TradeConstants.VAR_OVERDUE));
+        double untolerated = BeeUtils.toDouble(result.get(TradeConstants.VAR_UNTOLERATED));
+        String oldestDate = result.get(TradeConstants.COL_TRADE_DATE);
         String financialState = BeeUtils.trim(result.get(COL_COMPANY_FINANCIAL_STATE));
         String financialStateColor = BeeUtils.trim(result.get(COL_BACKGROUND));
 
@@ -916,6 +918,13 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         table.setText(2, 1, String.valueOf(debt));
         table.setText(3, 0, Localized.dictionary().trdOverdue() + ":");
         table.setText(3, 1, String.valueOf(overdue));
+        StyleUtils.setColor(table.getCellFormatter().getElement(3, 1), "red");
+        table.setText(4, 0, "Netoleruojama skola:");
+        table.setText(4, 1, String.valueOf(untolerated));
+        StyleUtils.setColor(table.getCellFormatter().getElement(4, 1), "red");
+        table.setText(5, 0, "Seniausia neapmokėta sąskaita:");
+        table.setText(5, 1, oldestDate);
+
         String cap = BeeUtils.joinWords(result.get(ClassifierConstants.COL_COMPANY_NAME),
                 result.get(ClassifierConstants.COL_COMPANY_TYPE));
 

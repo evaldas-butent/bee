@@ -84,7 +84,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-class CompanyForm extends AbstractFormInterceptor {
+public class CompanyForm extends AbstractFormInterceptor {
 
   private FaLabel switchAction;
 
@@ -310,7 +310,7 @@ class CompanyForm extends AbstractFormInterceptor {
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     if (DataUtils.hasId(row)) {
-      refreshCreditInfo();
+      refreshCreditInfo(form, row.getId());
       createQrButton(form, row);
 
       Presenter presenter = form.getViewPresenter();
@@ -557,15 +557,14 @@ class CompanyForm extends AbstractFormInterceptor {
 
   }
 
-  private void refreshCreditInfo() {
-    final FormView form = getFormView();
+  public static void refreshCreditInfo(FormView form, Long companyId) {
     final Widget widget = form.getWidgetByName(SVC_CREDIT_INFO, false);
 
     if (widget != null) {
       widget.getElement().setInnerText(null);
 
       ParameterList args = TradeKeeper.createArgs(SVC_CREDIT_INFO);
-      args.addDataItem(COL_COMPANY, getActiveRow().getId());
+      args.addDataItem(COL_COMPANY, companyId);
 
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
         @Override
@@ -593,13 +592,32 @@ class CompanyForm extends AbstractFormInterceptor {
               if (BeeUtils.toDouble(amount) <= limit) {
                 StyleUtils.setColor(table.getCellFormatter().getElement(c, 1), "black");
               }
-              c++;
             }
             amount = result.get(VAR_OVERDUE);
 
             if (BeeUtils.isPositiveDouble(amount)) {
-              table.setHtml(c, 0, Localized.dictionary().trdOverdue());
+              table.setHtml(++c, 0, Localized.dictionary().trdOverdue());
               table.setHtml(c, 1, amount);
+            }
+            amount = result.get(VAR_UNTOLERATED);
+
+            if (BeeUtils.isPositiveDouble(amount)) {
+              table.setHtml(++c, 0, "Netoleruojama skola");
+              table.setHtml(c, 1, amount);
+            }
+            if (!BeeUtils.isEmpty(result.get(COL_TRADE_DATE))) {
+              table.setHtml(++c, 0, "Seniausia neapmokėta sąskaita");
+              table.setHtml(c, 1, result.get(COL_TRADE_DATE));
+              StyleUtils.setColor(table.getCellFormatter().getElement(c, 1), "black");
+            }
+            if (!BeeUtils.isEmpty(result.get(COL_TRADE_PAYMENT_TIME))) {
+              table.setHtml(++c, 0, "Paskutinis mokėjimas");
+              table.setHtml(c, 1, result.get(COL_TRADE_PAID));
+              StyleUtils.setColor(table.getCellFormatter().getElement(c, 1), "black");
+
+              table.setHtml(++c, 0, "Paskutinio mokėjimo data");
+              table.setHtml(c, 1, result.get(COL_TRADE_PAYMENT_TIME));
+              StyleUtils.setColor(table.getCellFormatter().getElement(c, 1), "black");
             }
             widget.getElement().setInnerHTML(table.getElement().getString());
           }

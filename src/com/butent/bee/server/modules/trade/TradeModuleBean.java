@@ -17,6 +17,7 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
+import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.COL_DOCUMENT_TYPE;
 import static com.butent.bee.shared.modules.trade.TradeConstants.COL_DOCUMENT_TYPE_NAME;
@@ -129,6 +130,7 @@ import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
+import com.butent.bee.shared.time.AbstractDate;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -510,7 +512,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
     SimpleRow company = qs.getRow(new SqlSelect()
         .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CREDIT_LIMIT,
-            COL_COMPANY_LIMIT_CURRENCY, COL_COMPANY_CREDIT_DAYS)
+            COL_COMPANY_LIMIT_CURRENCY, COL_COMPANY_CREDIT_DAYS, COL_COMPANY_TOLERATED_DAYS)
         .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
         .addField(VIEW_FINANCIAL_STATES, COL_FINANCIAL_STATE_NAME, COL_COMPANY_FINANCIAL_STATE)
         .addField(VIEW_COLORS, COL_BACKGROUND, COL_COLOR)
@@ -532,15 +534,19 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       double limit = BeeUtils.unbox(company.getDouble(COL_COMPANY_CREDIT_LIMIT));
       Long curr = company.getLong(COL_COMPANY_LIMIT_CURRENCY);
       int days = BeeUtils.unbox(company.getInt(COL_COMPANY_CREDIT_DAYS));
+      int toleratedDays = BeeUtils.unbox(company.getInt(COL_COMPANY_TOLERATED_DAYS));
+
+      HasConditions customerClause = SqlUtils.or(
+          SqlUtils.equals(TBL_ERP_SALES, COL_SALE_PAYER, companyId),
+          SqlUtils.and(SqlUtils.isNull(TBL_ERP_SALES, COL_SALE_PAYER),
+              SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_CUSTOMER, companyId)));
 
       SqlSelect query = new SqlSelect()
           .addFields(TBL_ERP_SALES, COL_TRADE_DATE, COL_TRADE_TERM)
           .addFrom(TBL_ERP_SALES)
-          .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_ERP_SALES, COL_SALE_PAYER,
-              companyId),
-              SqlUtils.and(SqlUtils.isNull(TBL_ERP_SALES, COL_SALE_PAYER),
-                  SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_CUSTOMER, companyId))),
-              SqlUtils.more(SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_DEBT), 0), 0)));
+          .setWhere(SqlUtils.and(customerClause,
+              SqlUtils.more(SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_DEBT), 0), 0)))
+          .addOrder(TBL_ERP_SALES, COL_TRADE_DATE);
 
       if (DataUtils.isId(curr)) {
         query.addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_ERP_SALES, COL_TRADE_DEBT,
@@ -555,18 +561,45 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       }
       double debt = 0.0;
       double overdue = 0.0;
+      double untolerated = 0.0;
+      SimpleRowSet rs = qs.getData(query);
 
-      for (SimpleRow row : qs.getData(query)) {
+      for (SimpleRow row : rs) {
         double xxx = BeeUtils.unbox(row.getDouble(COL_TRADE_DEBT));
         // - BeeUtils.unbox(row.getDouble(COL_TRADE_PAID));
 
-        int dayDiff = TimeUtils.dayDiff(BeeUtils.nvl(row.getDateTime(COL_TRADE_TERM),
-            TimeUtils.nextDay(row.getDateTime(COL_TRADE_DATE), days)), TimeUtils.nowMinutes());
+        AbstractDate term = BeeUtils.nvl(row.getDateTime(COL_TRADE_TERM),
+            TimeUtils.nextDay(row.getDateTime(COL_TRADE_DATE), days));
+
+        int dayDiff = TimeUtils.dayDiff(term, TimeUtils.nowMinutes());
 
         if (dayDiff > 0) {
+          if (dayDiff > toleratedDays) {
+            untolerated += xxx;
+          }
           overdue += xxx;
         }
         debt += xxx;
+      }
+      if (!rs.isEmpty()) {
+        resp.put(COL_TRADE_DATE, rs.getDateTime(0, COL_TRADE_DATE).getDate().toString());
+
+        SimpleRow row = qs.getRow(new SqlSelect()
+            .addMax("subq", COL_TRADE_PAYMENT_TIME)
+            .addSum(TBL_ERP_SALES, COL_TRADE_PAID)
+            .addFrom(TBL_ERP_SALES)
+            .addFromInner(new SqlSelect()
+                    .addMax(TBL_ERP_SALES, COL_TRADE_PAYMENT_TIME)
+                    .addFrom(TBL_ERP_SALES)
+                    .setWhere(customerClause), "subq",
+                SqlUtils.joinUsing(TBL_ERP_SALES, "subq", COL_TRADE_PAYMENT_TIME))
+            .setWhere(customerClause));
+
+        if (Objects.nonNull(row) && Objects.nonNull(row.getDateTime(COL_TRADE_PAYMENT_TIME))) {
+          resp.put(COL_TRADE_PAYMENT_TIME,
+              row.getDateTime(COL_TRADE_PAYMENT_TIME).getDate().toString());
+          resp.put(COL_TRADE_PAID, row.getValue(COL_TRADE_PAID));
+        }
       }
       resp.put(COL_COMPANY_NAME, company.getValue(COL_COMPANY_NAME));
       resp.put(COL_COMPANY_TYPE, company.getValue(COL_COMPANY_TYPE));
@@ -576,6 +609,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       resp.put(COL_COMPANY_CREDIT_DAYS, days);
       resp.put(VAR_DEBT, BeeUtils.round(debt, 2));
       resp.put(VAR_OVERDUE, BeeUtils.round(overdue, 2));
+      resp.put(VAR_UNTOLERATED, BeeUtils.round(untolerated, 2));
       resp.put(COL_COMPANY_FINANCIAL_STATE, company.getValue(COL_COMPANY_FINANCIAL_STATE));
       resp.put(COL_BACKGROUND, company.getValue(COL_COLOR));
     }
@@ -1745,15 +1779,15 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       if (!TradeActKind.RENT_PROJECT.equals(kind)) {
         actData = qs.getData(new SqlSelect()
-                .addFields(trade, COL_TA_PARENT, COL_TA_CONTINUOUS)
-                .addFrom(trade)
-                .setWhere(SqlUtils.and(sys.idEquals(trade, id),
-                        SqlUtils.equals(trade, COL_TA_KIND, TradeActKind.RETURN))));
+            .addFields(trade, COL_TA_PARENT, COL_TA_CONTINUOUS)
+            .addFrom(trade)
+            .setWhere(SqlUtils.and(sys.idEquals(trade, id),
+                SqlUtils.equals(trade, COL_TA_KIND, TradeActKind.RETURN))));
 
         if (!actData.isEmpty()) {
           continuousAct = DataUtils.isId(actData.getLong(0, COL_TA_CONTINUOUS))
-                  ? actData.getLong(0, COL_TA_CONTINUOUS)
-                  : actData.getLong(0, COL_TA_PARENT);
+              ? actData.getLong(0, COL_TA_CONTINUOUS)
+              : actData.getLong(0, COL_TA_PARENT);
         }
       }
     } else {
@@ -1789,7 +1823,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
         if (TradeActKind.RENT_PROJECT.equals(kind)) {
           query.setWhere(SqlUtils.and(SqlUtils.equals(trade, COL_TA_RENT_PROJECT, id),
-                  SqlUtils.inList(trade, COL_TA_KIND, TradeActKind.SALE, TradeActKind.SUPPLEMENT)));
+              SqlUtils.inList(trade, COL_TA_KIND, TradeActKind.SALE, TradeActKind.SUPPLEMENT)));
         }
       }
       if (BeeUtils.same(tradeItems, TBL_TRADE_ACT_SERVICES)) {
@@ -1821,9 +1855,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     if (simpleRowSet.hasColumn("TradeActItemID")) {
       BeeRowSet beeRowSet =
-              TradeActKind.RENT_PROJECT.equals(kind)
+          TradeActKind.RENT_PROJECT.equals(kind)
               ? qs.getViewData(VIEW_TRADE_ACT_ITEMS, Filter.equals(COL_TA_RENT_PROJECT, id))
-                      : qs.getViewData(VIEW_TRADE_ACT_ITEMS, Filter.equals(COL_TRADE_ACT, id));
+              : qs.getViewData(VIEW_TRADE_ACT_ITEMS, Filter.equals(COL_TRADE_ACT, id));
 
       Map<Long, String> itemsRetQty = new LinkedHashMap<>();
       int colListLength = simpleRowSet.getColumnNames().length;
@@ -2840,7 +2874,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       if (!emails.containsKey(customerId)) {
         response.addWarning("Nėra email adreso: ", companies.get(customerId).get(COL_COMPANY_NAME));
-       continue;
+        continue;
       }
       Map<String, Long> info = new HashMap<>();
       info.put(COL_TRADE_CUSTOMER, customerId);
@@ -3091,7 +3125,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           .setWhere(SqlUtils.equals(tradeItems, itemsRelation, invoice.getLong(itemsRelation)));
 
       if (Objects.equals(TBL_SALE_ITEMS, tradeItems)) {
-        itemsQuery.addFields(tradeItems, COL_ITEM_FACTOR);
+        itemsQuery.addFields(tradeItems, COL_ITEM_FACTOR)
+            .addFields(TBL_SERVICE_OBJECTS, COL_SERVICE_ADDRESS)
+            .addFromLeft(TBL_SERVICE_OBJECTS,
+                sys.joinTables(TBL_SERVICE_OBJECTS, tradeItems, COL_SERVICE_OBJECT));
       }
 
       SimpleRowSet items = qs.getData(itemsQuery);
@@ -3124,7 +3161,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         wsItem.setVat(item.getValue(COL_TRADE_VAT), item.getBoolean(COL_TRADE_VAT_PERC),
             item.getBoolean(COL_TRADE_VAT_PLUS));
         wsItem.setArticle(item.getValue(COL_TRADE_ITEM_ARTICLE));
-        wsItem.setNote(item.getValue(COL_TRADE_ITEM_NOTE));
+        wsItem.setNote(BeeUtils.joinItems(item.getValue(COL_TRADE_ITEM_NOTE),
+            item.hasColumn(COL_SERVICE_ADDRESS) ? item.getValue(COL_SERVICE_ADDRESS) : null));
       }
       if (response.hasErrors()) {
         break;

@@ -347,6 +347,7 @@ public final class TradeConstants {
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";
   public static final String VAR_OVERDUE = "Overdue";
+  public static final String VAR_UNTOLERATED = "Untolerated";
   public static final String VAR_DOCUMENT = "Document";
   public static final String VAR_ITEMS = "Items";
   public static final String VAR_RESERVATIONS = "Reservations";

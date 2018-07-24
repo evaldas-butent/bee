@@ -23,10 +23,21 @@
         <InputDateTime source="Date" visible="true" />
 
         <Label for="SaleSeries" />
-        <DataSelector source="SaleSeries" renderColumns="SeriesName"
-                      upperCase="true" style="width: 7em;" />
-        <Label for="InvoiceNo" />
-        <InputText source="InvoiceNo" />
+
+        <cell colSpan="3">
+          <FlowPanel class="flexBox-horizontal-space-between">
+            <DataSelector source="SaleSeries" renderColumns="SeriesName"
+                          upperCase="true" style="width: 7em;" />
+            <Table kind="custom">
+              <row>
+                <Label text="Nr" />
+                <InputText source="InvoiceNo" />
+              </row>
+            </Table>
+            <CheckBox for="IsSentToEmail" source="IsSentToEmail" readOnly="true"/>
+            <div/>
+          </FlowPanel>
+        </cell>
       </row>
 
       <row>
@@ -34,11 +45,22 @@
         <InputDate source="Term" style="width: 10em;" />
 
         <Label text="=trdTotal" />
-        <DecimalLabel source="Amount" format="0.00" style="font-weight: bold;" />
+        <cell>
+          <FlowPanel class="flexBox-horizontal-space-between">
+            <DecimalLabel source="Amount" format="0.00" style="font-weight: bold;" />
 
-        <Label for="Currency" />
-        <DataSelector source="Currency" renderColumns="CurrencyName"
-          style="width: 50px;" editEnabled="false" newRowEnabled="false" />
+            <Table kind="custom">
+              <row>
+                <Label for="Currency" />
+                <DataSelector source="Currency" renderColumns="CurrencyName"
+                              style="width: 50px;" editEnabled="false" newRowEnabled="false" />
+              </row>
+            </Table>
+          </FlowPanel>
+        </cell>
+
+        <Label for="InvoiceTransferType" />
+        <DataSelector source="InvoiceTransferType" style="&inp;"/>
       </row>
 
       <row>
@@ -49,7 +71,9 @@
         <DataSelector source="Customer" name="Customer" required="true" visible="true"
                       style="&inp;" renderColumns="CustomerName CustomerTypeName" />
 
-        <CheckBox for="IsSentToEmail" source="IsSentToEmail" readOnly="true"/>
+        <cell colSpan="2" rowSpan="3">
+          <FlowPanel name="CreditInfo" />
+        </cell>
       </row>
 
       <row>
@@ -59,9 +83,6 @@
 
         <Label for="Payer" />
         <DataSelector source="Payer" name="Payer" style="&inp;"/>
-
-        <Label for="InvoiceTransferType" />
-        <DataSelector source="InvoiceTransferType" style="&inp;"/>
       </row>
 
       <row>
