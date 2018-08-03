@@ -627,8 +627,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
     Relation relation = Relation.create();
     relation.setViewName(VIEW_TRADE_ACTS);
     relation
-        .setChoiceColumns(Arrays.asList("Id", "OperationName", "CompanyName", "TypeName", "Series",
-            "Number", "Name", "Date"));
+        .setChoiceColumns(Arrays.asList("Id", "OperationName", "CompanyName", "TypeName", "SeriesName",
+            "Number", "ActName", "Date", "ObjectName", "ObjectAddress"));
     relation.setFilter(Filter.and(Filter.equals(COL_TA_KIND, TradeActKind.RENT_PROJECT.ordinal()),
         Filter.or(Filter.notEquals(COL_TA_STATUS, combinedActStatus), Filter.isNull(COL_TA_STATUS)
         ), Filter.equals(COL_TA_COMPANY, getCompany(selectedRows.get(0)))));

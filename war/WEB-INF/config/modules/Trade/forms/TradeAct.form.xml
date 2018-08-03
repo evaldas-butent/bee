@@ -61,7 +61,7 @@
         </Label>
         <DataSelector name="RentProject" source="RentProject" style="&inpw;"
                       renderColumns="RentProjectName RentProjectSeriesName RentProjectNumber"
-                      choiceColumns="ActName SeriesName Number" disablable="false"
+                      choiceColumns="ActName SeriesName Number ObjectName ObjectAddress" disablable="false"
                       newRowEnabled="false" filter="Kind = 8" caching="none">
           <dynStyle>
             <ui:inline>display:none</ui:inline>

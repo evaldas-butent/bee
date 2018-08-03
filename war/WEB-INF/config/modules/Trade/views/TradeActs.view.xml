@@ -164,6 +164,11 @@
       <SimpleColumn name="Number" alias="RentProjectNumber"/>
       <SimpleColumn name="Kind" alias="RentProjectKind"/>
       <SimpleColumn name="Company" alias="RentProjectCompany" />
+      <SimpleColumn name="Object" alias="RentProjectObject"/>
+      <SimpleJoin joinType="LEFT" name="Object">
+        <SimpleColumn name="ObjectName" alias="RentProjectObjectName" />
+        <SimpleColumn name="ObjectAddress" alias="RentProjectObjectAddress" />
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="RegistrationNo" />
