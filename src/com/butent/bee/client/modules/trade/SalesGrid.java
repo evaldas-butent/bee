@@ -15,6 +15,7 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.CustomAction;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
@@ -42,6 +43,12 @@ public class SalesGrid extends InvoicesGrid {
   @Override
   public GridInterceptor getInstance() {
     return new SalesGrid();
+  }
+
+  @Override
+  public boolean isRowEditable(IsRow row) {
+    return super.isRowEditable(row)
+        && SalesInvoiceForm.isEditable(row.isNull(getDataIndex(TradeConstants.COL_TRADE_EXPORTED)));
   }
 
   public void send() {
