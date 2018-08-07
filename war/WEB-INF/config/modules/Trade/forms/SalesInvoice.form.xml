@@ -119,8 +119,4 @@
       </page>
     </TabbedPages>
   </FlowPanel>
-
-  <f:rowEditable>
-    <ui:expression>!row.Exported</ui:expression>
-  </f:rowEditable>
 </f:Form>

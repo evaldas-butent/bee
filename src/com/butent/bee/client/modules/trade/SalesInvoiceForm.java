@@ -130,6 +130,11 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
   }
 
   @Override
+  public boolean isRowEditable(IsRow row) {
+    return super.isRowEditable(row) && isEditable(row.isNull(getDataIndex(COL_TRADE_EXPORTED)));
+  }
+
+  @Override
   public void onLoad(FormView form) {
     super.onLoad(form);
 
@@ -322,6 +327,10 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
                 }
               });
         }));
+  }
+
+  static boolean isEditable(boolean notExported) {
+    return BeeKeeper.getUser().isAdministrator() || notExported;
   }
 
   private void setTerm(JustDate date) {

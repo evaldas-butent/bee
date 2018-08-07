@@ -61,8 +61,4 @@
     <ui:inline>="color:green"</ui:inline>
     <ui:expression>row.Debt == 0</ui:expression>
   </g:rowStyle>
-
-  <g:rowEditable>
-    <ui:expression>!row.Exported</ui:expression>
-  </g:rowEditable>
 </g:Grid>
