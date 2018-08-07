@@ -1,8 +1,5 @@
 package com.butent.bee.server.modules.trade;
 
-import com.butent.bee.client.data.Data;
-import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.i18n.Formatter;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -91,6 +88,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -2214,37 +2212,41 @@ public class TradeActBean implements HasTimerService {
       if (stock != null) {
         int scale = sys.getFieldScale(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY);
 
-        List<BeeRow> hasStock = new ArrayList<>();
-        List<BeeRow> noStock = new ArrayList<>();
+        List<BeeRow> hasOrdering = new ArrayList<>();
+        List<BeeRow> noOrdering = new ArrayList<>();
+        int idxOrdinal = items.getColumnIndex(COL_ITEM_ORDINAL);
 
         for (BeeRow row : items) {
-          boolean has = false;
-
           if (stock.containsRow(row.getId())) {
             for (Map.Entry<Long, Double> entry : stock.row(row.getId()).entrySet()) {
               row.setProperty(PRP_WAREHOUSE_PREFIX + BeeUtils.toString(entry.getKey()),
                   BeeUtils.toString(entry.getValue(), scale));
-
-              if (warehouse != null && warehouse.equals(entry.getKey())) {
-                has = BeeUtils.isPositive(entry.getValue());
-              }
             }
           }
-          has = false;
-
-          if (warehouse != null) {
-            if (has) {
-              hasStock.add(row);
-            } else {
-              noStock.add(row);
-            }
+          if (row.isNull(idxOrdinal)) {
+            noOrdering.add(row);
+          } else {
+            hasOrdering.add(row);
           }
         }
+        String prop = Objects.isNull(warehouse) ? null
+            : PRP_WAREHOUSE_PREFIX + BeeUtils.toString(warehouse);
 
-        if (!hasStock.isEmpty() && !noStock.isEmpty()) {
+        if (!noOrdering.isEmpty() && Objects.nonNull(prop)) {
+          noOrdering.sort((o1, o2) -> {
+            boolean s1 = BeeUtils.isPositive(o1.getPropertyDouble(prop));
+            boolean s2 = BeeUtils.isPositive(o2.getPropertyDouble(prop));
+
+            int res = Objects.compare(s1, s2, Comparator.reverseOrder());
+
+            if (res == 0) {
+              res = Objects.compare(o1.getId(), o2.getId(), Comparator.reverseOrder());
+            }
+            return res;
+          });
           items.clearRows();
-          items.addRows(hasStock);
-          items.addRows(noStock);
+          items.addRows(hasOrdering);
+          items.addRows(noOrdering);
         }
 
         items.setTableProperty(TBL_WAREHOUSES, DataUtils.buildIdList(stock.columnKeySet()));
