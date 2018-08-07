@@ -2512,7 +2512,10 @@ public class TradeActBean implements HasTimerService {
       query.addFields(rangeAlias, ALS_SUPPLIER_NAME, COL_COST_AMOUNT);
     }
 
-    query.addFields(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE);
+    query.addFields(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_TA_SERVICE_FACTOR);
+    query.addExpr(SqlUtils.multiply(SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_ITEM_PRICE),
+      SqlUtils.field(TBL_SALE_ITEMS, COL_TA_SERVICE_FACTOR)), COL_TRADE_ITEM_PRICE);
+
     query.addFields(TBL_SALES, COL_TRADE_CURRENCY);
 
     query.addFields(TBL_SALE_ITEMS, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC);
@@ -3693,16 +3696,15 @@ public class TradeActBean implements HasTimerService {
 
     String saleId = sys.getIdName(TBL_SALES);
 
+    IsExpression amountExpression = SqlUtils.multiply(SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY), SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_ITEM_PRICE),
+      SqlUtils.field(TBL_SALE_ITEMS, COL_TA_SERVICE_FACTOR));
+
     SqlSelect invoicesQuery = new SqlSelect()
             .addFields(TBL_TRADE_ACT_SERVICES, idName)
             .addFields(TBL_SALES, COL_TRADE_INVOICE_NO, saleId)
             .addField(TBL_SALES, COL_TRADE_DATE, "InvoiceDate")
-            .addExpr(SqlUtils.minus(
-                    TradeModuleBean.getAmountExpression(TBL_SALE_ITEMS),
-                    SqlUtils.multiply(TradeModuleBean.getAmountExpression(TBL_SALE_ITEMS),
-                            SqlUtils.divide(SqlUtils.nvl(SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_DISCOUNT), 0),
-                            100))
-            ),COL_TRADE_AMOUNT)
+            .addExpr(SqlUtils.minus(amountExpression, SqlUtils.multiply(amountExpression, SqlUtils.divide(SqlUtils.nvl(
+              SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_DISCOUNT), 0), 100))),COL_TRADE_AMOUNT)
             .addField(TBL_SALE_ITEMS, COL_TRADE_DISCOUNT, "SaleItemDiscount")
             .addField(TBL_SALES_SERIES, COL_SERIES_NAME, COL_TRADE_INVOICE_PREFIX)
             .addFrom(TBL_TRADE_ACT_SERVICES)

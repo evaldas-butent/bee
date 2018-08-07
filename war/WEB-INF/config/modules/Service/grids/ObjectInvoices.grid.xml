@@ -1,23 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="ObjectInvoices" viewName="OrderChildInvoices"
-  editPopup="true" flexGrow="1"
+  name="ObjectInvoices" viewName="SaleItems"
+  editPopup="true" flexGrow="1" filter="ServiceObject" readOnly="true"
   >
-  <xi:include href="../../Orders/grids/columns/Invoices.columns.xml" />
   <g:columns>
-    <RelColumn name="ServiceMaintenance" viewName="ServiceMaintenance" renderColumns="ServiceMaintenance" filterSupplier="value"
-               editPopup="true" label="=svcRepair" />
-  </g:columns>
+    <RelColumn name="Sale"  editPopup="true" />
+    <RelColumn name="Item" renderColumns="ItemName" choiceColumns="Name Article" visible="true">
+      <footer text="=totalOf" horizontalAlignment="right" />
+    </RelColumn>
+    <DataColumn name="Article" />
 
-  <g:rowStyle>
-    <ui:inline>="color: red"</ui:inline>
-    <ui:expression>row.Debt &gt; 0 &amp;&amp; row.Term &lt; new Date().getTime()</ui:expression>
-  </g:rowStyle>
-  <g:rowStyle>
-    <ui:inline>="color: green"</ui:inline>
-    <ui:expression>row.Debt == 0</ui:expression>
-  </g:rowStyle>
+    <DataColumn name="Quantity" visible="true">
+      <footer aggregate="sum" />
+    </DataColumn>
+    <DataColumn name="UnitName" flexGrow="0" caption="=unitShort" />
+
+    <DataColumn name="Factor" />
+
+    <CalcColumn name="PeriodPrice" type="double" scale="3" label="=taPeriodPrice" >
+      <render>
+        <ui:expression>row.Price * (row.Factor == null ? 1 : row.Factor)</ui:expression>
+      </render>
+    </CalcColumn>
+
+    <DataColumn name="Price" >
+      <footer expression="row.Quantity * row.Price * (row.Factor == null ? 1 : row.Factor)" />
+    </DataColumn>
+
+    <DataColumn name="Discount" flexGrow="0">
+      <footer evaluator="discount" scale="2" />
+    </DataColumn>
+
+    <DataColumn name="VatPlus" width="20" sortable="false" caption="+" format="+" carry="true" />
+    <DataColumn name="Vat" carry="true">
+      <footer evaluator="vat" />
+    </DataColumn>
+    <DataColumn name="VatPercent" width="20" sortable="false" caption="%" format="%" carry="true" />
+
+    <CalcColumn name="VatSum" type="decimal" caption="=vatAmount" format="0.00" visible="false">
+      <renderer type="vat" />
+      <footer aggregate="sum" />
+    </CalcColumn>
+
+    <CalcColumn name="Total" type="decimal" caption="=trdAmount" format="0.00">
+      <style>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+      <renderer type="total" />
+      <footer aggregate="sum" />
+    </CalcColumn>
+
+    <DataColumn name="Note" maxWidth="300" visible="false" />
+
+    <DataColumn name="DateFrom" />
+    <DataColumn name="DateTo" />
+    <RelColumn name="Object" choiceColumns="ObjectName ObjectAddress" renderColumns="ObjectName ObjectAddress" />
+  </g:columns>
 </g:Grid>
