@@ -5,7 +5,7 @@
 
         name="RelTradeActServices" viewName="TradeActServices"
         flexGrow="1"
-        newRowCaption="=newService" disabledActions="filter"
+        newRowCaption="=newService" disabledActions="filter" order="DateFrom DESC NULLS_LAST, TradeNumber DESC"
 >
   <xi:include href="columns/TradeActServiceLeft.columns.xml" />
 
@@ -65,6 +65,10 @@
   <xi:include href="columns/TradeActTotal.columns.xml" />
 
   <xi:include href="columns/TradeActServiceRight.columns.xml" />
+  <g:rowStyle>
+    <ui:inline>background-color: #f5f5f5;</ui:inline>
+    <ui:expression>row.RelRentAct == row.RentProject</ui:expression>
+  </g:rowStyle>
   <g:rowEditable>
     <ui:expression>row.RelRentAct != row.RentProject</ui:expression>
   </g:rowEditable>

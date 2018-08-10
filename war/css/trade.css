@@ -609,3 +609,7 @@
 .bee-trade-print-item-amount {
   width: 80px;
 }
+
+.bee-grid-grid_TradeActItems_RentProject .bee-CreateNew {
+    display : none;
+}
