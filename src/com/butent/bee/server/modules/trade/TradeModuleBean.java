@@ -85,7 +85,6 @@ import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
@@ -240,7 +239,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    List<SearchResult> result = new ArrayList<>();
 
     Filter documentFilter;
     if (DataUtils.isId(query)) {
@@ -249,8 +247,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     } else {
       documentFilter = Filter.equals(COL_TRADE_NUMBER, query);
     }
-
-    result.addAll(qs.getSearchResults(VIEW_TRADE_DOCUMENTS, documentFilter));
+    List<SearchResult> result =
+        new ArrayList<>(qs.getSearchResults(VIEW_TRADE_DOCUMENTS, documentFilter));
 
     Set<String> columns = Sets.newHashSet(COL_TRADE_NUMBER, COL_TRADE_INVOICE_NO,
         ALS_CUSTOMER_NAME);
@@ -400,7 +398,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
   private ResponseObject getItemsForSelection(RequestInfo reqInfo) {
     Long saleId = reqInfo.getParameterLong(COL_SALE);
-    Long warehouse = reqInfo.getParameterLong(COL_WAREHOUSE);
     String source = reqInfo.getParameter(Service.VAR_TABLE);
 
     Assert.notEmpty(source);
@@ -1061,7 +1058,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
         if (BeeUtils.same(event.getTargetName(), VIEW_DEBT_REPORTS)) {
           BeeRowSet gridRowSet = event.getRowset();
-          DataInfo viewData = sys.getDataInfo(VIEW_DEBT_REPORTS);
 
           if (gridRowSet.isEmpty()) {
             return;
@@ -1326,7 +1322,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
             Long sum = oCount + sCount;
 
-            if (sum.compareTo(Long.valueOf(0)) == 0) {
+            if (sum.compareTo(0L) == 0) {
               continue;
             }
 
@@ -2157,7 +2153,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     String tradeItems;
     String itemsRelation;
     String articleSource;
-    SimpleRowSet actData = null;
+    SimpleRowSet actData;
     Long continuousAct = null;
     TradeActKind kind = null;
 
@@ -2251,7 +2247,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
 
     SimpleRowSet simpleRowSet = qs.getData(query);
-    SimpleRowSet contItems = null;
+    SimpleRowSet contItems;
 
     if (simpleRowSet.hasColumn("TradeActItemID")) {
       BeeRowSet beeRowSet =

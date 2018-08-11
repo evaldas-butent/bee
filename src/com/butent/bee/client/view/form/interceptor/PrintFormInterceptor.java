@@ -13,7 +13,6 @@ import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;

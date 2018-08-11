@@ -23,7 +23,7 @@
         <Relations relColumn="Message" defaultRelations="Requests Tasks Assessments Persons Documents"
           blockedRelations="Messages" >
           <Relation viewName="ServiceObjects" renderColumns="Model CategoryName ArticleNo"
-                    newRowEnabled="false" editPopup="true" choiceColumns="Model CategoryName ArticleNo"/>
+                    newRowEnabled="false" editWindow="modal" choiceColumns="Model CategoryName ArticleNo"/>
           <Relation viewName="TradeActs" choiceColumns="SeriesName Number CompanyName OperationName"
                     renderColumns="SeriesName Number CompanyName" newRowEnabled="false" filter="StatusName != Baigtas"
                     order="Id desc"/>

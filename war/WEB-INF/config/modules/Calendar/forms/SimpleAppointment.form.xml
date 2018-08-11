@@ -125,7 +125,7 @@
                       order="Id desc"/>
 
             <Relation viewName="ServiceObjects" renderColumns="Address" newRowEnabled="false"
-                      editPopup="true" choiceColumns="Address"/>
+                      editWindow="modal" choiceColumns="Address"/>
           </Relations>
         </FlowPanel>
       </page>

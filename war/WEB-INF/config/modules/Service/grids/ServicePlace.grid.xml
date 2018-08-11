@@ -7,7 +7,7 @@
         readOnly="true"
 >
     <g:columns>
-      <RelColumn name="TradeAct" renderColumns="ActName" editPopup="true" visible="true" readOnly="true" />
+      <RelColumn name="TradeAct" renderColumns="ActName" editWindow="modal" visible="true" readOnly="true" />
       <DataColumn name="Date" />
       <DataColumn name="CompanyName" />
       <DataColumn name="SeriesName" />

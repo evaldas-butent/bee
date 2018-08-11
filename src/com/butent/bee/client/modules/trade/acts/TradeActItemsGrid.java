@@ -19,7 +19,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnFooter;
@@ -643,14 +642,14 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
               .getDataIndex("CurrencyMinorName")));
         }
 
-        RowFactory.createRow(FORM_NEW_TA_INVOICE, null, salesInfo, newSalesRow, Modality.ENABLED,
-            null, new AbstractFormInterceptor() {
+        RowFactory.createRow(FORM_NEW_TA_INVOICE, null, salesInfo, newSalesRow, Opener.MODAL,
+            new AbstractFormInterceptor() {
 
               @Override
               public FormInterceptor getInstance() {
                 return this;
               }
-            }, null, row -> {
+            }, row -> {
               ParameterList args = TradeActKeeper.createArgs(SVC_CREATE_INVOICE_ITEMS);
               args.addDataItem(TradeConstants.COL_SALE, row.getId());
               args.addDataItem(TradeConstants.COL_TRADE_CURRENCY, row.getLong(salesInfo

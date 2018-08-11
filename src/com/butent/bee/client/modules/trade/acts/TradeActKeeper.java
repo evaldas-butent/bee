@@ -1,8 +1,5 @@
 package com.butent.bee.client.modules.trade.acts;
 
-import com.butent.bee.client.view.*;
-import com.butent.bee.shared.data.*;
-import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -11,7 +8,7 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
-import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.COL_CUSTOMER;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -20,7 +17,6 @@ import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.DataCache;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -36,6 +32,7 @@ import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.view.edit.EditStartEvent;
@@ -48,6 +45,11 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
@@ -58,7 +60,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.MenuService;
-import com.butent.bee.shared.modules.administration.*;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
@@ -121,8 +123,8 @@ public final class TradeActKeeper {
         ReportUtils.getPdf(form.getPrintElement().getString(), (fileInfo) -> {
           String invoice = BeeUtils.same(form.getViewName(), VIEW_SALES)
               ? BeeUtils.join("_", Localized.dictionary().trdInvoice(),
-                  BeeUtils.join("", form.getStringValue(COL_TRADE_INVOICE_PREFIX),
-                          form.getStringValue(COL_TRADE_INVOICE_NO)))
+              BeeUtils.join("", form.getStringValue(COL_TRADE_INVOICE_PREFIX),
+                  form.getStringValue(COL_TRADE_INVOICE_NO)))
               : BeeUtils.join("_", form.getCaption(), form.getActiveRowId());
 
           if (!BeeUtils.isEmpty(invoice)) {
@@ -274,13 +276,13 @@ public final class TradeActKeeper {
       }
     };
 
-      GridFactory.registerGridInterceptor(GRID_TRADE_ACT_ITEMS, isClientArea() ? interceptor
-          : new TradeActItemsGrid());
-      GridFactory.registerGridInterceptor(GRID_TRADE_ACT_SERVICES, isClientArea() ? interceptor
-          : new TradeActServicesGrid());
-      GridFactory.registerGridInterceptor(VIEW_TRADE_ACT_FILES,
-          new FileGridInterceptor(COL_TRADE_ACT, AdministrationConstants.COL_FILE,
-              AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
+    GridFactory.registerGridInterceptor(GRID_TRADE_ACT_ITEMS, isClientArea() ? interceptor
+        : new TradeActItemsGrid());
+    GridFactory.registerGridInterceptor(GRID_TRADE_ACT_SERVICES, isClientArea() ? interceptor
+        : new TradeActServicesGrid());
+    GridFactory.registerGridInterceptor(VIEW_TRADE_ACT_FILES,
+        new FileGridInterceptor(COL_TRADE_ACT, AdministrationConstants.COL_FILE,
+            AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
     if (isClientArea()) {
       GridFactory.registerGridInterceptor(GRID_SALES, new AbstractGridInterceptor() {
@@ -296,17 +298,8 @@ public final class TradeActKeeper {
           }
 
           Queries.update(VIEW_SALES, row.getId(), "Visited", Value.getValue(new DateTime()),
-              new Queries.IntCallback() {
-                @Override
-                public void onSuccess(Integer result) {
-                  Queries.getRow(VIEW_SALES, row.getId(), new RowCallback() {
-                    @Override
-                    public void onSuccess(BeeRow updRow) {
-                      RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_SALES,  updRow);
-                    }
-                  });
-                }
-              });
+              result -> Queries.getRow(VIEW_SALES, row.getId(),
+                  updRow -> RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_SALES, updRow)));
         }
 
         @Override
@@ -525,7 +518,7 @@ public final class TradeActKeeper {
 
   static String getStorageKey(String name) {
     return BeeUtils.join(STORAGE_KEY_SEPARATOR, VIEW_TRADE_ACTS,
-      BeeKeeper.getUser().getUserId(), name);
+        BeeKeeper.getUser().getUserId(), name);
   }
 
   static BeeRowSet getUserSeries(boolean checkDefaults) {
@@ -651,16 +644,17 @@ public final class TradeActKeeper {
     boolean isReservedAct = kind == TradeActKind.RESERVE;
 
     boolean defEnabled = !(hasContinuousTa || hasRentProjectTa)
-            && !(isContinuousTa || isRentProjectTa) && !TradeActKeeper.isClientArea()
-            && !hasMultiReturn && !hasReturn;
+        && !(isContinuousTa || isRentProjectTa) && !TradeActKeeper.isClientArea()
+        && !hasMultiReturn && !hasReturn;
 
     boolean isReturnActItemsEnabled = hasRentProjectTa && isReturnTa;
-    boolean isSaleAndHasRentProject = hasRentProjectTa && !isRentProjectTa && (hasReturn || isSaleTa);
+    boolean isSaleAndHasRentProject =
+        hasRentProjectTa && !isRentProjectTa && (hasReturn || isSaleTa);
     boolean isSupplementAndHasRentProject = hasRentProjectTa && !isRentProjectTa && isSupplementTa;
 
-
-    return  defEnabled || isReturnActItemsEnabled || isSaleAndHasRentProject || isSupplementAndHasRentProject
-            || isReservedAct;
+    return defEnabled || isReturnActItemsEnabled || isSaleAndHasRentProject
+        || isSupplementAndHasRentProject
+        || isReservedAct;
   }
 
   static boolean isUserSeries(Long series) {
@@ -703,7 +697,7 @@ public final class TradeActKeeper {
       if (userSeries != null && userSeries.getNumberOfRows() == 1) {
         Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_SERIES, userSeries.getRow(0).getId());
         Data.setValue(VIEW_TRADE_ACTS, row, COL_SERIES_NAME,
-          userSeries.getString(0, userSeries.getColumnIndex(COL_SERIES_NAME)));
+            userSeries.getString(0, userSeries.getColumnIndex(COL_SERIES_NAME)));
       }
     } else {
       Long seriesId = BeeUtils.toLongOrNull(BeeKeeper.getStorage().get(getStorageKey(COL_SERIES)));
@@ -717,18 +711,27 @@ public final class TradeActKeeper {
 
     if (parent != null && TradeActKind.RENT_PROJECT.equals(getKind(VIEW_TRADE_ACTS, parent))) {
       RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_NAME, row, parent);
-      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_NAME, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_NAME));
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_NAME,
+          Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_NAME));
 
-      RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_RENT_PROJECT, row, parent);
-      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_RENT_PROJECT));
-      RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_COMPANY, row, parent);
-      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_COMPANY, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_COMPANY));
-      RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_CONTACT, row, parent);
-      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_CONTACT, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_CONTACT));
+      RelationUtils
+          .setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_RENT_PROJECT, row, parent);
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT,
+          Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_RENT_PROJECT));
+      RelationUtils
+          .setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_COMPANY, row, parent);
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_COMPANY,
+          Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_COMPANY));
+      RelationUtils
+          .setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_CONTACT, row, parent);
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_CONTACT,
+          Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_CONTACT));
       RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_OBJECT, row, parent);
-      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_OBJECT, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_OBJECT));
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_OBJECT,
+          Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_OBJECT));
 
-      Data.setValue(VIEW_TRADE_ACTS, row, ALS_RENT_PROJECT_COMPANY, Data.getLong(VIEW_TRADE_ACTS, parent,
+      Data.setValue(VIEW_TRADE_ACTS, row, ALS_RENT_PROJECT_COMPANY,
+          Data.getLong(VIEW_TRADE_ACTS, parent,
               COL_TA_COMPANY));
     }
   }

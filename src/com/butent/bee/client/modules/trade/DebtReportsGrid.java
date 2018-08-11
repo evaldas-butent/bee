@@ -166,8 +166,8 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
     presenter.getHeader().clearCommandPanel();
     presenter.getHeader().addCommandItem(action);
     presenter.getHeader().addCommandItem(TradeKeeper.createAmountAction(presenter.getViewName(),
-      () ->
-        presenter.getDataProvider().getFilter(), TradeConstants.COL_SALE, presenter.getGridView()));
+        () -> presenter.getDataProvider().getFilter(), TradeConstants.COL_SALE,
+        presenter.getGridView()));
   }
 
   @Override
@@ -274,8 +274,8 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
         @Override
         public String getLabel() {
           return BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, isTermOverdue() ? Localized
-              .dictionary().trdTermInOverdue()
-              : null, isTermNotExpired() ? Localized.dictionary().trdTermNotExpired() : null,
+                  .dictionary().trdTermInOverdue()
+                  : null, isTermNotExpired() ? Localized.dictionary().trdTermNotExpired() : null,
               getTermPayFrom() != null ? BeeUtils.joinWords(Localized.dictionary().trdTerm(),
                   Localized.dictionary().dateFromShort(), getTermPayFrom().toString()) : null,
               getTermPayTo() != null ? BeeUtils.joinWords(Localized.dictionary().trdTerm(),

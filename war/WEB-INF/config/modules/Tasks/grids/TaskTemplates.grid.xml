@@ -14,7 +14,6 @@
   <xi:include href="columns/TaskTemplate.columns.xml" />
 
   <g:columns>
-    <DataColumn name="ProductName" />
     <DataColumn name="StartTime" />
     <DataColumn name="FinishTime" />
   </g:columns>

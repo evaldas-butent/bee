@@ -5,9 +5,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Multimap;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
@@ -37,10 +34,9 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Triplet;
 import com.butent.bee.shared.communication.ResponseMessage;
-import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
@@ -107,46 +103,24 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     FaLabel summary = new FaLabel(FontAwesome.LINE_CHART);
     summary.setTitle(Localized.dictionary().totalOf());
 
-    summary.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        ParameterList args = createArgs(SVC_GET_SALE_AMOUNTS);
-        args.addDataItem(VAR_VIEW_NAME, viewName);
-        args.addDataItem(Service.VAR_COLUMN, salesRelColumn);
-        Filter filter = null;
+    summary.addClickHandler(event -> {
+      ParameterList args = createArgs(SVC_GET_SALE_AMOUNTS);
+      args.addDataItem(VAR_VIEW_NAME, viewName);
+      args.addDataItem(Service.VAR_COLUMN, salesRelColumn);
+      Filter filter = null;
 
-        if (filterCallback != null) {
-          filter = filterCallback.getFilter();
-        }
-
-        if (filter != null) {
-          args.addDataItem(EcConstants.VAR_FILTER, Codec.beeSerialize(filter));
-        }
-
-        BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            response.notify(listener);
-          }
-        });
+      if (filterCallback != null) {
+        filter = filterCallback.getFilter();
       }
+
+      if (filter != null) {
+        args.addDataItem(EcConstants.VAR_FILTER, Codec.beeSerialize(filter));
+      }
+
+      BeeKeeper.getRpc().makePostRequest(args, response -> response.notify(listener));
     });
 
     return summary;
-  }
-
-  public static IdentifiableWidget createAmountAction(final String viewName,
-      final Filter filter, final String salesRelColumn,
-      final NotificationListener listener) {
-
-    return createAmountAction(viewName, new FilterCallback() {
-
-      @Override
-      public Filter getFilter() {
-        return filter;
-      }
-    }, salesRelColumn, listener);
-
   }
 
   public static void createDocument(TradeDocument tradeDocument, IdCallback callback) {

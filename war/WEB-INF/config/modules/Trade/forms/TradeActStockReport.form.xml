@@ -7,7 +7,7 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  
+
   name="TradeActStockReport" caption="=taReportStock"
   >
   <FlowPanel>
@@ -22,7 +22,7 @@
         <Label text="=dateTo" />
       </cell>
       <InputDateTime name="EndDate" style="width: 120px;" />
-      
+
       <cell style="padding-left: 3em;">
         <CheckBox name="Quantity" text="=quantity" />
       </cell>
@@ -44,11 +44,11 @@
         </row>
         <row>
           <Label text="=objects" />
-          <MultiSelector name="Object" viewName="CompanyObjects" 
+          <MultiSelector name="Object" viewName="CompanyObjects"
             renderColumns="ObjectName" choiceColumns="CompanyName ObjectName ObjectAddress"
             newRowEnabled="false" style="&multi;" summarize="true" />
         </row>
-    
+
         <row>
           <Label text="=warehouses" />
           <MultiSelector name="Warehouse" viewName="Warehouses" renderColumns="Code"
@@ -69,30 +69,30 @@
             newRowEnabled="false"
             style="&multi;" summarize="true" />
         </row>
-        
+
         <row>
           <Label text="=trdOperationsShort" />
           <MultiSelector name="Operation" viewName="TradeOperations" filter="Kind &lt; 2"
             renderColumns="OperationName" newRowEnabled="false" style="&multi;" summarize="true" />
         </row>
-        
+
         <row>
           <Label text="=seriesPlural" />
           <MultiSelector name="Series" viewName="TradeSeries" renderColumns="SeriesName"
             newRowEnabled="false" style="&multi;" summarize="true" />
         </row>
-        
+
         <row>
           <Label text="=managers" />
           <MultiSelector name="Manager" viewName="Users"
             renderColumns="FirstName LastName"
             choiceColumns="FirstName LastName CompanyName PositionName"
-            newRowEnabled="false" editPopup="true"
+            newRowEnabled="false" editWindow="modal"
             style="&multi;" summarize="true" />
         </row>
       </Table>
     </Disclosure>
-    
+
     <br/>
     <HorizontalPanel>
       <cell kind="label">
@@ -106,7 +106,7 @@
         &gitems;
       </ListBox>
     </HorizontalPanel>
-    
+
     <br/>
     <FlowPanel name="DataContainer" />
   </FlowPanel>

@@ -256,7 +256,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         @Override
         public void onEditStart(EditStartEvent event) {
           event.consume();
-          CalendarKeeper.openAppointment(Appointment.create(getActiveRow()), null, null);
+          CalendarKeeper.openAppointment(Appointment.create(getActiveRow()), null, null, null);
         }
 
         @Override

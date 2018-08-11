@@ -46,7 +46,6 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -353,10 +352,9 @@ class PersonForm extends AbstractFormInterceptor {
 
     if (BeeUtils.allNotNull(parentForm, parentInfo)) {
 
-      Set<String> columns = new HashSet<>();
-      columns.addAll(Arrays.asList(COL_PHONE, COL_MOBILE, COL_FAX, ALS_EMAIL_ID, COL_EMAIL,
-          COL_WEBSITE, COL_ADDRESS, COL_CITY, ALS_CITY_NAME, ALS_COUNTRY_NAME, ALS_COUNTRY_CODE,
-          COL_COUNTRY, COL_POST_INDEX, COL_SOCIAL_CONTACTS));
+      Set<String> columns = new HashSet<>(Arrays.asList(COL_PHONE, COL_MOBILE, COL_FAX,
+          ALS_EMAIL_ID, COL_EMAIL, COL_WEBSITE, COL_ADDRESS, COL_CITY, ALS_CITY_NAME,
+          ALS_COUNTRY_NAME, ALS_COUNTRY_CODE, COL_COUNTRY, COL_POST_INDEX, COL_SOCIAL_CONTACTS));
 
       for (String column : columns) {
         int index = parentInfo.getColumnIndex(column);

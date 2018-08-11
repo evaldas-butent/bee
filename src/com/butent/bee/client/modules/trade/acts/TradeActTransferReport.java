@@ -2,7 +2,6 @@ package com.butent.bee.client.modules.trade.acts;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
-import com.google.gwt.dom.client.TableElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.i18n.client.NumberFormat;
 
@@ -20,9 +19,9 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
-import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
@@ -42,6 +41,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
+import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -76,9 +76,10 @@ public class TradeActTransferReport extends ReportInterceptor {
   private static final List<String> TOTAL_COLUMNS = Arrays.asList(COL_TRADE_ITEM_QUANTITY,
       ALS_BASE_AMOUNT, COL_COST_AMOUNT, "Arr" + COL_TRADE_AMOUNT);
 
-  private static final List<String> HIDDEN_COLUMNS = Arrays.asList("Arr" + COL_SALE, "ArrTotalAmount");
+  private static final List<String> HIDDEN_COLUMNS =
+      Arrays.asList("Arr" + COL_SALE, "ArrTotalAmount");
 
-  private static final List<String> AVG_COLUMNS = Arrays.asList("SaleFactor");
+  private static final List<String> AVG_COLUMNS = Collections.singletonList("SaleFactor");
 
   private static final List<String> MONEY_COLUMNS = Arrays.asList(COL_TRADE_ITEM_PRICE,
       ALS_BASE_AMOUNT);
@@ -332,8 +333,8 @@ public class TradeActTransferReport extends ReportInterceptor {
       if (TOTAL_COLUMNS.contains(colName)) {
         totals.put(j, BeeConst.DOUBLE_ZERO);
       } else if (AVG_COLUMNS.contains(colName)) {
-          totals.put(j, BeeConst.DOUBLE_ZERO);
-          avgCnt.put(j, 0);
+        totals.put(j, BeeConst.DOUBLE_ZERO);
+        avgCnt.put(j, 0);
       }
     }
 
@@ -385,11 +386,10 @@ public class TradeActTransferReport extends ReportInterceptor {
 
             if (totals.containsKey(j) && data.getColumnIndex("Arr" + COL_TRADE_AMOUNT) != j) {
 
-                totals.put(j, totals.get(j) + value);
-
+              totals.put(j, totals.get(j) + value);
 
               if (avgCnt.containsKey(j)) {
-                  avgCnt.put(j, avgCnt.get(j) + 1);
+                avgCnt.put(j, avgCnt.get(j) + 1);
               }
             }
 
@@ -420,9 +420,9 @@ public class TradeActTransferReport extends ReportInterceptor {
 
         if (BeeUtils.isPrefix(colName, "Arr") && !BeeUtils.isEmpty(text)) {
           if (BeeUtils.isSuffix(colName, COL_TRADE_INVOICE_PREFIX)
-                  || BeeUtils.isSuffix(colName, COL_TRADE_INVOICE_NO)) {
+              || BeeUtils.isSuffix(colName, COL_TRADE_INVOICE_NO)) {
             HtmlTable inv = new HtmlTable(STYLE_BODY + "-innerTb");
-            String ids [] = BeeUtils.split(data.getValue(i, "Arr" + COL_SALE), '\n');
+            String ids[] = BeeUtils.split(data.getValue(i, "Arr" + COL_SALE), '\n');
 
             int itemRow = 0;
             for (String item : BeeUtils.split(text, '\n')) {
@@ -435,7 +435,8 @@ public class TradeActTransferReport extends ReportInterceptor {
             table.setWidget(r, j, inv);
 
           } else {
-            table.setHtml(r, j, BeeUtils.replace(text, "\n", "<br />"), getColumnStyle(colName), styleName);
+            table.setHtml(r, j, BeeUtils.replace(text, "\n", "<br />"), getColumnStyle(colName),
+                styleName);
           }
         } else {
           table.setText(r, j, text, getColumnStyle(colName), styleName);
@@ -486,7 +487,7 @@ public class TradeActTransferReport extends ReportInterceptor {
         String colName = data.getColumnName(index);
         Double value = totals.get(index);
         if (avgCnt.containsKey(index) && BeeUtils.isPositive(avgCnt.get(index))) {
-            value = value / avgCnt.get(index);
+          value = value / avgCnt.get(index);
         }
 
         NumberFormat format = TradeActHelper.getNumberFormat(colName);

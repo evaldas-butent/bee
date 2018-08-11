@@ -1716,7 +1716,7 @@ public class TradeActBean implements HasTimerService {
 
     SqlSelect returnQuery = new SqlSelect()
         .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM, COL_TA_PARENT)
-        .addSum(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY, ALS_RETURNED_QTY)
+        .addSum(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY, TradeConstants.ALS_RETURNED_QTY)
         .addFrom(TBL_TRADE_ACTS)
         .addFromInner(TBL_TRADE_ACT_ITEMS,
             sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
@@ -1818,7 +1818,7 @@ public class TradeActBean implements HasTimerService {
     }
 
     query.addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY);
-    query.addFields(returnAlias, ALS_RETURNED_QTY);
+    query.addFields(returnAlias, TradeConstants.ALS_RETURNED_QTY);
     query.addField(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY, ALS_REMAINING_QTY);
 
     query.addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_PRICE);
@@ -1845,8 +1845,8 @@ public class TradeActBean implements HasTimerService {
     SqlUpdate update = new SqlUpdate(tmp)
         .addExpression(ALS_REMAINING_QTY,
             SqlUtils.minus(SqlUtils.field(tmp, COL_TRADE_ITEM_QUANTITY),
-                SqlUtils.field(tmp, ALS_RETURNED_QTY)))
-        .setWhere(SqlUtils.positive(tmp, ALS_RETURNED_QTY));
+                SqlUtils.field(tmp, TradeConstants.ALS_RETURNED_QTY)))
+        .setWhere(SqlUtils.positive(tmp, TradeConstants.ALS_RETURNED_QTY));
 
     qs.updateData(update);
 
@@ -1902,7 +1902,7 @@ public class TradeActBean implements HasTimerService {
           COL_SERIES_NAME, COL_TA_NUMBER, COL_OPERATION_NAME,
           ALS_COMPANY_NAME, COL_COMPANY_OBJECT_NAME,
           itemIdName, ALS_ITEM_NAME, COL_ITEM_ARTICLE,
-          COL_TRADE_ITEM_QUANTITY, ALS_UNIT_NAME, ALS_RETURNED_QTY, ALS_REMAINING_QTY,
+          COL_TRADE_ITEM_QUANTITY, ALS_UNIT_NAME, TradeConstants.ALS_RETURNED_QTY, ALS_REMAINING_QTY,
           COL_TRADE_ITEM_PRICE, ALS_BASE_AMOUNT, COL_TRADE_DISCOUNT, ALS_DISCOUNT_AMOUNT,
           ALS_TOTAL_AMOUNT);
 
@@ -1963,7 +1963,7 @@ public class TradeActBean implements HasTimerService {
       }
 
       query.addSum(tmp, COL_TRADE_ITEM_QUANTITY);
-      query.addSum(tmp, ALS_RETURNED_QTY);
+      query.addSum(tmp, TradeConstants.ALS_RETURNED_QTY);
       query.addSum(tmp, ALS_REMAINING_QTY);
       query.addSum(tmp, ALS_BASE_AMOUNT);
       query.addSum(tmp, ALS_DISCOUNT_AMOUNT);

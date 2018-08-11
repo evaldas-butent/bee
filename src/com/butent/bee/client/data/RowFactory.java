@@ -151,7 +151,7 @@ public final class RowFactory {
         Opener.in(UiHelper.getRelationNewRowWindowType(), selector.getElement(), null));
   }
 
-  private static void createRelatedRow(String formName, BeeRow row, final DataSelector selector,
+  public static void createRelatedRow(String formName, BeeRow row, final DataSelector selector,
       Opener opener) {
 
     Assert.notEmpty(formName);

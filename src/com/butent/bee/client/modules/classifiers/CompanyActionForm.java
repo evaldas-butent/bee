@@ -25,8 +25,6 @@ import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.css.values.Display;
-import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
@@ -262,8 +260,8 @@ final class CompanyActionForm extends AbstractFormInterceptor {
 
   private Handler getAppointmentTypeValidation(final FormView form, final IsRow row) {
     return event -> {
-      IsRow appointmentTypeRow = null;
-        DateTime time;
+      IsRow appointmentTypeRow;
+      DateTime time;
 
       if (getPlanedDurationColumnIndex() < 0) {
         return true;
@@ -279,7 +277,7 @@ final class CompanyActionForm extends AbstractFormInterceptor {
         time = row.getDateTime(form.getDataIndex(CalendarConstants.COL_START_DATE_TIME));
       } else {
         appointmentTypeRow = plannedDurations.get(BeeUtils.toLong(row
-                .getString(form.getDataIndex(CalendarConstants.COL_APPOINTMENT_TYPE))));
+            .getString(form.getDataIndex(CalendarConstants.COL_APPOINTMENT_TYPE))));
         time = new DateTime(BeeUtils.toLong(event.getNewValue()));
       }
 

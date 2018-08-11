@@ -2,7 +2,6 @@ package com.butent.bee.client.modules.classifiers;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.HasHandlers;
@@ -23,9 +22,7 @@ import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.ModalGrid;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
@@ -40,7 +37,6 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
@@ -342,12 +338,12 @@ public class CompanyForm extends AbstractFormInterceptor {
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow newRow) {
     form.getViewPresenter().getHeader().clearCommandPanel();
     createCellValidationHandlers(form, newRow);
     newRow.setValue(form.getDataIndex(COL_REMIND_EMAIL), Boolean.TRUE);
     newRow.setValue(form.getDataIndex(COL_EMAIL_INVOICES), Boolean.TRUE);
-    super.onStartNewRow(form, oldRow, newRow);
+    super.onStartNewRow(form, newRow);
   }
 
   private static void createCellValidationHandlers(FormView form, IsRow row) {
@@ -363,88 +359,76 @@ public class CompanyForm extends AbstractFormInterceptor {
   }
 
   private static Handler getEmailIdValidationHandler(final FormView form, final IsRow row) {
-    return new Handler() {
-
-      @Override
-      public Boolean validateCell(CellValidateEvent event) {
-        if (DataUtils.isId(BeeUtils.toLongOrNull(event.getNewValue()))) {
-          return Boolean.TRUE;
-        }
-
-        int idxRemindEmail = form.getDataIndex(COL_REMIND_EMAIL);
-        int idxEmailInvoices = form.getDataIndex(COL_EMAIL_INVOICES);
-
-        if (idxRemindEmail < 0) {
-          row.setValue(idxRemindEmail, (Boolean) null);
-          form.refreshBySource(COL_REMIND_EMAIL);
-        }
-
-        if (idxEmailInvoices < 0) {
-          row.setValue(idxEmailInvoices, (Boolean) null);
-          form.refreshBySource(COL_EMAIL_INVOICES);
-        }
-
-        if (idxRemindEmail > -1) {
-          return Boolean.TRUE;
-        }
-
-        if (idxEmailInvoices > -1) {
-          return Boolean.TRUE;
-        }
+    return event -> {
+      if (DataUtils.isId(BeeUtils.toLongOrNull(event.getNewValue()))) {
         return Boolean.TRUE;
       }
+
+      int idxRemindEmail = form.getDataIndex(COL_REMIND_EMAIL);
+      int idxEmailInvoices = form.getDataIndex(COL_EMAIL_INVOICES);
+
+      if (idxRemindEmail < 0) {
+        row.setValue(idxRemindEmail, (Boolean) null);
+        form.refreshBySource(COL_REMIND_EMAIL);
+      }
+
+      if (idxEmailInvoices < 0) {
+        row.setValue(idxEmailInvoices, (Boolean) null);
+        form.refreshBySource(COL_EMAIL_INVOICES);
+      }
+
+      if (idxRemindEmail > -1) {
+        return Boolean.TRUE;
+      }
+
+      if (idxEmailInvoices > -1) {
+        return Boolean.TRUE;
+      }
+      return Boolean.TRUE;
     };
   }
 
   private ClickHandler getFinancialStateAuditClickHandler() {
-    return new ClickHandler() {
+    return event -> {
+      FormView formView = getFormView();
 
-      @Override
-      public void onClick(ClickEvent event) {
-        FormView formView = getFormView();
-
-        if (formView == null) {
-          return;
-        }
-
-        IsRow activeRow = formView.getActiveRow();
-
-        if (activeRow == null) {
-          return;
-        }
-
-        GridFactory.openGrid(AdministrationConstants.GRID_HISTORY,
-            new FinancialStateHistoryHandler(formView.getViewName(),
-                Lists.newArrayList(Long.valueOf(activeRow.getId()))),
-            null, ModalGrid.opener(800, 500, true));
+      if (formView == null) {
+        return;
       }
+
+      IsRow activeRow = formView.getActiveRow();
+
+      if (activeRow == null) {
+        return;
+      }
+
+      GridFactory.openGrid(AdministrationConstants.GRID_HISTORY,
+          new FinancialStateHistoryHandler(formView.getViewName(),
+              Lists.newArrayList(activeRow.getId())),
+          null, ModalGrid.opener(800, 500, true));
     };
   }
 
   private static Handler getRemindEmailValidationHandler(final FormView form) {
-    return new Handler() {
+    return event -> {
+      String eventValue = event.getNewValue();
 
-      @Override
-      public Boolean validateCell(CellValidateEvent event) {
-        String eventValue = event.getNewValue();
+      if (!BeeUtils.toBoolean(eventValue)) {
+        return Boolean.TRUE;
+      }
 
-        if (!BeeUtils.toBoolean(eventValue)) {
-          return Boolean.TRUE;
-        }
+      int idxEmailId = form.getDataIndex(COL_EMAIL_ID);
 
-        int idxEmailId = form.getDataIndex(COL_EMAIL_ID);
+      if (idxEmailId < 0) {
+        return Boolean.FALSE;
+      }
 
-        if (idxEmailId < 0) {
-          return Boolean.FALSE;
-        }
-
-        if (DataUtils.isId(form.getActiveRow().getLong(form.getDataIndex(COL_EMAIL_ID)))) {
-          return Boolean.TRUE;
-        } else {
-          form.notifySevere(Localized.dictionary().email(), Localized.dictionary()
-              .valueRequired());
-          return Boolean.FALSE;
-        }
+      if (DataUtils.isId(form.getActiveRow().getLong(form.getDataIndex(COL_EMAIL_ID)))) {
+        return Boolean.TRUE;
+      } else {
+        form.notifySevere(Localized.dictionary().email(), Localized.dictionary()
+            .valueRequired());
+        return Boolean.FALSE;
       }
     };
   }
@@ -504,39 +488,29 @@ public class CompanyForm extends AbstractFormInterceptor {
       return toErp;
     }
 
-    toErp = new Button(Localized.dictionary().trSendToERP(), new ClickHandler() {
+    toErp = new Button(Localized.dictionary().trSendToERP(), arg0 -> {
+      if (DataUtils.isNewRow(getActiveRow())) {
+        return;
+      }
+      Global.confirm(Localized.dictionary().trSendToERP() + "?", () -> {
+        final HeaderView header = getHeaderView();
+        header.clearCommandPanel();
+        header.addCommandItem(new Image(Global.getImages().loading()));
 
-      @Override
-      public void onClick(ClickEvent arg0) {
-        if (DataUtils.isNewRow(getActiveRow())) {
-          return;
-        }
-        Global.confirm(Localized.dictionary().trSendToERP() + "?", new ConfirmationCallback() {
-          @Override
-          public void onConfirm() {
-            final HeaderView header = getHeaderView();
-            header.clearCommandPanel();
-            header.addCommandItem(new Image(Global.getImages().loading()));
+        ParameterList args = TradeKeeper.createArgs(TradeConstants.SVC_SEND_COMPANY_TO_ERP);
+        args.addDataItem(COL_COMPANY, getActiveRowId());
 
-            ParameterList args = TradeKeeper.createArgs(TradeConstants.SVC_SEND_COMPANY_TO_ERP);
-            args.addDataItem(COL_COMPANY, getActiveRowId());
+        BeeKeeper.getRpc().makePostRequest(args, response -> {
+          header.clearCommandPanel();
+          header.addCommandItem(toErp);
+          response.notify(getFormView());
 
-            BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-              @Override
-              public void onResponse(ResponseObject response) {
-                header.clearCommandPanel();
-                header.addCommandItem(toErp);
-                response.notify(getFormView());
-
-                if (!response.hasErrors()) {
-                  getFormView().notifyInfo(Localized.dictionary().ok() + ":",
-                      response.getResponseAsString());
-                }
-              }
-            });
+          if (!response.hasErrors()) {
+            getFormView().notifyInfo(Localized.dictionary().ok() + ":",
+                response.getResponseAsString());
           }
         });
-      }
+      });
     });
 
     return toErp;

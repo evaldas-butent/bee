@@ -627,7 +627,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
               Service empty = new Service(row, tu);
               empty.quantity = row.getDouble(qtyIndex);
               services.add(empty);
-            }continue;
+            }
+            continue;
           }
 
           List<Range<DateTime>> invoiceRanges = new ArrayList<>();
@@ -861,18 +862,18 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           params.addDataItem(saleItems.getViewName(), saleItems.serialize());
           params.addDataItem(VAR_ID_LIST, DataUtils.buildIdList(prepareApproveActs));
 
-    BeeKeeper.getRpc().makeRequest(params, response -> {
-      if (response.hasResponse(BeeRow.class)) {
-        BeeRow result = BeeRow.restore(response.getResponseAsString());
+          BeeKeeper.getRpc().makeRequest(params, response -> {
+            if (response.hasResponse(BeeRow.class)) {
+              BeeRow result = BeeRow.restore(response.getResponseAsString());
 
-        RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_SALES, result, null);
-        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_INVOICES);
-        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS);
+              RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_SALES, result, null);
+              DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_INVOICES);
+              DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS);
 
-        refresh(false);
-        RowEditor.open(VIEW_SALES, result);
-      }
-    });
+              refresh(false);
+              RowEditor.open(VIEW_SALES, result);
+            }
+          });
         });
   }
 
@@ -1557,15 +1558,15 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
               STYLE_SVC_TOGGLE_WIDGET, false);
 
-        toggle.addClickHandler(event -> {
-          if (event.getSource() instanceof Toggle) {
-            onToggle((Toggle) event.getSource(), STYLE_SVC_SELECTED);
+          toggle.addClickHandler(event -> {
+            if (event.getSource() instanceof Toggle) {
+              onToggle((Toggle) event.getSource(), STYLE_SVC_SELECTED);
 
-            commandSave.setStyleName(STYLE_COMMAND_DISABLED,
-                !Selectors.contains(table.getElement(),
-                    Selectors.classSelector(STYLE_SVC_SELECTED)));
-          }
-        });
+              commandSave.setStyleName(STYLE_COMMAND_DISABLED,
+                  !Selectors.contains(table.getElement(),
+                      Selectors.classSelector(STYLE_SVC_SELECTED)));
+            }
+          });
 
           table.setWidget(r, c++, toggle, STYLE_SVC_TOGGLE_PREFIX + STYLE_CELL_SUFFIX);
         } else {
