@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="CarServiceComments" source="CarServiceComments"
+      caption="=svcComments" newRowForm="CarServiceComment" editForm="CarServiceComment"
+>
+  <Columns>
+    <SimpleColumn name="CarServiceOrder" />
+    <SimpleColumn name="Publisher" />
+    <SimpleJoin name="Publisher" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn alias="PublisherFirstName" name="FirstName" />
+          <SimpleColumn alias="PublisherLastName" name="LastName" />
+
+          <SimpleJoin name="PhotoFile" joinType="LEFT">
+            <SimpleColumn name="Hash" alias="PhotoFile" label="=photo" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="PublishTime" />
+
+    <SimpleColumn name="Subject" />
+    <SimpleColumn name="Comment" />
+    <SimpleColumn name="EventNote" />
+    <SimpleColumn name="Term" />
+
+    <SimpleColumn name="SentEmail"/>
+    <SimpleColumn name="SentSms"/>
+  </Columns>
+</View>

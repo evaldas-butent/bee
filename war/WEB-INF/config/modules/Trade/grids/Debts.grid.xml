@@ -1,20 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-	xmlns:xi="http://www.w3.org/2001/XInclude"
-	xmlns:ui="http://www.butent.com/ui"
-	name="Debts" viewName="Debts"
-	disabledActions="add delete"
-	readOnly="true"
-	filter = "Debt > 0"
-	caption="=debts"
-	>
+        xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:ui="http://www.butent.com/ui"
+        name="Debts" viewName="Debts" disabledActions="add delete" readOnly="true"
+        filter="Debt > 0" caption="=debts">
 
 	<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
-		<RelColumn name="CustomerCode" caption="=companyCode" label="=companyCode"  />
+		<RelColumn name="CustomerCode" caption="=companyCode" label="=companyCode" />
 		<RelColumn name="Customer" renderColumns="CustomerName" caption="=company" label="=company" editEnabled="true" />
 		<!-- Duplicate filter options with RelColumn-->
 		<DataColumn name="FinancialStateName"
-				   caption="=financialState" label="=financialState" filterSupplier="list"/>
+				        caption="=financialState" label="=financialState" filterSupplier="list"/>
 		<RelColumn name="SaleSeries" />
 		<DataColumn name="InvoiceNo" />
 		<RelColumn name="Manager" />

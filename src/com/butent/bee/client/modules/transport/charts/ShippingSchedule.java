@@ -8,7 +8,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
@@ -91,7 +90,7 @@ final class ShippingSchedule extends VehicleTimeBoard {
   @Override
   public void handleAction(Action action) {
     if (Action.ADD.equals(action)) {
-      RowFactory.createRow(VIEW_TRIPS, Modality.DISABLED);
+      RowFactory.createRow(VIEW_TRIPS);
     } else {
       super.handleAction(action);
     }

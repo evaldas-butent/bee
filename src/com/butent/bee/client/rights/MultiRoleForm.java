@@ -16,16 +16,13 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.presenter.Presenter;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
@@ -34,9 +31,7 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
@@ -227,58 +222,55 @@ abstract class MultiRoleForm extends RightsForm {
       params.addQueryItem(COL_OBJECT_TYPE, getObjectType().ordinal());
       params.addQueryItem(COL_STATE, getRightsState().ordinal());
 
-      BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          if (response.hasErrors()) {
-            response.notify(BeeKeeper.getScreen());
-            callback.accept(false);
+      BeeKeeper.getRpc().makeRequest(params, response -> {
+        if (response.hasErrors()) {
+          response.notify(BeeKeeper.getScreen());
+          callback.accept(false);
 
-          } else {
-            if (!initialValues.isEmpty()) {
-              initialValues.clear();
-            }
-            if (!changes.isEmpty()) {
-              changes.clear();
-            }
+        } else {
+          if (!initialValues.isEmpty()) {
+            initialValues.clear();
+          }
+          if (!changes.isEmpty()) {
+            changes.clear();
+          }
 
-            if (response.hasResponse()) {
-              Map<String, String> rights =
-                  Codec.deserializeLinkedHashMap(response.getResponseAsString());
+          if (response.hasResponse()) {
+            Map<String, String> rights =
+                Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
-              if (getRightsState().isChecked()) {
-                Set<Long> ids = new HashSet<>(roles.keySet());
-
-                for (RightsObject object : getObjects()) {
-                  if (rights.containsKey(object.getName())) {
-                    Set<Long> values = new HashSet<>(ids);
-                    values.removeAll(DataUtils.parseIdSet(rights.get(object.getName())));
-
-                    if (!values.isEmpty()) {
-                      initialValues.putAll(object.getName(), values);
-                    }
-
-                  } else {
-                    initialValues.putAll(object.getName(), ids);
-                  }
-                }
-
-              } else if (!rights.isEmpty()) {
-                for (Map.Entry<String, String> entry : rights.entrySet()) {
-                  initialValues.putAll(entry.getKey(), DataUtils.parseIdSet(entry.getValue()));
-                }
-              }
-
-            } else if (getRightsState().isChecked()) {
+            if (getRightsState().isChecked()) {
               Set<Long> ids = new HashSet<>(roles.keySet());
 
               for (RightsObject object : getObjects()) {
-                initialValues.putAll(object.getName(), ids);
+                if (rights.containsKey(object.getName())) {
+                  Set<Long> values = new HashSet<>(ids);
+                  values.removeAll(DataUtils.parseIdSet(rights.get(object.getName())));
+
+                  if (!values.isEmpty()) {
+                    initialValues.putAll(object.getName(), values);
+                  }
+
+                } else {
+                  initialValues.putAll(object.getName(), ids);
+                }
+              }
+
+            } else if (!rights.isEmpty()) {
+              for (Map.Entry<String, String> entry : rights.entrySet()) {
+                initialValues.putAll(entry.getKey(), DataUtils.parseIdSet(entry.getValue()));
               }
             }
 
-            callback.accept(true);
+          } else if (getRightsState().isChecked()) {
+            Set<Long> ids = new HashSet<>(roles.keySet());
+
+            for (RightsObject object : getObjects()) {
+              initialValues.putAll(object.getName(), ids);
+            }
           }
+
+          callback.accept(true);
         }
       });
     });
@@ -403,38 +395,35 @@ abstract class MultiRoleForm extends RightsForm {
       }
       params.addDataItem(COL_OBJECT, Codec.beeSerialize(diff));
 
-      BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          if (response.hasErrors()) {
-            response.notify(BeeKeeper.getScreen());
-            if (callback != null) {
-              callback.accept(false);
+      BeeKeeper.getRpc().makeRequest(params, response -> {
+        if (response.hasErrors()) {
+          response.notify(BeeKeeper.getScreen());
+          if (callback != null) {
+            callback.accept(false);
+          }
+
+        } else {
+          int size = changes.size();
+
+          for (Map.Entry<String, Long> entry : changes.entries()) {
+            if (initialValues.containsEntry(entry.getKey(), entry.getValue())) {
+              initialValues.remove(entry.getKey(), entry.getValue());
+            } else {
+              initialValues.put(entry.getKey(), entry.getValue());
             }
+          }
 
-          } else {
-            int size = changes.size();
+          changes.clear();
+          onClearChanges();
 
-            for (Map.Entry<String, Long> entry : changes.entries()) {
-              if (initialValues.containsEntry(entry.getKey(), entry.getValue())) {
-                initialValues.remove(entry.getKey(), entry.getValue());
-              } else {
-                initialValues.put(entry.getKey(), entry.getValue());
-              }
-            }
+          String message = Localized.dictionary().roleRightsSaved(BeeUtils.joinWords(
+              BeeUtils.bracket(getObjectType().getCaption()), Localized.dictionary().roleState(),
+              getRightsState().getCaption()), size);
+          debug(message);
+          BeeKeeper.getScreen().notifyInfo(message);
 
-            changes.clear();
-            onClearChanges();
-
-            String message = Localized.dictionary().roleRightsSaved(BeeUtils.joinWords(
-                BeeUtils.bracket(getObjectType().getCaption()), Localized.dictionary().roleState(),
-                getRightsState().getCaption()), size);
-            debug(message);
-            BeeKeeper.getScreen().notifyInfo(message);
-
-            if (callback != null) {
-              callback.accept(true);
-            }
+          if (callback != null) {
+            callback.accept(true);
           }
         }
       });
@@ -496,22 +485,19 @@ abstract class MultiRoleForm extends RightsForm {
 
   private void checkUserRights() {
     Queries.getRowSet(VIEW_USER_ROLES, Collections.singletonList(COL_ROLE),
-        Filter.equals(COL_USER, getUserId()), new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            if (DataUtils.isEmpty(result)) {
-              BeeKeeper.getScreen().notifyWarning(Localized.dictionary().userHasNotRoles());
+        Filter.equals(COL_USER, getUserId()), result -> {
+          if (DataUtils.isEmpty(result)) {
+            BeeKeeper.getScreen().notifyWarning(Localized.dictionary().userHasNotRoles());
 
-            } else {
-              int index = result.getColumnIndex(COL_ROLE);
+          } else {
+            int index = result.getColumnIndex(COL_ROLE);
 
-              Set<Long> userRoles = new HashSet<>();
-              for (BeeRow row : result) {
-                userRoles.add(row.getLong(index));
-              }
-
-              markUserValues(userRoles);
+            Set<Long> userRoles = new HashSet<>();
+            for (BeeRow row : result) {
+              userRoles.add(row.getLong(index));
             }
+
+            markUserValues(userRoles);
           }
         });
   }
@@ -524,9 +510,8 @@ abstract class MultiRoleForm extends RightsForm {
     setDataType(widget, DATA_TYPE_ROLE_LABEL);
 
     widget.addClickHandler(
-        event -> RowEditor.open(VIEW_ROLES, roleId, Opener.MODAL, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
+        event -> RowEditor.open(VIEW_ROLES, roleId, result -> {
+          if (isAttached()) {
             String name = Data.getString(VIEW_ROLES, result, COL_ROLE_NAME);
 
             if (!BeeUtils.equalsTrimRight(name, roles.get(roleId))) {

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="SubstitutionObjects" idName="SubstitutionObjectID"
+>
+  <Fields>
+    <Relation name="Substitution" relation="Substitutions" notNull="true" label="=substitution" />
+    <String name="Object" precision="100" notNull="true" label="=object" />
+    <Long name="ObjectID" notNull="true" label="ID" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="Substitution Object ObjectID" />
+  </Constraints>
+</Table>

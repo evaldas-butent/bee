@@ -8,6 +8,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -20,7 +21,7 @@ public final class TradeAccounts implements BeeSerializable {
   public static final String TBL_TRADE_ACCOUNTS = "TradeAccounts";
   public static final String COL_TRADE_ACCOUNTS = "TradeAccounts";
 
-  private static final String COL_COST_ACCOUNT = "CostAccount";
+  public static final String COL_COST_ACCOUNT = "CostAccount";
 
   private static final String COL_TRADE_PAYABLES = "TradePayables";
   private static final String COL_TRADE_RECEIVABLES = "TradeReceivables";
@@ -76,6 +77,25 @@ public final class TradeAccounts implements BeeSerializable {
     Long salesDiscounts = DataUtils.getLongQuietly(columns, row, COL_SALES_DISCOUNTS);
     Long costOfGoodsSold = DataUtils.getLongQuietly(columns, row, COL_COST_OF_GOODS_SOLD);
     Long writeOffAccount = DataUtils.getLongQuietly(columns, row, COL_WRITE_OFF_ACCOUNT);
+
+    return new TradeAccounts(costAccount, tradePayables, tradeReceivables,
+        vatPayable, vatReceivable, salesRevenue, salesDiscounts, costOfGoodsSold, writeOffAccount);
+  }
+
+  public static TradeAccounts createAvailable(SimpleRow row) {
+    Long costAccount = DataUtils.getLongQuietly(row, COL_COST_ACCOUNT);
+    if (costAccount == null) {
+      costAccount = DataUtils.getLongQuietly(row, FinanceConstants.COL_COST_OF_MERCHANDISE);
+    }
+
+    Long tradePayables = DataUtils.getLongQuietly(row, COL_TRADE_PAYABLES);
+    Long tradeReceivables = DataUtils.getLongQuietly(row, COL_TRADE_RECEIVABLES);
+    Long vatPayable = DataUtils.getLongQuietly(row, COL_VAT_PAYABLE);
+    Long vatReceivable = DataUtils.getLongQuietly(row, COL_VAT_RECEIVABLE);
+    Long salesRevenue = DataUtils.getLongQuietly(row, COL_SALES_REVENUE);
+    Long salesDiscounts = DataUtils.getLongQuietly(row, COL_SALES_DISCOUNTS);
+    Long costOfGoodsSold = DataUtils.getLongQuietly(row, COL_COST_OF_GOODS_SOLD);
+    Long writeOffAccount = DataUtils.getLongQuietly(row, COL_WRITE_OFF_ACCOUNT);
 
     return new TradeAccounts(costAccount, tradePayables, tradeReceivables,
         vatPayable, vatReceivable, salesRevenue, salesDiscounts, costOfGoodsSold, writeOffAccount);

@@ -24,10 +24,12 @@ import java.util.List;
 public class TaskSlackRenderer extends AbstractSlackRenderer {
 
   private final List<? extends IsColumn> dataColumns;
+  private String viewName;
 
-  TaskSlackRenderer(List<? extends IsColumn> columns) {
+  TaskSlackRenderer(List<? extends IsColumn> columns, String viewName) {
     super();
     this.dataColumns = columns;
+    this.viewName = viewName;
   }
 
   @Override
@@ -117,7 +119,7 @@ public class TaskSlackRenderer extends AbstractSlackRenderer {
 
     TaskStatus status =
             EnumUtils.getEnumByIndex(TaskStatus.class,
-                    Data.getInteger(VIEW_TASKS, row, COL_STATUS));
+                    Data.getInteger(viewName, row, COL_STATUS));
     if (status == null) {
       return null;
     } else {
@@ -146,6 +148,11 @@ public class TaskSlackRenderer extends AbstractSlackRenderer {
   }
 
   private DateTime getLastStatusTime(IsRow row) {
-    return row.getDateTime(DataUtils.getColumnIndex(ALS_LAST_BREAK_EVENT, dataColumns));
+    int index = DataUtils.getColumnIndex(ALS_LAST_BREAK_EVENT, dataColumns);
+    if (index >= 0) {
+      return row.getDateTime(index);
+    }
+
+    return null;
   }
 }

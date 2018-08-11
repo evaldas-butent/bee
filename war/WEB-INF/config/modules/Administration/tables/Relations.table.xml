@@ -24,6 +24,7 @@
     <Relation name="Assessment" relation="Assessments" label="=assessments" cascade="DELETE" />
     <Relation name="Project" relation="Projects" label="=projects" cascade="DELETE" />
     <Relation name="ServiceMaintenance" relation="ServiceMaintenance" label="=svcMaintenance" cascade="DELETE" />
+    <Relation name="TaskTemplate" relation="TaskTemplates" label="=crmTaskTemplate" cascade="DELETE" />
     <Relation name="TradeAct" relation="TradeActs" label="=tradeAct" cascade="DELETE" />
     <Relation name="Sale" relation="Sales" label="=trdInvoice" cascade="DELETE" />
     <Relation name="CompanyObject" relation="CompanyObjects" label="=object" cascade="DELETE" />

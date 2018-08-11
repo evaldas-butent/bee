@@ -27,6 +27,16 @@ public enum OperationType implements HasLocalizedCaption {
     }
 
     @Override
+    public Long getCostDebit(TradeAccounts tradeAccounts) {
+      return null;
+    }
+
+    @Override
+    public Long getCostCredit(TradeAccounts tradeAccounts) {
+      return null;
+    }
+
+    @Override
     public Long getDebtAccount(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getTradePayables();
     }
@@ -45,6 +55,11 @@ public enum OperationType implements HasLocalizedCaption {
     public ItemPrice getDefaultPrice() {
       return ItemPrice.COST;
     }
+
+    @Override
+    public boolean maybeConsignment() {
+      return true;
+    }
   },
 
   SALE(true, false, false, false, DebtKind.RECEIVABLE) {
@@ -61,6 +76,16 @@ public enum OperationType implements HasLocalizedCaption {
     @Override
     public Long getAmountCredit(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getSalesRevenue();
+    }
+
+    @Override
+    public Long getCostDebit(TradeAccounts tradeAccounts) {
+      return (tradeAccounts == null) ? null : tradeAccounts.getCostOfGoodsSold();
+    }
+
+    @Override
+    public Long getCostCredit(TradeAccounts tradeAccounts) {
+      return null;
     }
 
     @Override
@@ -97,6 +122,16 @@ public enum OperationType implements HasLocalizedCaption {
 
     @Override
     public Long getAmountCredit(TradeAccounts tradeAccounts) {
+      return null;
+    }
+
+    @Override
+    public Long getCostDebit(TradeAccounts tradeAccounts) {
+      return null;
+    }
+
+    @Override
+    public Long getCostCredit(TradeAccounts tradeAccounts) {
       return null;
     }
 
@@ -138,6 +173,16 @@ public enum OperationType implements HasLocalizedCaption {
     }
 
     @Override
+    public Long getCostDebit(TradeAccounts tradeAccounts) {
+      return (tradeAccounts == null) ? null : tradeAccounts.getWriteOffAccount();
+    }
+
+    @Override
+    public Long getCostCredit(TradeAccounts tradeAccounts) {
+      return null;
+    }
+
+    @Override
     public Long getDebtAccount(TradeAccounts tradeAccounts) {
       return null;
     }
@@ -175,6 +220,16 @@ public enum OperationType implements HasLocalizedCaption {
     }
 
     @Override
+    public Long getCostDebit(TradeAccounts tradeAccounts) {
+      return (tradeAccounts == null) ? null : tradeAccounts.getCostOfGoodsSold();
+    }
+
+    @Override
+    public Long getCostCredit(TradeAccounts tradeAccounts) {
+      return null;
+    }
+
+    @Override
     public Long getDebtAccount(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getTradeReceivables();
     }
@@ -202,6 +257,11 @@ public enum OperationType implements HasLocalizedCaption {
     }
 
     @Override
+    public boolean isReturn() {
+      return true;
+    }
+
+    @Override
     public Long getAmountDebit(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getSalesRevenue();
     }
@@ -209,6 +269,16 @@ public enum OperationType implements HasLocalizedCaption {
     @Override
     public Long getAmountCredit(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getTradeReceivables();
+    }
+
+    @Override
+    public Long getCostDebit(TradeAccounts tradeAccounts) {
+      return (tradeAccounts == null) ? null : tradeAccounts.getCostAccount();
+    }
+
+    @Override
+    public Long getCostCredit(TradeAccounts tradeAccounts) {
+      return (tradeAccounts == null) ? null : tradeAccounts.getCostOfGoodsSold();
     }
 
     @Override
@@ -249,6 +319,16 @@ public enum OperationType implements HasLocalizedCaption {
     }
 
     @Override
+    public Long getCostDebit(TradeAccounts tradeAccounts) {
+      return null;
+    }
+
+    @Override
+    public Long getCostCredit(TradeAccounts tradeAccounts) {
+      return null;
+    }
+
+    @Override
     public Long getDebtAccount(TradeAccounts tradeAccounts) {
       return (tradeAccounts == null) ? null : tradeAccounts.getTradePayables();
     }
@@ -266,6 +346,16 @@ public enum OperationType implements HasLocalizedCaption {
     @Override
     public ItemPrice getDefaultPrice() {
       return ItemPrice.COST;
+    }
+
+    @Override
+    public boolean isReturn() {
+      return true;
+    }
+
+    @Override
+    public boolean maybeConsignment() {
+      return true;
     }
   };
 
@@ -339,9 +429,21 @@ public enum OperationType implements HasLocalizedCaption {
     return debtKind != null;
   }
 
+  public boolean isReturn() {
+    return false;
+  }
+
+  public boolean maybeConsignment() {
+    return false;
+  }
+
   public abstract Long getAmountDebit(TradeAccounts tradeAccounts);
 
   public abstract Long getAmountCredit(TradeAccounts tradeAccounts);
+
+  public abstract Long getCostDebit(TradeAccounts tradeAccounts);
+
+  public abstract Long getCostCredit(TradeAccounts tradeAccounts);
 
   public abstract Long getDebtAccount(TradeAccounts tradeAccounts);
 

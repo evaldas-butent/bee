@@ -14,17 +14,13 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.ModalGrid;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.CellKind;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridPanel;
@@ -49,11 +45,10 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomAction;
-import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.Holder;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -63,7 +58,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
@@ -257,15 +251,12 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
                 ParameterList args = CarsKeeper.createSvcArgs(SVC_GET_OBJECT);
                 args.addDataItem(COL_OBJECT, obj);
 
-                BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-                  @Override
-                  public void onResponse(ResponseObject response) {
-                    response.notify(getFormView());
+                BeeKeeper.getRpc().makePostRequest(args, response -> {
+                  response.notify(getFormView());
 
-                    if (!response.hasErrors()) {
-                      new SpecificationBuilder(Specification
-                          .restore(response.getResponseAsString()), CarOrderForm.this);
-                    }
+                  if (!response.hasErrors()) {
+                    new SpecificationBuilder(Specification
+                        .restore(response.getResponseAsString()), CarOrderForm.this);
                   }
                 });
               } else {
@@ -299,12 +290,9 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
               }
               commit(form, updates, updatedRow -> {
                 if (DataUtils.isId(oldObject)) {
-                  Queries.deleteRow(TBL_CONF_OBJECTS, oldObject, new Queries.IntCallback() {
-                    @Override
-                    public void onSuccess(Integer cnt) {
-                      if (BeeUtils.isPositive(cnt)) {
-                        Data.resetLocal(TBL_CAR_ORDER_ITEMS);
-                      }
+                  Queries.deleteRow(TBL_CONF_OBJECTS, oldObject, cnt -> {
+                    if (BeeUtils.isPositive(cnt)) {
+                      Data.resetLocal(TBL_CAR_ORDER_ITEMS);
                     }
                   });
                 }
@@ -338,12 +326,9 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
 
       commit(getFormView(), updates, updatedRow -> {
         if (DataUtils.isId(oldObject)) {
-          Queries.deleteRow(TBL_CONF_OBJECTS, oldObject, new Queries.IntCallback() {
-            @Override
-            public void onSuccess(Integer cnt) {
-              if (BeeUtils.isPositive(cnt)) {
-                Data.resetLocal(TBL_CAR_ORDER_ITEMS);
-              }
+          Queries.deleteRow(TBL_CONF_OBJECTS, oldObject, cnt -> {
+            if (BeeUtils.isPositive(cnt)) {
+              Data.resetLocal(TBL_CAR_ORDER_ITEMS);
             }
           });
         }
@@ -354,34 +339,26 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
     } else {
       Queries.getRowSet(TBL_CONF_OPTIONS, Collections.singletonList(COL_ITEM),
           Filter.and(Filter.idIn(opts.keySet()), Filter.notNull(COL_ITEM)),
-          new Queries.RowSetCallback() {
-            @Override
-            public void onSuccess(BeeRowSet res) {
-              BeeRowSet items = new BeeRowSet(TBL_CAR_ORDER_ITEMS,
-                  Data.getColumns(TBL_CAR_ORDER_ITEMS, Arrays.asList(COL_ORDER, COL_ITEM,
-                      COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_OBJECT)));
+          res -> {
+            BeeRowSet items = new BeeRowSet(TBL_CAR_ORDER_ITEMS,
+                Data.getColumns(TBL_CAR_ORDER_ITEMS, Arrays.asList(COL_ORDER, COL_ITEM,
+                    COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_OBJECT)));
 
-              for (BeeRow item : res) {
-                Integer prc = opts.get(item.getId());
-                price.set(price.get() - BeeUtils.unbox(prc));
+            for (BeeRow item : res) {
+              Integer prc = opts.get(item.getId());
+              price.set(price.get() - BeeUtils.unbox(prc));
 
-                BeeRow row = items.addEmptyRow();
-                row.setValue(items.getColumnIndex(COL_ORDER), getActiveRowId());
-                row.setValue(items.getColumnIndex(COL_ITEM), item.getLong(0));
-                row.setValue(items.getColumnIndex(COL_TRADE_ITEM_QUANTITY), 1);
-                row.setValue(items.getColumnIndex(COL_TRADE_ITEM_PRICE), prc);
-                row.setValue(items.getColumnIndex(COL_OBJECT), specification.getId());
-              }
-              if (!DataUtils.isEmpty(items)) {
-                Queries.insertRows(items, new RpcCallback<RowInfoList>() {
-                  @Override
-                  public void onSuccess(RowInfoList result) {
-                    runnable.run();
-                  }
-                });
-              } else {
-                runnable.run();
-              }
+              BeeRow row = items.addEmptyRow();
+              row.setValue(items.getColumnIndex(COL_ORDER), getActiveRowId());
+              row.setValue(items.getColumnIndex(COL_ITEM), item.getLong(0));
+              row.setValue(items.getColumnIndex(COL_TRADE_ITEM_QUANTITY), 1);
+              row.setValue(items.getColumnIndex(COL_TRADE_ITEM_PRICE), prc);
+              row.setValue(items.getColumnIndex(COL_OBJECT), specification.getId());
+            }
+            if (!DataUtils.isEmpty(items)) {
+              Queries.insertRows(items, result -> runnable.run());
+            } else {
+              runnable.run();
             }
           });
     }
@@ -408,9 +385,7 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
 
       @Override
       public Widget getActionWidget() {
-        FaLabel action = new FaLabel(FontAwesome.ENVELOPE_O);
-        action.setTitle(Localized.dictionary().trWriteEmail());
-        return action;
+        return new Button(Localized.dictionary().ecOrderCommandMail());
       }
     };
   }
@@ -418,12 +393,7 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
   @Override
   protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
     Queries.getRowSet(TBL_CAR_ORDER_ITEMS, null, Filter.equals(COL_ORDER, getActiveRowId()),
-        new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            dataConsumer.accept(new BeeRowSet[] {result});
-          }
-        });
+        result -> dataConsumer.accept(new BeeRowSet[] {result}));
   }
 
   @Override
@@ -465,7 +435,7 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
 
   private void buildCar() {
     if (hasCar(getActiveRow())) {
-      RowEditor.open(VIEW_CARS, getLongValue(COL_CAR), Opener.NEW_TAB);
+      RowEditor.open(VIEW_CARS, getLongValue(COL_CAR));
       return;
     }
     if (!getFormView().isEnabled()) {
@@ -477,20 +447,17 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
     BeeRow car = RowFactory.createEmptyRow(info, true);
     car.setValue(info.getColumnIndex(COL_OBJECT), obj);
 
-    RowFactory.createRow(info, car, Modality.ENABLED, new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow newCar) {
-        Map<String, String> updates = new HashMap<>();
-        updates.put(COL_OBJECT, null);
-        updates.put(COL_CAR, BeeUtils.toString(newCar.getId()));
+    RowFactory.createRow(info, car, Opener.MODAL, newCar -> {
+      Map<String, String> updates = new HashMap<>();
+      updates.put(COL_OBJECT, null);
+      updates.put(COL_CAR, BeeUtils.toString(newCar.getId()));
 
-        commit(getFormView(), updates, updatedRow -> {
-          if (DataUtils.isId(obj)) {
-            Queries.update(TBL_CAR_ORDER_ITEMS, Filter.equals(COL_OBJECT, obj), COL_OBJECT,
-                (String) null, null);
-          }
-        });
-      }
+      commit(getFormView(), updates, updatedRow -> {
+        if (DataUtils.isId(obj)) {
+          Queries.update(TBL_CAR_ORDER_ITEMS, Filter.equals(COL_OBJECT, obj), COL_OBJECT,
+              (String) null, null);
+        }
+      });
     });
   }
 
@@ -536,12 +503,9 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
     table.setText(2, 0, d.trAccountingItem());
     table.setWidget(2, 1, item);
 
-    Queries.getValue(VIEW_CARS, getLongValue(COL_CAR), COL_ITEM, new RpcCallback<String>() {
-      @Override
-      public void onSuccess(String itemId) {
-        if (DataUtils.isId(itemId)) {
-          item.setValue(BeeUtils.toLongOrNull(itemId), false);
-        }
+    Queries.getValue(VIEW_CARS, getLongValue(COL_CAR), COL_ITEM, itemId -> {
+      if (DataUtils.isId(itemId)) {
+        item.setValue(BeeUtils.toLongOrNull(itemId), false);
       }
     });
     operation.addSelectorHandler(event -> {
@@ -587,7 +551,7 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
 
         TradeKeeper.createDocument(doc, tradeId -> {
           DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), VIEW_TRADE_DOCUMENTS);
-          RowEditor.open(VIEW_TRADE_DOCUMENTS, tradeId, Opener.NEW_TAB);
+          RowEditor.open(VIEW_TRADE_DOCUMENTS, tradeId);
         });
       }
     });

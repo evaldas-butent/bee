@@ -29,8 +29,6 @@ public interface DataView extends View, NotificationListener, HasViewName, HasAc
     return DataUtils.getColumnIndex(source, getDataColumns());
   }
 
-  String getOptions();
-
   Map<String, String> getProperties();
 
   String getProperty(String key);

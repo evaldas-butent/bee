@@ -102,12 +102,4 @@
       </FlowPanel>
     </center>
   </SplitPanel>
-  <f:rowMessage>
-    <ui:function>
-      return ("&lt;span class&#61;\"bee-svc-object-title\"&gt;" + (row.Model ? row.Model + " " : "") + "&lt;&#47;span&gt;")
-      + ("&lt;span class&#61;\"bee-svc-object-title bee-svc-object-small-title\"&gt;" + (row.SerialNo ? row.SerialNo + " " : "") + "&lt;&#47;span&gt;")
-      + ("&lt;span class&#61;\"bee-svc-object-title\"&gt;"
-      + (row.ContactPerson ? (row.Model || row.SerialNo ? "/ " : "") + row.ContactFirstName + (row.ContactLastName ? " " + row.ContactLastName : "") + " " : "") + "&lt;&#47;span&gt;");
-    </ui:function>
-  </f:rowMessage>
 </f:Form>  

@@ -11,6 +11,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderImpl;
@@ -225,7 +226,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
   }
 
   public void save(Consumer<IsRow> consumer) {
-    final FormView form = getForm();
+    FormView form = getForm();
     if (!form.validate(form, true)) {
       return;
     }
@@ -235,10 +236,6 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     } else {
       gridView.formConfirm(consumer);
     }
-  }
-
-  public void setCaption(String caption) {
-    header.setCaption(caption);
   }
 
   public void showAction(Action action) {
@@ -264,7 +261,9 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     formContainer.addStyleName(STYLE_FORM_CONTAINER);
     formContainer.addStyleName(getFormStyle(STYLE_FORM_CONTAINER, edit));
     formContainer.addStyleName(UiOption.getStyleName(uiOptions));
-    formContainer.addStyleName(formView.getContainerStyleName());
+
+    StyleUtils.updateAppearance(formContainer,
+        formView.getContainerClassName(), formView.getContainerStyle());
 
     formContainer.addTopHeightFillHorizontal(headerView.asWidget(), 0, headerView.getHeight());
     formContainer.addTopBottomFillHorizontal(formView.asWidget(), headerView.getHeight(), 0);

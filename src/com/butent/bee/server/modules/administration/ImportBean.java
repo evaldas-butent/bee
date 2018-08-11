@@ -80,9 +80,8 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellReference;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -1230,24 +1229,39 @@ public class ImportBean {
     ImportObject op = io.getPropertyRelation(TBL_CONF_OPTIONS);
 
     if (Objects.nonNull(op)) {
+      Long id;
       try {
-        File tmp = File.createTempFile("bee_", null);
-        tmp.deleteOnExit();
-        FileOutputStream os = new FileOutputStream(tmp);
-        Files.copy(file.toPath(), os);
-        os.close();
-        file = tmp;
+        id = fs.storeFile(new FileInputStream(file), null, null).getId();
       } catch (IOException ex) {
         file.delete();
         return ResponseObject.error(ex);
       }
-      ResponseObject response = importData(op.getObjectId(), fileId, progress);
+      ResponseObject response = importData(op.getObjectId(), id, progress);
 
       if (response.hasErrors()) {
         file.delete();
         return response;
       }
-      status = response.getResponse(status, null);
+      status.putAll(response.getResponse(status, null));
+    }
+    // Packets
+    ImportObject pk = io.getPropertyRelation(TBL_CONF_PACKET_OPTIONS);
+
+    if (Objects.nonNull(pk)) {
+      Long id;
+      try {
+        id = fs.storeFile(new FileInputStream(file), null, null).getId();
+      } catch (IOException ex) {
+        file.delete();
+        return ResponseObject.error(ex);
+      }
+      ResponseObject response = importData(pk.getObjectId(), id, progress);
+
+      if (response.hasErrors()) {
+        file.delete();
+        return response;
+      }
+      status.putAll(response.getResponse(status, null));
     }
     SqlSelect query = new SqlSelect()
         .addField(TBL_CONF_OPTIONS, sys.getIdName(TBL_CONF_OPTIONS), COL_OPTION)
@@ -1262,7 +1276,7 @@ public class ImportBean {
 
     if (DataUtils.isId(type)) {
       query.setWhere(SqlUtils.and(query.getWhere(),
-          SqlUtils.equals(TBL_CONF_GROUPS, COL_TYPE, type)));
+          SqlUtils.equals(TBL_CONF_OPTIONS, COL_TYPE, type)));
     }
     Map<String, Option> options = new HashMap<>();
 
@@ -1504,7 +1518,7 @@ public class ImportBean {
           errorProcessor.accept(loc.relations() + ": " + loc.configuration(), bundle.toString());
           ok = false;
         }
-        Set<Long> packet = new HashSet<>();
+        Set<Long> deniedPacketOptions = new HashSet<>();
 
         for (String optCode : Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults()
             .splitToList(Strings.nullToEmpty(row.getValue(prfx + CarsConstants.COL_PACKET)))) {
@@ -1514,14 +1528,14 @@ public class ImportBean {
             errorProcessor.accept(loc.relations() + ": " + loc.packet(), optCode);
             ok = false;
           } else {
-            packet.add(opt.getId());
+            deniedPacketOptions.add(opt.getId());
           }
         }
         if (ok) {
           configuration.setRelationInfo(option, bundle,
               ConfInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION))
                   .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)),
-              DataUtils.buildIdList(packet));
+              DataUtils.buildIdList(deniedPacketOptions));
         }
       }
     }
@@ -1655,7 +1669,7 @@ public class ImportBean {
                 ConfInfo.of(configuration.getRelationPrice(option, bundle),
                     configuration.getRelationDescription(option, bundle))
                     .setCriteria(configuration.getRelationCriteria(option, bundle)),
-                configuration.getRelationPackets(option, bundle));
+                configuration.getDeniedPacketOptions(option, bundle));
             cnt++;
           }
         }

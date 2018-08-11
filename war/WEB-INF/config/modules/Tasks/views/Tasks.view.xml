@@ -4,7 +4,7 @@
    xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="Tasks" source="Tasks" caption="=crmTasks"
-  editForm="Task" newRowForm="NewTask" rowCaption="Summary"
+  editForm="Task" newRowForm="NewTask" rowCaption="Id Summary"
   >
   <Relation renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
     choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime" />
@@ -105,7 +105,8 @@
       <HiddenColumn name="Event"/>
       <AggregateColumn name="PublishTime" alias="LastBreakEvent" aggregate="MAX" />
     </ExternalJoin>
-    
+
+    <SimpleColumn name="EndResult" />
   </Columns>
 
   <Order>

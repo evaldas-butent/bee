@@ -95,6 +95,10 @@ public class QueryServiceBean {
     BeeRowSet getViewData(BeeView view, SqlSelect query, Filter filter);
 
     int getViewSize(BeeView view, SqlSelect query, Filter filter);
+
+    default boolean hasAnyRows(BeeView view, SqlSelect query, Filter filter) {
+      return getViewSize(view, query, filter) > 0;
+    }
   }
 
   /**
@@ -638,9 +642,7 @@ public class QueryServiceBean {
 
     Long[] arr = getLongColumn(query);
     if (arr != null && arr.length > 0) {
-      for (Long value : arr) {
-        result.add(value);
-      }
+      Collections.addAll(result, arr);
     }
 
     return result;
@@ -651,9 +653,7 @@ public class QueryServiceBean {
 
     Long[] arr = getLongColumn(query);
     if (arr != null && arr.length > 0) {
-      for (Long value : arr) {
-        result.add(value);
-      }
+      Collections.addAll(result, arr);
     }
 
     return result;
@@ -759,6 +759,17 @@ public class QueryServiceBean {
     return results;
   }
 
+  public Set<String> getSet(IsQuery query) {
+    Set<String> result = new HashSet<>();
+
+    String[] arr = getColumn(query);
+    if (arr != null && arr.length > 0) {
+      Collections.addAll(result, arr);
+    }
+
+    return result;
+  }
+
   public String getValue(IsQuery query) {
     return getSingleValue(query).getValue(0, 0);
   }
@@ -792,7 +803,7 @@ public class QueryServiceBean {
   }
 
   public BeeRowSet getViewData(String viewName, Filter filter, Order order) {
-    return getViewData(viewName, filter, order, BeeConst.UNDEF, BeeConst.UNDEF, null);
+    return getViewData(viewName, filter, order, null);
   }
 
   public BeeRowSet getViewData(String viewName, Filter filter, Order order, List<String> columns) {
@@ -801,6 +812,12 @@ public class QueryServiceBean {
 
   public BeeRowSet getViewData(String viewName, Filter filter, Order order, int limit, int offset,
       List<String> columns) {
+
+    return getViewData(viewName, filter, order, limit, offset, columns, null);
+  }
+
+  public BeeRowSet getViewData(String viewName, Filter filter, Order order, int limit, int offset,
+      List<String> columns, Object eventOptions) {
 
     BeeView view = sys.getView(viewName);
     SqlSelect query = view.getQuery(usr.getCurrentUserId(), filter, order, columns);
@@ -840,16 +857,20 @@ public class QueryServiceBean {
     if (provider != null) {
       return provider.getViewData(view, query, filter);
     }
-    return getViewData(query, view, BeeUtils.isEmpty(columns));
+
+    boolean postEvent = BeeUtils.isEmpty(columns) || eventOptions != null;
+    return getViewData(query, view, postEvent, eventOptions);
   }
 
-  public BeeRowSet getViewData(final SqlSelect query, final BeeView view, boolean postEvent) {
+  public BeeRowSet getViewData(final SqlSelect query, final BeeView view, boolean postEvent,
+      Object eventOptions) {
+
     Assert.noNulls(query, view);
     Assert.state(!query.isEmpty());
 
     activateTables(query);
 
-    final ViewQueryEvent event = new ViewQueryEvent(view.getName(), query);
+    final ViewQueryEvent event = new ViewQueryEvent(view.getName(), query, eventOptions);
 
     if (postEvent) {
       sys.postDataEvent(event);
@@ -884,12 +905,30 @@ public class QueryServiceBean {
       Pair<String, String> sourcePair = getDependencies(viewName, query);
       sys.filterVisibleState(query, sourcePair.getA(), sourcePair.getB());
     }
-    ViewDataProvider provider = viewDataProviders.get(viewName);
 
+    ViewDataProvider provider = viewDataProviders.get(viewName);
     if (provider != null) {
       return provider.getViewSize(view, query, filter);
     }
+
     return sqlCount(query);
+  }
+
+  public boolean hasAnyRows(String viewName, Filter filter) {
+    BeeView view = sys.getView(viewName);
+    SqlSelect query = view.getQuery(usr.getCurrentUserId(), filter);
+
+    if (!usr.isAdministrator()) {
+      Pair<String, String> sourcePair = getDependencies(viewName, query);
+      sys.filterVisibleState(query, sourcePair.getA(), sourcePair.getB());
+    }
+
+    ViewDataProvider provider = viewDataProviders.get(viewName);
+    if (provider != null) {
+      return provider.hasAnyRows(view, query, filter);
+    }
+
+    return sqlExists(query);
   }
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
@@ -1148,9 +1187,7 @@ public class QueryServiceBean {
     SimpleRowSet data = getData(ss);
 
     List<String> columns = new ArrayList<>();
-    for (String colName : data.getColumnNames()) {
-      columns.add(colName);
-    }
+    Collections.addAll(columns, data.getColumnNames());
 
     return columns;
   }
@@ -1189,11 +1226,19 @@ public class QueryServiceBean {
   }
 
   public boolean sqlExists(String source, IsCondition where) {
-    return sqlCount(new SqlSelect().addFrom(source).setWhere(where)) > 0;
+    return sqlCount(new SqlSelect().addFrom(source).setWhere(where).setLimit(1)) > 0;
   }
 
   public boolean sqlExists(String source, String field, Object value) {
     return sqlExists(source, SqlUtils.equals(source, field, value));
+  }
+
+  public boolean sqlExists(SqlSelect query) {
+    SqlSelect ss = query.copyOf().resetOrder().setLimit(1);
+    if (ss.isEmpty()) {
+      ss.addConstant(null, "dummy");
+    }
+    return !DataUtils.isEmpty(getData(ss));
   }
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)

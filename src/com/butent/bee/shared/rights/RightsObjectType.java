@@ -4,6 +4,7 @@ import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.ArrayUtils;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -14,12 +15,14 @@ public enum RightsObjectType implements HasLocalizedCaption {
       return constants.objectField();
     }
   },
+
   WIDGET(RightsState.VIEW) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.objectWidget();
     }
   },
+
   DATA(RightsState.VIEW, RightsState.CREATE, RightsState.EDIT, RightsState.DELETE,
       RightsState.MERGE) {
     @Override
@@ -27,6 +30,7 @@ public enum RightsObjectType implements HasLocalizedCaption {
       return constants.objectData();
     }
   },
+
   MENU(RightsState.VIEW) {
     @Override
     public String getCaption(Dictionary constants) {
@@ -38,6 +42,7 @@ public enum RightsObjectType implements HasLocalizedCaption {
       return true;
     }
   },
+
   MODULE(RightsState.VIEW) {
     @Override
     public String getCaption(Dictionary constants) {
@@ -48,15 +53,20 @@ public enum RightsObjectType implements HasLocalizedCaption {
     public boolean isHierarchical() {
       return true;
     }
+  },
+
+  LIST(RightsState.VIEW, RightsState.EDIT, RightsState.REQUIRED) {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.objectList();
+    }
   };
 
   private final Set<RightsState> registeredStates = new LinkedHashSet<>();
 
   RightsObjectType(RightsState... states) {
     if (!ArrayUtils.isEmpty(states)) {
-      for (RightsState state : states) {
-        registeredStates.add(state);
-      }
+      Collections.addAll(registeredStates, states);
     }
   }
 

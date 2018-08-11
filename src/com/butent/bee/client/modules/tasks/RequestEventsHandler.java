@@ -2,8 +2,6 @@ package com.butent.bee.client.modules.tasks;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -14,7 +12,6 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.eventsboard.EventsBoard;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.widget.FaLabel;
@@ -105,13 +102,7 @@ public class RequestEventsHandler extends EventsBoard {
         add = getAddEventActionWidget();
         if (add instanceof HasClickHandlers) {
 
-          ((HasClickHandlers) add).addClickHandler(new ClickHandler() {
-
-            @Override
-            public void onClick(ClickEvent arg0) {
-              handleAction(Action.ADD);
-            }
-          });
+          ((HasClickHandlers) add).addClickHandler(arg0 -> handleAction(Action.ADD));
         }
       }
 
@@ -123,13 +114,7 @@ public class RequestEventsHandler extends EventsBoard {
 
       if (refresh instanceof HasClickHandlers) {
 
-        ((HasClickHandlers) refresh).addClickHandler(new ClickHandler() {
-
-          @Override
-          public void onClick(ClickEvent arg0) {
-            handleAction(Action.REFRESH);
-          }
-        });
+        ((HasClickHandlers) refresh).addClickHandler(arg0 -> handleAction(Action.REFRESH));
       }
 
       if (refresh != null) {
@@ -234,13 +219,7 @@ public class RequestEventsHandler extends EventsBoard {
 
     for (final Long extTaskId : extTasks) {
       InternalLink url = new InternalLink(BeeUtils.toString(extTaskId));
-      url.addClickHandler(new ClickHandler() {
-
-        @Override
-        public void onClick(ClickEvent arg0) {
-          RowEditor.open(VIEW_TASKS, extTaskId, Opener.NEW_TAB);
-        }
-      });
+      url.addClickHandler(arg0 -> RowEditor.open(VIEW_TASKS, extTaskId));
 
       ((Flow) widget).add(url);
     }

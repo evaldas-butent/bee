@@ -4,8 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -25,8 +23,6 @@ import com.butent.bee.client.timeboard.TimeBoard;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.client.timeboard.TimeBoardRowLayout;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
-import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Mover;
@@ -226,13 +222,9 @@ final class ProjectScheduleChart extends TimeBoard {
     ParameterList params = ProjectsKeeper.createSvcArgs(SVC_GET_PROJECT_CHART_DATA);
     params.addDataItem(VAR_PROJECT, BeeUtils.toString(projectId));
 
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (setData(response, false)) {
-          render(true);
-        }
+    BeeKeeper.getRpc().makePostRequest(params, response -> {
+      if (setData(response, false)) {
+        render(true);
       }
     });
   }
@@ -370,13 +362,7 @@ final class ProjectScheduleChart extends TimeBoard {
     StyleUtils.setLeft(dataMover, getChartLeft() - TimeBoardHelper.DEFAULT_MOVER_WIDTH);
     StyleUtils.setHeight(dataMover, height);
 
-    dataMover.addMoveHandler(new MoveEvent.Handler() {
-
-      @Override
-      public void onMove(MoveEvent event) {
-        onDataResize(event);
-      }
-    });
+    dataMover.addMoveHandler(this::onDataResize);
 
     panel.add(dataMover);
 
@@ -435,24 +421,14 @@ final class ProjectScheduleChart extends TimeBoard {
 
   private static ResponseCallback getResponseCallback(final ViewCallback viewCallback,
       final Long projectId) {
-    return new ResponseCallback() {
-
-      @Override
-      public void onResponse(ResponseObject response) {
-        ProjectScheduleChart chart = new ProjectScheduleChart(projectId);
-        chart.onCreate(response, viewCallback);
-      }
+    return response -> {
+      ProjectScheduleChart chart = new ProjectScheduleChart(projectId);
+      chart.onCreate(response, viewCallback);
     };
   }
 
   private static ViewCallback getViewCallback(final Flow widget) {
-    return new ViewCallback() {
-
-      @Override
-      public void onSuccess(View result) {
-        widget.add(result);
-      }
-    };
+    return widget::add;
   }
 
   private void addChartRowWidget(HasWidgets panel, IdentifiableWidget widget,
@@ -489,13 +465,7 @@ final class ProjectScheduleChart extends TimeBoard {
 
     final BeeRowSet rs = BeeRowSet.restore(item.beeRowSet);
 
-    label.addClickHandler(new ClickHandler() {
-
-      @Override
-      public void onClick(ClickEvent arg0) {
-        RowEditor.open(rs.getViewName(), rs.getRow(0).getId(), Opener.NEW_TAB);
-      }
-    });
+    label.addClickHandler(arg0 -> RowEditor.open(rs.getViewName(), rs.getRow(0).getId()));
 
     panel.add(label);
     return panel;
@@ -564,13 +534,7 @@ final class ProjectScheduleChart extends TimeBoard {
   }
 
   private static void addClickHandler(Flow panel, final String viewName, final Long rowId) {
-    panel.addClickHandler(new ClickHandler() {
-
-      @Override
-      public void onClick(ClickEvent arg0) {
-        RowEditor.open(viewName, rowId, Opener.NEW_TAB);
-      }
-    });
+    panel.addClickHandler(arg0 -> RowEditor.open(viewName, rowId));
   }
 
   private void onDataResize(MoveEvent event) {

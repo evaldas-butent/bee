@@ -15,7 +15,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
@@ -159,15 +158,14 @@ final class FreightExchange extends ChartBase {
               Localized.dictionary().inputSimple()), value -> {
             switch (value) {
               case 0:
-                RowFactory.createRow(VIEW_ORDERS, Modality.DISABLED);
+                RowFactory.createRow(VIEW_ORDERS);
                 break;
 
               case 1:
                 DataInfo dataInfo = Data.getDataInfo(VIEW_ORDER_CARGO);
                 BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
                 RowFactory.createRow(FORM_NEW_SIMPLE_ORDER,
-                    Localized.dictionary().newTransportationOrder(), dataInfo, row,
-                    Modality.DISABLED, null);
+                    Localized.dictionary().newTransportationOrder(), dataInfo, row, null);
                 break;
             }
           });
@@ -376,7 +374,7 @@ final class FreightExchange extends ChartBase {
       newRow.setValue(dataInfo.getColumnIndex(COL_CUSTOMER), customerId);
       newRow.setValue(dataInfo.getColumnIndex(COL_CUSTOMER_NAME), findCustomerName(customerId));
 
-      RowFactory.createRow(dataInfo, newRow, Modality.DISABLED);
+      RowFactory.createRow(dataInfo, newRow);
     }
   }
 

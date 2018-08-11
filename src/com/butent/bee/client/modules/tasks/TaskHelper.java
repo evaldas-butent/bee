@@ -15,6 +15,7 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -23,6 +24,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
@@ -112,6 +114,11 @@ final class TaskHelper {
       newRow.setProperty(PROP_DESCENDING, BeeConst.INT_TRUE);
     } else {
       newRow.removeProperty(PROP_DESCENDING);
+    }
+
+    Widget mailToggle = form.getWidgetByName(PROP_MAIL);
+    if (mailToggle instanceof InputBoolean && ((InputBoolean) mailToggle).isChecked()) {
+      newRow.setProperty(PROP_MAIL, BooleanValue.S_TRUE);
     }
 
     BeeRowSet rowSet = new BeeRowSet(viewName, form.getDataColumns());

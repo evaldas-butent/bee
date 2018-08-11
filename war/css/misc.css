@@ -522,6 +522,9 @@
 .bee-conf-packet {
   color: silver;
 }
+.bee-conf-packet-optional {
+  color: burlywood;
+}
 .bee-conf-packet-collapsed {
   color: blue;
   cursor: pointer;
@@ -625,6 +628,7 @@
 .bee-spec-options {
   flex: 1;
   overflow: auto;
+  margin-top: 10px;
 }
 .bee-spec-box {
   overflow: auto;
@@ -649,12 +653,16 @@
   width: 150px;
   height: 150px;
   margin: 10px;
+  padding: 10px;
+  box-sizing: border-box;
   background-color: white;
   border: 1px solid silver;
+  border-radius: 5px;
   display: flex;
   justify-content: space-around;
   flex-direction: column;
   text-align: center;
+  overflow: hidden;
 }
 .bee-spec-thumbnail-active:hover {
   cursor: pointer;
@@ -676,7 +684,7 @@
   border-collapse: collapse;
   margin-top: 10px;
 }
-.bee-spec-selectable tr td:nth-child(2) {
+.bee-spec-selectable tr td:nth-child(2), .bee-spec-selectable tr td:nth-child(4) {
   text-align: right;
 }
 .bee-spec-selectable td {
@@ -740,6 +748,10 @@
   color: white;
 }
 
+.bee-reminder-dialog-radioTask {
+  margin-left: 20px;
+}
+
 .bee-reminder-dialog-remindButton {
    background-color: #1eb2d8;
    color: white;
@@ -771,9 +783,4 @@
 }
 
 .bee-Rights-object-selector-cell{
-}
-
-.bee-GridMenu-addicted .bee-GridMenu-label {
-  width: 250px;
-  text-align: center;
 }

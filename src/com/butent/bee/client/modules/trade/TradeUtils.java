@@ -50,6 +50,10 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.OperationType;
@@ -64,12 +68,15 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.StringList;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public final class TradeUtils {
@@ -782,6 +789,18 @@ public final class TradeUtils {
     return false;
   }
 
+  static boolean isDocumentValueId(IsRow row, String colName) {
+    return DataUtils.isId(getDocumentRelation(row, colName));
+  }
+
+  static boolean isDocumentValueTrue(IsRow row, String colName) {
+    if (row == null) {
+      return false;
+    } else {
+      return Data.isTrue(VIEW_TRADE_DOCUMENTS, row, colName);
+    }
+  }
+
   static boolean documentPriceIsParentCost(IsRow row) {
     return documentPriceIsParentCost(getDocumentOperationType(row), getDocumentItemPrice(row));
   }
@@ -789,7 +808,8 @@ public final class TradeUtils {
   static boolean documentPriceIsParentCost(OperationType operationType, ItemPrice itemPrice) {
     return operationType != null && operationType.consumesStock()
         && (itemPrice == ItemPrice.COST
-        || itemPrice == null && operationType.getDefaultPrice() == ItemPrice.COST);
+        || itemPrice == null && operationType.getDefaultPrice() == ItemPrice.COST
+        && !operationType.hasDebt());
   }
 
   static Long getCompanyForPriceCalculation(IsRow row, OperationType operationType) {
@@ -836,7 +856,9 @@ public final class TradeUtils {
 
     options.put(COL_DISCOUNT_COMPANY, BeeUtils.toStringOrNull(company));
 
+    options.put(COL_OPERATION_TYPE, BeeUtils.toString(operationType.ordinal()));
     options.put(COL_DISCOUNT_OPERATION, BeeUtils.toStringOrNull(operation));
+
     if (operationType.requireOperationForPriceCalculation()) {
       options.put(Service.VAR_REQUIRED, COL_DISCOUNT_OPERATION);
     }
@@ -880,6 +902,40 @@ public final class TradeUtils {
     } else {
       return null;
     }
+  }
+
+  static Filter getFilterForCustomerReturn(Long customer, DateTime date, String n1, String n2) {
+    CompoundFilter filter = Filter.and();
+
+    if (DataUtils.isId(customer)) {
+      filter.add(Filter.equals(COL_TRADE_CUSTOMER, customer));
+    }
+
+    if (date != null) {
+      filter.add(Filter.isLess(COL_TRADE_DATE, new DateTimeValue(TimeUtils.startOfNextDay(date))));
+    }
+
+    if (BeeUtils.anyNotEmpty(n1, n2)) {
+      StringList numberColumns = StringList.of(COL_TRADE_NUMBER,
+          COL_TRADE_DOCUMENT_NUMBER_1, COL_TRADE_DOCUMENT_NUMBER_2);
+
+      Filter f1 = BeeUtils.isEmpty(n1) ? null : Filter.anyContains(numberColumns, n1);
+      Filter f2 = (BeeUtils.isEmpty(n2) || Objects.equals(n1, n2))
+          ? null : Filter.anyContains(numberColumns, n2);
+
+      filter.add(Filter.or(f1, f2));
+    }
+
+    filter.add(Filter.any(COL_TRADE_DOCUMENT_PHASE, TradeDocumentPhase.getStockPhases()));
+
+    EnumSet<OperationType> operationTypes = EnumSet.of(OperationType.SALE, OperationType.POS);
+    filter.add(Filter.any(COL_OPERATION_TYPE, operationTypes));
+
+    filter.add(Filter.isPositive(COL_TRADE_ITEM_QUANTITY));
+    filter.add(Filter.or(Filter.isNull(ALS_RETURNED_QTY),
+        Filter.compareWithColumn(COL_TRADE_ITEM_QUANTITY, Operator.GT, ALS_RETURNED_QTY)));
+
+    return filter;
   }
 
   private static Multimap<String, Element> getNamedElements(Element element) {

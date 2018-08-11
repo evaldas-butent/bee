@@ -7,13 +7,10 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
@@ -25,7 +22,6 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -71,45 +67,44 @@ public abstract class InvoiceBuilder extends AbstractGridInterceptor
       mainItem = null;
     }
     RowFactory.createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo,
-        newRow, Modality.ENABLED, null, new InvoiceForm(mainItem), null, new RowCallback() {
+        newRow, Opener.DETACHED, new InvoiceForm(mainItem) {
           @Override
-          public void onSuccess(final BeeRow row) {
-            ParameterList args = getRequestArgs();
+          public boolean saveOnPrintNewRow() {
+            return false;
+          }
+        }, row -> {
+          ParameterList args = getRequestArgs();
 
-            if (args != null) {
-              Map<String, String> params = new HashMap<>();
+          if (args != null) {
+            Map<String, String> params = new HashMap<>();
 
-              params.put(Service.VAR_TABLE, Data.getViewTable(getViewName()));
-              params.put(getRelationColumn(), BeeUtils.toString(row.getId()));
-              params.put(Service.VAR_DATA, DataUtils.buildIdList(data.getRowIds()));
-              params.put(COL_CURRENCY, row.getString(dataInfo.getColumnIndex(COL_CURRENCY)));
+            params.put(Service.VAR_TABLE, Data.getViewTable(getViewName()));
+            params.put(getRelationColumn(), BeeUtils.toString(row.getId()));
+            params.put(Service.VAR_DATA, DataUtils.buildIdList(data.getRowIds()));
+            params.put(COL_CURRENCY, row.getString(dataInfo.getColumnIndex(COL_CURRENCY)));
 
-              if (mainItem != null && DataUtils.isId(mainItem.get())) {
-                params.put(ClassifierConstants.COL_ITEM, BeeUtils.toString(mainItem.get()));
-              }
-              for (String prm : params.keySet()) {
-                if (!args.hasParameter(prm)) {
-                  args.addDataItem(prm, params.get(prm));
-                }
-              }
-              BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-                @Override
-                public void onResponse(ResponseObject response) {
-                  response.notify(getGridView());
-
-                  if (!response.hasErrors()) {
-                    Popup popup = UiHelper.getParentPopup(getGridView().getGrid());
-
-                    if (popup != null) {
-                      popup.close();
-                    }
-                    Data.resetLocal(getViewName());
-                    RowEditor.openForm(dataInfo.getEditForm(), dataInfo,
-                        Filter.compareId(row.getId()), Opener.MODAL);
-                  }
-                }
-              });
+            if (mainItem != null && DataUtils.isId(mainItem.get())) {
+              params.put(ClassifierConstants.COL_ITEM, BeeUtils.toString(mainItem.get()));
             }
+            for (String prm : params.keySet()) {
+              if (!args.hasParameter(prm)) {
+                args.addDataItem(prm, params.get(prm));
+              }
+            }
+            BeeKeeper.getRpc().makePostRequest(args, response -> {
+              response.notify(getGridView());
+
+              if (!response.hasErrors()) {
+                Popup popup = UiHelper.getParentPopup(getGridView().getGrid());
+
+                if (popup != null) {
+                  popup.close();
+                }
+                Data.resetLocal(getViewName());
+                RowEditor.openForm(dataInfo.getEditForm(), dataInfo,
+                    Filter.compareId(row.getId()));
+              }
+            });
           }
         });
   }
@@ -147,12 +142,8 @@ public abstract class InvoiceBuilder extends AbstractGridInterceptor
       getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
-    Queries.getRowSet(getViewName(), null, Filter.idIn(ids), new Queries.RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet data) {
-        createInvoice(data, InvoiceBuilder.this);
-      }
-    });
+    Queries.getRowSet(getViewName(), null, Filter.idIn(ids),
+        data -> createInvoice(data, InvoiceBuilder.this));
   }
 
   protected void createInvoice(BeeRowSet data, BiConsumer<BeeRowSet, BeeRow> consumer) {

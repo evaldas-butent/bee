@@ -31,6 +31,7 @@ public final class DocumentConstants {
   public static final String VIEW_CRITERIA_GROUPS = "CriteriaGroups";
   public static final String VIEW_CRITERIA = "Criteria";
   public static final String VIEW_DOCUMENT_TYPES = "DocumentTypes";
+  public static final String VIEW_DOCUMENT_REMINDERS = "DocumentReminders";
 
   public static final String COL_CATEGORY_NAME = "Name";
 
@@ -50,6 +51,14 @@ public final class DocumentConstants {
   public static final String COL_DOCUMENT_STATUS_MAIN = "Main";
   public static final String COL_DOCUMENT_EXPIRES = "Expires";
   public static final String COL_DOCUMENT_USER = "User";
+
+  public static final String COL_DOCUMENT_REMINDER_ISTASK = "IsTask";
+  public static final String COL_DOCUMENT_REMINDER_USER = "User";
+  public static final String COL_DOCUMENT_REMINDER_TASK_TEMPLATE = "TaskTemplate";
+  public static final String COL_DOCUMENT_REMINDER_EXECUTORS = "Executors";
+  public static final String COL_DOCUMENT_REMINDER_DATE = "ReminderDate";
+  public static final String COL_DOCUMENT_REMINDER_ACTIVE = "Active";
+  public static final String COL_DOCUMENT_REMINDER_USER_DATE = "UserDate";
 
   public static final String COL_DOCUMENT_TEMPLATE = "Template";
   public static final String COL_DOCUMENT_TEMPLATE_NAME = "Name";

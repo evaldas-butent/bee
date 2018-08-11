@@ -5,8 +5,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
@@ -19,14 +17,9 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.UserInfo;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
-import com.butent.bee.client.data.Queries.RowSetCallback;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.i18n.Format;
@@ -34,6 +27,7 @@ import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -43,7 +37,6 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
@@ -129,33 +122,17 @@ public class DocumentForm extends DocumentDataForm {
   }
 
   private final Button newTemplateButton = new Button(Localized.dictionary()
-      .newDocumentTemplate(), new ClickHandler() {
-    @Override
-    public void onClick(ClickEvent event) {
-      RowFactory.createRow(VIEW_DOCUMENT_TEMPLATES, Modality.ENABLED, new RowCallback() {
-        @Override
-        public void onSuccess(final BeeRow row) {
-          DocumentsHandler.copyDocumentData(getLongValue(COL_DOCUMENT_DATA), new IdCallback() {
-            @Override
-            public void onSuccess(Long dataId) {
-              Queries.update(VIEW_DOCUMENT_TEMPLATES, Filter.compareId(row.getId()),
-                  COL_DOCUMENT_DATA, new LongValue(dataId), new IntCallback() {
-                    @Override
-                    public void onSuccess(Integer res) {
-                      Long oldId = Data.getLong(VIEW_DOCUMENT_TEMPLATES, row, COL_DOCUMENT_DATA);
+      .newDocumentTemplate(), event -> RowFactory.createRow(VIEW_DOCUMENT_TEMPLATES, Opener.MODAL,
+          row -> DocumentsHandler.copyDocumentData(getLongValue(COL_DOCUMENT_DATA),
+              dataId -> Queries.update(VIEW_DOCUMENT_TEMPLATES, Filter.compareId(row.getId()),
+                  COL_DOCUMENT_DATA, new LongValue(dataId), res -> {
+                    Long oldId = Data.getLong(VIEW_DOCUMENT_TEMPLATES, row, COL_DOCUMENT_DATA);
 
-                      if (DataUtils.isId(oldId)) {
-                        Queries.deleteRow(VIEW_DOCUMENT_DATA, oldId);
-                      }
-                      RowEditor.open(VIEW_DOCUMENT_TEMPLATES, row.getId(), Opener.MODAL);
+                    if (DataUtils.isId(oldId)) {
+                      Queries.deleteRow(VIEW_DOCUMENT_DATA, oldId);
                     }
-                  });
-            }
-          });
-        }
-      });
-    }
-  });
+                    RowEditor.open(VIEW_DOCUMENT_TEMPLATES, row.getId());
+                  }))));
   private ChildGrid itemsGrid;
   private Relations rel;
 
@@ -197,15 +174,26 @@ public class DocumentForm extends DocumentDataForm {
         ((HasEnabled) category).setEnabled(newRow);
       }
     }
-    if (getHeaderView() == null) {
+
+    HeaderView header = getHeaderView();
+
+    if (header == null) {
       return;
     }
-    getHeaderView().clearCommandPanel();
+    header.clearCommandPanel();
+
+    final DocumentsReminder documentsReminder = new DocumentsReminder(row.getId(),
+        Data.getLong(VIEW_DOCUMENTS, row, COL_COMPANY));
+
+    documentsReminder.getReminderLabel().addClickHandler(event -> {
+      documentsReminder.showDialog();
+    });
+    header.addCommandItem(documentsReminder.getReminderLabel());
 
     if (!newRow && user.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
-      getHeaderView().addCommandItem(newTemplateButton);
+      header.addCommandItem(newTemplateButton);
     }
-    super.onStart(form);
+    super.afterRefresh(form, row);
   }
 
   @Override
@@ -299,120 +287,114 @@ public class DocumentForm extends DocumentDataForm {
 
   @Override
   protected void parseContent(String content, Long dataId, final Consumer<String> consumer) {
-    super.parseContent(content, dataId, new Consumer<String>() {
-      @Override
-      public void accept(String input) {
-        final Map<String, BeeRow> relations = new HashMap<>();
+    super.parseContent(content, dataId, input -> {
+      final Map<String, BeeRow> relations = new HashMap<>();
 
-        final List<String> parts = Lists.newArrayList(Splitter
-            .on("<!--{" + VIEW_DOCUMENT_ITEMS + "}-->").split(input));
+      final List<String> parts = Lists.newArrayList(Splitter
+          .on("<!--{" + VIEW_DOCUMENT_ITEMS + "}-->").split(input));
 
-        final Map<String, Double> globals = new HashMap<>();
-        final Holder<Integer> holder = Holder.of(rel.getRowChildren(true).size() + parts.size());
+      final Map<String, Double> globals = new HashMap<>();
+      final Holder<Integer> holder = Holder.of(rel.getRowChildren(true).size() + parts.size());
 
-        final BiConsumer<Integer, String> executor = new BiConsumer<Integer, String>() {
-          @Override
-          public void accept(Integer index, String value) {
-            if (index != null) {
-              parts.set(index, value);
-            }
-            holder.set(holder.get() - 1);
-
-            if (!BeeUtils.isPositive(holder.get())) {
-              StringBuilder sb = new StringBuilder();
-
-              for (String part : parts) {
-                sb.append(part);
-              }
-              String result = sb.toString();
-
-              for (String global : globals.keySet()) {
-                result = result.replace("{" + global + "}",
-                    BeeUtils.nonZero(globals.get(global))
-                        ? BeeUtils.toString(globals.get(global), 2) : "");
-              }
-              for (BeeColumn column : getFormView().getDataColumns()) {
-                result = result.replace("{" + COL_DOCUMENT + column.getId() + "}",
-                    BeeUtils.nvl(getParsedValue(getViewName(), getActiveRow(), column), ""));
-              }
-              for (RowChildren garden : rel.getRowChildren(true)) {
-                String relation = Data.getColumnRelation(garden.getRepository(),
-                    garden.getChildColumn());
-
-                for (BeeColumn column : Data.getColumns(relation)) {
-                  result = result.replace("{" + relation + column.getId() + "}",
-                      BeeUtils.nvl(getParsedValue(relation, relations.get(relation), column), ""));
-                }
-              }
-              consumer.accept(result);
-            }
+      final BiConsumer<Integer, String> executor = new BiConsumer<Integer, String>() {
+        @Override
+        public void accept(Integer index, String value) {
+          if (index != null) {
+            parts.set(index, value);
           }
+          holder.set(holder.get() - 1);
 
-          private String getParsedValue(String viewName, IsRow row, BeeColumn column) {
-            String val = null;
+          if (!BeeUtils.isPositive(holder.get())) {
+            StringBuilder sb = new StringBuilder();
 
-            if (row != null) {
-              switch (column.getType()) {
-                case BOOLEAN:
-                  val = BeeUtils.unbox(Data.getBoolean(viewName, row, column.getId()))
-                      ? Localized.dictionary().yes() : Localized.dictionary().no();
-                  break;
+            for (String part : parts) {
+              sb.append(part);
+            }
+            String result = sb.toString();
 
-                case DATE:
-                  JustDate date = Data.getDate(viewName, row, column.getId());
-                  if (date != null) {
-                    val = Format.renderDate(date);
-                  }
-                  break;
+            for (String global : globals.keySet()) {
+              result = result.replace("{" + global + "}",
+                  BeeUtils.nonZero(globals.get(global))
+                      ? BeeUtils.toString(globals.get(global), 2) : "");
+            }
+            for (BeeColumn column : getFormView().getDataColumns()) {
+              result = result.replace("{" + COL_DOCUMENT + column.getId() + "}",
+                  BeeUtils.nvl(getParsedValue(getViewName(), getActiveRow(), column), ""));
+            }
+            for (RowChildren garden : rel.getRowChildren(true)) {
+              String relation = Data.getColumnRelation(garden.getRepository(),
+                  garden.getChildColumn());
 
-                case DATE_TIME:
-                  DateTime time = Data.getDateTime(viewName, row, column.getId());
-                  if (time != null) {
-                    val = Format.renderDateTime(time);
-                  }
-                  break;
-
-                default:
-                  String enumKey = column.getEnumKey();
-
-                  if (!BeeUtils.isEmpty(enumKey)) {
-                    val = EnumUtils.getLocalizedCaption(enumKey,
-                        Data.getInteger(viewName, row, column.getId()),
-                        Localized.dictionary());
-                  } else {
-                    val = Data.getString(viewName, row, column.getId());
-                  }
-                  break;
+              for (BeeColumn column : Data.getColumns(relation)) {
+                result = result.replace("{" + relation + column.getId() + "}",
+                    BeeUtils.nvl(getParsedValue(relation, relations.get(relation), column), ""));
               }
             }
-            return val;
-          }
-        };
-        for (RowChildren garden : rel.getRowChildren(true)) {
-          final String relation = Data.getColumnRelation(garden.getRepository(),
-              garden.getChildColumn());
-          Long id = BeeUtils.peek(DataUtils.parseIdList(garden.getChildrenIds()));
-
-          if (DataUtils.isId(id)) {
-            Queries.getRow(relation, id, new RowCallback() {
-              @Override
-              public void onSuccess(BeeRow result) {
-                relations.put(relation, result);
-                executor.accept(null, null);
-              }
-            });
-          } else {
-            executor.accept(null, null);
+            consumer.accept(result);
           }
         }
-        for (int i = 0; i < parts.size(); i++) {
-          String part = parts.get(i);
 
-          if (i % 2 > 0 && i < parts.size() - 1) {
-            parseItems(part, i, executor, globals);
-          } else {
-            executor.accept(i, part);
+        private String getParsedValue(String viewName, IsRow row, BeeColumn column) {
+          String val = null;
+
+          if (row != null) {
+            switch (column.getType()) {
+              case BOOLEAN:
+                val = BeeUtils.unbox(Data.getBoolean(viewName, row, column.getId()))
+                    ? Localized.dictionary().yes() : Localized.dictionary().no();
+                break;
+
+              case DATE:
+                JustDate date = Data.getDate(viewName, row, column.getId());
+                if (date != null) {
+                  val = Format.renderDate(date);
+                }
+                break;
+
+              case DATE_TIME:
+                DateTime time = Data.getDateTime(viewName, row, column.getId());
+                if (time != null) {
+                  val = Format.renderDateTime(time);
+                }
+                break;
+
+              default:
+                String enumKey = column.getEnumKey();
+
+                if (!BeeUtils.isEmpty(enumKey)) {
+                  val = EnumUtils.getLocalizedCaption(enumKey,
+                      Data.getInteger(viewName, row, column.getId()),
+                      Localized.dictionary());
+                } else {
+                  val = Data.getString(viewName, row, column.getId());
+                }
+                break;
+            }
           }
+          return val;
+        }
+      };
+      for (RowChildren garden : rel.getRowChildren(true)) {
+        final String relation = Data.getColumnRelation(garden.getRepository(),
+            garden.getChildColumn());
+        Long id = BeeUtils.peek(DataUtils.parseIdList(garden.getChildrenIds()));
+
+        if (DataUtils.isId(id)) {
+          Queries.getRow(relation, id, result -> {
+            relations.put(relation, result);
+            executor.accept(null, null);
+          });
+        } else {
+          executor.accept(null, null);
+        }
+      }
+      for (int i = 0; i < parts.size(); i++) {
+        String part = parts.get(i);
+
+        if (i % 2 > 0 && i < parts.size() - 1) {
+          parseItems(part, i, executor, globals);
+        } else {
+          executor.accept(i, part);
         }
       }
     });
@@ -434,15 +416,12 @@ public class DocumentForm extends DocumentDataForm {
       final String formName = event.getNewRowFormName();
       final DataSelector selector = event.getSelector();
 
-      Queries.getRow(TBL_COMPANIES, company, new RowCallback() {
-        @Override
-        public void onSuccess(BeeRow result) {
-          RelationUtils.updateRow(Data.getDataInfo(ServiceConstants.VIEW_SERVICE_OBJECTS),
-              ServiceConstants.COL_SERVICE_CUSTOMER, row,
-              Data.getDataInfo(TBL_COMPANIES), result, true);
+      Queries.getRow(TBL_COMPANIES, company, result -> {
+        RelationUtils.updateRow(Data.getDataInfo(ServiceConstants.VIEW_SERVICE_OBJECTS),
+            ServiceConstants.COL_SERVICE_CUSTOMER, row,
+            Data.getDataInfo(TBL_COMPANIES), result, true);
 
-          RowFactory.createRelatedRow(formName, row, selector, null);
-        }
+        RowFactory.createRelatedRow(formName, row, selector);
       });
     }
   }
@@ -498,60 +477,54 @@ public class DocumentForm extends DocumentDataForm {
               DataUtils.buildIdList(companies.subList(1, companies.size())));
         }
 
-        Queries.getRow(VIEW_COMPANIES, companies.get(0), new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            RelationUtils.updateRow(Data.getDataInfo(TaskConstants.VIEW_TASKS),
-                COL_COMPANY, row, Data.getDataInfo(VIEW_COMPANIES), result, true);
+        Queries.getRow(VIEW_COMPANIES, companies.get(0), result -> {
+          RelationUtils.updateRow(Data.getDataInfo(TaskConstants.VIEW_TASKS),
+              COL_COMPANY, row, Data.getDataInfo(VIEW_COMPANIES), result, true);
 
-            latch.set(latch.get() - 1);
-            if (latch.get() <= 0) {
-              RowFactory.createRelatedRow(formName, row, selector, null);
-            }
+          latch.set(latch.get() - 1);
+          if (latch.get() <= 0) {
+            RowFactory.createRelatedRow(formName, row, selector);
           }
         });
       }
 
       if (!persons.isEmpty()) {
         Queries.getRowSet(VIEW_COMPANY_PERSONS, null, Filter.equals(COL_PERSON, persons.get(0)),
-            new RowSetCallback() {
-              @Override
-              public void onSuccess(BeeRowSet result) {
-                BeeRow contact = null;
+            result -> {
+              BeeRow contact = null;
 
-                int size = result.getNumberOfRows();
-                if (size == 1) {
-                  contact = result.getRow(0);
+              int size = result.getNumberOfRows();
+              if (size == 1) {
+                contact = result.getRow(0);
 
-                } else if (size > 1 && !companies.isEmpty()) {
-                  Long company = companies.get(0);
-                  int index = result.getColumnIndex(COL_COMPANY);
+              } else if (size > 1 && !companies.isEmpty()) {
+                Long company = companies.get(0);
+                int index = result.getColumnIndex(COL_COMPANY);
 
-                  for (BeeRow r : result) {
-                    if (company.equals(r.getLong(index))) {
-                      contact = r;
-                      break;
-                    }
+                for (BeeRow r : result) {
+                  if (company.equals(r.getLong(index))) {
+                    contact = r;
+                    break;
                   }
                 }
+              }
 
-                if (contact == null) {
+              if (contact == null) {
+                row.setProperty(Relations.PFX_RELATED + VIEW_PERSONS,
+                    DataUtils.buildIdList(persons));
+              } else {
+                RelationUtils.updateRow(Data.getDataInfo(TaskConstants.VIEW_TASKS),
+                    COL_CONTACT, row, Data.getDataInfo(VIEW_COMPANY_PERSONS), contact, true);
+
+                if (persons.size() > 1) {
                   row.setProperty(Relations.PFX_RELATED + VIEW_PERSONS,
-                      DataUtils.buildIdList(persons));
-                } else {
-                  RelationUtils.updateRow(Data.getDataInfo(TaskConstants.VIEW_TASKS),
-                      COL_CONTACT, row, Data.getDataInfo(VIEW_COMPANY_PERSONS), contact, true);
-
-                  if (persons.size() > 1) {
-                    row.setProperty(Relations.PFX_RELATED + VIEW_PERSONS,
-                        DataUtils.buildIdList(persons.subList(1, persons.size())));
-                  }
+                      DataUtils.buildIdList(persons.subList(1, persons.size())));
                 }
+              }
 
-                latch.set(latch.get() - 1);
-                if (latch.get() <= 0) {
-                  RowFactory.createRelatedRow(formName, row, selector, null);
-                }
+              latch.set(latch.get() - 1);
+              if (latch.get() <= 0) {
+                RowFactory.createRelatedRow(formName, row, selector);
               }
             });
       }
@@ -580,20 +553,17 @@ public class DocumentForm extends DocumentDataForm {
     final Holder<Integer> holder = Holder.of(c);
     final String[] parts = new String[c];
 
-    final BiConsumer<Integer, String> executor = new BiConsumer<Integer, String>() {
-      @Override
-      public void accept(Integer index, String value) {
-        parts[index] = value;
-        holder.set(holder.get() - 1);
+    final BiConsumer<Integer, String> executor = (index, value) -> {
+      parts[index] = value;
+      holder.set(holder.get() - 1);
 
-        if (!BeeUtils.isPositive(holder.get())) {
-          StringBuilder sb = new StringBuilder();
+      if (!BeeUtils.isPositive(holder.get())) {
+        StringBuilder sb = new StringBuilder();
 
-          for (String part : parts) {
-            sb.append(part);
-          }
-          consumer.accept(idx, sb.toString());
+        for (String part : parts) {
+          sb.append(part);
         }
+        consumer.accept(idx, sb.toString());
       }
     };
     double qtyAmount = 0;
@@ -624,10 +594,8 @@ public class DocumentForm extends DocumentDataForm {
       String itemContent = row.getString(contentIdx);
       final int index = i;
 
-      Consumer<String> contentConsumer = new Consumer<String>() {
-        @Override
-        public void accept(String input) {
-          executor.accept(index, content.replace("{" + COL_DOCUMENT_CONTENT + "}", input)
+      Consumer<String> contentConsumer =
+          input -> executor.accept(index, content.replace("{" + COL_DOCUMENT_CONTENT + "}", input)
               .replace("{Index}", BeeUtils.nvl(ordinal, ""))
               .replace("{" + COL_DESCRIPTION + "}", descr)
               .replace("{" + COL_TRADE_ITEM_QUANTITY + "}",
@@ -641,8 +609,6 @@ public class DocumentForm extends DocumentDataForm {
               .replace("{" + COL_TRADE_VAT_PLUS + COL_TRADE_AMOUNT + "}",
                   BeeUtils.nonZero(vat.get() + sum.get())
                       ? BeeUtils.toString(vat.get() + sum.get(), 2) : ""));
-        }
-      };
       if (!BeeUtils.isEmpty(itemContent)) {
         super.parseContent(itemContent, row.getLong(dataIdx), contentConsumer);
       } else {

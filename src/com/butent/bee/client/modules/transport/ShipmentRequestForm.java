@@ -19,6 +19,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -40,7 +41,6 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -61,7 +61,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.CssUnit;
-import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.Overflow;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -129,14 +128,29 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
   private FaLabel copyAction;
   private Flow container;
+  private boolean hasResponsibleManager;
 
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
-    if (BeeUtils.same(editableWidget.getColumnId(), COL_QUERY_FREIGHT_INSURANCE)) {
-      editableWidget.addCellValidationHandler(event -> {
-        styleRequiredField(NAME_VALUE_LABEL, event.getNewValue() != null);
-        return true;
-      });
+    switch (editableWidget.getColumnId()) {
+      case COL_QUERY_FREIGHT_INSURANCE:
+        editableWidget.addCellValidationHandler(event -> {
+          styleRequiredField(NAME_VALUE_LABEL, event.getNewValue() != null);
+          return true;
+        });
+        break;
+
+      case COL_EXPEDITION:
+        if (widget instanceof DataSelector) {
+          ((DataSelector) widget).addSelectorHandler(event -> {
+            if (!hasResponsibleManager && event.isChanged()) {
+              setResponsibleManager(Data.getLong(event.getRelatedViewName(), event.getRelatedRow(),
+                  COL_QUERY_MANAGER), Data.getLong(event.getRelatedViewName(),
+                  event.getRelatedRow(), COL_QUERY_MANAGER + COL_PERSON));
+            }
+          });
+        }
+        break;
     }
     super.afterCreateEditableWidget(editableWidget, widget);
   }
@@ -345,26 +359,29 @@ class ShipmentRequestForm extends PrintFormInterceptor {
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-    fillNewRowValues(form, newRow);
+  public void onStartNewRow(FormView form, IsRow row) {
+    fillNewRowValues(form, row);
 
     Queries.getRowSet(VIEW_EXPEDITION_TYPES, null, Filter.notNull(COL_SELF_SERVICE),
         Order.ascending(COL_SELF_SERVICE, COL_EXPEDITION_TYPE_NAME), typ -> {
 
           if (!typ.isEmpty()) {
             RelationUtils.updateRow(Data.getDataInfo(getFormView().getViewName()),
-                COL_EXPEDITION, newRow, Data.getDataInfo(typ.getViewName()), typ.getRow(0), true);
+                COL_EXPEDITION, row, Data.getDataInfo(typ.getViewName()), typ.getRow(0), true);
+            getFormView().refreshBySource(COL_EXPEDITION);
           }
           Long responsibility = Global.getParameterRelation(PRM_SELF_SERVICE_RESPONSIBILITY);
 
           if (DataUtils.isId(responsibility)) {
             Queries.getRowSet(VIEW_COMPANY_USERS, Arrays.asList(COL_USER, COL_COMPANY_PERSON),
-                Filter.and(Filter.equals(COL_COMPANY, Data.getLong(VIEW_SHIPMENT_REQUESTS, newRow,
-                    COL_COMPANY)), Filter.equals(COL_COMPANY_USER_RESPONSIBILITY, responsibility)
-                ), resp -> {
+                Filter.and(Filter.equals(COL_COMPANY, BeeKeeper.getUser().getCompany()),
+                    Filter.equals(COL_COMPANY_USER_RESPONSIBILITY, responsibility)), resp -> {
+
                   if (!resp.isEmpty()) {
                     setResponsibleManager(resp.getLong(0, 0), resp.getLong(0, 1));
-                  } else {
+                    hasResponsibleManager = true;
+
+                  } else if (!typ.isEmpty()) {
                     setResponsibleManager(typ.getLong(0, typ.getColumnIndex(COL_QUERY_MANAGER)),
                         typ.getLong(0, typ.getColumnIndex(COL_QUERY_MANAGER + COL_PERSON)));
                   }
@@ -374,7 +391,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
                 typ.getLong(0, typ.getColumnIndex(COL_QUERY_MANAGER + COL_PERSON)));
           }
         });
-    super.onStartNewRow(form, oldRow, newRow);
+    super.onStartNewRow(form, row);
   }
 
   private void fillNewRowValues(FormView form, IsRow newRow) {
@@ -422,9 +439,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
         @Override
         public Widget getActionWidget() {
-          FaLabel action = new FaLabel(FontAwesome.ENVELOPE_O);
-          action.setTitle(Localized.dictionary().trWriteEmail());
-          return action;
+          return new Button(Localized.dictionary().ecOrderCommandMail());
         }
       };
     }
@@ -640,7 +655,6 @@ class ShipmentRequestForm extends PrintFormInterceptor {
       password = BeeUtils.randomString(6);
 
       messages.add(BeeUtils.join(": ", dic.loginUserName(), login));
-      messages.add(BeeUtils.join(": ", dic.loginPassword(), password));
     } else {
       password = null;
     }
@@ -742,7 +756,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
                       @Override
                       public void run() {
                         if (Objects.equals(placesRowSets.size(), ++copiedGrids)) {
-                          RowEditor.open(getViewName(), shipmentRequestRow.getId(), Opener.MODAL);
+                          RowEditor.open(getViewName(), shipmentRequestRow.getId());
                         }
                       }
                     };
@@ -779,42 +793,25 @@ class ShipmentRequestForm extends PrintFormInterceptor {
         acceptedTermsConsumer.accept(true);
       } else {
         FlowPanel panel = new FlowPanel();
-        StyleUtils.setHeight(panel, 160);
-        StyleUtils.setWidth(panel, 300);
 
-        HtmlTable table = new HtmlTable();
+        Label label = new Label(terms);
+        StyleUtils.setHeight(label, 450);
+        StyleUtils.setWidth(label, 550);
+        StyleUtils.setOverflow(label, StyleUtils.ScrollBars.BOTH, Overflow.AUTO);
+        panel.add(label);
 
-        FlowPanel fp = new FlowPanel();
-        StyleUtils.setHeight(fp, 100);
-        StyleUtils.setWidth(fp, 300);
+        panel.add(new Label(BeeConst.HTML_NBSP));
 
-        Label commonTerms = new Label(Localized.dictionary().trAgreeWithTermsAndConditions());
-        table.setWidget(0, 0, commonTerms, StyleUtils.className(FontWeight.BOLD));
-        table.getCellFormatter().setColSpan(1, 0, 2);
-        table.setWidget(1, 0, fp);
-
-        FaLabel question = new FaLabel(FontAwesome.QUESTION_CIRCLE);
-        question.addClickHandler(clickEvent -> {
-          fp.clear();
-          fp.add(new Label(terms));
-          StyleUtils.setHeight(fp, 400);
-          StyleUtils.setHeight(panel, 460);
-          StyleUtils.setOverflow(fp, StyleUtils.ScrollBars.VERTICAL, Overflow.AUTO);
-          StyleUtils.setOverflow(fp, StyleUtils.ScrollBars.HORIZONTAL, Overflow.AUTO);
-        });
-        table.setWidget(0, 1, question);
-
-        panel.add(table);
-
-        Global.showModalWidget(Localized.dictionary().trRequestCommonTerms(), panel);
-
-        Button no = new Button(Localized.dictionary().no().toUpperCase());
         Button yes = new Button(Localized.dictionary().trAgreeWithConditions().toUpperCase());
         StyleUtils.setColor(yes, "white");
         StyleUtils.setBackgroundColor(yes, "#6bae45");
+        Button no = new Button(Localized.dictionary().no().toUpperCase());
 
-        table.setWidget(2, 0, yes);
-        table.setWidget(2, 1, no);
+        Flow actionPanel = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL_CENTER);
+        actionPanel.add(yes);
+        actionPanel.add(no);
+        panel.add(actionPanel);
+
         no.addClickHandler(clickEvent -> {
           acceptedTermsConsumer.accept(false);
           UiHelper.closeDialog(panel);
@@ -823,6 +820,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
           acceptedTermsConsumer.accept(true);
           UiHelper.closeDialog(panel);
         });
+        Global.showModalWidget(Localized.dictionary().trRequestCommonTerms(), panel);
       }
     });
   }
@@ -1171,7 +1169,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
       if (!BeeUtils.isEmpty(viewName)) {
         Long id = BeeUtils.nvl(assessment, order);
         Label label = new Label(BeeUtils.joinWords(loc.trOrder(), id));
-        label.addClickHandler((e) -> RowEditor.open(viewName, id, Opener.MODAL));
+        label.addClickHandler((e) -> RowEditor.open(viewName, id));
         ((HasWidgets) widget).add(label);
       }
     }
@@ -1210,10 +1208,10 @@ class ShipmentRequestForm extends PrintFormInterceptor {
   }
 
   private void setResponsibleManager(Long manager, Long managerPerson) {
-    if (DataUtils.isId(manager)) {
-      IsRow activeRow = getActiveRow();
-      String viewName = getViewName();
+    IsRow activeRow = getActiveRow();
+    String viewName = getViewName();
 
+    if (DataUtils.isId(manager)) {
       Data.setValue(viewName, activeRow, COL_QUERY_MANAGER, manager);
 
       Queries.getRow(TBL_COMPANY_PERSONS, managerPerson, row -> {
@@ -1223,6 +1221,10 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
         getFormView().refresh(false, false);
       });
+    } else {
+      Data.clearCell(viewName, activeRow, COL_QUERY_MANAGER);
+      RelationUtils.clearRelatedValues(Data.getDataInfo(viewName), COL_QUERY_MANAGER, activeRow);
+      getFormView().refresh(false, false);
     }
   }
 }

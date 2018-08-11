@@ -15,7 +15,6 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
@@ -157,14 +156,11 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     ParameterList parameters = createArgs(SVC_CREATE_DOCUMENT);
     parameters.addDataItem(VAR_DOCUMENT, tradeDocument.serialize());
 
-    BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasErrors()) {
-          callback.onFailure(response.getErrors());
-        } else {
-          callback.onSuccess(response.getResponseAsLong());
-        }
+    BeeKeeper.getRpc().makeRequest(parameters, response -> {
+      if (response.hasErrors()) {
+        callback.onFailure(response.getErrors());
+      } else {
+        callback.onSuccess(response.getResponseAsLong());
       }
     });
   }
@@ -178,32 +174,29 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     ParameterList parameters = createArgs(SVC_GET_ITEM_STOCK_BY_WAREHOUSE);
     parameters.addQueryItem(COL_ITEM, item);
 
-    BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        List<Triplet<String, Double, Double>> result = new ArrayList<>();
+    BeeKeeper.getRpc().makeRequest(parameters, response -> {
+      List<Triplet<String, Double, Double>> result = new ArrayList<>();
 
-        if (response.hasResponse()) {
-          String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+      if (response.hasResponse()) {
+        String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
 
-          if (arr != null) {
-            for (String s : arr) {
-              Triplet<String, String, String> triplet = Triplet.restore(s);
+        if (arr != null) {
+          for (String s : arr) {
+            Triplet<String, String, String> triplet = Triplet.restore(s);
 
-              String warehouse = triplet.getA();
-              Double stock = BeeUtils.toDoubleOrNull(triplet.getB());
-              Double reserved = BeeUtils.toDoubleOrNull(triplet.getC());
+            String warehouse = triplet.getA();
+            Double stock = BeeUtils.toDoubleOrNull(triplet.getB());
+            Double reserved = BeeUtils.toDoubleOrNull(triplet.getC());
 
-              if (!BeeUtils.isEmpty(warehouse)
-                  && (BeeUtils.isPositive(stock) || BeeUtils.isNegative(stock))) {
-                result.add(Triplet.of(warehouse, stock, reserved));
-              }
+            if (!BeeUtils.isEmpty(warehouse)
+                && (BeeUtils.isPositive(stock) || BeeUtils.isNegative(stock))) {
+              result.add(Triplet.of(warehouse, stock, reserved));
             }
           }
         }
-
-        consumer.accept(result);
       }
+
+      consumer.accept(result);
     });
   }
 
@@ -221,20 +214,17 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     if (Objects.nonNull(dateTo)) {
       parameters.addDataItem(COL_DATE_TO, dateTo.serialize());
     }
-    BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        Map<ModuleAndSub, Map<String, Double>> reservationsInfo = new LinkedHashMap<>();
+    BeeKeeper.getRpc().makeRequest(parameters, response -> {
+      Map<ModuleAndSub, Map<String, Double>> reservationsInfo = new LinkedHashMap<>();
 
-        Codec.deserializeLinkedHashMap(response.getResponseAsString())
-            .forEach((k, v) -> {
-              Map<String, Double> map = new LinkedHashMap<>();
-              reservationsInfo.put(ModuleAndSub.parse(k), map);
-              Codec.deserializeLinkedHashMap(v)
-                  .forEach((s, q) -> map.put(s, BeeUtils.toDouble(q)));
-            });
-        consumer.accept(reservationsInfo);
-      }
+      Codec.deserializeLinkedHashMap(response.getResponseAsString())
+          .forEach((k, v) -> {
+            Map<String, Double> map = new LinkedHashMap<>();
+            reservationsInfo.put(ModuleAndSub.parse(k), map);
+            Codec.deserializeLinkedHashMap(v)
+                .forEach((s, q) -> map.put(s, BeeUtils.toDouble(q)));
+          });
+      consumer.accept(reservationsInfo);
     });
   }
 
@@ -252,17 +242,14 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     }
     parameters.addDataItem(VAR_RESERVATIONS, includeReservations);
 
-    BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        Multimap<Long, ItemQuantities> result = ArrayListMultimap.create();
+    BeeKeeper.getRpc().makeRequest(parameters, response -> {
+      Multimap<Long, ItemQuantities> result = ArrayListMultimap.create();
 
-        if (response.hasResponse()) {
-          Codec.deserializeMultiMap(response.getResponseAsString())
-              .forEach((k, v) -> result.put(BeeUtils.toLong(k), ItemQuantities.restore(v)));
-        }
-        consumer.accept(result);
+      if (response.hasResponse()) {
+        Codec.deserializeMultiMap(response.getResponseAsString())
+            .forEach((k, v) -> result.put(BeeUtils.toLong(k), ItemQuantities.restore(v)));
       }
+      consumer.accept(result);
     });
   }
 
@@ -323,6 +310,8 @@ public final class TradeKeeper implements HandlesAllDataEvents {
         new TradeDebtsGrid(DebtKind.PAYABLE));
     GridFactory.registerGridInterceptor(GRID_TRADE_RECEIVABLES,
         new TradeDebtsGrid(DebtKind.RECEIVABLE));
+
+    GridFactory.registerGridInterceptor(GRID_ANALOGS_OF_ITEM, new AnalogsOfItemGrid());
 
     FormFactory.registerFormInterceptor(FORM_SALES_INVOICE, new SalesInvoiceForm());
     FormFactory.registerFormInterceptor(FORM_TRADE_DOCUMENT, new TradeDocumentForm());
@@ -442,21 +431,18 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     ParameterList params = createArgs(SVC_GET_DOCUMENT_TYPE_CAPTION_AND_FILTER);
     params.addDataItem(COL_DOCUMENT_TYPE, typeId);
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasResponse()) {
-          Pair<String, String> pair = Pair.restore(response.getResponseAsString());
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      if (response.hasResponse()) {
+        Pair<String, String> pair = Pair.restore(response.getResponseAsString());
 
-          String caption = pair.getA();
-          Filter filter = BeeUtils.isEmpty(pair.getB()) ? null : Filter.restore(pair.getB());
+        String caption = pair.getA();
+        Filter filter = BeeUtils.isEmpty(pair.getB()) ? null : Filter.restore(pair.getB());
 
-          String supplierKey = getDocumentGridSupplierKey(typeId);
+        String supplierKey = getDocumentGridSupplierKey(typeId);
 
-          GridFactory.createGrid(GRID_TRADE_DOCUMENTS, supplierKey, new TradeDocumentsGrid(),
-              EnumSet.of(UiOption.GRID), GridOptions.forCaptionAndFilter(caption, filter),
-              callback);
-        }
+        GridFactory.createGrid(GRID_TRADE_DOCUMENTS, supplierKey, new TradeDocumentsGrid(),
+            EnumSet.of(UiOption.GRID), GridOptions.forCaptionAndFilter(caption, filter),
+            callback);
       }
     });
   }
@@ -468,30 +454,27 @@ public final class TradeKeeper implements HandlesAllDataEvents {
         () -> {
           final long startTime = System.currentTimeMillis();
 
-          BeeKeeper.getRpc().makeRequest(createArgs(SVC_REBUILD_STOCK), new ResponseCallback() {
-            @Override
-            public void onResponse(ResponseObject response) {
-              List<String> messages = new ArrayList<>();
+          BeeKeeper.getRpc().makeRequest(createArgs(SVC_REBUILD_STOCK), response -> {
+            List<String> messages = new ArrayList<>();
 
-              if (response.hasMessages()) {
-                for (ResponseMessage responseMessage : response.getMessages()) {
-                  messages.add(responseMessage.getMessage());
-                }
+            if (response.hasMessages()) {
+              for (ResponseMessage responseMessage : response.getMessages()) {
+                messages.add(responseMessage.getMessage());
               }
+            }
 
-              if (response.hasErrors()) {
-                Global.showError(Localized.dictionary().rebuildTradeStockCaption(), messages);
+            if (response.hasErrors()) {
+              Global.showError(Localized.dictionary().rebuildTradeStockCaption(), messages);
 
-              } else {
-                if (!messages.isEmpty()) {
-                  messages.add(BeeConst.STRING_EMPTY);
-                }
-                messages.add(BeeUtils.joinWords(
-                    Localized.dictionary().rebuildTradeStockNotification(),
-                    TimeUtils.elapsedSeconds(startTime)));
-
-                Global.showInfo(Localized.dictionary().rebuildTradeStockCaption(), messages);
+            } else {
+              if (!messages.isEmpty()) {
+                messages.add(BeeConst.STRING_EMPTY);
               }
+              messages.add(BeeUtils.joinWords(
+                  Localized.dictionary().rebuildTradeStockNotification(),
+                  TimeUtils.elapsedSeconds(startTime)));
+
+              Global.showInfo(Localized.dictionary().rebuildTradeStockCaption(), messages);
             }
           });
         });

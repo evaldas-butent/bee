@@ -1,7 +1,7 @@
 package com.butent.bee.shared.data.filter;
 
 import com.google.common.collect.BoundType;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 
 import com.butent.bee.shared.Assert;
@@ -29,7 +29,9 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -300,9 +302,27 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return new CustomFilter(key, args);
   }
 
+  public static Filter custom(String key, Multimap<String, String> options) {
+    Assert.notEmpty(key);
+
+    if (options == null) {
+      return new CustomFilter(key);
+
+    } else {
+      List<String> args = new ArrayList<>();
+
+      options.entries().forEach(entry -> {
+        args.add(entry.getKey());
+        args.add(entry.getValue());
+      });
+
+      return new CustomFilter(key, args);
+    }
+  }
+
   public static Filter custom(String key, String arg) {
     Assert.notEmpty(key);
-    return new CustomFilter(key, Lists.newArrayList(arg));
+    return new CustomFilter(key, Collections.singletonList(arg));
   }
 
   public static Filter custom(String key, Long arg) {
@@ -315,7 +335,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
 
   public static Filter custom(String key, String arg1, String arg2) {
     Assert.notEmpty(key);
-    return new CustomFilter(key, Lists.newArrayList(arg1, arg2));
+    return new CustomFilter(key, Arrays.asList(arg1, arg2));
   }
 
   public static Filter equals(String column, DateTime value) {
@@ -540,6 +560,10 @@ public abstract class Filter implements BeeSerializable, RowFilter {
 
   public static Filter or(Filter f1, Filter f2, Filter f3) {
     return or(or(f1, f2), f3);
+  }
+
+  public static Filter or(Filter f1, Filter f2, Filter f3, Filter f4) {
+    return or(or(f1, f2), or(f3, f4));
   }
 
   public static Filter restore(String s) {

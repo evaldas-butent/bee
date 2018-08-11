@@ -295,11 +295,13 @@
       <xs:enumeration value="CarJobModels" />
       <xs:enumeration value="CarJobProgress" />
       <xs:enumeration value="CarJobs" />
+      <xs:enumeration value="CarMessageTemplates" />
       <xs:enumeration value="CarOrderItems" />
       <xs:enumeration value="CarOrders" />
       <xs:enumeration value="CarPlaceCodes" />
       <xs:enumeration value="CarRecalls" />
       <xs:enumeration value="Cars" />
+      <xs:enumeration value="CarServiceComments" />
       <xs:enumeration value="CarServiceEvents" />
       <xs:enumeration value="CarServiceFiles" />
       <xs:enumeration value="CarServiceItems" />
@@ -384,6 +386,7 @@
       <xs:enumeration value="DocumentFiles" />
       <xs:enumeration value="DocumentItems" />
       <xs:enumeration value="DocumentPlaces" />
+      <xs:enumeration value="DocumentReminders" />
       <xs:enumeration value="Documents" />
       <xs:enumeration value="DocumentStatuses" />
       <xs:enumeration value="DocumentTemplates" />
@@ -453,6 +456,7 @@
       <xs:enumeration value="InvoiceTradeActs" />
       <xs:enumeration value="InvoiceTransferTypes" />
       <xs:enumeration value="IpFilters" />
+      <xs:enumeration value="ItemAnalogs" />
       <xs:enumeration value="ItemCategories" />
       <xs:enumeration value="ItemGraphics" />
       <xs:enumeration value="ItemManufacturers" />
@@ -597,6 +601,9 @@
       <xs:enumeration value="Stages" />
       <xs:enumeration value="StageTriggers" />
       <xs:enumeration value="StateProcess" />
+      <xs:enumeration value="SubstitutionObjects" />
+      <xs:enumeration value="SubstitutionReasons" />
+      <xs:enumeration value="Substitutions" />
       <xs:enumeration value="TaskDurations" />
       <xs:enumeration value="TaskEvents" />
       <xs:enumeration value="TaskFiles" />
@@ -633,6 +640,11 @@
       <xs:enumeration value="TimeRanges" />
       <xs:enumeration value="TimeZones" />
       <xs:enumeration value="TodoList" />
+      <xs:enumeration value="TTExecutors" />
+      <xs:enumeration value="TTExecutorGroups" />
+      <xs:enumeration value="TTFiles" />
+      <xs:enumeration value="TTObservers" />
+      <xs:enumeration value="TTObserverGroups" />
       <xs:enumeration value="TradeAccounts" />
       <xs:enumeration value="TradeActDrivers" />
       <xs:enumeration value="TradeActFiles" />
@@ -654,6 +666,7 @@
       <xs:enumeration value="TradeDocuments" />
       <xs:enumeration value="TradeExpenditures" />
       <xs:enumeration value="TradeItemCost" />
+      <xs:enumeration value="TradeItemsForReturn" />
       <xs:enumeration value="TradeMovement" />
       <xs:enumeration value="TradeNotes" />
       <xs:enumeration value="TradeOperations" />
@@ -707,6 +720,7 @@
       <xs:enumeration value="Warehouses" />
       <xs:enumeration value="WarrantyTypes" />
       <xs:enumeration value="WorkSchedule" />
+      <xs:enumeration value="WorkScheduleInfo" />
       <xs:enumeration value="WorkScheduleLocks" />
       <xs:enumeration value="Workspaces" />
 

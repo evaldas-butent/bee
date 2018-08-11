@@ -3,17 +3,26 @@
         xmlns:ui="http://www.butent.com/ui"
 
         name="CarServiceItems" viewName="CarServiceItems" autoFlex="true"
-        filter="!(Job)" caption="=productsServices"
+        newRowWindow="modal" order="Bundle, ParentOrder, Job"
 >
   <g:columns>
-    <RelColumn name="Item" renderColumns="ItemName" flexGrow="2" visible="true" readOnly="true">
-      <dynStyle>
-        <ui:inline>color:blue;</ui:inline>
-        <ui:expression>row.IsService</ui:expression>
-      </dynStyle>
+    <RelColumn name="Bundle" readOnly="true" editEnabled="true">
+      <style>
+        <bodyStyle>
+          <ui:inline>color:brown;</ui:inline>
+        </bodyStyle>
+      </style>
     </RelColumn>
 
     <DataColumn name="Article" flexGrow="1" />
+    <DataColumn name="ItemName" flexGrow="2" />
+
+    <DataColumn name="Duration">
+      <editable>
+        <ui:expression>row.Job != null</ui:expression>
+      </editable>
+      <editor type="time" stepValue="5" />
+    </DataColumn>
 
     <DataColumn name="Quantity" scale="0" visible="true" />
     <DataColumn name="UnitName" label="=unitShort" />
@@ -59,6 +68,16 @@
       <renderer type="total" />
     </CalcColumn>
   </g:columns>
+
+  <g:rowStyle>
+    <ui:inline>color:green;</ui:inline>
+    <ui:expression>row.Job</ui:expression>
+  </g:rowStyle>
+  <g:rowStyle>
+    <ui:inline>color:silver</ui:inline>
+    <ui:expression>row.Parent</ui:expression>
+  </g:rowStyle>
+
   <g:rowEditable>
     <ui:expression>!row.Completed</ui:expression>
   </g:rowEditable>

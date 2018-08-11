@@ -13,6 +13,7 @@
       <item value="unit">=unit</item>
       <item value="warehouse">=warehouse</item>
       <item value="supplier">=supplier</item>
+      <item value="customer">=trdCustomer</item>
       <item value="year">=receivedYear</item>
       <item value="month">=receivedMonth</item>'>
     ]>
@@ -49,6 +50,7 @@
           <item value="article">=article</item>
           <item value="unit">=unit</item>
           <item value="supplier">=supplier</item>
+          <item value="customer">=trdCustomer</item>
           <item value="year">=receivedYear</item>
           <item value="month">=receivedMonth</item>
         </ListBox>
@@ -86,7 +88,7 @@
         <row>
           <Label text="=warehouses" style="&c1;" />
           <MultiSelector name="Warehouses" viewName="Warehouses" renderColumns="Code"
-                         choiceColumns="Code Name" newRowEnabled="false" editPopup="true"
+                         choiceColumns="Code Name" newRowEnabled="false"
                          style="&flt;" summarize="true" />
 
           <Label text="=itemTypes" />
@@ -98,7 +100,7 @@
         <row>
           <Label text="=suppliers" style="&c1;" />
           <MultiSelector name="Suppliers" viewName="Companies" renderColumns="Name"
-                         choiceColumns="Name TypeName" newRowEnabled="false" editPopup="true"
+                         choiceColumns="Name TypeName" newRowEnabled="false"
                          style="&flt;" summarize="true" />
 
           <Label text="=itemGroups" />
@@ -108,9 +110,9 @@
         </row>
 
         <row>
-          <Label text="=manufacturers" style="&c1;" />
-          <MultiSelector name="Manufacturers" viewName="Companies" renderColumns="Name"
-                         choiceColumns="Name TypeName" newRowEnabled="false" editPopup="true"
+          <Label text="=trdCustomers" style="&c1;" />
+          <MultiSelector name="Customers" viewName="Companies" renderColumns="Name"
+                         choiceColumns="Name TypeName" newRowEnabled="false"
                          style="&flt;" summarize="true" />
 
           <Label text="=itemCategories" />
@@ -120,18 +122,14 @@
         </row>
 
         <row>
-          <Label text="=receivedDateFrom" style="&c1;" />
-          <FlowPanel>
-            <InputDateTime name="ReceivedFrom" style="&dt;" summarize="true" />
-
-            <Label text="=dateToShort"
-                   style="display: inline-block; box-sizing: border-box; min-width: 4em; padding-right: 6px; text-align: right;" />
-            <InputDateTime name="ReceivedTo" style="&dt;" summarize="true" />
-          </FlowPanel>
+          <Label text="=manufacturers" style="&c1;" />
+          <MultiSelector name="Manufacturers" viewName="Companies" renderColumns="Name"
+                         choiceColumns="Name TypeName" newRowEnabled="false"
+                         style="&flt;" summarize="true" />
 
           <Label text="=goods" />
           <MultiSelector name="Items" viewName="Items" filter="!(IsService)"
-                         renderColumns="Name Article" newRowEnabled="false" editPopup="true"
+                         renderColumns="Name Article" newRowEnabled="false"
                          style="&flt;" summarize="true" />
         </row>
 
@@ -145,6 +143,17 @@
 
           <Label text="=itemFilter" />
           <InputText name="ItemFilter" style="&flt;" maxLength="256" summarize="true" />
+        </row>
+
+        <row>
+          <Label text="=receivedDateFrom" style="&c1;" />
+          <FlowPanel>
+            <InputDateTime name="ReceivedFrom" style="&dt;" summarize="true" />
+
+            <Label text="=dateToShort"
+                   style="display: inline-block; box-sizing: border-box; min-width: 4em; padding-right: 6px; text-align: right;" />
+            <InputDateTime name="ReceivedTo" style="&dt;" summarize="true" />
+          </FlowPanel>
         </row>
       </Table>
     </Disclosure>

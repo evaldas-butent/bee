@@ -143,10 +143,10 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
             || BeeUtils.same(viewName, getFormView().getViewName())) {
 
           RowEditor.openForm(form.getName(), Data.getDataInfo(getFormView().getViewName()),
-              row, Opener.MODAL, null, getPrintFormInterceptor());
+              row, null, getPrintFormInterceptor());
         } else {
           RowEditor.openForm(form.getName(), Data.getDataInfo(viewName),
-              Filter.compareId(row.getId()), Opener.MODAL, null, getPrintFormInterceptor());
+              Filter.compareId(row.getId()), null, getPrintFormInterceptor());
         }
       } else {
         printJasperReport();

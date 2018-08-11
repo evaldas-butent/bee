@@ -15,7 +15,6 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Storage;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
@@ -30,14 +29,12 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -352,23 +349,20 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
     params.addQueryItem(Service.VAR_MONTH, ym.getMonth());
     params.addQueryItem(scheduleParent.getWorkScheduleRelationColumn(), getRelationId());
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        List<Earnings> earnings = new ArrayList<>();
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      List<Earnings> earnings = new ArrayList<>();
 
-        if (response.hasResponse()) {
-          String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+      if (response.hasResponse()) {
+        String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
 
-          if (!ArrayUtils.isEmpty(arr)) {
-            for (String s : arr) {
-              earnings.add(Earnings.restore(s));
-            }
+        if (!ArrayUtils.isEmpty(arr)) {
+          for (String s : arr) {
+            earnings.add(Earnings.restore(s));
           }
         }
-
-        callback.onSuccess(earnings);
       }
+
+      callback.onSuccess(earnings);
     });
   }
 
@@ -387,22 +381,19 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
     ParameterList params = PayrollKeeper.createArgs(SVC_GET_SCHEDULED_MONTHS);
     params.addQueryItem(scheduleParent.getWorkScheduleRelationColumn(), getRelationId());
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        List<YearMonth> months = new ArrayList<>();
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      List<YearMonth> months = new ArrayList<>();
 
-        if (response.hasResponse()) {
-          for (String s : Splitter.on(BeeConst.CHAR_COMMA).split(response.getResponseAsString())) {
-            YearMonth ym = YearMonth.parse(s);
-            if (ym != null) {
-              months.add(ym);
-            }
+      if (response.hasResponse()) {
+        for (String s : Splitter.on(BeeConst.CHAR_COMMA).split(response.getResponseAsString())) {
+          YearMonth ym = YearMonth.parse(s);
+          if (ym != null) {
+            months.add(ym);
           }
         }
-
-        callback.onSuccess(months);
       }
+
+      callback.onSuccess(months);
     });
   }
 
@@ -441,25 +432,22 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
         filters.put(VIEW_LOCATIONS, Filter.idIn(objects));
       }
 
-      Queries.getData(viewNames, filters, CachingPolicy.NONE, new Queries.DataCallback() {
-        @Override
-        public void onSuccess(Collection<BeeRowSet> result) {
-          clearData();
+      Queries.getData(viewNames, filters, CachingPolicy.NONE, (Queries.DataCallback) result -> {
+        clearData();
 
-          for (BeeRowSet rowSet : result) {
-            switch (rowSet.getViewName()) {
-              case VIEW_EMPLOYEES:
-                setEmData(rowSet);
-                break;
+        for (BeeRowSet rowSet : result) {
+          switch (rowSet.getViewName()) {
+            case VIEW_EMPLOYEES:
+              setEmData(rowSet);
+              break;
 
-              case VIEW_LOCATIONS:
-                setObData(rowSet);
-                break;
-            }
+            case VIEW_LOCATIONS:
+              setObData(rowSet);
+              break;
           }
-
-          callback.run();
         }
+
+        callback.run();
       });
     }
   }
@@ -775,7 +763,7 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
       Long id = DomUtils.getDataPropertyLong(DomUtils.getParentRow(target, false), KEY_PART);
 
       if (DataUtils.isId(id)) {
-        RowEditor.open(scheduleParent.getPartitionViewName(), id, Opener.MODAL);
+        RowEditor.open(scheduleParent.getPartitionViewName(), id);
       }
     });
 
@@ -812,7 +800,7 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
         Long id = DomUtils.getDataPropertyLong(DomUtils.getParentRow(target, false), KEY_SUBST);
 
         if (DataUtils.isId(id)) {
-          RowEditor.open(VIEW_EMPLOYEES, id, Opener.MODAL);
+          RowEditor.open(VIEW_EMPLOYEES, id);
         }
       });
 

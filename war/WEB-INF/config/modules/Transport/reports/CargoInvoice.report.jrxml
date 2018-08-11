@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2017-03-07T16:50:55 -->
+<!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
+<!-- 2017-07-13T13:16:36 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" whenResourceMissingType="Key" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -186,6 +186,7 @@
 	<parameter name="PayerName2" class="java.lang.String"/>
 	<parameter name="PayerTypeName2" class="java.lang.String"/>
 	<parameter name="PayerAddress2" class="java.lang.String"/>
+	<parameter name="Proforma" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -218,7 +219,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="13.5" isBold="true" isItalic="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{d}.printInvoiceVat() + " " + $V{docNo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[(BeeUtils.isEmpty($P{Proforma}) ? $V{d}.printInvoiceVat()  : $V{d}.trdProformaInvoice()) + " " + $V{docNo}]]></textFieldExpression>
 			</textField>
 			<image>
 				<reportElement x="0" y="0" width="220" height="40" isRemoveLineWhenBlank="true" uuid="d4dbe3fc-4b18-46d7-bda2-b2f4a50d560b">

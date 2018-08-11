@@ -3,7 +3,7 @@
 
       name="ShipmentRequests" source="ShipmentRequests" module="Transport.SelfService"
       caption="=trRequests" newRowCaption="=trRequestNew"
-      newRowForm="ShipmentRequest" editForm="ShipmentRequest"
+      newRowForm="ShipmentRequest" editForm="ShipmentRequest" rowCaption="OrderNo"
     >
   <Relation renderColumns="OrderNo Date CompanyName" />
   <Columns>

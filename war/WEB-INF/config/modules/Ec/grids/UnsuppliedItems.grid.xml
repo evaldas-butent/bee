@@ -7,7 +7,8 @@
   footerMode="none" flexGrow="1" minColumnWidth="60"
   >
   <g:columns>
-    <RelColumn name="Client" minWidth="150" editEnabled="true" visible="true">
+    <RelColumn name="Client" minWidth="150" editEnabled="true" visible="true"
+               searchBy="LastName" >
       <renderToken source="FirstName" />
       <renderToken source="LastName" />
       <renderToken source="CompanyName" prefix=", " />

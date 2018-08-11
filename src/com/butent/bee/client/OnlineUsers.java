@@ -13,7 +13,6 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
@@ -199,7 +198,7 @@ public final class OnlineUsers extends Flow {
     }
 
     UiHelper.closeDialog(onlineUsersPopup.getWidget());
-    RowEditor.open(ClassifierConstants.VIEW_PERSONS, id, Opener.NEW_TAB);
+    RowEditor.open(ClassifierConstants.VIEW_PERSONS, id);
   }
 
   private FaLabel renderChatButton(Long userId) {

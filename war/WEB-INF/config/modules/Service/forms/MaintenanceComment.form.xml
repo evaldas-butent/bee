@@ -15,7 +15,7 @@
       </row>
       <row>
         <text/>
-        <CheckBox source="ShowCustomer" summarize="true" style="width:"/>
+        <CheckBox source="ShowCustomer" summarize="true" />
       </row>
       <row>
         <text/>

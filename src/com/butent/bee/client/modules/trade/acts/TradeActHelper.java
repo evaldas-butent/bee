@@ -13,6 +13,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -118,7 +119,7 @@ final class TradeActHelper {
 
       case COL_TRADE_ITEM_QUANTITY:
         return Localized.dictionary().quantity();
-      case ALS_RETURNED_QTY:
+      case TradeActConstants.ALS_RETURNED_QTY:
         return Localized.dictionary().taQuantityReturned();
       case ALS_REMAINING_QTY:
         return Localized.dictionary().taQuantityRemained();
@@ -240,7 +241,7 @@ final class TradeActHelper {
         return Format.getDefaultLongFormat();
 
       case COL_TRADE_ITEM_QUANTITY:
-      case ALS_RETURNED_QTY:
+      case TradeActConstants.ALS_RETURNED_QTY:
       case ALS_REMAINING_QTY:
       case COL_EXTERNAL_STOCK:
         return getQuantityFormat();
@@ -320,7 +321,7 @@ final class TradeActHelper {
 
   static ValueType getType(Collection<String> viewNames, String colName) {
     switch (colName) {
-      case ALS_RETURNED_QTY:
+      case TradeActConstants.ALS_RETURNED_QTY:
       case ALS_REMAINING_QTY:
 
       case ALS_BASE_AMOUNT:

@@ -11,8 +11,9 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.RowCountChangeEvent;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
@@ -24,28 +25,66 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.trade.DebtKind;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 class TradeDebtsGrid extends AbstractGridInterceptor {
+
+  private final class PaymentTermsRenderer extends AbstractCellRenderer {
+
+    private PaymentTermsRenderer(CellSource cellSource) {
+      super(cellSource);
+    }
+
+    @Override
+    public String render(IsRow row) {
+      String s = getString(row);
+      if (BeeUtils.isEmpty(s)) {
+        return null;
+      }
+
+      List<String> list = Codec.deserializeList(s);
+      if (list.size() < 2) {
+        return null;
+      }
+
+      StringBuilder sb = new StringBuilder();
+
+      for (int i = 0; i < list.size() - 1; i += 2) {
+        if (i > 0) {
+          sb.append(BeeConst.DEFAULT_LIST_SEPARATOR);
+        }
+
+        DateTime dt = DateTime.restore(list.get(i));
+        if (dt != null) {
+          sb.append(Format.renderDateCompact(dt));
+          sb.append(" - ");
+        }
+        sb.append(list.get(i + 1));
+      }
+
+      return sb.toString();
+    }
+  }
 
   private static final String STYLE_COMMAND_DISCHARGE =
       TradeKeeper.STYLE_PREFIX + "debt-command-discharge";
@@ -83,6 +122,17 @@ class TradeDebtsGrid extends AbstractGridInterceptor {
     return filters;
   }
 
+  @Override
+  public AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
+      ColumnDescription columnDescription, CellSource cellSource) {
+
+    if (PROP_TD_PAYMENT_TERMS.equals(columnName)) {
+      return new PaymentTermsRenderer(cellSource);
+    } else {
+      return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
+    }
+  }
+
   public void initDischarger(String caption, Consumer<GridView> consumer) {
     this.dischargerCaption = caption;
     this.discharger = consumer;
@@ -94,7 +144,7 @@ class TradeDebtsGrid extends AbstractGridInterceptor {
 
     IsRow row = event.getRowValue();
     if (row != null) {
-      RowEditor.open(getViewName(), row, Opener.NEW_TAB);
+      RowEditor.open(getViewName(), row);
     }
   }
 
@@ -220,10 +270,7 @@ class TradeDebtsGrid extends AbstractGridInterceptor {
     phases.clear();
 
     if (BeeUtils.isEmpty(value)) {
-      phases.addAll(Arrays.stream(TradeDocumentPhase.values())
-          .filter(TradeDocumentPhase::modifyStock)
-          .collect(Collectors.toSet()));
-
+      phases.addAll(TradeDocumentPhase.getStockPhases());
     } else if (!BeeConst.STRING_MINUS.equals(value)) {
       phases.addAll(EnumUtils.parseIndexSet(TradeDocumentPhase.class, value));
     }

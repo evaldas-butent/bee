@@ -6,5 +6,21 @@
   <Columns>
     <SimpleColumn name="Packet" />
     <SimpleColumn name="Option" />
+    <SimpleJoin name="Option" joinType="INNER">
+      <SimpleColumn name="Type" />
+      <SimpleJoin name="Type" joinType="INNER">
+        <SimpleColumn name="TypeName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Group" />
+      <SimpleJoin name="Group" joinType="INNER">
+        <SimpleColumn name="GroupName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Code" />
+      <SimpleColumn name="Code2" />
+      <SimpleColumn name="OptionName" />
+    </SimpleJoin>
+    <SimpleColumn name="Optional" />
   </Columns>
 </View>

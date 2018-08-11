@@ -15,7 +15,6 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.MessageBoxes;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
@@ -831,7 +830,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
     TradeActKeeper.setDefaultOperation(newRow, TradeActKind.RETURN);
 
-    RowFactory.createRow(viewTradeActs, newRow, Modality.ENABLED, result -> {
+    RowFactory.createRow(viewTradeActs, newRow, Opener.MODAL, result -> {
       getGridView().ensureRow(result, true);
       if (parent != null) {
         Queries.getRow(VIEW_TRADE_ACTS, parent.getId(), updatedParent -> {
@@ -1045,8 +1044,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
       TradeActKeeper.setDefaultOperation(newRow, TradeActKind.SUPPLEMENT);
 
-      RowFactory.createRow(dataInfo, newRow, Modality.ENABLED,
-          result -> getGridView().ensureRow(result, true));
+    RowFactory.createRow(dataInfo, newRow, Opener.MODAL,
+        result -> getGridView().ensureRow(result, true));
     });
   }
 

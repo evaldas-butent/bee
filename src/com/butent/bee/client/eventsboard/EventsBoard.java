@@ -5,10 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -253,8 +250,8 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
     DataInfo data = Data.getDataInfo(getEventsDataViewName());
 
     BeeRow row = RowFactory.createEmptyRow(data, true);
-    RowFactory.createRow(data.getNewRowForm(), data.getCaption(), data, row, null, null,
-        getNewEventFormInterceptor(), null, null);
+    RowFactory.createRow(data.getNewRowForm(), data.getCaption(), data, row,
+        getNewEventFormInterceptor(), null);
   }
 
   public void create(HasWidgets widget, long relId) {
@@ -588,13 +585,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
       if (add instanceof HasClickHandlers) {
         HIDDEN_ACTIONS.add(Action.ADD);
 
-        ((HasClickHandlers) add).addClickHandler(new ClickHandler() {
-
-          @Override
-          public void onClick(ClickEvent arg0) {
-            handleAction(Action.ADD);
-          }
-        });
+        ((HasClickHandlers) add).addClickHandler(arg0 -> handleAction(Action.ADD));
       }
     }
 
@@ -697,40 +688,36 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
   }
 
   private RowSetCallback getDataCallback(final HasWidgets cont, final boolean clearCache) {
-    return new RowSetCallback() {
-
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        logger.debug("parse event data from", getEventsDataViewName());
-        if (!clearCache && getOldData() != null && result != null) {
-          if (getOldData().getNumberOfRows() == result.getNumberOfRows()
-              && getOldData().getRow(getOldData().getNumberOfRows() - 1).getId() == result.getRow(
-              result.getNumberOfRows() - 1).getId()) {
-            // TODO: create some methods validate that data is same;
-            return;
-          }
-        }
-        cont.clear();
-        setOldData(result);
-
-        if (result.isEmpty()) {
+    return result -> {
+      logger.debug("parse event data from", getEventsDataViewName());
+      if (!clearCache && getOldData() != null && result != null) {
+        if (getOldData().getNumberOfRows() == result.getNumberOfRows()
+            && getOldData().getRow(getOldData().getNumberOfRows() - 1).getId() == result.getRow(
+            result.getNumberOfRows() - 1).getId()) {
+          // TODO: create some methods validate that data is same;
           return;
         }
-
-        EventFilesFilter flt = getFilesFilter();
-
-        if (flt == null) {
-          prepareCascadedStructure(cont, result);
-          return;
-        }
-
-        List<String> fileCols = flt.getColumnsList();
-        Filter filter = Filter.and(Filter.notNull(flt.eventColName),
-            Filter.any(flt.eventColName, result.getRowIds()));
-
-        Queries
-            .getRowSet(flt.filesViewName, fileCols, filter, getFilesRowSetCallback(cont, result));
       }
+      cont.clear();
+      setOldData(result);
+
+      if (result.isEmpty()) {
+        return;
+      }
+
+      EventFilesFilter flt = getFilesFilter();
+
+      if (flt == null) {
+        prepareCascadedStructure(cont, result);
+        return;
+      }
+
+      List<String> fileCols = flt.getColumnsList();
+      Filter filter = Filter.and(Filter.notNull(flt.eventColName),
+          Filter.any(flt.eventColName, result.getRowIds()));
+
+      Queries
+          .getRowSet(flt.filesViewName, fileCols, filter, getFilesRowSetCallback(cont, result));
     };
   }
 
@@ -767,82 +754,78 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
 
   private RowSetCallback getFilesRowSetCallback(final HasWidgets eventPanel,
       final BeeRowSet events) {
-    return new RowSetCallback() {
+    return result -> {
+      EventFilesFilter filter = getFilesFilter();
 
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        EventFilesFilter filter = getFilesFilter();
-
-        if (filter == null) {
-          logger.warning("file filter was missed");
-          prepareCascadedStructure(eventPanel, events);
-          return;
-        }
-
-        List<FileInfo> filesResult = Lists.newArrayList();
-
-        int idxFileId = result.getColumnIndex(filter.fileColName);
-        int idxEventId = result.getColumnIndex(filter.eventColName);
-
-        if (BeeUtils.isNegative(idxFileId) || BeeUtils.isNegative(idxEventId)) {
-          logger.warning("cannot access in column", filter.fileColName, filter.eventColName,
-              " in view", filter.filesViewName);
-          prepareCascadedStructure(eventPanel, events);
-          return;
-        }
-
-        int idxFileName =
-            BeeUtils.isEmpty(filter.fileNameColName) ? BeeConst.UNDEF : result
-                .getColumnIndex(filter.fileNameColName);
-
-        int idxFileSize =
-            BeeUtils.isEmpty(filter.fileNameColName) ? BeeConst.UNDEF : result
-                .getColumnIndex(filter.fileSizeColName);
-        int idxFileType =
-            BeeUtils.isEmpty(filter.fileTypeColName) ? BeeConst.UNDEF : result
-                .getColumnIndex(filter.fileTypeColName);
-        int idxFileCaption =
-            BeeUtils.isEmpty(filter.fileCaptionColName) ? BeeConst.UNDEF : result
-                .getColumnIndex(filter.fileCaptionColName);
-
-        for (BeeRow fileRow : result) {
-          Long fileId = fileRow.getLong(idxFileId);
-          String hash = fileRow.getString(result.getColumnIndex(COL_FILE_HASH));
-
-          String fileName = null;
-          Long fileSize = null;
-          String fileType = null;
-          String fileCaption = null;
-
-          if (!BeeUtils.isNegative(idxFileName)) {
-            fileName = fileRow.getString(idxFileName);
-          }
-
-          if (!BeeUtils.isNegative(idxFileSize)) {
-            fileSize = fileRow.getLong(idxFileSize);
-          }
-
-          if (!BeeUtils.isNegative(idxFileType)) {
-            fileType = fileRow.getString(idxFileType);
-          }
-
-          if (!BeeUtils.isNegative(idxFileCaption)) {
-            fileCaption = fileRow.getString(idxFileCaption);
-          }
-
-          FileInfo fi = new FileInfo(fileId, hash, fileName, fileSize, fileType);
-          fi.setRelatedId(fileRow.getLong(idxEventId));
-
-          if (!BeeUtils.isEmpty(fileCaption)) {
-            fi.setCaption(fileCaption);
-          }
-
-          filesResult.add(fi);
-        }
-        setFiles(filesResult);
-
+      if (filter == null) {
+        logger.warning("file filter was missed");
         prepareCascadedStructure(eventPanel, events);
+        return;
       }
+
+      List<FileInfo> filesResult = Lists.newArrayList();
+
+      int idxFileId = result.getColumnIndex(filter.fileColName);
+      int idxEventId = result.getColumnIndex(filter.eventColName);
+
+      if (BeeUtils.isNegative(idxFileId) || BeeUtils.isNegative(idxEventId)) {
+        logger.warning("cannot access in column", filter.fileColName, filter.eventColName,
+            " in view", filter.filesViewName);
+        prepareCascadedStructure(eventPanel, events);
+        return;
+      }
+
+      int idxFileName =
+          BeeUtils.isEmpty(filter.fileNameColName) ? BeeConst.UNDEF : result
+              .getColumnIndex(filter.fileNameColName);
+
+      int idxFileSize =
+          BeeUtils.isEmpty(filter.fileNameColName) ? BeeConst.UNDEF : result
+              .getColumnIndex(filter.fileSizeColName);
+      int idxFileType =
+          BeeUtils.isEmpty(filter.fileTypeColName) ? BeeConst.UNDEF : result
+              .getColumnIndex(filter.fileTypeColName);
+      int idxFileCaption =
+          BeeUtils.isEmpty(filter.fileCaptionColName) ? BeeConst.UNDEF : result
+              .getColumnIndex(filter.fileCaptionColName);
+
+      for (BeeRow fileRow : result) {
+        Long fileId = fileRow.getLong(idxFileId);
+        String hash = fileRow.getString(result.getColumnIndex(COL_FILE_HASH));
+
+        String fileName = null;
+        Long fileSize = null;
+        String fileType = null;
+        String fileCaption = null;
+
+        if (!BeeUtils.isNegative(idxFileName)) {
+          fileName = fileRow.getString(idxFileName);
+        }
+
+        if (!BeeUtils.isNegative(idxFileSize)) {
+          fileSize = fileRow.getLong(idxFileSize);
+        }
+
+        if (!BeeUtils.isNegative(idxFileType)) {
+          fileType = fileRow.getString(idxFileType);
+        }
+
+        if (!BeeUtils.isNegative(idxFileCaption)) {
+          fileCaption = fileRow.getString(idxFileCaption);
+        }
+
+        FileInfo fi = new FileInfo(fileId, hash, fileName, fileSize, fileType);
+        fi.setRelatedId(fileRow.getLong(idxEventId));
+
+        if (!BeeUtils.isEmpty(fileCaption)) {
+          fi.setCaption(fileCaption);
+        }
+
+        filesResult.add(fi);
+      }
+      setFiles(filesResult);
+
+      prepareCascadedStructure(eventPanel, events);
     };
   }
 
@@ -894,12 +877,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
 
       if (panel.getWidgetCount() > 0 && DomUtils.isVisible(panel.getParent())) {
         final Widget last = panel.getWidget(panel.getWidgetCount() - 1);
-        Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-          @Override
-          public void execute() {
-            DomUtils.scrollIntoView(last.getElement());
-          }
-        });
+        Scheduler.get().scheduleDeferred(() -> DomUtils.scrollIntoView(last.getElement()));
       }
     }
   }

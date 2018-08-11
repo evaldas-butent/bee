@@ -49,8 +49,8 @@
                 </FlowPanel>
               </row>
               <row>
-                <Label for="Type" />
-                <DataSelector source="Type" style="width:20em;" />
+                <Label for="Type" class="bee-required" />
+                <DataSelector source="Type" style="width:20em;" required="true" />
               </row>
             </Table>
           </FlowPanel>

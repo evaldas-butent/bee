@@ -43,10 +43,10 @@
 
     <row>
       <Label for="Company" />
-      <DataSelector source="Company" editPopup="true" newRowEnabled="false"
+      <DataSelector source="Company" newRowEnabled="false"
                     choiceColumns="Name TypeName" renderColumns="CompanyName CompanyTypeName" />
       <Label for="Contact" />
-      <DataSelector source="Contact" editPopup="true" newRowEnabled="false"
+      <DataSelector source="Contact" newRowEnabled="false"
                     renderColumns="ContactFirstName ContactLastName"
                     choiceColumns="FirstName LastName CompanyName" options="Company" />
     </row>
@@ -61,36 +61,36 @@
       <InputText source="Summary" style="&inp2x;" autocomplete="true" />
     </row>
 
-    <row>
-      <Label text="=crmTaskExecutors" />
+    <row listName="RTExecutors">
+      <Label text="=crmTaskExecutors" listName="RTExecutors" />
       <ChildSelector childTable="RTExecutors" viewName="Users" property="Executors"
                      targetRelColumn="RecurringTask" sourceRelColumn="User"
-                     renderColumns="FirstName LastName" editPopup="true" newRowEnabled="false"
+                     renderColumns="FirstName LastName" newRowEnabled="false"
                      style="&inp2x;" label="=crmTaskExecutors" />
     </row>
 
-    <row>
-      <Label text="=crmTaskExecutorGroups" />
+    <row listName="RTExecutorGroups">
+      <Label text="=crmTaskExecutorGroups" listName="RTExecutorGroups" />
       <ChildSelector childTable="RTExecutorGroups" viewName="UserGroupSettings"
                      targetRelColumn="RecurringTask" sourceRelColumn="Group"
-                     property="ExecutorGroups" renderColumns="Name" editPopup="true"
+                     property="ExecutorGroups" renderColumns="Name"
                      newRowEnabled="false" style="&inp2y;" label="=crmTaskExecutorGroups"
                      filter="Owner {u} or Visibility 1" />
     </row>
 
-    <row>
-      <Label text="=crmTaskObservers" />
+    <row listName="RTObservers">
+      <Label text="=crmTaskObservers" listName="RTObservers" />
       <ChildSelector childTable="RTObservers" viewName="Users" property="Observers"
                      targetRelColumn="RecurringTask" sourceRelColumn="User"
-                     renderColumns="FirstName LastName" editPopup="true" newRowEnabled="false"
+                     renderColumns="FirstName LastName" newRowEnabled="false"
                      style="&inp2x;" label="=crmTaskObservers" />
     </row>
 
-    <row>
-      <Label text="=crmTaskObserverGroups" />
+    <row listName="RTObserverGroups">
+      <Label text="=crmTaskObserverGroups" listName="RTObserverGroups" />
       <ChildSelector childTable="RTObserverGroups" viewName="UserGroupSettings"
                      targetRelColumn="RecurringTask" sourceRelColumn="Group"
-                     property="ObserverGroups" renderColumns="Name" editPopup="true"
+                     property="ObserverGroups" renderColumns="Name"
                      newRowEnabled="false" style="&inp2y;" label="=crmTaskObserverGroups"
                      filter="Owner {u} or Visibility 1" />
     </row>
@@ -119,8 +119,12 @@
     <row>
       <Label />
       <CheckBox source="CopyByMail" text="=mailNotify" />
-      <Label />
-      <CheckBox source="PrivateTask" text="=crmTaskPrivate" />
+      <cell colSpan="4">
+        <FlowPanel>
+          <CheckBox source="PrivateTask" text="=crmTaskPrivate" />
+          <Button name="EndResult" text="=crmTaskEndResult" style="margin-left: 30px;" />
+        </FlowPanel>
+      </cell>
     </row>
   </Table>
 

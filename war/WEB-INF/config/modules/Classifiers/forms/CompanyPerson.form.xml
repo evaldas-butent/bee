@@ -1,38 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form []>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-    
-  name="CompanyPerson" viewName="CompanyPersons" caption="=companyPerson"
-  height="350" width="800" favorite="FirstName LastName"
-  >
+        xmlns:f="http://www.butent.com/form"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="CompanyPerson" viewName="CompanyPersons" caption="=companyPerson"
+        height="550" width="850" favorite="FirstName LastName"
+>
   <FlowPanel>
-    <Table kind="controls" style="margin-top: 1ex;">
+    <Table kind="controls" style="margin: 1ex 0;">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
 
       <row>
         <Label name="CompanyLabel" for="Company" />
-        <DataSelector name="Company" source="Company" style="width: 200px"
-           choiceColumns="Name TypeName" renderColumns="CompanyName TypeName"/>
+        <DataSelector name="Company" source="Company" style="width: 200px;"
+                      choiceColumns="Name TypeName" renderColumns="CompanyName TypeName" />
+
         <Label name="PersonLabel" for="Person" />
-        <DataSelector name="Person" source="Person" style="width: 200px" />
-        <FlowPanel name="qrFlowPanel" style="margin-left: 10px" />
+        <DataSelector name="Person" source="Person" style="width: 200px;" />
+
+        <FlowPanel name="qrFlowPanel" style="margin-left: 10px;" />
       </row>
+
       <row>
         <Label for="Department" />
-        <DataSelector source="Department" style="width: 200px" />
+        <DataSelector source="Department" style="width: 200px;" />
+
         <Label for="Position" />
-        <DataSelector source="Position" style="width: 200px" />
+        <DataSelector source="Position" style="width: 200px;" />
       </row>
+
       <row>
         <Label for="DateOfEmployment" />
-        <InputDate source="DateOfEmployment" style="width: 200px" />
+        <InputDate source="DateOfEmployment" style="width: 200px;" />
+
         <Label for="DateOfDismissal" />
-        <InputDate source="DateOfDismissal" style="width: 200px" />
+        <InputDate source="DateOfDismissal" style="width: 200px;" />
+      </row>
+
+      <row data="RcpsGroupsContacts" listName="RcpsGroupsContacts">
+        <Label text="=mailRecipientsGroups" listName="RcpsGroupsContacts" />
+        <cell colSpan="3">
+          <ChildSelector viewName="RecipientsGroups" childTable="RcpsGroupsContacts"
+                         targetRelColumn="CompanyPerson" sourceRelColumn="RecipientsGroup"
+                         renderColumns="GroupName" choiceColumns="GroupName"
+                         label="=mailRecipientsGroups" style="width: 100%;"
+                         filter="Creator {u} or Visibility = 0" />
+        </cell>
       </row>
     </Table>
+
     <xi:include href="widgets/ContactInfoOpen.widget.xml" />
   </FlowPanel>
 </f:Form>  

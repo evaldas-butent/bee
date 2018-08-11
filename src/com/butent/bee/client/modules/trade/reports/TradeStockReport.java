@@ -8,7 +8,6 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
@@ -22,13 +21,11 @@ import com.butent.bee.client.output.Report;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -67,7 +64,7 @@ public class TradeStockReport extends ReportInterceptor {
   private static BeeLogger logger = LogUtils.getLogger(TradeStockReport.class);
 
   private static final List<String> SELECTOR_NAMES = Arrays.asList(
-      RP_WAREHOUSES, RP_SUPPLIERS, RP_MANUFACTURERS, RP_DOCUMENTS,
+      RP_WAREHOUSES, RP_SUPPLIERS, RP_CUSTOMERS, RP_MANUFACTURERS, RP_DOCUMENTS,
       RP_ITEM_TYPES, RP_ITEM_GROUPS, RP_ITEM_CATEGORIES, RP_ITEMS);
 
   private static final List<String> GROUP_NAMES = reportGroupNames(5);
@@ -201,23 +198,20 @@ public class TradeStockReport extends ReportInterceptor {
       ParameterList parameters = TradeKeeper.createArgs(getService());
       parameters.addDataItem(Service.VAR_REPORT_PARAMETERS, reportParameters.serialize());
 
-      BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          if (response.hasMessages()) {
-            response.notify(getFormView());
-          }
+      BeeKeeper.getRpc().makeRequest(parameters, response -> {
+        if (response.hasMessages()) {
+          response.notify(getFormView());
+        }
 
-          if (response.hasResponse()) {
-            Map<String, String> data = Codec.deserializeHashMap(response.getResponseAsString());
-            render(data);
+        if (response.hasResponse()) {
+          Map<String, String> data = Codec.deserializeHashMap(response.getResponseAsString());
+          render(data);
 
-            sheet.addHeaders(getLabels(false));
-            sheet.autoSizeAll();
+          sheet.addHeaders(getLabels(false));
+          sheet.autoSizeAll();
 
-          } else {
-            getFormView().notifyWarning(Localized.dictionary().nothingFound());
-          }
+        } else {
+          getFormView().notifyWarning(Localized.dictionary().nothingFound());
         }
       });
     }
@@ -404,17 +398,12 @@ public class TradeStockReport extends ReportInterceptor {
   }
 
   private static Filter getDocumentSelectorFilter() {
-    EnumSet<TradeDocumentPhase> phases = EnumSet.noneOf(TradeDocumentPhase.class);
-    phases.addAll(Arrays.stream(TradeDocumentPhase.values())
-        .filter(TradeDocumentPhase::modifyStock)
-        .collect(Collectors.toSet()));
-
     EnumSet<OperationType> operationTypes = EnumSet.noneOf(OperationType.class);
     operationTypes.addAll(Arrays.stream(OperationType.values())
         .filter(OperationType::producesStock)
         .collect(Collectors.toSet()));
 
-    return Filter.and(Filter.any(COL_TRADE_DOCUMENT_PHASE, phases),
+    return Filter.and(Filter.any(COL_TRADE_DOCUMENT_PHASE, TradeDocumentPhase.getStockPhases()),
         Filter.any(COL_OPERATION_TYPE, operationTypes));
   }
 
@@ -916,7 +905,7 @@ public class TradeStockReport extends ReportInterceptor {
       Long id = DomUtils.getDataPropertyLong(cell, KEY_ID);
 
       if (group != null && DataUtils.isId(id)) {
-        RowEditor.open(group.editViewName(), id, Opener.MODAL);
+        RowEditor.open(group.editViewName(), id);
       }
     }
   }

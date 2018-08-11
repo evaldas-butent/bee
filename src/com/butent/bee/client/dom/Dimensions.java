@@ -69,6 +69,7 @@ public class Dimensions implements HasInfo, HasDimensions {
   public Dimensions(Double widthValue, CssUnit widthUnit, Double heightValue, CssUnit heightUnit,
       Double minWidthValue, CssUnit minWidthUnit, Double minHeightValue, CssUnit minHeightUnit,
       Double maxWidthValue, CssUnit maxWidthUnit, Double maxHeightValue, CssUnit maxHeightUnit) {
+
     this.widthValue = widthValue;
     this.widthUnit = widthUnit;
     this.heightValue = heightValue;
@@ -290,6 +291,31 @@ public class Dimensions implements HasInfo, HasDimensions {
     return getWidthValue() == null && getHeightValue() == null
         && getMinWidthValue() == null && getMinHeightValue() == null
         && getMaxWidthValue() == null && getMaxHeightValue() == null;
+  }
+
+  public void merge(Dimensions other) {
+    Assert.notNull(other);
+
+    if (getWidthValue() == null && other.getWidthValue() != null) {
+      setWidth(other.getWidthValue(), other.getWidthUnit());
+    }
+    if (getHeightValue() == null && other.getHeightValue() != null) {
+      setHeight(other.getHeightValue(), other.getHeightUnit());
+    }
+
+    if (getMinWidthValue() == null && other.getMinWidthValue() != null) {
+      setMinWidth(other.getMinWidthValue(), other.getMinWidthUnit());
+    }
+    if (getMinHeightValue() == null && other.getMinHeightValue() != null) {
+      setMinHeight(other.getMinHeightValue(), other.getMinHeightUnit());
+    }
+
+    if (getMaxWidthValue() == null && other.getMaxWidthValue() != null) {
+      setMaxWidth(other.getMaxWidthValue(), other.getMaxWidthUnit());
+    }
+    if (getMaxHeightValue() == null && other.getMaxHeightValue() != null) {
+      setMaxHeight(other.getMaxHeightValue(), other.getMaxHeightUnit());
+    }
   }
 
   public void removeFrom(Element el) {

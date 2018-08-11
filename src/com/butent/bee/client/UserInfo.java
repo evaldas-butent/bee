@@ -86,6 +86,10 @@ public class UserInfo implements HasInfo {
     return isLoggedIn() && userData.canEditData(object);
   }
 
+  public boolean canEditList(String viewName, String listName) {
+    return isLoggedIn() && userData.canEditList(viewName, listName);
+  }
+
   public boolean canMergeData(String object) {
     return isLoggedIn() && userData.canMergeData(object);
   }
@@ -106,6 +110,14 @@ public class UserInfo implements HasInfo {
 
   public int getActionSensitivityMillis() {
     return actionSensitivityMillis;
+  }
+
+  public String getChildEditWindow() {
+    return getSetting(COL_CHILD_EDIT_WINDOW);
+  }
+
+  public String getChildNewRowWindow() {
+    return getSetting(COL_CHILD_NEW_ROW_WINDOW);
   }
 
   public int getClickSensitivityDistance() {
@@ -140,6 +152,14 @@ public class UserInfo implements HasInfo {
     return isLoggedIn() ? userData.getFirstName() : null;
   }
 
+  public String getGridEditWindow() {
+    return getSetting(COL_GRID_EDIT_WINDOW);
+  }
+
+  public String getGridNewRowWindow() {
+    return getSetting(COL_GRID_NEW_ROW_WINDOW);
+  }
+
   @Override
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties("Is Logged In", isLoggedIn(),
@@ -171,8 +191,20 @@ public class UserInfo implements HasInfo {
     return userData.getLogin();
   }
 
+  public String getNewMailMessageWindow() {
+    return getSetting(COL_NEW_MAIL_MESSAGE_WINDOW);
+  }
+
   public int getNewsRefreshIntervalSeconds() {
     return newsRefreshIntervalSeconds;
+  }
+
+  public String getOtherEditWindows() {
+    return getSetting(COL_OTHER_EDIT_WINDOWS);
+  }
+
+  public String getOtherNewRowWindows() {
+    return getSetting(COL_OTHER_NEW_ROW_WINDOWS);
   }
 
   public Presence getPresence() {
@@ -184,6 +216,14 @@ public class UserInfo implements HasInfo {
       return null;
     }
     return userData.getProperty(property);
+  }
+
+  public String getRelationEditWindow() {
+    return getSetting(COL_RELATION_EDIT_WINDOW);
+  }
+
+  public String getRelationNewRowWindow() {
+    return getSetting(COL_RELATION_NEW_ROW_WINDOW);
   }
 
   public String getSessionId() {
@@ -279,6 +319,14 @@ public class UserInfo implements HasInfo {
 
   public boolean isDataVisible(String object) {
     return isLoggedIn() && userData.isDataVisible(object);
+  }
+
+  public boolean isListRequired(String viewName, String listName) {
+    return isLoggedIn() && userData.isListRequired(viewName, listName);
+  }
+
+  public boolean isListVisible(String viewName, String listName) {
+    return isLoggedIn() && userData.isListVisible(viewName, listName);
   }
 
   public boolean isLoggedIn() {

@@ -10,13 +10,10 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Storage;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.TabGroup;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.i18n.Format;
@@ -35,7 +32,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
@@ -57,7 +53,6 @@ import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
-import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -317,14 +312,17 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   }
 
   @Override
-  public void onStartNewRow(final FormView form, IsRow oldRow, IsRow newRow) {
-    if (form != null && oldRow != null && newRow != null) {
+  public void onStartNewRow(final FormView form, IsRow row) {
+    GridView grid = (form == null) ? null : form.getBackingGrid();
+    IsRow oldRow = (grid == null) ? null : grid.getGrid().getActiveRow();
+
+    if (oldRow != null && row != null) {
       final int index = getDataIndex(COL_TRADE_SERIES);
       final String series = BeeUtils.trim(oldRow.getString(index));
 
       Long userId = BeeKeeper.getUser().getUserId();
 
-      if (!BeeUtils.isEmpty(series) && BeeUtils.isEmpty(newRow.getString(index))
+      if (!BeeUtils.isEmpty(series) && BeeUtils.isEmpty(row.getString(index))
           && DataUtils.isId(userId)) {
 
         Filter filter = Filter.and(
@@ -333,25 +331,22 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
             Filter.in(COL_SERIES, VIEW_TRADE_SERIES, Data.getIdColumn(VIEW_TRADE_SERIES),
                 Filter.equals(COL_SERIES_NAME, series)));
 
-        Queries.getRowCount(VIEW_SERIES_MANAGERS, filter, new Queries.IntCallback() {
-          @Override
-          public void onSuccess(Integer result) {
-            if (BeeUtils.isPositive(result) && form.getActiveRow() != null
-                && BeeUtils.isEmpty(form.getActiveRow().getString(index))) {
+        Queries.getRowCount(VIEW_SERIES_MANAGERS, filter, result -> {
+          if (BeeUtils.isPositive(result) && form.getActiveRow() != null
+              && BeeUtils.isEmpty(form.getActiveRow().getString(index))) {
 
-              form.getActiveRow().setValue(index, series);
-              if (form.getOldRow() != null) {
-                form.getOldRow().setValue(index, series);
-              }
-
-              form.refreshBySource(COL_TRADE_SERIES);
+            form.getActiveRow().setValue(index, series);
+            if (form.getOldRow() != null) {
+              form.getOldRow().setValue(index, series);
             }
+
+            form.refreshBySource(COL_TRADE_SERIES);
           }
         });
       }
     }
 
-    super.onStartNewRow(form, oldRow, newRow);
+    super.onStartNewRow(form, row);
   }
 
   double getTotal() {
@@ -440,16 +435,13 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
 
     if (DataUtils.isId(status) && phase != null) {
       Queries.getValue(VIEW_TRADE_STATUSES, status, phase.getStatusColumnName(),
-          new RpcCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-              if (!BeeConst.isTrue(result) && DataUtils.sameId(row, getActiveRow())) {
-                getActiveRow().clearCell(statusIndex);
-                RelationUtils.clearRelatedValues(Data.getDataInfo(getViewName()),
-                    COL_TRADE_DOCUMENT_STATUS, getActiveRow());
+          result -> {
+            if (!BeeConst.isTrue(result) && DataUtils.sameId(row, getActiveRow())) {
+              getActiveRow().clearCell(statusIndex);
+              RelationUtils.clearRelatedValues(Data.getDataInfo(getViewName()),
+                  COL_TRADE_DOCUMENT_STATUS, getActiveRow());
 
-                getFormView().refreshBySource(COL_TRADE_DOCUMENT_STATUS);
-              }
+              getFormView().refreshBySource(COL_TRADE_DOCUMENT_STATUS);
             }
           });
     }
@@ -506,6 +498,11 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
           getFormView().refreshBySource(COL_TRADE_WAREHOUSE_TO);
         }
       }
+
+      GridView itemsGrid = ViewHelper.getChildGrid(getFormView(), GRID_TRADE_DOCUMENT_ITEMS);
+      if (itemsGrid != null && itemsGrid.getGridInterceptor() instanceof TradeDocumentItemsGrid) {
+        ((TradeDocumentItemsGrid) itemsGrid.getGridInterceptor()).refreshCommands();
+      }
     }
   }
 
@@ -548,12 +545,9 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
         getFormView().refreshBySource(COL_TRADE_DOCUMENT_OWNER);
       }
 
-      getFormView().saveChanges(new RowCallback() {
-        @Override
-        public void onSuccess(BeeRow result) {
-          getFormView().setEnabled(isRowEditable(result));
-          maybeClearStatus(result);
-        }
+      getFormView().saveChanges(result -> {
+        getFormView().setEnabled(isRowEditable(result));
+        maybeClearStatus(result);
       });
 
     } else {
@@ -576,31 +570,28 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
               ParameterList params = TradeKeeper.createArgs(SVC_DOCUMENT_PHASE_TRANSITION);
               params.setSummary(getViewName(), newRow.getId());
 
-              BeeKeeper.getRpc().sendText(params, rowSet.serialize(), new ResponseCallback() {
-                @Override
-                public void onResponse(ResponseObject response) {
-                  if (Queries.checkRowResponse(SVC_DOCUMENT_PHASE_TRANSITION, getViewName(),
-                      response)) {
+              BeeKeeper.getRpc().sendText(params, rowSet.serialize(), response -> {
+                if (Queries.checkRowResponse(SVC_DOCUMENT_PHASE_TRANSITION, getViewName(),
+                    response)) {
 
-                    BeeRow r = BeeRow.restore(response.getResponseAsString());
+                  BeeRow r = BeeRow.restore(response.getResponseAsString());
 
-                    int numberIndex = getDataIndex(COL_TRADE_NUMBER);
-                    String newNumber = r.getString(numberIndex);
+                  int numberIndex = getDataIndex(COL_TRADE_NUMBER);
+                  String newNumber = r.getString(numberIndex);
 
-                    IsRow oldRow = getFormView().getOldRow();
+                  IsRow oldRow = getFormView().getOldRow();
 
-                    if (!BeeUtils.isEmpty(newNumber) && oldRow != null
-                        && !Objects.equals(newNumber, oldRow.getString(numberIndex))) {
+                  if (!BeeUtils.isEmpty(newNumber) && oldRow != null
+                      && !Objects.equals(newNumber, oldRow.getString(numberIndex))) {
 
-                      oldRow.setValue(numberIndex, newNumber);
-                      getActiveRow().setValue(numberIndex, newNumber);
-                    }
-
-                    RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), r, true);
-                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_STOCK);
-
-                    getFormView().setEnabled(isRowEditable(getActiveRow()));
+                    oldRow.setValue(numberIndex, newNumber);
+                    getActiveRow().setValue(numberIndex, newNumber);
                   }
+
+                  RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), r, true);
+                  DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_STOCK);
+
+                  getFormView().setEnabled(isRowEditable(getActiveRow()));
                 }
               });
             }
@@ -645,14 +636,11 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
         final long id = row.getId();
 
         Queries.getLastUpdated(TBL_TRADE_DOCUMENTS, id, COL_TRADE_DOCUMENT_STATUS,
-            new RpcCallback<DateTime>() {
-              @Override
-              public void onSuccess(DateTime result) {
-                if (result != null && Objects.equals(getActiveRowId(), id)) {
-                  ((HasHtml) widget).setText(BeeUtils.joinWords(
-                      Localized.dictionary().statusUpdated(),
-                      Format.render(PredefinedFormat.DATE_SHORT_TIME_MEDIUM, result)));
-                }
+            result -> {
+              if (result != null && Objects.equals(getActiveRowId(), id)) {
+                ((HasHtml) widget).setText(BeeUtils.joinWords(
+                    Localized.dictionary().statusUpdated(),
+                    Format.render(PredefinedFormat.DATE_SHORT_TIME_MEDIUM, result)));
               }
             });
       }
