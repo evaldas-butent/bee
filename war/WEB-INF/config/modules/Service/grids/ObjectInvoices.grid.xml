@@ -3,10 +3,10 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="ObjectInvoices" viewName="SaleItems"
-  editPopup="true" flexGrow="1" filter="ServiceObject" readOnly="true"
+  editWindow="modal" flexGrow="1" filter="ServiceObject" readOnly="true"
   >
   <g:columns>
-    <RelColumn name="Sale"  editPopup="true" />
+    <RelColumn name="Sale" editWindow="modal" />
     <RelColumn name="Item" renderColumns="ItemName" choiceColumns="Name Article" visible="true">
       <footer text="=totalOf" horizontalAlignment="right" />
     </RelColumn>

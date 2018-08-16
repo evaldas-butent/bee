@@ -9,17 +9,20 @@
     <col index="0" kind="label" />
     <col index="2" kind="label" />
     <row>
-      <Label for="Group" />
-      <DataSelector source="Group" renderColumns="TypeName GroupName" />
+      <Label for="Type" />
+      <DataSelector source="Type" />
 
-      <Label for="Description" />
-      <cell rowSpan="4">
-        <InputArea source="Description" visibleLines="10" style="width:300px;" />
-      </cell>
+      <Label for="Group" />
+      <DataSelector source="Group" renderColumns="GroupName2 GroupName" />
     </row>
     <row>
       <Label for="OptionName" />
       <InputText source="OptionName" />
+
+      <Label for="Description" />
+      <cell rowSpan="3">
+        <InputArea source="Description" visibleLines="7" style="width:300px;" />
+      </cell>
     </row>
     <row>
       <Label for="Code" />
@@ -32,6 +35,8 @@
     <row>
       <Label for="Item" />
       <DataSelector source="Item" newRowEnabled="false" />
+      <text />
+      <CheckBox source="Blocked" />
     </row>
     <row>
       <Label for="PhotoFile" />
@@ -49,13 +54,15 @@
       </FlowPanel>
     </row>
     <row>
-      <Label text="=packet" data="ConfPacketOptions" />
+      <Label for="OptionName2" />
       <cell colSpan="3">
-        <ChildSelector childTable="ConfPacketOptions" targetRelColumn="Packet"
-                       viewName="ConfOptions" sourceRelColumn="Option" newRowEnabled="false"
-                       style="width:100%;" choiceColumns="Code Code2 OptionName GroupName TypeName"
-                       renderColumns="Code Code2 OptionName" label="=packet"
-                       data="ConfPacketOptions" />
+        <InputText source="OptionName2" style="width:100%;" />
+      </cell>
+    </row>
+    <row data="ConfPacketOptions" listName="ConfPacketOptions">
+      <cell colSpan="4">
+        <ChildGrid name="ConfPacketOptions" relColumn="Packet"
+                   style="width:100%; height: 250px; text-align:left;" />
       </cell>
     </row>
   </Table>

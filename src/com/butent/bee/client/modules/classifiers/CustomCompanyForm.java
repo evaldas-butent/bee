@@ -29,8 +29,8 @@ public class CustomCompanyForm extends CompanyForm {
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-    super.onStartNewRow(form, oldRow, newRow);
+  public void onStartNewRow(FormView form, IsRow newRow) {
+    super.onStartNewRow(form, newRow);
 
     String url = Global.getParameterText(PRM_URL);
 

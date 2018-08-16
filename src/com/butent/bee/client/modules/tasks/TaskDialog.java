@@ -2,15 +2,19 @@ package com.butent.bee.client.modules.tasks;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
+import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.UnboundSelector;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.style.StyleUtils;
@@ -25,6 +29,7 @@ import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
@@ -196,6 +201,60 @@ class TaskDialog extends DialogBox {
     return chkBx.getId();
   }
 
+  Map<String, String> addEndResult(Map<String, MultiSelector> widgets, List<String> endResults,
+      String fileId) {
+    if (BeeUtils.isEmpty(endResults)) {
+      return null;
+    }
+
+    Map<String, String> multiIds = new HashMap<>();
+
+    HtmlTable table = getContainer();
+    int row = table.getRowCount();
+    String styleName = STYLE_DIALOG + "-resultLabel";
+
+    if (endResults.contains(VIEW_TASK_FILES)) {
+      Element fileLabel = Selectors.getElementByClassName(getContent(),
+          STYLE_DIALOG + "-filesLabel");
+
+      if (fileLabel != null) {
+        fileLabel.addClassName(StyleUtils.NAME_REQUIRED);
+        multiIds.put(VIEW_TASK_FILES, fileId);
+      }
+    }
+
+    for (String viewName : widgets.keySet()) {
+      if (endResults.contains(viewName)) {
+        Label label = new Label(Data.getViewCaption(viewName));
+        label.addStyleName(styleName);
+        label.addStyleName(StyleUtils.NAME_REQUIRED);
+
+        table.setWidget(row, 0, label);
+        table.getCellFormatter().addStyleName(row, 0, styleName + STYLE_CELL);
+
+        MultiSelector multi = widgets.get(viewName);
+        List<Long> ids = multi.getIds();
+
+        Relation relation = Relation.create(viewName, multi.getChoiceColumns());
+
+        MultiSelector newMulti = MultiSelector.autonomous(relation, multi.getRenderer());
+        StyleUtils.setWidth(newMulti, 100, CssUnit.PCT);
+
+        if (!BeeUtils.isEmpty(ids)) {
+          newMulti.setIds(ids);
+          newMulti.setValues(multi.getValues());
+          newMulti.setChoices(multi.getChoices());
+        }
+
+        table.setWidget(row, 1, newMulti);
+        multiIds.put(viewName, newMulti.getId());
+        row++;
+      }
+    }
+
+    return multiIds;
+  }
+
   String addSelector(String caption, String relView, List<String> relColumns,
       boolean required, Collection<Long> exclusions, Collection<Long> filter, String valueSource) {
     HtmlTable table = getContainer();
@@ -320,6 +379,15 @@ class TaskDialog extends DialogBox {
     }
   }
 
+  MultiSelector getRelation(String id) {
+    Widget child = getChild(id);
+    if (child instanceof MultiSelector) {
+      return (MultiSelector) child;
+    } else {
+      return null;
+    }
+  }
+
   DataSelector getSelector(String id) {
     Widget child = getChild(id);
     if (child instanceof DataSelector) {
@@ -332,7 +400,7 @@ class TaskDialog extends DialogBox {
   String getTime(String id) {
     Widget child = getChild(id);
     if (child instanceof InputTime) {
-      return ((InputTime) child).getValue();
+      return ((InputTime) child).getNormalizedValue();
     } else {
       return null;
     }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="DocumentStatuses" viewName="DocumentStatuses" caption="=documentStatuses"
-  newRowPopup="true"
-  >
+        name="DocumentStatuses" viewName="DocumentStatuses" caption="=documentStatuses"
+        newRowWindow="modal"
+>
   <g:columns>
     <DataColumn name="Name" minWidth="200" visible="true" />
     <DataColumn name="Main" autoFit="true" />

@@ -24,7 +24,7 @@
       </editable>
     </DataColumn>
 
-    <DataColumn name="Quantity" scale="0" visible="true">
+    <DataColumn name="Quantity" visible="true">
       <footer aggregate="sum" />
     </DataColumn>
     <DataColumn name="UnitName" label="=unitShort" />

@@ -31,6 +31,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Arrays;
@@ -50,8 +51,15 @@ public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandle
       erpAction.setTitle(Localized.dictionary().trSendToERP());
       presenter.getHeader().addCommandItem(erpAction);
     }
-    payAction.setTitle(Localized.dictionary().pay());
-    presenter.getHeader().addCommandItem(payAction);
+    GridDescription gridDescription = presenter.getGridView().getGridDescription();
+
+    if (gridDescription.hasColumn(TradeConstants.COL_TRADE_PAYMENT_TIME)
+        && gridDescription.hasColumn(TradeConstants.COL_TRADE_PAID)
+        && BeeKeeper.getUser().canEditColumn(getViewName(), TradeConstants.COL_TRADE_PAYMENT_TIME)
+        && BeeKeeper.getUser().canEditColumn(getViewName(), TradeConstants.COL_TRADE_PAID)) {
+      payAction.setTitle(Localized.dictionary().pay());
+      presenter.getHeader().addCommandItem(payAction);
+    }
   }
 
   @Override

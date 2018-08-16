@@ -6,10 +6,8 @@ import com.google.gwt.event.shared.HasHandlers;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
@@ -22,7 +20,6 @@ import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -62,21 +59,17 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
       case WIDGET_NAME_REASON:
         if (widget instanceof UnboundSelector) {
           reasonSelector = (UnboundSelector) widget;
-          reasonSelector.addSelectorHandler(new SelectorEvent.Handler() {
-
-            @Override
-            public void onDataSelector(SelectorEvent event) {
-              UnboundSelector docSelector = getDocumentSelector();
-              Label docLabel = getDocumentLabel();
-              if (docSelector != null) {
-                docSelector.setNullable(!isRequiredDocument());
-              }
-
-              if (docLabel != null) {
-                docLabel.setStyleName(StyleUtils.NAME_REQUIRED, isRequiredDocument());
-              }
-
+          reasonSelector.addSelectorHandler(event -> {
+            UnboundSelector docSelector = getDocumentSelector();
+            Label docLabel = getDocumentLabel();
+            if (docSelector != null) {
+              docSelector.setNullable(!isRequiredDocument());
             }
+
+            if (docLabel != null) {
+              docLabel.setStyleName(StyleUtils.NAME_REQUIRED, isRequiredDocument());
+            }
+
           });
         }
 
@@ -220,19 +213,15 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
 
     ProjectsHelper.registerProjectEvent(viewName, ProjectEvent.EDIT, projectRow.getId(), comment,
         newData,
-        oldData, new Callback<BeeRow>() {
-
-          @Override
-          public void onSuccess(BeeRow result) {
-            event.getCallback().onSuccess(result);
-            RowInsertEvent.fire(BeeKeeper.getBus(), viewName, result, event.getSourceId());
-          }
+        oldData, result -> {
+          event.getCallback().onSuccess(result);
+          RowInsertEvent.fire(BeeKeeper.getBus(), viewName, result, event.getSourceId());
         });
 
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow row) {
     if (editInfoLabel != null) {
       DateTime time = new DateTime();
       String user =
@@ -266,23 +255,19 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
         value =
             ProjectsHelper.getDisplayValue(projectForm.getViewName(),
                 projectValidator.getColumnId(), value, projectForm.getActiveRow(),
-                new Callback<String>() {
+                result -> {
+                  if (BeeUtils.isEmpty(result)) {
+                    return;
+                  }
 
-              @Override
-              public void onSuccess(String result) {
-                if (BeeUtils.isEmpty(result)) {
-                  return;
-                }
+                  Flow tf = getToFlow();
 
-                Flow tf = getToFlow();
+                  if (tf == null) {
+                    return;
+                  }
 
-                if (tf == null) {
-                  return;
-                }
-
-                tf.getElement().setInnerText(result);
-              }
-            });
+                  tf.getElement().setInnerText(result);
+                });
       }
 
       toFlow.getElement().setInnerText(value);

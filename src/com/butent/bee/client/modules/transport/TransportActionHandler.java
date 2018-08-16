@@ -6,7 +6,6 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.event.logical.RowActionEvent.Handler;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -26,7 +25,7 @@ public class TransportActionHandler implements Handler {
         DataInfo data = Data.getDataInfo(BeeUtils.isEmpty(Data.getString(event.getViewName(),
             event.getRow(), "ExpeditionType")) ? VIEW_TRIPS : VIEW_EXPEDITION_TRIPS);
 
-        RowEditor.openForm(data.getEditForm(), data, Filter.compareId(tripId), Opener.NEW_TAB);
+        RowEditor.openForm(data.getEditForm(), data, Filter.compareId(tripId));
       }
     }
   }

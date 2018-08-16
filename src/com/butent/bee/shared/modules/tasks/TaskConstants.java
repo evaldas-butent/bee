@@ -411,7 +411,8 @@ public final class TaskConstants {
         null,
         TaskWorkflowAction.hidden()),
     CREATE_SCHEDULED(Localized.dictionary().crmTaskForwardedForExecution(),
-        Localized.dictionary().crmTaskStatusScheduled(), null, TaskWorkflowAction.hidden());
+        Localized.dictionary().crmTaskStatusScheduled(), null, TaskWorkflowAction.hidden()),
+    SUBSTITUTE(Localized.dictionary().substitution(), null, null, TaskWorkflowAction.hidden());
 
     private final String caption;
     private final String commandLabel;
@@ -815,6 +816,12 @@ public final class TaskConstants {
 
   public static final String VIEW_TODO_LIST = "TodoList";
 
+  public static final String VIEW_TT_EXECUTORS = "TTExecutors";
+  public static final String VIEW_TT_EXECUTOR_GROUPS = "TTExecutorGroups";
+  public static final String VIEW_TT_OBSERVERS = "TTObservers";
+  public static final String VIEW_TT_OBSERVER_GROUPS = "TTObserverGroups";
+  public static final String VIEW_TT_FILES = "TTFiles";
+
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";
 
@@ -831,12 +838,14 @@ public final class TaskConstants {
 
   public static final String COL_TASK_TEMPLATE_NAME = "Name";
   public static final String COL_TASK_TYPE_NAME = "Name";
+  public static final String COL_NOT_SCHEDULED_TASK = "NotScheduledTask";
 
   public static final String COL_SUMMARY = "Summary";
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_CAPTION = "Caption";
   public static final String COL_TASK_COMPANY = "Company";
   public static final String COL_PRIVATE_TASK = "PrivateTask";
+  public static final String COL_END_RESULT = "EndResult";
 
   public static final String COL_PARENT = "Parent";
   public static final String COL_ORDER = "Order";
@@ -902,6 +911,7 @@ public final class TaskConstants {
   public static final String COL_REQUEST_REMINDER_USER = "User";
 
   public static final String COL_RECURRING_TASK = "RecurringTask";
+  public static final String COL_TASK_TEMPLATE = "TaskTemplate";
 
   public static final String COL_RT_SCHEDULE_FROM = "ScheduleFrom";
   public static final String COL_RT_SCHEDULE_UNTIL = "ScheduleUntil";
@@ -1000,6 +1010,7 @@ public final class TaskConstants {
   public static final String GRID_RECURRING_TASKS = "RecurringTasks";
   public static final String GRID_CHILD_RECURRING_TASKS = "ChildRecurringTasks";
   public static final String GRID_RT_FILES = "RTFiles";
+  public static final String GRID_TT_FILES = "TTFiles";
 
   public static final String GRID_RELATED_TASKS = "RelatedTasks";
   public static final String GRID_CHILD_TASKS = "ChildTasks";
@@ -1019,6 +1030,7 @@ public final class TaskConstants {
   public static final String FORM_TASK_PREVIEW = "TaskPreview";
 
   public static final String FORM_RECURRING_TASK = "RecurringTask";
+  public static final String FORM_TASK_TEMPLATE = "TaskTemplate";
 
   public static final String FORM_NEW_REQUEST = "NewRequest";
   public static final String FORM_REQUEST = "Request";
@@ -1033,6 +1045,8 @@ public final class TaskConstants {
   public static final String PRM_DEFAULT_DBA_TEMPLATE = "DefaultDBATemplate";
   public static final String PRM_DEFAULT_DBA_DOCUMENT_TYPE = "DefaultDBADocumentType";
   public static final String PRM_CREATE_PRIVATE_TASK_FIRST = "CreatePrivateTaskFirst";
+  public static final String PRM_SUMMARY_EXPIRED_TASK_PERCENT = "SummaryExpiredTaskPercent";
+  public static final String PRM_AUTO_TASK_USER = "AutoTaskUser";
 
   public static final String TASK_STATUS_STYLE = "bee-header-caption_state";
   public static final String TASK_STATUS_STYLE_NOT_VISITED = TASK_STATUS_STYLE + "_not_visited";

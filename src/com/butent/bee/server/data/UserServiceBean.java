@@ -259,6 +259,11 @@ public class UserServiceBean {
     return info != null && info.getUserData().canEditData(viewName);
   }
 
+  public boolean canEditList(String viewName, String listName) {
+    UserInfo info = getCurrentUserInfo();
+    return info != null && info.getUserData().canEditList(viewName, listName);
+  }
+
   public BeeRowSet ensureUserSettings() {
     Long userId = getCurrentUserId();
 
@@ -767,6 +772,16 @@ public class UserServiceBean {
   public boolean isDataVisible(String viewName) {
     UserInfo info = getCurrentUserInfo();
     return info != null && info.getUserData().isDataVisible(viewName);
+  }
+
+  public boolean isListRequired(String viewName, String listName) {
+    UserInfo info = getCurrentUserInfo();
+    return info != null && info.getUserData().isListRequired(viewName, listName);
+  }
+
+  public boolean isListVisible(String viewName, String listName) {
+    UserInfo info = getCurrentUserInfo();
+    return info != null && info.getUserData().isListVisible(viewName, listName);
   }
 
   public boolean isMenuVisible(String object) {

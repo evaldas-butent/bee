@@ -14,7 +14,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.COL_MOD
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.ChildSelector;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
@@ -31,6 +30,7 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -39,7 +39,6 @@ import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -147,12 +146,9 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
         COL_TRADE_CUSTOMER + COL_PERSON, COL_CAR, COL_CAR).forEach((s, t) ->
         RelationUtils.copyWithDescendants(eventInfo, s, eventRow, orderInfo, t, orderRow));
 
-    RowFactory.createRow(orderInfo, orderRow, null, new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow result) {
-        RelationUtils.updateRow(eventInfo, COL_SERVICE_ORDER, eventRow, orderInfo, result, true);
-        getFormView().refresh();
-      }
+    RowFactory.createRow(orderInfo, orderRow, Opener.MODAL, result -> {
+      RelationUtils.updateRow(eventInfo, COL_SERVICE_ORDER, eventRow, orderInfo, result, true);
+      getFormView().refresh();
     });
   }
 
@@ -162,10 +158,8 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
     cal.setTitle(Localized.dictionary().startingTime());
 
     cal.addClickHandler(clickEvent -> BeeKeeper.getRpc()
-        .makeGetRequest(CarsKeeper.createSvcArgs(SVC_GET_CALENDAR), new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            CalendarKeeper.openCalendar(response.getResponseAsLong(), result -> {
+        .makeGetRequest(CarsKeeper.createSvcArgs(SVC_GET_CALENDAR),
+            response -> CalendarKeeper.openCalendar(response.getResponseAsLong(), result -> {
               if (result instanceof CalendarPanel) {
                 CalendarPanel panel = (CalendarPanel) result;
 
@@ -189,9 +183,7 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
 
                 Global.showModalWidget(cal.getTitle(), panel);
               }
-            });
-          }
-        }));
+            })));
     getHeaderView().addCommandItem(cal);
     super.onLoad(form);
   }
@@ -205,12 +197,12 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-    if (newRow.isEmpty(getDataIndex(COL_END_DATE_TIME))
-        && BeeUtils.isEmpty(newRow.getProperty(COL_DURATION))) {
-      newRow.setProperty(COL_DURATION, TimeUtils.renderTime(TimeUtils.MILLIS_PER_HOUR, true));
+  public void onStartNewRow(FormView form, IsRow row) {
+    if (row.isEmpty(getDataIndex(COL_END_DATE_TIME))
+        && BeeUtils.isEmpty(row.getProperty(COL_DURATION))) {
+      row.setProperty(COL_DURATION, TimeUtils.renderTime(TimeUtils.MILLIS_PER_HOUR, true));
     }
-    super.onStartNewRow(form, oldRow, newRow);
+    super.onStartNewRow(form, row);
   }
 
   private void commitAttendees(String attendees, IsRow eventRow, boolean isNew) {

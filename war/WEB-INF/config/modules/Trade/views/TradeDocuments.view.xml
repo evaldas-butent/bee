@@ -4,6 +4,7 @@
       name="TradeDocuments" source="TradeDocuments"
       caption="=trdDocuments" newRowCaption="=trdNewDocument"
       editForm="TradeDocument" newRowForm="TradeDocument"
+      rowCaption="Series Number"
 >
   <Columns>
     <SimpleColumn name="Date" />
@@ -61,12 +62,14 @@
     <SimpleJoin joinType="LEFT" name="WarehouseFrom">
       <SimpleColumn name="Code" alias="WarehouseFromCode" />
       <SimpleColumn name="Name" alias="WarehouseFromName" />
+      <SimpleColumn name="Consignment" alias="WarehouseFromConsignment" />
     </SimpleJoin>
 
     <SimpleColumn name="WarehouseTo" />
     <SimpleJoin joinType="LEFT" name="WarehouseTo">
       <SimpleColumn name="Code" alias="WarehouseToCode" />
       <SimpleColumn name="Name" alias="WarehouseToName" />
+      <SimpleColumn name="Consignment" alias="WarehouseToConsignment" />
     </SimpleJoin>
 
     <SimpleColumn name="Currency" />

@@ -3,9 +3,7 @@ package com.butent.bee.client.modules.classifiers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 
 import com.butent.bee.client.composite.DataSelector;
@@ -15,7 +13,6 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
@@ -28,7 +25,6 @@ import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.css.values.Display;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
@@ -120,7 +116,12 @@ final class CompanyActionForm extends AbstractFormInterceptor {
 
   @Override
   public void onLoad(FormView form) {
+    List<String> columns = Lists.newArrayList(CalendarConstants.COL_APPOINTMENT_TYPE_NAME,
+        CalendarConstants.COL_APPOINTMENT_TYPE_DURATION);
 
+    Filter filter = Filter.notNull(CalendarConstants.COL_APPOINTMENT_TYPE_DURATION);
+    Queries.getRowSet(CalendarConstants.VIEW_APPOINTMENT_TYPES, columns, filter,
+        getAppointmentTypesCallback());
   }
 
   @Override
@@ -138,7 +139,7 @@ final class CompanyActionForm extends AbstractFormInterceptor {
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow row) {
     GridView parentGrid = getGridView();
     FormView parentForm = null;
     IsRow parentRow = null;
@@ -147,7 +148,7 @@ final class CompanyActionForm extends AbstractFormInterceptor {
     int idxStartDate = form.getDataIndex(CalendarConstants.COL_START_DATE_TIME);
 
     if (idxStartDate > -1) {
-      newRow.setValue(idxStartDate, TimeUtils.nowMinutes());
+      row.setValue(idxStartDate, TimeUtils.nowMinutes());
     }
 
     if (parentGrid != null) {
@@ -161,13 +162,13 @@ final class CompanyActionForm extends AbstractFormInterceptor {
     if (parentRow != null
         && BeeUtils.same(parentForm.getFormName(), ClassifierConstants.FORM_COMPANY)
         && idxCompany > -1) {
-      newRow.setValue(idxCompany, parentRow.getId());
+      row.setValue(idxCompany, parentRow.getId());
 
       int idxCompanyName = form.getDataIndex(ClassifierConstants.ALS_COMPANY_NAME);
       int idxParentCompanyName = parentForm.getDataIndex(ClassifierConstants.COL_COMPANY_NAME);
 
       if (idxCompanyName > -1 && idxParentCompanyName > -1) {
-        newRow.setValue(idxCompanyName, parentRow.getValue(idxParentCompanyName));
+        row.setValue(idxCompanyName, parentRow.getValue(idxParentCompanyName));
         form.refreshBySource(ClassifierConstants.COL_COMPANY);
         if (companyWidget != null) {
           companyWidget.setEnabled(false);
@@ -175,29 +176,15 @@ final class CompanyActionForm extends AbstractFormInterceptor {
       }
     }
 
-    createRegisterResultCheckBox(form, newRow);
+    createRegisterResultCheckBox(form, row);
     form.addCellValidationHandler(CalendarConstants.COL_STATUS, getStatusValidationHandler(
-        form, newRow));
-
-    super.onStartNewRow(form, oldRow, newRow);
-  }
-
-  @Override
-  public void onStart(FormView form) {
-
-    List<String> columns = Lists.newArrayList(CalendarConstants.COL_APPOINTMENT_TYPE_NAME,
-        CalendarConstants.COL_APPOINTMENT_TYPE_DURATION);
-
-    Filter filter = Filter.notNull(CalendarConstants.COL_APPOINTMENT_TYPE_DURATION);
-    Queries.getRowSet(CalendarConstants.VIEW_APPOINTMENT_TYPES, columns, filter,
-        getAppointmentTypesCallback());
-
+        form, row));
     form.addCellValidationHandler(CalendarConstants.COL_START_DATE_TIME,
-        getAppointmentTypeValidation(form));
-
+        getAppointmentTypeValidation(form, row));
     form.addCellValidationHandler(CalendarConstants.COL_APPOINTMENT_TYPE,
-        getAppointmentTypeValidation(form));
-    super.onStart(form);
+        getAppointmentTypeValidation(form, row));
+
+    super.onStartNewRow(form, row);
   }
 
   private static boolean canModify(FormView form, IsRow row) {
@@ -250,75 +237,63 @@ final class CompanyActionForm extends AbstractFormInterceptor {
   }
 
   private RowSetCallback getAppointmentTypesCallback() {
-    return new RowSetCallback() {
+    return result -> {
+      plannedDurations.clear();
+      setPlanedDurationColumnIndex(-1);
 
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        plannedDurations.clear();
-        setPlanedDurationColumnIndex(-1);
+      if (result == null) {
+        return;
+      }
 
-        if (result == null) {
-          return;
-        }
+      if (result.isEmpty()) {
+        return;
+      }
 
-        if (result.isEmpty()) {
-          return;
-        }
+      setPlanedDurationColumnIndex(result
+          .getColumnIndex(CalendarConstants.COL_APPOINTMENT_TYPE_DURATION));
 
-        setPlanedDurationColumnIndex(result
-            .getColumnIndex(CalendarConstants.COL_APPOINTMENT_TYPE_DURATION));
-
-        for (IsRow row : result) {
-          plannedDurations.put(row.getId(), row);
-        }
-
+      for (IsRow row : result) {
+        plannedDurations.put(row.getId(), row);
       }
     };
   }
 
-  private Handler getAppointmentTypeValidation(final FormView form) {
-    return new Handler() {
+  private Handler getAppointmentTypeValidation(final FormView form, final IsRow row) {
+    return event -> {
+      IsRow appointmentTypeRow;
+      DateTime time;
 
-      @Override
-      public Boolean validateCell(CellValidateEvent event) {
-        IsRow appointmentTypeRow = null;
-        DateTime time;
-        IsRow row = getActiveRow();
-
-        if (getPlanedDurationColumnIndex() < 0) {
-          return true;
-        }
-
-        if (BeeUtils
-            .isEmpty(row.getString(form.getDataIndex(CalendarConstants.COL_START_DATE_TIME)))) {
-          return true;
-        }
-
-        if (event.getColumnId().equals(CalendarConstants.COL_APPOINTMENT_TYPE)) {
-          appointmentTypeRow = plannedDurations.get(BeeUtils.toLong(event.getNewValue()));
-          time =
-              row.getDateTime(form.getDataIndex(CalendarConstants.COL_START_DATE_TIME));
-        } else {
-          appointmentTypeRow =
-              plannedDurations.get(BeeUtils.toLong(row
-                  .getString(form.getDataIndex(CalendarConstants.COL_APPOINTMENT_TYPE))));
-          time = new DateTime(BeeUtils.toLong(event.getNewValue()));
-        }
-
-        if (appointmentTypeRow == null) {
-          return true;
-        }
-
-        DateTime plannedDurationTime = new DateTime(TimeUtils.parseTime(
-            appointmentTypeRow.getString(getPlanedDurationColumnIndex())));
-
-        DateTime plannedEndTime = new DateTime(time.getTime() + plannedDurationTime.getTime());
-
-        row.setValue(form.getDataIndex(CalendarConstants.COL_END_DATE_TIME), plannedEndTime);
-        form.refreshBySource(CalendarConstants.COL_END_DATE_TIME);
-
+      if (getPlanedDurationColumnIndex() < 0) {
         return true;
       }
+
+      if (BeeUtils
+          .isEmpty(row.getString(form.getDataIndex(CalendarConstants.COL_START_DATE_TIME)))) {
+        return true;
+      }
+
+      if (event.getColumnId().equals(CalendarConstants.COL_APPOINTMENT_TYPE)) {
+        appointmentTypeRow = plannedDurations.get(BeeUtils.toLong(event.getNewValue()));
+        time = row.getDateTime(form.getDataIndex(CalendarConstants.COL_START_DATE_TIME));
+      } else {
+        appointmentTypeRow = plannedDurations.get(BeeUtils.toLong(row
+            .getString(form.getDataIndex(CalendarConstants.COL_APPOINTMENT_TYPE))));
+        time = new DateTime(BeeUtils.toLong(event.getNewValue()));
+      }
+
+      if (appointmentTypeRow == null) {
+        return true;
+      }
+
+      DateTime plannedDurationTime = new DateTime(TimeUtils.parseTime(
+          appointmentTypeRow.getString(getPlanedDurationColumnIndex())));
+
+      DateTime plannedEndTime = new DateTime(time.getTime() + plannedDurationTime.getTime());
+
+      row.setValue(form.getDataIndex(CalendarConstants.COL_END_DATE_TIME), plannedEndTime);
+      form.refreshBySource(CalendarConstants.COL_END_DATE_TIME);
+
+      return true;
     };
   }
 
@@ -327,55 +302,41 @@ final class CompanyActionForm extends AbstractFormInterceptor {
   }
 
   private ClickHandler getShowAndHideResultClickHandler(final FormView form, final IsRow row) {
-    return new ClickHandler() {
-
-      @Override
-      public void onClick(ClickEvent arg0) {
-        showActionResultInput(form, row);
-      }
-    };
+    return arg0 -> showActionResultInput(form, row);
   }
 
   private ValueChangeHandler<String> getShowAndHideResultValueChangeHandler(final FormView form,
       final IsRow row) {
-    return new ValueChangeHandler<String>() {
+    return value -> {
+      Boolean boolValue = BeeUtils.toBooleanOrNull(value.getValue());
 
-      @Override
-      public void onValueChange(ValueChangeEvent<String> value) {
-        Boolean boolValue = BeeUtils.toBooleanOrNull(value.getValue());
-
-        if (BeeUtils.isTrue(boolValue)) {
-          showActionResultInput(form, row);
-        } else {
-          hideActionResultInput(form, row);
-        }
+      if (BeeUtils.isTrue(boolValue)) {
+        showActionResultInput(form, row);
+      } else {
+        hideActionResultInput(form, row);
       }
     };
   }
 
   private Handler getStatusValidationHandler(final FormView form, final IsRow row) {
-    return new Handler() {
+    return event -> {
+      String newValue = event.getNewValue();
+      AppointmentStatus newStatus = EnumUtils.getEnumByIndex(AppointmentStatus.class, newValue);
 
-      @Override
-      public Boolean validateCell(CellValidateEvent event) {
-        String newValue = event.getNewValue();
-        AppointmentStatus newStatus = EnumUtils.getEnumByIndex(AppointmentStatus.class, newValue);
-
-        if (newStatus.compareTo(AppointmentStatus.COMPLETED) == 0) {
-          showActionResultInput(form, row);
-          if (registerResult != null) {
-            registerResult.setChecked(true);
-          }
-        } else {
-          hideActionResultInput(form, row);
-          if (registerResult != null) {
-            registerResult.setChecked(false);
-          }
+      if (newStatus.compareTo(AppointmentStatus.COMPLETED) == 0) {
+        showActionResultInput(form, row);
+        if (registerResult != null) {
+          registerResult.setChecked(true);
         }
-        row.setValue(form.getDataIndex(CalendarConstants.COL_STATUS), newValue);
-        form.refreshBySource(CalendarConstants.COL_STATUS);
-        return Boolean.TRUE;
+      } else {
+        hideActionResultInput(form, row);
+        if (registerResult != null) {
+          registerResult.setChecked(false);
+        }
       }
+      row.setValue(form.getDataIndex(CalendarConstants.COL_STATUS), newValue);
+      form.refreshBySource(CalendarConstants.COL_STATUS);
+      return Boolean.TRUE;
     };
   }
 
@@ -550,12 +511,10 @@ final class CompanyActionForm extends AbstractFormInterceptor {
     registerResultActive = true;
   }
 
-  private static boolean validateDates(Long from, Long to,
-      final FormView form) {
+  private static boolean validateDates(Long from, Long to, final FormView form) {
     long now = System.currentTimeMillis();
 
     if (from == null && to == null) {
-
       if (form != null) {
         form.notifySevere(Localized.dictionary().calEnterPlannedStartTime());
       }
@@ -563,19 +522,19 @@ final class CompanyActionForm extends AbstractFormInterceptor {
     }
 
     if (from == null && to != null) {
-      if (to.longValue() >= now) {
+      if (to >= now) {
         return true;
       }
     }
 
     if (from != null && to == null) {
-      if (from.longValue() <= now) {
+      if (from <= now) {
         return true;
       }
     }
 
     if (from != null && to != null) {
-      if (from.longValue() <= to.longValue()) {
+      if (from <= to) {
         return true;
       } else {
         if (form != null) {

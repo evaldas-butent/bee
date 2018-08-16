@@ -11,7 +11,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.*;
@@ -126,9 +126,8 @@ abstract class MaintenanceStateChangeInterceptor extends MaintenanceExpanderForm
     BeeRow emptyRow = RowFactory.createEmptyRow(data, false);
 
     RowFactory.createRow(FORM_MAINTENANCE_STATE_COMMENT, null, data, emptyRow,
-        Modality.ENABLED, null,
-        new MaintenanceCommentForm(maintenanceRow, stateProcessRow), null, new RowCallback() {
-
+        Opener.MODAL, new MaintenanceCommentForm(maintenanceRow, stateProcessRow),
+        new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             if (success != null) {

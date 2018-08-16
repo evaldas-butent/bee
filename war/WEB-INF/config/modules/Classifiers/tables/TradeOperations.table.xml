@@ -35,6 +35,10 @@
     <Relation name="TradeAccounts" unique="true" relation="TradeAccounts" editable="true"
               label="=finTradeAccounts" />
 
+    <Numeric name="Consignment" precision="1" label="=consignment" />
+    <Relation name="ConsignmentDebit" relation="ChartOfAccounts" label="=consignmentDebit" />
+    <Relation name="ConsignmentCredit" relation="ChartOfAccounts" label="=consignmentCredit" />
+
     <String name="Background" precision="100" label="=backgroundColor" />
     <String name="Foreground" precision="100" label="=foregroundColor" />
 

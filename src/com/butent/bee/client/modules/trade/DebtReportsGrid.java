@@ -9,7 +9,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
@@ -23,7 +22,6 @@ import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -38,7 +36,6 @@ import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -169,8 +166,8 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
     presenter.getHeader().clearCommandPanel();
     presenter.getHeader().addCommandItem(action);
     presenter.getHeader().addCommandItem(TradeKeeper.createAmountAction(presenter.getViewName(),
-      () ->
-        presenter.getDataProvider().getFilter(), TradeConstants.COL_SALE, presenter.getGridView()));
+        () -> presenter.getDataProvider().getFilter(), TradeConstants.COL_SALE,
+        presenter.getGridView()));
   }
 
   @Override
@@ -277,8 +274,8 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
         @Override
         public String getLabel() {
           return BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, isTermOverdue() ? Localized
-              .dictionary().trdTermInOverdue()
-              : null, isTermNotExpired() ? Localized.dictionary().trdTermNotExpired() : null,
+                  .dictionary().trdTermInOverdue()
+                  : null, isTermNotExpired() ? Localized.dictionary().trdTermNotExpired() : null,
               getTermPayFrom() != null ? BeeUtils.joinWords(Localized.dictionary().trdTerm(),
                   Localized.dictionary().dateFromShort(), getTermPayFrom().toString()) : null,
               getTermPayTo() != null ? BeeUtils.joinWords(Localized.dictionary().trdTerm(),
@@ -429,8 +426,7 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
           GridFactory.getGridInterceptor(TradeConstants.GRID_ERP_SALES),
           options, PresenterCallback.SHOW_IN_NEW_TAB);
     } else if (ClassifierConstants.COL_COMPANY_NAME.equals(event.getColumnId())) {
-      RowEditor.open(ClassifierConstants.VIEW_COMPANIES, activeRow.getId(),
-          Opener.NEW_TAB);
+      RowEditor.open(ClassifierConstants.VIEW_COMPANIES, activeRow.getId());
     }
   }
 
@@ -453,24 +449,19 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
     rpc.addDataItem(TradeConstants.VAR_FOOTER, p2);
     rpc.addDataItem(TradeConstants.VAR_ID_LIST, DataUtils.buildIdList(ids));
 
-    BeeKeeper.getRpc().makePostRequest(rpc, new ResponseCallback() {
+    BeeKeeper.getRpc().makePostRequest(rpc, response -> {
+      if (response.hasErrors()) {
+        getGridPresenter().getGridView().notifySevere(response.getErrors());
+        Popup.getActivePopup().close();
+        return;
+      }
 
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasErrors()) {
-          getGridPresenter().getGridView().notifySevere(response.getErrors());
-          Popup.getActivePopup().close();
-          return;
-        }
+      if (response.hasResponse() && response.getResponse() instanceof String) {
+        getGridPresenter().getGridView().notifyInfo(response.getResponseAsString());
+      }
 
-        if (response.hasResponse() && response.getResponse() instanceof String) {
-          getGridPresenter().getGridView().notifyInfo(
-              new String[] {(String) response.getResponse()});
-        }
-
-        if (Popup.getActivePopup() != null) {
-          Popup.getActivePopup().close();
-        }
+      if (Popup.getActivePopup() != null) {
+        Popup.getActivePopup().close();
       }
     });
 

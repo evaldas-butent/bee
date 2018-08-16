@@ -3,7 +3,8 @@
         xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="TradePayables" viewName="TradeDocuments"
-        disabledActions="add delete filter rights"
+        disabledActions="add delete filter rights" dataOptions="TradePaymentTerms"
+        autoFlex="true"
 >
   <g:columns>
     <SelectionColumn name="Select" width="20" />
@@ -40,6 +41,7 @@
 
   <g:columns>
     <DataColumn name="Term" />
+    <PropColumn name="TdPaymentTerms" type="string" label="=trdPaymentTerms" />
 
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName"
                sortBy="ManagerLastName ManagerFirstName" visible="false" />

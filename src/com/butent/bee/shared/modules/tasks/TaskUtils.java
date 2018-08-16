@@ -6,6 +6,15 @@ import com.google.common.collect.Multimap;
 
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
+import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.grid.CellKind;
+import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -14,9 +23,12 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
@@ -25,10 +37,15 @@ import com.butent.bee.shared.time.ScheduleDateMode;
 import com.butent.bee.shared.time.ScheduleDateRange;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -52,7 +69,7 @@ public final class TaskUtils {
       }
 
       if (BeeUtils.unbox(row.getInteger(info.getColumnIndex(COL_STATUS)))
-        != TaskStatus.COMPLETED.ordinal()) {
+          != TaskStatus.COMPLETED.ordinal()) {
         if (resp != null) {
           resp.addWarning(
               BeeUtils.joinWords(Localized.dictionary().crmTask(), row.getId()),
@@ -141,6 +158,13 @@ public final class TaskUtils {
     }
 
     return result;
+  }
+
+  public static Filter getTaskPrivacyFilter(long userId) {
+    return Filter.or(Filter.isNull(COL_PRIVATE_TASK),
+        Filter.equals(COL_OWNER, userId), Filter.equals(COL_EXECUTOR, userId),
+        Filter.in(COL_TASK_ID, VIEW_TASK_USERS, COL_TASK,
+            Filter.equals(AdministrationConstants.COL_USER, userId)));
   }
 
   public static List<Long> getTaskUsers(IsRow row, List<BeeColumn> columns) {
@@ -234,6 +258,116 @@ public final class TaskUtils {
     }
 
     return DataUtils.render(dataInfo, row, column, index, dateRenderer, dateTimeRenderer);
+  }
+
+  public static void renderEndResult(Map<String, MultiSelector> relations, FormView formView,
+      boolean isOwner, Runnable runnable) {
+
+    HtmlTable table = new HtmlTable();
+    table.setColumnCellKind(0, CellKind.LABEL);
+    table.setWidth("100%");
+
+    String view = formView.getViewName();
+    IsRow row = formView.getActiveRow();
+
+    Map<String, CheckBox> cbMap = new HashMap<>();
+    List<String> savedEndResult = Codec.deserializeList(Data.getString(view, row, COL_END_RESULT));
+
+    relations.put(VIEW_TASK_FILES, null);
+
+    int i = 0;
+    for (String relation : relations.keySet()) {
+      String caption = Data.getViewCaption(relation);
+
+      if (!BeeUtils.isEmpty(caption)) {
+        CheckBox cb = new CheckBox();
+        cb.setEnabled(isOwner);
+
+        if (savedEndResult.contains(relation)) {
+          cb.setChecked(true);
+        }
+
+        table.setWidget(i, 0, cb);
+        cbMap.put(relation, cb);
+
+        table.setText(i, 1, caption);
+        i++;
+      }
+    }
+
+    Global.inputWidget(Localized.dictionary().crmTaskEndResult(), table, () -> {
+      List<String> result = new ArrayList<>();
+      List<String> translations = new ArrayList<>();
+
+      for (String viewName : cbMap.keySet()) {
+        if (cbMap.get(viewName).isChecked()) {
+          result.add(viewName);
+          translations.add(Data.getViewCaption(viewName));
+        }
+      }
+
+      if (savedEndResult.equals(result)) {
+        return;
+      }
+
+      if (DataUtils.isId(row.getId()) && BeeUtils.same(view, VIEW_TASKS)) {
+        int idx = Data.getColumnIndex(view, COL_END_RESULT);
+
+        if (!BeeConst.isUndef(idx)) {
+          Queries.update(view, row.getId(), COL_END_RESULT, new TextValue(result.isEmpty()
+                  ? BeeConst.STRING_EMPTY : Codec.beeSerialize(result)), (Integer count) -> {
+                if (BeeUtils.isPositive(count)) {
+                  insertEndResultNote(Collections.singletonList(row.getId()), savedEndResult,
+                      translations, runnable);
+                }
+              });
+        }
+      } else {
+        Data.setValue(view, row, COL_END_RESULT, Codec.beeSerialize(result));
+      }
+    });
+  }
+
+  public static void insertEndResultNote(List<Long> ids, List<String> savedEndResult,
+      List<String> endResult, Runnable runnable) {
+
+    String message;
+
+    List<String> savedTranslations = new ArrayList<>();
+
+    if (savedEndResult != null) {
+      savedEndResult.forEach(viewName -> savedTranslations.add(Data.getViewCaption(viewName)));
+    }
+
+    if (!savedTranslations.isEmpty() && !endResult.isEmpty()) {
+      message = TaskUtils.getUpdateNote(Localized.dictionary().crmTaskEndResult(),
+          BeeUtils.join(", ", savedTranslations), BeeUtils.join(", ", endResult));
+    } else if (savedTranslations.isEmpty() && !endResult.isEmpty()) {
+      message = TaskUtils.getInsertNote(Localized.dictionary().crmTaskEndResult(),
+          BeeUtils.join(", ", endResult));
+    } else {
+      message = TaskUtils.getDeleteNote(Localized.dictionary().crmTaskEndResult(), null);
+    }
+
+    BeeRowSet rowSet = new BeeRowSet(TBL_TASK_EVENTS, Data.getColumns(TBL_TASK_EVENTS,
+        Arrays.asList(COL_TASK, COL_PUBLISHER, COL_PUBLISH_TIME, COL_EVENT_NOTE,
+            COL_EVENT)));
+
+    for (Long id : ids) {
+      BeeRow r = rowSet.addEmptyRow();
+      r.setValue(rowSet.getColumnIndex(COL_TASK), id);
+      r.setValue(rowSet.getColumnIndex(COL_PUBLISHER),
+          BeeKeeper.getUser().getUserId());
+      r.setValue(rowSet.getColumnIndex(COL_PUBLISH_TIME), TimeUtils.nowMillis());
+      r.setValue(rowSet.getColumnIndex(COL_EVENT_NOTE), message);
+      r.setValue(rowSet.getColumnIndex(COL_EVENT), TaskEvent.EDIT);
+    }
+
+    Queries.insertRows(rowSet, result -> {
+      if (runnable != null) {
+        runnable.run();
+      }
+    });
   }
 
   public static boolean sameObservers(IsRow oldRow, IsRow newRow) {

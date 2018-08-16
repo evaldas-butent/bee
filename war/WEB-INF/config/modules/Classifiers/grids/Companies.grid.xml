@@ -57,6 +57,8 @@
     <DataColumn name="DiscountPercent" visible="false" />
     <DataColumn name="DiscountParent" renderColumns="DiscountParentName" visible="false" />
     <DataColumn name="PriceName" visible="false" />
+
+    <PropColumn name="Activity" type="string"  caption="=companyActivities" filterSupplier="custom" filterOptions="company_activities"/>
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />

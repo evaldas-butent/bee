@@ -219,6 +219,8 @@ public enum Report implements HasWidgetSupplier {
           new ReportTextItem(COL_CUSTOMER, loc.customer()),
           new ReportTextItem(COL_ORDER_MANAGER, loc.manager()),
           new ReportTextItem(COL_CARGO, loc.cargo()),
+          new ReportTextItem(COL_CARGO_TYPE_NAME, loc.trCargoType()),
+          new ReportTextItem(COL_CARGO_GROUP_NAME, loc.trCargoGroup()),
           new ReportBooleanItem(COL_CARGO_PARTIAL, loc.partial()),
 
           new ReportNumericItem(COL_ROUTE_KILOMETERS, loc.kilometers()),
@@ -442,7 +444,8 @@ public enum Report implements HasWidgetSupplier {
           new ReportTextItem(ALS_TRAILER_NUMBER, loc.trailer()),
           new ReportEnumItem(TaskConstants.COL_STATUS, loc.status(), TripStatus.class),
           new ReportTextItem(TradeConstants.COL_TRADE_MANAGER, loc.manager()),
-          new ReportTextItem(COL_MAIN_DRIVER, loc.trdDriver()),
+          new ReportTextItem(COL_MAIN_DRIVER,
+              BeeUtils.joinWords(loc.mailDefault(), loc.trdDriver())),
           new ReportNumericItem(COL_SPEEDOMETER_BEFORE, loc.trSpeedometerFrom()),
           new ReportNumericItem(COL_SPEEDOMETER_AFTER, loc.trSpeedometerAfter()),
           new ReportNumericItem(COL_FUEL_BEFORE, loc.trFuelBalanceBefore()).setPrecision(3),
@@ -640,7 +643,9 @@ public enum Report implements HasWidgetSupplier {
           new ReportDateTimeItem(COL_DURATION_DATE,
               Data.getColumnLabel(TBL_EVENT_DURATIONS, COL_DURATION_DATE)),
           new ReportTimeDurationItem(COL_DURATION,
-              Data.getColumnLabel(TBL_EVENT_DURATIONS, COL_DURATION))
+              Data.getColumnLabel(TBL_EVENT_DURATIONS, COL_DURATION)),
+          new ReportDateTimeItem(COL_COMPLETED, Data.getColumnLabel(VIEW_TASKS, COL_COMPLETED)),
+          new ReportDateTimeItem(COL_APPROVED, Data.getColumnLabel(VIEW_TASKS, COL_APPROVED))
       );
     }
 

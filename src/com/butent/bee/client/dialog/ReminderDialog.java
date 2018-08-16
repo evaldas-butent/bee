@@ -11,12 +11,15 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.widget.InputDate;
+import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.shared.i18n.PredefinedFormat;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
@@ -56,7 +59,8 @@ public class ReminderDialog extends DialogBox {
   private BeeRow reminderDataRow;
   private Map<Integer, DateTime> datesByField;
   private TextLabel dateTextLabel;
-  private InputDateTime dateTimeInput;
+  private InputDate dateInput;
+  private InputTime timeInput;
   private Filter flt;
   private Module module;
   private long objectId;
@@ -143,7 +147,8 @@ public class ReminderDialog extends DialogBox {
     selectionPanel.add(selector);
 
     createDateTimeWidget(dataTypeId);
-    selectionPanel.add(dateTimeInput);
+    selectionPanel.add(dateInput);
+    selectionPanel.add(timeInput);
 
     mainPanel.add(selectionPanel);
 
@@ -249,6 +254,22 @@ public class ReminderDialog extends DialogBox {
     return null;
   }
 
+  private DateTime calculateDateTimeValue() {
+    if (dateInput != null || timeInput != null) {
+      if (dateInput.getDate() != null) {
+        Long dateInMillis = dateInput.getDate().getTime();
+
+        if (timeInput.getMillis() != null) {
+          dateInMillis += timeInput.getMillis();
+        }
+
+        return new DateTime(dateInMillis);
+      }
+    }
+
+    return null;
+  }
+
   private void calculateReminderTime(BeeRow selectorRow, DateTime dateTime) {
     DateTime calculatedDate = dateTime;
     if (selectorRow != null && DataUtils.isId(selectorRow.getId())) {
@@ -258,8 +279,12 @@ public class ReminderDialog extends DialogBox {
       if (datesByField.containsKey(dataField)) {
         calculatedDate = calculateDateBySelectorChoice(selectorRow);
         if (calculatedDate != null) {
-          dateTimeInput.setDateTime(calculatedDate);
-          dateTimeInput.addStyleName(STYLE_ELEMENT_NOT_VISIBLE);
+          dateInput.setDate(calculatedDate.getDate());
+          dateInput.addStyleName(STYLE_ELEMENT_NOT_VISIBLE);
+
+          timeInput.setMinutes(TimeUtils.minutesSinceDayStarted(calculatedDate));
+          timeInput.addStyleName(STYLE_ELEMENT_NOT_VISIBLE);
+
           dateTextLabel.setText(formatDate(calculatedDate));
         }
       }
@@ -275,6 +300,20 @@ public class ReminderDialog extends DialogBox {
     }
   }
 
+  private List<BeeRow> calculateSelectionRows(BeeRowSet rowSet) {
+    List<BeeRow> selectionRows = new ArrayList<>();
+    for (BeeRow row : rowSet.getRows()) {
+      if (DataUtils.isId(row.getId())) {
+        DateTime calculatedDate = calculateDateBySelectorChoice(row);
+        if (calculatedDate != null && calculatedDate.getTime() > System.currentTimeMillis()) {
+          selectionRows.add(row);
+        }
+      }
+    }
+
+    return selectionRows;
+  }
+
   private Button createCancelButton() {
     return new Button(Localized.dictionary().userReminderCancel(), event -> {
       close();
@@ -285,29 +324,38 @@ public class ReminderDialog extends DialogBox {
     DateTime dataValue = reminderDataRow == null ? null : reminderDataRow.getDateTime(
         Data.getColumnIndex(VIEW_USER_REMINDERS, COL_USER_REMINDER_TIME));
 
-    dateTimeInput = new InputDateTime();
-    dateTimeInput.addStyleName(STYLE_DIALOG_COMPONENT);
-    dateTimeInput.setDateTimeFormat(Format.getPredefinedFormat(PredefinedFormat.DATE_TIME_SHORT));
+    dateInput = new InputDate();
+    dateInput.addStyleName(STYLE_DIALOG_COMPONENT);
+    dateInput.setDateTimeFormat(Format.getPredefinedFormat(PredefinedFormat.DATE_SHORT));
+    StyleUtils.setWidth(dateInput, 100);
+
+    timeInput = new InputTime();
+    timeInput.setStepValue(15);
+    timeInput.setMillis(Global.getParameterTime(TaskConstants.PRM_END_OF_WORK_DAY));
+    timeInput.addStyleName(STYLE_DIALOG_COMPONENT);
 
     if (dataValue != null) {
-      dateTimeInput.setDateTime(dataValue);
+      dateInput.setDate(dataValue.getDate());
+      timeInput.setMinutes(TimeUtils.minutesSinceDayStarted(dataValue));
     }
 
     if (reminderDataRow == null || dataTypeId != null) {
-      dateTimeInput.addStyleName(STYLE_ELEMENT_NOT_VISIBLE);
+      dateInput.addStyleName(STYLE_ELEMENT_NOT_VISIBLE);
+      timeInput.addStyleName(STYLE_ELEMENT_NOT_VISIBLE);
     }
 
-    dateTimeInput.addEditStopHandler(valueChangeEvent ->
-        setTime());
-    dateTimeInput.addInputHandler(valueChangeEvent ->
-        calculateReminderTime(null, dateTimeInput.getDateTime()));
+    dateInput.addEditStopHandler(valueChangeEvent -> setTime());
+    dateInput.addInputHandler(valueChangeEvent -> calculateReminderTime(null,
+        calculateDateTimeValue()));
+
+    timeInput.addEditStopHandler(valueChangeEvent -> setTime());
+    timeInput.addInputHandler(valueChangeEvent -> calculateReminderTime(null,
+        calculateDateTimeValue()));
   }
 
   private Button createReminderButton() {
-    final Button reminderButton =
-        new Button(Localized.dictionary().userRemind(), event -> {
-          Long time =
-              dateTimeInput.getDateTime() == null ? null : dateTimeInput.getDateTime().getTime();
+    final Button reminderButton = new Button(Localized.dictionary().userRemind(), event -> {
+          Long time = dateInput.getDate() == null ? null : calculateDateTimeValue().getTime();
 
           if (time != null && System.currentTimeMillis() < time) {
             final List<BeeColumn> columns = Data.getColumns(VIEW_USER_REMINDERS,
@@ -345,47 +393,66 @@ public class ReminderDialog extends DialogBox {
 
     selector = UnboundSelector.create(relation);
     selector.addStyleName(STYLE_DIALOG_COMPONENT);
+    DomUtils.setPlaceholder(selector, Localized.dictionary().actionSelect());
 
-    if (reminderDataRow != null && dataTypeId == null) {
-      selector.setSelection(createOtherTimeSelectionRow(), null, false);
-      selector.normalizeDisplay(Localized.dictionary().userReminderDisabled());
-    }
+    Queries.getRowSet(VIEW_REMINDER_TYPES, null,
+        Filter.equals(COL_REMINDER_MODULE, module.ordinal()), result -> {
+          List<BeeRow> selectionRows = calculateSelectionRows(result);
 
-    if (dataTypeId != null) {
-      selector.setValue(dataTypeId, true);
-    }
+          if (selectionRows.size() == 0) {
+            BeeRow emptyRow = createOtherTimeSelectionRow();
+            selector.setSelection(emptyRow,
+                emptyRow.getValue(Data.getColumnIndex(VIEW_REMINDER_TYPES,
+                    COL_REMINDER_NAME)), true);
 
-    selector.getOracle().setAdditionalFilter(
-        Filter.equals(COL_REMINDER_MODULE, module.ordinal()), true);
+            timeInput.removeStyleName(STYLE_ELEMENT_NOT_VISIBLE);
+            dateInput.removeStyleName(STYLE_ELEMENT_NOT_VISIBLE);
 
-    selector.addSelectorHandler(event -> {
-      if (event.isChanged()) {
-        if (event != null) {
-          calculateReminderTime(event.getRelatedRow(), null);
-        }
-        if (!DataUtils.hasId(event.getRelatedRow())) {
-          dateTimeInput.clearValue();
-          dateTimeInput.removeStyleName(STYLE_ELEMENT_NOT_VISIBLE);
-          dateTextLabel.getParent().addStyleName(STYLE_ELEMENT_NOT_VISIBLE);
-        }
-      }
-    });
-
-    selector.getOracle().addDataReceivedHandler(rowSet -> {
-      List<BeeRow> selectionRows = new ArrayList<>();
-      for (BeeRow row : rowSet.getRows()) {
-        if (DataUtils.isId(row.getId())) {
-          DateTime calculatedDate = calculateDateBySelectorChoice(row);
-          if (calculatedDate != null && calculatedDate.getTime() > System.currentTimeMillis()) {
-            selectionRows.add(row);
+            if (calculateDateTimeValue() != null) {
+              dateInput.setDate(calculateDateTimeValue().getDate());
+              timeInput.setMinutes(TimeUtils.minutesSinceDayStarted(calculateDateTimeValue()));
+            } else {
+              dateInput.clearValue();
+              timeInput.setMillis(Global.getParameterTime(TaskConstants.PRM_END_OF_WORK_DAY));
+            }
           }
-        }
-      }
 
-      selectionRows.add(createOtherTimeSelectionRow());
+          if (reminderDataRow != null && dataTypeId == null) {
+            selector.setSelection(createOtherTimeSelectionRow(), null, false);
+            selector.normalizeDisplay(Localized.dictionary().userReminderDisabled());
+          }
 
-      rowSet.setRows(selectionRows);
-    });
+          if (dataTypeId != null) {
+            selector.setValue(dataTypeId, true);
+          }
+
+          selector.getOracle().setAdditionalFilter(
+              Filter.equals(COL_REMINDER_MODULE, module.ordinal()), true);
+
+          selector.addSelectorHandler(event -> {
+            if (event.isChanged()) {
+              if (event != null) {
+                calculateReminderTime(event.getRelatedRow(), null);
+              }
+              if (!DataUtils.hasId(event.getRelatedRow())) {
+                dateInput.clearValue();
+                dateInput.removeStyleName(STYLE_ELEMENT_NOT_VISIBLE);
+                dateTextLabel.getParent().addStyleName(STYLE_ELEMENT_NOT_VISIBLE);
+
+                timeInput.setMillis(Global.getParameterTime(TaskConstants.PRM_END_OF_WORK_DAY));
+                timeInput.removeStyleName(STYLE_ELEMENT_NOT_VISIBLE);
+              }
+            }
+          });
+
+          selector.getOracle().addDataReceivedHandler(rowSet -> {
+            List<BeeRow> receivedRows = calculateSelectionRows(rowSet);
+
+            receivedRows.add(createOtherTimeSelectionRow());
+
+            rowSet.setRows(receivedRows);
+          });
+        });
   }
 
   private static BeeRow createOtherTimeSelectionRow() {
@@ -424,8 +491,7 @@ public class ReminderDialog extends DialogBox {
   private Button createUpdateButton() {
     final Button updateReminderButton =
         new Button(Localized.dictionary().userReminderUpdate(), event -> {
-          Long time = dateTimeInput.getDateTime() == null ? null
-              : dateTimeInput.getDateTime().getTime();
+          Long time = dateInput.getDate() == null ? null : calculateDateTimeValue().getTime();
 
           if (time != null && System.currentTimeMillis() < time) {
             List<String> columns = Lists.newArrayList(COL_USER_REMINDER_TYPE,
@@ -470,8 +536,13 @@ public class ReminderDialog extends DialogBox {
   }
 
   private void setTime() {
-    setTimeToDateTimeInput(Global.getParameterTime(TimeUtils.isToday(dateTimeInput.getDateTime())
-        ? TaskConstants.PRM_END_OF_WORK_DAY : TaskConstants.PRM_START_OF_WORK_DAY));
+    Long time = timeInput.getMillis() != null ? timeInput.getMillis()
+        : Global.getParameterTime(TimeUtils.isToday(calculateDateTimeValue().getDateTime())
+        ? TaskConstants.PRM_END_OF_WORK_DAY : TaskConstants.PRM_START_OF_WORK_DAY);
+
+    timeInput.setMillis(time);
+
+    setTimeToDateTimeInput(time);
   }
 
   private void setTimeToDateTimeInput(Long time) {
@@ -479,16 +550,13 @@ public class ReminderDialog extends DialogBox {
       DateTime dateTime = TimeUtils.toDateTimeOrNull(time);
 
       if (dateTime != null) {
-        int hour = dateTime.getUtcHour();
-        int minute = dateTime.getUtcMinute();
-        DateTime value = dateTimeInput.getDateTime();
-        value.setHour(hour);
-        value.setMinute(minute);
-        dateTimeInput.setDateTime(value);
+        DateTime value = calculateDateTimeValue();
+        timeInput.setMillis(time);
+        dateInput.setDate(value.getDate());
       }
     }
 
-    calculateReminderTime(null, dateTimeInput.getDateTime());
+    calculateReminderTime(null, calculateDateTimeValue());
   }
 
   private static void showDateError() {

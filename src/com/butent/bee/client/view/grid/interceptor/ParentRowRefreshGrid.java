@@ -60,6 +60,10 @@ public class ParentRowRefreshGrid extends AbstractGridInterceptor {
   }
 
   public boolean previewModify(Set<Long> rowIds) {
+    return previewModify(rowIds, false);
+  }
+
+  public boolean previewModify(Set<Long> rowIds, boolean refreshChildren) {
     if (Objects.isNull(rowIds)
         || getGridView().getRowData().stream().anyMatch(row -> rowIds.contains(row.getId()))) {
       FormView parentForm = ViewHelper.getForm(getGridView());
@@ -67,7 +71,8 @@ public class ParentRowRefreshGrid extends AbstractGridInterceptor {
       if (Objects.nonNull(parentForm) && DomUtils.isVisible(parentForm.getElement())
           && DataUtils.isId(parentForm.getActiveRowId())) {
         String view = parentForm.getViewName();
-        Queries.getRow(view, parentForm.getActiveRowId(), RowCallback.refreshRow(view));
+        Queries.getRow(view, parentForm.getActiveRowId(),
+            RowCallback.refreshRow(view, refreshChildren));
       }
       return true;
     }

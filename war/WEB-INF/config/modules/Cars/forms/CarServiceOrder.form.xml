@@ -62,6 +62,9 @@
             </FlowPanel>
           </FlowPanel>
         </row>
+        <row>
+          <CheckBox source="ExpectantCustomer" style="position: absolute;left: 160px;" />
+        </row>
       </Table>
       <FlowPanel class="flexible" style="min-width:200px; overflow:auto; margin:5px; padding:5px;
       border:1px solid silver; border-radius:5px; background-color:whitesmoke;">
@@ -125,16 +128,13 @@
     <br />
     <TabbedPages class="flexible">
       <page>
-        <text>=productsServices</text>
-        <ChildGrid name="CarServiceItems" relColumn="ServiceOrder" />
-      </page>
-      <page>
-        <text>=serviceJobs</text>
+        <text>=productsServices+, +=serviceJobs</text>
         <FlowPanel class="flexBox-vertical">
-          <ChildGrid name="CarServiceJobs" relColumn="ServiceOrder" class="flexible" />
+          <ChildGrid name="CarServiceItems" relColumn="ServiceOrder" class="flexible" />
+
           <FlowPanel class="flexible flexBox-horizontal">
             <FlowPanel style="width:100px;" />
-            <ChildGrid name="CarJobProgress" parent="CarServiceJobs" relColumn="ServiceJob"
+            <ChildGrid name="CarJobProgress" parent="CarServiceItems" relColumn="ServiceJob"
                        class="flexible" summarize="false" />
           </FlowPanel>
         </FlowPanel>
@@ -148,24 +148,21 @@
         <GridPanel name="TradeDocuments" child="true" parent="{form}" />
       </page>
       <page>
+        <text>=svcComments</text>
+        <FlowPanel name="CarServiceComments" class="flex-horizontal" />
+      </page>
+      <page>
         <text>=notes</text>
         <FlowPanel class="flexBox-vertical">
-          <HorizontalPanel style="width:100%;">
-            <Label text="=symptoms" data="CarSymptoms" />
-            <cell style="width:100%;">
-              <ChildSelector property="CarServiceSymptoms" name="CarServiceSymptoms"
-                             viewName="CarSymptoms"
-                             childTable="CarServiceSymptoms" targetRelColumn="ServiceOrder"
-                             sourceRelColumn="Symptom" renderColumns="SymptomName Code"
-                             style="width: 100%;" summarize="true" />
-            </cell>
-          </HorizontalPanel>
-
           <Label for="Notes" />
           <FlowPanel style="position:relative;" class="flexible">
             <InputArea source="Notes" class="occupy-1" summarize="true" />
           </FlowPanel>
         </FlowPanel>
+      </page>
+      <page>
+        <text>=symptoms</text>
+        <ChildGrid name="CarServiceSymptoms" relColumn="ServiceOrder" />
       </page>
       <page>
         <text>=files</text>

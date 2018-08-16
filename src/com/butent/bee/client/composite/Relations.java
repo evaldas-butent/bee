@@ -307,6 +307,20 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     return BeeConst.STRING_EMPTY;
   }
 
+  public Map<String, MultiSelector> getWidgetMap(boolean viewNameKeys) {
+    Map<String, MultiSelector> widgets = new HashMap<>();
+
+    for (String relation : widgetMap.keySet()) {
+      if (widgetMap.get(relation) != null) {
+
+        widgets.put(viewNameKeys ? Data.getColumnRelation(STORAGE, relation) : relation,
+            widgetMap.get(relation));
+      }
+    }
+
+    return widgets;
+  }
+
   @Override
   public Value getSummary() {
     int count = 0;

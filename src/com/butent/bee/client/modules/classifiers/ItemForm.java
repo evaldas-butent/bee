@@ -99,11 +99,11 @@ class ItemForm extends AbstractFormInterceptor {
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  public void onStartNewRow(FormView form, IsRow row) {
     ItemsGrid gridHandler = getItemGridHandler(form);
 
     if (gridHandler != null && gridHandler.showServices()) {
-      newRow.setValue(form.getDataIndex(ClassifierConstants.COL_ITEM_IS_SERVICE), 1);
+      row.setValue(form.getDataIndex(ClassifierConstants.COL_ITEM_IS_SERVICE), 1);
     }
   }
 

@@ -1,12 +1,14 @@
 package com.butent.bee.client.data;
 
 import com.google.common.base.Splitter;
+import com.google.gwt.xml.client.Document;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
@@ -34,6 +36,7 @@ import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.Relation.Caching;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,9 +46,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
-/**
- * Provides suggestions data management functionality for data changing events.
- */
 public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   @FunctionalInterface
@@ -167,6 +167,8 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   public static final Caching DEFAULT_CACHING = Caching.GLOBAL;
   private static final int DEFAULT_MAX_ROW_COUNT_FOR_CACHING = 1_000;
 
+  private static final Operator DEFAULT_OPERATOR = Operator.CONTAINS;
+
   private static Caching determineCaching(Relation relation, int dataSize) {
     if (relation.getCaching() == null) {
       if (dataSize > 0) {
@@ -185,6 +187,23 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     } else {
       return relation.getCaching();
     }
+  }
+
+  public static Operator getOperator(Relation relation, DataInfo dataInfo) {
+    Operator operator = (relation == null) ? null : relation.getOperator();
+
+    if (operator == null && dataInfo != null && !BeeUtils.isEmpty(dataInfo.getRelationInfo())) {
+      Document doc = XmlUtils.parse(dataInfo.getRelationInfo());
+
+      if (doc != null) {
+        String value = doc.getDocumentElement().getAttribute(Relation.ATTR_OPERATOR);
+        if (!BeeUtils.isEmpty(value)) {
+          operator = EnumUtils.getEnumByName(Operator.class, value);
+        }
+      }
+    }
+
+    return (operator == null) ? DEFAULT_OPERATOR : operator;
   }
 
   private final DataInfo dataInfo;
@@ -239,7 +258,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       this.searchColumns.add(dataInfo.getColumns().get(index));
     }
 
-    this.searchType = relation.nvlOperator();
+    this.searchType = getOperator(relation, dataInfo);
 
     String cuf = relation.getCurrentUserFilter();
     this.immutableFilter = BeeUtils.isEmpty(cuf) ? relation.getFilter()
@@ -538,13 +557,10 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
         ? CachingPolicy.FULL : CachingPolicy.NONE;
 
     Queries.getRowSet(getViewName(), null, getFilter(null, false), viewOrder, cachingPolicy,
-        new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            setViewData(result);
-            onDataReceived(getViewData());
-            checkPendingRequest();
-          }
+        result -> {
+          setViewData(result);
+          onDataReceived(getViewData());
+          checkPendingRequest();
         });
   }
 
@@ -703,21 +719,18 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
 
     Queries.getRowSet(getViewName(), null, getFilter(getQueryFilter(queryParts), true), viewOrder,
-        offset, limit, new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            if (getPendingRequest() == null) {
-              return;
-            }
-            if (request.equals(getPendingRequest().getRequest())) {
-              setRequestData(result);
-              setLastRequest(request);
-              Callback callback = getPendingRequest().getCallback();
-              setPendingRequest(null);
-              processRequest(request, callback);
-            } else {
-              checkPendingRequest();
-            }
+        offset, limit, result -> {
+          if (getPendingRequest() == null) {
+            return;
+          }
+          if (request.equals(getPendingRequest().getRequest())) {
+            setRequestData(result);
+            setLastRequest(request);
+            Callback callback = getPendingRequest().getCallback();
+            setPendingRequest(null);
+            processRequest(request, callback);
+          } else {
+            checkPendingRequest();
           }
         });
 

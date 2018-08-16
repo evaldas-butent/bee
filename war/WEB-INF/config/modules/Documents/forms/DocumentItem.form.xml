@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-  
-  name="DocumentItem" caption="=documentItem" width="850"
-  >
+        xmlns:f="http://www.butent.com/form"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="DocumentItem" caption="=documentItem" width="850"
+>
   <TabbedPages resizable="false">
     <page>
       <text>=mainInformation</text>
@@ -15,8 +15,8 @@
         </row>
         <row>
           <Label for="Description" />
-          <DataSelector source="Description"  viewName="DistinctDocumentItems"
-            valueSource="Description" strict="false"/>
+          <DataSelector source="Description" viewName="DistinctDocumentItems"
+                        valueSource="Description" strict="false" />
         </row>
         <row>
           <Label for="Quantity" />
@@ -24,7 +24,7 @@
         </row>
         <row>
           <Label for="Price" />
-          <InputDecimal source="Price" />
+          <InputMoney source="Price" />
         </row>
         <row>
           <Label for="VatPlus" />

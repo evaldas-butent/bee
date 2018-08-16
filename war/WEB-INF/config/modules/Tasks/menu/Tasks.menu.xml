@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Entry xmlns="http://www.butent.com/menu"
 
-name="Tasks" label="=crmTasks" order="20" module="Tasks"
+       name="Tasks" label="=crmTasks" order="20" module="Tasks"
 >
   <Item name="Requests" label="=crmRequests" service="grid" parameters="Requests" />
 
-  <Item name="AssignedTasks" label="=crmTasksAssignedTasks" service="task_list" parameters="Assigned"
-    separator="true" />
+  <Item name="AssignedTasks" label="=crmTasksAssignedTasks" service="task_list"
+        parameters="Assigned"
+        separator="true" />
   <Item name="DelegatedTasks" label="=crmTasksDelegatedTasks" service="task_list"
-    parameters="Delegated" />
-  <Item name="ObservedTasks" label="=crmTasksObservedTasks" service="task_list" parameters="Observed" />
-  <Item name="NotScheduledTasks" label="=crmTasksNotScheduledTasks" service="task_list" parameters="Not_Scheduled" />
+        parameters="Delegated" />
+  <Item name="ObservedTasks" label="=crmTasksObservedTasks" service="task_list"
+        parameters="Observed" />
+  <Item name="NotScheduledTasks" label="=crmTasksNotScheduledTasks" service="task_list"
+        parameters="Not_Scheduled" />
   <Item name="RecurringTasks" label="=crmRecurringTasks" service="grid"
-    parameters="RecurringTasks" />
-  <Item name="AllTasks" label="=crmTasksAll" service="task_list" parameters="All" separator="true" />
+        parameters="RecurringTasks" />
+  <Item name="AllTasks" label="=crmTasksAll" service="task_list" parameters="All"
+        separator="true" />
 
   <Item name="TodoList" label="=crmTodoList" service="grid" parameters="TodoList"
-    separator="true" />
+        separator="true" />
 </Entry>

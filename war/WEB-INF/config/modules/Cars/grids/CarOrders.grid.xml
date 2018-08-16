@@ -15,7 +15,8 @@
         </bodyStyle>
       </style>
     </RelColumn>
-    <RelColumn name="Customer" visible="true" renderColumns="CustomerName CustomerTypeName" />
+    <RelColumn name="Customer" visible="true" renderColumns="CustomerName CustomerTypeName"
+               searchBy="CustomerName" />
     <RelColumn name="CustomerPerson" renderColumns="ContactFirstName ContactLastName" />
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
     <DataColumn name="BodyNumber" />

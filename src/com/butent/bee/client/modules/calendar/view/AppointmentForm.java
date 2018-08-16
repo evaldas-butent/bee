@@ -13,6 +13,7 @@ import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -64,7 +65,7 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
             Data.setValue(VIEW_TASKS, row, COL_COMPANY, companyId);
             Data.setValue(VIEW_TASKS, row, ALS_COMPANY_NAME, company);
           }
-          RowFactory.createRelatedRow(formName, row, selector, null);
+          RowFactory.createRelatedRow(formName, row, selector);
         }
       } else {
         Filter filter = null;
@@ -130,7 +131,7 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
       Data.setValue(TradeActConstants.VIEW_TRADE_ACTS, row, TradeActConstants.COL_TA_KIND,
         TradeActKind.SALE.ordinal());
 
-      RowFactory.createRelatedRow(tradeAct.getNewRowForm(), row, tradeAct, event.getOnOpenNewRow());
+      RowFactory.createRelatedRow(tradeAct.getNewRowForm(), row, tradeAct, Opener.MODAL);
     }
   }
 

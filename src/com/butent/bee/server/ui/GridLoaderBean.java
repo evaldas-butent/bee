@@ -43,6 +43,7 @@ import com.butent.bee.shared.ui.RendererType;
 import com.butent.bee.shared.ui.SelectorColumn;
 import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.ui.UiConstants;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -106,13 +107,14 @@ public class GridLoaderBean {
   private static final String ATTR_CACHE_DATA = "cacheData";
 
   private static final String ATTR_DATA_PROVIDER = "dataProvider";
+  private static final String ATTR_DATA_OPTIONS = "dataOptions";
   private static final String ATTR_INITIAL_ROW_SET_SIZE = "initialRowSetSize";
 
   private static final String ATTR_ENABLED_ACTIONS = "enabledActions";
   private static final String ATTR_DISABLED_ACTIONS = "disabledActions";
 
   private static final String ATTR_NEW_ROW_DEFAULTS = "newRowDefaults";
-  private static final String ATTR_NEW_ROW_POPUP = "newRowPopup";
+  private static final String ATTR_NEW_ROW_WINDOW = "newRowWindow";
 
   private static final String ATTR_EDIT_MODE = "editMode";
   private static final String ATTR_EDIT_SAVE = "editSave";
@@ -937,9 +939,9 @@ public class GridLoaderBean {
     if (!BeeUtils.isEmpty(newRowCaption)) {
       dst.setNewRowCaption(newRowCaption.trim());
     }
-    Boolean newRowPopup = XmlUtils.getAttributeBoolean(src, ATTR_NEW_ROW_POPUP);
-    if (newRowPopup != null) {
-      dst.setNewRowPopup(newRowPopup);
+    String newRowWindow = src.getAttribute(ATTR_NEW_ROW_WINDOW);
+    if (!BeeUtils.isEmpty(newRowWindow)) {
+      dst.setNewRowWindow(WindowType.parse(newRowWindow));
     }
 
     String editForm = src.getAttribute(UiConstants.ATTR_EDIT_FORM);
@@ -962,9 +964,9 @@ public class GridLoaderBean {
     if (editShowId != null) {
       dst.setEditShowId(editShowId);
     }
-    Boolean editPopup = XmlUtils.getAttributeBoolean(src, UiConstants.ATTR_EDIT_POPUP);
-    if (editPopup != null) {
-      dst.setEditPopup(editPopup);
+    String editWindow = src.getAttribute(UiConstants.ATTR_EDIT_WINDOW);
+    if (!BeeUtils.isEmpty(editWindow)) {
+      dst.setEditWindow(WindowType.parse(editWindow));
     }
 
     Boolean editInPlace = XmlUtils.getAttributeBoolean(src, ATTR_EDIT_IN_PLACE);
@@ -1077,9 +1079,9 @@ public class GridLoaderBean {
       }
     }
 
-    String options = src.getAttribute(HasOptions.ATTR_OPTIONS);
+    String options = src.getAttribute(ATTR_DATA_OPTIONS);
     if (!BeeUtils.isEmpty(options)) {
-      dst.setOptions(options);
+      dst.setDataOptions(options);
     }
 
     List<Element> propElements = XmlUtils.getElementsByLocalName(src,

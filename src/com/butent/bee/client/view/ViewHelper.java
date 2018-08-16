@@ -20,11 +20,13 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -40,6 +42,23 @@ public final class ViewHelper {
 
   public static Widget asWidget(View view) {
     return (view == null) ? null : view.asWidget();
+  }
+
+  public static GridView findGridById(String id) {
+    if (BeeUtils.isEmpty(id)) {
+      return null;
+
+    } else {
+      Widget widget = DomUtils.getWidget(id);
+
+      if (widget instanceof GridView) {
+        return (GridView) widget;
+      } else if (widget instanceof HasGridView) {
+        return ((HasGridView) widget).getGridView();
+      } else {
+        return null;
+      }
+    }
   }
 
   public static View getActiveView(Element target) {
@@ -301,6 +320,12 @@ public final class ViewHelper {
     }
   }
 
+  public static NotificationListener getNotificationListener() {
+    View view = getActiveView(DomUtils.getActiveElement());
+    return (view instanceof NotificationListener)
+        ? (NotificationListener) view : BeeKeeper.getScreen();
+  }
+
   public static Collection<PagerView> getPagers(HasWidgets container) {
     Assert.notNull(container);
     Collection<PagerView> pagers = new HashSet<>();
@@ -435,6 +460,10 @@ public final class ViewHelper {
     if (form != null) {
       Scheduler.get().scheduleDeferred(form::onResize);
     }
+  }
+
+  public static WindowType normalize(WindowType windowType) {
+    return Popup.hasEventPreview() ? WindowType.MODAL : windowType;
   }
 
   public static void refresh(View view) {

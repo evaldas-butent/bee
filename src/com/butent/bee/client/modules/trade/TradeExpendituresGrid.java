@@ -12,7 +12,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.event.EventUtils;
@@ -22,12 +21,10 @@ import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.render.AbstractCellRenderer;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasRowValue;
@@ -163,7 +160,7 @@ public class TradeExpendituresGrid extends AbstractGridInterceptor {
           } else if (target.hasClassName(GEN_STYLE_LINK)) {
             Long genId = row.getLong(getDataIndex(COL_EXPENDITURE_GENERATED_DOCUMENT));
             if (DataUtils.isId(genId)) {
-              RowEditor.open(VIEW_TRADE_DOCUMENTS, genId, Opener.MODAL);
+              RowEditor.open(VIEW_TRADE_DOCUMENTS, genId);
             }
           }
         }
@@ -288,53 +285,47 @@ public class TradeExpendituresGrid extends AbstractGridInterceptor {
           }
 
           Queries.insert(VIEW_TRADE_DOCUMENTS, Data.getColumns(VIEW_TRADE_DOCUMENTS, tdColumns),
-              tdValues, null, new RowCallback() {
-                @Override
-                public void onSuccess(final BeeRow tdRow) {
-                  Queries.updateCellAndFire(getViewName(), row.getId(), row.getVersion(),
-                      COL_EXPENDITURE_GENERATED_DOCUMENT, null, BeeUtils.toString(tdRow.getId()));
+              tdValues, null, tdRow -> {
+                Queries.updateCellAndFire(getViewName(), row.getId(), row.getVersion(),
+                    COL_EXPENDITURE_GENERATED_DOCUMENT, null, BeeUtils.toString(tdRow.getId()));
 
-                  RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_TRADE_DOCUMENTS, tdRow, null);
+                RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_TRADE_DOCUMENTS, tdRow, null);
 
-                  List<String> itemColumns = new ArrayList<>();
-                  List<String> itemValues = new ArrayList<>();
+                List<String> itemColumns = new ArrayList<>();
+                List<String> itemValues = new ArrayList<>();
 
-                  itemColumns.add(COL_TRADE_DOCUMENT);
-                  itemValues.add(BeeUtils.toString(tdRow.getId()));
+                itemColumns.add(COL_TRADE_DOCUMENT);
+                itemValues.add(BeeUtils.toString(tdRow.getId()));
 
-                  itemColumns.add(COL_ITEM);
-                  itemValues.add(row.getString(getDataIndex(COL_EXPENDITURE_TYPE_ITEM)));
+                itemColumns.add(COL_ITEM);
+                itemValues.add(row.getString(getDataIndex(COL_EXPENDITURE_TYPE_ITEM)));
 
-                  itemColumns.add(COL_TRADE_ITEM_QUANTITY);
-                  itemValues.add(BeeConst.STRING_ONE);
+                itemColumns.add(COL_TRADE_ITEM_QUANTITY);
+                itemValues.add(BeeConst.STRING_ONE);
 
-                  itemColumns.add(COL_TRADE_ITEM_PRICE);
-                  itemValues.add(row.getString(getDataIndex(COL_EXPENDITURE_AMOUNT)));
+                itemColumns.add(COL_TRADE_ITEM_PRICE);
+                itemValues.add(row.getString(getDataIndex(COL_EXPENDITURE_AMOUNT)));
 
-                  String vat = row.getString(getDataIndex(COL_EXPENDITURE_VAT));
-                  if (!BeeUtils.isEmpty(vat)) {
-                    itemColumns.add(COL_TRADE_DOCUMENT_ITEM_VAT);
-                    itemValues.add(vat);
-                  }
-
-                  String vip = row.getString(getDataIndex(COL_EXPENDITURE_VAT_IS_PERCENT));
-                  if (!BeeUtils.isEmpty(vip)) {
-                    itemColumns.add(COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT);
-                    itemValues.add(vip);
-                  }
-
-                  Queries.insert(VIEW_TRADE_DOCUMENT_ITEMS,
-                      Data.getColumns(VIEW_TRADE_DOCUMENT_ITEMS, itemColumns), itemValues,
-                      null, new RowCallback() {
-                        @Override
-                        public void onSuccess(BeeRow itemRow) {
-                          RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_TRADE_DOCUMENT_ITEMS,
-                              itemRow, null);
-
-                          RowEditor.open(VIEW_TRADE_DOCUMENTS, tdRow.getId(), Opener.MODAL);
-                        }
-                      });
+                String vat = row.getString(getDataIndex(COL_EXPENDITURE_VAT));
+                if (!BeeUtils.isEmpty(vat)) {
+                  itemColumns.add(COL_TRADE_DOCUMENT_ITEM_VAT);
+                  itemValues.add(vat);
                 }
+
+                String vip = row.getString(getDataIndex(COL_EXPENDITURE_VAT_IS_PERCENT));
+                if (!BeeUtils.isEmpty(vip)) {
+                  itemColumns.add(COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT);
+                  itemValues.add(vip);
+                }
+
+                Queries.insert(VIEW_TRADE_DOCUMENT_ITEMS,
+                    Data.getColumns(VIEW_TRADE_DOCUMENT_ITEMS, itemColumns), itemValues,
+                    null, itemRow -> {
+                      RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_TRADE_DOCUMENT_ITEMS,
+                          itemRow, null);
+
+                      RowEditor.open(VIEW_TRADE_DOCUMENTS, tdRow.getId());
+                    });
               });
         });
   }

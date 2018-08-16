@@ -192,7 +192,8 @@ public enum FormWidget {
   CANVAS("Canvas", EnumSet.of(Type.DISPLAY)),
   CHECK_BOX("CheckBox", EnumSet.of(Type.EDITABLE)),
   CHILD_GRID(UiConstants.TAG_CHILD_GRID, EnumSet.of(Type.IS_CHILD, Type.IS_GRID)),
-  CHILD_SELECTOR("ChildSelector", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.IS_CHILD)),
+  CHILD_SELECTOR(UiConstants.TAG_CHILD_SELECTOR,
+      EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.IS_CHILD)),
   COLOR_EDITOR("ColorEditor", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   COMPLEX_PANEL("ComplexPanel", EnumSet.of(Type.HAS_LAYERS)),
   CUSTOM("Custom", EnumSet.of(Type.IS_CUSTOM)),
@@ -507,14 +508,37 @@ public enum FormWidget {
 
     if (BeeUtils.isDigit(s)) {
       scale = BeeUtils.toInt(s);
-    } else if (column != null && !BeeConst.isUndef(column.getScale())) {
-      scale = money
-          ? Math.min(column.getScale(), Format.getDefaultMoneyScale()) : column.getScale();
+    } else if (money) {
+      scale = Format.getDefaultMoneyScale();
     } else {
-      scale = money ? Format.getDefaultMoneyScale() : BeeConst.UNDEF;
+      scale = BeeConst.UNDEF;
     }
 
-    widget.setScale(scale);
+    int columnScale;
+    if (column == null) {
+      columnScale = BeeConst.UNDEF;
+    } else {
+      switch (column.getType()) {
+        case INTEGER:
+        case LONG:
+          columnScale = 0;
+          break;
+        default:
+          columnScale = column.getScale();
+      }
+    }
+
+    if (scale > 0 && columnScale >= 0) {
+      scale = Math.min(scale, columnScale);
+    }
+
+    if (money && scale == Format.getDefaultMoneyScale()) {
+      widget.setScale(scale);
+    } else if (columnScale >= 0) {
+      widget.setScale(columnScale);
+    } else if (scale >= 0) {
+      widget.setScale(scale);
+    }
 
     String pattern = attributes.get(UiConstants.ATTR_FORMAT);
     NumberFormat format;
@@ -522,14 +546,23 @@ public enum FormWidget {
     if (BeeUtils.isEmpty(pattern)) {
       if (money && scale == Format.getDefaultMoneyScale()) {
         format = Format.getDefaultMoneyFormat();
-      } else {
+      } else if (Math.max(scale, 0) < columnScale) {
+        format = Format.getDecimalFormat(Math.max(scale, 0), columnScale);
+      } else if (scale >= 0) {
         format = Format.getDecimalFormat(scale);
+      } else if (columnScale >= 0) {
+        format = Format.getDecimalFormat(columnScale);
+      } else {
+        format = null;
       }
+
     } else {
       format = Format.getNumberFormat(pattern);
     }
 
-    widget.setNumberFormat(format);
+    if (format != null) {
+      widget.setNumberFormat(format);
+    }
 
     String currencySource = attributes.get(HasRelatedCurrency.ATTR_CURRENCY_SOURCE);
     if (!BeeUtils.isEmpty(currencySource)) {
@@ -1180,6 +1213,18 @@ public enum FormWidget {
             widgetInterceptor.configureRelation(name, relation);
           }
           widget = ChildSelector.create(viewName, relation, attributes);
+
+          if (widget != null && !BeeUtils.isEmpty(viewName)) {
+            String listName = BeeUtils.notEmpty(attributes.get(UiConstants.ATTR_LIST_NAME),
+                attributes.get(UiConstants.ATTR_CHILD_TABLE));
+
+            if (BeeKeeper.getUser().isListRequired(viewName, listName)) {
+              attributes.put(UiConstants.ATTR_REQUIRED, BeeConst.STRING_TRUE);
+            }
+            if (!BeeKeeper.getUser().canEditList(viewName, listName)) {
+              attributes.put(UiConstants.ATTR_READ_ONLY, BeeConst.STRING_TRUE);
+            }
+          }
         }
         break;
 
@@ -1946,10 +1991,18 @@ public enum FormWidget {
           UiHelper.setDefaultBounds((HasBounds) widget, column);
         }
 
-      } else if (isLabel() && attributes.containsKey(UiConstants.ATTR_FOR)) {
-        BeeColumn forColumn = getColumn(columns, attributes, UiConstants.ATTR_FOR);
-        if (forColumn != null) {
-          associateLabel(widget, forColumn);
+      } else if (isLabel()) {
+        if (attributes.containsKey(UiConstants.ATTR_FOR)) {
+          BeeColumn forColumn = getColumn(columns, attributes, UiConstants.ATTR_FOR);
+          if (forColumn != null) {
+            associateLabel(widget, forColumn);
+          }
+
+        } else if (attributes.containsKey(UiConstants.ATTR_LIST_NAME)) {
+          String listName = attributes.get(UiConstants.ATTR_LIST_NAME);
+          if (BeeKeeper.getUser().isListRequired(viewName, listName)) {
+            widget.addStyleName(StyleUtils.NAME_REQUIRED);
+          }
         }
       }
 

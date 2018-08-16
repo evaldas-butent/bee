@@ -310,6 +310,48 @@ public enum TradeReportGroup implements HasLocalizedCaption {
     }
   },
 
+  CUSTOMER("customer") {
+    @Override
+    public String getCaption(Dictionary dictionary) {
+      return dictionary.trdCustomer();
+    }
+
+    @Override
+    public ValueType getType() {
+      return ValueType.LONG;
+    }
+
+    @Override
+    public String valueSource() {
+      return TBL_TRADE_DOCUMENTS;
+    }
+
+    @Override
+    public String valueColumn() {
+      return COL_TRADE_CUSTOMER;
+    }
+
+    @Override
+    public boolean primaryDocument() {
+      return false;
+    }
+
+    @Override
+    public String labelSource() {
+      return TBL_COMPANIES;
+    }
+
+    @Override
+    public String labelColumn() {
+      return COL_COMPANY_NAME;
+    }
+
+    @Override
+    public String editViewName() {
+      return VIEW_COMPANIES;
+    }
+  },
+
   YEAR_RECEIVED("year") {
     @Override
     public String getCaption(Dictionary dictionary) {
@@ -427,6 +469,21 @@ public enum TradeReportGroup implements HasLocalizedCaption {
     return list;
   }
 
+  public static boolean needsDocument(TradeReportGroup trg) {
+    return trg != null && trg.needsDocument();
+  }
+
+  public static boolean needsDocument(Collection<TradeReportGroup> groups) {
+    if (!BeeUtils.isEmpty(groups)) {
+      return groups.stream()
+          .filter(Objects::nonNull)
+          .anyMatch(trg -> trg.needsDocument());
+
+    } else {
+      return false;
+    }
+  }
+
   public static boolean needsItem(TradeReportGroup trg) {
     return trg != null && trg.needsItem();
   }
@@ -515,6 +572,10 @@ public enum TradeReportGroup implements HasLocalizedCaption {
 
   public boolean isEditable() {
     return !BeeUtils.isEmpty(editViewName());
+  }
+
+  public boolean needsDocument() {
+    return !primaryDocument() && TBL_TRADE_DOCUMENTS.equals(valueSource());
   }
 
   public boolean needsItem() {

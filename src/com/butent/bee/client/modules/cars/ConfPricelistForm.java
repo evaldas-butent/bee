@@ -110,16 +110,13 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
 
     @Override
     public void onClick(ClickEvent clickEvent) {
-      Long type = getBranchType();
-
-      Queries.getRowSet(TBL_CONF_GROUPS, Collections.singletonList(COL_GROUP_NAME),
-          DataUtils.isId(type) ? Filter.equals(COL_TYPE, type) : null,
-          result -> {
+      Queries.getRowSet(TBL_CONF_GROUPS, Arrays.asList(COL_GROUP_NAME, COL_GROUP_NAME2),
+          null, result -> {
             List<String> choice = new ArrayList<>();
             Map<String, Dimension> map = new HashMap<>();
 
             for (BeeRow row : result) {
-              String name = row.getString(0);
+              String name = BeeUtils.notEmpty(row.getString(1), row.getString(0));
               Dimension dimension = new Dimension(row.getId(), name);
 
               if (!configuration.getAllDimensions().contains(dimension)) {
@@ -167,7 +164,8 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
         Relation relation = Relation.create(TBL_CONF_OPTIONS,
             Arrays.asList(COL_CODE, COL_CODE2, COL_OPTION_NAME));
 
-        relation.setFilter(Filter.equals(COL_GROUP, dimension.getId()));
+        relation.setFilter(Filter.and(getBranchFilter(),
+            Filter.equals(COL_GROUP, dimension.getId())));
 
         UnboundSelector selector = UnboundSelector.create(relation);
 
@@ -281,6 +279,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
   private static final String STYLE_ROW_DEL = STYLE_ROW + "-del";
   public static final String STYLE_PACKET = STYLE_PREFIX + "-packet";
   public static final String STYLE_PACKET_COLLAPSED = STYLE_PACKET + "-collapsed";
+  public static final String STYLE_PACKET_OPTIONAL = STYLE_PACKET + "-optional";
 
   private static final String STYLE_COL = STYLE_PREFIX + "-col";
   private static final String STYLE_COL_HEADER = STYLE_COL + "-hdr";
@@ -373,15 +372,15 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
   public void onLoad(FormView form) {
     Queries.getRowCount(TBL_IMPORT_OPTIONS, Filter.equals(COL_IMPORT_TYPE,
         ImportType.CONFIGURATION.ordinal()), cnt -> {
-          if (BeeUtils.isPositive(cnt)) {
-            importAction.setTitle(Localized.dictionary().actionImport());
-            importAction.setCallback(response -> {
-              ImportCallback.showResponse(response);
-              requery();
-            });
-            getHeaderView().addCommandItem(importAction);
-          }
+      if (BeeUtils.isPositive(cnt)) {
+        importAction.setTitle(Localized.dictionary().actionImport());
+        importAction.setCallback(response -> {
+          ImportCallback.showResponse(response);
+          requery();
         });
+        getHeaderView().addCommandItem(importAction);
+      }
+    });
     super.onLoad(form);
   }
 
@@ -413,13 +412,15 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
     return BeeUtils.joinWords(cap);
   }
 
-  private Long getBranchType() {
+  private Filter getBranchFilter() {
     IsRow item = tree.getSelectedItem();
 
     if (item == null) {
       return null;
     }
-    return Data.getLong(tree.getViewName(), item, COL_TYPE);
+    Long type = Data.getLong(tree.getViewName(), item, COL_TYPE);
+
+    return DataUtils.isId(type) ? Filter.equals(COL_TYPE, type) : null;
   }
 
   private Long getBranchId() {
@@ -711,6 +712,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
     }
     ParameterList args = CarsKeeper.createSvcArgs(SVC_GET_CONFIGURATION);
     args.addDataItem(COL_BRANCH, branchId);
+    args.addDataItem(COL_BLOCKED, true);
 
     rpcId = BeeKeeper.getRpc().makePostRequest(args, new ResponseCallbackWithId() {
       @Override
@@ -993,9 +995,11 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       }
       rIdx++;
       // PACKET OPTIONS
-      for (Option pack : configuration.getPackets(option)) {
-        table.setText(rIdx, 0, pack.getCode(), STYLE_PACKET);
-        table.setText(rIdx, 1, pack.getName(), STYLE_PACKET);
+      for (Map.Entry<Option, Boolean> pck : configuration.getPacketOptions(option).entrySet()) {
+        Option packetOption = pck.getKey();
+        table.setText(rIdx, 0, packetOption.getCode(), STYLE_PACKET);
+        table.setText(rIdx, 1, packetOption.getName(), STYLE_PACKET,
+            pck.getValue() ? STYLE_PACKET_OPTIONAL : "");
         table.getCellFormatter().setStyleName(rIdx, 2, STYLE_PACKET);
 
         for (int c = 0; c < cols.size(); c++) {
@@ -1006,13 +1010,13 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
           if (configuration.hasRelation(option, bundle)) {
             cell.addClassName(STYLE_CELL);
 
-            if (!DataUtils.parseIdSet(configuration.getRelationPackets(option, bundle))
-                .contains(pack.getId())) {
+            if (!DataUtils.parseIdSet(configuration.getDeniedPacketOptions(option, bundle))
+                .contains(packetOption.getId())) {
               cell.addClassName(STYLE_OPTIONAL);
             }
             DomUtils.setDataIndex(cell, r);
             DomUtils.setDataColumn(cell, c);
-            DomUtils.setDataKey(cell, BeeUtils.toString(pack.getId()));
+            DomUtils.setDataKey(cell, BeeUtils.toString(packetOption.getId()));
           }
         }
         rIdx++;
@@ -1027,11 +1031,10 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       rows.stream().map(Option::getId).forEach(excludedOptions::add);
 
       UnboundSelector inputGroup = UnboundSelector.create(TBL_CONF_GROUPS,
-          Collections.singletonList(COL_GROUP_NAME));
+          Arrays.asList(COL_GROUP_NAME2, COL_GROUP_NAME));
 
-      Long type = getBranchType();
-      inputGroup.getOracle().setAdditionalFilter(Filter.and(Filter.idNotIn(excludedGroups),
-          DataUtils.isId(type) ? Filter.equals(COL_TYPE, type) : null), true);
+      Filter typeFilter = getBranchFilter();
+      inputGroup.getOracle().setAdditionalFilter(Filter.idNotIn(excludedGroups), true);
 
       inputGroup.setWidth("100%");
 
@@ -1047,12 +1050,11 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       inputOption.addSelectorHandler(event -> {
         if (event.isOpened()) {
           if (DataUtils.isId(inputGroup.getRelatedId())) {
-            event.getSelector().getOracle()
-                .setAdditionalFilter(Filter.equals(COL_GROUP, inputGroup.getRelatedId()), true);
+            event.getSelector().getOracle().setAdditionalFilter(Filter.and(typeFilter,
+                Filter.equals(COL_GROUP, inputGroup.getRelatedId())), true);
           } else {
-            event.getSelector().getOracle()
-                .setAdditionalFilter(Filter.and(Filter.exclude(COL_GROUP, excludedGroups),
-                    DataUtils.isId(type) ? Filter.equals(COL_TYPE, type) : null), true);
+            event.getSelector().getOracle().setAdditionalFilter(Filter.and(typeFilter,
+                Filter.exclude(COL_GROUP, excludedGroups)), true);
           }
         }
       });
@@ -1074,8 +1076,9 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
         } else if (DataUtils.isId(inputGroup.getRelatedId())) {
           Global.confirm(inputGroup.getRenderedValue(),
               Icon.QUESTION, Collections.singletonList(Localized.dictionary().selectAll()),
-              () -> Queries.getRowSet(TBL_CONF_OPTIONS, null, Filter.and(Filter.equals(COL_GROUP,
-                  inputGroup.getRelatedId()), Filter.idNotIn(excludedOptions)),
+              () -> Queries.getRowSet(TBL_CONF_OPTIONS, null, Filter.and(typeFilter,
+                  Filter.equals(COL_GROUP, inputGroup.getRelatedId()),
+                  Filter.idNotIn(excludedOptions)),
                   rs -> {
                     if (DataUtils.isEmpty(rs)) {
                       getFormView().notifyWarning(Localized.dictionary().noData());
@@ -1132,10 +1135,10 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
             configuration.removeRelation(option, bundle);
             break;
           case SVC_SET_RELATION:
-            String packet = configuration.getRelationPackets(option, bundle);
-            configuration.setRelationInfo(option, bundle, info, packet);
+            String deniedPacketOptions = configuration.getDeniedPacketOptions(option, bundle);
+            configuration.setRelationInfo(option, bundle, info, deniedPacketOptions);
             args.addDataItem(Service.VAR_DATA, info.serialize());
-            args.addNotEmptyData(COL_PACKET, packet);
+            args.addNotEmptyData(COL_PACKET, deniedPacketOptions);
             break;
         }
         BeeKeeper.getRpc().makePostRequest(args, defaultResponse);
@@ -1144,12 +1147,15 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       Long packId = BeeUtils.toLongOrNull(DomUtils.getDataKey(cell));
 
       if (DataUtils.isId(packId)) {
-        Set<Long> packets = DataUtils.parseIdSet(configuration.getRelationPackets(option, bundle));
+        Set<Long> deniedPacketOptions = DataUtils.parseIdSet(configuration
+            .getDeniedPacketOptions(option, bundle));
 
-        if (!packets.remove(packId)) {
-          packets.add(packId);
+        if (!deniedPacketOptions.remove(packId)) {
+          deniedPacketOptions.add(packId);
         }
-        configuration.setRelationInfo(option, bundle, null, DataUtils.buildIdList(packets));
+        configuration.setRelationInfo(option, bundle, null,
+            DataUtils.buildIdList(deniedPacketOptions));
+
         consumer.accept(SVC_SET_RELATION, ConfInfo.of(price, description).setCriteria(criteria)
             .setPhoto(photo));
 
@@ -1207,20 +1213,23 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
     configuration.setOptionInfo(option, info);
   }
 
-  private void setPackets(Collection<Option> opts) {
-    Queries.getRowSet(TBL_CONF_PACKET_OPTIONS, Arrays.asList(COL_PACKET, COL_OPTION),
-        Filter.any(COL_PACKET, opts.stream().map(Option::getId).collect(Collectors.toSet())),
+  private void setPackets(Collection<Option> packages) {
+    Queries.getRowSet(TBL_CONF_PACKET_OPTIONS, Arrays.asList(COL_PACKET, COL_OPTION, COL_OPTIONAL),
+        Filter.any(COL_PACKET, packages.stream().map(Option::getId).collect(Collectors.toSet())),
         packRs -> {
           if (DataUtils.isEmpty(packRs)) {
             refresh();
           } else {
-            Multimap<Long, Long> packs = HashMultimap.create();
-            packRs.forEach(row -> packs.put(row.getLong(0), row.getLong(1)));
+            Multimap<Long, Pair<Long, Boolean>> packs = HashMultimap.create();
+            packRs.forEach(row -> packs.put(row.getLong(0),
+                Pair.of(row.getLong(1), BeeUtils.unbox(row.getBoolean(2)))));
 
-            Queries.getRowSet(TBL_CONF_OPTIONS, null, Filter.idIn(packs.values()),
+            Queries.getRowSet(TBL_CONF_OPTIONS, null,
+                Filter.idIn(packs.values().stream().map(Pair::getA).collect(Collectors.toSet())),
                 optsRs -> {
-                  opts.forEach(opt -> packs.get(opt.getId()).forEach(pack ->
-                      configuration.getPackets(opt).add(new Option(optsRs.getRowById(pack)))));
+                  packages.forEach(pkg -> packs.get(pkg.getId()).forEach(pack ->
+                      configuration.getPacketOptions(pkg)
+                          .put(new Option(optsRs.getRowById(pack.getA())), pack.getB())));
                   refresh();
                 });
           }

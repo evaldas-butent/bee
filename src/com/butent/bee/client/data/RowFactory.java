@@ -1,7 +1,6 @@
 package com.butent.bee.client.data;
 
 import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
@@ -12,7 +11,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.ModalForm;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -58,7 +56,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 
 public final class RowFactory {
 
@@ -74,7 +71,7 @@ public final class RowFactory {
 
   public static final int GENERATED_FORM_WIDTH = 500;
   public static final int GENERATED_HEADER_HEIGHT = 40;
-  public static final int GENERATED_ROW_HEIGHT = 60;
+  public static final int GENERATED_ROW_HEIGHT = 40;
   public static final int GENERATED_HEIGHT_MARGIN = 20;
 
   private static final String STYLE_MENU_POPUP = STYLE_PREFIX + "menu-popup";
@@ -84,7 +81,6 @@ public final class RowFactory {
   private static final int GENERATED_AREA_HEIGHT = 60;
 
   private static final String DEFAULT_CAPTION = Localized.dictionary().actionNew();
-  private static final Modality DEFAULT_MODALITY = Modality.ENABLED;
 
   private static final BeeLogger logger = LogUtils.getLogger(RowFactory.class);
 
@@ -100,7 +96,7 @@ public final class RowFactory {
     return row;
   }
 
-  public static void createRelatedRow(final DataSelector selector, String defValue) {
+  public static void createRelatedRow(DataSelector selector, String defValue) {
     Assert.notNull(selector);
 
     DataInfo dataInfo = selector.getOracle().getDataInfo();
@@ -141,12 +137,22 @@ public final class RowFactory {
         }
       }
 
-      createRelatedRow(formName, row, selector, event.getOnOpenNewRow());
+      Opener opener = Opener.in(UiHelper.getRelationNewRowWindowType(), selector.getElement(),
+          event.getOnOpenNewRow());
+
+      createRelatedRow(formName, row, selector, opener);
     }
   }
 
+  public static void createRelatedRow(String formName, BeeRow row, DataSelector selector) {
+    Assert.notNull(selector);
+
+    createRelatedRow(formName, row, selector,
+        Opener.in(UiHelper.getRelationNewRowWindowType(), selector.getElement(), null));
+  }
+
   public static void createRelatedRow(String formName, BeeRow row, final DataSelector selector,
-      final Consumer<FormView> onOpen) {
+      Opener opener) {
 
     Assert.notEmpty(formName);
     Assert.notNull(row);
@@ -155,38 +161,45 @@ public final class RowFactory {
     selector.setAdding(true);
 
     createRow(formName, selector.getNewRowCaption(), selector.getOracle().getDataInfo(), row,
-        Modality.ENABLED, selector, null, onOpen, new RowCallback() {
+        opener, null, new RowCallback() {
           @Override
           public void onCancel() {
-            selector.setAdding(false);
-            selector.setFocus(true);
+            if (selector.isAttached() && selector.isAdding()) {
+              selector.setAdding(false);
+
+              if (UiHelper.isInteractive(selector)) {
+                selector.setFocus(true);
+              }
+            }
           }
 
           @Override
           public void onSuccess(BeeRow result) {
-            SelectorEvent.fireRowCreated(selector, result);
+            if (selector.isAttached() && selector.isAdding()) {
+              SelectorEvent.fireRowCreated(selector, result);
+              selector.setAdding(false);
 
-            selector.setAdding(false);
-            selector.setSelection(result, null, true);
+              if (UiHelper.isInteractive(selector)) {
+                selector.setSelection(result, null, true);
+              }
+            }
           }
         });
   }
 
   public static void createRow(String viewName) {
-    createRow(viewName, DEFAULT_MODALITY);
+    createRow(viewName, getDefaultOpener());
   }
 
-  public static void createRow(String viewName, Modality modality) {
-    createRow(viewName, null, modality, null);
+  public static void createRow(String viewName, Opener opener) {
+    createRow(viewName, opener, null);
   }
 
-  public static void createRow(String viewName, Modality modality, RowCallback rowCallback) {
-    createRow(viewName, null, modality, rowCallback);
+  public static void createRow(String viewName, RowCallback rowCallback) {
+    createRow(viewName, getDefaultOpener(), rowCallback);
   }
 
-  public static void createRow(String viewName, String caption, Modality modality,
-      RowCallback rowCallback) {
-
+  public static void createRow(String viewName, Opener opener, RowCallback rowCallback) {
     Assert.notEmpty(viewName);
 
     DataInfo dataInfo = Data.getDataInfo(viewName);
@@ -195,39 +208,57 @@ public final class RowFactory {
     }
 
     BeeRow row = createEmptyRow(dataInfo, true);
-    createRow(dataInfo.getNewRowForm(), BeeUtils.notEmpty(caption, dataInfo.getNewRowCaption()),
-        dataInfo, row, modality, null, null, null, rowCallback);
+    createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(),
+        dataInfo, row, opener, null, rowCallback);
   }
 
-  public static void createRow(DataInfo dataInfo, BeeRow row, Modality modality) {
-    createRow(dataInfo, row, modality, null);
+  public static void createRow(DataInfo dataInfo, BeeRow row) {
+    createRow(dataInfo, row, getDefaultOpener());
   }
 
-  public static void createRow(DataInfo dataInfo, BeeRow row, Modality modality,
+  public static void createRow(DataInfo dataInfo, BeeRow row, Opener opener) {
+    createRow(dataInfo, row, opener, null);
+  }
+
+  public static void createRow(DataInfo dataInfo, BeeRow row, RowCallback rowCallback) {
+    createRow(dataInfo, row, getDefaultOpener(), rowCallback);
+  }
+
+  public static void createRow(DataInfo dataInfo, BeeRow row, Opener opener,
       RowCallback rowCallback) {
 
     Assert.notNull(dataInfo);
-    createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo, row, modality,
-        null, null, null, rowCallback);
+    createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo, row, opener, null,
+        rowCallback);
   }
 
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
-      Modality modality, UIObject target, FormInterceptor formInterceptor,
-      Consumer<FormView> onOpen, RowCallback rowCallback) {
+      RowCallback rowCallback) {
+
+    createRow(formName, caption, dataInfo, row, getDefaultOpener(), null, rowCallback);
+  }
+
+  public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
+      Opener opener, RowCallback rowCallback) {
+
+    createRow(formName, caption, dataInfo, row, opener, null, rowCallback);
+  }
+
+  public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
+      FormInterceptor formInterceptor, RowCallback rowCallback) {
+
+    createRow(formName, caption, dataInfo, row, getDefaultOpener(), formInterceptor, rowCallback);
+  }
+
+  public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
+      Opener opener, FormInterceptor formInterceptor, RowCallback rowCallback) {
 
     Assert.notEmpty(formName);
 
     Assert.notNull(dataInfo);
     Assert.notNull(row);
 
-    getForm(formName, caption, formInterceptor, dataInfo, row, modality, target, onOpen,
-        rowCallback);
-  }
-
-  public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
-      Modality modality, RowCallback rowCallback) {
-
-    createRow(formName, caption, dataInfo, row, modality, null, null, null, rowCallback);
+    getForm(formName, caption, formInterceptor, dataInfo, row, opener, rowCallback);
   }
 
   public static void createRowUsingForm(String viewName, String formName, RowCallback rowCallback) {
@@ -238,8 +269,8 @@ public final class RowFactory {
 
     if (dataInfo != null) {
       BeeRow row = createEmptyRow(dataInfo, true);
-      createRow(formName, dataInfo.getNewRowCaption(),
-          dataInfo, row, DEFAULT_MODALITY, null, null, null, rowCallback);
+      createRow(formName, dataInfo.getNewRowCaption(), dataInfo, row, getDefaultOpener(), null,
+          rowCallback);
     }
   }
 
@@ -267,8 +298,8 @@ public final class RowFactory {
           DataInfo dataInfo = Data.getDataInfo(DiscussionsConstants.VIEW_DISCUSSIONS);
           BeeRow row = createEmptyRow(dataInfo, true);
 
-          RowFactory.createRow(DiscussionsConstants.FORM_NEW_ANNOUNCEMENT,
-              Localized.dictionary().announcementNew(), dataInfo, row, DEFAULT_MODALITY, null);
+          createRow(DiscussionsConstants.FORM_NEW_ANNOUNCEMENT,
+              Localized.dictionary().announcementNew(), dataInfo, row, getDefaultOpener(), null);
         });
 
     addMenuItem(panel, Module.SERVICE, ServiceConstants.TBL_SERVICE_MAINTENANCE,
@@ -289,7 +320,7 @@ public final class RowFactory {
   }
 
   private static void addMenuItem(HasWidgets panel, Module module, String viewName, String text) {
-    addMenuItem(panel, module, viewName, text, () -> createRow(viewName, DEFAULT_MODALITY));
+    addMenuItem(panel, module, viewName, text, () -> createRow(viewName, getDefaultOpener()));
   }
 
   private static void addMenuItem(HasWidgets panel, Module module, String viewName, String text,
@@ -446,10 +477,13 @@ public final class RowFactory {
     return result;
   }
 
+  private static Opener getDefaultOpener() {
+    return Opener.in(UiHelper.getOtherNewRowWindowType(), null);
+  }
+
   private static void getForm(String formName, final String caption,
       FormInterceptor formInterceptor, final DataInfo dataInfo, final BeeRow row,
-      Modality modality, final UIObject target, final Consumer<FormView> onOpen,
-      final RowCallback rowCallback) {
+      final Opener opener, final RowCallback rowCallback) {
 
     FormInterceptor fcb =
         (formInterceptor == null) ? FormFactory.getFormInterceptor(formName) : formInterceptor;
@@ -461,25 +495,22 @@ public final class RowFactory {
             result.setEditing(true);
             result.start(null);
 
-            openForm(result, caption, dataInfo, row, modality, target, onOpen, rowCallback);
+            Opener formOpener;
+            if (opener == null) {
+              formOpener = getDefaultOpener();
+            } else {
+              formOpener = opener.normalize();
+            }
+
+            openForm(result, caption, dataInfo, row, formOpener, rowCallback);
           }
         });
   }
 
-  private static void openForm(final FormView formView, String caption, final DataInfo dataInfo,
-      final BeeRow row, Modality modality, UIObject target,
-      final Consumer<FormView> onOpen, final RowCallback callback) {
+  public static void openForm(final FormView formView, String caption, final DataInfo dataInfo,
+      final BeeRow row, Opener opener, final RowCallback callback) {
 
     final String cap = BeeUtils.notEmpty(caption, formView.getCaption(), DEFAULT_CAPTION);
-
-    boolean modal;
-    if (Popup.hasEventPreview()) {
-      modal = true;
-    } else if (modality == null) {
-      modal = DEFAULT_MODALITY == Modality.ENABLED;
-    } else {
-      modal = modality == Modality.ENABLED;
-    }
 
     final FormInterceptor interceptor = formView.getFormInterceptor();
 
@@ -493,12 +524,12 @@ public final class RowFactory {
       interceptor.afterCreatePresenter(presenter);
     }
 
-    final ModalForm dialog = new ModalForm(presenter, formView, false);
+    final ModalForm dialog = opener.isPopup() ? new ModalForm(presenter, formView, false) : null;
 
     final RowCallback closer = new RowCallback() {
       @Override
       public void onCancel() {
-        dialog.close();
+        closeForm();
         if (callback != null) {
           callback.onCancel();
         }
@@ -506,9 +537,17 @@ public final class RowFactory {
 
       @Override
       public void onSuccess(BeeRow result) {
-        dialog.close();
+        closeForm();
         if (callback != null) {
           callback.onSuccess(result);
+        }
+      }
+
+      private void closeForm() {
+        if (opener.isPopup()) {
+          dialog.close();
+        } else {
+          BeeKeeper.getScreen().closeWidget(presenter.getMainView());
         }
       }
     };
@@ -559,7 +598,8 @@ public final class RowFactory {
                       closer.onSuccess(result);
 
                       RowEditor.open(dataInfo.getViewName(), result,
-                          Opener.modal(fv -> fv.getViewPresenter().handleAction(Action.PRINT)));
+                          Opener.in(opener.getWindowType(),
+                              fv -> fv.getViewPresenter().handleAction(Action.PRINT)));
                     }
                   });
                 });
@@ -575,37 +615,46 @@ public final class RowFactory {
       }
     });
 
-    dialog.setOnSave(input -> {
-      if (formView.checkOnSave(input)) {
-        presenter.handleAction(Action.SAVE);
+    Runnable onOpen = () -> {
+      if (interceptor != null) {
+        interceptor.onStartNewRow(formView, row);
       }
-    });
 
-    dialog.setOnEscape(input -> {
-      if (formView.checkOnClose(input)) {
-        presenter.handleAction(Action.CLOSE);
-      }
-    });
-
-    dialog.addOpenHandler(event -> {
-      if (formView.getFormInterceptor() != null) {
-        formView.getFormInterceptor().onStartNewRow(formView, null, row);
-      }
       formView.updateRow(row, true);
 
       formView.focus();
 
-      if (onOpen != null) {
-        onOpen.accept(formView);
+      if (opener.getOnOpen() != null) {
+        opener.getOnOpen().accept(formView);
       }
-    });
+    };
 
-    dialog.setPreviewEnabled(modal);
+    if (opener.isPopup()) {
+      dialog.setOnSave(input -> {
+        if (formView.checkOnSave(input)) {
+          presenter.handleAction(Action.SAVE);
+        }
+      });
 
-    if (target == null) {
-      dialog.center();
+      dialog.setOnEscape(input -> {
+        if (formView.checkOnClose(input)) {
+          presenter.handleAction(Action.CLOSE);
+        }
+      });
+
+      dialog.addOpenHandler(event -> onOpen.run());
+
+      dialog.setPreviewEnabled(opener.isModal());
+
+      if (opener.getTarget() == null) {
+        dialog.centerOrCascade(formView.getContainerClassName());
+      } else {
+        dialog.showRelativeTo(opener.getTarget());
+      }
+
     } else {
-      dialog.showRelativeTo(target.getElement());
+      opener.onCreate(presenter);
+      onOpen.run();
     }
   }
 

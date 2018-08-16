@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 public class PriceRecalculator extends Button {
 
   public enum RecalculatorData {
-    ITEM, QUANTITY, PRICE, CURRENCY
+    ITEM, QUANTITY, PRICE, CURRENCY, DISCOUNT
   }
 
   private final ParentRowRefreshGrid grid;
@@ -59,48 +59,61 @@ public class PriceRecalculator extends Button {
   public static void getPriceAndDiscount(GridView gridView, int cnt,
       BiFunction<Integer, RecalculatorData, String> dataSupplier,
       TriConsumer<Integer, Double, Double> consumer, Runnable finalizer) {
+
     FormView parentForm = ViewHelper.getForm(gridView);
-    Map<String, String> options = new HashMap<>();
-
-    options.put(COL_DISCOUNT_COMPANY, parentForm.getStringValue(COL_CUSTOMER));
-    options.put(Service.VAR_TIME, parentForm.getStringValue(COL_DATE));
-    options.put(COL_DISCOUNT_CURRENCY, parentForm.getStringValue(COL_CURRENCY));
-    options.put(COL_DISCOUNT_WAREHOUSE, parentForm.getStringValue(COL_WAREHOUSE));
-    options.put(COL_MODEL, parentForm.getStringValue(COL_MODEL));
-    options.put(COL_PRODUCTION_DATE, parentForm.getStringValue(COL_PRODUCTION_DATE));
-
     Latch latch = new Latch(cnt);
 
+    TriConsumer<Integer, Double, Double> priceConsumer = (idx, price, discount) -> {
+      Double newPrice = BeeUtils.toDoubleOrNull(dataSupplier.apply(idx, RecalculatorData.PRICE));
+
+      if (BeeUtils.isPositive(newPrice)) {
+        Long currency = BeeUtils.toLongOrNull(dataSupplier.apply(idx, RecalculatorData.CURRENCY));
+
+        if (DataUtils.isId(currency)) {
+          newPrice = Money.exchange(currency, parentForm.getLongValue(COL_CURRENCY), newPrice,
+              parentForm.getDateTimeValue(COL_DATE));
+        } else {
+          newPrice = null;
+        }
+      }
+      if (BeeUtils.isPositive(price) && (!BeeUtils.isPositive(newPrice)
+          || BeeUtils.isLess(price, newPrice))) {
+        newPrice = price;
+      }
+      Double newDiscount = BeeUtils.toDoubleOrNull(dataSupplier.apply(idx,
+          RecalculatorData.DISCOUNT));
+
+      if (BeeUtils.isPositive(discount) && (!BeeUtils.isPositive(newDiscount)
+          || BeeUtils.isMore(discount, newDiscount))) {
+        newDiscount = discount;
+      }
+      consumer.accept(idx, Localized.normalizeMoney(newPrice), newDiscount);
+
+      latch.decrement();
+
+      if (latch.isOpen()) {
+        finalizer.run();
+      }
+    };
     for (int i = 0; i < cnt; i++) {
       int idx = i;
       Long item = BeeUtils.toLongOrNull(dataSupplier.apply(idx, RecalculatorData.ITEM));
-      options.put(Service.VAR_QTY, dataSupplier.apply(idx, RecalculatorData.QUANTITY));
 
-      ClassifierKeeper.getPriceAndDiscount(item, options, (price, discount) -> {
-        Double newPrice = BeeUtils.toDoubleOrNull(dataSupplier.apply(idx, RecalculatorData.PRICE));
+      if (DataUtils.isId(item)) {
+        Map<String, String> options = new HashMap<>();
+        options.put(COL_DISCOUNT_COMPANY, parentForm.getStringValue(COL_CUSTOMER));
+        options.put(Service.VAR_TIME, parentForm.getStringValue(COL_DATE));
+        options.put(COL_DISCOUNT_CURRENCY, parentForm.getStringValue(COL_CURRENCY));
+        options.put(COL_DISCOUNT_WAREHOUSE, parentForm.getStringValue(COL_WAREHOUSE));
+        options.put(COL_MODEL, parentForm.getStringValue(COL_MODEL));
+        options.put(COL_PRODUCTION_DATE, parentForm.getStringValue(COL_PRODUCTION_DATE));
+        options.put(Service.VAR_QTY, dataSupplier.apply(idx, RecalculatorData.QUANTITY));
 
-        if (BeeUtils.isPositive(newPrice)) {
-          Long currency = BeeUtils.toLongOrNull(dataSupplier.apply(idx, RecalculatorData.CURRENCY));
-
-          if (DataUtils.isId(currency)) {
-            newPrice = Money.exchange(currency, parentForm.getLongValue(COL_CURRENCY), newPrice,
-                parentForm.getDateTimeValue(COL_DATE));
-          } else {
-            newPrice = null;
-          }
-        }
-        if (BeeUtils.isPositive(price) && (!BeeUtils.isPositive(newPrice)
-            || BeeUtils.isLess(price, newPrice))) {
-          newPrice = price;
-        }
-        consumer.accept(idx, Localized.normalizeMoney(newPrice), discount);
-
-        latch.decrement();
-
-        if (latch.isOpen()) {
-          finalizer.run();
-        }
-      });
+        ClassifierKeeper.getPriceAndDiscount(item, options,
+            (price, discount) -> priceConsumer.accept(idx, price, discount));
+      } else {
+        priceConsumer.accept(idx, null, null);
+      }
     }
   }
 
@@ -159,60 +172,53 @@ public class PriceRecalculator extends Button {
         Arrays.asList(COL_PRICE, COL_TRADE_DOCUMENT_ITEM_DISCOUNT,
             COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT)));
 
-    Runnable executor = () ->
-        getPriceAndDiscount(gridView, rows.size(), (idx, info) -> {
-              switch (info) {
-                case ITEM:
-                  return rows.get(idx).getString(gridView.getDataIndex(COL_ITEM));
-                case QUANTITY:
-                  return rows.get(idx).getString(gridView.getDataIndex(COL_TRADE_ITEM_QUANTITY));
-                case PRICE:
-                case CURRENCY:
-                  Pair<String, String> pair = priceInfo.get(rows.get(idx)
-                      .getLong(gridView.getDataIndex(COL_ITEM)));
+    Runnable executor = () -> getPriceAndDiscount(gridView, rows.size(), (idx, info) -> {
+          switch (info) {
+            case ITEM:
+              return rows.get(idx).getString(gridView.getDataIndex(COL_ITEM));
+            case QUANTITY:
+              return rows.get(idx).getString(gridView.getDataIndex(COL_TRADE_ITEM_QUANTITY));
+            case PRICE:
+            case CURRENCY:
+              Pair<String, String> pair = priceInfo.get(rows.get(idx)
+                  .getLong(gridView.getDataIndex(COL_ITEM)));
 
-                  if (Objects.nonNull(pair)) {
-                    return Objects.equals(info, RecalculatorData.PRICE) ? pair.getA() : pair.getB();
-                  }
-                  break;
+              if (Objects.nonNull(pair)) {
+                return Objects.equals(info, RecalculatorData.PRICE) ? pair.getA() : pair.getB();
               }
+              break;
+            case DISCOUNT:
               return null;
-            },
-            (idx, price, discount) -> rowSet
-                .addRow(rows.get(idx).getId(), rows.get(idx).getVersion(),
-                    Queries.asList(price, discount, BeeUtils.isPositive(discount))),
-            () -> Queries.updateRows(rowSet, new DataChangeCallback(rowSet.getViewName()) {
-              @Override
-              public void onSuccess(RowInfoList result) {
-                setEnabled(true);
-                grid.previewModify(null);
-                super.onSuccess(result);
-              }
-            }));
-    if (Objects.equals(gridView.getGridName(), GRID_SERVICE_ORDER_JOBS)) {
-      Filter filter = Filter.isNull(COL_MODEL);
-      FormView parentForm = ViewHelper.getForm(gridView);
+          }
+          return null;
+        },
+        (idx, price, discount) -> rowSet.addRow(rows.get(idx).getId(), rows.get(idx).getVersion(),
+            Queries.asList(price, discount, BeeUtils.isPositive(discount))),
+        () -> Queries.updateRows(rowSet, new DataChangeCallback(rowSet.getViewName()) {
+          @Override
+          public void onSuccess(RowInfoList result) {
+            setEnabled(true);
+            grid.previewModify(null);
+            super.onSuccess(result);
+          }
+        }));
+    Filter filter = Filter.isNull(COL_MODEL);
+    FormView parentForm = ViewHelper.getForm(gridView);
 
-      if (DataUtils.isId(parentForm.getLongValue(COL_MODEL))) {
-        filter = Filter.or(filter, Filter.equals(COL_MODEL, parentForm.getLongValue(COL_MODEL)));
-      }
-      filter = Filter.and(Filter.any(COL_ITEM, rows.stream()
-          .map(row -> row.getLong(gridView.getDataIndex(COL_ITEM)))
-          .collect(Collectors.toList())), filter);
-
-      Queries.getRowSet(TBL_CAR_JOBS, null, filter, new Queries.RowSetCallback() {
-        @Override
-        public void onSuccess(BeeRowSet result) {
-          result.forEach(beeRow -> priceInfo.put(DataUtils.getLong(result, beeRow, COL_ITEM),
-              Pair.of(BeeUtils.nvl(DataUtils.getString(result, beeRow, COL_MODEL + COL_PRICE),
-                  DataUtils.getString(result, beeRow, COL_PRICE)),
-                  BeeUtils.nvl(DataUtils.getString(result, beeRow, COL_MODEL + COL_CURRENCY),
-                      DataUtils.getString(result, beeRow, COL_CURRENCY)))));
-          executor.run();
-        }
-      });
-    } else {
-      executor.run();
+    if (DataUtils.isId(parentForm.getLongValue(COL_MODEL))) {
+      filter = Filter.or(filter, Filter.equals(COL_MODEL, parentForm.getLongValue(COL_MODEL)));
     }
+    filter = Filter.and(Filter.any(COL_ITEM, rows.stream()
+        .map(row -> row.getLong(gridView.getDataIndex(COL_ITEM)))
+        .collect(Collectors.toList())), filter);
+
+    Queries.getRowSet(TBL_CAR_JOBS, null, filter, result -> {
+      result.forEach(beeRow -> priceInfo.put(DataUtils.getLong(result, beeRow, COL_ITEM),
+          Pair.of(BeeUtils.nvl(DataUtils.getString(result, beeRow, COL_MODEL + COL_PRICE),
+              DataUtils.getString(result, beeRow, COL_PRICE)),
+              BeeUtils.nvl(DataUtils.getString(result, beeRow, COL_MODEL + COL_CURRENCY),
+                  DataUtils.getString(result, beeRow, COL_CURRENCY)))));
+      executor.run();
+    });
   }
 }

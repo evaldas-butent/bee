@@ -25,6 +25,10 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.dialog.Modality;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.RowActionEvent;
@@ -36,6 +40,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
@@ -196,7 +201,7 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
                     COL_SERVICE_CUSTOMER, ALS_SERVICE_CUSTOMER_NAME, ALS_CUSTOMER_TYPE_NAME);
                 ServiceUtils.fillContractorAndManufacturerValues(newRow, objectRow);
 
-                RowFactory.createRow(maintenanceDataInfo, newRow, Modality.ENABLED);
+                RowFactory.createRow(maintenanceDataInfo, newRow, Opener.MODAL);
               });
               return false;
             } else {
@@ -650,7 +655,7 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
                 COL_SERVICE_CRITERION_VALUE);
 
             box.setAdditionalFilter(Filter.equals(COL_SERVICE_MAIN_CRITERIA,
-              DataUtils.getLong(result, crit, COL_SERVICE_MAIN_CRITERIA)));
+                DataUtils.getLong(result, crit, COL_SERVICE_MAIN_CRITERIA)));
 
             box.setValue(value);
 

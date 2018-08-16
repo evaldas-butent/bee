@@ -9,7 +9,6 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_CUSTO
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowUpdateCallback;
@@ -21,7 +20,6 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
@@ -50,12 +48,9 @@ public class CarJobProgressGrid extends AbstractGridInterceptor {
       Long eventId = row.getLong(getDataIndex(COL_SERVICE_EVENT));
 
       if (DataUtils.isId(eventId)) {
-        RowEditor.open(TBL_SERVICE_EVENTS, eventId, Opener.MODAL, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            Queries.getRow(getViewName(), row.getId(), new RowUpdateCallback(getViewName()));
-          }
-        });
+        RowEditor.open(TBL_SERVICE_EVENTS, eventId, Opener.MODAL,
+            result -> Queries.getRow(getViewName(), row.getId(),
+                new RowUpdateCallback(getViewName())));
       } else {
         DataInfo eventInfo = Data.getDataInfo(TBL_SERVICE_EVENTS);
         BeeRow eventRow = RowFactory.createEmptyRow(eventInfo);
@@ -75,20 +70,13 @@ public class CarJobProgressGrid extends AbstractGridInterceptor {
         }
         Queries.getRowSet(TBL_ATTENDEES, Collections.singletonList(COL_ATTENDEE_NAME),
             Filter.equals(COL_COMPANY_PERSON, row.getLong(getDataIndex(COL_COMPANY_PERSON))),
-            new Queries.RowSetCallback() {
-              @Override
-              public void onSuccess(BeeRowSet rowSet) {
-                eventRow.setProperty(TBL_ATTENDEES, DataUtils.buildIdList(rowSet));
+            rowSet -> {
+              eventRow.setProperty(TBL_ATTENDEES, DataUtils.buildIdList(rowSet));
 
-                RowFactory.createRow(eventInfo, eventRow, null, new RowCallback() {
-                  @Override
-                  public void onSuccess(BeeRow result) {
-                    Queries.updateAndFire(getViewName(), row.getId(), row.getVersion(),
-                        COL_SERVICE_EVENT, null, BeeUtils.toString(result.getId()),
-                        ModificationEvent.Kind.UPDATE_ROW);
-                  }
-                });
-              }
+              RowFactory.createRow(eventInfo, eventRow, Opener.MODAL,
+                  result -> Queries.updateAndFire(getViewName(), row.getId(), row.getVersion(),
+                      COL_SERVICE_EVENT, null, BeeUtils.toString(result.getId()),
+                      ModificationEvent.Kind.UPDATE_ROW));
             });
       }
     }

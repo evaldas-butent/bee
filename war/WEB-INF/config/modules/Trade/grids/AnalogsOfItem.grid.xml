@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Grid[
+    <!ENTITY pricescale "2">
+    <!ENTITY costscale "2">
+    ]>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="AnalogsOfItem" viewName="Items"
+        editForm="Item" editShowId="true"
+        disabledActions="filter rights"
+>
+  <g:columns>
+    <DataColumn name="Ordinal" visible="false" />
+    <IdColumn name="Id" />
+
+    <RelColumn name="Type" visible="false" />
+    <RelColumn name="Group" visible="false" />
+
+    <DataColumn name="Name" visible="true" />
+    <DataColumn name="Name2" visible="false" />
+    <DataColumn name="Article" />
+    <DataColumn name="Article2" visible="false" />
+    <DataColumn name="Barcode" visible="false" />
+
+    <RelColumn name="Unit" caption="=unitShort" />
+
+    <DataColumn name="Weight" visible="false" />
+    <DataColumn name="Area" visible="false" />
+
+    <DataColumn name="Price" caption="=salePriceShort" scale="&pricescale;" />
+    <RelColumn name="Currency" caption="=currencyShort" />
+
+    <DataColumn name="Cost" scale="&costscale;" visible="false" />
+    <RelColumn name="CostCurrency" caption="=currencyShort" visible="false" />
+
+    <DataColumn name="Price1" scale="&pricescale;" visible="false" />
+    <RelColumn name="Currency1" caption="=currencyShort" visible="false" />
+    <DataColumn name="Price2" scale="&pricescale;" visible="false" />
+    <RelColumn name="Currency2" caption="=currencyShort" visible="false" />
+    <DataColumn name="Price3" scale="&pricescale;" visible="false" />
+    <RelColumn name="Currency3" caption="=currencyShort" visible="false" />
+
+    <DataColumn name="Vat" visible="false" />
+    <DataColumn name="VatPercent" visible="false" />
+  </g:columns>
+
+  <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
+  <xi:include href="../../Classifiers/grids/columns/HiddenTradeAccounts.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="DefaultQuantity" visible="false" />
+    <DataColumn name="ExternalCode" visible="false" />
+
+    <DataColumn name="Description" visible="false" />
+    <DataColumn name="Notes" visible="false" />
+
+    <PropColumn name="Stock" type="double" dynamic="true" />
+  </g:columns>
+</g:Grid>

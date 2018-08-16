@@ -16,16 +16,16 @@ public class LocalProvider extends CachedProvider {
       String viewName, List<BeeColumn> columns, BeeRowSet table) {
 
     this(display, presenter, modificationPreviewer, notificationListener, viewName, columns, null,
-        table, null, null);
+        table, null, null, null);
   }
 
   public LocalProvider(HasDataTable display, HasDataProvider presenter,
       ModificationPreviewer modificationPreviewer, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, Filter immutableFilter, BeeRowSet table,
-      Map<String, Filter> parentFilters, Filter userFilter) {
+      Map<String, Filter> parentFilters, Filter userFilter, String dataOptions) {
 
     super(display, presenter, modificationPreviewer, notificationListener, viewName, columns,
-        immutableFilter, table, parentFilters, userFilter);
+        immutableFilter, table, parentFilters, userFilter, dataOptions);
   }
 
   @Override

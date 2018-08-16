@@ -1,8 +1,5 @@
 package com.butent.bee.client.modules.trade.acts;
 
-import com.butent.bee.client.view.*;
-import com.butent.bee.shared.data.*;
-import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -11,7 +8,7 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
-import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.COL_CUSTOMER;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -20,10 +17,8 @@ import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.DataCache;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowInsertCallback;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
@@ -37,6 +32,9 @@ import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.ViewFactory;
+import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -47,6 +45,11 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
@@ -56,9 +59,8 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
-import com.butent.bee.shared.modules.administration.*;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
@@ -121,8 +123,8 @@ public final class TradeActKeeper {
         ReportUtils.getPdf(form.getPrintElement().getString(), (fileInfo) -> {
           String invoice = BeeUtils.same(form.getViewName(), VIEW_SALES)
               ? BeeUtils.join("_", Localized.dictionary().trdInvoice(),
-                  BeeUtils.join("", form.getStringValue(COL_TRADE_INVOICE_PREFIX),
-                          form.getStringValue(COL_TRADE_INVOICE_NO)))
+              BeeUtils.join("", form.getStringValue(COL_TRADE_INVOICE_PREFIX),
+                  form.getStringValue(COL_TRADE_INVOICE_NO)))
               : BeeUtils.join("_", form.getCaption(), form.getActiveRowId());
 
           if (!BeeUtils.isEmpty(invoice)) {
@@ -194,41 +196,35 @@ public final class TradeActKeeper {
 
     ViewFactory.registerSupplier(GRID_ALL_ACTS_KEY, createActViewSupplier(null));
 
-    MenuService.TRADE_ACT_NEW.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        final TradeActKind kind = EnumUtils.getEnumByName(TradeActKind.class, parameters);
+    MenuService.TRADE_ACT_NEW.setHandler(parameters -> {
+      final TradeActKind kind = EnumUtils.getEnumByName(TradeActKind.class, parameters);
 
-        if (kind == null) {
-          logger.severe(MenuService.TRADE_ACT_NEW.name(), "kind not recognized", parameters);
+      if (kind == null) {
+        logger.severe(MenuService.TRADE_ACT_NEW.name(), "kind not recognized", parameters);
 
-        } else {
-          ensureChache(() -> {
-            DataInfo dataInfo = Data.getDataInfo(VIEW_TRADE_ACTS);
-            BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
+      } else {
+        ensureChache(() -> {
+          DataInfo dataInfo = Data.getDataInfo(VIEW_TRADE_ACTS);
+          BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
 
-            prepareNewTradeAct(row, kind);
+          prepareNewTradeAct(row, kind);
 
-            RowFactory.createRow(dataInfo, row, Modality.ENABLED);
-          });
-        }
+          RowFactory.createRow(dataInfo, row);
+        });
       }
     });
 
-    MenuService.TRADE_ACT_LIST.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        if (BeeUtils.same(parameters, BeeConst.ALL)) {
-          ViewFactory.createAndShow(GRID_ALL_ACTS_KEY);
+    MenuService.TRADE_ACT_LIST.setHandler(parameters -> {
+      if (BeeUtils.same(parameters, BeeConst.ALL)) {
+        ViewFactory.createAndShow(GRID_ALL_ACTS_KEY);
 
+      } else {
+        TradeActKind kind = EnumUtils.getEnumByName(TradeActKind.class, parameters);
+
+        if (kind != null && kind.getGridSupplierKey() != null) {
+          ViewFactory.createAndShow(kind.getGridSupplierKey());
         } else {
-          TradeActKind kind = EnumUtils.getEnumByName(TradeActKind.class, parameters);
-
-          if (kind != null && kind.getGridSupplierKey() != null) {
-            ViewFactory.createAndShow(kind.getGridSupplierKey());
-          } else {
-            logger.severe(GRID_TRADE_ACTS, "kind not recognized", parameters);
-          }
+          logger.severe(GRID_TRADE_ACTS, "kind not recognized", parameters);
         }
       }
     });
@@ -280,13 +276,13 @@ public final class TradeActKeeper {
       }
     };
 
-      GridFactory.registerGridInterceptor(GRID_TRADE_ACT_ITEMS, isClientArea() ? interceptor
-          : new TradeActItemsGrid());
-      GridFactory.registerGridInterceptor(GRID_TRADE_ACT_SERVICES, isClientArea() ? interceptor
-          : new TradeActServicesGrid());
-      GridFactory.registerGridInterceptor(VIEW_TRADE_ACT_FILES,
-          new FileGridInterceptor(COL_TRADE_ACT, AdministrationConstants.COL_FILE,
-              AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
+    GridFactory.registerGridInterceptor(GRID_TRADE_ACT_ITEMS, isClientArea() ? interceptor
+        : new TradeActItemsGrid());
+    GridFactory.registerGridInterceptor(GRID_TRADE_ACT_SERVICES, isClientArea() ? interceptor
+        : new TradeActServicesGrid());
+    GridFactory.registerGridInterceptor(VIEW_TRADE_ACT_FILES,
+        new FileGridInterceptor(COL_TRADE_ACT, AdministrationConstants.COL_FILE,
+            AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
     if (isClientArea()) {
       GridFactory.registerGridInterceptor(GRID_SALES, new AbstractGridInterceptor() {
@@ -302,17 +298,8 @@ public final class TradeActKeeper {
           }
 
           Queries.update(VIEW_SALES, row.getId(), "Visited", Value.getValue(new DateTime()),
-              new Queries.IntCallback() {
-                @Override
-                public void onSuccess(Integer result) {
-                  Queries.getRow(VIEW_SALES, row.getId(), new RowCallback() {
-                    @Override
-                    public void onSuccess(BeeRow updRow) {
-                      RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_SALES,  updRow);
-                    }
-                  });
-                }
-              });
+              result -> Queries.getRow(VIEW_SALES, row.getId(),
+                  updRow -> RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_SALES, updRow)));
         }
 
         @Override
@@ -338,7 +325,7 @@ public final class TradeActKeeper {
 
     SelectorEvent.register(new TradeActSelectorHandler());
 
-    Preloader cacheLoader = input -> ensureChache(input);
+    Preloader cacheLoader = TradeActKeeper::ensureChache;
 
     FormFactory.registerPreloader(FORM_TRADE_ACT, cacheLoader);
     FormFactory.registerPreloader(FORM_INVOICE_BUILDER, cacheLoader);
@@ -364,14 +351,11 @@ public final class TradeActKeeper {
           VIEW_SERIES_MANAGERS, VIEW_WAREHOUSES, VIEW_TRADE_STATUSES);
       final long start = System.currentTimeMillis();
 
-      cache.getData(viewNames, new DataCache.MultiCallback() {
-        @Override
-        public void onSuccess(Integer result) {
-          cacheLoaded = true;
-          logger.debug("trade act cache loaded", result, TimeUtils.elapsedMillis(start));
+      cache.getData(viewNames, result -> {
+        cacheLoaded = true;
+        logger.debug("trade act cache loaded", result, TimeUtils.elapsedMillis(start));
 
-          command.run();
-        }
+        command.run();
       });
     }
   }
@@ -534,7 +518,7 @@ public final class TradeActKeeper {
 
   static String getStorageKey(String name) {
     return BeeUtils.join(STORAGE_KEY_SEPARATOR, VIEW_TRADE_ACTS,
-      BeeKeeper.getUser().getUserId(), name);
+        BeeKeeper.getUser().getUserId(), name);
   }
 
   static BeeRowSet getUserSeries(boolean checkDefaults) {
@@ -660,16 +644,17 @@ public final class TradeActKeeper {
     boolean isReservedAct = kind == TradeActKind.RESERVE;
 
     boolean defEnabled = !(hasContinuousTa || hasRentProjectTa)
-            && !(isContinuousTa || isRentProjectTa) && !TradeActKeeper.isClientArea()
-            && !hasMultiReturn && !hasReturn;
+        && !(isContinuousTa || isRentProjectTa) && !TradeActKeeper.isClientArea()
+        && !hasMultiReturn && !hasReturn;
 
     boolean isReturnActItemsEnabled = hasRentProjectTa && isReturnTa;
-    boolean isSaleAndHasRentProject = hasRentProjectTa && !isRentProjectTa && (hasReturn || isSaleTa);
+    boolean isSaleAndHasRentProject =
+        hasRentProjectTa && !isRentProjectTa && (hasReturn || isSaleTa);
     boolean isSupplementAndHasRentProject = hasRentProjectTa && !isRentProjectTa && isSupplementTa;
 
-
-    return  defEnabled || isReturnActItemsEnabled || isSaleAndHasRentProject || isSupplementAndHasRentProject
-            || isReservedAct;
+    return defEnabled || isReturnActItemsEnabled || isSaleAndHasRentProject
+        || isSupplementAndHasRentProject
+        || isReservedAct;
   }
 
   static boolean isUserSeries(Long series) {
@@ -712,7 +697,7 @@ public final class TradeActKeeper {
       if (userSeries != null && userSeries.getNumberOfRows() == 1) {
         Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_SERIES, userSeries.getRow(0).getId());
         Data.setValue(VIEW_TRADE_ACTS, row, COL_SERIES_NAME,
-          userSeries.getString(0, userSeries.getColumnIndex(COL_SERIES_NAME)));
+            userSeries.getString(0, userSeries.getColumnIndex(COL_SERIES_NAME)));
       }
     } else {
       Long seriesId = BeeUtils.toLongOrNull(BeeKeeper.getStorage().get(getStorageKey(COL_SERIES)));
@@ -726,18 +711,27 @@ public final class TradeActKeeper {
 
     if (parent != null && TradeActKind.RENT_PROJECT.equals(getKind(VIEW_TRADE_ACTS, parent))) {
       RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_NAME, row, parent);
-      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_NAME, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_NAME));
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_NAME,
+          Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_NAME));
 
-      RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_RENT_PROJECT, row, parent);
-      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_RENT_PROJECT));
-      RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_COMPANY, row, parent);
-      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_COMPANY, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_COMPANY));
-      RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_CONTACT, row, parent);
-      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_CONTACT, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_CONTACT));
+      RelationUtils
+          .setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_RENT_PROJECT, row, parent);
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT,
+          Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_RENT_PROJECT));
+      RelationUtils
+          .setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_COMPANY, row, parent);
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_COMPANY,
+          Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_COMPANY));
+      RelationUtils
+          .setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_CONTACT, row, parent);
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_CONTACT,
+          Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_CONTACT));
       RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_OBJECT, row, parent);
-      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_OBJECT, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_OBJECT));
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_OBJECT,
+          Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_OBJECT));
 
-      Data.setValue(VIEW_TRADE_ACTS, row, ALS_RENT_PROJECT_COMPANY, Data.getLong(VIEW_TRADE_ACTS, parent,
+      Data.setValue(VIEW_TRADE_ACTS, row, ALS_RENT_PROJECT_COMPANY,
+          Data.getLong(VIEW_TRADE_ACTS, parent,
               COL_TA_COMPANY));
     }
   }
@@ -766,48 +760,38 @@ public final class TradeActKeeper {
   }
 
   private static ViewSupplier createActViewSupplier(final TradeActKind kind) {
-    return new ViewSupplier() {
-      @Override
-      public void create(ViewCallback callback) {
-        openActGrid(kind, ViewFactory.getPresenterCallback(callback));
-      }
-    };
+    return callback -> openActGrid(kind, ViewFactory.getPresenterCallback(callback));
   }
 
   private static void openActGrid(final TradeActKind kind, final PresenterCallback callback) {
-    ensureParameters(new ScheduledCommand() {
-      @Override
-      public void execute() {
-        ensureChache(() -> {
-          String supplierKey;
-          String caption;
-          Filter filter;
+    ensureParameters(() -> ensureChache(() -> {
+      String supplierKey;
+      String caption;
+      Filter filter;
 
-          if (kind == null) {
-            supplierKey = GRID_ALL_ACTS_KEY;
+      if (kind == null) {
+        supplierKey = GRID_ALL_ACTS_KEY;
 
-            if (isClientArea()) {
-              caption = BeeUtils.join(" - ", Localized.dictionary().tradeActs(),
-                  BeeKeeper.getUser().getCompanyName());
-              filter = Filter.equals(COL_TA_COMPANY, BeeKeeper.getUser().getCompany());
-            } else {
-              caption = Localized.dictionary().tradeActsAll();
-              filter = null;
-            }
+        if (isClientArea()) {
+          caption = BeeUtils.join(" - ", Localized.dictionary().tradeActs(),
+              BeeKeeper.getUser().getCompanyName());
+          filter = Filter.equals(COL_TA_COMPANY, BeeKeeper.getUser().getCompany());
+        } else {
+          caption = Localized.dictionary().tradeActsAll();
+          filter = null;
+        }
 
-          } else {
-            supplierKey = kind.getGridSupplierKey();
+      } else {
+        supplierKey = kind.getGridSupplierKey();
 
-            caption = Localized.dictionary().tradeActs() + " - " + kind.getCaption();
-            filter = kind.getFilter();
-          }
-
-          GridFactory.createGrid(GRID_TRADE_ACTS, supplierKey, new TradeActGrid(kind),
-              EnumSet.of(UiOption.GRID), GridOptions.forCaptionAndFilter(caption, filter),
-              callback);
-        });
+        caption = Localized.dictionary().tradeActs() + " - " + kind.getCaption();
+        filter = kind.getFilter();
       }
-    });
+
+      GridFactory.createGrid(GRID_TRADE_ACTS, supplierKey, new TradeActGrid(kind),
+          EnumSet.of(UiOption.GRID), GridOptions.forCaptionAndFilter(caption, filter),
+          callback);
+    }));
   }
 
   private TradeActKeeper() {

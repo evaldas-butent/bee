@@ -859,7 +859,7 @@ public class TransportReportsBean {
         .addExpr(firstLastNameJoiner.apply(TBL_PERSONS), COL_DRIVER)
         .addFields(tmpTrips, COL_TRIP_NO, COL_DATE_FROM, COL_DATE_TO, COL_STATUS,
             COL_SPEEDOMETER_BEFORE, COL_SPEEDOMETER_AFTER, COL_FUEL_BEFORE, COL_FUEL_AFTER,
-            COL_NOTES, COL_TRADE_MANAGER, COL_MAIN_DRIVER)
+            COL_NOTES, COL_TRADE_MANAGER, COL_MAIN_DRIVER, ALS_TRAILER_NUMBER, ALS_VEHICLE_NUMBER)
         .addFrom(TBL_TRIP_COSTS)
         .setWhere(costsClause)
         .addFromLeft(tmpTrips, SqlUtils.join(tmpTrips, sys.getIdName(TBL_TRIPS),
@@ -887,7 +887,7 @@ public class TransportReportsBean {
         .addExpr(SqlUtils.constant(BeeConst.STRING_EMPTY), COL_DRIVER)
         .addFields(tmpTrips, COL_TRIP_NO, COL_DATE_FROM, COL_DATE_TO, COL_STATUS,
             COL_SPEEDOMETER_BEFORE, COL_SPEEDOMETER_AFTER, COL_FUEL_BEFORE, COL_FUEL_AFTER,
-            COL_NOTES, COL_TRADE_MANAGER, COL_MAIN_DRIVER)
+            COL_NOTES, COL_TRADE_MANAGER, COL_MAIN_DRIVER, ALS_TRAILER_NUMBER, ALS_VEHICLE_NUMBER)
         .addFrom(TBL_TRIP_FUEL_COSTS)
         .addFromLeft(tmpTrips, SqlUtils.join(tmpTrips, sys.getIdName(TBL_TRIPS),
             TBL_TRIP_FUEL_COSTS, COL_TRIP))
@@ -1194,6 +1194,9 @@ public class TransportReportsBean {
         SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
             SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")), COL_ORDER_MANAGER));
 
+    cargoClause.add(report.getCondition(TBL_CARGO_TYPES, COL_CARGO_TYPE_NAME));
+    cargoClause.add(report.getCondition(TBL_CARGO_GROUPS, COL_CARGO_GROUP_NAME));
+
     if (!cargoClause.isEmpty()) {
       clause.add(SqlUtils.in(TBL_TRIPS, sys.getIdName(TBL_TRIPS),
           new SqlSelect().setDistinctMode(true)
@@ -1202,6 +1205,10 @@ public class TransportReportsBean {
               .addFromLeft(TBL_ORDER_CARGO,
                   sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
               .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+              .addFromLeft(TBL_CARGO_TYPES,
+                  sys.joinTables(TBL_CARGO_TYPES, TBL_ORDER_CARGO, COL_CARGO_TYPE))
+              .addFromLeft(TBL_CARGO_GROUPS,
+                  sys.joinTables(TBL_CARGO_GROUPS, TBL_ORDER_CARGO, COL_CARGO_GROUP))
               .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
               .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_ORDERS, COL_ORDER_MANAGER))
               .addFromLeft(TBL_COMPANY_PERSONS,
@@ -1457,7 +1464,9 @@ public class TransportReportsBean {
     boolean cargoRequired = report.requiresField(COL_ORDER_NO)
         || report.requiresField(COL_ORDER + COL_ORDER_DATE) || report.requiresField(COL_CUSTOMER)
         || report.requiresField(COL_ORDER_MANAGER) || report.requiresField(COL_CARGO)
-        || report.requiresField(COL_CARGO_PARTIAL) || report.requiresField(ALS_ORDER_STATUS);
+        || report.requiresField(COL_CARGO_PARTIAL) || report.requiresField(ALS_ORDER_STATUS)
+        || report.requiresField(COL_CARGO_TYPE_NAME)
+        || report.requiresField(COL_CARGO_GROUP_NAME);
 
     if (cargoRequired) {
       String tmpPercents = getCargoTripPercents(COL_TRIP,
@@ -1473,10 +1482,16 @@ public class TransportReportsBean {
           .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
               SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")), COL_ORDER_MANAGER)
           .addFields(tmpPercents, COL_CARGO)
+          .addFields(VIEW_CARGO_TYPES, COL_CARGO_TYPE_NAME)
+          .addFields(VIEW_CARGO_GROUPS, COL_CARGO_GROUP_NAME)
           .addFields(TBL_ORDER_CARGO, COL_CARGO_PARTIAL)
           .addFrom(tmp)
           .addFromLeft(tmpPercents, SqlUtils.joinUsing(tmp, tmpPercents, COL_TRIP))
           .addFromLeft(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, tmpPercents, COL_CARGO))
+          .addFromLeft(VIEW_CARGO_TYPES,
+              sys.joinTables(VIEW_CARGO_TYPES, TBL_ORDER_CARGO, COL_CARGO_TYPE))
+          .addFromLeft(VIEW_CARGO_GROUPS,
+              sys.joinTables(VIEW_CARGO_GROUPS, TBL_ORDER_CARGO, COL_CARGO_GROUP))
           .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
           .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
           .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_ORDERS, COL_ORDER_MANAGER))

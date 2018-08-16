@@ -707,11 +707,17 @@ public interface Dictionary {
 
   default String chatsShowAll() {return g("chatsShowAll");}
 
+  default String checkCancellations() {return g("checkCancellations");}
+
   default String checkNo() {return g("checkNo");}
 
   default String checked() {return g("checked");}
 
   default String chief() {return g("chief");}
+
+  default String childEditWindow() {return g("childEditWindow");}
+
+  default String childNewRowWindow() {return g("childNewRowWindow");}
 
   default String chooseContactSource() {return g("chooseContactSource");}
 
@@ -867,6 +873,14 @@ public interface Dictionary {
 
   default String configuration() {return g("configuration");}
 
+  default String consignment() {return g("consignment");}
+
+  default String consignmentCredit() {return g("consignmentCredit");}
+
+  default String consignmentDebit() {return g("consignmentDebit");}
+
+  default String consignor() {return g("consignor");}
+
   default String constant() {return g("constant");}
 
   default String contact() {return g("contact");}
@@ -994,6 +1008,8 @@ public interface Dictionary {
   default String crmActionSuspend() {return g("crmActionSuspend");}
 
   default String crmAdded() {return g("crmAdded");}
+
+  default String crmAutoCreatedTask() {return g("crmAutoCreatedTask");}
 
   default String crmCreatedNewTasks(Object p0) {
     Map<String, Object> _m = new HashMap<>();
@@ -1223,6 +1239,8 @@ public interface Dictionary {
 
   default String crmTaskDurations() {return g("crmTaskDurations");}
 
+  default String crmTaskEndResult() {return g("crmTaskEndResult");}
+
   default String crmTaskEvent() {return g("crmTaskEvent");}
 
   default String crmTaskEventApproved() {return g("crmTaskEventApproved");}
@@ -1293,6 +1311,8 @@ public interface Dictionary {
 
   default String crmTaskForwardingForExecution() {return g("crmTaskForwardingForExecution");}
 
+  default String crmTaskLabelDelayedDays() {return g("crmTaskLabelDelayedDays");}
+
   default String crmTaskLabelDelayedHours() {return g("crmTaskLabelDelayedHours");}
 
   default String crmTaskLabelLate() {return g("crmTaskLabelLate");}
@@ -1317,11 +1337,21 @@ public interface Dictionary {
 
   default String crmTaskOutOfObservers() {return g("crmTaskOutOfObservers");}
 
+  default String crmTaskOwnerAddToObservers() {return g("crmTaskOwnerAddToObservers");}
+
   default String crmTaskOwnerCanNotBe(Object p0) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{0}", p0);
     return Localized.format(g("crmTaskOwnerCanNotBe"), _m);
   }
+
+  default String crmTaskOwnerChange(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("crmTaskOwnerChange"), _m);
+  }
+
+  default String crmTaskOwnerChangeCaption() {return g("crmTaskOwnerChangeCaption");}
 
   default String crmTaskParameters() {return g("crmTaskParameters");}
 
@@ -1383,15 +1413,29 @@ public interface Dictionary {
 
   default String crmTaskSubject() {return g("crmTaskSubject");}
 
+  default String crmTaskSummaryActiveLateTasks() {return g("crmTaskSummaryActiveLateTasks");}
+
+  default String crmTaskSummaryActiveTasks() {return g("crmTaskSummaryActiveTasks");}
+
+  default String crmTaskSummaryDelegatedLateTasks() {return g("crmTaskSummaryDelegatedLateTasks");}
+
+  default String crmTaskSummaryDelegatedTasks() {return g("crmTaskSummaryDelegatedTasks");}
+
+  default String crmTaskSummarySoonLateTasks() {return g("crmTaskSummarySoonLateTasks");}
+
   default String crmTaskSuspension() {return g("crmTaskSuspension");}
 
   default String crmTaskTemplate() {return g("crmTaskTemplate");}
+
+  default String crmTaskTemplateFiles() {return g("crmTaskTemplateFiles");}
 
   default String crmTaskTemplateName() {return g("crmTaskTemplateName");}
 
   default String crmTaskTemplates() {return g("crmTaskTemplates");}
 
   default String crmTaskTermChange() {return g("crmTaskTermChange");}
+
+  default String crmTaskTermDaysExpired() {return g("crmTaskTermDaysExpired");}
 
   default String crmTaskType() {return g("crmTaskType");}
 
@@ -1434,6 +1478,8 @@ public interface Dictionary {
   default String crmTodoItem() {return g("crmTodoItem");}
 
   default String crmTodoList() {return g("crmTodoList");}
+
+  default String crmValidTaskTemplates() {return g("crmValidTaskTemplates");}
 
   default String currencies() {return g("currencies");}
 
@@ -1577,12 +1623,6 @@ public interface Dictionary {
     return Localized.format(g("deleteSelectedRows"), _m);
   }
 
-  default String deletedRows(Object p0) {
-    Map<String, Object> _m = new HashMap<>();
-    _m.put("{0}", p0);
-    return Localized.format(g("deletedRows"), _m);
-  }
-
   default String department() {return g("department");}
 
   default String departmentEmployee() {return g("departmentEmployee");}
@@ -1596,6 +1636,8 @@ public interface Dictionary {
   default String departmentPositions() {return g("departmentPositions");}
 
   default String departments() {return g("departments");}
+
+  default String depth() {return g("depth");}
 
   default String description() {return g("description");}
 
@@ -2542,6 +2584,8 @@ public interface Dictionary {
 
   default String editMode() {return g("editMode");}
 
+  default String editWindow() {return g("editWindow");}
+
   default String editing() {return g("editing");}
 
   default String editorTemplates() {return g("editorTemplates");}
@@ -2616,6 +2660,8 @@ public interface Dictionary {
   }
 
   default String executorFullName() {return g("executorFullName");}
+
+  default String expectantCustomer() {return g("expectantCustomer");}
 
   default String expectedDuration() {return g("expectedDuration");}
 
@@ -3150,6 +3196,8 @@ public interface Dictionary {
 
   default String finPostingPrecedence() {return g("finPostingPrecedence");}
 
+  default String finPurchaseReturns() {return g("finPurchaseReturns");}
+
   default String finReceivablesFromEmployees() {return g("finReceivablesFromEmployees");}
 
   default String finRevenueAndExpenseSummary() {return g("finRevenueAndExpenseSummary");}
@@ -3217,6 +3265,10 @@ public interface Dictionary {
   default String greatest() {return g("greatest");}
 
   default String gridColumnSettings() {return g("gridColumnSettings");}
+
+  default String gridEditWindow() {return g("gridEditWindow");}
+
+  default String gridNewRowWindow() {return g("gridNewRowWindow");}
 
   default String gridSettings() {return g("gridSettings");}
 
@@ -3342,6 +3394,12 @@ public interface Dictionary {
     return Localized.format(g("invalidPeriod"), _m);
   }
 
+  default String invalidQuantity(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("invalidQuantity"), _m);
+  }
+
   default String invalidRange() {return g("invalidRange");}
 
   default String invalidTime() {return g("invalidTime");}
@@ -3363,6 +3421,18 @@ public interface Dictionary {
   default String isNot() {return g("isNot");}
 
   default String item() {return g("item");}
+
+  default String item1() {return g("item1");}
+
+  default String item2() {return g("item2");}
+
+  default String itemAnalog() {return g("itemAnalog");}
+
+  default String itemAnalogs() {return g("itemAnalogs");}
+
+  default String itemAnalogsNew() {return g("itemAnalogsNew");}
+
+  default String itemAnalogsShort() {return g("itemAnalogsShort");}
 
   default String itemBarcode() {return g("itemBarcode");}
 
@@ -3447,6 +3517,8 @@ public interface Dictionary {
   default String link() {return g("link");}
 
   default String list() {return g("list");}
+
+  default String lists() {return g("lists");}
 
   default String liters() {return g("liters");}
 
@@ -3609,6 +3681,8 @@ public interface Dictionary {
   default String mailNewAccountPassword() {return g("mailNewAccountPassword");}
 
   default String mailNewMessage() {return g("mailNewMessage");}
+
+  default String mailNewMessageWindow() {return g("mailNewMessageWindow");}
 
   default String mailNewNewsletter() {return g("mailNewNewsletter");}
 
@@ -3956,6 +4030,8 @@ public interface Dictionary {
 
   default String newPaymentTerm() {return g("newPaymentTerm");}
 
+  default String newPaymentType() {return g("newPaymentType");}
+
   default String newPerson() {return g("newPerson");}
 
   default String newPersonCompany() {return g("newPersonCompany");}
@@ -3985,6 +4061,8 @@ public interface Dictionary {
   default String newRole() {return g("newRole");}
 
   default String newRow() {return g("newRow");}
+
+  default String newRowWindow() {return g("newRowWindow");}
 
   default String newSalaryFund() {return g("newSalaryFund");}
 
@@ -4070,6 +4148,8 @@ public interface Dictionary {
 
   default String objectField() {return g("objectField");}
 
+  default String objectList() {return g("objectList");}
+
   default String objectLocation() {return g("objectLocation");}
 
   default String objectLocations() {return g("objectLocations");}
@@ -4117,6 +4197,8 @@ public interface Dictionary {
   default String optionType() {return g("optionType");}
 
   default String optionTypes() {return g("optionTypes");}
+
+  default String optional() {return g("optional");}
 
   default String options() {return g("options");}
 
@@ -4210,7 +4292,11 @@ public interface Dictionary {
 
   default String otherCosts() {return g("otherCosts");}
 
+  default String otherEditWindows() {return g("otherEditWindows");}
+
   default String otherInfo() {return g("otherInfo");}
+
+  default String otherNewRowWindows() {return g("otherNewRowWindows");}
 
   default String outsized() {return g("outsized");}
 
@@ -4243,6 +4329,8 @@ public interface Dictionary {
   default String parameterType() {return g("parameterType");}
 
   default String parameters() {return g("parameters");}
+
+  default String parent() {return g("parent");}
 
   default String partTime() {return g("partTime");}
 
@@ -4875,6 +4963,8 @@ public interface Dictionary {
 
   default String prmItemArticleSourceColumn() {return g("prmItemArticleSourceColumn");}
 
+  default String prmItemNoteSourceColumns() {return g("prmItemNoteSourceColumns");}
+
   default String prmMainCurrency() {return g("prmMainCurrency");}
 
   default String prmMaintenanceServiceGroup() {return g("prmMaintenanceServiceGroup");}
@@ -4906,6 +4996,8 @@ public interface Dictionary {
   default String prmSQLMessagesORACLE() {return g("prmSQLMessagesORACLE");}
 
   default String prmSQLMessagesPOSTGRESQL() {return g("prmSQLMessagesPOSTGRESQL");}
+
+  default String prmSelfServiceResponsibility() {return g("prmSelfServiceResponsibility");}
 
   default String prmSelfServiceRole() {return g("prmSelfServiceRole");}
 
@@ -4945,6 +5037,8 @@ public interface Dictionary {
 
   default String prmStartOfWorkDay() {return g("prmStartOfWorkDay");}
 
+  default String prmSummaryExpiredTaskPercent() {return g("prmSummaryExpiredTaskPercent");}
+
   default String prmUrgentRate() {return g("prmUrgentRate");}
 
   default String prmUrl() {return g("prmUrl");}
@@ -4981,6 +5075,8 @@ public interface Dictionary {
 
   default String qrCode() {return g("qrCode");}
 
+  default String qualityCheck() {return g("qualityCheck"); }
+
   default String quantity() {return g("quantity");}
 
   default String quantityFrom() {return g("quantityFrom");}
@@ -5000,6 +5096,10 @@ public interface Dictionary {
   default String reasons() {return g("reasons");}
 
   default String rebuildTradeStockCaption() {return g("rebuildTradeStockCaption");}
+
+  default String rebuildTradeStockConsumers() {return g("rebuildTradeStockConsumers");}
+
+  default String rebuildTradeStockIsUpToDate() {return g("rebuildTradeStockIsUpToDate");}
 
   default String rebuildTradeStockNotification() {return g("rebuildTradeStockNotification");}
 
@@ -5078,6 +5178,10 @@ public interface Dictionary {
   default String relatedTo() {return g("relatedTo");}
 
   default String relation() {return g("relation");}
+
+  default String relationEditWindow() {return g("relationEditWindow");}
+
+  default String relationNewRowWindow() {return g("relationNewRowWindow");}
 
   default String relationStateName() {return g("relationStateName");}
 
@@ -5230,6 +5334,18 @@ public interface Dictionary {
 
   default String rows() {return g("rows");}
 
+  default String rowsDeleted(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("rowsDeleted"), _m);
+  }
+
+  default String rowsInserted(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("rowsInserted"), _m);
+  }
+
   default String rowsRetrieved(Object p0) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{0}", p0);
@@ -5251,6 +5367,8 @@ public interface Dictionary {
   default String salePriceLabel() {return g("salePriceLabel");}
 
   default String salePriceShort() {return g("salePriceShort");}
+
+  default String save() {return g("save");}
 
   default String saveAndPrintAction() {return g("saveAndPrintAction");}
 
@@ -5291,6 +5409,8 @@ public interface Dictionary {
   }
 
   default String searchTips() {return g("searchTips");}
+
+  default String selectActiveRow() {return g("selectActiveRow");}
 
   default String selectAll() {return g("selectAll");}
 
@@ -5407,6 +5527,14 @@ public interface Dictionary {
   default String statuses() {return g("statuses");}
 
   default String style() {return g("style");}
+
+  default String substitute() {return g("substitute");}
+
+  default String substitution() {return g("substitution");}
+
+  default String substitutionReasons() {return g("substitutionReasons");}
+
+  default String substitutions() {return g("substitutions");}
 
   default String summary() {return g("summary");}
 
@@ -5620,6 +5748,10 @@ public interface Dictionary {
 
   default String swift() {return g("swift");}
 
+  default String symptom() {return g("symptom"); }
+
+  default String symptomCode() {return g("symptomCode"); }
+
   default String symptoms() {return g("symptoms");}
 
   default String systemAllUsers() {return g("systemAllUsers");}
@@ -5819,6 +5951,8 @@ public interface Dictionary {
 
   default String timeSheet() {return g("timeSheet");}
 
+  default String timeSheetInfo() {return g("timeSheetInfo");}
+
   default String timeSheetLock() {return g("timeSheetLock");}
 
   default String timeZone() {return g("timeZone");}
@@ -5868,8 +6002,6 @@ public interface Dictionary {
   default String trAdvances() {return g("trAdvances");}
 
   default String trAgreeWithConditions() {return g("trAgreeWithConditions");}
-
-  default String trAgreeWithTermsAndConditions() {return g("trAgreeWithTermsAndConditions");}
 
   default String trArrivalCity() {return g("trArrivalCity");}
 
@@ -5970,6 +6102,8 @@ public interface Dictionary {
 
   default String trCargoDocuments() {return g("trCargoDocuments");}
 
+  default String trCargoGroup() {return g("trCargoGroup");}
+
   default String trCargoGroups() {return g("trCargoGroups");}
 
   default String trCargoIncomes() {return g("trCargoIncomes");}
@@ -6021,6 +6155,8 @@ public interface Dictionary {
   default String trContractPrinting() {return g("trContractPrinting");}
 
   default String trCopyOrder() {return g("trCopyOrder");}
+
+  default String trCopyRequest() {return g("trCopyRequest");}
 
   default String trCountryNorm() {return g("trCountryNorm");}
 
@@ -6870,7 +7006,11 @@ public interface Dictionary {
 
   default String trdCashRegisterNo() {return g("trdCashRegisterNo");}
 
+  default String trdCommandReturn() {return g("trdCommandReturn");}
+
   default String trdCustomer() {return g("trdCustomer");}
+
+  default String trdCustomers() {return g("trdCustomers");}
 
   default String trdDate() {return g("trdDate");}
 
@@ -6888,7 +7028,11 @@ public interface Dictionary {
 
   default String trdDocumentFiles() {return g("trdDocumentFiles");}
 
+  default String trdDocumentHasChildren() {return g("trdDocumentHasChildren");}
+
   default String trdDocumentItem() {return g("trdDocumentItem");}
+
+  default String trdDocumentItemHasChildren() {return g("trdDocumentItemHasChildren");}
 
   default String trdDocumentItems() {return g("trdDocumentItems");}
 
@@ -6931,6 +7075,8 @@ public interface Dictionary {
 
   default String trdDriver() {return g("trdDriver");}
 
+  default String trdEnterSupplierOrCustomer() {return g("trdEnterSupplierOrCustomer");}
+
   default String trdERPDebts() {return g("trdERPDebts");}
 
   default String trdERPSales() {return g("trdERPSales");}
@@ -6961,6 +7107,8 @@ public interface Dictionary {
 
   default String trdInvoices() {return g("trdInvoices");}
 
+  default String trdItemParent() {return g("trdItemParent");}
+
   default String trdItemStock() {return g("trdItemStock");}
 
   default String trdItemVehicle() {return g("trdItemVehicle");}
@@ -6970,6 +7118,8 @@ public interface Dictionary {
   default String trdItemWarehouseFrom() {return g("trdItemWarehouseFrom");}
 
   default String trdItemWarehouseTo() {return g("trdItemWarehouseTo");}
+
+  default String trdItemsForReturn() {return g("trdItemsForReturn");}
 
   default String trdLatestSalePayment() {return g("trdLatestSalePayment");}
 
@@ -7071,9 +7221,15 @@ public interface Dictionary {
 
   default String trdQuantityReserved() {return g("trdQuantityReserved");}
 
+  default String trdQuantityReturn() {return g("trdQuantityReturn");}
+
+  default String trdQuantityReturned() {return g("trdQuantityReturned");}
+
   default String trdQuantityStock() {return g("trdQuantityStock");}
 
   default String trdReceivedDate() {return g("trdReceivedDate");}
+
+  default String trdRelatedDocumentItem() {return g("trdRelatedDocumentItem");}
 
   default String trdRelatedDocuments() {return g("trdRelatedDocuments");}
 
@@ -7303,6 +7459,8 @@ public interface Dictionary {
 
   default String users() {return g("users");}
 
+  default String validFrom() {return g("validFrom");}
+
   default String validUntil() {return g("validUntil");}
 
   default String valuation() {return g("valuation");}
@@ -7469,6 +7627,8 @@ public interface Dictionary {
 
   default String vehiclesShort() {return g("vehiclesShort");}
 
+  default String visible() {return g("visible");}
+
   default String volume() {return g("volume");}
 
   default String volumeUnit() {return g("volumeUnit");}
@@ -7492,6 +7652,16 @@ public interface Dictionary {
   default String widgets() {return g("widgets");}
 
   default String width() {return g("width");}
+
+  default String windowDetached() {return g("windowDetached");}
+
+  default String windowModal() {return g("windowModal");}
+
+  default String windowNewTab() {return g("windowNewTab");}
+
+  default String windowOnTop() {return g("windowOnTop");}
+
+  default String windows() {return g("windows");}
 
   default String winter() {return g("winter");}
 

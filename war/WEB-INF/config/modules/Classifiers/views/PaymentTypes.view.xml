@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-      name="PaymentTypes" source="PaymentTypes" module="Classifiers" caption="=paymentTypes"
-    >
+      name="PaymentTypes" source="PaymentTypes" module="Classifiers"
+      caption="=paymentTypes" newRowCaption="=newPaymentType"
+>
   <Columns>
     <SimpleColumn name="PaymentName" />
     <SimpleColumn name="PaymentCash" />

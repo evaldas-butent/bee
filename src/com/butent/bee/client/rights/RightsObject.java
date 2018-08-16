@@ -53,6 +53,11 @@ public class RightsObject implements HasCaption {
     return name;
   }
 
+  @Override
+  public String toString() {
+    return BeeUtils.joinItems(name, caption, moduleAndSub, level, parent, hasChildren);
+  }
+
   int getLevel() {
     return level;
   }

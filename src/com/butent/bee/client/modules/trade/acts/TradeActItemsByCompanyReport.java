@@ -11,7 +11,6 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
@@ -20,16 +19,15 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.DataUtils;
@@ -74,7 +72,7 @@ public class TradeActItemsByCompanyReport extends ReportInterceptor {
       COL_TA_ITEM, COL_TA_COMPANY, COL_TA_OBJECT, COL_TA_MANAGER, COL_WAREHOUSE);
 
   private static final List<String> TOTAL_COLUMNS = Arrays.asList(COL_TRADE_ITEM_QUANTITY,
-      ALS_RETURNED_QTY, ALS_REMAINING_QTY, ALS_BASE_AMOUNT, ALS_DISCOUNT_AMOUNT,
+      TradeActConstants.ALS_RETURNED_QTY, ALS_REMAINING_QTY, ALS_BASE_AMOUNT, ALS_DISCOUNT_AMOUNT,
       ALS_TOTAL_AMOUNT);
 
   private static final List<String> MONEY_COLUMNS = Arrays.asList(COL_TRADE_ITEM_PRICE,
@@ -193,22 +191,19 @@ public class TradeActItemsByCompanyReport extends ReportInterceptor {
       params.addDataItem(Service.VAR_GROUP_BY, NameUtils.join(groupBy));
     }
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasMessages()) {
-          response.notify(getFormView());
-        }
+    BeeKeeper.getRpc().makeRequest(params, response -> {
+      if (response.hasMessages()) {
+        response.notify(getFormView());
+      }
 
-        if (response.hasResponse(SimpleRowSet.class)) {
-          renderData(SimpleRowSet.restore(response.getResponseAsString()), currencyName);
+      if (response.hasResponse(SimpleRowSet.class)) {
+        renderData(SimpleRowSet.restore(response.getResponseAsString()), currencyName);
 
-          sheet.addHeaders(headers);
-          sheet.autoSizeAll();
+        sheet.addHeaders(headers);
+        sheet.autoSizeAll();
 
-        } else {
-          getFormView().notifyWarning(Localized.dictionary().nothingFound());
-        }
+      } else {
+        getFormView().notifyWarning(Localized.dictionary().nothingFound());
       }
     });
   }
@@ -439,7 +434,7 @@ public class TradeActItemsByCompanyReport extends ReportInterceptor {
           long actId = DomUtils.getDataIndexLong(row);
 
           if (DataUtils.isId(actId)) {
-            RowEditor.open(VIEW_TRADE_ACTS, actId, Opener.MODAL);
+            RowEditor.open(VIEW_TRADE_ACTS, actId);
           }
         }
       });

@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.trade;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
@@ -17,16 +19,15 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Storage;
+import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.DialogConstants;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
@@ -57,6 +58,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
@@ -81,6 +83,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.Property;
+import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -89,6 +93,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -154,6 +159,8 @@ public class TradeItemPicker extends Flow implements HasPaging {
   private static final String KEY_PRICE = "price";
   private static final String KEY_WAREHOUSE = "warehouse";
 
+  private static final CachingPolicy CACHING_POLICY = CachingPolicy.NONE;
+
   private static final int itemPriceScale = Data.getColumnScale(VIEW_ITEMS, COL_ITEM_PRICE);
   private static final int costScale = Data.getColumnScale(VIEW_TRADE_ITEM_COST,
       COL_TRADE_ITEM_COST);
@@ -172,7 +179,10 @@ public class TradeItemPicker extends Flow implements HasPaging {
 
   private TradeDocumentPhase documentPhase;
   private OperationType operationType;
+
   private Long warehouse;
+  private Long supplier;
+  private Long customer;
 
   private ItemPrice itemPrice;
 
@@ -192,6 +202,8 @@ public class TradeItemPicker extends Flow implements HasPaging {
 
   private Filter filter;
   private final List<TradeItemSearch> filterBy = new ArrayList<>();
+
+  private Filter parentFilter;
 
   private final SimplePager pager = new SimplePager(999);
 
@@ -260,29 +272,34 @@ public class TradeItemPicker extends Flow implements HasPaging {
   }
 
   public void open(BiConsumer<Collection<BeeRow>, TradeDocumentSums> selectionConsumer) {
+    open(Localized.dictionary().itemSelection(), true, selectionConsumer);
+  }
+
+  public void open(String caption, boolean allowCreateNew,
+      BiConsumer<Collection<BeeRow>, TradeDocumentSums> selectionConsumer) {
+
     if (selectionConsumer == null) {
       logger.severe(NameUtils.getName(this), "selection consumer is null");
       return;
     }
 
-    final DialogBox dialog = DialogBox.withoutCloseBox(Localized.dictionary().itemSelection(),
-        STYLE_DIALOG);
+    final DialogBox dialog = DialogBox.withoutCloseBox(caption, STYLE_DIALOG);
 
-    if (!needsStock()) {
-      Button newItem = new Button(Localized.dictionary().newItem());
-      newItem.addStyleName(STYLE_NEW_ITEM);
+    if (allowCreateNew) {
+      if (!needsStock()) {
+        Button newItem = new Button(Localized.dictionary().newItem());
+        newItem.addStyleName(STYLE_NEW_ITEM);
 
-      newItem.addClickHandler(event -> createNew(false));
+        newItem.addClickHandler(event -> createNew(false));
+        dialog.addCommand(newItem);
+      }
 
-      dialog.addCommand(newItem);
+      Button newService = new Button(Localized.dictionary().newService());
+      newService.addStyleName(STYLE_NEW_SERVICE);
+
+      newService.addClickHandler(event -> createNew(true));
+      dialog.addCommand(newService);
     }
-
-    Button newService = new Button(Localized.dictionary().newService());
-    newService.addStyleName(STYLE_NEW_SERVICE);
-
-    newService.addClickHandler(event -> createNew(true));
-
-    dialog.addCommand(newService);
 
     FaLabel save = new FaLabel(FontAwesome.SAVE, STYLE_SAVE);
 
@@ -360,7 +377,10 @@ public class TradeItemPicker extends Flow implements HasPaging {
   void setDocumentRow(IsRow row) {
     setDocumentPhase(TradeUtils.getDocumentPhase(row));
     setOperationType(TradeUtils.getDocumentOperationType(row));
+
     setWarehouse(TradeUtils.getDocumentRelation(row, COL_TRADE_WAREHOUSE_FROM));
+    setSupplier(TradeUtils.getDocumentRelation(row, COL_TRADE_SUPPLIER));
+    setCustomer(TradeUtils.getDocumentRelation(row, COL_TRADE_CUSTOMER));
 
     setItemPrice(TradeUtils.getDocumentItemPrice(row));
 
@@ -398,12 +418,9 @@ public class TradeItemPicker extends Flow implements HasPaging {
       Data.setValue(VIEW_ITEMS, row, COL_ITEM_IS_SERVICE, isService);
     }
 
-    RowFactory.createRow(dataInfo, row, Modality.ENABLED, new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow result) {
-        if (DataUtils.hasId(result)) {
-          doQuery(Filter.compareId(result.getId()), Collections.emptySet());
-        }
+    RowFactory.createRow(dataInfo, row, Opener.MODAL, result -> {
+      if (DataUtils.hasId(result)) {
+        doQuery(Filter.compareId(result.getId()), Collections.emptySet());
       }
     });
   }
@@ -560,7 +577,43 @@ public class TradeItemPicker extends Flow implements HasPaging {
       searchBy.addAll(getDefaultSearchBy(query));
     }
 
-    doQuery(Filter.and(buildParentFilter(), buildSearchFilter(query, searchBy)), searchBy);
+    Filter searchFilter = buildSearchFilter(query, searchBy);
+
+    boolean showAnalogs;
+    if (searchFilter == null) {
+      showAnalogs = false;
+    } else if (searchBy.size() == 1 && searchBy.get(0) == TradeItemSearch.ID) {
+      showAnalogs = false;
+    } else {
+      showAnalogs = getOperationType() != null && getOperationType().consumesStock();
+    }
+
+    if (showAnalogs) {
+      ParameterList parameters = TradeKeeper.createArgs(SVC_GET_ITEM_ANALOGS);
+      parameters.addDataItem(Service.VAR_VIEW_WHERE, searchFilter.serialize());
+
+      addStyleName(STYLE_SEARCH_RUNNING);
+
+      BeeKeeper.getRpc().makeRequest(parameters, response -> {
+        if (response.hasErrors()) {
+          removeStyleName(STYLE_SEARCH_RUNNING);
+
+        } else {
+          Filter analogFilter = null;
+          if (response.hasResponse()) {
+            Set<Long> analogs = DataUtils.parseIdSet(response.getResponseAsString());
+            if (!analogs.isEmpty()) {
+              analogFilter = Filter.idIn(analogs);
+            }
+          }
+
+          doQuery(Filter.and(buildParentFilter(), Filter.or(searchFilter, analogFilter)), searchBy);
+        }
+      });
+
+    } else {
+      doQuery(Filter.and(buildParentFilter(), searchFilter), searchBy);
+    }
   }
 
   private void doQuery(final Filter where, final Collection<TradeItemSearch> searchBy) {
@@ -589,7 +642,7 @@ public class TradeItemPicker extends Flow implements HasPaging {
           }
 
           Queries.getRowSet(VIEW_ITEM_SELECTION, null, where, null, offset, limit,
-              new Queries.RowSetCallback() {
+              CACHING_POLICY, getQueryOptions(), new Queries.RowSetCallback() {
                 @Override
                 public void onFailure(String... reason) {
                   removeStyleName(STYLE_SEARCH_RUNNING);
@@ -631,7 +684,7 @@ public class TradeItemPicker extends Flow implements HasPaging {
     addStyleName(STYLE_SEARCH_RUNNING);
 
     Queries.getRowSet(VIEW_ITEM_SELECTION, null, getFilter(), null, getPageStart(), getPageSize(),
-        new Queries.RowSetCallback() {
+        CACHING_POLICY, getQueryOptions(), new Queries.RowSetCallback() {
           @Override
           public void onFailure(String... reason) {
             removeStyleName(STYLE_SEARCH_RUNNING);
@@ -668,9 +721,18 @@ public class TradeItemPicker extends Flow implements HasPaging {
   }
 
   private Filter buildParentFilter() {
-    if (needsStock()) {
+    if (getParentFilter() != null) {
+      return getParentFilter();
+
+    } else if (needsStock()) {
+      Multimap<String, String> options = ArrayListMultimap.create();
+      if (DataUtils.isId(getWarehouse())) {
+        options.put(COL_STOCK_WAREHOUSE, BeeUtils.toString(getWarehouse()));
+      }
+
       return Filter.or(Filter.notNull(COL_ITEM_IS_SERVICE),
-          Filter.custom(FILTER_ITEM_HAS_STOCK, getWarehouse()));
+          Filter.custom(FILTER_ITEM_HAS_STOCK, options));
+
     } else {
       return null;
     }
@@ -715,6 +777,22 @@ public class TradeItemPicker extends Flow implements HasPaging {
 
   private void setWarehouse(Long warehouse) {
     this.warehouse = warehouse;
+  }
+
+  private Long getSupplier() {
+    return supplier;
+  }
+
+  private void setSupplier(Long supplier) {
+    this.supplier = supplier;
+  }
+
+  private Long getCustomer() {
+    return customer;
+  }
+
+  private void setCustomer(Long customer) {
+    this.customer = customer;
   }
 
   private ItemPrice getItemPrice() {
@@ -1757,7 +1835,7 @@ public class TradeItemPicker extends Flow implements HasPaging {
     if (cell.hasClassName(STYLE_ID + STYLE_CELL_SUFFIX)) {
       long id = getRowId(cell);
       if (DataUtils.isId(id)) {
-        RowEditor.open(VIEW_ITEMS, id, Opener.MODAL);
+        RowEditor.open(VIEW_ITEMS, id);
       }
 
     } else if (cell.hasClassName(STYLE_MAIN_WAREHOUSE + STYLE_CELL_SUFFIX)) {
@@ -1879,6 +1957,14 @@ public class TradeItemPicker extends Flow implements HasPaging {
     this.filter = filter;
   }
 
+  private Filter getParentFilter() {
+    return parentFilter;
+  }
+
+  void setParentFilter(Filter parentFilter) {
+    this.parentFilter = parentFilter;
+  }
+
   private List<TradeItemSearch> getFilterBy() {
     return filterBy;
   }
@@ -1905,5 +1991,29 @@ public class TradeItemPicker extends Flow implements HasPaging {
 
   private void setSavePending() {
     setState(State.PENDING);
+  }
+
+  private Collection<Property> getQueryOptions() {
+    Map<String, String> options = new HashMap<>();
+
+    if (getOperationType() != null) {
+      options.put(COL_OPERATION_TYPE, BeeUtils.toString(getOperationType().ordinal()));
+    }
+    if (DataUtils.isId(getWarehouse())) {
+      options.put(COL_STOCK_WAREHOUSE, BeeUtils.toString(getWarehouse()));
+    }
+    if (DataUtils.isId(getSupplier())) {
+      options.put(COL_TRADE_SUPPLIER, BeeUtils.toString(getSupplier()));
+    }
+    if (DataUtils.isId(getCustomer())) {
+      options.put(COL_TRADE_CUSTOMER, BeeUtils.toString(getCustomer()));
+    }
+
+    if (options.isEmpty()) {
+      return null;
+    } else {
+      return PropertyUtils.createProperties(Service.VAR_VIEW_EVENT_OPTIONS,
+          Codec.beeSerialize(options));
+    }
   }
 }

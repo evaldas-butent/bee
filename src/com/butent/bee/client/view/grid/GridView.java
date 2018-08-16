@@ -26,6 +26,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.WindowType;
 
 import java.util.Collection;
 import java.util.List;
@@ -60,6 +61,8 @@ public interface GridView extends DataView,
 
   void formConfirm(Consumer<IsRow> consumer);
 
+  void formUnload(FormView formView);
+
   FormView getActiveForm();
 
   DataInfo getDataInfo();
@@ -67,6 +70,8 @@ public interface GridView extends DataView,
   List<String> getDynamicColumnGroups();
 
   Set<String> getEditInPlace();
+
+  WindowType getEditWindowType();
 
   FormView getForm(GridFormKind kind);
 
@@ -86,7 +91,11 @@ public interface GridView extends DataView,
 
   String getGridName();
 
+  WindowType getNewRowWindowType();
+
   String getRelColumn();
+
+  Long getRelId();
 
   Collection<RowInfo> getSelectedRows(SelectedRows mode);
 
@@ -102,6 +111,8 @@ public interface GridView extends DataView,
 
   boolean isEmpty();
 
+  boolean isInteractive();
+
   boolean isReadOnly();
 
   boolean isRowEditable(IsRow row, NotificationListener notificationListener);
@@ -115,6 +126,10 @@ public interface GridView extends DataView,
   void reset(GridDescription gridDescription);
 
   void selectForm(GridFormKind kind, int index);
+
+  void setEditWindowType(WindowType windowType, boolean store);
+
+  void setNewRowWindowType(WindowType windowType, boolean store);
 
   void setRelId(Long relId);
 

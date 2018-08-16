@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  
-  name="User" viewName="Users" caption="=user"
-  width="700" height="75" heightUnit="vh"
-  >
+        xmlns:f="http://www.butent.com/form"
+
+        name="User" viewName="Users" caption="=user"
+        width="700" height="75" heightUnit="vh"
+>
   <FlowPanel class="flexBox-vertical">
-    <Table kind="controls" style="border-collapse: collapse;" cellStyle="padding-top: 2px; padding-left: 1em;">
+    <Table kind="controls" style="border-collapse: collapse;"
+           cellStyle="padding-top: 2px; padding-left: 1em;">
       <col index="0" cellStyle="text-align: right;" />
       <col index="2" cellStyle="text-align: right;" />
 
-      <br/>
+      <br />
       <row>
         <Label for="Login" />
         <InputText source="Login" />
@@ -18,11 +19,12 @@
         <ListBox source="Interface" />
       </row>
 
-      <br/>
+      <br />
       <row>
         <Label text="=personFullName" for="CompanyPerson" />
-        <DataSelector source="CompanyPerson" editSource="Person" editPopup="true"
-          renderColumns="FirstName Lastname" choiceColumns="FirstName Lastname CompanyName" style="width: 14em;" />
+        <DataSelector source="CompanyPerson" editSource="Person"
+                      renderColumns="FirstName LastName"
+                      choiceColumns="FirstName LastName CompanyName" style="width: 14em;" />
         <Label text="=company" for="CompanyName" />
         <InputText source="CompanyName" readOnly="true" style="width: 200px;" />
       </row>
@@ -34,24 +36,24 @@
         <InputText source="PositionName" readOnly="true" style="width: 200px;" />
       </row>
 
-      <br/>
+      <br />
       <row>
         <Label for="BlockAfter" />
         <InputDateTime source="BlockAfter" style="width: 14em;" />
         <Label for="BlockBefore" />
         <InputDateTime source="BlockBefore" style="width: 14em;" />
       </row>
-      
-      <br/>
-      <row data="UserRoles">
-        <Label text="=roles" />
+
+      <br />
+      <row data="UserRoles" listName="UserRoles">
+        <Label text="=roles" listName="UserRoles" />
         <cell colSpan="3">
           <ChildSelector childTable="UserRoles" viewName="Roles"
-            targetRelColumn="User" sourceRelColumn="Role" style="width: 400px;" />
+                         targetRelColumn="User" sourceRelColumn="Role" style="width: 400px;" />
         </cell>
-      </row>  
+      </row>
 
-      <br/>
+      <br />
     </Table>
 
     <ChildGrid class="flexible" name="UserFeeds" relColumn="User" />

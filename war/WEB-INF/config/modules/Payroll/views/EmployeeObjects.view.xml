@@ -68,6 +68,8 @@
     </SimpleJoin>
 
     <SimpleColumn name="Note" />
+
+    <SimpleColumn name="Lock" />
   </Columns>
 
   <Order>

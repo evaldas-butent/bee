@@ -34,6 +34,15 @@
   <xi:include href="columns/TradeAccounts.columns.xml" />
 
   <g:columns>
+    <DataColumn name="Consignment" module="Finance" visible="false" />
+
+    <RelColumn name="ConsignmentDebit" module="Finance" newRowEnabled="false"
+               choiceColumns="AccountCode AccountName" renderColumns="ConsignmentDebitCode"
+               visible="false" />
+    <RelColumn name="ConsignmentCredit" module="Finance" newRowEnabled="false"
+               choiceColumns="AccountCode AccountName" renderColumns="ConsignmentCreditCode"
+               visible="false" />
+
     <DataColumn name="Background" updateMode="row">
       <editor type="color" />
     </DataColumn>

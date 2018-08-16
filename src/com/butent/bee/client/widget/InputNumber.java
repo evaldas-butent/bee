@@ -55,6 +55,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
 
   public InputNumber() {
     super();
+    setCharMatcher(NUM_CHAR_MATCHER);
   }
 
   public InputNumber(Element element) {
@@ -179,7 +180,10 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
 
   @Override
   public void setScale(int scale) {
-    this.scale = scale;
+    if (this.scale != scale) {
+      this.scale = scale;
+      setCharMatcher(getDefaultCharMatcher());
+    }
   }
 
   @Override
@@ -271,7 +275,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
 
   @Override
   protected CharMatcher getDefaultCharMatcher() {
-    return NUM_CHAR_MATCHER;
+    return (getScale() == 0) ? INT_CHAR_MATCHER : NUM_CHAR_MATCHER;
   }
 
   @Override

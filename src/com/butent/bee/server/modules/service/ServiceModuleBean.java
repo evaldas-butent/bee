@@ -234,9 +234,73 @@ public class ServiceModuleBean implements BeeModule {
     return value;
   }
 
+  public void formatInvoiceItemNoteField(SqlInsert insert, SimpleRow itemRow) {
+    String notes = prm.getText(PRM_ITEM_NOTE_SOURCE_COLUMNS);
+
+    if (!BeeUtils.isEmpty(notes)) {
+      for (String column : Arrays.asList(COL_TYPE, COL_SERVICE_MAINTENANCE_ID, COL_MODEL,
+          COL_WARRANTY_TYPE, COL_WARRANTY_VALID_TO, COL_DEPARTMENT)) {
+        String prmColumnValue = BeeUtils.join(BeeConst.STRING_EMPTY, BeeConst.STRING_LEFT_BRACKET,
+            column, BeeConst.STRING_RIGHT_BRACKET);
+
+        if (notes.contains(prmColumnValue)) {
+          String columnValue = itemRow.getValue(column);
+          if (BeeUtils.isEmpty(columnValue)) {
+            notes = notes.replace(prmColumnValue, BeeConst.STRING_EMPTY);
+
+          } else if (BeeUtils.equals(column, COL_WARRANTY_VALID_TO)) {
+            DateTimeFormatInfo dtfInfo = usr.getDateTimeFormatInfo();
+            notes = notes.replace(prmColumnValue,
+                Formatter.renderDate(dtfInfo, itemRow.getDate(COL_WARRANTY_VALID_TO)));
+
+          } else {
+            notes = notes.replace(prmColumnValue, columnValue);
+          }
+        }
+      }
+      if (!BeeUtils.isEmpty(notes)) {
+        insert.addConstant(COL_ORDER_ITEM_NOTE, notes);
+      }
+    }
+  }
+
   public void formatInvoiceItemsQuery(SqlSelect query) {
     query.addFields(TBL_SERVICE_MAINTENANCE, sys.getIdName(TBL_SERVICE_MAINTENANCE),
         COL_WARRANTY_VALID_TO);
+
+    String noteSourceColumns = prm.getText(PRM_ITEM_NOTE_SOURCE_COLUMNS);
+
+    if (!BeeUtils.isEmpty(noteSourceColumns)) {
+      for (String column : Arrays.asList(COL_TYPE, COL_MODEL, COL_WARRANTY_TYPE, COL_DEPARTMENT)) {
+        String prmColumnValue = BeeUtils.join(BeeConst.STRING_EMPTY, BeeConst.STRING_LEFT_BRACKET,
+            column, BeeConst.STRING_RIGHT_BRACKET);
+
+        if (noteSourceColumns.contains(prmColumnValue)) {
+          switch (column) {
+            case COL_TYPE:
+              query.addField(TBL_MAINTENANCE_TYPES, COL_TYPE_NAME, COL_TYPE);
+              query.addFromLeft(TBL_MAINTENANCE_TYPES,
+                  sys.joinTables(TBL_MAINTENANCE_TYPES, TBL_SERVICE_MAINTENANCE, COL_TYPE));
+              break;
+            case COL_MODEL:
+              query.addField(TBL_SERVICE_OBJECTS, COL_MODEL, COL_MODEL);
+              query.addFromLeft(TBL_SERVICE_OBJECTS,
+                  sys.joinTables(TBL_SERVICE_OBJECTS, TBL_SERVICE_MAINTENANCE, COL_SERVICE_OBJECT));
+              break;
+            case COL_WARRANTY_TYPE:
+              query.addField(TBL_WARRANTY_TYPES, COL_WARRANTY_NAME, COL_WARRANTY_TYPE);
+              query.addFromLeft(TBL_WARRANTY_TYPES,
+                  sys.joinTables(TBL_WARRANTY_TYPES, TBL_SERVICE_MAINTENANCE, COL_WARRANTY_TYPE));
+              break;
+            case COL_DEPARTMENT:
+              query.addField(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME, COL_DEPARTMENT);
+              query.addFromLeft(TBL_DEPARTMENTS,
+                  sys.joinTables(TBL_DEPARTMENTS, TBL_SERVICE_MAINTENANCE, COL_DEPARTMENT));
+              break;
+          }
+        }
+      }
+    }
   }
 
   public SqlSelect formatExportReservationsQuery() {
@@ -300,7 +364,8 @@ public class ServiceModuleBean implements BeeModule {
         BeeParameter.createRelation(module, PRM_ROLE, true, TBL_ROLES, COL_ROLE_NAME),
         BeeParameter.createBoolean(module, PRM_FILTER_ALL_DEVICES),
         BeeParameter.createNumber(module, PRM_CLIENT_CHANGING_SETTING, false, 4),
-        BeeParameter.createText(module, PRM_ITEM_ARTICLE_SOURCE_COLUMN, false, COL_ITEM_ARTICLE)
+        BeeParameter.createText(module, PRM_ITEM_ARTICLE_SOURCE_COLUMN, false, COL_ITEM_ARTICLE),
+        BeeParameter.createText(module, PRM_ITEM_NOTE_SOURCE_COLUMNS)
     );
   }
 
@@ -1308,7 +1373,8 @@ public class ServiceModuleBean implements BeeModule {
     query.addExpr(priceExch, COL_ITEM_PRICE)
         .addOrder(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS));
 
-    return ResponseObject.response(qs.getViewData(query, sys.getView(TBL_ORDER_ITEMS), false));
+    return ResponseObject.response(qs.getViewData(query, sys.getView(TBL_ORDER_ITEMS),
+        false, null));
   }
 
   private ResponseObject getMaintenanceNewRowValues() {

@@ -97,6 +97,11 @@ public class UserData implements BeeSerializable, HasInfo {
     return hasDataRight(viewName, RightsState.EDIT);
   }
 
+  public boolean canEditList(String viewName, String listName) {
+    return BeeUtils.anyEmpty(viewName, listName)
+        || hasListRight(viewName, listName, RightsState.EDIT);
+  }
+
   public boolean canMergeData(String viewName) {
     return hasDataRight(viewName, RightsState.MERGE);
   }
@@ -207,7 +212,7 @@ public class UserData implements BeeSerializable, HasInfo {
   }
 
   public String getCompanyPersonPositionName() {
-    return  companyPersonPositionName;
+    return companyPersonPositionName;
   }
 
   public String getFirstName() {
@@ -303,8 +308,8 @@ public class UserData implements BeeSerializable, HasInfo {
   }
 
   public boolean isColumnRequired(String viewName, String column) {
-    return BeeUtils.anyEmpty(viewName, column)
-        || hasRight(RightsObjectType.FIELD, RightsUtils.buildName(viewName, column),
+    return BeeUtils.allNotEmpty(viewName, column)
+        && hasRight(RightsObjectType.FIELD, RightsUtils.buildName(viewName, column),
         RightsState.REQUIRED);
   }
 
@@ -314,6 +319,17 @@ public class UserData implements BeeSerializable, HasInfo {
 
   public boolean isDataVisible(String viewName) {
     return hasDataRight(viewName, RightsState.VIEW);
+  }
+
+  public boolean isListRequired(String viewName, String listName) {
+    return BeeUtils.allNotEmpty(viewName, listName)
+        && hasRight(RightsObjectType.LIST, RightsUtils.buildName(viewName, listName),
+        RightsState.REQUIRED);
+  }
+
+  public boolean isListVisible(String viewName, String listName) {
+    return BeeUtils.anyEmpty(viewName, listName)
+        || hasListRight(viewName, listName, RightsState.VIEW);
   }
 
   public boolean isMenuVisible(String object) {
@@ -466,6 +482,11 @@ public class UserData implements BeeSerializable, HasInfo {
         && hasRight(RightsObjectType.FIELD, RightsUtils.buildName(viewName, column), state);
   }
 
+  private boolean hasListRight(String viewName, String listName, RightsState state) {
+    return hasDataRight(viewName, state)
+        && hasRight(RightsObjectType.LIST, RightsUtils.buildName(viewName, listName), state);
+  }
+
   private boolean hasRight(RightsObjectType type, String object, RightsState state) {
     Assert.notNull(state);
 
@@ -475,7 +496,7 @@ public class UserData implements BeeSerializable, HasInfo {
       return false;
     }
     if (BeeUtils.isEmpty(object) || hasAuthoritah()) {
-      return true;
+      return state.isChecked();
     }
     boolean checked;
 

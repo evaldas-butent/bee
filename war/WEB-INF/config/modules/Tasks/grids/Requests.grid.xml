@@ -14,7 +14,7 @@
     <DataColumn name="Date" width="100" visible="true" />
     <DataColumn name="Summary" visible="true" minWidth="150" maxWidth="500" />
     <DataColumn name="Finished" width="100" format="DATE_TIME_SHORT" />
-    <RelColumn name="Customer" minWidth="100" visible="true" />
+    <RelColumn name="Customer" minWidth="100" visible="true" searchBy="CustomerName" />
 
     <DataColumn name="Content" minWidth="100" flexShrink="1" whiteSpace="nowrap" visible="true" />
 

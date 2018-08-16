@@ -28,7 +28,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.ejb.EJB;
-import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -38,32 +37,20 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Application;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-@ApplicationPath(AdministrationConstants.FILE_URL)
 @Path("/")
 @Produces(MediaType.APPLICATION_OCTET_STREAM)
 @Authorized
-public class FileServiceApplication extends Application {
+public class FileServiceApplication {
 
   private static BeeLogger logger = LogUtils.getLogger(FileServiceApplication.class);
 
   @EJB
   FileStorageBean fs;
-
-  @Override
-  public Set<Class<?>> getClasses() {
-    Set<Class<?>> classes = new HashSet<>();
-
-    classes.add(AuthenticationFilter.class);
-    classes.add(this.getClass());
-
-    return classes;
-  }
 
   @GET
   @Path("{id:\\d+}")

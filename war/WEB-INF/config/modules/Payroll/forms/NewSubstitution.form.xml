@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form[
-  <!ENTITY w1 "width: 100&#37;">
-  <!ENTITY w2 "width: 8em;">
-]>
+    <!ENTITY w1 "width: 100&#37;">
+    <!ENTITY w2 "width: 8em;">
+    ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
+        xmlns:ui="http://www.butent.com/ui"
 
-  name="NewSubstitution" viewName="EmployeeObjects" caption="=employeeSubstitution"
-  width="36" widthUnit="em" height="26" heightUnit="em"
-  >
+        name="NewSubstitution" viewName="EmployeeObjects" caption="=employeeSubstitution"
+        width="36" widthUnit="em" height="26" heightUnit="em"
+>
   <Table kind="controls">
     <col index="0" kind="label" />
     <col index="2" kind="label" />
@@ -16,9 +16,10 @@
     <row>
       <Label for="SubstituteFor" class="bee-required" />
       <cell colSpan="3">
-        <DataSelector name="SubstituteFor" source="SubstituteFor" renderColumns="ForFirstName ForLastName"
-          choiceColumns="FirstName LastName CompanyName" filter="!(DateOfDismissal)"
-          style="&w1;" required="true" newRowEnabled="false" visible="true" />
+        <DataSelector name="SubstituteFor" source="SubstituteFor"
+                      renderColumns="ForFirstName ForLastName"
+                      choiceColumns="FirstName LastName CompanyName" filter="!(DateOfDismissal)"
+                      style="&w1;" required="true" newRowEnabled="false" visible="true" />
       </cell>
     </row>
 
@@ -32,7 +33,7 @@
 
     <row class="bee-new-substitution-employee">
       <cell colSpan="3">
-        <CheckBox name="ShowAvailableEmployees" text="=showAvailableEmployees"/>
+        <CheckBox name="ShowAvailableEmployees" text="=showAvailableEmployees" />
       </cell>
     </row>
 
@@ -40,8 +41,8 @@
       <Label for="Employee" />
       <cell colSpan="5">
         <DataSelector name="Employee" source="Employee" renderColumns="FirstName LastName"
-          choiceColumns="FirstName LastName CompanyName Mobile PersonAddress"
-          style="&w1;" newRowEnabled="false" visible="true" caching="local" />
+                      choiceColumns="FirstName LastName CompanyName Mobile PersonAddress"
+                      style="&w1;" newRowEnabled="false" visible="true" caching="local" />
       </cell>
     </row>
 
@@ -49,18 +50,18 @@
       <Label for="Object" />
       <cell colSpan="3">
         <DataSelector source="Object" renderColumns="LocationName"
-          choiceColumns="LocationName CompanyName" filter="Status 1"
-          style="&w1;" newRowEnabled="false" visible="true" />
+                      choiceColumns="LocationName CompanyName" filter="Status 1"
+                      style="&w1;" newRowEnabled="false" visible="true" />
       </cell>
     </row>
-    
+
     <row>
       <Label for="Wage" />
-      <InputDecimal source="Wage" currencySource="Currency" style="&w2;" />
+      <InputMoney source="Wage" currencySource="Currency" style="&w2;" />
 
       <Label for="Currency" />
       <DataSelector source="Currency" for="Wage" newRowEnabled="false" editEnabled="false"
-        style="width: 5em;" />
+                    style="width: 5em;" />
     </row>
 
     <row>
@@ -70,7 +71,7 @@
       </cell>
     </row>
   </Table>
-  
+
   <f:rowValidation>
     <ui:expression>(row.Employee == row.SubstituteFor) ? (row.ForLastName + ' ' + row.ForLastName) : null</ui:expression>
   </f:rowValidation>

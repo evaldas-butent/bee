@@ -1,8 +1,6 @@
 package com.butent.bee.client.modules.mail;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
@@ -48,20 +46,10 @@ public class RuleForm extends AbstractFormInterceptor implements SelectorEvent.H
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
     if (BeeUtils.same(editableWidget.getColumnId(), COL_RULE_CONDITION)) {
       conditionWidget = (ListBox) widget;
-      conditionWidget.addChangeHandler(new ChangeHandler() {
-        @Override
-        public void onChange(ChangeEvent arg0) {
-          adjustConditionOptions(null);
-        }
-      });
+      conditionWidget.addChangeHandler(arg0 -> adjustConditionOptions(null));
     } else if (BeeUtils.same(editableWidget.getColumnId(), COL_RULE_ACTION)) {
       actionWidget = (ListBox) widget;
-      actionWidget.addChangeHandler(new ChangeHandler() {
-        @Override
-        public void onChange(ChangeEvent arg0) {
-          adjustActionOptions(null);
-        }
-      });
+      actionWidget.addChangeHandler(arg0 -> adjustActionOptions(null));
     }
   }
 
@@ -177,9 +165,9 @@ public class RuleForm extends AbstractFormInterceptor implements SelectorEvent.H
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-    init(newRow);
-    super.onStartNewRow(form, oldRow, newRow);
+  public void onStartNewRow(FormView form, IsRow row) {
+    init(row);
+    super.onStartNewRow(form, row);
   }
 
   private void adjustActionOptions(IsRow row) {

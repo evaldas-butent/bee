@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view"
+<View xmlns="http://www.butent.com/view" xmlns:x="http://www.butent.com/expression"
 
       name="CarServiceItems" source="CarServiceItems" caption="=productsServices+(+=serviceOrder+)"
 >
@@ -40,5 +40,21 @@
     </ExternalJoin>
 
     <SimpleColumn name="Reserve" />
+
+    <SimpleColumn name="Parent" />
+
+    <SimpleColumn name="Bundle" />
+    <SimpleJoin joinType="LEFT" name="Bundle">
+      <SimpleColumn name="Code" alias="BundleCode" />
+      <SimpleColumn name="BundleName" />
+    </SimpleJoin>
+
+    <IdColumn name="ParentID" hidden="true" />
+    <SimpleColumn name="ParentOrder">
+      <x:nvl type="LONG">
+        <x:number>"Parent"</x:number>
+        <x:number>"ParentID"</x:number>
+      </x:nvl>
+    </SimpleColumn>
   </Columns>
 </View>

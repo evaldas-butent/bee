@@ -93,6 +93,10 @@ public class InputBoolean extends Composite implements Editor, HasValueChangeHan
     setValue(null);
   }
 
+  public BooleanWidget getCheckBox() {
+    return checkBox;
+  }
+
   @Override
   public EditorAction getDefaultFocusAction() {
     return null;
@@ -268,9 +272,5 @@ public class InputBoolean extends Composite implements Editor, HasValueChangeHan
   @Override
   public List<String> validate(String normalizedValue, boolean checkForNull) {
     return null;
-  }
-
-  private BooleanWidget getCheckBox() {
-    return checkBox;
   }
 }

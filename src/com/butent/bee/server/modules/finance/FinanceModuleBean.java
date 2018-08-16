@@ -32,6 +32,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.PrepaymentKind;
+import com.butent.bee.shared.modules.finance.TradeAccountsPrecedence;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
@@ -351,6 +352,18 @@ public class FinanceModuleBean implements BeeModule {
     } else {
       return null;
     }
+  }
+
+  public List<TradeAccountsPrecedence> getAccountsPrecedence() {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_FINANCE_CONFIGURATION, COL_TRADE_ACCOUNTS_PRECEDENCE)
+        .addFrom(TBL_FINANCE_CONFIGURATION)
+        .setWhere(SqlUtils.notNull(TBL_FINANCE_CONFIGURATION, COL_TRADE_ACCOUNTS_PRECEDENCE));
+
+    Set<String> set = qs.getSet(query);
+    String value = (set.size() == 1) ? set.stream().findFirst().get() : null;
+
+    return TradeAccountsPrecedence.parse(value);
   }
 
   private ResponseObject postTradeDocuments(RequestInfo reqInfo) {

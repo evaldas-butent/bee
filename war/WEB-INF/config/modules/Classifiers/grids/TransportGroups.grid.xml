@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  
-  name="TransportGroups" viewName="TransportGroups" caption="=trTransportGroups"
-  newRowCaption="=trNewTransportGroup" editForm="TransportGroup" editPopup="true"
-  minColumnWidth="150"
-  >
+
+        name="TransportGroups" viewName="TransportGroups" caption="=trTransportGroups"
+        newRowCaption="=trNewTransportGroup" editForm="TransportGroup"
+        minColumnWidth="150"
+>
   <g:columns>
     <DataColumn name="Name" caption="=group" />
     <RelColumn name="Manager" caption="=manager" />

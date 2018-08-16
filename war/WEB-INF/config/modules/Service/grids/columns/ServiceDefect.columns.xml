@@ -8,7 +8,7 @@
   <RelColumn name="Supplier" />
   <RelColumn name="Customer" />
 
-  <RelColumn name="Manager" />
+  <RelColumn name="Manager" searchBy="ManagerLastName" />
   <RelColumn name="Currency" />
 
   <DataColumn name="TypeOfWork" />

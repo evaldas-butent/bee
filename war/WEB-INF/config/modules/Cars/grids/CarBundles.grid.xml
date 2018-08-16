@@ -7,7 +7,6 @@
     <DataColumn name="BundleName" />
     <DataColumn name="Code" />
     <RelColumn name="Model" />
-    <RelColumn name="Customer" />
     <DataColumn name="ValidUntil" />
   </g:columns>
 </g:Grid>

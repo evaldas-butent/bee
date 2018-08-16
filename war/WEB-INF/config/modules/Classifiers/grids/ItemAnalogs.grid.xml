@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="ItemAnalogs" viewName="ItemAnalogs" caption="=itemAnalogs"
+        newRowForm="ItemAnalogs"
+>
+  <g:columns>
+    <DataColumn name="Item1" visible="true" readOnly="true" editEnabled="true" />
+    <DataColumn name="Item1Name" visible="true" flexGrow="3" />
+    <DataColumn name="Item1Article" flexGrow="1" />
+
+    <DataColumn name="Item2" visible="true" readOnly="true" editEnabled="true" />
+    <DataColumn name="Item2Name" visible="true" flexGrow="3" />
+    <DataColumn name="Item2Article" flexGrow="1" />
+  </g:columns>
+
+  <g:rowValidation>
+    <ui:function>
+      if (row.Item1 == row.Item2) {
+        return $wnd.Bee_maybeTranslate("=item1+ = +=item2");
+      } else {
+        return null;
+      }
+    </ui:function>
+  </g:rowValidation>
+</g:Grid>

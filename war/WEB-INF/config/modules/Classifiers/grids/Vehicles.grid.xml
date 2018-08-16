@@ -14,7 +14,7 @@
     <DataColumn name="BrandName" />
     <DataColumn name="ModelName" />
     <DataColumn name="Number" />
-    <RelColumn name="Owner" />
+    <RelColumn name="Owner" searchBy="OwnerName" />
     <DataColumn name="ProductionDate" caption="=vehicleProductionDateShort" width="80" />
     <RelColumn name="Fuel" />
     <DataColumn name="Power" />

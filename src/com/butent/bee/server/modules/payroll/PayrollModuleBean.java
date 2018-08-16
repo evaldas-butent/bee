@@ -241,7 +241,7 @@ public class PayrollModuleBean implements BeeModule, ConcurrencyBean.HasTimerSer
 
     Long currency = prm.getRelation(PRM_CURRENCY);
 
-    Table<Integer, String, Double> table = HashBasedTable.create();
+    Table<Integer, String, Pair<Double, Integer>> table = HashBasedTable.create();
 
     Map<Long, String> locationNames = new HashMap<>();
 
@@ -276,6 +276,19 @@ public class PayrollModuleBean implements BeeModule, ConcurrencyBean.HasTimerSer
             )) {
             Earnings item = new Earnings(employeeId, fundRow.getLong(COL_SUBSTITUTE_FOR), fundRow
               .getLong(COL_OBJECT));
+
+            HasConditions conditions = SqlUtils.and();
+            conditions.add(SqlUtils.and(SqlUtils.moreEqual(TBL_WORK_SCHEDULE, COL_DATE, range.getMinDate()),
+                    SqlUtils.or(SqlUtils.lessEqual(TBL_WORK_SCHEDULE, COL_DATE, range.getMaxDate()),
+                            SqlUtils.isNull(TBL_WORK_SCHEDULE, COL_DATE))));
+
+            conditions.add(SqlUtils.equals(TBL_WORK_SCHEDULE, COL_EMPLOYEE, employeeId),
+                    SqlUtils.equals(TBL_WORK_SCHEDULE, COL_OBJECT, fundRow.getLong(COL_OBJECT)),
+                    SqlUtils.equals(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_KIND, WorkScheduleKind.ACTUAL));
+
+            Integer days = qs.sqlCount(TBL_WORK_SCHEDULE, conditions);
+
+            item.setActualDays(days);
             item.setDateFrom(fundRow.getDate(COL_EMPLOYEE_OBJECT_FROM));
             item.setDateUntil(fundRow.getDate(COL_EMPLOYEE_OBJECT_UNTIL));
             item.setSalaryFund(adm.maybeExchange(fundRow.getLong(COL_CURRENCY), currency,
@@ -290,6 +303,7 @@ public class PayrollModuleBean implements BeeModule, ConcurrencyBean.HasTimerSer
         if (!BeeUtils.isEmpty(earnings)) {
           for (Earnings item : earnings) {
             Double amount = fundsOnly ? item.getSalaryFund() : item.total();
+            Integer days = BeeUtils.positive(item.getActualDays(), BeeConst.INT_FALSE);
 
             if (BeeUtils.isPositive(amount)) {
               Long objectId = item.getObjectId();
@@ -304,10 +318,11 @@ public class PayrollModuleBean implements BeeModule, ConcurrencyBean.HasTimerSer
 
               if (!BeeUtils.isEmpty(objectName)) {
                 if (table.contains(tnr, objectName)) {
-                  amount += table.get(tnr, objectName);
+                  amount += table.get(tnr, objectName).getA();
+                  days += table.get(tnr, objectName).getB();
                 }
 
-                table.put(tnr, objectName, amount);
+                table.put(tnr, objectName, Pair.of(amount, days));
               }
             }
           }

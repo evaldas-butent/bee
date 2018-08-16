@@ -21,7 +21,6 @@ import com.butent.bee.client.js.Markdown;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.HeaderImpl;
@@ -102,7 +101,7 @@ public class ChatView extends Flow implements Presenter, View,
         for (String view : message.getLinkData().keySet()) {
           InternalLink link = new InternalLink(message.getText());
           link.addClickHandler(arg0 -> RowEditor.open(view,
-              BeeUtils.toLong(message.getLinkData().get(view)), Opener.NEW_TAB));
+              BeeUtils.toLong(message.getLinkData().get(view))));
           linkContainer.add(link);
         }
 

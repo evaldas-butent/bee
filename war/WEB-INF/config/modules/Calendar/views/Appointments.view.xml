@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
       name="Appointments" source="Appointments" newRowForm="Appointment"
-      caption="=calAppointments" newRowCaption="=calNewAppointment"
+      caption="=calAppointments" newRowCaption="=calNewAppointment" rowCaption="Summary"
 >
   <Relation renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime" />
   <Columns>

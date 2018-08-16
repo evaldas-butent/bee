@@ -6,20 +6,25 @@ import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.RowActionEvent;
+import com.butent.bee.client.grid.ColumnFooter;
+import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
+import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
@@ -28,18 +33,37 @@ import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.WindowType;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 class RelatedTasksGrid extends TasksGrid {
 
-  private static void openTask(Long id) {
-    if (DataUtils.isId(id)) {
-      RowEditor.open(VIEW_TASKS, id, Opener.MODAL);
-    }
-  }
+  private static final String NAME_MODE = "Mode";
+  private static final String NAME_SLACK = "Slack";
 
   RelatedTasksGrid() {
     super(TaskType.RELATED, null);
+  }
+
+  @Override
+  public boolean afterCreateColumn(String columnId, List<? extends IsColumn> dataColumns,
+      AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
+      EditableColumn editableColumn) {
+
+    if (BeeUtils.same(columnId, NAME_MODE) && column instanceof HasCellRenderer) {
+      ((HasCellRenderer) column).setRenderer(new ModeRenderer());
+
+    } else if (BeeUtils.same(columnId, NAME_SLACK) && column instanceof HasCellRenderer) {
+      ((HasCellRenderer) column).setRenderer(new TaskSlackRenderer(dataColumns,
+          VIEW_RELATED_TASKS));
+
+    } else if (BeeUtils.inListSame(columnId, COL_FINISH_TIME, COL_EXECUTOR)) {
+      editableColumn.addCellValidationHandler(ValidationHelper.DO_NOT_VALIDATE);
+    }
+
+    return true;
   }
 
   @Override
@@ -73,9 +97,12 @@ class RelatedTasksGrid extends TasksGrid {
             }
           }
         }
-        RowFactory.createRow(dataInfo, row, Modality.ENABLED, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
+
+        WindowType windowType = getNewRowWindowType();
+        Opener opener = Opener.maybeCreate(windowType);
+
+        RowFactory.createRow(dataInfo, row, opener, result -> {
+          if (isAttached()) {
             presenter.handleAction(Action.REFRESH);
           }
         });
@@ -90,12 +117,9 @@ class RelatedTasksGrid extends TasksGrid {
     final Long taskId = getTaskId(row);
 
     if (DataUtils.isId(taskId)) {
-      Queries.deleteRow(VIEW_TASKS, taskId, new Queries.IntCallback() {
-        @Override
-        public void onSuccess(Integer result) {
-          RowDeleteEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, taskId);
-          presenter.handleAction(Action.REFRESH);
-        }
+      Queries.deleteRow(VIEW_TASKS, taskId, result -> {
+        RowDeleteEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, taskId);
+        presenter.handleAction(Action.REFRESH);
       });
     }
 
@@ -131,7 +155,7 @@ class RelatedTasksGrid extends TasksGrid {
 
   @Override
   protected void afterCopyTask() {
-    if (getGridPresenter() != null) {
+    if (isAttached() && getGridPresenter() != null) {
       getGridPresenter().handleAction(Action.REFRESH);
     }
   }
@@ -139,5 +163,14 @@ class RelatedTasksGrid extends TasksGrid {
   @Override
   protected Long getTaskId(IsRow row) {
     return (row == null) ? null : row.getLong(getDataIndex(COL_TASK));
+  }
+
+  private void openTask(Long id) {
+    if (DataUtils.isId(id)) {
+      WindowType windowType = getEditWindowType();
+      Opener opener = Opener.maybeCreate(windowType);
+
+      RowEditor.open(VIEW_TASKS, id, opener);
+    }
   }
 }

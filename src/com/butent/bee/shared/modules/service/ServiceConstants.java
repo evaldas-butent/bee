@@ -28,6 +28,7 @@ public final class ServiceConstants {
   public static final String PRM_DEFAULT_WARRANTY_TYPE = "DefaultWarrantyType";
   public static final String PRM_FILTER_ALL_DEVICES = "FilterAllDevices";
   public static final String PRM_ITEM_ARTICLE_SOURCE_COLUMN = "ItemArticleSourceColumn";
+  public static final String PRM_ITEM_NOTE_SOURCE_COLUMNS = "ItemNoteSourceColumns";
   public static final String PRM_URGENT_RATE = "UrgentRate";
   public static final String PRM_SERVICE_MANAGER_WAREHOUSE = "ServiceManagerWarehouse";
   public static final String PRM_SMS_REQUEST_SERVICE_ADDRESS = "SmsRequestServiceAddress";
@@ -190,6 +191,7 @@ public final class ServiceConstants {
   public static final String COL_WARRANTY_MAINTENANCE = "WarrantyMaintenance";
   public static final String COL_WARRANTY = "Warranty";
   public static final String COL_WARRANTY_DURATION = "Duration";
+  public static final String COL_WARRANTY_NAME = "Name";
   public static final String COL_WARRANTY_TYPE = "WarrantyType";
   public static final String COL_WARRANTY_VALID_TO = "WarrantyValidTo";
 

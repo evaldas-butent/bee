@@ -52,6 +52,14 @@ public final class Settings {
     return getString("build");
   }
 
+  public static String getChildEditWindow() {
+    return getString("childEditWindow");
+  }
+
+  public static String getChildNewRowWindow() {
+    return getString("childNewRowWindow");
+  }
+
   public static int getClickSensitivityDistance() {
     return getInt("clickSensitivityDistance");
   }
@@ -119,6 +127,14 @@ public final class Settings {
     return getInt("exporterSplitRowsThreshold");
   }
 
+  public static String getGridEditWindow() {
+    return getString("gridEditWindow");
+  }
+
+  public static String getGridNewRowWindow() {
+    return getString("gridNewRowWindow");
+  }
+
   public static String getIncomingChatMessageSound() {
     return getString("incomingChatMessageSound");
   }
@@ -181,6 +197,10 @@ public final class Settings {
     return (d == null) ? BeeConst.UNDEF : BeeUtils.toLong(d);
   }
 
+  public static String getNewMailMessageWindow() {
+    return getString("newMailMessageWindow");
+  }
+
   public static int getNewsRefreshIntervalSeconds() {
     return getInt("newsRefreshIntervalSeconds");
   }
@@ -191,6 +211,14 @@ public final class Settings {
 
   public static JSONObject getOnStartup() {
     return getObject("onStartup");
+  }
+
+  public static String getOtherEditWindows() {
+    return getString("otherEditWindows");
+  }
+
+  public static String getOtherNewRowWindows() {
+    return getString("otherNewRowWindows");
   }
 
   public static int getProviderMaxPrefetchSteps() {
@@ -211,6 +239,14 @@ public final class Settings {
 
   public static int getReducedInteractionStatusMinutes() {
     return getInt("reducedInteractionStatusMinutes");
+  }
+
+  public static String getRelationEditWindow() {
+    return getString("relationEditWindow");
+  }
+
+  public static String getRelationNewRowWindow() {
+    return getString("relationNewRowWindow");
   }
 
   public static String getReleaseDate() {

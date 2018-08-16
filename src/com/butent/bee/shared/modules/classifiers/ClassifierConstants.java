@@ -20,6 +20,7 @@ public final class ClassifierConstants {
   public static final String TIMER_REMIND_TASKS_SUMMARY = "timer_remind_tasks_summary_";
   public static final String TIMER_REMIND_CALENDAR_EVENTS = "timer_remind_calendar_events";
   public static final String TIMER_REMIND_USER_TASKS = "timer_remind_user_tasks";
+  public static final String TIMER_REMIND_SERVICE_COMMENT = "timer_remind_service_comment";
   public static final String TIMER_REMIND_DOCUMENT_END = "timer_remind_document_end_";
   public static final String TIMER_REMIND_PROJECT_DATES = "timer_remind_project_dates";
 
@@ -288,12 +289,14 @@ public final class ClassifierConstants {
   public static final String COL_WAREHOUSE_NAME = "Name";
   public static final String COL_WAREHOUSE_SUPPLIER_CODE = "SupplierCode";
   public static final String COL_WAREHOUSE_BRANCH = "Branch";
+  public static final String COL_WAREHOUSE_CONSIGNMENT = "Consignment";
   public static final String COL_WAREHOUSE_REMAINDER = "Remainder";
 
   public static final String COL_RELATION_TYPE = "RelationType";
   public static final String COL_RELATION_TYPE_NAME = "Name";
 
   public static final String COL_ACTIVITY = "Activity";
+  public static final String COL_ACTIVITY_NAME = "Name";
 
   public static final String COL_COMPANY_TYPE_NAME = "Name";
 
@@ -395,6 +398,7 @@ public final class ClassifierConstants {
 
   public static final String FILTER_COMPANY_CREATION_AND_TYPE = "company_creation_and_type";
   public static final String FILTER_COMPANY_USAGE = "company_usage";
+  public static final String FILTER_COMPANY_ACTIVITIES = "company_activities";
 
   public static final String QR_FLOW_PANEL = "qrFlowPanel";
   public static final String QR_TYPE = "qrType";

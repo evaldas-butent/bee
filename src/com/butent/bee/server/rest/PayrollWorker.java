@@ -1,5 +1,6 @@
 package com.butent.bee.server.rest;
 
+import com.butent.bee.shared.Pair;
 import com.google.common.collect.Table;
 
 import com.butent.bee.server.modules.payroll.PayrollModuleBean;
@@ -52,6 +53,7 @@ public class PayrollWorker {
 
   private static final String TAG_OBJECT = "object";
   private static final String TAG_AMOUNT = "amount";
+  private static final String TAG_DAYS = "days";
 
   @EJB
   PayrollModuleBean pmb;
@@ -81,7 +83,7 @@ public class PayrollWorker {
         TimeUtils.parseYear(year), TimeUtils.parseMonth(month));
     addMessages(document, root, response);
 
-    Table<Integer, String, Double> table = getEarningsTable(response);
+    Table<Integer, String, Pair<Double, Integer>> table = getEarningsTable(response);
 
     if (table == null || table.isEmpty()) {
       if (!response.hasMessages()) {
@@ -98,8 +100,8 @@ public class PayrollWorker {
       BeeUtils.sort(objects);
 
       for (String object : objects) {
-        Double amount = table.get(tn, object);
-
+        Double amount = table.get(tn, object).getA();
+        Integer days = table.get(tn, object).getB();
         if (BeeUtils.isPositive(amount)) {
           Element item = document.createElement(TAG_ITEM);
           root.appendChild(item);
@@ -107,6 +109,7 @@ public class PayrollWorker {
           XmlUtils.appendElementWithText(document, item, TAG_TAB_NUMBER, BeeUtils.toString(tn));
           XmlUtils.appendElementWithText(document, item, TAG_OBJECT, object);
           XmlUtils.appendElementWithText(document, item, TAG_AMOUNT, BeeUtils.toString(amount, 2));
+          XmlUtils.appendElementWithText(document, item, TAG_DAYS, BeeUtils.toString(days));
         }
       }
     }
@@ -223,9 +226,9 @@ public class PayrollWorker {
   }
 
   @SuppressWarnings("unchecked")
-  private static Table<Integer, String, Double> getEarningsTable(ResponseObject response) {
+  private static Table<Integer, String, Pair<Double, Integer>> getEarningsTable(ResponseObject response) {
     if (response.getResponse() instanceof Table) {
-      return (Table<Integer, String, Double>) response.getResponse();
+      return (Table<Integer, String, Pair<Double, Integer>>) response.getResponse();
     } else {
       return null;
     }

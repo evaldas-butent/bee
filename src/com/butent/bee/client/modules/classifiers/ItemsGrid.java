@@ -28,7 +28,6 @@ import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.GridView;
@@ -319,11 +318,11 @@ class ItemsGrid extends TreeGridInterceptor {
         if (DataUtils.isId(id)) {
           if (cell.hasClassName(STYLE_RES_ORDER_ID_PREFIX + STYLE_CELL_SUFFIX)) {
             RowEditor.openForm(COL_ORDER, Data.getDataInfo(VIEW_ORDERS), Filter.compareId(id),
-                Opener.MODAL, null, new OrderForm());
+                null, new OrderForm());
 
           } else if (cell.hasClassName(STYLE_RES_REPAIR_ID_PREFIX + STYLE_CELL_SUFFIX)) {
             RowEditor.openForm(COL_SERVICE_MAINTENANCE, Data.getDataInfo(TBL_SERVICE_MAINTENANCE),
-                Filter.compareId(id), Opener.MODAL, null, new ServiceMaintenanceForm());
+                Filter.compareId(id), null, new ServiceMaintenanceForm());
           }
         }
       }
