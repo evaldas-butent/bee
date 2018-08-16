@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.service;
 
+import com.butent.bee.client.data.*;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
@@ -23,10 +24,6 @@ import com.butent.bee.client.composite.Autocomplete;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.Relations;
-import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -102,6 +99,8 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
   private ChildGrid groupsGrid;
   private ChildGrid criteriaGrid;
 
+  private DataSelector itemSelector;
+
   private Relations relations;
 
   private final List<HandlerRegistration> registry = new ArrayList<>();
@@ -128,6 +127,15 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
             }
             event.getSelector().setAdditionalFilter(filter, filter != null);
           }
+        }
+      });
+    } else if (widget instanceof DataSelector && editableWidget.hasSource(COL_ITEM)) {
+      itemSelector = (DataSelector) widget;
+
+      itemSelector.addSelectorHandler(event -> {
+        if (event.isNewRow()) {
+          event.consume();
+          fillNewItemWithValues(event);
         }
       });
     }
@@ -407,6 +415,56 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
 
     return Autocomplete.create(Relation.create(viewName,
         Lists.newArrayList(column)), true);
+  }
+
+  private void fillNewItemWithValues(SelectorEvent event) {
+
+    FormView form = getFormView();
+    String category = form.getStringValue(ALS_SERVICE_CATEGORY_NAME);
+
+    Queries.getRowSet(VIEW_ITEM_CATEGORY_TREE, null, Filter.equals(COL_CATEGORY_NAME, category), null, new Queries.RowSetCallback() {
+      @Override
+      public void onSuccess(BeeRowSet result) {
+        if (result.isEmpty()) {
+          event.consume();
+
+          form.notifySevere("Kategorija \"" + category + "\" nerasta prekių kategorijų medyje");
+
+        } else {
+          BeeRow newRow = event.getNewRow();
+
+          String itemName = BeeUtils.joinItems(form.getStringValue(COL_MODEL),
+            form.getStringValue(COL_SERVICE_BODY_NO));
+          String itemInButenta = form.getStringValue("ItemInButenta");
+          String address = form.getStringValue(COL_ADDRESS);
+
+          Data.setValue(VIEW_ITEMS, newRow, COL_ITEM_NAME, itemName);
+          Data.setValue(VIEW_ITEMS, newRow, COL_ITEM_EXTERNAL_CODE, itemInButenta);
+          Data.setValue(VIEW_ITEMS, newRow, COL_ITEM_ARTICLE, address);
+
+          for (Entry<String, Editor> entry : criteriaEditors.entrySet()) {
+
+            Editor editor = entry.getValue();
+
+            if (editor != null) {
+              String value = editor.getNormalizedValue();
+
+              if (entry.getKey().trim().toLowerCase().equals("svoris") && BeeUtils.isDouble(value.trim())) {
+                Data.setValue(VIEW_ITEMS, newRow, COL_ITEM_WEIGHT, BeeUtils.toDouble(value.trim()));
+              } else if (entry.getKey().trim().toLowerCase().equals("nuomos kaina") && BeeUtils.isDouble(value.trim())) {
+                Data.setValue(VIEW_ITEMS, newRow, COL_ITEM_RENTAL_PRICE, BeeUtils.toDouble(value.trim()));
+              } else if (entry.getKey().trim().toLowerCase().equals("pardavimo kaina") && BeeUtils.isDouble(value.trim())) {
+                Data.setValue(VIEW_ITEMS, newRow, COL_ITEM_PRICE, BeeUtils.toDouble(value.trim()));
+              }
+            }
+          }
+
+          newRow.setProperty(COL_CATEGORY, result.getRow(0).getId());
+
+          RowFactory.createRelatedRow(COL_ITEM, newRow, itemSelector, event.getOnOpenNewRow());
+        }
+      }
+    });
   }
 
   private void render() {
