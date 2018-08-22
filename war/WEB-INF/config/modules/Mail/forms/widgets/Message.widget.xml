@@ -25,7 +25,7 @@
           <Relation viewName="ServiceObjects" renderColumns="Model CategoryName ArticleNo"
                     newRowEnabled="false" editWindow="modal" choiceColumns="Model CategoryName ArticleNo"/>
           <Relation viewName="TradeActs" choiceColumns="SeriesName Number CompanyName OperationName"
-                    renderColumns="SeriesName Number CompanyName" newRowEnabled="false" filter="StatusName != Baigtas"
+                    renderColumns="SeriesName Number CompanyName" filter="StatusName != Baigtas"
                     order="Id desc"/>
           <Relation name="CompanyObjectRel" viewName="CompanyObjects" renderColumns="ObjectName" newRowEnabled="false" />
         </Relations>

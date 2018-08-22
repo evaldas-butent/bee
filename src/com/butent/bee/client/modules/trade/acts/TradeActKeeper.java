@@ -342,7 +342,7 @@ public final class TradeActKeeper {
     command.addStyleName(STYLE_COMMAND_PREFIX + suffix);
   }
 
-  static void ensureChache(final Runnable command) {
+  public static void ensureChache(final Runnable command) {
     if (cacheLoaded) {
       command.run();
 
@@ -683,7 +683,7 @@ public final class TradeActKeeper {
     return false;
   }
 
-  static void prepareNewTradeAct(IsRow row, TradeActKind kind) {
+  public static void prepareNewTradeAct(IsRow row, TradeActKind kind) {
     prepareNewTradeAct(row, null, kind);
   }
 

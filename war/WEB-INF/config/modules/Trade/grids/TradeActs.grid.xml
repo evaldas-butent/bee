@@ -8,7 +8,7 @@
     <SelectionColumn name="Select" />
     <IdColumn name="Id" />
     <RelColumn name="Operation" renderColumns="OperationName" />
-    <RelColumn name="Company" visible="true" renderColumns="CompanyName TypeName" />
+    <RelColumn name="Company" visible="true" renderColumns="CompanyName TypeName" searchBy="CompanyName" />
     <RelColumn name="Series" visible="true" filterSupplier="list" />
     <DataColumn name="Number" visible="true" />
     <RelColumn name="RentProject" visible="true" renderColumns="RentProjectSeriesName RentProjectNumber" editEnabled="true"> </RelColumn>
