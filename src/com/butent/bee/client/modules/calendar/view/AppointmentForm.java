@@ -18,7 +18,6 @@ import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -77,20 +76,7 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
 
         } else if (Objects.equals(viewName, TradeActConstants.TBL_TRADE_ACTS)) {
           event.consume();
-          String formName = event.getNewRowFormName();
-          DataSelector selector = event.getSelector();
-          BeeRow row = event.getNewRow();
-
-          List<TradeActKind> kinds = Arrays.asList(TradeActKind.SALE, TradeActKind.TENDER,
-              TradeActKind.PURCHASE, TradeActKind.WRITE_OFF, TradeActKind.RESERVE,
-              TradeActKind.RENT_PROJECT);
-
-          Global.choice(Localized.dictionary().tradeActNew(), null,
-              kinds.stream().map(HasLocalizedCaption::getCaption).collect(Collectors.toList()),
-              value -> TradeActKeeper.ensureChache(() -> {
-                TradeActKeeper.prepareNewTradeAct(row, kinds.get(value));
-                RowFactory.createRelatedRow(formName, row, selector);
-              }));
+          createTradeAct(event.getNewRowFormName(), event.getNewRow(), event.getSelector());
         }
       } else {
         Filter filter = null;
@@ -144,23 +130,28 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
 
   @Override
   public void onClick(ClickEvent clickEvent) {
-    DataSelector tradeAct =
-        (DataSelector) getFormView().getWidgetBySource(TradeActConstants.COL_TRADE_ACT);
+    DataSelector tradeAct = (DataSelector) getFormView()
+        .getWidgetBySource(TradeActConstants.COL_TRADE_ACT);
+    DataInfo dataInfo = tradeAct.getOracle().getDataInfo();
 
-    if (tradeAct != null) {
-      DataInfo dataInfo = tradeAct.getOracle().getDataInfo();
-      BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
-      SelectorEvent event = SelectorEvent.fireNewRow(tradeAct, row, tradeAct.getNewRowForm(),
-          tradeAct.getDisplayValue());
-
-      Data.setValue(TradeActConstants.VIEW_TRADE_ACTS, row, TradeActConstants.COL_TA_KIND,
-          TradeActKind.SALE.ordinal());
-
-      RowFactory.createRelatedRow(tradeAct.getNewRowForm(), row, tradeAct, Opener.MODAL);
-    }
+    createTradeAct(tradeAct.getNewRowForm(), RowFactory.createEmptyRow(dataInfo, true),
+        (DataSelector) getFormView().getWidgetBySource(TradeActConstants.COL_TRADE_ACT));
   }
 
   public DataSelector getProjectSelector() {
     return prjSelector;
+  }
+
+  public static void createTradeAct(String formName, BeeRow row, DataSelector selector) {
+    List<TradeActKind> kinds = Arrays.asList(TradeActKind.SALE, TradeActKind.TENDER,
+        TradeActKind.PURCHASE, TradeActKind.WRITE_OFF, TradeActKind.RESERVE,
+        TradeActKind.RENT_PROJECT);
+
+    Global.choice(Localized.dictionary().tradeActNew(), null,
+        kinds.stream().map(HasLocalizedCaption::getCaption).collect(Collectors.toList()),
+        value -> TradeActKeeper.ensureChache(() -> {
+          TradeActKeeper.prepareNewTradeAct(row, kinds.get(value));
+          RowFactory.createRelatedRow(formName, row, selector);
+        }));
   }
 }

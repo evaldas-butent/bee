@@ -22,7 +22,6 @@ import static com.butent.bee.shared.modules.mail.MailConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.ResponseCallbackWithId;
@@ -41,7 +40,7 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
+import com.butent.bee.client.modules.calendar.view.AppointmentForm;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
@@ -76,12 +75,10 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
-import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -99,7 +96,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class MailMessage extends AbstractFormInterceptor {
 
@@ -227,20 +223,8 @@ public class MailMessage extends AbstractFormInterceptor {
 
           case TradeActConstants.TBL_TRADE_ACTS:
             event.consume();
-            formName = event.getNewRowFormName();
-            selector = event.getSelector();
-            row = event.getNewRow();
-
-            List<TradeActKind> kinds = Arrays.asList(TradeActKind.SALE, TradeActKind.TENDER,
-                TradeActKind.PURCHASE, TradeActKind.WRITE_OFF, TradeActKind.RESERVE,
-                TradeActKind.RENT_PROJECT);
-
-            Global.choice(Localized.dictionary().tradeActNew(), null,
-                kinds.stream().map(HasLocalizedCaption::getCaption).collect(Collectors.toList()),
-                value -> TradeActKeeper.ensureChache(() -> {
-                  TradeActKeeper.prepareNewTradeAct(row, kinds.get(value));
-                  RowFactory.createRelatedRow(formName, row, selector);
-                }));
+            AppointmentForm.createTradeAct(event.getNewRowFormName(), event.getNewRow(),
+                event.getSelector());
             break;
         }
       }

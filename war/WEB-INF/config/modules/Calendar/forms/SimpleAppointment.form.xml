@@ -37,8 +37,8 @@
                    char="plus_circle"/>
 
           <DataSelector source="TradeAct" style="&absolute; left: 80px; top: 80px; width: 240px;"
-                        choiceColumns="SeriesName Number ActName OperationName" renderColumns="SeriesName TradeNumber
-                        ActName" viewName="RequestsActs" newRowEnabled="false" />
+                        choiceColumns="SeriesName Number CompanyName OperationName Date ActName ObjectName"
+                        renderColumns="SeriesName Number CompanyName" order="Id desc" newRowEnabled="false" />
 
           <Label for="ServiceObject" style="&absolute; left: 0px; top: 120px; width: 76px;" />
 
