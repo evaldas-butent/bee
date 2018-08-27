@@ -278,9 +278,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
     switch (svc) {
       case SVC_ITEMS_INFO:
-        response = getItemsInfo(reqInfo.getParameter("view_name"),
-            BeeUtils.toLongOrNull(reqInfo.getParameter("id")),
-            reqInfo.getParameter(COL_CURRENCY), reqInfo.getParameter("TypeTable"));
+        response = getItemsInfo(reqInfo);
         break;
 
       case SVC_CREDIT_INFO:
@@ -2140,8 +2138,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return ResponseObject.response(Pair.of(caption, filter));
   }
 
-  private ResponseObject getItemsInfo(String viewName, Long id, String currencyTo,
-      String typeTable) {
+  private ResponseObject getItemsInfo(RequestInfo reqInfo) {
+
+    String viewName = reqInfo.getParameter("view_name");
+    Long id = BeeUtils.toLongOrNull(reqInfo.getParameter("id"));
+    String currencyTo = reqInfo.getParameter(COL_CURRENCY);
+    String typeTable = reqInfo.getParameter("TypeTable");
+
     if (!sys.isView(viewName)) {
       return ResponseObject.error("Wrong view name");
     }
@@ -2227,6 +2230,20 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             COL_TA_SERVICE_TARIFF, COL_TA_SERVICE_MIN, COL_TA_SERVICE_DAYS)
             .addFields(TBL_ITEMS, COL_TRADE_TIME_UNIT);
         query.addOrder(TBL_ITEMS, COL_TRADE_ITEM_ORDINAL, sys.getIdName(TBL_ITEMS));
+
+        if (TradeActKind.RENT_PROJECT.equals(kind)) {
+          HasConditions orCon = SqlUtils.or(SqlUtils.sqlFalse());
+
+          if (reqInfo.hasParameter("showRentSvc") && reqInfo.getParameterBoolean("showRentSvc")) {
+            orCon.add(SqlUtils.equals(tradeItems, itemsRelation, id));
+          }
+
+          if (reqInfo.hasParameter("showOtherSvc") && reqInfo.getParameterBoolean("showOtherSvc")) {
+            orCon.add(SqlUtils.equals(trade, COL_TA_RENT_PROJECT, id));
+          }
+
+          query.setWhere(orCon);
+        }
       }
     } else {
       query.addOrder(tradeItems, COL_TRADE_ITEM_ORDINAL, sys.getIdName(tradeItems));

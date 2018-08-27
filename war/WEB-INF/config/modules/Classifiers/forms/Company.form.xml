@@ -151,7 +151,7 @@
               <InputDecimal source="CreditDays" style="width: 60px;" summarize="true" />
             </row>
 
-            <row for="ToleratedDays" module="Orders">
+            <row for="ToleratedDays">
               <Label for="ToleratedDays" style="&lbl;" />
               <InputDecimal source="ToleratedDays" style="width: 60px;" summarize="true" />
             </row>

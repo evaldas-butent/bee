@@ -1,11 +1,7 @@
 package com.butent.bee.client.modules.trade.acts;
 
-import com.butent.bee.client.grid.ColumnFooter;
-import com.butent.bee.client.grid.ColumnHeader;
-import com.butent.bee.client.grid.column.AbstractColumn;
-import com.butent.bee.client.view.View;
-import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -17,7 +13,6 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -51,15 +46,22 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class TradeActServicesGrid extends AbstractGridInterceptor implements
     SelectionHandler<BeeRowSet> {
 
   private static final String STYLE_COMMAND_RECALCULATE_PRICES = TradeActKeeper.STYLE_PREFIX
       + "command-recalculate-prices";
+
+  private static GridView getItemsGridView(GridView servicesGridView) {
+    IsRow formRow = ViewHelper.getFormRow(servicesGridView.asWidget());
+
+    TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, formRow);
+    return TradeActKind.RENT_PROJECT.equals(kind)
+            ? ViewHelper.getSiblingGrid(servicesGridView.asWidget(), "RPTradeActItems")
+            : ViewHelper.getSiblingGrid(servicesGridView.asWidget(), GRID_TRADE_ACT_ITEMS);
+  }
 
   private static double getItemTotal(GridView gridView) {
     double total = BeeConst.DOUBLE_ZERO;
@@ -68,12 +70,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
       return total;
     }
 
-    IsRow formRow = ViewHelper.getFormRow(gridView.asWidget());
-    TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, formRow);
-
-    GridView items = TradeActKind.RENT_PROJECT.equals(kind)
-            ? ViewHelper.getSiblingGrid(gridView.asWidget(), "RPTradeActItems")
-            : ViewHelper.getSiblingGrid(gridView.asWidget(), GRID_TRADE_ACT_ITEMS);
+    GridView items = getItemsGridView(gridView);
 
     if (items != null && !items.isEmpty()) {
       Totalizer totalizer = new Totalizer(items.getDataColumns());
@@ -81,7 +78,14 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
       int qtyIndex = items.getDataIndex(COL_TRADE_ITEM_QUANTITY);
       totalizer.setQuantityFunction(new QuantityReader(qtyIndex));
 
-      for (IsRow row : items.getRowData()) {
+      Collection<RowInfo> selectedItems = items.getSelectedRows(GridView.SelectedRows.ALL);
+
+      if (selectedItems.isEmpty()) {
+        return BeeConst.DOUBLE_UNDEF;
+      }
+
+      for (RowInfo selectedItem : selectedItems) {
+        IsRow row = items.getGrid().getRowById(selectedItem.getId());
         Double amount = totalizer.getTotal(row);
         if (BeeUtils.isDouble(amount)) {
           total += amount;
@@ -93,7 +97,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
   }
 
   private TradeActServicePicker picker;
-  private Button commandRecalculate;
+  private Button commandApplyTariff;
   private Button commandApplyRental;
 
   TradeActServicesGrid() {
@@ -117,15 +121,15 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     GridView gridView = presenter.getGridView();
 
     if (gridView != null && !gridView.isReadOnly()) {
-      commandRecalculate = new Button(Localized.dictionary().taTariff());
-      commandRecalculate.addStyleName(STYLE_COMMAND_RECALCULATE_PRICES);
-      commandRecalculate.addClickHandler(event -> maybeRecalculatePrices(true));
+      commandApplyTariff = new Button(Localized.dictionary().taTariff());
+      commandApplyTariff.addStyleName(STYLE_COMMAND_RECALCULATE_PRICES);
+      commandApplyTariff.addClickHandler(event -> applyTariff(true));
 
       commandApplyRental = new Button(Localized.dictionary().taApplyRentalPrice());
       commandApplyRental.addStyleName(STYLE_COMMAND_RECALCULATE_PRICES);
       commandApplyRental.addClickHandler(event -> applyRentalPrice());
 
-      presenter.getHeader().addCommandItem(commandRecalculate);
+      presenter.getHeader().addCommandItem(commandApplyTariff);
       presenter.getHeader().addCommandItem(commandApplyRental);
     }
   }
@@ -168,8 +172,8 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
 
     IsRow parentRow = ViewHelper.getFormRow(gridView);
 
-    if (commandRecalculate != null) {
-      commandRecalculate.setVisible(parentRow != null
+    if (commandApplyTariff != null) {
+      commandApplyTariff.setVisible(parentRow != null
           && !DataUtils.isId(Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_CONTINUOUS)));
     }
 
@@ -271,7 +275,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     return new TradeActServicesGrid();
   }
 
-  void maybeRecalculatePrices(boolean updateTariff) {
+  void applyTariff(boolean updateTariff) {
     GridView gridView = getGridView();
     if (gridView == null || gridView.isEmpty()) {
       return;
@@ -280,8 +284,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     double total = getItemTotal(gridView);
 
     if (!BeeUtils.isPositive(total)) {
-      gridView.notifyWarning(Data.getViewCaption(VIEW_TRADE_ACT_ITEMS),
-          Localized.dictionary().noData());
+      gridView.notifyWarning(Data.getViewCaption(VIEW_TRADE_ACT_ITEMS), Localized.dictionary().selectAtLeastOneRow());
       return;
     }
 
@@ -448,6 +451,18 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
       return;
     }
 
+    GridView itemsGridView = getItemsGridView(gridView);
+    Collection<RowInfo> selItems = itemsGridView.getSelectedRows(GridView.SelectedRows.ALL);
+
+    if (selItems.isEmpty()) {
+      gridView.notifyWarning(Data.getViewCaption(VIEW_TRADE_ACT_ITEMS), Localized.dictionary().selectAtLeastOneRow());
+      return;
+    }
+
+    Collection<Long> idItems = new ArrayList<>();
+
+    selItems.forEach(item -> ((ArrayList<Long>) idItems).add(item.getId()));
+
     gridView.ensureRelId(relId -> {
       ParameterList prm = TradeActKeeper.createArgs(SVC_GET_ACT_ITEMS_RENTAL_AMOUNT);
 
@@ -461,6 +476,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
         }
 
         prm.addDataItem(COL_TRADE_ACT, relId);
+        prm.addDataItem(VAR_ID_LIST, DataUtils.buildIdList(idItems));
 
         BeeKeeper.getRpc().makePostRequest(prm, response -> {
           if (!response.hasResponse(Double.class)) {
@@ -470,15 +486,6 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
           String viewName = gridView.getViewName();
           double rentalAmount = BeeUtils.toDouble(response.getResponseAsString());
           IsRow row = gridView.getActiveRow();
-
-         // for (IsRow row : gridView.getRowData()) {
-//            if (getGridView().getActiveRowId() != row.getId()) {
-//              continue;
-//            }
-//
-//            if (Data.getInteger(viewName, row, COL_TIME_UNIT) == null) {
-//              continue;
-//            }
 
           Double quantity = Data.getDouble(viewName, row, COL_TRADE_ITEM_QUANTITY);
 
@@ -495,7 +502,6 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
                       COL_IS_ITEM_RENTAL_PRICE)), oldValues, newValues, null, result -> {
                 RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
               });
-         // }
         });
       });
     });

@@ -1020,7 +1020,9 @@ public class TradeActGrid extends AbstractGridInterceptor {
               newRow.setValue(i, parent.getId());
               RelationUtils.updateRow(Data.getDataInfo(VIEW_TRADE_ACTS), colId, newRow,
                   Data.getDataInfo(VIEW_TRADE_ACTS), parent, true);
-              break;
+            } else {
+              newRow.setValue(i, parent.getValue(i));
+              RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), colId, newRow, parent);
             }
 
             break;

@@ -40,6 +40,7 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.modules.calendar.view.AppointmentForm;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
@@ -73,6 +74,7 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -110,9 +112,9 @@ public class MailMessage extends AbstractFormInterceptor {
           case TransportConstants.TBL_ASSESSMENTS:
           case DocumentConstants.TBL_DOCUMENTS:
             event.consume();
-            final String formName = event.getNewRowFormName();
-            final DataSelector selector = event.getSelector();
-            final BeeRow row = event.getNewRow();
+            String formName = event.getNewRowFormName();
+            DataSelector selector = event.getSelector();
+            BeeRow row = event.getNewRow();
 
             final ScheduledCommand executor = new ScheduledCommand() {
               private int counter;
@@ -217,6 +219,12 @@ public class MailMessage extends AbstractFormInterceptor {
               }
               executor.execute();
             });
+            break;
+
+          case TradeActConstants.TBL_TRADE_ACTS:
+            event.consume();
+            AppointmentForm.createTradeAct(event.getNewRowFormName(), event.getNewRow(),
+                event.getSelector());
             break;
         }
       }

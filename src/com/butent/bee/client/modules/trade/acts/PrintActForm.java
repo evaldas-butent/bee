@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.widget.CheckBox;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
@@ -11,7 +13,6 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
@@ -23,7 +24,6 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -90,6 +90,8 @@ public class PrintActForm extends AbstractFormInterceptor {
   List<Widget> totals = new ArrayList<>();
   List<Widget> totalsOf = new ArrayList<>();
   Consumer<Double> totConsumer;
+  CheckBox showRentActServices = new CheckBox("Nuomos projekto paslaugos");
+  CheckBox showOtherActServices = new CheckBox("Kitos aktų paslaugos");
 
 
   @Override
@@ -109,7 +111,17 @@ public class PrintActForm extends AbstractFormInterceptor {
 
   @Override
   public void onLoad(FormView form) {
+    HeaderView headerView = form.getViewPresenter().getHeader();
+    headerView.addCommandItem(showRentActServices);
+    headerView.addCommandItem(showOtherActServices);
+
     TradeActKeeper.ensureSendMailPrintableForm(form);
+
+    showRentActServices.addClickHandler(e -> beforeRefresh(form, form.getActiveRow()));
+    showOtherActServices.addClickHandler(e -> beforeRefresh(form, form.getActiveRow()));
+
+    showRentActServices.setChecked(true);
+    showOtherActServices.setChecked(true);
     super.onLoad(form);
   }
 
@@ -212,6 +224,8 @@ public class PrintActForm extends AbstractFormInterceptor {
       renderItems(SERVICES_WIDGET_NAME);
     }
 
+    showRentActServices.setVisible(TradeActKind.RENT_PROJECT.equals(kind));
+    showOtherActServices.setVisible(TradeActKind.RENT_PROJECT.equals(kind));
     super.beforeRefresh(form, row);
   }
 
@@ -592,7 +606,7 @@ public class PrintActForm extends AbstractFormInterceptor {
     }
   }
 
-  private String [] getColumnList(String formName) {
+  private String [] getColumnList(String formName, String typeTable) {
     ArrayList<String> cols = Lists.newArrayList(COLUMN_LIST);
     TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, getActiveRow());
 
@@ -615,7 +629,10 @@ public class PrintActForm extends AbstractFormInterceptor {
           } else {
             cols.add("RemainingQty");
           }
-          cols.remove("Quantity");
+
+          if (ITEMS_WIDGET_NAME.equals(typeTable)) {
+            cols.remove("Quantity");
+          }
           cols.remove(COL_TA_RETURNED_QTY);
           return cols.toArray(new String[cols.size()]);
         }
@@ -683,244 +700,243 @@ public class PrintActForm extends AbstractFormInterceptor {
     args.addDataItem("view_name", getViewName());
     args.addDataItem("id", getActiveRowId());
     args.addDataItem("TypeTable", typeTable);
+    args.addDataItem("showRentSvc", showRentActServices.isChecked());
+    args.addDataItem("showOtherSvc", showOtherActServices.isChecked());
 
-    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(BeeKeeper.getScreen());
+    BeeKeeper.getRpc().makePostRequest(args, response -> {
+      response.notify(BeeKeeper.getScreen());
 
-        if (response.hasErrors()) {
-          totConsumer.accept(0.0);
-          return;
+      if (response.hasErrors()) {
+        totConsumer.accept(0.0);
+        return;
+      }
+      SimpleRowSet rs = SimpleRowSet.restore(response.getResponseAsString());
+
+      if (rs.isEmpty()) {
+        totConsumer.accept(0.0);
+        return;
+      }
+      Map<String, Map<String, String>> data = new LinkedHashMap<>();
+
+      for (SimpleRowSet.SimpleRow row : rs) {
+        String id = getDataTableId(typeTable, row);
+
+        Long itemId = row.getLong(COL_ITEM);
+
+        if ((BeeUtils.same(FORM_PRINT_TA_RETURN,
+            BeeUtils.removeSuffix(getFormView().getFormName(), VAR_PRINT_RENTAL))
+        || BeeUtils.same(FORM_PRINT_TA_RETURN_EXTRA,
+                    BeeUtils.removeSuffix(getFormView().getFormName(), VAR_PRINT_RENTAL)))
+            && remainQty.get(itemId) == null) {
+          remainQty.put(itemId, 0D);
         }
-        SimpleRowSet rs = SimpleRowSet.restore(response.getResponseAsString());
 
-        if (rs.isEmpty()) {
-          totConsumer.accept(0.0);
-          return;
-        }
-        Map<String, Map<String, String>> data = new LinkedHashMap<>();
-
-        for (SimpleRowSet.SimpleRow row : rs) {
-          String id = getDataTableId(typeTable, row);
-
-          Long itemId = row.getLong(COL_ITEM);
-
-          if ((BeeUtils.same(FORM_PRINT_TA_RETURN,
-              BeeUtils.removeSuffix(getFormView().getFormName(), VAR_PRINT_RENTAL))
-          || BeeUtils.same(FORM_PRINT_TA_RETURN_EXTRA,
-                      BeeUtils.removeSuffix(getFormView().getFormName(), VAR_PRINT_RENTAL)))
-              && remainQty.get(itemId) == null) {
-            remainQty.put(itemId, 0D);
-          }
-
-          if (BeeUtils.same(
-                  BeeUtils.removeSuffix(getFormView().getFormName(), VAR_PRINT_RENTAL),
-                  FORM_PRINT_TA_RETURN_EXTRA)) {
-            if (!BeeUtils.isPositive(row.getDouble(COL_TRADE_ITEM_QUANTITY))) {
-              continue;
-            }
-          }
-
-          for (String col : rs.getColumnNames()) {
-            String value = row.getValue(col);
-
-            if (Objects.equals(col, COL_TA_RETURNED_QTY)) {
-              BigDecimal remaining = remainQty.get(itemId) != null
-                  ? new BigDecimal(remainQty.get(itemId))
-                  : row.getDecimal(COL_TRADE_ITEM_QUANTITY)
-                  .subtract(BeeUtils.nvl(row.getDecimal(COL_TA_RETURNED_QTY), BigDecimal.ZERO));
-
-              if (remaining.compareTo(BigDecimal.ZERO) != 0
-                      || BeeUtils.same(BeeUtils.removeSuffix(getFormView().getFormName(), VAR_PRINT_RENTAL),
-                      FORM_PRINT_TA_RETURN)) {
-                addDataToTable(data, id, "RemainingQty", remaining.toPlainString());
-              }
-            }
-            if (!BeeUtils.isEmpty(value)) {
-              switch (col) {
-                case COL_TA_SERVICE_FROM:
-                case COL_TA_SERVICE_TO:
-                  value = new JustDate(BeeUtils.toLong(value)).toString();
-                  break;
-
-                case COL_TRADE_TIME_UNIT:
-                  value = EnumUtils.getCaption(TradeActTimeUnit.class, BeeUtils.toIntOrNull(value));
-                  break;
-
-                case COL_TRADE_ITEM_NOTE:
-                  addDataToTable(data, id, COL_ITEM_NAME, BeeUtils.join("/",
-                      row.getValue(COL_ITEM_NAME), row.getValue(COL_TRADE_ITEM_NOTE)));
-                  break;
-
-                case COL_TA_SERVICE_MIN:
-                  String daysPerWeek = row.getValue(COL_TA_SERVICE_DAYS);
-                  addDataToTable(data, id, COL_ITEM_NAME, BeeUtils.join("/",
-                      row.getValue(COL_ITEM_NAME), row.getValue(COL_TRADE_ITEM_NOTE),
-                      BeeUtils.joinWords("Minimalus nuomos terminas", value,
-                          EnumUtils.getCaption(TradeActTimeUnit.class,
-                              row.getInt(COL_TRADE_TIME_UNIT))),
-                      BeeUtils.isEmpty(daysPerWeek) ? null : daysPerWeek + "d.per Sav."));
-                  break;
-                case COL_ITEM_WEIGHT:
-                  addDataToTable(data, id, col, value);
-                  addDataToTable(data, id, "RemainWeight", value);
-                  break;
-
-              }
-              addDataToTable(data, id, col, value);
-            }
-          }
-          double qty = getQuantity(data, id, itemId);
-          double prc = BeeUtils.toDouble(getDataValue(data, id, COL_TRADE_ITEM_PRICE));
-          double sum = qty * prc;
-
-          double disc = BeeUtils.toDouble(getDataValue(data, id, COL_TRADE_DISCOUNT));
-          double vat = BeeUtils.toDouble(getDataValue(data, id, COL_TRADE_VAT));
-          boolean vatInPercents = BeeUtils.toBoolean(getDataValue(data, id, COL_TRADE_VAT_PERC));
-
-          double dscSum = sum / 100 * disc;
-          sum -= dscSum;
-
-          if (BeeUtils.toBoolean(getDataValue(data, id, COL_TRADE_VAT_PLUS))) {
-            if (vatInPercents) {
-              vat = sum / 100 * vat;
-            }
-          } else {
-            if (vatInPercents) {
-              vat = sum - sum / (1 + vat / 100);
-            }
-            sum -= vat;
-          }
-          sum = BeeUtils.round(sum, 2);
-
-          for (String col : new String[] {COL_ITEM_WEIGHT, COL_ITEM_AREA}) {
-            if (data.get(id) != null && data.get(id).containsKey(col)) {
-              addDataToTable(data, id, col,
-                  BeeUtils.toString(BeeUtils.round(BeeUtils.toDouble(
-                      getDataValue(data, id, col)) * qty, 5)));
-            }
-          }
-
-          if (data.get(id) != null && data.get(id).containsKey("RemainWeight")) {
-            addDataToTable(data, id, "RemainWeight",
-                    BeeUtils.toString( BeeUtils.round(BeeUtils.toDouble(
-                            getDataValue(data, id, "RemainWeight")) * remainQty.get(itemId), 5)
-            ));
-          }
-          if (disc > 0) {
-            addDataToTable(data, id, COL_TRADE_DISCOUNT,
-                BeeUtils.removeTrailingZeros(BeeUtils.toString(disc)) + "%");
-          }
-          if (vat > 0) {
-            addDataToTable(data, id, COL_TRADE_VAT, BeeUtils.toString(BeeUtils.round(vat, 2)));
-          }
-
-          if (BeeUtils.inList(getFormView().getFormName(), FORM_PRINT_TA_NO_STOCK,
-              FORM_PRINT_TA_NO_STOCK + VAR_PRINT_RENTAL, FORM_PRINT_TA_SALE_PHYSICAL,
-              FORM_PRINT_TA_SALE_PHYSICAL + VAR_PRINT_RENTAL, FORM_PRINT_TA_SALE_RENT,
-              FORM_PRINT_TA_SALE_RENT + VAR_PRINT_RENTAL, FORM_PRINT_TA_SALE_ADDITION,
-              FORM_PRINT_TA_SALE_ADDITION + VAR_PRINT_RENTAL, FORM_PRINT_TA_RETURN,
-              FORM_PRINT_TA_RETURN + VAR_PRINT_RENTAL, FORM_PRINT_TA_RETURN_EXTRA,
-                  FORM_PRINT_TA_RETURN_EXTRA + VAR_PRINT_RENTAL)
-              && BeeUtils.same(typeTable, ITEMS_WIDGET_NAME)) {
-            addDataToTable(data, id, COL_TRADE_ITEM_PRICE, BeeUtils.removeTrailingZeros(BeeUtils
-                .toString(BeeUtils.round((sum + dscSum + vat) / (qty != 0 ? qty : 1d), 5))));
-          } else {
-            addDataToTable(data, id, COL_TRADE_ITEM_PRICE, BeeUtils.removeTrailingZeros(BeeUtils
-                .toString(BeeUtils.round((sum + dscSum) / (qty != 0 ? qty : 1d), 5))));
-          }
-          addDataToTable(data, id, "Amount", BeeUtils.toString(BeeUtils.round(sum, 2)));
-          addDataToTable(data, id, "AmountVat", BeeUtils.toString(
-              BeeUtils.round(sum + BeeUtils.max(0D, vat), 2)
-          ));
-
-          if (BeeUtils.same(typeTable, SERVICES_WIDGET_NAME)) {
-            if (BeeUtils.isEmpty(getDataValue(data, id, COL_TIME_UNIT))) {
-              addDataToTable(data, id, "MinTermAmount",
-                  BeeUtils.toString(BeeUtils.round(sum + vat, 2)));
-            } else if (BeeUtils.isDouble(BeeUtils.toDouble(
-                getDataValue(data, id, COL_TA_SERVICE_MIN)))) {
-              double mint = BeeUtils.toDouble(getDataValue(data, id, COL_TA_SERVICE_MIN));
-              addDataToTable(data, id, "MinTermAmount",
-                  BeeUtils.toString(BeeUtils.round(mint * (sum + vat), 2)));
-            }
-          }
-
-          addDataToTable(data, id, "AmountTotal", BeeUtils.toString(BeeUtils.round(sum + vat, 2)));
-
-        }
-        HtmlTable table = new HtmlTable(TradeUtils.STYLE_ITEMS_TABLE);
-        int c = 0;
-
-        Set<String> calc = new HashSet<>();
-        calc.add(COL_TRADE_ITEM_QUANTITY);
-        calc.add(COL_TA_RETURNED_QTY);
-        calc.add("RemainingQty");
-        calc.add(COL_TRADE_WEIGHT);
-        calc.add("RemainWeight");
-        calc.add(COL_ITEM_AREA);
-//        calc.add(COL_ITEM_RENTAL_PRICE);
-        calc.add("Amount");
-        calc.add("AmountVat");
-        calc.add(COL_TRADE_VAT);
-        calc.add("AmountTotal");
-        calc.add("MinTermAmount");
-
-        for (String col : getColumnList(getFormView().getFormName())) {
-
-          if (!isDataContainsColumn(data, col)) {
+        if (BeeUtils.same(
+                BeeUtils.removeSuffix(getFormView().getFormName(), VAR_PRINT_RENTAL),
+                FORM_PRINT_TA_RETURN_EXTRA)) {
+          if (!BeeUtils.isPositive(row.getDouble(COL_TRADE_ITEM_QUANTITY))) {
             continue;
           }
-
-          if (isVisibleColumn(typeTable, col)) {
-            table.setText(0, c, getTableHeader(getFormView(), typeTable, col),
-                TradeUtils.STYLE_ITEMS + col);
-          }
-          int r = 1;
-          BigDecimal sum = BigDecimal.ZERO;
-
-          for (String id : data.keySet()) {
-            if (!isDataRowVisible(typeTable, getFormView(), data, id)) {
-              continue;
-            }
-            String value = getDataValue(data, id, col);
-
-            if (calc.contains(col)) {
-              sum = sum.add(BeeUtils.nvl(BeeUtils.toDecimalOrNull(value), BigDecimal.ZERO));
-              value = BeeUtils.removeTrailingZeros(value);
-            }
-
-            if (isVisibleColumn(typeTable, col)) {
-              table.setText(r++, c, value, TradeUtils.STYLE_ITEMS + col);
-            }
-          }
-          String value = null;
-
-          if (sum.compareTo(BigDecimal.ZERO) != 0) {
-            value = BeeUtils.removeTrailingZeros(sum.toPlainString());
-          }
-          if ("AmountTotal".equals(col) && BeeUtils.same(typeTable, ITEMS_WIDGET_NAME)) {
-            totConsumer.accept(sum.doubleValue());
-          } else if ("MinTermAmount".equals(col)
-              && BeeUtils.same(typeTable, SERVICES_WIDGET_NAME)) {
-            totConsumer.accept(sum.doubleValue());
-          }
-
-          if (isVisibleColumn(typeTable, col)) {
-            table.setText(r, c, value, TradeUtils.STYLE_ITEMS + col);
-          }
-          c++;
         }
-        table.setText(table.getRowCount() - 1, 0, Localized.dictionary().totalOf());
 
-        for (int i = 0; i < table.getRowCount(); i++) {
-          table.getRowFormatter().addStyleName(i, i == 0 ? TradeUtils.STYLE_ITEMS_HEADER
-              : (i < (table.getRowCount() - 1)
-                  ? TradeUtils.STYLE_ITEMS_DATA : TradeUtils.STYLE_ITEMS_FOOTER));
+        for (String col : rs.getColumnNames()) {
+          String value = row.getValue(col);
+
+          if (Objects.equals(col, COL_TA_RETURNED_QTY)) {
+            BigDecimal remaining = remainQty.get(itemId) != null
+                ? new BigDecimal(remainQty.get(itemId))
+                : row.getDecimal(COL_TRADE_ITEM_QUANTITY)
+                .subtract(BeeUtils.nvl(row.getDecimal(COL_TA_RETURNED_QTY), BigDecimal.ZERO));
+
+            if (remaining.compareTo(BigDecimal.ZERO) != 0
+                    || BeeUtils.same(BeeUtils.removeSuffix(getFormView().getFormName(), VAR_PRINT_RENTAL),
+                    FORM_PRINT_TA_RETURN)) {
+              addDataToTable(data, id, "RemainingQty", remaining.toPlainString());
+            }
+          }
+          if (!BeeUtils.isEmpty(value)) {
+            switch (col) {
+              case COL_TA_SERVICE_FROM:
+              case COL_TA_SERVICE_TO:
+                value = new JustDate(BeeUtils.toLong(value)).toString();
+                break;
+
+              case COL_TRADE_TIME_UNIT:
+                value = EnumUtils.getCaption(TradeActTimeUnit.class, BeeUtils.toIntOrNull(value));
+                break;
+
+              case COL_TRADE_ITEM_NOTE:
+                addDataToTable(data, id, COL_ITEM_NAME, BeeUtils.join("/",
+                    row.getValue(COL_ITEM_NAME), row.getValue(COL_TRADE_ITEM_NOTE)));
+                break;
+
+              case COL_TA_SERVICE_MIN:
+                String daysPerWeek = row.getValue(COL_TA_SERVICE_DAYS);
+                addDataToTable(data, id, COL_ITEM_NAME, BeeUtils.join("/",
+                    row.getValue(COL_ITEM_NAME), row.getValue(COL_TRADE_ITEM_NOTE),
+                    BeeUtils.joinWords("Minimalus nuomos terminas", value,
+                        EnumUtils.getCaption(TradeActTimeUnit.class,
+                            row.getInt(COL_TRADE_TIME_UNIT))),
+                    BeeUtils.isEmpty(daysPerWeek) ? null : daysPerWeek + "d.per Sav."));
+                break;
+              case COL_ITEM_WEIGHT:
+                addDataToTable(data, id, col, value);
+                addDataToTable(data, id, "RemainWeight", value);
+                break;
+
+            }
+            addDataToTable(data, id, col, value);
+          }
         }
-        items.getElement().setInnerHTML(table.getElement().getString());
+        double qty = getQuantity(data, id, itemId);
+        double prc = BeeUtils.toDouble(getDataValue(data, id, COL_TRADE_ITEM_PRICE));
+        double sum = qty * prc;
+
+        double disc = BeeUtils.toDouble(getDataValue(data, id, COL_TRADE_DISCOUNT));
+        double vat = BeeUtils.toDouble(getDataValue(data, id, COL_TRADE_VAT));
+        boolean vatInPercents = BeeUtils.toBoolean(getDataValue(data, id, COL_TRADE_VAT_PERC));
+
+        double dscSum = sum / 100 * disc;
+        sum -= dscSum;
+
+        if (BeeUtils.toBoolean(getDataValue(data, id, COL_TRADE_VAT_PLUS))) {
+          if (vatInPercents) {
+            vat = sum / 100 * vat;
+          }
+        } else {
+          if (vatInPercents) {
+            vat = sum - sum / (1 + vat / 100);
+          }
+          sum -= vat;
+        }
+        sum = BeeUtils.round(sum, 2);
+
+        for (String col : new String[] {COL_ITEM_WEIGHT, COL_ITEM_AREA}) {
+          if (data.get(id) != null && data.get(id).containsKey(col)) {
+            addDataToTable(data, id, col,
+                BeeUtils.toString(BeeUtils.round(BeeUtils.toDouble(
+                    getDataValue(data, id, col)) * qty, 5)));
+          }
+        }
+
+        if (data.get(id) != null && data.get(id).containsKey("RemainWeight")) {
+          addDataToTable(data, id, "RemainWeight",
+                  BeeUtils.toString( BeeUtils.round(BeeUtils.toDouble(
+                          getDataValue(data, id, "RemainWeight")) * remainQty.get(itemId), 5)
+          ));
+        }
+        if (disc > 0) {
+          addDataToTable(data, id, COL_TRADE_DISCOUNT,
+              BeeUtils.removeTrailingZeros(BeeUtils.toString(disc)) + "%");
+        }
+        if (vat > 0) {
+          addDataToTable(data, id, COL_TRADE_VAT, BeeUtils.toString(BeeUtils.round(vat, 2)));
+        }
+
+        if (BeeUtils.inList(getFormView().getFormName(), FORM_PRINT_TA_NO_STOCK,
+            FORM_PRINT_TA_NO_STOCK + VAR_PRINT_RENTAL, FORM_PRINT_TA_SALE_PHYSICAL,
+            FORM_PRINT_TA_SALE_PHYSICAL + VAR_PRINT_RENTAL, FORM_PRINT_TA_SALE_RENT,
+            FORM_PRINT_TA_SALE_RENT + VAR_PRINT_RENTAL, FORM_PRINT_TA_SALE_ADDITION,
+            FORM_PRINT_TA_SALE_ADDITION + VAR_PRINT_RENTAL, FORM_PRINT_TA_RETURN,
+            FORM_PRINT_TA_RETURN + VAR_PRINT_RENTAL, FORM_PRINT_TA_RETURN_EXTRA,
+                FORM_PRINT_TA_RETURN_EXTRA + VAR_PRINT_RENTAL)
+            && BeeUtils.same(typeTable, ITEMS_WIDGET_NAME)) {
+          addDataToTable(data, id, COL_TRADE_ITEM_PRICE, BeeUtils.removeTrailingZeros(BeeUtils
+              .toString(BeeUtils.round((sum + dscSum + vat) / (qty != 0 ? qty : 1d), 5))));
+        } else {
+          addDataToTable(data, id, COL_TRADE_ITEM_PRICE, BeeUtils.removeTrailingZeros(BeeUtils
+              .toString(BeeUtils.round((sum + dscSum) / (qty != 0 ? qty : 1d), 5))));
+        }
+        addDataToTable(data, id, "Amount", BeeUtils.toString(BeeUtils.round(sum, 2)));
+        addDataToTable(data, id, "AmountVat", BeeUtils.toString(
+            BeeUtils.round(sum + BeeUtils.max(0D, vat), 2)
+        ));
+
+        if (BeeUtils.same(typeTable, SERVICES_WIDGET_NAME)) {
+          if (BeeUtils.isEmpty(getDataValue(data, id, COL_TIME_UNIT))) {
+            addDataToTable(data, id, "MinTermAmount",
+                BeeUtils.toString(BeeUtils.round(sum + vat, 2)));
+          } else if (BeeUtils.isDouble(BeeUtils.toDouble(
+              getDataValue(data, id, COL_TA_SERVICE_MIN)))) {
+            double mint = BeeUtils.toDouble(getDataValue(data, id, COL_TA_SERVICE_MIN));
+            addDataToTable(data, id, "MinTermAmount",
+                BeeUtils.toString(BeeUtils.round(mint * (sum + vat), 2)));
+          }
+        }
+
+        addDataToTable(data, id, "AmountTotal", BeeUtils.toString(BeeUtils.round(sum + vat, 2)));
+
       }
+      HtmlTable table = new HtmlTable(TradeUtils.STYLE_ITEMS_TABLE);
+      int c = 0;
+
+      Set<String> calc = new HashSet<>();
+      calc.add(COL_TRADE_ITEM_QUANTITY);
+      calc.add(COL_TA_RETURNED_QTY);
+      calc.add("RemainingQty");
+      calc.add(COL_TRADE_WEIGHT);
+      calc.add("RemainWeight");
+      calc.add(COL_ITEM_AREA);
+//        calc.add(COL_ITEM_RENTAL_PRICE);
+      calc.add("Amount");
+      calc.add("AmountVat");
+      calc.add(COL_TRADE_VAT);
+      calc.add("AmountTotal");
+      calc.add("MinTermAmount");
+
+      for (String col : getColumnList(getFormView().getFormName(), typeTable)) {
+
+        if (!isDataContainsColumn(data, col)) {
+          continue;
+        }
+
+        if (isVisibleColumn(typeTable, col)) {
+          table.setText(0, c, getTableHeader(getFormView(), typeTable, col),
+              TradeUtils.STYLE_ITEMS + col);
+        }
+        int r = 1;
+        BigDecimal sum = BigDecimal.ZERO;
+
+        for (String id : data.keySet()) {
+          if (!isDataRowVisible(typeTable, getFormView(), data, id)) {
+            continue;
+          }
+          String value = getDataValue(data, id, col);
+
+          if (calc.contains(col)) {
+            sum = sum.add(BeeUtils.nvl(BeeUtils.toDecimalOrNull(value), BigDecimal.ZERO));
+            value = BeeUtils.removeTrailingZeros(value);
+          }
+
+          if (isVisibleColumn(typeTable, col)) {
+            table.setText(r++, c, value, TradeUtils.STYLE_ITEMS + col);
+          }
+        }
+        String value = null;
+
+        if (sum.compareTo(BigDecimal.ZERO) != 0) {
+          value = BeeUtils.removeTrailingZeros(sum.toPlainString());
+        }
+        if ("AmountTotal".equals(col) && BeeUtils.same(typeTable, ITEMS_WIDGET_NAME)) {
+          totConsumer.accept(sum.doubleValue());
+        } else if ("MinTermAmount".equals(col)
+            && BeeUtils.same(typeTable, SERVICES_WIDGET_NAME)) {
+          totConsumer.accept(sum.doubleValue());
+        }
+
+        if (isVisibleColumn(typeTable, col)) {
+          table.setText(r, c, value, TradeUtils.STYLE_ITEMS + col);
+        }
+        c++;
+      }
+      table.setText(table.getRowCount() - 1, 0, Localized.dictionary().totalOf());
+
+      for (int i = 0; i < table.getRowCount(); i++) {
+        table.getRowFormatter().addStyleName(i, i == 0 ? TradeUtils.STYLE_ITEMS_HEADER
+            : (i < (table.getRowCount() - 1)
+                ? TradeUtils.STYLE_ITEMS_DATA : TradeUtils.STYLE_ITEMS_FOOTER));
+      }
+      items.getElement().setInnerHTML(table.getElement().getString());
     });
   }
 

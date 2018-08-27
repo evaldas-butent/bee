@@ -5010,34 +5010,40 @@ public class TradeActBean implements HasTimerService {
     String colName = req.hasParameter(Service.VAR_COLUMN)
             ? req.getParameter(Service.VAR_COLUMN) : COL_TRADE_ACT;
 
-    return ResponseObject.response(totalActItemsRentalPrice(actId, table, colName));
+    Collection<Long> ids = req.hasParameter(VAR_ID_LIST)
+            ? DataUtils.parseIdSet(req.getParameter(VAR_ID_LIST)) : new ArrayList<>();
+
+    return ResponseObject.response(totalActItemsRentalPrice(actId, table, colName, ids));
   }
 
-  private double totalActItemsRentalPrice(Long actId, String table, String colName) {
+  private double totalActItemsRentalPrice(Long actId, String table, String colName, Collection<Long> ids) {
     double result = BeeConst.DOUBLE_ZERO;
 
     if (!DataUtils.isId(actId)) {
       return result;
     }
 
-    IsCondition condition = SqlUtils.sqlTrue();
+    HasConditions condition = SqlUtils.and();
 
     SqlSelect query = new SqlSelect();
 
     if (COL_TA_RENT_PROJECT.equals(colName)) {
-      condition = SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.SALE, TradeActKind.SUPPLEMENT);
+      condition.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.SALE, TradeActKind.SUPPLEMENT));
     }
+
+    if (!BeeUtils.isEmpty(ids)) {
+      condition.add(sys.idInList(TBL_TRADE_ACT_ITEMS, ids));
+    }
+
+    condition.add(SqlUtils.positive(TBL_ITEMS, COL_ITEM_RENTAL_PRICE),
+            SqlUtils.positive(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY),
+            SqlUtils.equals(table, colName, actId));
 
     query.addFrom(TBL_TRADE_ACT_ITEMS)
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_ITEMS, COL_ITEM))
         .addFromInner(TBL_TRADE_ACTS, sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS,
             COL_TRADE_ACT))
-        .setWhere(SqlUtils.and(SqlUtils.positive(TBL_ITEMS, COL_ITEM_RENTAL_PRICE),
-            SqlUtils.positive(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY),
-            //SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, actId)));
-                SqlUtils.equals(table, colName, actId), condition));
-
-
+        .setWhere(condition);
 
     query.addSum(ExchangeUtils.exchangeField(query,
         SqlUtils.multiply(SqlUtils.field(TBL_ITEMS, COL_ITEM_RENTAL_PRICE),

@@ -1,19 +1,23 @@
 package com.butent.bee.client.modules.calendar.view;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_USER;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.composite.Relations;
+import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -22,14 +26,17 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
+import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class AppointmentForm extends AbstractFormInterceptor implements ClickHandler {
 
@@ -66,6 +73,10 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
             Data.setValue(VIEW_TASKS, row, ALS_COMPANY_NAME, company);
           }
           RowFactory.createRelatedRow(formName, row, selector);
+
+        } else if (Objects.equals(viewName, TradeActConstants.TBL_TRADE_ACTS)) {
+          event.consume();
+          createTradeAct(event.getNewRowFormName(), event.getNewRow(), event.getSelector());
         }
       } else {
         Filter filter = null;
@@ -106,7 +117,7 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
     if (widget instanceof Relations) {
       ((Relations) widget).setSelectorHandler(new RelationsHandler());
     } else if (BeeUtils.same(NEW_ACT_LABEL, name)) {
-      ((FaLabel)widget).addClickHandler(this);
+      ((FaLabel) widget).addClickHandler(this);
     }
 
     super.afterCreateWidget(name, widget, callback);
@@ -117,25 +128,30 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
     return new AppointmentForm();
   }
 
-
   @Override
   public void onClick(ClickEvent clickEvent) {
-    DataSelector tradeAct = (DataSelector) getFormView().getWidgetBySource(TradeActConstants.COL_TRADE_ACT);
+    DataSelector tradeAct = (DataSelector) getFormView()
+        .getWidgetBySource(TradeActConstants.COL_TRADE_ACT);
+    DataInfo dataInfo = tradeAct.getOracle().getDataInfo();
 
-    if (tradeAct != null) {
-      DataInfo dataInfo = tradeAct.getOracle().getDataInfo();
-      BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
-      SelectorEvent event = SelectorEvent.fireNewRow(tradeAct, row, tradeAct.getNewRowForm(),
-        tradeAct.getDisplayValue());
-
-      Data.setValue(TradeActConstants.VIEW_TRADE_ACTS, row, TradeActConstants.COL_TA_KIND,
-        TradeActKind.SALE.ordinal());
-
-      RowFactory.createRelatedRow(tradeAct.getNewRowForm(), row, tradeAct, Opener.MODAL);
-    }
+    createTradeAct(tradeAct.getNewRowForm(), RowFactory.createEmptyRow(dataInfo, true),
+        (DataSelector) getFormView().getWidgetBySource(TradeActConstants.COL_TRADE_ACT));
   }
 
   public DataSelector getProjectSelector() {
     return prjSelector;
+  }
+
+  public static void createTradeAct(String formName, BeeRow row, DataSelector selector) {
+    List<TradeActKind> kinds = Arrays.asList(TradeActKind.SALE, TradeActKind.TENDER,
+        TradeActKind.PURCHASE, TradeActKind.WRITE_OFF, TradeActKind.RESERVE,
+        TradeActKind.RENT_PROJECT);
+
+    Global.choice(Localized.dictionary().tradeActNew(), null,
+        kinds.stream().map(HasLocalizedCaption::getCaption).collect(Collectors.toList()),
+        value -> TradeActKeeper.ensureChache(() -> {
+          TradeActKeeper.prepareNewTradeAct(row, kinds.get(value));
+          RowFactory.createRelatedRow(formName, row, selector);
+        }));
   }
 }
