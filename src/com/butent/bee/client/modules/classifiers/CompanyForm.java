@@ -27,6 +27,8 @@ import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -58,6 +60,7 @@ import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
@@ -77,6 +80,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -192,6 +196,30 @@ public class CompanyForm extends AbstractFormInterceptor {
         }
 
       });
+    } else if (widget instanceof ChildGrid && Objects.equals(name, "CompActionList")) {
+      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+        @Override
+        public void onEditStart(EditStartEvent event) {
+          event.consume();
+          CalendarKeeper.openAppointment(Appointment.create(event.getRowValue()), null, null, null);
+        }
+
+        @Override
+        public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
+          FormView form = CompanyForm.this.getFormView();
+
+          CalendarKeeper.createAppointment(beeRow -> {
+            DataInfo sourceInfo = Data.getDataInfo(form.getViewName());
+            DataInfo targetInfo = Data.getDataInfo(gridView.getViewName());
+
+            RelationUtils.updateRow(targetInfo, COL_COMPANY, beeRow, sourceInfo,
+                form.getActiveRow(), true);
+
+          }, null, result -> Data.refreshLocal(gridView.getViewName()));
+          return false;
+        }
+      });
+
     } else if (BeeUtils.same(name, TBL_COMPANY_PERSONS) && widget instanceof ChildGrid) {
       ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
         @Override
