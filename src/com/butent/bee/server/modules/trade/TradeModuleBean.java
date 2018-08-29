@@ -173,7 +173,7 @@ import javax.ejb.TimerService;
 @LocalBean
 public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerService {
 
-  private static BeeLogger logger = LogUtils.getLogger(TradeModuleBean.class);
+  static BeeLogger logger = LogUtils.getLogger(TradeModuleBean.class);
 
   private static final Map<ModuleAndSub, StockReservationsProvider> stockReservationsProviders =
       new HashMap<>();
@@ -203,6 +203,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
   @EJB TradeActDataEventHandler taHandler;
   @EJB SystemServiceBean srv;
+  @EJB CustomTradeModuleBean custom;
 
   @Resource
   TimerService timerService;
@@ -3033,9 +3034,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return doc;
   }
 
-  private ResponseObject sendCompanyToERP(Long companyId) {
+  public ResponseObject sendCompanyToERP(Long companyId) {
     ResponseObject response = ResponseObject.emptyResponse();
-    SimpleRow data = null;
+    SimpleRow data;
 
     if (DataUtils.isId(companyId)) {
       data = qs.getRow(new SqlSelect()
@@ -3051,30 +3052,31 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
           .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
           .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
-    }
-    if (data != null) {
-      try {
-        String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
-        String remoteLogin = prm.getText(PRM_ERP_LOGIN);
-        String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
-        String company = BeeUtils.joinItems(data.getValue(COL_COMPANY_NAME),
-            data.getValue(COL_COMPANY_TYPE));
+      if (Objects.nonNull(data)) {
+        try {
+          String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+          String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+          String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
-        company = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
-            .importClient(BeeUtils.toString(companyId), company,
-                data.getValue(COL_COMPANY_CODE),
-                data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
-                data.getValue(COL_POST_INDEX), data.getValue(COL_CITY),
-                data.getValue(COL_COUNTRY));
+          String company = BeeUtils.joinItems(data.getValue(COL_COMPANY_NAME),
+              data.getValue(COL_COMPANY_TYPE));
 
-        response.setResponse(company);
+          company = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
+              .importClient(BeeUtils.toString(companyId), company,
+                  data.getValue(COL_COMPANY_CODE),
+                  data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
+                  data.getValue(COL_POST_INDEX), data.getValue(COL_CITY),
+                  data.getValue(COL_COUNTRY));
 
-      } catch (BeeException e) {
-        response.addError(e);
+          response.setResponse(company);
+
+        } catch (BeeException e) {
+          response.addError(e);
+        }
+      } else {
+        response.addError("Wrong company id", companyId);
       }
-    } else {
-      response.addError("Wrong company id", companyId);
     }
     return response;
   }
@@ -3386,6 +3388,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         .setWhere(sys.idInList(trade, ids));
 
     switch (trade) {
+      case TBL_TRADE_DOCUMENTS:
+        return custom.sendDocumentToErp(ids);
+
       case TBL_SALES:
         tradeItems = TBL_SALE_ITEMS;
         itemsRelation = COL_SALE;
@@ -3433,40 +3438,17 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     for (SimpleRow invoice : invoices) {
       for (String col : new String[] {
-          COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER, COL_SALE_PAYER,
-          COL_TRADE_BOL_CARRIER}) {
+          COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER, COL_SALE_PAYER, COL_TRADE_BOL_CARRIER}) {
         Long id = invoices.hasColumn(col) ? invoice.getLong(col) : null;
 
         if (DataUtils.isId(id) && !companies.containsKey(id)) {
-          SimpleRow data = qs.getRow(new SqlSelect()
-              .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
-              .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, COL_COMPANY_TYPE)
-              .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
-              .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
-              .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
-              .addFrom(TBL_COMPANIES)
-              .addFromLeft(TBL_COMPANY_TYPES,
-                  sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
-              .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
-              .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
-              .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
-              .setWhere(sys.idEquals(TBL_COMPANIES, id)));
+          ResponseObject resp = sendCompanyToERP(id);
 
-          try {
-            String company = BeeUtils.joinItems(data.getValue(COL_COMPANY_NAME),
-                data.getValue(COL_COMPANY_TYPE));
-
-            company = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
-                .importClient(BeeUtils.toString(id), company, data.getValue(COL_COMPANY_CODE),
-                    data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
-                    data.getValue(COL_POST_INDEX), data.getValue(COL_CITY),
-                    data.getValue(COL_COUNTRY));
-
-            companies.put(id, company);
-
-          } catch (BeeException e) {
-            response.addError(e);
+          if (resp.hasErrors()) {
+            response.addErrorsFrom(resp);
+            break;
           }
+          companies.put(id, resp.getResponseAsString());
         }
       }
       if (response.hasErrors()) {
@@ -3497,7 +3479,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       doc.setTerm(invoice.getDate(COL_TRADE_TERM));
       doc.setCurrency(invoice.getValue(COL_CURRENCY));
       doc.setManager(invoice.getValue(PayrollConstants.COL_TAB_NUMBER));
-      doc.setSaleNote(invoice.getValue(COL_NOTES));
+      doc.setNotes(invoice.getValue(COL_NOTES));
 
       if (Objects.equals(trade, TBL_SALES)) {
         doc.setBolNumber(invoice.getValue(COL_TRADE_BOL_NUMBER));

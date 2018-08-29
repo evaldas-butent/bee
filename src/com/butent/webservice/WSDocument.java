@@ -72,7 +72,11 @@ public class WSDocument {
   private String payer;
   private String currency;
   private String manager;
-  private  String saleNote;
+  private String notes;
+
+  private String department;
+  private String action;
+  private String center;
 
   private String bolSeries;
   private String bolNumber;
@@ -124,6 +128,9 @@ public class WSDocument {
           .append(XmlUtils.tag("kitas_dok", invoiceNumber))
           .append(XmlUtils.tag("terminas", term))
           .append(XmlUtils.tag("valiuta", currency))
+          .append(XmlUtils.tag("padalinys", department))
+          .append(XmlUtils.tag("veikla", action))
+          .append(XmlUtils.tag("centras", center))
           .append(XmlUtils.tag("preke", item.itemId))
           .append(XmlUtils.tag("kiekis", item.quantity))
           .append(XmlUtils.tag("artikulas", item.article))
@@ -178,12 +185,16 @@ public class WSDocument {
 
         }
       }
-      if (!BeeUtils.isEmpty(saleNote)) {
-        sb.append(XmlUtils.tag("pastabos", saleNote));
+      if (!BeeUtils.isEmpty(notes)) {
+        sb.append(XmlUtils.tag("pastabos", notes));
       }
       sb.append("</row>");
     }
     return sb.append("</VFPData>").toString();
+  }
+
+  public void setAction(String action) {
+    this.action = action;
   }
 
   public void setBolSeries(String bolSeries) {
@@ -230,12 +241,20 @@ public class WSDocument {
     this.bolDriverTabNo = bolDriverTabNo;
   }
 
+  public void setCenter(String center) {
+    this.center = center;
+  }
+
   public void setCurrency(String currency) {
     this.currency = currency;
   }
 
   public void setCustomer(String customer) {
     this.customer = customer;
+  }
+
+  public void setDepartment(String department) {
+    this.department = department;
   }
 
   public void setInvoice(String prefix, String no) {
@@ -255,8 +274,8 @@ public class WSDocument {
     this.payer = payer;
   }
 
-  public void setSaleNote(String saleNote) {
-    this.saleNote = saleNote;
+  public void setNotes(String notes) {
+    this.notes = notes;
   }
 
   public void setSupplier(String supplier) {

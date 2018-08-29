@@ -7,6 +7,7 @@
         order="Date desc"
 >
   <g:columns>
+    <SelectionColumn name="Select" width="20" />
     <IdColumn name="Id" />
 
     <DataColumn name="Date" visible="true" />
@@ -67,6 +68,7 @@
 
   <g:columns>
     <DataColumn name="Notes" visible="false" />
+    <DataColumn name="Exported" />
   </g:columns>
 
   <g:rowMessage>

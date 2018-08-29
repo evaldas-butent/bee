@@ -133,6 +133,7 @@
     <SimpleColumn name="ReceivedDate" />
 
     <SimpleColumn name="Notes" />
+    <SimpleColumn name="Exported" />
   </Columns>
 
   <Order>

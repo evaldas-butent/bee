@@ -48,5 +48,6 @@
     <DateTime name="ReceivedDate" label="=trdReceivedDate" />
 
     <Text name="Notes" label="=trdNotes" />
+    <DateTime name="Exported" label="=trdExported" />
   </Fields>
 </Table>

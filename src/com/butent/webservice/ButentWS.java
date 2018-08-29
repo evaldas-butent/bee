@@ -351,7 +351,6 @@ public final class ButentWS {
     String answer;
 
     try {
-      logger.info(doc.getXml());
       answer = process("ImportDoc", doc.getXml());
     } catch (Exception e) {
       throw BeeException.error(e);
