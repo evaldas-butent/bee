@@ -39,6 +39,7 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
@@ -71,6 +72,7 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.RegulatedWidget;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.WindowType;
@@ -208,14 +210,20 @@ public class CompanyForm extends AbstractFormInterceptor {
         public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
           FormView form = CompanyForm.this.getFormView();
 
-          CalendarKeeper.createAppointment(beeRow -> {
-            DataInfo sourceInfo = Data.getDataInfo(form.getViewName());
-            DataInfo targetInfo = Data.getDataInfo(gridView.getViewName());
+          CalendarKeeper.ensureData(new Command() {
+            @Override
+            public void execute() {
+              CalendarKeeper.createAppointment(null, new DateTime(), null, null, beeRow -> {
+                DataInfo sourceInfo = Data.getDataInfo(form.getViewName());
+                DataInfo targetInfo = Data.getDataInfo(gridView.getViewName());
 
-            RelationUtils.updateRow(targetInfo, COL_COMPANY, beeRow, sourceInfo,
-                form.getActiveRow(), true);
+                RelationUtils.updateRow(targetInfo, COL_COMPANY, beeRow, sourceInfo,
+                    form.getActiveRow(), true);
 
-          }, null, result -> Data.refreshLocal(gridView.getViewName()));
+              }, result -> Data.refreshLocal(gridView.getViewName()));
+            }
+          });
+
           return false;
         }
       });
