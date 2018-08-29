@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.service;
 
+import com.butent.bee.client.widget.FaLabel;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
@@ -12,6 +13,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_VAT_PERCENT;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TA_OBJECT;
@@ -102,6 +104,8 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
   private ChildGrid groupsGrid;
   private ChildGrid criteriaGrid;
 
+  private DataSelector itemSelector;
+
   private Relations relations;
 
   private final List<HandlerRegistration> registry = new ArrayList<>();
@@ -130,6 +134,8 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
           }
         }
       });
+    } else if (widget instanceof DataSelector && editableWidget.hasSource(COL_ITEM)) {
+      itemSelector = (DataSelector) widget;
     }
     super.afterCreateEditableWidget(editableWidget, widget);
   }
@@ -202,6 +208,8 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
       ((DataSelector) widget).addSelectorHandler(this);
     } else if (widget instanceof Relations) {
       relations = (Relations) widget;
+    } else if (widget instanceof FaLabel && BeeUtils.same(name, "NewItem")) {
+        ((FaLabel) widget).addClickHandler(clickEvent -> fillNewItemWithValues());
     }
   }
 
@@ -407,6 +415,57 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
 
     return Autocomplete.create(Relation.create(viewName,
         Lists.newArrayList(column)), true);
+  }
+
+  private void fillNewItemWithValues() {
+
+    FormView form = getFormView();
+    String category = form.getStringValue(ALS_SERVICE_CATEGORY_NAME);
+
+    Queries.getRowSet(VIEW_ITEM_CATEGORY_TREE, null, Filter.equals(COL_CATEGORY_NAME, category), null, result -> {
+      if (result.isEmpty()) {
+        form.notifySevere("Kategorija \"" + category + "\" nerasta prekių kategorijų medyje");
+      } else {
+        BeeRow newRow = RowFactory.createEmptyRow(Data.getDataInfo(VIEW_ITEMS));
+
+        String itemName = BeeUtils.joinItems(form.getStringValue(COL_MODEL),
+          form.getStringValue(COL_SERVICE_BODY_NO));
+        String itemInButenta = form.getStringValue("ItemInButenta");
+        String address = form.getStringValue(COL_ADDRESS);
+        Number pvm = Global.getParameterNumber(PRM_VAT_PERCENT);
+
+        Data.setValue(VIEW_ITEMS, newRow, COL_ITEM_NAME, itemName);
+        Data.setValue(VIEW_ITEMS, newRow, COL_ITEM_EXTERNAL_CODE, itemInButenta);
+        Data.setValue(VIEW_ITEMS, newRow, COL_ITEM_ARTICLE, address);
+        Data.setValue(VIEW_ITEMS, newRow, COL_UNIT, 1);
+        Data.setValue(VIEW_ITEMS, newRow, ALS_UNIT_NAME, "vnt");
+        Data.setValue(VIEW_ITEMS, newRow, COL_ITEM_VAT_PERCENT, pvm.doubleValue());
+        Data.setValue(VIEW_ITEMS, newRow, COL_SERVICE_OBJECT, getActiveRowId());
+        Data.setValue(VIEW_ITEMS, newRow, "ObjectModel", form.getStringValue("Model"));
+        Data.setValue(VIEW_ITEMS, newRow, "ObjectCategory", form.getStringValue(ALS_SERVICE_CATEGORY_NAME));
+
+        for (Entry<String, Editor> entry : criteriaEditors.entrySet()) {
+
+          Editor editor = entry.getValue();
+
+          if (editor != null) {
+            String value = editor.getNormalizedValue();
+
+            if (entry.getKey().trim().toLowerCase().equals("svoris") && BeeUtils.isDouble(value.trim())) {
+              Data.setValue(VIEW_ITEMS, newRow, COL_ITEM_WEIGHT, BeeUtils.toDouble(value.trim()));
+            } else if (entry.getKey().trim().toLowerCase().equals("nuomos kaina") && BeeUtils.isDouble(value.trim())) {
+              Data.setValue(VIEW_ITEMS, newRow, COL_ITEM_RENTAL_PRICE, BeeUtils.toDouble(value.trim()));
+            } else if (entry.getKey().trim().toLowerCase().equals("pardavimo kaina") && BeeUtils.isDouble(value.trim())) {
+              Data.setValue(VIEW_ITEMS, newRow, COL_ITEM_PRICE, BeeUtils.toDouble(value.trim()));
+            }
+          }
+        }
+
+        newRow.setProperty(COL_CATEGORY, result.getRow(0).getId());
+
+        RowFactory.createRelatedRow(COL_ITEM, newRow, itemSelector, Opener.MODAL);
+      }
+    });
   }
 
   private void render() {
