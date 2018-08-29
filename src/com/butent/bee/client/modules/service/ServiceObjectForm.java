@@ -13,6 +13,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_VAT_PERCENT;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TA_OBJECT;
@@ -431,10 +432,17 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
           form.getStringValue(COL_SERVICE_BODY_NO));
         String itemInButenta = form.getStringValue("ItemInButenta");
         String address = form.getStringValue(COL_ADDRESS);
+        Number pvm = Global.getParameterNumber(PRM_VAT_PERCENT);
 
         Data.setValue(VIEW_ITEMS, newRow, COL_ITEM_NAME, itemName);
         Data.setValue(VIEW_ITEMS, newRow, COL_ITEM_EXTERNAL_CODE, itemInButenta);
         Data.setValue(VIEW_ITEMS, newRow, COL_ITEM_ARTICLE, address);
+        Data.setValue(VIEW_ITEMS, newRow, COL_UNIT, 1);
+        Data.setValue(VIEW_ITEMS, newRow, ALS_UNIT_NAME, "vnt");
+        Data.setValue(VIEW_ITEMS, newRow, COL_ITEM_VAT_PERCENT, pvm.doubleValue());
+        Data.setValue(VIEW_ITEMS, newRow, COL_SERVICE_OBJECT, getActiveRowId());
+        Data.setValue(VIEW_ITEMS, newRow, "ObjectModel", form.getStringValue("Model"));
+        Data.setValue(VIEW_ITEMS, newRow, "ObjectCategory", form.getStringValue(ALS_SERVICE_CATEGORY_NAME));
 
         for (Entry<String, Editor> entry : criteriaEditors.entrySet()) {
 
