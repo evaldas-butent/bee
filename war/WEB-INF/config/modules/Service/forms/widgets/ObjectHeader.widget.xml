@@ -83,9 +83,13 @@
                         choiceColumns="ParentName Name" style="&finp;"/>
         </FlowPanel>
 
-        <FlowPanel style="&mfld; width: 20em;" for="Item">
+        <FlowPanel style="&mfld; width: 17em;" for="Item">
           <Label for="Item" style="&flbl;" />
           <DataSelector source="Item" viewName="Items" style="&finp;"/>
+        </FlowPanel>
+
+        <FlowPanel style="margin-left: 1em; margin-top: 2em;">
+          <FaLabel name="NewItem" class = "bee-Relations-newRel" char="plus_circle" title="=newItem"/>
         </FlowPanel>
       </FlowPanel>
 

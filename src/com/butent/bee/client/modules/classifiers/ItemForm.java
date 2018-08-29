@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.classifiers;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_CATEGORY;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_EXTERNAL_STOCK;
 
 import com.butent.bee.client.BeeKeeper;
@@ -44,6 +45,10 @@ class ItemForm extends AbstractFormInterceptor {
 
         if (gridHandler != null && gridHandler.getSelectedCategory() != null) {
           categories.add(gridHandler.getSelectedCategory().getId());
+        }
+
+        if (row.hasPropertyValue(COL_CATEGORY)) {
+          categories.add(row.getPropertyLong(COL_CATEGORY));
         }
 
         ((MultiSelector) categoryWidget).setIds(categories);
