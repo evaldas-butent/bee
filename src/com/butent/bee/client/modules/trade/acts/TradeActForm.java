@@ -10,7 +10,7 @@ import com.butent.bee.client.widget.InputTimeOfDay;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.*;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.shared.HasHandlers;
@@ -46,9 +46,6 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
@@ -546,6 +543,14 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       if (rentProject != null && DataUtils.isId(getCompany())) {
         rentProject.getOracle().setAdditionalFilter(Filter.equals(COL_TA_COMPANY, getCompany()), true);
       }
+
+      if(event.getSelector() == rentProject && event.getRelatedRow() != null && !DataUtils.isId(getContract())) {
+        IsRow rentProject = event.getRelatedRow();
+
+        Data.setValue(VIEW_TRADE_ACTS, getActiveRow(), COL_TA_CONTRACT,
+                Data.getLong(VIEW_TRADE_ACTS, rentProject, COL_TA_CONTRACT));
+        RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_CONTRACT, getActiveRow(), rentProject);
+      }
     }
   }
 
@@ -602,8 +607,16 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     return row.getLong(getDataIndex(COL_TA_COMPANY));
   }
 
+  private Long getContract() {
+    return getContract(getActiveRow());
+  }
+
   private Long getContact(IsRow row) {
     return row.getLong(getDataIndex(COL_CONTACT));
+  }
+
+  private Long getContract(IsRow row) {
+    return row.getLong(getDataIndex(COL_TA_CONTRACT));
   }
 
   private Boolean getContactPhysical(IsRow row) {

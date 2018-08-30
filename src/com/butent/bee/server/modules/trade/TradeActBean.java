@@ -597,8 +597,15 @@ public class TradeActBean implements HasTimerService {
       return ResponseObject.error("Aktas " + rentProject + "nėra nuomos proj.");
     }
 
+    SimpleRow rentProjectAct = qs.getRow(new SqlSelect()
+            .addFields(TBL_TRADE_ACTS, COL_TA_CONTRACT)
+            .addFrom(TBL_TRADE_ACTS)
+            .setWhere(sys.idEquals(TBL_TRADE_ACTS, rentProject)));
+
     SqlUpdate upd = new SqlUpdate(TBL_TRADE_ACTS)
             .addConstant(COL_TA_RENT_PROJECT, rentProject)
+            .addExpression(COL_TA_CONTRACT, SqlUtils.sqlIf(SqlUtils.isNull(TBL_TRADE_ACTS, COL_TA_CONTRACT),
+                    rentProjectAct.getLong(COL_TA_CONTRACT), SqlUtils.field(TBL_TRADE_ACTS, COL_TA_CONTRACT)))
             .setWhere(sys.idInList(TBL_TRADE_ACTS, acts));
 
     ResponseObject resp = qs.updateDataWithResponse(upd);

@@ -80,15 +80,20 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
 
       Collection<RowInfo> selectedItems = items.getSelectedRows(GridView.SelectedRows.ALL);
 
-      if (selectedItems.isEmpty()) {
-        return BeeConst.DOUBLE_UNDEF;
-      }
-
-      for (RowInfo selectedItem : selectedItems) {
-        IsRow row = items.getGrid().getRowById(selectedItem.getId());
-        Double amount = totalizer.getTotal(row);
-        if (BeeUtils.isDouble(amount)) {
-          total += amount;
+      if (!selectedItems.isEmpty()) {
+        for (RowInfo selectedItem : selectedItems) {
+          IsRow row = items.getGrid().getRowById(selectedItem.getId());
+          Double amount = totalizer.getTotal(row);
+          if (BeeUtils.isDouble(amount)) {
+            total += amount;
+          }
+        }
+      } else {
+        for (IsRow row : items.getRowData()) {
+          Double amount = totalizer.getTotal(row);
+          if (BeeUtils.isDouble(amount)) {
+            total += amount;
+          }
         }
       }
     }
@@ -453,15 +458,11 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
 
     GridView itemsGridView = getItemsGridView(gridView);
     Collection<RowInfo> selItems = itemsGridView.getSelectedRows(GridView.SelectedRows.ALL);
-
-    if (selItems.isEmpty()) {
-      gridView.notifyWarning(Data.getViewCaption(VIEW_TRADE_ACT_ITEMS), Localized.dictionary().selectAtLeastOneRow());
-      return;
-    }
-
     Collection<Long> idItems = new ArrayList<>();
 
-    selItems.forEach(item -> ((ArrayList<Long>) idItems).add(item.getId()));
+    if (! selItems.isEmpty()) {
+      selItems.forEach(item -> ( idItems).add(item.getId()));
+    }
 
     gridView.ensureRelId(relId -> {
       ParameterList prm = TradeActKeeper.createArgs(SVC_GET_ACT_ITEMS_RENTAL_AMOUNT);
@@ -476,7 +477,10 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
         }
 
         prm.addDataItem(COL_TRADE_ACT, relId);
-        prm.addDataItem(VAR_ID_LIST, DataUtils.buildIdList(idItems));
+
+        if (!BeeUtils.isEmpty(idItems)) {
+          prm.addDataItem(VAR_ID_LIST, DataUtils.buildIdList(idItems));
+        }
 
         BeeKeeper.getRpc().makePostRequest(prm, response -> {
           if (!response.hasResponse(Double.class)) {
