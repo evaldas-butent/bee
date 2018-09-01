@@ -20,6 +20,7 @@ public final class TradeActConstants {
   public static final String SVC_ALTER_ACT_KIND = "AlterActKind";
 
   public static final String SVC_GET_ACTS_FOR_INVOICE = "GetActsForInvoice";
+  @Deprecated
   public static final String SVC_GET_ACT_ITEMS_RENTAL_AMOUNT = "GetActItemsRentalAmount";
   public static final String SVC_GET_SERVICES_FOR_INVOICE = "GetServicesForInvoice";
   public static final String SVC_GET_NEXT_ACT_NUMBER = "GetNextActNumber";

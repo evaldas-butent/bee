@@ -5010,6 +5010,7 @@ public class TradeActBean implements HasTimerService {
     }
   }
 
+  @Deprecated
   private ResponseObject totalActItemsRentalPrice(RequestInfo req) {
     Long actId = req.getParameterLong(COL_TRADE_ACT);
     String table = req.hasParameter(Service.VAR_TABLE)
@@ -5023,6 +5024,7 @@ public class TradeActBean implements HasTimerService {
     return ResponseObject.response(totalActItemsRentalPrice(actId, table, colName, ids));
   }
 
+  @Deprecated
   private double totalActItemsRentalPrice(Long actId, String table, String colName, Collection<Long> ids) {
     double result = BeeConst.DOUBLE_ZERO;
 

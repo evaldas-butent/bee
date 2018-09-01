@@ -1,6 +1,6 @@
 package com.butent.bee.client.modules.trade.acts;
 
-import com.butent.bee.shared.Service;
+import com.butent.bee.shared.data.*;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.google.common.collect.Lists;
@@ -12,7 +12,6 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -28,11 +27,6 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsColumn;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
@@ -317,9 +311,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
             calculatePrice(row.getDouble(priceIndex), row.getDate(toIndex), total, tariff,
                 row.getDouble(quantity));
 
-        if (updatePrice(row.getId(), row.getVersion(), row.getString(priceIndex), price)) {
-          count++;
-        }
+        count++;
       } else if (row.getInteger(timeUnitIdx) != null && updateTariff) {
         double t = BeeUtils.unbox(row.getDouble(priceIndex)) * 100
             * BeeUtils.unbox(row.getDouble(quantity)) / total;
@@ -337,8 +329,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
         gridView.notifyInfo(Localized.dictionary().taRecalculatedPrices(count));
       }
     } else if (updateTariff) {
-      gridView.notifyWarning(Data.getColumnLabel(getViewName(), COL_TA_SERVICE_TARIFF),
-          Localized.dictionary().noData());
+      gridView.notifyWarning(Localized.dictionary().taTimeUnit(), Localized.dictionary().valueRequired());
     }
   }
 
@@ -458,57 +449,54 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
 
     GridView itemsGridView = getItemsGridView(gridView);
     Collection<RowInfo> selItems = itemsGridView.getSelectedRows(GridView.SelectedRows.ALL);
-    Collection<Long> idItems = new ArrayList<>();
+    double rentalAmount = 0D;
 
-    if (! selItems.isEmpty()) {
-      selItems.forEach(item -> ( idItems).add(item.getId()));
+    int qtyIndex = itemsGridView.getDataIndex(COL_TRADE_ITEM_QUANTITY);
+    QuantityReader quantityReader = new QuantityReader(qtyIndex);
+    RowToDouble amountReader = row -> {
+      double qty = BeeUtils.unbox(quantityReader.apply(row));
+      double rp = BeeUtils.unbox(row.getDouble(itemsGridView.getDataIndex(COL_ITEM_RENTAL_PRICE)));
+      Double irp = row.getDouble(itemsGridView.getDataIndex("ItemRentalPrice"));
+
+      return BeeUtils.isDouble(irp) ? qty * irp : qty * rp;
+    };
+
+    if (BeeUtils.isEmpty(selItems)) {
+      for (IsRow row : itemsGridView.getRowData()) {
+        Double amount = amountReader.apply(row);
+        if (BeeUtils.isDouble(amount)) {
+          rentalAmount += amount;
+        }
+      }
+    } else {
+      for (RowInfo selectedItem : selItems) {
+        IsRow row = itemsGridView.getGrid().getRowById(selectedItem.getId());
+        Double amount = amountReader.apply(row);
+        if (BeeUtils.isDouble(amount)) {
+          rentalAmount += amount;
+        }
+      }
     }
 
-    gridView.ensureRelId(relId -> {
-      ParameterList prm = TradeActKeeper.createArgs(SVC_GET_ACT_ITEMS_RENTAL_AMOUNT);
+    String viewName = gridView.getViewName();
 
+    IsRow row = gridView.getActiveRow();
 
-      Queries.getRow(VIEW_TRADE_ACTS, relId, parentActRow -> {
-        TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentActRow);
+    Double quantity = Data.getDouble(viewName, row, COL_TRADE_ITEM_QUANTITY);
 
-        if (TradeActKind.RENT_PROJECT.equals(kind)) {
-          prm.addDataItem(Service.VAR_TABLE, TBL_TRADE_ACTS);
-          prm.addDataItem(Service.VAR_COLUMN, COL_TA_RENT_PROJECT);
-        }
+    List<String> oldValues = Arrays.asList(
+        Data.getString(viewName, row, COL_TA_SERVICE_TARIFF),
+        Data.getString(viewName, row, COL_ITEM_PRICE), null);
 
-        prm.addDataItem(COL_TRADE_ACT, relId);
+    List<String> newValues = Arrays.asList(null, BeeUtils.toString(rentalAmount / quantity),
+        "1");
 
-        if (!BeeUtils.isEmpty(idItems)) {
-          prm.addDataItem(VAR_ID_LIST, DataUtils.buildIdList(idItems));
-        }
-
-        BeeKeeper.getRpc().makePostRequest(prm, response -> {
-          if (!response.hasResponse(Double.class)) {
-            return;
-          }
-
-          String viewName = gridView.getViewName();
-          double rentalAmount = BeeUtils.toDouble(response.getResponseAsString());
-          IsRow row = gridView.getActiveRow();
-
-          Double quantity = Data.getDouble(viewName, row, COL_TRADE_ITEM_QUANTITY);
-
-          List<String> oldValues = Arrays.asList(
-              Data.getString(viewName, row, COL_TA_SERVICE_TARIFF),
-              Data.getString(viewName, row, COL_ITEM_PRICE), null);
-
-          List<String> newValues = Arrays.asList(null, BeeUtils.toString(rentalAmount / quantity),
-              "1");
-
-          Queries.update(getViewName(), row.getId(), row.getVersion(),
-              Data.getColumns(VIEW_TRADE_ACT_SERVICES,
-                  Arrays.asList(COL_TA_SERVICE_TARIFF, COL_ITEM_PRICE,
-                      COL_IS_ITEM_RENTAL_PRICE)), oldValues, newValues, null, result -> {
-                RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
-              });
+    Queries.update(getViewName(), row.getId(), row.getVersion(),
+        Data.getColumns(VIEW_TRADE_ACT_SERVICES,
+            Arrays.asList(COL_TA_SERVICE_TARIFF, COL_ITEM_PRICE,
+                COL_IS_ITEM_RENTAL_PRICE)), oldValues, newValues, null, result -> {
+          RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
         });
-      });
-    });
   }
 
   private Double calculatePrice(Double defPrice, JustDate dateTo, Double itemTotal, Double

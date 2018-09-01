@@ -67,7 +67,7 @@
 
     <CalcColumn name="RentalPrice" visible="true" scale="2" type="double" caption="=rentalSum" >
       <render>
-        <ui:expression>row.ItemRentalPrice ? row.Quantity * row.ItemRentalPrice : row.Quantity * row.RentalPrice</ui:expression>
+        <ui:expression>row.ItemRentalPrice ? &qty; * row.ItemRentalPrice : &qty; * row.RentalPrice</ui:expression>
       </render>
       <footer aggregate="sum" scale="2" format="0.00"/>
     </CalcColumn>
