@@ -222,6 +222,16 @@
           <RichTextEditor source="Notes" class="flexible" summarize="true" disablable="false"/>
         </FlowPanel>
       </page>
+      <page for="CompActionList" module="Calendar">
+        <text>=calAppointments</text>
+        <ChildGrid name="CompActionList" relColumn="TradeAct" paging="true" />
+      </page>
+      <page>
+        <text>=relatedInformation</text>
+        <Relations relColumn="TradeAct" inline="true" summarize="true"
+                   defaultRelations="Messages Tasks TradeActs"
+                   style="margin: 0px 15px 0px 15px; min-width:300px;" />
+      </page>
     </TabbedPages>
   </FlowPanel>
   <f:rowEditable>

@@ -1,17 +1,5 @@
 package com.butent.bee.client.modules.trade.acts;
 
-import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.layout.TabbedPages;
-import com.butent.bee.client.view.ViewHelper;
-import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.InputTimeOfDay;
-import com.butent.bee.client.widget.Label;
-import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.Service;
-import com.butent.bee.shared.data.*;
-import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
@@ -19,11 +7,12 @@ import com.google.gwt.xml.client.Element;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_BACKGROUND;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_FINANCIAL_STATE;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_CONTACT;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
@@ -32,6 +21,9 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.TabbedPages;
+import com.butent.bee.client.modules.calendar.RelatedAppointmentsGrid;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
@@ -39,34 +31,53 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.InputTimeOfDay;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
+import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation.Caching;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.client.Global;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.trade.TradeConstants;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.Handler,
     HandlesUpdateEvents {
@@ -113,11 +124,11 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
 
-    if (widget instanceof DataSelector && editableWidget.getColumnId() !=null) {
+    if (widget instanceof DataSelector && editableWidget.getColumnId() != null) {
       switch (editableWidget.getColumnId()) {
         case COL_TA_COMPANY:
           editableWidget.getRelation().setCaching(Caching.NONE);
-          ((DataSelector)  widget).addSelectorHandler(this::showCompanyFinancialState);
+          ((DataSelector) widget).addSelectorHandler(this::showCompanyFinancialState);
           break;
         case COL_TRADE_SERIES:
           ((DataSelector) widget).addSelectorHandler(this);
@@ -135,7 +146,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
-    if (widget instanceof  DataSelector && name != null) {
+    if (widget instanceof DataSelector && name != null) {
       switch (name) {
         case WIDGET_TA_CONTRACT:
           contractSelector = (DataSelector) widget;
@@ -153,7 +164,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     }
 
     if (widget instanceof ChildGrid && name != null) {
-      switch (name){
+      switch (name) {
         case GRID_TRADE_ACT_ITEMS:
           tradeActItemsGrid = (ChildGrid) widget;
           break;
@@ -172,35 +183,40 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
               HeaderView formHeader = getFormHeader(gridView);
 
-              if (formHeader != null && isSaleTradeAct(parentRow) && BeeKeeper.getUser().canCreateData(
-                      VIEW_SALES) && !TradeActKeeper.isClientArea() && !hasContinuousAct(parentRow)) {
+              if (formHeader != null && isSaleTradeAct(parentRow)
+                  && BeeKeeper.getUser().canCreateData(VIEW_SALES)
+                  && !TradeActKeeper.isClientArea() && !hasContinuousAct(parentRow)) {
 
-                  gridView.getViewPresenter().getHeader().addCommandItem(commandSale);
+                gridView.getViewPresenter().getHeader().addCommandItem(commandSale);
               }
 
               if (commandImportItems != null) {
                 commandImportItems.setVisible(TradeActKeeper.isEnabledItemsGrid(getKind(parentRow),
-                        ViewHelper.getForm(gridView), parentRow));
+                    ViewHelper.getForm(gridView), parentRow));
               }
             }
           });
-        case GRID_TRADE_ACTS :
+        case GRID_TRADE_ACTS:
           tradeActsGrid = (ChildGrid) widget;
           break;
-        case "RPTradeActs" :
+        case "RPTradeActs":
           rpTradeActsGrid = (ChildGrid) widget;
           rpTradeActsGrid.setGridInterceptor(new TradeActGrid(null));
           break;
-        case "RelTradeActServices" :
+        case "RelTradeActServices":
           relTradeActServices = (ChildGrid) widget;
           relTradeActServices.setGridInterceptor(new TradeActServicesGrid());
+          break;
+        case "CompActionList":
+          ((ChildGrid) widget).setGridInterceptor(new RelatedAppointmentsGrid(COL_TRADE_ACT));
+          break;
       }
     }
 
     if (widget instanceof TabbedPages && name == "TabbedPages") {
       tabbedPages = (TabbedPages) widget;
     }
-    if (widget instanceof FaLabel && Objects.equals(name,"InputTime")) {
+    if (widget instanceof FaLabel && Objects.equals(name, "InputTime")) {
       ((FaLabel) widget).addClickHandler(clickEvent -> {
         DateTime current = getDateTimeValue(COL_TA_DATE);
 
@@ -233,7 +249,8 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
     if (companySelector != null) {
       if (DataUtils.isId(getRentProjectCompany(row))) {
-        companySelector.getOracle().setAdditionalFilter(Filter.idIn(Arrays.asList(getRentProjectCompany(row))), true);
+        companySelector.getOracle()
+            .setAdditionalFilter(Filter.idIn(Arrays.asList(getRentProjectCompany(row))), true);
       } else {
         companySelector.getOracle().setAdditionalFilter(Filter.isTrue(), true);
       }
@@ -245,7 +262,8 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     header.clearCommandPanel();
 
     if (!DataUtils.isNewRow(row)) {
-      commandCompose = new Button(Localized.dictionary().taInvoiceCompose(), e-> onCommandComposeClick(row));
+      commandCompose =
+          new Button(Localized.dictionary().taInvoiceCompose(), e -> onCommandComposeClick(row));
 
       if (!isReturnAct(row) && !isRelatedWithContinuousAct(row) && !TradeActKeeper.isClientArea()) {
         header.addCommandItem(commandCompose);
@@ -279,8 +297,10 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     switch (action) {
       case SAVE:
         if (DataUtils.isId(getSeries()) && !BeeUtils.isEmpty(getSeriesName())) {
-          BeeKeeper.getStorage().set(TradeActKeeper.getStorageKey(COL_SERIES), BeeUtils.toString(getSeries()));
-          BeeKeeper.getStorage().set(TradeActKeeper.getStorageKey(COL_SERIES_NAME), getSeriesName());
+          BeeKeeper.getStorage()
+              .set(TradeActKeeper.getStorageKey(COL_SERIES), BeeUtils.toString(getSeries()));
+          BeeKeeper.getStorage()
+              .set(TradeActKeeper.getStorageKey(COL_SERIES_NAME), getSeriesName());
         }
 
         return validateBeforeSave(getFormView(), getActiveRow(), true);
@@ -304,7 +324,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     }
 
     if (TradeActKeeper.isClientArea() && description.hasAttribute("disablable")) {
-     description.setAttribute("disablable", "true");
+      description.setAttribute("disablable", "true");
     }
 
     return super.beforeCreateWidget(name, description);
@@ -360,8 +380,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     }
 
     if (event.hasView(ClassifierConstants.VIEW_COMPANIES)
-        && event.getRowId() == BeeUtils.unbox(form
-            .getLongValue(COL_TA_COMPANY))) {
+        && event.getRowId() == BeeUtils.unbox(form.getLongValue(COL_TA_COMPANY))) {
 
       String[][] cols = new String[][] {
           {ClassifierConstants.ALS_COMPANY_NAME, ClassifierConstants.COL_COMPANY_NAME},
@@ -409,34 +428,33 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     }
 
     if (form != null && !row.hasPropertyValue(PRP_MULTI_RETURN_DATA)
-            && DataUtils.isId(row.getLong(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_RENT_PROJECT)))) {
+        && DataUtils.isId(row.getLong(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_RENT_PROJECT)))) {
       DataInfo dataInfo = Data.getDataInfo(VIEW_TRADE_ACTS);
       Queries.getRowSet(VIEW_TRADE_ACTS, dataInfo.getColumnNames(false),
-              Filter.and(Filter.equals(COL_TA_RENT_PROJECT, row.getLong(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_RENT_PROJECT))),
-                      Filter.or(Filter.equals(COL_TA_KIND, TradeActKind.SALE),
-                              Filter.equals(COL_TA_KIND, TradeActKind.SUPPLEMENT))),
+          Filter.and(Filter.equals(COL_TA_RENT_PROJECT,
+              row.getLong(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_RENT_PROJECT))),
+              Filter.or(Filter.equals(COL_TA_KIND, TradeActKind.SALE),
+                  Filter.equals(COL_TA_KIND, TradeActKind.SUPPLEMENT))),
+          result -> {
+            List<IsRow> rows = new ArrayList<>(result.getRows());
+            ParameterList params = TradeActKeeper.createArgs(SVC_GET_ITEMS_FOR_MULTI_RETURN);
+            params.addQueryItem(Service.VAR_LIST, DataUtils.buildIdList(DataUtils.getRowIds(rows)));
+            params.addQueryItem("DEBUG", "[TradeActFrom][onStartEdit]");
 
-              result -> {
+            BeeKeeper.getRpc().makePostRequest(params, response -> {
+              if (response.hasResponse(BeeRowSet.class)) {
+                BeeRowSet parentItems = BeeRowSet.restore(response.getResponseAsString());
 
-                List<IsRow> rows = new ArrayList<>(result.getRows());
-                ParameterList params = TradeActKeeper.createArgs(SVC_GET_ITEMS_FOR_MULTI_RETURN);
-                params.addQueryItem(Service.VAR_LIST, DataUtils.buildIdList(DataUtils.getRowIds(rows)));
-                params.addQueryItem("DEBUG", "[TradeActFrom][onStartEdit]");
+                BeeRowSet parentActs = Data.createRowSet(VIEW_TRADE_ACTS);
+                for (IsRow parent : rows) {
+                  parentActs.addRow(DataUtils.cloneRow(parent));
+                }
 
-                BeeKeeper.getRpc().makePostRequest(params, response -> {
-                  if (response.hasResponse(BeeRowSet.class)) {
-                    BeeRowSet parentItems = BeeRowSet.restore(response.getResponseAsString());
-
-                    BeeRowSet parentActs = Data.createRowSet(VIEW_TRADE_ACTS);
-                    for (IsRow parent : rows) {
-                      parentActs.addRow(DataUtils.cloneRow(parent));
-                    }
-
-                    row.setProperty(PRP_MULTI_RETURN_DATA, Codec.beeSerialize(Pair.of(parentActs,
-                            parentItems)));
-                  }
-                });
-              });
+                row.setProperty(PRP_MULTI_RETURN_DATA, Codec.beeSerialize(Pair.of(parentActs,
+                    parentItems)));
+              }
+            });
+          });
     }
 
     return super.onStartEdit(form, row, focusCommand);
@@ -473,7 +491,8 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         Long continuousActId = getFormView().getLongValue(COL_TA_CONTINUOUS);
 
         if (objectSelector != null && DataUtils.isId(getCompany())) {
-          objectSelector.getOracle().setAdditionalFilter(Filter.equals(COL_TA_COMPANY, getCompany()), true);
+          objectSelector.getOracle()
+              .setAdditionalFilter(Filter.equals(COL_TA_COMPANY, getCompany()), true);
         }
 
         if (DataUtils.isId(parentId) || BeeUtils.isPositive(parentsCount)
@@ -541,15 +560,19 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
     if (BeeUtils.same(event.getRelatedViewName(), VIEW_TRADE_ACTS)) {
       if (rentProject != null && DataUtils.isId(getCompany())) {
-        rentProject.getOracle().setAdditionalFilter(Filter.equals(COL_TA_COMPANY, getCompany()), true);
+        rentProject.getOracle()
+            .setAdditionalFilter(Filter.equals(COL_TA_COMPANY, getCompany()), true);
       }
 
-      if(event.getSelector() == rentProject && event.getRelatedRow() != null && !DataUtils.isId(getContract())) {
+      if (event.getSelector() == rentProject && event.getRelatedRow() != null && !DataUtils
+          .isId(getContract())) {
         IsRow rentProject = event.getRelatedRow();
 
         Data.setValue(VIEW_TRADE_ACTS, getActiveRow(), COL_TA_CONTRACT,
-                Data.getLong(VIEW_TRADE_ACTS, rentProject, COL_TA_CONTRACT));
-        RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_CONTRACT, getActiveRow(), rentProject);
+            Data.getLong(VIEW_TRADE_ACTS, rentProject, COL_TA_CONTRACT));
+        RelationUtils
+            .setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_CONTRACT, getActiveRow(),
+                rentProject);
       }
     }
   }
@@ -564,21 +587,22 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   boolean validateBeforeSave(FormView form, IsRow row, boolean beforeSave) {
     boolean valid;
 
-    valid = !(isNewRow(row) && isReturnAct(row) && !TradeActUtils.getMultiReturnData(row).isNull() && beforeSave);
+    valid = !(isNewRow(row) && isReturnAct(row) && !TradeActUtils.getMultiReturnData(row).isNull()
+        && beforeSave);
 
     if (!valid) {
       form.notifySevere(Localized.dictionary().allValuesEmpty(Localized.dictionary()
-              .list(), Localized.dictionary().tradeActItems()));
+          .list(), Localized.dictionary().tradeActItems()));
       return false;
     }
 
-    if (DataUtils.isId(getCompany(row))  && !isReturnAct(row)) {
+    if (DataUtils.isId(getCompany(row)) && !isReturnAct(row)) {
       valid = BeeUtils.unbox(getContactPhysical(row)) || DataUtils.isId(getContact(row));
     }
 
     if (!valid) {
       form.notifySevere(Localized.dictionary().contact() + " "
-              + Localized.dictionary().valueRequired());
+          + Localized.dictionary().valueRequired());
       return false;
     }
 
@@ -586,7 +610,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
     if (!valid) {
       form.notifySevere(Localized.dictionary().taRegistrationNo() + " "
-                + Localized.dictionary().valueRequired());
+          + Localized.dictionary().valueRequired());
       return false;
     }
 
@@ -630,7 +654,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   private HeaderView getHeaderView(FormView formView) {
 
     if (headerView == null) {
-     headerView = formView.getViewPresenter().getHeader();
+      headerView = formView.getViewPresenter().getHeader();
     }
 
     return headerView;
@@ -677,7 +701,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
     int index = tabbedPages.getTabIndexByDataKey(key);
 
-    if (BeeUtils.clamp(index , 0, tabbedPages.getPageCount() - 1) != index) {
+    if (BeeUtils.clamp(index, 0, tabbedPages.getPageCount() - 1) != index) {
       return null;
     }
 
@@ -700,7 +724,6 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     boolean valid;
     Widget labelName = form.getWidgetByName("label" + COL_TA_NAME);
 
-
     if (row == null) {
       return false;
     }
@@ -714,18 +737,19 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       return false;
     }
 
-    String[] fields =  getKind(row) != null ? getKind(row).getReqFields() : new String [] {};
+    String[] fields = getKind(row) != null ? getKind(row).getReqFields() : new String[] {};
 
     for (String field : fields) {
-        String value = row.getString(getDataIndex(field));
-        Widget w = form.getWidgetByName("label" + field);
+      String value = row.getString(getDataIndex(field));
+      Widget w = form.getWidgetByName("label" + field);
 
-        valid = !BeeUtils.isEmpty(value) || (mayDefaults && StyleUtils.hasClassName(w.getElement(), clsHasDefaults));
+      valid = !BeeUtils.isEmpty(value) || (mayDefaults && StyleUtils
+          .hasClassName(w.getElement(), clsHasDefaults));
 
-        if (!valid) {
-          form.notifySevere(getColumnLabel(field) + " " + Localized.dictionary().valueRequired());
-          return false;
-        }
+      if (!valid) {
+        form.notifySevere(getColumnLabel(field) + " " + Localized.dictionary().valueRequired());
+        return false;
+      }
     }
 
     return true;
@@ -747,7 +771,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       return;
     }
 
-    String[] fields = getKind(row) != null ? getKind(row).getReqFields() : new String [] {};
+    String[] fields = getKind(row) != null ? getKind(row).getReqFields() : new String[] {};
 
     for (String field : fields) {
       wid = form.getWidgetByName("label" + field, true);
@@ -829,7 +853,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     rpTradeActItemsGrid.setEnabled(false);
     interceptor = rpTradeActItemsGrid.getGridInterceptor();
 
-    if(interceptor instanceof TradeActItemsGrid) {
+    if (interceptor instanceof TradeActItemsGrid) {
       ((TradeActItemsGrid) interceptor).getCustomUIBuilder().setParentRow(row);
     }
   }
@@ -845,7 +869,8 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
           (getKind(row) == null) ? null : getKind(row).getCaption());
 
     } else {
-      caption = (getKind(row) == null) ? Localized.dictionary().tradeAct() : getKind(row).getCaption();
+      caption =
+          (getKind(row) == null) ? Localized.dictionary().tradeAct() : getKind(row).getCaption();
     }
 
     if (form.getViewPresenter() != null && form.getViewPresenter().getHeader() != null) {
@@ -907,10 +932,10 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
           return;
         }
         Map<String, String> result = Codec.deserializeLinkedHashMap(
-                response.getResponseAsString());
+            response.getResponseAsString());
 
         double limit = BeeUtils.toDouble(
-                result.get(ClassifierConstants.COL_COMPANY_CREDIT_LIMIT));
+            result.get(ClassifierConstants.COL_COMPANY_CREDIT_LIMIT));
         double debt = BeeUtils.toDouble(result.get(TradeConstants.VAR_DEBT));
         double overdue = BeeUtils.toDouble(result.get(TradeConstants.VAR_OVERDUE));
         double untolerated = BeeUtils.toDouble(result.get(TradeConstants.VAR_UNTOLERATED));
@@ -926,7 +951,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         table.setText(0, 0, Localized.dictionary().financialState() + ":");
         table.setText(1, 0, Localized.dictionary().creditLimit() + ":");
         table.setText(1, 1, BeeUtils.joinWords(limit,
-                result.get(AdministrationConstants.COL_CURRENCY)));
+            result.get(AdministrationConstants.COL_CURRENCY)));
         table.setText(2, 0, Localized.dictionary().trdDebt() + ":");
         table.setText(2, 1, String.valueOf(debt));
         table.setText(3, 0, Localized.dictionary().trdOverdue() + ":");
@@ -939,7 +964,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         table.setText(5, 1, oldestDate);
 
         String cap = BeeUtils.joinWords(result.get(ClassifierConstants.COL_COMPANY_NAME),
-                result.get(ClassifierConstants.COL_COMPANY_TYPE));
+            result.get(ClassifierConstants.COL_COMPANY_TYPE));
 
         Global.showModalWidget(cap, table).hideOnEscape();
       });

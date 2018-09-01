@@ -27,8 +27,7 @@ import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.client.modules.calendar.Appointment;
-import com.butent.bee.client.modules.calendar.CalendarKeeper;
+import com.butent.bee.client.modules.calendar.RelatedAppointmentsGrid;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -39,7 +38,6 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
@@ -61,7 +59,6 @@ import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
@@ -72,7 +69,6 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.RegulatedWidget;
-import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.WindowType;
@@ -199,34 +195,7 @@ public class CompanyForm extends AbstractFormInterceptor {
 
       });
     } else if (widget instanceof ChildGrid && Objects.equals(name, "CompActionList")) {
-      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
-        @Override
-        public void onEditStart(EditStartEvent event) {
-          event.consume();
-          CalendarKeeper.openAppointment(Appointment.create(event.getRowValue()), null, null, null);
-        }
-
-        @Override
-        public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
-          FormView form = CompanyForm.this.getFormView();
-
-          CalendarKeeper.ensureData(new Command() {
-            @Override
-            public void execute() {
-              CalendarKeeper.createAppointment(null, new DateTime(), null, null, beeRow -> {
-                DataInfo sourceInfo = Data.getDataInfo(form.getViewName());
-                DataInfo targetInfo = Data.getDataInfo(gridView.getViewName());
-
-                RelationUtils.updateRow(targetInfo, COL_COMPANY, beeRow, sourceInfo,
-                    form.getActiveRow(), true);
-
-              }, result -> Data.refreshLocal(gridView.getViewName()));
-            }
-          });
-
-          return false;
-        }
-      });
+      ((ChildGrid) widget).setGridInterceptor(new RelatedAppointmentsGrid(COL_COMPANY));
 
     } else if (BeeUtils.same(name, TBL_COMPANY_PERSONS) && widget instanceof ChildGrid) {
       ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
