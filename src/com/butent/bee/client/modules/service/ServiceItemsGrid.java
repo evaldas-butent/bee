@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.service;
 
+import com.butent.bee.client.view.form.FormView;
 import com.google.common.collect.ImmutableMap;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_COMPANY;
@@ -63,8 +64,15 @@ public class ServiceItemsGrid extends OrderItemsGrid {
 
   @Override
   public Map<String, String> getAdditionalColumns() {
+    FormView parentForm = ViewHelper.getForm(getGridView());
+
+    Long repairer = BeeKeeper.getUser().getUserData().getCompanyPerson();
+    if (parentForm != null && DataUtils.isId(parentForm.getLongValue(COL_REPAIRER))) {
+      repairer = Data.getLong("ServiceMaintenance", parentForm.getActiveRow(),
+        "RepairerCompanyPerson");
+    }
     return ImmutableMap.of(COL_SERVICE_OBJECT, BeeConst.STRING_EMPTY,
-        COL_REPAIRER, BeeUtils.toString(BeeKeeper.getUser().getUserData().getCompanyPerson()));
+        COL_REPAIRER, BeeUtils.toString(repairer));
   }
 
   @Override

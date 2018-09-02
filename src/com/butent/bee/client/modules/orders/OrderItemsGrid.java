@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.orders;
 
+import com.butent.bee.shared.utils.EnumUtils;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
@@ -674,13 +675,16 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
     Integer trOperationVat = Data.containsColumn(getParentViewName(), COL_TRADE_VAT_PERC)
         ? parentRow.getInteger(Data.getColumnIndex(getParentViewName(), COL_TRADE_VAT_PERC))
         : null;
-    TradeVatMode vatMode = Data.containsColumn(getParentViewName(), COL_OPERATION_VAT_MODE)
-        ? Data.getEnum(getParentViewName(), parentRow, COL_OPERATION_VAT_MODE, TradeVatMode.class)
-        : null;
 
     for (BeeRow item : items) {
       Double qty = BeeUtils.toDouble(item.getProperty(PRP_QUANTITY));
       Double freeRem = BeeUtils.toDouble(item.getProperty(PRP_FREE_REMAINDER));
+
+      String ip = item.getProperty(PRP_ITEM_PRICE);
+      if (BeeUtils.isDigit(ip)) {
+        ItemPrice itemPrice = EnumUtils.getEnumByIndex(ItemPrice.class, ip);
+        priceNames.put(item.getId(), itemPrice);
+      }
 
       if (BeeUtils.isDouble(qty)) {
         final BeeRow row = DataUtils.createEmptyRow(rowSet.getNumberOfColumns());
@@ -717,10 +721,7 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
 
           row.setValue(vatIdx, vat);
           row.setValue(vatPrcIndex, true);
-
-          if (vatMode != null && Objects.equals(TradeVatMode.PLUS, vatMode)) {
-            row.setValue(vatPlusIdx, true);
-          }
+          row.setValue(vatPlusIdx, true);
         }
         setAdditionalColumnsValues(rowSet, row, parentRow);
         rowSet.addRow(row);

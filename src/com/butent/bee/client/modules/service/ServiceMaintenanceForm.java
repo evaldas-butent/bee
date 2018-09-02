@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.service;
 
+import com.butent.bee.shared.ui.UiConstants;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.shared.HasHandlers;
@@ -118,6 +119,10 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         CellValidation cv = event.getCellValidation();
         final String newValue = cv.getNewValue();
         String oldValue = cv.getOldValue();
+
+        setStorageWarehouseKey(BeeUtils.toLong(newValue));
+        setStorageWarehouseNameKey(Data.getString("ServiceMaintenance", getActiveRow(),
+          "WarehouseName"));
 
         if (!Objects.equals(newValue, oldValue) && oldValue != null
             && DataUtils.hasId(getActiveRow())) {
@@ -715,6 +720,18 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     form.addStyleName(STYLE_PROGRESS_CONTAINER);
     form.addStyleName(STYLE_PROGRESS_BAR);
 
+    String key = getStorageWarehouseKey();
+    if (BeeKeeper.getStorage().hasItem(key)) {
+      Long warehouse = BeeKeeper.getStorage().getLong(key);
+      Data.setValue("ServiceMaintenance", row, COL_WAREHOUSE, warehouse);
+    }
+
+    key = getStorageWarehouseNameKey();
+    if (BeeKeeper.getStorage().hasItem(key)) {
+      String warehouseName = BeeKeeper.getStorage().get(key);
+      Data.setValue("ServiceMaintenance", row, "WarehouseName", warehouseName);
+    }
+
     ParameterList params = ServiceKeeper.createArgs(SVC_GET_MAINTENANCE_NEW_ROW_VALUES);
     BeeKeeper.getRpc().makePostRequest(params, response -> {
       if (!response.isEmpty() && !response.hasErrors()) {
@@ -861,6 +878,24 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         createStateChangeComment(row, null);
       }
     });
+  }
+
+  private static String getStorageWarehouseKey() {
+    return BeeUtils.join(BeeConst.STRING_MINUS, "UserWarehouse",
+      BeeKeeper.getUser().getUserId(), UiConstants.ATTR_VALUE);
+  }
+
+  private static String getStorageWarehouseNameKey() {
+    return BeeUtils.join(BeeConst.STRING_MINUS, "UserWarehouseName",
+      BeeKeeper.getUser().getUserId(), UiConstants.ATTR_VALUE);
+  }
+
+  private void setStorageWarehouseKey(Long warehouse) {
+    BeeKeeper.getStorage().set(getStorageWarehouseKey(), warehouse);
+  }
+
+  private void setStorageWarehouseNameKey(String name) {
+    BeeKeeper.getStorage().set(getStorageWarehouseNameKey(), name);
   }
 
   private boolean isValidData(FormView form, IsRow row) {
