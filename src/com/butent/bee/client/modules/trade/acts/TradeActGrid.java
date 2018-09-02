@@ -249,7 +249,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
       gridView.notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
-    Queries.getRowSet(getViewName(), null, Filter.and(Filter.idIn(ids),
+    Queries.getRowSet(getViewName(), null, Filter.and(
+        Filter.or(Filter.idIn(ids), Filter.any(COL_TA_RENT_PROJECT, ids)),
         Filter.notEquals(COL_TA_KIND, TradeActKind.RETURN), Filter.isNull(COL_TA_CONTINUOUS),
         Filter.notNull(COL_TA_COMPANY)), result -> {
       if (DataUtils.isEmpty(result)) {
@@ -1022,7 +1023,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
                   Data.getDataInfo(VIEW_TRADE_ACTS), parent, true);
             } else {
               newRow.setValue(i, parent.getValue(i));
-              RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), colId, newRow, parent);
+              RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), colId, newRow,
+                  parent);
             }
 
             break;
