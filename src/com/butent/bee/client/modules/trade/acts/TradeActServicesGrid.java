@@ -280,6 +280,11 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
       return;
     }
 
+    if (gridView.getActiveRow() == null) {
+      gridView.notifyWarning(Data.getViewCaption(VIEW_TRADE_ACT_SERVICES), Localized.dictionary().selectAtLeastOneRow());
+      return;
+    }
+
     double total = getItemTotal(gridView);
 
     if (!BeeUtils.isPositive(total)) {
@@ -294,6 +299,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     int quantity = getDataIndex(COL_TRADE_ITEM_QUANTITY);
 
     int count = 0;
+
 
     for (IsRow row : gridView.getRowData()) {
       if (gridView.getActiveRowId() != row.getId()) {
@@ -310,7 +316,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
         Double price =
             calculatePrice(row.getDouble(priceIndex), row.getDate(toIndex), total, tariff,
                 row.getDouble(quantity));
-
+        updatePrice(row.getId(), row.getVersion(), row.getString(priceIndex), price);
         count++;
       } else if (row.getInteger(timeUnitIdx) != null && updateTariff) {
         double t = BeeUtils.unbox(row.getDouble(priceIndex)) * 100

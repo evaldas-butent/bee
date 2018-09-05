@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.trade;
 
+import com.butent.bee.shared.data.value.TimeOfDayValue;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -194,10 +195,6 @@ public class TradeActBean implements HasTimerService {
         response = getServicesForInvoice(reqInfo);
         break;
 
-      case SVC_GET_ACT_ITEMS_RENTAL_AMOUNT:
-        response = totalActItemsRentalPrice(reqInfo);
-        break;
-
       case SVC_CREATE_ACT_INVOICE:
         response = createInvoice(reqInfo);
         break;
@@ -261,7 +258,8 @@ public class TradeActBean implements HasTimerService {
             COL_OPERATION_NAME),
         BeeParameter.createText(module, PRM_SYNC_ERP_DATA),
         BeeParameter.createNumber(module, PRM_SYNC_ERP_STOCK),
-        BeeParameter.createText(module, PRM_INVOICE_MAIL_SIGNATURE)
+        BeeParameter.createText(module, PRM_INVOICE_MAIL_SIGNATURE),
+        BeeParameter.createTimeOfDay(module, PRM_TRADE_SERVICE_TRANSITION_TIME, false, new TimeOfDayValue(14).getLong())
         );
   }
 
@@ -660,7 +658,7 @@ public class TradeActBean implements HasTimerService {
     return response;
   }
 
-  private ResponseObject createContinuousAct(BeeRowSet parentActs, long fifoId, JustDate now) {
+  private ResponseObject createContinuousAct(BeeRowSet parentActs, long fifoId, DateTime actDate) {
     if (parentActs.isEmpty()) {
       return ResponseObject.emptyResponse();
     }
@@ -698,7 +696,7 @@ public class TradeActBean implements HasTimerService {
         .addConstant(COL_TA_KIND, TradeActKind.CONTINUOUS.ordinal())
         .addConstant(COL_TA_NUMBER, number + " T-" + getNextChildActNumber(TradeActKind
             .CONTINUOUS, series, parentIds.get(0), COL_TA_NUMBER))
-        .addConstant(COL_TA_DATE, now)
+        .addConstant(COL_TA_DATE, actDate)
         .addConstant(COL_TA_MANAGER, usr.getCurrentUserId())
         .addConstant(COL_TA_NOTES, BeeUtils.joinItems(Lists.newArrayList(qs.getColumn(
             actNumbersQuery))));
@@ -759,7 +757,7 @@ public class TradeActBean implements HasTimerService {
     );
 
     if (!DataUtils.isEmpty(services)) {
-      response = createServices(continuousActId, services, now);
+      response = createServices(continuousActId, services, actDate);
     }
 
     if (response.hasErrors()) {
@@ -1077,7 +1075,7 @@ public class TradeActBean implements HasTimerService {
     return ResponseObject.emptyResponse();
   }
 
-  private ResponseObject createServices(Long continuousId, BeeRowSet services, JustDate svcTimes) {
+  private ResponseObject createServices(Long continuousId, BeeRowSet services, DateTime svcTimes) {
     List<BeeColumn> colData = new ArrayList<>();
     int idxSvcActs = services.getColumnIndex(COL_TRADE_ACT);
 
@@ -2093,10 +2091,20 @@ public class TradeActBean implements HasTimerService {
       }
     }
 
-    JustDate date = TimeUtils.nextDay(qs.getDateTime(new SqlSelect()
+    DateTime date = qs.getDateTime(new SqlSelect()
         .addFields(TBL_TRADE_ACTS, COL_TA_DATE)
         .addFrom(TBL_TRADE_ACTS)
-        .setWhere(sys.idEquals(TBL_TRADE_ACTS, actId))));
+        .setWhere(sys.idEquals(TBL_TRADE_ACTS, actId)));
+
+    if (prm.hasParameter(PRM_TRADE_SERVICE_TRANSITION_TIME)) {
+        TimeOfDayValue transitionTime = new TimeOfDayValue(
+                TimeUtils.renderTime(prm.getTime(PRM_TRADE_SERVICE_TRANSITION_TIME), true));
+        TimeOfDayValue actTime = new TimeOfDayValue(date);
+
+        if (actTime.compareTo(transitionTime) > 0) {
+            date = TimeUtils.nextDay(date).getDateTime();
+        }
+    }
 
     for (BeeRow parentAct : parentActs) {
       long parentId = parentAct.getId();
@@ -5010,62 +5018,6 @@ public class TradeActBean implements HasTimerService {
     }
   }
 
-  @Deprecated
-  private ResponseObject totalActItemsRentalPrice(RequestInfo req) {
-    Long actId = req.getParameterLong(COL_TRADE_ACT);
-    String table = req.hasParameter(Service.VAR_TABLE)
-            ? req.getParameter(Service.VAR_TABLE) : TBL_TRADE_ACT_ITEMS;
-    String colName = req.hasParameter(Service.VAR_COLUMN)
-            ? req.getParameter(Service.VAR_COLUMN) : COL_TRADE_ACT;
-
-    Collection<Long> ids = req.hasParameter(VAR_ID_LIST)
-            ? DataUtils.parseIdSet(req.getParameter(VAR_ID_LIST)) : new ArrayList<>();
-
-    return ResponseObject.response(totalActItemsRentalPrice(actId, table, colName, ids));
-  }
-
-  @Deprecated
-  private double totalActItemsRentalPrice(Long actId, String table, String colName, Collection<Long> ids) {
-    double result = BeeConst.DOUBLE_ZERO;
-
-    if (!DataUtils.isId(actId)) {
-      return result;
-    }
-
-    HasConditions condition = SqlUtils.and();
-
-    SqlSelect query = new SqlSelect();
-
-    if (COL_TA_RENT_PROJECT.equals(colName)) {
-      condition.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.SALE, TradeActKind.SUPPLEMENT));
-    }
-
-    if (!BeeUtils.isEmpty(ids)) {
-      condition.add(sys.idInList(TBL_TRADE_ACT_ITEMS, ids));
-    }
-
-    condition.add(SqlUtils.positive(TBL_ITEMS, COL_ITEM_RENTAL_PRICE),
-            SqlUtils.positive(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY),
-            SqlUtils.equals(table, colName, actId));
-
-    query.addFrom(TBL_TRADE_ACT_ITEMS)
-        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_ITEMS, COL_ITEM))
-        .addFromInner(TBL_TRADE_ACTS, sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS,
-            COL_TRADE_ACT))
-        .setWhere(condition);
-
-    query.addSum(ExchangeUtils.exchangeField(query,
-        SqlUtils.multiply(SqlUtils.field(TBL_ITEMS, COL_ITEM_RENTAL_PRICE),
-            SqlUtils.field(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY)),
-        SqlUtils.field(TBL_ITEMS, COL_ITEM_RENTAL_PRICE_CURRENCY),
-        SqlUtils.field(TBL_TRADE_ACTS, COL_TA_DATE)
-    ), ALS_TOTAL_AMOUNT);
-
-    result = BeeUtils.unbox(qs.getDouble(query));
-
-    return  result;
-  }
-
   private double totalActItems(Long actId) {
     double result = BeeConst.DOUBLE_ZERO;
 
@@ -5166,7 +5118,7 @@ public class TradeActBean implements HasTimerService {
     return qs.updateDataWithResponse(actUpdate);
   }
 
-  private ResponseObject updateRentProjectAct(BeeRowSet parentActs, long fifoId, JustDate now) {
+  private ResponseObject updateRentProjectAct(BeeRowSet parentActs, long fifoId, DateTime actDate) {
     ResponseObject response = ResponseObject.emptyResponse();
     if (parentActs.isEmpty()) {
       return response;
@@ -5198,7 +5150,7 @@ public class TradeActBean implements HasTimerService {
     );
 
     if (!DataUtils.isEmpty(services)) {
-      response = createServices(fifoId, services, now);
+      response = createServices(fifoId, services, actDate);
     }
 
     if (response.hasErrors()) {

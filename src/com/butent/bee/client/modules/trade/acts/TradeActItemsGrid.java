@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.trade.acts;
 
 import com.butent.bee.shared.*;
+import com.butent.bee.shared.data.value.TimeOfDayValue;
+import com.butent.bee.shared.time.JustDate;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -1003,8 +1005,20 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
   private void doSingleReturn(IsRow parentRow, Long parent, TradeActKind kind) {
     ParameterList params = TradeActKeeper.createArgs(SVC_GET_ITEMS_FOR_RETURN);
     params.addQueryItem(COL_TRADE_ACT, parent);
-    final DateTime date = getDate(parentRow);
+    DateTime date = getDate(parentRow);
 
+    Long transitionParameter = Global.getParameterTime(PRM_TRADE_SERVICE_TRANSITION_TIME);
+
+    if (transitionParameter != null) {
+      TimeOfDayValue transitionTime = new TimeOfDayValue(TimeUtils.renderTime(transitionParameter, true));
+      TimeOfDayValue actTime = new TimeOfDayValue(date);
+
+      if (actTime.compareTo(transitionTime) > 0) {
+        date = TimeUtils.nextDay(date).getDateTime();
+      }
+    }
+
+    final long dateTime = date.getTime();
     BeeKeeper.getRpc().makeRequest(params, response -> {
       if (response.hasResponse(BeeRowSet.class)) {
         BeeRowSet parentItems = BeeRowSet.restore(response.getResponseAsString());
@@ -1027,7 +1041,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
                     COL_TA_CONTINUOUS))) {
                   ParameterList ps = TradeActKeeper.createArgs(SVC_SPLIT_ACT_SERVICES);
                   ps.addQueryItem(COL_TRADE_ACT, parent);
-                  ps.addQueryItem(COL_TA_DATE, date.getTime());
+                  ps.addQueryItem(COL_TA_DATE, dateTime);
 
                   BeeKeeper.getRpc().makeRequest(ps, rsp -> DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
                       VIEW_TRADE_ACT_SERVICES));

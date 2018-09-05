@@ -20,8 +20,6 @@ public final class TradeActConstants {
   public static final String SVC_ALTER_ACT_KIND = "AlterActKind";
 
   public static final String SVC_GET_ACTS_FOR_INVOICE = "GetActsForInvoice";
-  @Deprecated
-  public static final String SVC_GET_ACT_ITEMS_RENTAL_AMOUNT = "GetActItemsRentalAmount";
   public static final String SVC_GET_SERVICES_FOR_INVOICE = "GetServicesForInvoice";
   public static final String SVC_GET_NEXT_ACT_NUMBER = "GetNextActNumber";
   public static final String SVC_GET_NEXT_RETURN_ACT_NUMBER = "GetNextReturnActNumber";
@@ -168,6 +166,7 @@ public final class TradeActConstants {
   public static final String PRM_SYNC_ERP_STOCK = "SyncStockInMinutes";
   public static final String PRM_INVOICE_MAIL_SIGNATURE = "InvoiceMailSignature";
   public static final String PRM_DEFAULT_TRADE_OPERATION = "DefaultTradeOperation";
+  public static final String PRM_TRADE_SERVICE_TRANSITION_TIME = "ServiceTransitionTime";
 
   public static final String PRP_INSERT_COLS = "InsertCols";
 
