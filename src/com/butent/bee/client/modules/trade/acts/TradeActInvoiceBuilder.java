@@ -88,6 +88,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     SelectorEvent.Handler {
@@ -483,15 +484,6 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         ((UnboundSelector) widget).setValue(currency, false);
       }
     }
-    widget = form.getWidgetByName(COL_TA_COMPANY);
-
-    if (widget instanceof UnboundSelector && getCompanyId() != null) {
-      ((UnboundSelector) widget).setValue(getCompanyId(), true);
-      ((UnboundSelector) widget).setEnabled(false);
-    } else {
-      ((UnboundSelector) widget).clearValue();
-      ((UnboundSelector) widget).setEnabled(true);
-    }
     boolean single = !multiple && !BeeUtils.isEmpty(actId);
 
     JustDate from = BeeKeeper.getStorage().getDate(storageKey(COL_TA_SERVICE_FROM));
@@ -512,6 +504,15 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     } else {
       ((InputDate) dateTo).setDate(TimeUtils.nextDay(new JustDate()));
+    }
+    widget = form.getWidgetByName(COL_TA_COMPANY);
+
+    if (widget instanceof UnboundSelector && getCompanyId() != null) {
+      ((UnboundSelector) widget).setValue(getCompanyId(), true);
+      ((UnboundSelector) widget).setEnabled(false);
+    } else {
+      ((UnboundSelector) widget).clearValue();
+      ((UnboundSelector) widget).setEnabled(true);
     }
   }
 
@@ -547,26 +548,33 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     ClassifierKeeper.getHolidays(this::doCompose);
   }
 
-  private void doCompose(final Collection<Integer> holidays) {
-    Range<JustDate> range = getRange();
-    if (range == null) {
-      return;
-    }
-    final Range<DateTime> builderRange = TradeActUtils.convertRange(range);
-    final int builderDays = TradeActUtils.countServiceDays(builderRange, holidays);
-    if (builderDays <= 0) {
-      getFormView().notifyWarning(Localized.dictionary().holidays());
-      return;
-    }
-
+  private void doCompose(Collection<Integer> holidays) {
     Collection<Long> actIds = getSelectedActs(STYLE_ACT_SELECTED);
+
     if (actIds.isEmpty()) {
       getFormView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
-
     commandCompose.addStyleName(STYLE_COMMAND_DISABLED);
     commandSave.addStyleName(STYLE_COMMAND_DISABLED);
+
+    getServices(actIds, holidays, () -> {
+      if (services.isEmpty()) {
+        getServiceContainer().clear();
+        getFormView().notifyWarning(Localized.dictionary().noData());
+      } else {
+        renderServices(holidays);
+      }
+    });
+  }
+
+  private void getServices(Collection<Long> actIds, Collection<Integer> holidays, Runnable action) {
+    Range<JustDate> range = getRange();
+
+    if (range == null) {
+      return;
+    }
+    Range<DateTime> builderRange = TradeActUtils.convertRange(range);
 
     ParameterList params = TradeActKeeper.createArgs(SVC_GET_SERVICES_FOR_INVOICE);
     params.addQueryItem(COL_TRADE_ACT, DataUtils.buildIdList(actIds));
@@ -742,12 +750,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
           services.add(svc);
         }
-
-        renderServices(holidays);
-
-      } else {
-        getServiceContainer().clear();
-        getFormView().notifyWarning(Localized.dictionary().noData());
+        action.run();
       }
     });
   }
@@ -1247,9 +1250,18 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         if (!BeeUtils.isEmpty(vatPerc)) {
           defVatPercent = BeeUtils.toDoubleOrNull(vatPerc);
         }
+        ClassifierKeeper.getHolidays(holidays ->
+            getServices(acts.stream().map(Act::id).collect(Collectors.toSet()), holidays, () -> {
+              int actIndex = Data.getColumnIndex(VIEW_TRADE_ACT_SERVICES, COL_TRADE_ACT);
 
-        renderActs();
+              Set<Long> actIds = services.stream().map(svc -> svc.row.getLong(actIndex))
+                  .collect(Collectors.toSet());
 
+              services.clear();
+              acts.removeIf(act -> !actIds.contains(act.id()));
+
+              renderActs();
+            }));
       } else if (notify) {
         getFormView().notifyWarning(Localized.dictionary().noData());
       }
