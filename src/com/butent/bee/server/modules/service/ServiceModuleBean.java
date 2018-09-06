@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.service;
 
+import com.butent.bee.shared.modules.mail.MailConstants;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -83,7 +84,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.service.ServiceUtils;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.report.ReportInfo;
@@ -1555,10 +1555,12 @@ public class ServiceModuleBean implements BeeModule {
           .addFields(TBL_MAINTENANCE_COMMENTS, COL_SERVICE_MAINTENANCE, COL_COMMENT,
               COL_PUBLISH_TIME, COL_EVENT_NOTE, COL_TERM, COL_SEND_EMAIL, COL_SEND_SMS)
           .addFields(TBL_EMAILS, COL_EMAIL)
+          .addField(COL_CREATOR + TBL_CONTACTS, COL_EMAIL, COL_CREATOR + COL_EMAIL)
           .addFields(TBL_CONTACTS, COL_PHONE)
           .addFields(TBL_PERSONS, COL_FIRST_NAME)
           .addFields(TBL_SERVICE_OBJECTS, COL_MODEL, COL_SERIAL_NO, COL_ARTICLE_NO)
           .addField(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME, ALS_MANUFACTURER_NAME)
+          .addEmptyLong(COL_CREATOR + MailConstants.COL_ACCOUNT)
           .addFields(TBL_SERVICE_MAINTENANCE, COL_DEPARTMENT, COL_EQUIPMENT,
               COL_MAINTENANCE_DESCRIPTION)
           .addField(TBL_SERVICE_TREE, COL_SERVICE_CATEGORY_NAME, ALS_CATEGORY_NAME)
@@ -1581,9 +1583,30 @@ public class ServiceModuleBean implements BeeModule {
               sys.joinTables(VIEW_MAINTENANCE_STATES, TBL_SERVICE_MAINTENANCE, COL_STATE))
           .addFromLeft(TBL_SERVICE_TREE,
               sys.joinTables(TBL_SERVICE_TREE, TBL_SERVICE_OBJECTS, COL_SERVICE_CATEGORY))
+          .addFromLeft(TBL_USERS, COL_CREATOR + TBL_USERS,
+              sys.joinTables(TBL_USERS, COL_CREATOR + TBL_USERS, TBL_SERVICE_MAINTENANCE, COL_CREATOR))
+          .addFromLeft(TBL_COMPANY_PERSONS, COL_CREATOR + TBL_COMPANY_PERSONS,
+              sys.joinTables(TBL_COMPANY_PERSONS, COL_CREATOR + TBL_COMPANY_PERSONS, COL_CREATOR + TBL_USERS,
+                COL_COMPANY_PERSON))
+          .addFromLeft(TBL_CONTACTS, COL_CREATOR + TBL_CONTACTS,
+              sys.joinTables(TBL_CONTACTS,COL_CREATOR + TBL_CONTACTS, COL_CREATOR + TBL_COMPANY_PERSONS, COL_CONTACT))
           .setWhere(sys.idEquals(TBL_MAINTENANCE_COMMENTS, commentId)));
 
       if (commentInfoRow != null) {
+        String email = commentInfoRow.getValue(COL_CREATOR + COL_EMAIL);
+
+        if (email != null && !email.trim().isEmpty()) {
+          SqlSelect selectAccount = new SqlSelect()
+            .addField(MailConstants.TBL_ACCOUNTS, sys.getIdName(MailConstants.TBL_ACCOUNTS), MailConstants.COL_ACCOUNT)
+            .addFrom(MailConstants.TBL_ACCOUNTS)
+            .setWhere(SqlUtils.equals(MailConstants.TBL_ACCOUNTS, COL_ADDRESS, email));
+
+          Long account = qs.getLong(selectAccount);
+          if (BeeUtils.isPositive(account)) {
+            commentInfoRow.setValue(COL_CREATOR + MailConstants.COL_ACCOUNT, BeeUtils.toString(account));
+          }
+        }
+
         boolean isSendEmail = false;
         boolean isSendSms = false;
 
@@ -1686,7 +1709,8 @@ public class ServiceModuleBean implements BeeModule {
   private ResponseObject informCustomerWithEmail(Dictionary dic, DateTimeFormatInfo dtfInfo,
       SimpleRow commentInfoRow) {
 
-    Long accountId = mail.getSenderAccountId(SVC_INFORM_CUSTOMER);
+    Long creatorAccount = commentInfoRow.getLong(COL_CREATOR + MailConstants.COL_ACCOUNT);
+    Long accountId = creatorAccount == null ? mail.getSenderAccountId(SVC_INFORM_CUSTOMER) : creatorAccount;
 
     if (!DataUtils.isId(accountId)) {
       return ResponseObject.error("No default account specified");
