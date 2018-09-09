@@ -353,12 +353,13 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
     String tradeAct;
 
     if (forAllSaleItems) {
-      for (BeeRow row : rowSet) {
-        tradeAct = BeeUtils.joinWords(row.getString(tradeSeriesIdx), row.getString(tradeNumberIdx));
+      for (BeeRow saleItem : saleItems) {
+        BeeRow row = rowSet.findRow(rowSet.getColumnIndex("SaleItem"), saleItem.getId());
+        if (row != null) {
+          tradeAct = BeeUtils.joinWords(row.getString(tradeSeriesIdx), row.getString(tradeNumberIdx));
+          saleItem.setProperty(TradeActConstants.COL_TRADE_ACT, tradeAct);
+        }
 
-        BeeRow saleItem = saleItems.getRowById(row.getLong(rowSet.getColumnIndex("SaleItem")));
-
-        saleItem.setProperty(TradeActConstants.COL_TRADE_ACT, tradeAct);
         saleItem.setProperty(COL_ITEM_IS_SERVICE, COL_ITEM_IS_SERVICE);
       }
     } else {
