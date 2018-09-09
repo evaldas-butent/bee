@@ -3,46 +3,33 @@
            xmlns:ui="http://www.butent.com/ui">
   <DataColumn name="Article" />
 
-  <DataColumn name="Quantity" visible="true" scale="3" >
+  <DataColumn name="Quantity" visible="true" scale="3">
     <footer aggregate="sum" />
-    <editable>
-      <ui:expression>row.Quantity != row.CompletedInvoices</ui:expression>
-    </editable>
   </DataColumn>
 
-  <DataColumn name="UnitName" caption="=unitShort"
-              flexGrow="0" />
+  <DataColumn name="UnitName" caption="=unitShort" flexGrow="0" />
 
-  <PropColumn name="FreeRemainder" type="double" label="=ordFreeRemainder"
-              visible="true" />
-
-  <DataColumn name="ResRemainder" scale="3" >
-    <editable>
-      <ui:expression>row.Quantity != row.CompletedInvoices</ui:expression>
-    </editable>
+  <DataColumn name="Completed" scale="3" label="=ordCompleted">
+    <style>
+      <bodyStyle>
+        <ui:inline>color:green;</ui:inline>
+      </bodyStyle>
+    </style>
+    <footer aggregate="sum" />
   </DataColumn>
 
-  <PropColumn name="CompletedInvoices" type="double" label="=ordCompleted"
-              visible="true">
+  <CalcColumn name="Uncompleted" type="double" scale="3" label="=ordUncompleted">
     <style>
       <bodyStyle>
-        <ui:inline>color: green; font-weight: bold;</ui:inline>
+        <ui:inline>color:red;</ui:inline>
       </bodyStyle>
     </style>
-  </PropColumn>
-
-
-  <CalcColumn name="Uncompleted" type="double" label="=ordUncompleted">
-    <style>
-      <bodyStyle>
-        <ui:inline>color: blue; font-weight: bold;</ui:inline>
-      </bodyStyle>
-    </style>
-
     <render>
-      <ui:expression>row.Quantity - row.CompletedInvoices</ui:expression>
+      <ui:expression>row.Quantity>row.Completed ? row.Quantity-row.Completed : ""</ui:expression>
     </render>
   </CalcColumn>
+
+  <DataColumn name="Reserve" />
 
   <DataColumn name="ItemCost">
     <dynStyle>

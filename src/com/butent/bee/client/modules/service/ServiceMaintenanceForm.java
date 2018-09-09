@@ -1,8 +1,8 @@
 package com.butent.bee.client.modules.service;
 
-import com.butent.bee.shared.ui.UiConstants;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -15,6 +15,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_CREATOR;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_MESSAGE;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -24,14 +25,21 @@ import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.grid.GridPanel;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
+import com.butent.bee.client.modules.trade.TradeDocumentsGrid;
+import com.butent.bee.client.modules.trade.TradeKeeper;
+import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -46,12 +54,21 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.CustomAction;
+import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Latch;
+import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.css.values.FontStyle;
+import com.butent.bee.shared.css.values.FontWeight;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -63,12 +80,26 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.cars.CarsConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
+import com.butent.bee.shared.modules.trade.ItemQuantities;
+import com.butent.bee.shared.modules.trade.Totalizer;
+import com.butent.bee.shared.modules.trade.TradeDiscountMode;
+import com.butent.bee.shared.modules.trade.TradeDocument;
+import com.butent.bee.shared.modules.trade.TradeDocumentItem;
+import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
+import com.butent.bee.shared.modules.trade.TradeVatMode;
+import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCheckedness;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -83,6 +114,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     implements SelectorEvent.Handler, RowUpdateEvent.Handler, DataChangeEvent.Handler {
@@ -112,6 +144,9 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   private FlowPanel warrantyMaintenancePanel;
   private Set<DataSelector> disableEditWidgets = new HashSet<>();
 
+  private CustomAction createInvoice = new CustomAction(FontAwesome.FILE_TEXT_O,
+      clickEvent -> selectItems());
+
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
     if (BeeUtils.same(editableWidget.getColumnId(), COL_WAREHOUSE)) {
@@ -122,7 +157,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
         setStorageWarehouseKey(BeeUtils.toLong(newValue));
         setStorageWarehouseNameKey(Data.getString("ServiceMaintenance", getActiveRow(),
-          "WarehouseName"));
+            "WarehouseName"));
 
         if (!Objects.equals(newValue, oldValue) && oldValue != null
             && DataUtils.hasId(getActiveRow())) {
@@ -308,6 +343,9 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
           return false;
         }
       });
+    } else if (Objects.equals(name, VIEW_TRADE_DOCUMENTS) && widget instanceof GridPanel) {
+      ((GridPanel) widget).setGridInterceptor(new TradeDocumentsGrid().setFilterSupplier(() ->
+          Filter.custom(FILTER_MAINTENANCE_DOCUMENTS, getActiveRowId())));
     }
     super.afterCreateWidget(name, widget, callback);
   }
@@ -382,6 +420,10 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       String link = BeeUtils.join(BeeConst.STRING_EMPTY,
           Global.getParameterText(PRM_EXTERNAL_MAINTENANCE_URL), row.getId());
       getHeaderView().addCommandItem(new Link(link, link));
+    }
+    if (Data.isViewEditable(TBL_TRADE_DOCUMENTS) && !DataUtils.isNewRow(row)) {
+      createInvoice.setTitle(Localized.dictionary().createInvoice());
+      getHeaderView().addCommandItem(createInvoice);
     }
   }
 
@@ -882,12 +924,256 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
   private static String getStorageWarehouseKey() {
     return BeeUtils.join(BeeConst.STRING_MINUS, "UserWarehouse",
-      BeeKeeper.getUser().getUserId(), UiConstants.ATTR_VALUE);
+        BeeKeeper.getUser().getUserId(), UiConstants.ATTR_VALUE);
   }
 
   private static String getStorageWarehouseNameKey() {
     return BeeUtils.join(BeeConst.STRING_MINUS, "UserWarehouseName",
-      BeeKeeper.getUser().getUserId(), UiConstants.ATTR_VALUE);
+        BeeKeeper.getUser().getUserId(), UiConstants.ATTR_VALUE);
+  }
+
+  private void renderInvoiceTable(BeeRowSet rs, Map<Long, Pair<Double, Double>> quantities) {
+    Map<IsRow, InputNumber> items = new HashMap<>();
+    DoubleLabel itemsTotal = new DoubleLabel(true);
+    String view = rs.getViewName();
+
+    HashMap<Long, Double> stocks = new HashMap<>();
+    quantities.forEach((item, pair) ->
+        stocks.put(item, Double.max(pair.getA() - pair.getB(), BeeConst.DOUBLE_ZERO)));
+
+    Consumer<Map<IsRow, InputNumber>> totalizer = map -> {
+      Totalizer tot = new Totalizer(Data.getColumns(view));
+      tot.setQuantityFunction(row -> map.get(row).getNumber());
+
+      itemsTotal.setValue(map.keySet().stream()
+          .mapToDouble(row -> BeeUtils.round(BeeUtils.unbox(tot.getTotal(row)), 2)).sum());
+    };
+    rs.forEach(row -> {
+      double qty = BeeUtils.unbox(row.getDouble(rs.getColumnIndex(COL_TRADE_ITEM_QUANTITY)))
+          - BeeUtils.unbox(row.getDouble(rs.getColumnIndex(CarsConstants.ALS_COMPLETED)));
+
+      if (BeeUtils.isPositive(qty)) {
+        row.setProperty(CarsConstants.COL_RESERVE, qty);
+        Long item = row.getLong(rs.getColumnIndex(COL_ITEM));
+
+        double stock = stocks.getOrDefault(item,
+            row.isTrue(rs.getColumnIndex(COL_ITEM_IS_SERVICE)) ? Double.MAX_VALUE
+                : BeeConst.DOUBLE_ZERO);
+        qty = BeeUtils.min(qty, stock);
+        stocks.put(item, stock - qty);
+
+        InputNumber input = new InputNumber();
+        input.addInputHandler(event -> totalizer.accept(items));
+        input.setWidth("80px");
+        input.setMinValue("0");
+
+        if (BeeUtils.isPositive(qty)) {
+          input.setValue(qty);
+        }
+        items.put(row, input);
+      }
+    });
+    Dictionary d = Localized.dictionary();
+    Latch rNo = new Latch(0);
+
+    HtmlTable table = new HtmlTable(StyleUtils.NAME_INFO_TABLE);
+    table.getRowFormatter().addStyleName(rNo.get(), StyleUtils.className(FontWeight.BOLD));
+    table.getRowFormatter().addStyleName(rNo.get(), StyleUtils.className(TextAlign.CENTER));
+
+    Flow container = new Flow();
+    container.add(new InlineLabel(d.quantity() + BeeConst.STRING_SPACE));
+    FaLabel clear = new FaLabel(FontAwesome.TIMES, true);
+    StyleUtils.setColor(clear, "red");
+    clear.addClickHandler(event -> {
+      items.values().forEach(InputText::clearValue);
+      totalizer.accept(items);
+    });
+    container.add(clear);
+    int c = 0;
+    table.setText(rNo.get(), c++, d.name());
+    table.setText(rNo.get(), c++, d.article());
+    table.setText(rNo.get(), c++, d.ordUncompleted());
+    table.setText(rNo.get(), c++, d.unitShort());
+    table.setWidget(rNo.get(), c++, container);
+    table.setText(rNo.get(), c++, d.price());
+    table.setText(rNo.get(), c++, d.discount());
+    table.setText(rNo.get(), c, d.vat());
+
+    Stream.of(2, 5, 6, 7).forEach(col ->
+        table.setColumnCellClasses(col, StyleUtils.className(TextAlign.RIGHT)));
+
+    rNo.increment();
+    table.getRowFormatter().addStyleName(rNo.get(), StyleUtils.className(FontStyle.ITALIC));
+    table.getCellFormatter().setColSpan(rNo.get(), 0, 8);
+    Flow flow = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
+    flow.add(new Label(Localized.dictionary().productsServices()));
+    flow.getWidget(0).addStyleName(StyleUtils.NAME_FLEXIBLE);
+    flow.add(new Label(d.total() + ": "));
+    flow.add(itemsTotal);
+    table.setWidget(rNo.get(), 0, flow);
+
+    items.forEach((row, input) -> {
+      rNo.increment();
+      int cNo = 0;
+      table.setText(rNo.get(), cNo++, Data.getString(view, row, ALS_ITEM_NAME));
+      table.setText(rNo.get(), cNo++, Data.getString(view, row, COL_ITEM_ARTICLE));
+      table.setText(rNo.get(), cNo++, row.getProperty(CarsConstants.COL_RESERVE));
+      table.setText(rNo.get(), cNo++, Data.getString(view, row, ALS_UNIT_NAME));
+
+      Flow cont = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL + "-center");
+      cont.add(input);
+
+      FaLabel info = new FaLabel(FontAwesome.INFO_CIRCLE);
+      info.addClickHandler(clickEvent ->
+          TradeKeeper.getReservationsInfo(getLongValue(COL_WAREHOUSE),
+              Data.getLong(view, row, COL_ITEM), Data.isTrue(view, row, CarsConstants.COL_RESERVE)
+                  ? getDateTimeValue(COL_MAINTENANCE_DATE) : null, reservations ->
+                  showReservations(BeeUtils.joinWords(Data.getString(view, row,
+                      ALS_ITEM_NAME), BeeUtils.parenthesize(Localized.dictionary()
+                          .trdStock() + ": " + quantities.getOrDefault(Data.getLong(view,
+                      row, COL_ITEM), Pair.of(BeeConst.DOUBLE_ZERO, null)).getA())),
+                      reservations)));
+
+      if (Data.isTrue(view, row, COL_ITEM_IS_SERVICE)) {
+        info.getElement().getStyle().setVisibility(Style.Visibility.HIDDEN);
+      }
+      cont.add(info);
+      table.setWidget(rNo.get(), cNo++, cont);
+
+      table.setText(rNo.get(), cNo++, Data.getString(view, row, COL_ITEM_PRICE));
+
+      String disc = Data.getString(view, row, COL_TRADE_DISCOUNT);
+      table.setText(rNo.get(), cNo++, BeeUtils.join("", disc, BeeUtils.isEmpty(disc) ? "" : "%"));
+
+      table.setText(rNo.get(), cNo, BeeUtils.join("", Data.getString(view, row, COL_TRADE_VAT),
+          Data.isNull(view, row, COL_TRADE_VAT_PERC) ? "" : "%"));
+    });
+    totalizer.accept(items);
+
+    Global.inputWidget(d.createInvoice(), table, new InputCallback() {
+      @Override
+      public String getErrorMessage() {
+        stocks.clear();
+        quantities.forEach((item, pair) ->
+            stocks.put(item, Double.max(pair.getA() - pair.getB(), BeeConst.DOUBLE_ZERO)));
+
+        for (Map.Entry<IsRow, InputNumber> entry : items.entrySet()) {
+          IsRow row = entry.getKey();
+          InputNumber input = entry.getValue();
+          Long item = Data.getLong(view, row, COL_ITEM);
+
+          double stock = stocks.getOrDefault(item, Data.isTrue(view, row,
+              COL_ITEM_IS_SERVICE) ? Double.MAX_VALUE : BeeConst.DOUBLE_ZERO);
+          double qty = BeeUtils.min(row.getPropertyDouble(CarsConstants.COL_RESERVE), stock);
+
+          input.setMaxValue(BeeUtils.toString(qty));
+          List<String> messages = input.validate(true);
+
+          if (!BeeUtils.isEmpty(messages)) {
+            input.setFocus(true);
+            return BeeUtils.joinItems(messages);
+          }
+          stocks.put(item, stock - BeeUtils.unbox(input.getNumber()));
+        }
+        return InputCallback.super.getErrorMessage();
+      }
+
+      @Override
+      public void onSuccess() {
+        ParameterList args = ServiceKeeper.createArgs(CarsConstants.SVC_CREATE_INVOICE);
+        TradeDocument doc = new TradeDocument(Global.getParameterRelation(PRM_SERVICE_OPERATION),
+            TradeDocumentPhase.COMPLETED);
+
+        Map<Long, Double> data = new HashMap<>();
+        Pair<TradeVatMode, TradeVatMode> vatMode = Pair.empty();
+
+        items.forEach((row, input) -> {
+          Double qty = input.getNumber();
+
+          if (BeeUtils.isPositive(qty)) {
+            TradeDocumentItem tradeItem = doc.addItem(Data.getLong(view, row, COL_ITEM), qty);
+
+            tradeItem.setPrice(Data.getDouble(view, row, COL_ITEM_PRICE));
+
+            tradeItem.setDiscount(Data.getDouble(view, row, COL_TRADE_DISCOUNT));
+            tradeItem.setDiscountIsPercent(Objects.nonNull(tradeItem.getDiscount()));
+
+            TradeVatMode mode = BeeUtils.unbox(Data.getBoolean(view, row, COL_TRADE_VAT_PLUS))
+                ? TradeVatMode.PLUS : TradeVatMode.INCLUSIVE;
+
+            if (vatMode.isNull()) {
+              vatMode.setA(mode);
+            } else if (!Objects.equals(vatMode.getA(), mode)) {
+              vatMode.setB(mode);
+            }
+            tradeItem.setVat(Data.getDouble(view, row, COL_TRADE_VAT));
+            tradeItem.setVatIsPercent(Data.getBoolean(view, row, COL_TRADE_VAT_PERC));
+
+            data.put(Data.getLong(view, row, COL_SERVICE_ITEM), qty);
+          }
+        });
+        args.addDataItem(view, Codec.beeSerialize(data));
+
+        if (Objects.nonNull(vatMode.getB())) {
+          getFormView().notifySevere("PVM+ požymis visoms prekėms turi būti vienodas");
+          return;
+        }
+        if (!doc.isValid()) {
+          getFormView().notifyWarning(d.noData());
+          return;
+        }
+        doc.setDate(TimeUtils.nowSeconds());
+        doc.setCurrency(Global.getParameterRelation(PRM_CURRENCY));
+        doc.setCustomer(getLongValue(COL_COMPANY));
+        doc.setWarehouseFrom(getLongValue(COL_WAREHOUSE));
+
+        doc.setDocumentDiscountMode(TradeDiscountMode.FROM_AMOUNT);
+        doc.setDocumentVatMode(vatMode.getA());
+
+        args.addDataItem(VAR_DOCUMENT, Codec.beeSerialize(doc));
+        createInvoice.running();
+
+        BeeKeeper.getRpc().makePostRequest(args, response -> {
+          createInvoice.idle();
+          response.notify(getFormView());
+
+          if (!response.hasErrors()) {
+            getFormView().refresh();
+            RowEditor.open(VIEW_TRADE_DOCUMENTS, response.getResponseAsLong());
+          }
+        });
+      }
+    });
+  }
+
+  private void selectItems() {
+    Queries.getRowSet(TBL_SERVICE_ITEMS, null,
+        Filter.equals(COL_SERVICE_MAINTENANCE, getActiveRowId()), itemsRs -> {
+          Set<Long> items = itemsRs.getDistinctLongs(itemsRs.getColumnIndex(COL_ITEM));
+          Map<Long, Pair<Double, Double>> stocks = new HashMap<>();
+
+          if (items.isEmpty()) {
+            renderInvoiceTable(itemsRs, stocks);
+          } else {
+            DateTime dateTime = getDateTimeValue(COL_MAINTENANCE_DATE);
+            Set<Long> rsv = new HashSet<>();
+            itemsRs.getRows().stream()
+                .filter(beeRow -> beeRow.isTrue(itemsRs.getColumnIndex(CarsConstants.COL_RESERVE)))
+                .forEach(beeRow -> rsv.add(beeRow.getLong(itemsRs.getColumnIndex(COL_ITEM))));
+
+            TradeKeeper.getStock(getLongValue(COL_WAREHOUSE), items, true, stockMultimap -> {
+              stockMultimap.asMap().forEach((item, quantities) -> stocks.put(item,
+                  Pair.of(quantities.stream().mapToDouble(ItemQuantities::getStock).sum(),
+                      quantities.stream().mapToDouble(itemQuantities ->
+                          itemQuantities.getReservedMap().entrySet().stream().filter(entry ->
+                              !rsv.contains(item) || TimeUtils.isLess(entry.getKey(), dateTime))
+                              .mapToDouble(Map.Entry::getValue).sum())
+                          .sum())));
+
+              renderInvoiceTable(itemsRs, stocks);
+            });
+          }
+        });
   }
 
   private void setStorageWarehouseKey(Long warehouse) {
@@ -896,6 +1182,16 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
   private void setStorageWarehouseNameKey(String name) {
     BeeKeeper.getStorage().set(getStorageWarehouseNameKey(), name);
+  }
+
+  private static void showReservations(String cap, Map<ModuleAndSub, Map<String, Double>> info) {
+    Widget widget = TradeUtils.renderReservations(info);
+
+    if (widget == null) {
+      Global.showInfo(cap);
+    } else {
+      Global.showModalWidget(cap, widget);
+    }
   }
 
   private boolean isValidData(FormView form, IsRow row) {
@@ -1037,7 +1333,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
                 getFormView().getActiveRow().clearCell(getDataIndex(ALS_STATE_NAME));
               }
               getFormView().refreshBySource(AdministrationConstants.COL_STATE);
-        });
+            });
       }
     }
   }

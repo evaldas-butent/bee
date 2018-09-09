@@ -12,5 +12,6 @@
               label="=svcMaintenance" />
 
     <Relation name="Repairer" relation="CompanyPersons" label="=svcMaster"/>
+    <Boolean name="Reserve" label="=reserve" defValue="1" />
   </Fields>
 </Table>

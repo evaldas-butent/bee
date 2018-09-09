@@ -33,7 +33,7 @@
           </page>
           <page>
             <text>=trInvoices</text>
-            <ChildGrid name="OrderChildInvoices" relColumn="ServiceMaintenance"/>
+            <GridPanel name="TradeDocuments" child="true" parent="{form}" />
           </page>
           <page module="Tasks">
             <text>=crmTasks</text>

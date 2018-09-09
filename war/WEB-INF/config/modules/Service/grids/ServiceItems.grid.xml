@@ -29,4 +29,8 @@
     <RelColumn name="Repairer" renderColumns="RepairerFirstName RepairerLastName"
                choiceColumns="FirstName LastName" visible="true" editInPlace="true" />
   </g:columns>
+
+  <g:rowEditable>
+    <ui:expression>!row.Completed</ui:expression>
+  </g:rowEditable>
 </g:Grid>

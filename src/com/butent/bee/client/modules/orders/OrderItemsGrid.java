@@ -92,7 +92,7 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
     reCalculate.addClickHandler(event -> recalculatePrices());
 
     presenter.getHeader().addCommandItem(reCalculate);
-    presenter.getHeader().addCommandItem(invoice);
+//    presenter.getHeader().addCommandItem(invoice);
 
     super.afterCreatePresenter(presenter);
   }

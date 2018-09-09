@@ -1,7 +1,7 @@
 package com.butent.bee.server.modules.service;
 
-import com.butent.bee.shared.modules.mail.MailConstants;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -44,6 +44,7 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.modules.orders.OrdersModuleBean;
+import com.butent.bee.server.modules.trade.StockReservationsProvider;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
@@ -84,10 +85,16 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.cars.CarsConstants;
+import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.service.ServiceUtils;
+import com.butent.bee.shared.modules.trade.ItemQuantities;
 import com.butent.bee.shared.modules.trade.Totalizer;
+import com.butent.bee.shared.modules.trade.TradeDocument;
 import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -103,8 +110,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -140,6 +149,8 @@ public class ServiceModuleBean implements BeeModule {
   OrdersModuleBean ord;
   @EJB
   SearchBean src;
+  @EJB
+  TradeModuleBean trd;
 
   @Override
   public List<SearchResult> doSearch(String query) {
@@ -193,6 +204,15 @@ public class ServiceModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_ITEMS_INFO)) {
       response = getItemsInfo(reqInfo);
+
+    } else if (BeeUtils.same(svc, CarsConstants.SVC_CREATE_INVOICE)) {
+      TradeDocument doc = TradeDocument.restore(reqInfo.getParameter(VAR_DOCUMENT));
+      Map<Long, Double> items = new HashMap<>();
+
+      Codec.deserializeHashMap(reqInfo.getParameter(TBL_SERVICE_ITEMS))
+          .forEach((id, qty) -> items.put(BeeUtils.toLong(id), BeeUtils.toDouble(qty)));
+
+      response = createInvoice(doc, items);
 
     } else if (BeeUtils.same(svc, SVC_GET_REPAIRER_TARIFF)) {
       Long repairerId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_REPAIRER));
@@ -361,6 +381,8 @@ public class ServiceModuleBean implements BeeModule {
         BeeParameter.createText(module, PRM_SMS_REQUEST_CONTACT_INFO_FROM, false, VIEW_DEPARTMENTS),
         BeeParameter.createRelation(module, PRM_SERVICE_MANAGER_WAREHOUSE, true, VIEW_WAREHOUSES,
             COL_WAREHOUSE_CODE),
+        BeeParameter.createRelation(module, PRM_SERVICE_OPERATION, true,
+            VIEW_TRADE_OPERATIONS, COL_OPERATION_NAME),
         BeeParameter.createRelation(module, PRM_ROLE, true, TBL_ROLES, COL_ROLE_NAME),
         BeeParameter.createBoolean(module, PRM_FILTER_ALL_DEVICES),
         BeeParameter.createNumber(module, PRM_CLIENT_CHANGING_SETTING, false, 4),
@@ -381,6 +403,44 @@ public class ServiceModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    BeeView.registerConditionProvider(FILTER_MAINTENANCE_DOCUMENTS, (view, args) -> {
+      IsCondition clause;
+      Long maintenanceId = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, 0));
+
+      if (DataUtils.isId(maintenanceId)) {
+        SqlSelect query = new SqlSelect().setDistinctMode(true)
+            .addFields(TBL_MAINTENANCE_INVOICES, COL_TRADE_DOCUMENT)
+            .addFrom(TBL_MAINTENANCE_INVOICES)
+            .addFromInner(TBL_SERVICE_ITEMS,
+                SqlUtils.and(sys.joinTables(TBL_SERVICE_ITEMS, TBL_MAINTENANCE_INVOICES,
+                    COL_SERVICE_ITEM), SqlUtils.equals(TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE,
+                    maintenanceId)));
+
+        clause = SqlUtils.in(view.getSourceAlias(), view.getSourceIdName(), query);
+      } else {
+        clause = SqlUtils.sqlFalse();
+      }
+      return clause;
+    });
+
+    TradeModuleBean.registerStockReservationsProvider(ModuleAndSub.of(getModule()),
+        new StockReservationsProvider() {
+
+          @Override
+          public Map<String, Double> getItemReservationsInfo(Long warehouse, Long item,
+              DateTime date) {
+            return com.butent.bee.server.Invocation.locateRemoteBean(ServiceModuleBean.class)
+                .getReservationsInfo(warehouse, item, date);
+          }
+
+          @Override
+          public Multimap<Long, ItemQuantities> getStockReservations(Long warehouse,
+              Collection<Long> items) {
+            return com.butent.bee.server.Invocation.locateRemoteBean(ServiceModuleBean.class)
+                .getReservations(warehouse, items);
+          }
+        });
+
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       @AllowConcurrentEvents
@@ -661,6 +721,111 @@ public class ServiceModuleBean implements BeeModule {
     return complInvoices;
   }
 
+  public Multimap<Long, ItemQuantities> getReservations(Long warehouse,
+      Collection<Long> items) {
+
+    IsExpression xpr = SqlUtils.aggregate(SqlConstants.SqlFunction.SUM,
+        SqlUtils.field(TBL_MAINTENANCE_INVOICES, COL_TRADE_ITEM_QUANTITY));
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE)
+        .addFields(TBL_ORDER_ITEMS, COL_ITEM, COL_TRADE_ITEM_QUANTITY)
+        .addExpr(xpr, CarsConstants.ALS_COMPLETED)
+        .addFrom(TBL_ORDER_ITEMS)
+        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
+        .addFromInner(TBL_SERVICE_ITEMS,
+            sys.joinTables(TBL_SERVICE_ITEMS, TBL_ORDER_ITEMS, ServiceConstants.COL_SERVICE_ITEM))
+        .addFromInner(TBL_SERVICE_MAINTENANCE,
+            sys.joinTables(TBL_SERVICE_MAINTENANCE, TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE))
+        .addFromLeft(TBL_MAINTENANCE_INVOICES,
+            sys.joinTables(TBL_SERVICE_ITEMS, TBL_MAINTENANCE_INVOICES,
+                ServiceConstants.COL_SERVICE_ITEM))
+        .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_SERVICE_ITEMS, CarsConstants.COL_RESERVE),
+            SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE),
+            SqlUtils.positive(TBL_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY)))
+        .addGroup(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE)
+        .addGroup(TBL_ORDER_ITEMS, COL_ITEM, COL_TRADE_ITEM_QUANTITY)
+        .setHaving(SqlUtils.or(SqlUtils.isNull(xpr),
+            SqlUtils.more(TBL_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY, xpr)));
+
+    if (DataUtils.isId(warehouse)) {
+      query.setWhere(SqlUtils.and(query.getWhere(),
+          SqlUtils.equals(TBL_SERVICE_MAINTENANCE, COL_WAREHOUSE, warehouse)));
+    }
+    if (!BeeUtils.isEmpty(items)) {
+      query.setWhere(SqlUtils.and(query.getWhere(),
+          SqlUtils.inList(TBL_ORDER_ITEMS, COL_ITEM, items)));
+    }
+    Multimap<Long, ItemQuantities> reservations = HashMultimap.create();
+
+    qs.getData(query).forEach(row -> {
+      Long item = row.getLong(COL_ITEM);
+      ItemQuantities existing = BeeUtils.peek(reservations.get(item));
+
+      if (Objects.isNull(existing)) {
+        existing = new ItemQuantities(null);
+        reservations.put(item, existing);
+      }
+      existing.addReserved(row.getDateTime(COL_MAINTENANCE_DATE),
+          row.getDouble(COL_TRADE_ITEM_QUANTITY)
+              - BeeUtils.unbox(row.getDouble(CarsConstants.ALS_COMPLETED)));
+    });
+    return reservations;
+  }
+
+  public Map<String, Double> getReservationsInfo(Long warehouse, Long item, DateTime date) {
+    IsExpression xpr = SqlUtils.aggregate(SqlConstants.SqlFunction.SUM,
+        SqlUtils.field(TBL_MAINTENANCE_INVOICES, COL_TRADE_ITEM_QUANTITY));
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE)
+        .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
+        .addFields(TBL_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .addExpr(xpr, CarsConstants.ALS_COMPLETED)
+        .addFrom(TBL_ORDER_ITEMS)
+        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
+        .addFromInner(TBL_SERVICE_ITEMS,
+            sys.joinTables(TBL_SERVICE_ITEMS, TBL_ORDER_ITEMS, ServiceConstants.COL_SERVICE_ITEM))
+        .addFromInner(TBL_SERVICE_MAINTENANCE,
+            sys.joinTables(TBL_SERVICE_MAINTENANCE, TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE))
+        .addFromLeft(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, TBL_SERVICE_MAINTENANCE, COL_COMPANY))
+        .addFromLeft(TBL_MAINTENANCE_INVOICES,
+            sys.joinTables(TBL_SERVICE_ITEMS, TBL_MAINTENANCE_INVOICES,
+                ServiceConstants.COL_SERVICE_ITEM))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ORDER_ITEMS, COL_ITEM, item),
+            SqlUtils.notNull(TBL_SERVICE_ITEMS, CarsConstants.COL_RESERVE),
+            SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE),
+            SqlUtils.positive(TBL_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY)))
+        .addGroup(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE)
+        .addGroup(TBL_COMPANIES, COL_COMPANY_NAME)
+        .addGroup(TBL_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .setHaving(SqlUtils.or(SqlUtils.isNull(xpr),
+            SqlUtils.more(TBL_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY, xpr)))
+        .addOrder(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE);
+
+    if (DataUtils.isId(warehouse)) {
+      query.setWhere(SqlUtils.and(query.getWhere(),
+          SqlUtils.equals(TBL_SERVICE_MAINTENANCE, COL_WAREHOUSE, warehouse)));
+    }
+    if (Objects.nonNull(date)) {
+      query.setWhere(SqlUtils.and(query.getWhere(),
+          SqlUtils.less(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE, date)));
+    }
+
+    DateTimeFormatInfo dtfInfo = usr.getDateTimeFormatInfo();
+    Map<String, Double> map = new LinkedHashMap<>();
+
+    qs.getData(query).forEach(row -> {
+      String key = BeeUtils.joinItems(Formatter.renderDateTime(dtfInfo,
+          row.getDateTime(COL_MAINTENANCE_DATE)), row.getValue(COL_COMPANY_NAME));
+
+      map.put(key, BeeUtils.unbox(map.get(key)) + row.getDouble(COL_TRADE_ITEM_QUANTITY)
+          - BeeUtils.unbox(row.getDouble(CarsConstants.ALS_COMPLETED)));
+    });
+    return map;
+  }
+
   public double getReservedRemaindersQuery(Long itemId, Long warehouseId) {
     SqlSelect qry = new SqlSelect()
         .addSum(TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER)
@@ -880,6 +1045,22 @@ public class ServiceModuleBean implements BeeModule {
     }
 
     return response;
+  }
+
+  private ResponseObject createInvoice(TradeDocument document, Map<Long, Double> items) {
+    ResponseObject response = trd.createDocument(document);
+
+    if (response.hasErrors()) {
+      return response;
+    }
+    Long tradeId = response.getResponseAsLong();
+
+    items.forEach((id, qty) -> qs.insertData(new SqlInsert(TBL_MAINTENANCE_INVOICES)
+        .addConstant(COL_TRADE_DOCUMENT, tradeId)
+        .addConstant(COL_SERVICE_ITEM, id)
+        .addConstant(COL_TRADE_ITEM_QUANTITY, qty)));
+
+    return ResponseObject.response(tradeId);
   }
 
   private ResponseObject createInvoiceItems(RequestInfo reqInfo) {
@@ -1584,12 +1765,15 @@ public class ServiceModuleBean implements BeeModule {
           .addFromLeft(TBL_SERVICE_TREE,
               sys.joinTables(TBL_SERVICE_TREE, TBL_SERVICE_OBJECTS, COL_SERVICE_CATEGORY))
           .addFromLeft(TBL_USERS, COL_CREATOR + TBL_USERS,
-              sys.joinTables(TBL_USERS, COL_CREATOR + TBL_USERS, TBL_SERVICE_MAINTENANCE, COL_CREATOR))
+              sys.joinTables(TBL_USERS, COL_CREATOR + TBL_USERS, TBL_SERVICE_MAINTENANCE,
+                  COL_CREATOR))
           .addFromLeft(TBL_COMPANY_PERSONS, COL_CREATOR + TBL_COMPANY_PERSONS,
-              sys.joinTables(TBL_COMPANY_PERSONS, COL_CREATOR + TBL_COMPANY_PERSONS, COL_CREATOR + TBL_USERS,
-                COL_COMPANY_PERSON))
+              sys.joinTables(TBL_COMPANY_PERSONS, COL_CREATOR + TBL_COMPANY_PERSONS,
+                  COL_CREATOR + TBL_USERS,
+                  COL_COMPANY_PERSON))
           .addFromLeft(TBL_CONTACTS, COL_CREATOR + TBL_CONTACTS,
-              sys.joinTables(TBL_CONTACTS,COL_CREATOR + TBL_CONTACTS, COL_CREATOR + TBL_COMPANY_PERSONS, COL_CONTACT))
+              sys.joinTables(TBL_CONTACTS, COL_CREATOR + TBL_CONTACTS,
+                  COL_CREATOR + TBL_COMPANY_PERSONS, COL_CONTACT))
           .setWhere(sys.idEquals(TBL_MAINTENANCE_COMMENTS, commentId)));
 
       if (commentInfoRow != null) {
@@ -1597,13 +1781,15 @@ public class ServiceModuleBean implements BeeModule {
 
         if (email != null && !email.trim().isEmpty()) {
           SqlSelect selectAccount = new SqlSelect()
-            .addField(MailConstants.TBL_ACCOUNTS, sys.getIdName(MailConstants.TBL_ACCOUNTS), MailConstants.COL_ACCOUNT)
-            .addFrom(MailConstants.TBL_ACCOUNTS)
-            .setWhere(SqlUtils.equals(MailConstants.TBL_ACCOUNTS, COL_ADDRESS, email));
+              .addField(MailConstants.TBL_ACCOUNTS, sys.getIdName(MailConstants.TBL_ACCOUNTS),
+                  MailConstants.COL_ACCOUNT)
+              .addFrom(MailConstants.TBL_ACCOUNTS)
+              .setWhere(SqlUtils.equals(MailConstants.TBL_ACCOUNTS, COL_ADDRESS, email));
 
           Long account = qs.getLong(selectAccount);
           if (BeeUtils.isPositive(account)) {
-            commentInfoRow.setValue(COL_CREATOR + MailConstants.COL_ACCOUNT, BeeUtils.toString(account));
+            commentInfoRow
+                .setValue(COL_CREATOR + MailConstants.COL_ACCOUNT, BeeUtils.toString(account));
           }
         }
 
@@ -1710,7 +1896,8 @@ public class ServiceModuleBean implements BeeModule {
       SimpleRow commentInfoRow) {
 
     Long creatorAccount = commentInfoRow.getLong(COL_CREATOR + MailConstants.COL_ACCOUNT);
-    Long accountId = creatorAccount == null ? mail.getSenderAccountId(SVC_INFORM_CUSTOMER) : creatorAccount;
+    Long accountId =
+        creatorAccount == null ? mail.getSenderAccountId(SVC_INFORM_CUSTOMER) : creatorAccount;
 
     if (!DataUtils.isId(accountId)) {
       return ResponseObject.error("No default account specified");

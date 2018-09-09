@@ -4,7 +4,7 @@
     name="ServiceItems" source="OrderItems"
     module="Service" caption="=feedGoods">
   <Columns>
-    <IdColumn name="ID"/>
+    <IdColumn name="ID" />
 
     <SimpleColumn name="ServiceItem" />
     <SimpleJoin joinType="LEFT" name="ServiceItem">
@@ -18,6 +18,12 @@
           <SimpleColumn alias="RepairerLastName" name="LastName" />
         </SimpleJoin>
       </SimpleJoin>
+
+      <ExternalJoin source="MaintenanceInvoices" name="ServiceItem" joinType="LEFT">
+        <AggregateColumn name="Quantity" alias="Completed" aggregate="SUM" />
+      </ExternalJoin>
+
+      <SimpleColumn name="Reserve" editable="true" />
     </SimpleJoin>
 
     <SimpleColumn name="Item" />

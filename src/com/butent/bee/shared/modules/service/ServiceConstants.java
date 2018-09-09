@@ -31,6 +31,7 @@ public final class ServiceConstants {
   public static final String PRM_ITEM_NOTE_SOURCE_COLUMNS = "ItemNoteSourceColumns";
   public static final String PRM_URGENT_RATE = "UrgentRate";
   public static final String PRM_SERVICE_MANAGER_WAREHOUSE = "ServiceManagerWarehouse";
+  public static final String PRM_SERVICE_OPERATION = "ServiceOperation";
   public static final String PRM_SMS_REQUEST_SERVICE_ADDRESS = "SmsRequestServiceAddress";
   public static final String PRM_SMS_REQUEST_SERVICE_USER_NAME = "SmsRequestServiceUserName";
   public static final String PRM_SMS_REQUEST_SERVICE_PASSWORD = "SmsRequestServicePassword";
@@ -58,6 +59,7 @@ public final class ServiceConstants {
   public static final String TBL_SERVICE_TREE = "ServiceTree";
   public static final String TBL_SERVICE_OBJECTS = "ServiceObjects";
   public static final String TBL_MAINTENANCE = "Maintenance";
+  public static final String TBL_MAINTENANCE_INVOICES = "MaintenanceInvoices";
   public static final String TBL_MAINTENANCE_COMMENTS = "MaintenanceComments";
   public static final String TBL_MAINTENANCE_PAYROLL = "MaintenancePayroll";
   public static final String TBL_MAINTENANCE_TARIFFS = "MaintenanceTariffs";
@@ -235,6 +237,8 @@ public final class ServiceConstants {
   public static final String PROP_MAIN_ITEM = "MainItem";
   public static final String PROP_CRITERIA = "Criteria";
   public static final String PROP_SERVICE_MAINTENANCE_LATE = "Late";
+
+  public static final String FILTER_MAINTENANCE_DOCUMENTS = "filter_maintenance_trade_documents";
 
   public static void register() {
     EnumUtils.register(ServiceCompanyKind.class);

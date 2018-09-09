@@ -1,9 +1,12 @@
 package com.butent.bee.client.modules.service;
 
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.google.common.collect.ImmutableMap;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_COMPANY;
+import static com.butent.bee.shared.modules.cars.CarsConstants.COL_RESERVE;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
@@ -32,6 +35,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class ServiceItemsGrid extends OrderItemsGrid {
 
@@ -93,6 +97,20 @@ public class ServiceItemsGrid extends OrderItemsGrid {
   @Override
   public String getParentViewName() {
     return TBL_SERVICE_MAINTENANCE;
+  }
+
+  @Override
+  public void onEditStart(EditStartEvent event) {
+    if (Objects.equals(event.getColumnId(), COL_RESERVE)) {
+      event.consume();
+      IsRow row = event.getRowValue();
+      String value = Data.getString(getViewName(), row, COL_RESERVE);
+
+      Queries.updateCellAndFire(getViewName(), row.getId(), row.getVersion(), COL_RESERVE,
+          value, BeeUtils.toString(!BeeUtils.toBoolean(value)));
+    } else {
+      super.onEditStart(event);
+    }
   }
 
   @Override
