@@ -1,41 +1,56 @@
 package com.butent.bee.client.modules.service;
 
-import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.view.edit.EditStartEvent;
-import com.butent.bee.client.view.form.FormView;
 import com.google.common.collect.ImmutableMap;
 
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_COMPANY;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.cars.CarsConstants.COL_RESERVE;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.DataChangeCallback;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.modules.classifiers.ItemsPicker;
 import com.butent.bee.client.modules.orders.OrderItemsGrid;
+import com.butent.bee.client.modules.trade.TradeItemPicker;
+import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.modules.transport.InvoiceCreator;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
+import com.butent.bee.shared.modules.trade.OperationType;
+import com.butent.bee.shared.modules.trade.TradeDiscountMode;
+import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
+import com.butent.bee.shared.modules.trade.TradeVatMode;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 public class ServiceItemsGrid extends OrderItemsGrid {
 
@@ -58,6 +73,12 @@ public class ServiceItemsGrid extends OrderItemsGrid {
   }
 
   @Override
+  public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
+    presenter.getGridView().ensureRelId(this::addItems);
+    return false;
+  }
+
+  @Override
   public ItemsPicker ensurePicker() {
     if (picker == null) {
       picker = new ServiceItemsPicker(Module.SERVICE);
@@ -73,7 +94,7 @@ public class ServiceItemsGrid extends OrderItemsGrid {
     Long repairer = BeeKeeper.getUser().getUserData().getCompanyPerson();
     if (parentForm != null && DataUtils.isId(parentForm.getLongValue(COL_REPAIRER))) {
       repairer = Data.getLong("ServiceMaintenance", parentForm.getActiveRow(),
-        "RepairerCompanyPerson");
+          "RepairerCompanyPerson");
     }
     return ImmutableMap.of(COL_SERVICE_OBJECT, BeeConst.STRING_EMPTY,
         COL_REPAIRER, BeeUtils.toString(repairer));
@@ -144,5 +165,73 @@ public class ServiceItemsGrid extends OrderItemsGrid {
       }
     }
     return price;
+  }
+
+  private void addItems(Long docId) {
+    FormView parentForm = ViewHelper.getForm(getGridView());
+
+    OperationType operationType = OperationType.SALE;
+    Long serviceObject = parentForm.getLongValue(COL_SERVICE_OBJECT);
+
+    getVatPercent(Global.getParameterRelation(PRM_SERVICE_OPERATION), (vatMode, vatPercent) ->
+        Global.getParameterRelation(PRM_CURRENCY, (currency, currencyName) -> {
+          TradeItemPicker itemsPicker = new TradeItemPicker(TradeDocumentPhase.PENDING,
+              operationType, parentForm.getLongValue(COL_WAREHOUSE),
+              operationType.getDefaultPrice(), parentForm.getDateTimeValue(COL_MAINTENANCE_DATE),
+              currency, currencyName, TradeDiscountMode.FROM_AMOUNT, null, vatMode,
+              Collections.singletonMap(COL_COMPANY, parentForm.getStringValue(COL_COMPANY)),
+              vatPercent);
+
+          itemsPicker.open((selectedItems, tds) -> {
+            List<BeeColumn> columns = DataUtils.getColumns(getDataColumns(),
+                Arrays.asList(COL_SERVICE_MAINTENANCE, COL_SERVICE_OBJECT, COL_ITEM,
+                    COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT,
+                    COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC));
+
+            BeeRowSet rowSet = new BeeRowSet(getViewName(), columns);
+
+            for (BeeRow row : selectedItems) {
+              long id = row.getId();
+              double quantity = tds.getQuantity(id);
+
+              Double price = tds.getPrice(id);
+              if (BeeUtils.isZero(price)) {
+                price = null;
+              }
+              Pair<Double, Boolean> discountInfo =
+                  TradeUtils.normalizeDiscountOrVatInfo(tds.getDiscountInfo(id));
+              Pair<Double, Boolean> vatInfo =
+                  TradeUtils.normalizeDiscountOrVatInfo(tds.getVatInfo(id));
+
+              rowSet.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
+                  Queries.asList(docId, serviceObject, id, quantity, price, discountInfo.getA(),
+                      (Objects.nonNull(vatMode) && Objects.nonNull(vatInfo.getA()))
+                          ? Objects.equals(vatMode, TradeVatMode.PLUS) : null,
+                      vatInfo.getA(), vatInfo.getB()));
+            }
+            Queries.insertRows(rowSet, new DataChangeCallback(rowSet.getViewName()));
+          });
+        }));
+  }
+
+  private static void getVatPercent(Long operation, BiConsumer<TradeVatMode, Double> vatConsumer) {
+    if (DataUtils.isId(operation)) {
+      Queries.getRow(VIEW_TRADE_OPERATIONS, operation, row -> {
+        TradeVatMode vatMode = Data.getEnum(VIEW_TRADE_OPERATIONS, row, COL_OPERATION_VAT_MODE,
+            TradeVatMode.class);
+        Double vatPercent = Data.getDouble(VIEW_TRADE_OPERATIONS, row, COL_OPERATION_VAT_PERCENT);
+
+        if (Objects.nonNull(vatMode) && vatPercent == null) {
+          Number p = Global.getParameterNumber(PRM_VAT_PERCENT);
+
+          if (p != null) {
+            vatPercent = p.doubleValue();
+          }
+        }
+        vatConsumer.accept(vatMode, vatPercent);
+      });
+    } else {
+      vatConsumer.accept(null, null);
+    }
   }
 }
