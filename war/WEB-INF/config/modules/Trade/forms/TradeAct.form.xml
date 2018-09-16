@@ -85,7 +85,7 @@
       <row>
         <Label for="Series" class="bee-required" />
         <DataSelector source="Series" newRowEnabled="false" style="width: &inpdt;" required="true"
-                      disablable="true" />
+                      disablable="true" filter="ForActs" />
 
         <Label name="labelNumber" for="Number" visible="true" />
         <InputText source="Number" style="&inpw;" visible="true" disablable="true" />

@@ -13,6 +13,10 @@
       <row>
         <Label for="SeriesName" />
         <InputText source="SeriesName" upperCase="true" style="width: 10em;" visible="true" />
+
+        <cell colSpan="2">
+          <CheckBox source="ForActs" />
+        </cell>
       </row>
 
       <row>
@@ -33,4 +37,4 @@
 
     <ChildGrid class="flexible" name="SeriesManagers" relColumn="Series" />
   </FlowPanel>
-</f:Form>  
+</f:Form>

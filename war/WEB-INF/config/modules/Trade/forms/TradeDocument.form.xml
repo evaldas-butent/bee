@@ -227,7 +227,7 @@
           <FlowPanel class="&mrcl;" style="&mrst;">
             <FlowPanel style="&mfld; width: 5em;">
               <Label for="Series" style="&flbl;" />
-              <DataSelector name="Series" source="Series" viewName="TradeSeries"
+              <DataSelector name="Series" source="Series" viewName="TradeSeries" filter="!(ForActs)"
                             valueSource="SeriesName" caching="none" strict="false" upperCase="true"
                             style="&finp;" />
             </FlowPanel>

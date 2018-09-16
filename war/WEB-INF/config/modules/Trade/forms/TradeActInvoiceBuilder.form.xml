@@ -4,7 +4,7 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  
+
   name="TradeActInvoiceBuilder" caption="=taInvoiceBuilder"
   enabledActions="refresh"
   >
@@ -14,17 +14,17 @@
       <col index="0" kind="label" />
       <col index="2" kind="label" />
       <col index="4" kind="label" />
-      
+
       <row>
         <Label text="=dateFrom" class="bee-required" />
         <InputDate name="DateFrom" style="width: 150px;" required="true" />
-    
+
         <Label text="=dateTo" class="bee-required" />
         <InputDate name="DateTo" style="width: 150px;" required="true" />
 
         <Label text="=taSeries" />
         <UnboundSelector name="Series" viewName="TradeSeries" renderColumns="SeriesName"
-                         newRowEnabled="false" style="width: 150px;" />
+                         newRowEnabled="false" style="width: 150px;" filter="ForActs" />
 
         <CheckBox name="AllActs" text="=tradeActsAll" style="margin-left: 10px;" />
       </row>
@@ -49,7 +49,7 @@
         <UnboundSelector name="SaleSeries" viewName="SaleSeries"  renderColumns="SeriesName" upperCase="true" style="width: 100px;" />
 
         <Label text="=currency" />
-        <UnboundSelector name="Currency" viewName="Currencies" renderColumns="Name" 
+        <UnboundSelector name="Currency" viewName="Currencies" renderColumns="Name"
           style="width: 5em;" newRowEnabled="false" />
 
         <Label text="=svcDevice" />
@@ -57,7 +57,7 @@
                          style="width: 150px;" newRowEnabled="false" choiceColumns="Model Address"/>
       </row>
     </Table>
-    
+
     &br;
     <FlowPanel name="TradeActs" style="overflow: auto; min-height: 10%; max-height: 30%;" />
     &br;

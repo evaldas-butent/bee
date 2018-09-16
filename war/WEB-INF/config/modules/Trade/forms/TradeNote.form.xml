@@ -12,7 +12,7 @@
     </row>
     <row module="Trade.Acts">
       <Label for="Series" />
-      <DataSelector source="Series" style="width:100px" newRowEnabled="false" />
+      <DataSelector source="Series" style="width:100px" newRowEnabled="false" filter="ForActs" />
     </row>
     <row>
       <Label for="Notes" />

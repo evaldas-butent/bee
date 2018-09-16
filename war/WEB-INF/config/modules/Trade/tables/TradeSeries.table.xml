@@ -11,5 +11,7 @@
     <Integer name="NumberLength" label="=trdSeriesNumberLength" />
 
     <Text name="Notes" label="=notes" />
+
+    <Boolean name="ForActs" label="Aktams" />
   </Fields>
 </Table>

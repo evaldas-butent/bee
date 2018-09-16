@@ -12,10 +12,11 @@
     <SimpleColumn name="NumberLength" />
 
     <SimpleColumn name="Notes" />
+
+    <SimpleColumn name="ForActs" />
   </Columns>
 
   <Order>
     <OrderBy column="SeriesName" />
   </Order>
 </View>
- 

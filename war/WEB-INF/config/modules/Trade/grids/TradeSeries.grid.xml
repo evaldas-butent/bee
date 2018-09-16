@@ -10,5 +10,7 @@
     <DataColumn name="NumberLength" minValue="0" maxValue="10" carry="true" />
 
     <DataColumn name="Notes" whiteSpace="normal" flexGrow="1" />
+
+    <DataColumn name="ForActs" width="40" />
   </g:columns>
 </g:Grid>

@@ -28,7 +28,7 @@
         <InputDateTime source="Until" style="width: 11em;" />
 
         <Label for="Series" />
-        <DataSelector source="Series" newRowEnabled="false" style="width: 120px;" />
+        <DataSelector source="Series" newRowEnabled="false" style="width: 120px;" filter="ForActs" />
       </row>
 
       <row>

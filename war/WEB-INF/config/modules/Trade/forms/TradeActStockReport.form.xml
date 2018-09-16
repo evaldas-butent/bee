@@ -79,7 +79,7 @@
         <row>
           <Label text="=seriesPlural" />
           <MultiSelector name="Series" viewName="TradeSeries" renderColumns="SeriesName"
-            newRowEnabled="false" style="&multi;" summarize="true" />
+            newRowEnabled="false" style="&multi;" summarize="true" filter="ForActs" />
         </row>
 
         <row>
