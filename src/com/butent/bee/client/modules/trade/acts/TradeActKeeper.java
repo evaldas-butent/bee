@@ -628,33 +628,14 @@ public final class TradeActKeeper {
   }
 
   static boolean isEnabledItemsGrid(TradeActKind kind, FormView form, IsRow row) {
-    if (row == null) {
+    if (row == null || kind == null) {
       return false;
     }
 
-    boolean hasContinuousTa = DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_CONTINUOUS)));
-    boolean hasRentProjectTa = DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_RENT_PROJECT)));
-    boolean isContinuousTa = kind == TradeActKind.CONTINUOUS;
-    boolean isRentProjectTa = kind == TradeActKind.RENT_PROJECT;
-    boolean isReturnTa = kind == TradeActKind.RETURN;
-    boolean isSupplementTa = kind == TradeActKind.SUPPLEMENT;
-    boolean isSaleTa = kind == TradeActKind.SALE;
-    boolean hasMultiReturn = DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_RETURN)));
-    boolean hasReturn = BeeUtils.isPositive(row.getPropertyLong(ALS_RETURNED_COUNT));
-    boolean isReservedAct = kind == TradeActKind.RESERVE;
+    boolean result = kind.isNewItemsEnabled(row, Data.getDataInfo(form.getViewName()))
+        && !TradeActKeeper.isClientArea();
 
-    boolean defEnabled = !(hasContinuousTa || hasRentProjectTa)
-        && !(isContinuousTa || isRentProjectTa) && !TradeActKeeper.isClientArea()
-        && !hasMultiReturn && !hasReturn;
-
-    boolean isReturnActItemsEnabled = hasRentProjectTa && isReturnTa;
-    boolean isSaleAndHasRentProject =
-        hasRentProjectTa && !isRentProjectTa && (hasReturn || isSaleTa);
-    boolean isSupplementAndHasRentProject = hasRentProjectTa && !isRentProjectTa && isSupplementTa;
-
-    return defEnabled || isReturnActItemsEnabled || isSaleAndHasRentProject
-        || isSupplementAndHasRentProject
-        || isReservedAct;
+    return result;
   }
 
   static boolean isUserSeries(Long series) {
