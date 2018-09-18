@@ -31,6 +31,7 @@
 		<field name="Article" class="java.lang.String"/>
 		<field name="Quantity" class="java.math.BigDecimal"/>
 		<field name="UnitName" class="java.lang.String"/>
+		<field name="PrimaryArticle" class="java.lang.String"/>
 		<variable name="counter" class="java.lang.Integer" calculation="Count">
 			<variableExpression><![CDATA[1]]></variableExpression>
 		</variable>
@@ -553,7 +554,7 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 								</reportElement>
-								<textFieldExpression><![CDATA[$F{Article}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[BeeUtils.notEmpty($F{PrimaryArticle}, $F{Article})]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
