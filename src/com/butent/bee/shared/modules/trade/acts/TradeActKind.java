@@ -1,5 +1,9 @@
 package com.butent.bee.shared.modules.trade.acts;
 
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.google.common.collect.Lists;
 
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
@@ -21,6 +25,12 @@ public enum TradeActKind implements HasLocalizedCaption {
       Option.ENABLE_RETURN, Option.ENABLE_SUPPLEMENT, Option.HAS_SERVICES, Option.SAVE_AS_TEMPLATE,
       Option.SHOW_STOCK) {
     @Override
+    public boolean isNewItemsEnabled(IsRow row, DataInfo info) {
+      boolean hasRentProjectTa = DataUtils.isId(row.getLong(info.getColumnIndex(COL_TA_RENT_PROJECT)));
+      return super.isNewItemsEnabled(row, info) || hasRentProjectTa;
+    }
+
+    @Override
     public String getCaption(Dictionary constants) {
       return constants.taKindSale();
     }
@@ -36,6 +46,13 @@ public enum TradeActKind implements HasLocalizedCaption {
   SUPPLEMENT(new String[] {COL_TA_INPUT_DRIVER, COL_TA_INPUT_VEHICLE, COL_TA_OBJECT, COL_TA_OPERATION, COL_TA_STATUS},
       Option.BUILD_INVOICES, Option.ENABLE_RETURN, Option.HAS_SERVICES,
       Option.SHOW_STOCK, Option.HAS_PARENT_ACT) {
+
+    @Override
+    public boolean isNewItemsEnabled(IsRow row, DataInfo info) {
+      boolean hasRentProjectTa = DataUtils.isId(row.getLong(info.getColumnIndex(COL_TA_RENT_PROJECT)));
+      return super.isNewItemsEnabled(row, info) || hasRentProjectTa;
+    }
+
     @Override
     public String getCaption(Dictionary constants) {
       return constants.taKindSupplement();
@@ -50,6 +67,13 @@ public enum TradeActKind implements HasLocalizedCaption {
   /* 2 */
   RETURN(new String[] {COL_TA_OBJECT, COL_TA_STATUS, COL_TA_OPERATION, COL_TA_DATE},
       Option.AUTO_NUMBER, Option.HAS_PARENT_ACT) {
+
+    @Override
+    public boolean isNewItemsEnabled(IsRow row, DataInfo info) {
+      boolean hasRentProjectTa = DataUtils.isId(row.getLong(info.getColumnIndex(COL_TA_RENT_PROJECT)));
+      return super.isNewItemsEnabled(row, info) || hasRentProjectTa;
+    }
+
     @Override
     public String getCaption(Dictionary constants) {
       return constants.taKindReturn();
@@ -106,6 +130,11 @@ public enum TradeActKind implements HasLocalizedCaption {
   CONTINUOUS(null, Option.AUTO_NUMBER, Option.HAS_SERVICES, Option.SHOW_STOCK,
       Option.ENABLE_RETURN, Option.BUILD_INVOICES) {
     @Override
+    public boolean isNewItemsEnabled(IsRow row, DataInfo info) {
+      return false;
+    }
+
+    @Override
     public  String getCaption(Dictionary constants) {
       return constants.taKindContinuous();
     }
@@ -119,6 +148,11 @@ public enum TradeActKind implements HasLocalizedCaption {
   /* 8 */
   RENT_PROJECT(null, Option.AUTO_NUMBER, Option.SHOW_STOCK, Option.ENABLE_RETURN,
           Option.BUILD_INVOICES, Option.HAS_RELATED_SERVICES) {
+    @Override
+    public boolean isNewItemsEnabled(IsRow row, DataInfo info) {
+      return false;
+    }
+
     @Override
     public boolean enableMultiReturn(TradeActKind other) {
       return false;
@@ -226,6 +260,18 @@ public enum TradeActKind implements HasLocalizedCaption {
 
   public boolean isAlterTarget() {
     return options.contains(Option.ALTER_TO);
+  }
+
+  public boolean isNewItemsEnabled(IsRow row, DataInfo info){
+    boolean hasContinuousTa = DataUtils.isId(row.getLong(info.getColumnIndex(COL_TA_CONTINUOUS)));
+    boolean hasMultiReturn = DataUtils.isId(row.getLong(info.getColumnIndex(COL_TA_RETURN)));
+    boolean hasReturn = BeeUtils.isPositive(row.getPropertyLong(ALS_RETURNED_COUNT));
+    boolean hasRentProjectTa = DataUtils.isId(row.getLong(info.getColumnIndex(COL_TA_RENT_PROJECT)));
+
+    boolean result = !(hasContinuousTa || hasMultiReturn || hasReturn);
+    boolean isMemberOfRentAndHasReturn =  hasRentProjectTa && hasReturn;
+
+    return result || isMemberOfRentAndHasReturn;
   }
 
   public boolean showStock() {

@@ -844,6 +844,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     GridInterceptor interceptor;
 
     tradeActItemsGrid.setEnabled(TradeActKeeper.isEnabledItemsGrid(kind, form, row));
+    tradeActItemsGrid.setPendingEnabled(TradeActKeeper.isEnabledItemsGrid(kind, form, row));
     interceptor = tradeActItemsGrid.getGridInterceptor();
 
     if (interceptor instanceof TradeActItemsGrid) {
