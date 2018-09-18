@@ -19,12 +19,13 @@ import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.DecimalLabel;
 import com.butent.bee.client.widget.InputDate;
@@ -59,10 +60,14 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
-public class TradeDocumentForm extends AbstractFormInterceptor {
+public class TradeDocumentForm extends PrintFormInterceptor {
 
   private static final BeeLogger logger = LogUtils.getLogger(TradeDocumentForm.class);
 
@@ -248,6 +253,42 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
     }
 
     super.beforeRefresh(form, row);
+  }
+
+  @Override
+  protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
+    Queries.getRowSet(TBL_TRADE_DOCUMENT_ITEMS, null,
+        Filter.equals(COL_TRADE_DOCUMENT, getActiveRowId()),
+        result -> {
+          result.addColumn(Data.getColumn(getViewName(), COL_TRADE_DOCUMENT_VAT_MODE));
+          String mode = getStringValue(COL_TRADE_DOCUMENT_VAT_MODE);
+          Integer idx = result.getNumberOfColumns() - 1;
+          result.forEach(beeRow -> beeRow.setValue(idx, mode));
+
+          dataConsumer.accept(new BeeRowSet[] {result});
+        });
+  }
+
+  @Override
+  protected void getReportParameters(Consumer<Map<String, String>> parametersConsumer) {
+    Map<String, Long> companies = new HashMap<>();
+
+    for (String col : Arrays.asList(COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER, COL_TRADE_PAYER)) {
+      Long id = getLongValue(col);
+
+      if (DataUtils.isId(id)) {
+        companies.put(col, id);
+      }
+    }
+    if (!companies.containsKey(COL_TRADE_SUPPLIER)) {
+      companies.put(COL_TRADE_SUPPLIER, BeeKeeper.getUser().getCompany());
+    }
+    super.getReportParameters(defaultParameters ->
+        ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
+          defaultParameters.putAll(companiesInfo);
+          defaultParameters.put(COL_TRADE_AMOUNT, BeeUtils.toString(tdSums.getTotal()));
+          parametersConsumer.accept(defaultParameters);
+        }));
   }
 
   @Override

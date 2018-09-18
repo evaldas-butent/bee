@@ -30,6 +30,7 @@
         caption="=trdDocument" showRowId="true"
         width="80" widthUnit="vw" height="80" heightUnit="vh"
 >
+  <f:properties jasperReports="TradeInvoice_lt" />
   <SplitPanel splitterSize="4" name="Split">
     <south size="300">
       <FlowPanel class="flexBox-vertical">
