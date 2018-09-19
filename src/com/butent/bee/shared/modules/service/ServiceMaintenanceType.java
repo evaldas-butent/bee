@@ -1,6 +1,6 @@
 package com.butent.bee.shared.modules.service;
 
-import static com.butent.bee.shared.modules.service.ServiceConstants.COL_REPAIRER;
+import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.filter.Filter;
@@ -11,6 +11,13 @@ import com.butent.bee.shared.ui.HasWidgetSupplier;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public enum ServiceMaintenanceType implements HasCaption, HasWidgetSupplier {
+
+  TRADE_DOCUMENTS(Localized.dictionary().trdInvoices()) {
+    @Override
+    public Filter getFilter(LongValue userValue) {
+      return null;
+    }
+  },
 
   ALL(Localized.dictionary().svcMaintenance()) {
     @Override

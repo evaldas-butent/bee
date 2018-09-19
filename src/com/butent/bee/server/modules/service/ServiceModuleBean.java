@@ -404,23 +404,19 @@ public class ServiceModuleBean implements BeeModule {
   @Override
   public void init() {
     BeeView.registerConditionProvider(FILTER_MAINTENANCE_DOCUMENTS, (view, args) -> {
-      IsCondition clause;
       Long maintenanceId = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, 0));
 
-      if (DataUtils.isId(maintenanceId)) {
-        SqlSelect query = new SqlSelect().setDistinctMode(true)
-            .addFields(TBL_MAINTENANCE_INVOICES, COL_TRADE_DOCUMENT)
-            .addFrom(TBL_MAINTENANCE_INVOICES)
-            .addFromInner(TBL_SERVICE_ITEMS,
-                SqlUtils.and(sys.joinTables(TBL_SERVICE_ITEMS, TBL_MAINTENANCE_INVOICES,
-                    COL_SERVICE_ITEM), SqlUtils.equals(TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE,
-                    maintenanceId)));
+      SqlSelect query = new SqlSelect().setDistinctMode(true)
+          .addFields(TBL_MAINTENANCE_INVOICES, COL_TRADE_DOCUMENT)
+          .addFrom(TBL_MAINTENANCE_INVOICES);
 
-        clause = SqlUtils.in(view.getSourceAlias(), view.getSourceIdName(), query);
-      } else {
-        clause = SqlUtils.sqlFalse();
+      if (Objects.nonNull(maintenanceId)) {
+        query.addFromInner(TBL_SERVICE_ITEMS,
+            SqlUtils.and(sys.joinTables(TBL_SERVICE_ITEMS, TBL_MAINTENANCE_INVOICES,
+                COL_SERVICE_ITEM), SqlUtils.equals(TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE,
+                maintenanceId)));
       }
-      return clause;
+      return SqlUtils.in(view.getSourceAlias(), view.getSourceIdName(), query);
     });
 
     TradeModuleBean.registerStockReservationsProvider(ModuleAndSub.of(getModule()),

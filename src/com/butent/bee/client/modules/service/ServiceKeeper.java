@@ -15,6 +15,7 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.orders.OrdersInvoicesGrid;
 import com.butent.bee.client.modules.trade.InvoicesGrid;
+import com.butent.bee.client.modules.trade.TradeDocumentsGrid;
 import com.butent.bee.client.timeboard.TimeBoard;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.View;
@@ -25,10 +26,12 @@ import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.service.ServiceMaintenanceType;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
 
 public final class ServiceKeeper {
@@ -72,8 +75,14 @@ public final class ServiceKeeper {
         new OrdersInvoicesGrid());
 
     for (ServiceMaintenanceType st : ServiceMaintenanceType.values()) {
-      GridFactory.registerGridSupplier(st.getSupplierKey(), GRID_SERVICE_MAINTENANCE,
-          new ServiceMaintenanceGrid(st));
+      if (ServiceMaintenanceType.TRADE_DOCUMENTS.equals(st)) {
+        GridFactory.registerGridSupplier(st.getSupplierKey(), TradeConstants.GRID_TRADE_DOCUMENTS,
+            new TradeDocumentsGrid(),
+            GridFactory.GridOptions.forFilter(Filter.custom(FILTER_MAINTENANCE_DOCUMENTS)));
+      } else {
+        GridFactory.registerGridSupplier(st.getSupplierKey(), GRID_SERVICE_MAINTENANCE,
+            new ServiceMaintenanceGrid(st));
+      }
     }
 
     MenuService.SERVICE_MAINTENANCE_LIST.setHandler(parameters -> {
@@ -109,7 +118,6 @@ public final class ServiceKeeper {
         }
       }
     });
-
 
     TimeBoard.ensureStyleSheet();
 
