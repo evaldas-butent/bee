@@ -1,17 +1,21 @@
 package com.butent.bee.shared.modules.trade.acts;
 
 import com.google.common.collect.BoundType;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
 
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_ITEM_QUANTITY;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
@@ -22,8 +26,12 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Consumer;
 
 public final class TradeActUtils {
 
@@ -380,5 +388,36 @@ public final class TradeActUtils {
   }
 
   private TradeActUtils() {
+  }
+
+  public static void getInvoiceEmails(Long companyId, Consumer<Set<String>> emailsConsumer) {
+    Set<String> emails = new HashSet<>();
+
+    if (!DataUtils.isId(companyId)) {
+      emailsConsumer.accept(emails);
+      return;
+    }
+    Filter flt = Filter.notNull(COL_EMAIL_ADDRESS);
+
+    Map<String, Filter> filters = ImmutableMap.of(
+        TBL_COMPANIES, Filter.and(Filter.compareId(companyId), flt),
+        TBL_COMPANY_CONTACTS, Filter.and(Filter.equals(COL_COMPANY, companyId), flt),
+        TBL_COMPANY_PERSONS, Filter.and(Filter.equals(COL_COMPANY, companyId), flt));
+
+    Queries.getData(filters.keySet(), filters, data -> {
+      data.forEach(rs -> {
+        int invoiceIdx = rs.getColumnIndex(COL_EMAIL_INVOICES);
+        int emailIdx = rs.getColumnIndex(COL_EMAIL_ADDRESS);
+
+        rs.getRows().stream().filter(beeRow -> beeRow.isTrue(invoiceIdx))
+            .forEach(beeRow -> emails.add(beeRow.getString(emailIdx)));
+      });
+      if (emails.isEmpty()) {
+        data.stream().filter(rs -> Objects.equals(rs.getViewName(), TBL_COMPANIES))
+            .findFirst().ifPresent(rs -> rs.forEach(beeRow ->
+            emails.add(beeRow.getString(rs.getColumnIndex(COL_EMAIL_ADDRESS)))));
+      }
+      emailsConsumer.accept(emails);
+    });
   }
 }

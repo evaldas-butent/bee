@@ -291,7 +291,7 @@ public class TradeDocumentSums {
     return this;
   }
 
-  public void addItems(BeeRowSet rowSet) {
+  public TradeDocumentSums addItems(BeeRowSet rowSet) {
     if (!DataUtils.isEmpty(rowSet)) {
       int qtyIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
       int priceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_PRICE);
@@ -305,6 +305,7 @@ public class TradeDocumentSums {
       addItems(rowSet.getRows(), qtyIndex, priceIndex,
           discountIndex, dipIndex, vatIndex, vipIndex);
     }
+    return this;
   }
 
   public void addItems(List<? extends IsRow> rows, int qtyIndex, int priceIndex,
@@ -327,7 +328,7 @@ public class TradeDocumentSums {
     }
   }
 
-  public void addPayments(BeeRowSet rowSet) {
+  public TradeDocumentSums addPayments(BeeRowSet rowSet) {
     if (!DataUtils.isEmpty(rowSet)) {
       int amountIndex = rowSet.getColumnIndex(COL_TRADE_PAYMENT_AMOUNT);
 
@@ -335,6 +336,7 @@ public class TradeDocumentSums {
         addPayment(row.getId(), row.getDouble(amountIndex));
       }
     }
+    return this;
   }
 
   public void clear() {
