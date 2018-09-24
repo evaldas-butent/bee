@@ -28,8 +28,7 @@
 	<subDataset name="TradeDocumentItems" uuid="98f3f5b7-8ff1-4380-abb9-dfb33d21039a">
 		<parameter name="d" class="com.butent.bee.shared.i18n.Dictionary"/>
 		<parameter name="currency" class="java.lang.String"/>
-		<parameter name="DocumentVatMode" class="java.lang.String"/>
-		<parameter name="DocumentDiscountMode" class="java.lang.String"/>
+		<parameter name="tds" class="com.butent.bee.shared.modules.trade.TradeDocumentSums"/>
 		<parameter name="TradeDocumentItemsDataSet" class="com.butent.bee.server.RsDataSource"/>
 		<queryString>
 			<![CDATA[]]>
@@ -46,10 +45,6 @@
 		<variable name="counter" class="java.lang.Integer" calculation="Count">
 			<variableExpression><![CDATA[1]]></variableExpression>
 		</variable>
-		<variable name="tds" class="com.butent.bee.shared.modules.trade.TradeDocumentSums">
-			<variableExpression><![CDATA[$V{tds}]]></variableExpression>
-			<initialValueExpression><![CDATA[new com.butent.bee.shared.modules.trade.TradeDocumentSums(EnumUtils.getEnumByIndex(com.butent.bee.shared.modules.trade.TradeVatMode.class, $P{DocumentVatMode}), EnumUtils.getEnumByIndex(com.butent.bee.shared.modules.trade.TradeDiscountMode.class, $P{DocumentDiscountMode}), null).addItems($P{TradeDocumentItemsDataSet}.getRowSet())]]></initialValueExpression>
-		</variable>
 		<variable name="id" class="java.lang.Long">
 			<variableExpression><![CDATA[$P{TradeDocumentItemsDataSet}.getRowValue().getId()]]></variableExpression>
 		</variable>
@@ -57,7 +52,7 @@
 			<variableExpression><![CDATA[$F{Vat}]]></variableExpression>
 		</variable>
 		<variable name="amount" class="java.lang.Double">
-			<variableExpression><![CDATA[$V{tds}.getItemTotal($V{id}) - $V{tds}.getItemVat($V{id})]]></variableExpression>
+			<variableExpression><![CDATA[$P{tds}.getItemTotal($V{id}) - $P{tds}.getItemVat($V{id})]]></variableExpression>
 		</variable>
 	</subDataset>
 	<subDataset name="CompanyBankAccounts" whenResourceMissingType="Error" uuid="308c900a-2f38-4be3-bc8c-41b38297546d">
@@ -145,6 +140,10 @@
 	<variable name="docNo" class="java.lang.String">
 		<variableExpression><![CDATA[$V{docNo}]]></variableExpression>
 		<initialValueExpression><![CDATA[BeeUtils.joinWords(BeeUtils.isEmpty($P{Series}) ? "" : ("Serija " + $P{Series}), BeeUtils.isEmpty($P{Number}) ? "" : ("Nr. " + $P{Number}))]]></initialValueExpression>
+	</variable>
+	<variable name="tds" class="com.butent.bee.shared.modules.trade.TradeDocumentSums">
+		<variableExpression><![CDATA[$V{tds}]]></variableExpression>
+		<initialValueExpression><![CDATA[new com.butent.bee.shared.modules.trade.TradeDocumentSums(EnumUtils.getEnumByIndex(com.butent.bee.shared.modules.trade.TradeVatMode.class, $P{DocumentVatMode}), EnumUtils.getEnumByIndex(com.butent.bee.shared.modules.trade.TradeDiscountMode.class, $P{DocumentDiscountMode}), null).addItems($P{TradeDocumentItemsDataSet}.getRowSet())]]></initialValueExpression>
 	</variable>
 	<title>
 		<band height="262">
@@ -500,9 +499,10 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 				<reportElement x="0" y="0" width="555" height="105" isRemoveLineWhenBlank="true" uuid="27e58c44-ea91-48cd-b747-a2da1e5c2b90">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.components.autoresize.proportional" value="true"/>
+					<property name="com.jaspersoft.studio.components.autoresize.next" value="true"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="TradeDocumentItems" uuid="a7a7bb7e-818c-492d-b39c-17c74b794465">
+					<datasetRun subDataset="TradeDocumentItems" uuid="f00e564a-b660-4e11-9fa0-b7b4777a082c">
 						<datasetParameter name="d">
 							<datasetParameterExpression><![CDATA[$V{loc}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -512,11 +512,8 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 						<datasetParameter name="currency">
 							<datasetParameterExpression><![CDATA[$P{CurrencyName}]]></datasetParameterExpression>
 						</datasetParameter>
-						<datasetParameter name="DocumentVatMode">
-							<datasetParameterExpression><![CDATA[$P{DocumentVatMode}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="DocumentDiscountMode">
-							<datasetParameterExpression><![CDATA[$P{DocumentDiscountMode}]]></datasetParameterExpression>
+						<datasetParameter name="tds">
+							<datasetParameterExpression><![CDATA[$V{tds}]]></datasetParameterExpression>
 						</datasetParameter>
 						<dataSourceExpression><![CDATA[$P{TradeDocumentItemsDataSet}]]></dataSourceExpression>
 					</datasetRun>
@@ -644,6 +641,7 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 						</jr:column>
 						<jr:column width="40" uuid="3af8347b-d882-4845-befc-9f73ad590fd2">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column6"/>
+							<printWhenExpression><![CDATA[$V{tds}.getDiscount() != 0]]></printWhenExpression>
 							<jr:columnHeader style="TableCell" height="30">
 								<textField isStretchWithOverflow="true">
 									<reportElement style="TableHeader" x="0" y="0" width="40" height="30" uuid="afde406d-ff3b-4882-b7bd-b2060e19df78"/>
@@ -687,21 +685,21 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 								<textElement textAlignment="Right">
 									<font isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$V{tds}.getTotal() - $V{tds}.getVat()]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$P{tds}.getTotal() - $P{tds}.getVat()]]></textFieldExpression>
 							</textField>
 							<textField pattern="#0.00">
 								<reportElement style="TableDetail" x="0" y="20" width="75" height="20" uuid="01d2a00d-0c67-4b01-8951-46cf5e630872"/>
 								<textElement textAlignment="Right">
 									<font isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$V{tds}.getVat()]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$P{tds}.getVat()]]></textFieldExpression>
 							</textField>
 							<textField pattern="#0.00">
 								<reportElement style="TableDetail" x="0" y="40" width="75" height="20" uuid="95194d68-3ffe-487a-97ba-fb5f05a68349"/>
 								<textElement textAlignment="Right">
 									<font isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$V{tds}.getTotal()]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$P{tds}.getTotal()]]></textFieldExpression>
 							</textField>
 						</jr:tableFooter>
 						<jr:columnHeader style="TableCell" height="30" rowSpan="1">
