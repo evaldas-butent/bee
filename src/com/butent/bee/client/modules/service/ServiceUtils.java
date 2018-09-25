@@ -1,13 +1,13 @@
 package com.butent.bee.client.modules.service;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
-import static com.butent.bee.shared.modules.orders.OrdersConstants.PRP_COMPLETED_INVOICES;
-import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.ALS_COMPANY_TYPE_NAME;
+import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.RpcInfo;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.ConfirmationCallback;
@@ -99,15 +99,17 @@ public final class ServiceUtils {
       Filter filter = Filter.equals(COL_SERVICE_MAINTENANCE, formView.getActiveRowId());
       Queries.getRowSet(TBL_SERVICE_ITEMS, null, filter, result -> {
         int qtyIdx = Data.getColumnIndex(TBL_SERVICE_ITEMS, TradeConstants.COL_TRADE_ITEM_QUANTITY);
+        int doneIdx = Data.getColumnIndex(TBL_SERVICE_ITEMS, RpcInfo.COL_COMPLETED);
         String changeStateErrorMsg = null;
 
         if (isItemsRequired && (result == null || result.isEmpty())) {
-          changeStateErrorMsg = Localized.dictionary().shoppingCartIsEmpty();
+          changeStateConsumer.accept(Localized.dictionary().shoppingCartIsEmpty());
+          return;
         }
 
         if (result != null) {
           for (IsRow row : result) {
-            Double completed = row.getPropertyDouble(PRP_COMPLETED_INVOICES);
+            Double completed = row.getDouble(doneIdx);
             Double qty = row.getDouble(qtyIdx);
 
             if (BeeUtils.unbox(completed) <= 0 || !Objects.equals(completed, qty)) {
@@ -116,7 +118,21 @@ public final class ServiceUtils {
             }
           }
         }
-        changeStateConsumer.accept(changeStateErrorMsg);
+        if (!BeeUtils.isEmpty(changeStateErrorMsg)) {
+          Global.confirm(changeStateErrorMsg, new ConfirmationCallback() {
+            @Override
+            public void onCancel() {
+              changeStateConsumer.accept("Klaida");
+            }
+
+            @Override
+            public void onConfirm() {
+              changeStateConsumer.accept(null);
+            }
+          });
+        } else {
+          changeStateConsumer.accept(null);
+        }
       });
     }
   }
@@ -252,23 +268,23 @@ public final class ServiceUtils {
         case 2:
           Global.inputString(loc.svcChangingClient(), loc.trAssessmentReason(),
               new StringCallback() {
-            @Override
-            public void onSuccess(String value) {
-              updateClientAndContact(event, formView, false);
-              reasonValue.accept(value);
-            }
+                @Override
+                public void onSuccess(String value) {
+                  updateClientAndContact(event, formView, false);
+                  reasonValue.accept(value);
+                }
 
-            @Override
-            public void onCancel() {
-              revertClientOrObject(event, formView);
-              super.onCancel();
-            }
+                @Override
+                public void onCancel() {
+                  revertClientOrObject(event, formView);
+                  super.onCancel();
+                }
 
-            @Override
-            public boolean isRequired() {
-              return requiredReason;
-            }
-          }, null);
+                @Override
+                public boolean isRequired() {
+                  return requiredReason;
+                }
+              }, null);
           break;
 
         case 3:
@@ -372,7 +388,7 @@ public final class ServiceUtils {
 
       if (clientChangingPrm == null
           || (BeeUtils.inList(clientChangingPrm.intValue(), 1, 2, 3, 6)
-              && !DataUtils.isId(maintenanceContactId))
+          && !DataUtils.isId(maintenanceContactId))
           || BeeUtils.inList(clientChangingPrm.intValue(), 4, 5)) {
         fillContactValues(formView.getActiveRow(), event.getRelatedRow());
         formView.refreshBySource(COL_CONTACT);

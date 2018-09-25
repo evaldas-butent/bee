@@ -904,10 +904,11 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
               getFormView().notifySevere(canChangeStateErrorMsg);
             }
           };
-          boolean isItemsRequired = stateProcessRow.isTrue(processRowSet
-              .getColumnIndex(COL_FINITE));
-          ServiceUtils.checkCanChangeState(true, isItemsRequired, changeStateConsumer,
-              getFormView());
+          //          boolean isItemsRequired = stateProcessRow.isTrue(processRowSet
+          //              .getColumnIndex(COL_FINITE));
+          //          ServiceUtils.checkCanChangeState(true, isItemsRequired, changeStateConsumer,
+          //              getFormView());
+          changeStateConsumer.accept(null);
 
         } else if (!BeeUtils.isEmpty(oldValue)) {
           Queries.updateAndFire(getViewName(), row.getId(), row.getVersion(), COL_ENDING_DATE,
