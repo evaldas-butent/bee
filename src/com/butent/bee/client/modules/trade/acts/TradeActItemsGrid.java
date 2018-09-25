@@ -1053,7 +1053,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
                           .isNull(TradeActConstants.COL_TA_SERVICE_TO));
 
                   Queries.update(VIEW_TRADE_ACT_SERVICES, flt, COL_TA_SERVICE_TO,
-                      new DateValue(TimeUtils.today()), result -> DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                      new DateValue(new JustDate(dateTime)), result -> DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
                           VIEW_TRADE_ACT_SERVICES));
                 }
               });
