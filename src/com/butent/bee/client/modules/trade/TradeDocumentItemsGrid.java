@@ -1040,7 +1040,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
           String caption = BeeUtils.joinWords(item,
               getStringValue(ALS_ITEM_NAME), getStringValue(COL_TRADE_ITEM_ARTICLE));
 
-          Widget widget = TradeUtils.renderItemStockByWarehouse(item, list, null);
+          Widget widget = TradeUtils.renderItemStockByWarehouse(item, list);
 
           if (widget != null) {
             Global.showModalWidget(caption, widget, target);

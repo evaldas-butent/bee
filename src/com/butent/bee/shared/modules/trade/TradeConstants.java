@@ -423,6 +423,7 @@ public final class TradeConstants {
   public static final String FORM_PAYMENT_CUSTOMERS = "PaymentCustomers";
 
   public static final String PRM_PROTECT_TRADE_DOCUMENTS_BEFORE = "ProtectTradeDocumentsBefore";
+  public static final String PRM_ERP_WAREHOUSE = "ERPWarehouse";
 
   public static final String FILTER_ITEM_HAS_STOCK = "item_has_stock";
   public static final String FILTER_STOCK_CONSIGNOR = "stock_consignor";

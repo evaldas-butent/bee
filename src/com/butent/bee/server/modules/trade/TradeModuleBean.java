@@ -632,6 +632,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     Collection<BeeParameter> params = new ArrayList<>();
     params.add(BeeParameter.createDate(module, PRM_PROTECT_TRADE_DOCUMENTS_BEFORE, true, null));
+    params.add(BeeParameter.createRelation(module, PRM_ERP_WAREHOUSE, TBL_WAREHOUSES,
+        COL_WAREHOUSE_CODE));
 
     params.addAll(act.getDefaultParameters());
 
@@ -5567,7 +5569,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
   }
 
-  private Multimap<Long, Triplet<Long, String, Double>> getStockByWarehouse(
+  public Multimap<Long, Triplet<Long, String, Double>> getStockByWarehouse(
       Collection<Long> items, Long consignor) {
 
     Multimap<Long, Triplet<Long, String, Double>> result = ArrayListMultimap.create();
@@ -5611,15 +5613,21 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         }
       }
     }
-    data = qs.getData(new SqlSelect()
-        .addField(TBL_ITEMS, sys.getIdName(TBL_ITEMS), COL_ITEM)
-        .addFields(TBL_ITEMS, COL_EXTERNAL_STOCK)
-        .addFrom(TBL_ITEMS)
-        .setWhere(SqlUtils.notNull(TBL_ITEMS, COL_EXTERNAL_STOCK)));
+    Pair<Long, String> erp = prm.getRelationInfo(PRM_ERP_WAREHOUSE);
 
-    if (!DataUtils.isEmpty(data)) {
-      data.forEach(row -> result.put(row.getLong(COL_ITEM),
-          Triplet.of(1000000L, "ERP", row.getDouble(COL_EXTERNAL_STOCK))));
+    if (erp.noNulls()) {
+      data = qs.getData(new SqlSelect()
+          .addField(TBL_ITEMS, sys.getIdName(TBL_ITEMS), COL_ITEM)
+          .addFields(TBL_ITEMS, COL_EXTERNAL_STOCK)
+          .addFrom(TBL_ITEMS)
+          .setWhere(SqlUtils.and(sys.idInList(TBL_ITEMS, items),
+              SqlUtils.notNull(TBL_ITEMS, COL_EXTERNAL_STOCK),
+              SqlUtils.notEqual(TBL_ITEMS, COL_EXTERNAL_STOCK, 0))));
+
+      if (!DataUtils.isEmpty(data)) {
+        data.forEach(row -> result.put(row.getLong(COL_ITEM),
+            Triplet.of(erp.getA(), erp.getB(), row.getDouble(COL_EXTERNAL_STOCK))));
+      }
     }
     return result;
   }
@@ -5968,11 +5976,17 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       }
     }
 */
-    com.google.common.collect.Table<Long, String, Double> data =
+    com.google.common.collect.Table<Long, Long, Double> data =
         taHandler.getStock(Collections.singleton(item));
 
     if (!data.isEmpty()) {
-      data.row(item).forEach((w, s) -> result.add(Triplet.of(w, s, null)));
+      SimpleRowSet rs = qs.getData(new SqlSelect()
+          .addField(TBL_WAREHOUSES, sys.getIdName(TBL_WAREHOUSES), COL_WAREHOUSE)
+          .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+          .addFrom(TBL_WAREHOUSES));
+
+      data.row(item).forEach((w, s) -> result.add(Triplet.of(rs.getValueByKey(COL_WAREHOUSE,
+          BeeUtils.toString(w), COL_WAREHOUSE_CODE), s, null)));
     }
     if (result.isEmpty()) {
       return ResponseObject.emptyResponse();

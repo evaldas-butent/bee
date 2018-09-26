@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.trade;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
@@ -18,6 +19,7 @@ import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Triplet;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -39,8 +41,9 @@ public class TradeActDataEventHandler implements DataEventHandler {
 
   @EJB SystemBean sys;
   @EJB QueryServiceBean qs;
+  @EJB TradeModuleBean trd;
 
-  public Table<Long, String, Double> getStock(Collection<Long> items, Long... warehouses) {
+  public Table<Long, Long, Double> getStock(Collection<Long> items, Long... warehouses) {
     IsCondition itemsClause = BeeUtils.isEmpty(items) ? null
         : SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_ITEM, items);
 
@@ -48,7 +51,7 @@ public class TradeActDataEventHandler implements DataEventHandler {
         SqlUtils.and(SqlUtils.notNull(TBL_TRADE_OPERATIONS, field), ArrayUtils.isEmpty(warehouses)
             ? null : SqlUtils.inList(TBL_TRADE_OPERATIONS, field, (Object[]) warehouses));
 
-    Table<Long, String, Double> result = HashBasedTable.create();
+    Table<Long, Long, Double> result = HashBasedTable.create();
 
     SqlSelect union = new SqlSelect()
         .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
@@ -79,16 +82,18 @@ public class TradeActDataEventHandler implements DataEventHandler {
     String subq = SqlUtils.uniqueName();
 
     SqlSelect query = new SqlSelect()
-        .addFields(subq, COL_TA_ITEM)
-        .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+        .addFields(subq, COL_TA_ITEM, COL_STOCK_WAREHOUSE)
         .addSum(subq, COL_TRADE_ITEM_QUANTITY, COL_STOCK_QUANTITY)
         .addFrom(union, subq)
-        .addFromInner(TBL_WAREHOUSES, sys.joinTables(TBL_WAREHOUSES, subq, COL_STOCK_WAREHOUSE))
-        .addGroup(subq, COL_TA_ITEM)
-        .addGroup(TBL_WAREHOUSES, COL_WAREHOUSE_CODE);
+        .addGroup(subq, COL_TA_ITEM, COL_STOCK_WAREHOUSE);
 
     qs.getData(query).forEach(row -> result.put(row.getLong(COL_TA_ITEM),
-        row.getValue(COL_WAREHOUSE_CODE), row.getDouble(COL_STOCK_QUANTITY)));
+        row.getLong(COL_STOCK_WAREHOUSE), row.getDouble(COL_STOCK_QUANTITY)));
+
+    Multimap<Long, Triplet<Long, String, Double>> tradeStock = trd.getStockByWarehouse(items, null);
+
+    tradeStock.forEach((item, triplet) -> result.put(item, triplet.getA(),
+        BeeUtils.unbox(result.get(item, triplet.getA())) + triplet.getC()));
 
     return result;
   }
@@ -144,11 +149,10 @@ public class TradeActDataEventHandler implements DataEventHandler {
 
       if (DataUtils.isId(warehouse)) {
         int itemIdx = rowSet.getColumnIndex(COL_TA_ITEM);
-        Table<Long, String, Double> stock = getStock(rowSet.getDistinctLongs(itemIdx), warehouse);
-        String whCode = qs.getValueById(TBL_WAREHOUSES, warehouse, COL_WAREHOUSE_CODE);
+        Table<Long, Long, Double> stock = getStock(rowSet.getDistinctLongs(itemIdx), warehouse);
 
         rowSet.forEach(beeRow -> beeRow.setProperty(COL_WAREHOUSE_REMAINDER,
-            stock.get(beeRow.getLong(itemIdx), whCode)));
+            stock.get(beeRow.getLong(itemIdx), warehouse)));
       }
     }
   }

@@ -1,18 +1,13 @@
 package com.butent.bee.client.modules.trade;
 
-import com.google.gwt.user.client.ui.Widget;
-
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.SVC_GET_ITEMS_FOR_SELECTION;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.classifiers.ItemsPicker;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -21,9 +16,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.utils.BeeUtils;
-
-import java.util.Map;
 
 public class SalesItemPicker extends ItemsPicker {
 
@@ -76,61 +68,6 @@ public class SalesItemPicker extends ItemsPicker {
   @Override
   protected String getCaption() {
     return Localized.dictionary().goods();
-  }
-
-  @Override
-  protected void renderItems(Map<Long, Double> quantities, Map<Long, String> warehouses,
-      Flow panel, BeeRowSet itemList) {
-    super.renderItems(quantities, warehouses, panel, itemList);
-
-    HtmlTable table = null;
-
-    for (int i = 0; i < panel.getWidgetCount(); i++) {
-      Widget w = panel.getWidget(i);
-      if (w instanceof HtmlTable && StyleUtils.hasClassName(w.getElement(), STYLE_ITEM_TABLE)) {
-        table = (HtmlTable) w;
-        break;
-      }
-    }
-
-    if (table == null) {
-      return;
-    }
-
-    int r = 0;
-    int c = table.getCellCount(r);
-
-    if (table.getWidget(r, c - 1) != null) {
-      table.setWidget(r, c, table.getWidget(r, c - 1));
-    } else {
-      table.setHtml(r, c, table.getCellFormatter().getElement(r, c - 1).getInnerHTML());
-    }
-
-    getVisibleTableCols().add(c - 1, ClassifierConstants.COL_EXTERNAL_STOCK);
-
-    table.setText(r, c - 1, Localized.maybeTranslate(itemList.getColumnLabel(
-        ClassifierConstants.COL_EXTERNAL_STOCK)));
-
-    r++;
-    for (int i = r; i < table.getRowCount(); i++) {
-      c = table.getCellCount(i);
-
-      Long itemId = BeeUtils.toLongOrNull(table.getCellFormatter().getElement(i,
-          getVisibleTableCols().indexOf(DataUtils.ID_TAG)).getInnerText());
-
-      if (!DataUtils.isId(itemId)) {
-        continue;
-      }
-
-      if (!itemList.getRowIds().contains(itemId)) {
-        continue;
-      }
-
-      table.setWidget(i, c, table.getWidget(i, c - 1));
-
-      table.setText(i, c - 1, itemList.getString(itemList.getRowIndex(itemId),
-          ClassifierConstants.COL_EXTERNAL_STOCK), STYLE_STOCK_POSITIVE);
-    }
   }
 
   protected String getSource() {

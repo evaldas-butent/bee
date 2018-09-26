@@ -6,8 +6,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
-import static com.butent.bee.shared.modules.service.ServiceConstants.COL_SERVICE_MAINTENANCE;
-import static com.butent.bee.shared.modules.service.ServiceConstants.TBL_SERVICE_MAINTENANCE;
+import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -343,8 +342,7 @@ class ItemsGrid extends TreeGridInterceptor {
           String caption = BeeUtils.joinWords(id,
               getStringValue(COL_ITEM_NAME), getStringValue(COL_ITEM_ARTICLE));
 
-          Widget widget = TradeUtils.renderItemStockByWarehouse(id, list,
-              getStringValue(COL_EXTERNAL_STOCK));
+          Widget widget = TradeUtils.renderItemStockByWarehouse(id, list);
 
           if (widget != null) {
             Global.showModalWidget(caption, widget, stockCommand.getElement());

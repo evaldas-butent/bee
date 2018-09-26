@@ -1,7 +1,6 @@
 package com.butent.bee.server.modules.trade;
 
 import com.butent.bee.shared.data.value.TimeOfDayValue;
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
@@ -30,7 +29,6 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.AdministrationModuleBean;
-import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
@@ -2222,7 +2220,7 @@ public class TradeActBean implements HasTimerService {
     if (kind.showStock()) {
       List<Long> itemIds = (items.getNumberOfRows() < 200)
           ? items.getRowIds() : BeeConst.EMPTY_IMMUTABLE_LONG_LIST;
-      Table<Long, Long, Double> stock = getStock(itemIds);
+      Table<Long, Long, Double> stock = dataHandler.getStock(itemIds);
 
       if (stock != null) {
         int scale = sys.getFieldScale(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY);
@@ -2703,43 +2701,6 @@ public class TradeActBean implements HasTimerService {
 
       return ResponseObject.response(data);
     }
-  }
-
-  private Table<Long, Long, Double> getStock(Collection<Long> items) {
-    Table<Long, Long, Double> result = HashBasedTable.create();
-
-    IsCondition condition = BeeUtils.isEmpty(items)
-        ? null : SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM, items);
-
-    SqlSelect plusQuery = getStockQuery(TBL_TRADE_ACT_ITEMS, condition, true);
-    SimpleRowSet plusData = qs.getData(plusQuery);
-
-    if (!DataUtils.isEmpty(plusData)) {
-      for (SimpleRow row : plusData) {
-        Double qty = row.getDouble(COL_TRADE_ITEM_QUANTITY);
-        if (BeeUtils.nonZero(qty)) {
-          result.put(row.getLong(COL_TA_ITEM), row.getLong(COL_OPERATION_WAREHOUSE_TO), qty);
-        }
-      }
-    }
-
-    SqlSelect minusQuery = getStockQuery(TBL_TRADE_ACT_ITEMS, condition, false);
-    SimpleRowSet minusData = qs.getData(minusQuery);
-
-    pushStock(result, minusData, COL_OPERATION_WAREHOUSE_FROM);
-
-    condition = BeeUtils.isEmpty(items)
-        ? null : SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TA_ITEM, items);
-
-    condition = SqlUtils.and(condition, SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE),
-        SqlUtils.notNull(TBL_TRADE_ACT_SERVICES, COL_SERVICE_DATE_FROM));
-
-    SqlSelect minusServicesQuery = getStockQuery(TBL_TRADE_ACT_SERVICES, condition, false);
-    SimpleRowSet minusServicesData = qs.getData(minusServicesQuery);
-
-    pushStock(result, minusServicesData, COL_OPERATION_WAREHOUSE_FROM);
-
-    return result;
   }
 
   private String getStock(IsCondition actCondition, IsCondition itemCondition, Long time,
