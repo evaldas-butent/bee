@@ -146,7 +146,7 @@ public enum TradeActKind implements HasLocalizedCaption {
 
   },
   /* 8 */
-  RENT_PROJECT(null, Option.AUTO_NUMBER, Option.SHOW_STOCK, Option.ENABLE_RETURN,
+  RENT_PROJECT(null, Option.AUTO_NUMBER, Option.SHOW_STOCK,
           Option.BUILD_INVOICES, Option.HAS_RELATED_SERVICES) {
     @Override
     public boolean isNewItemsEnabled(IsRow row, DataInfo info) {
