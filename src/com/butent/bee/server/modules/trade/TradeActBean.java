@@ -257,7 +257,9 @@ public class TradeActBean implements HasTimerService {
         BeeParameter.createText(module, PRM_SYNC_ERP_DATA),
         BeeParameter.createNumber(module, PRM_SYNC_ERP_STOCK),
         BeeParameter.createText(module, PRM_INVOICE_MAIL_SIGNATURE),
-        BeeParameter.createTimeOfDay(module, PRM_TRADE_SERVICE_TRANSITION_TIME, false, new TimeOfDayValue(14).getLong())
+        BeeParameter.createTimeOfDay(module, PRM_TRADE_SERVICE_TRANSITION_TIME, false,
+                new TimeOfDayValue(14).getLong()),
+        BeeParameter.createTimeOfDay(module, PRM_DEFAULT_RETURN_ACT_TIME)
         );
   }
 
