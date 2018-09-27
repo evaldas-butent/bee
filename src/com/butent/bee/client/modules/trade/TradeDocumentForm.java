@@ -73,6 +73,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TradeDocumentForm extends PrintFormInterceptor {
 
@@ -597,6 +599,19 @@ public class TradeDocumentForm extends PrintFormInterceptor {
     if (from != null && !from.isEditable(BeeKeeper.getUser().isAdministrator()) && !isOwner(row)) {
       event.cancel();
       return;
+    }
+
+    if (Objects.equals(to, TradeDocumentPhase.APPROVED)) {
+      String missing = Stream.of(COL_TRADE_SERIES, COL_TRADE_NUMBER, COL_TRADE_MANAGER)
+          .filter(s -> row.isNull(getDataIndex(s)))
+          .map(s -> Data.getColumnLabel(getViewName(), s))
+          .collect(Collectors.joining(", "));
+
+      if (!BeeUtils.isEmpty(missing)) {
+        getFormView().notifySevere(Localized.dictionary().valueRequired(), missing);
+        event.cancel();
+        return;
+      }
     }
 
     if (DataUtils.isNewRow(row)) {

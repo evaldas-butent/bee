@@ -8,6 +8,8 @@
     <SimpleColumn name="Code" />
     <SimpleColumn name="Name" />
 
+    <SimpleColumn name="ERPCode" />
+
     <SimpleColumn name="Branch" />
     <SimpleJoin joinType="LEFT" name="Branch">
       <SimpleColumn alias="BranchName" name="Name" />

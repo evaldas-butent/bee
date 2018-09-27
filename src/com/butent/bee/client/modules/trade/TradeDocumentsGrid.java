@@ -5,6 +5,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiOption;
@@ -20,6 +21,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -109,25 +111,33 @@ public class TradeDocumentsGrid extends AbstractGridInterceptor {
       view.notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
-    Global.confirm(Localized.dictionary().trSendToERPConfirm(), () -> {
-      erpAction.running();
-      ParameterList args = TradeKeeper.createArgs(TradeConstants.SVC_SEND_TO_ERP);
-      args.addDataItem(TradeConstants.VAR_VIEW_NAME, view.getViewName());
-      args.addDataItem(TradeConstants.VAR_ID_LIST, DataUtils.buildIdList(ids));
-
-      BeeKeeper.getRpc().makePostRequest(args, response -> {
-        erpAction.idle();
-        response.notify(view);
-
-        if (response.hasResponse(Integer.class)) {
-          Integer cnt = response.getResponseAsInt();
-
-          if (cnt > 0) {
-            Data.resetLocal(view.getViewName());
+    Queries.getRowCount(view.getViewName(), Filter.and(Filter.idIn(ids),
+        Filter.notEquals(TradeConstants.COL_TRADE_DOCUMENT_PHASE, TradeDocumentPhase.APPROVED)),
+        count -> {
+          if (count > 0) {
+            view.notifyWarning("Leidžiami eksportuoti tik patvirtinti dokumentai");
+            return;
           }
-          view.notifyInfo("Eksportuota dokumentų: " + cnt);
-        }
-      });
-    });
+          Global.confirm(Localized.dictionary().trSendToERPConfirm(), () -> {
+            erpAction.running();
+            ParameterList args = TradeKeeper.createArgs(TradeConstants.SVC_SEND_TO_ERP);
+            args.addDataItem(TradeConstants.VAR_VIEW_NAME, view.getViewName());
+            args.addDataItem(TradeConstants.VAR_ID_LIST, DataUtils.buildIdList(ids));
+
+            BeeKeeper.getRpc().makePostRequest(args, response -> {
+              erpAction.idle();
+              response.notify(view);
+
+              if (response.hasResponse(Integer.class)) {
+                Integer cnt = response.getResponseAsInt();
+
+                if (cnt > 0) {
+                  Data.resetLocal(view.getViewName());
+                }
+                view.notifyInfo("Eksportuota dokumentų: " + cnt);
+              }
+            });
+          });
+        });
   }
 }

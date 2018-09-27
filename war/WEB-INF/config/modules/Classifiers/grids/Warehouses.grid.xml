@@ -9,6 +9,8 @@
     <DataColumn name="Code" visible="true" />
     <DataColumn name="Name" />
 
+    <DataColumn name="ERPCode" />
+
     <RelColumn name="Branch" module="Ec" />
     <DataColumn name="SupplierCode" module="Ec" />
 

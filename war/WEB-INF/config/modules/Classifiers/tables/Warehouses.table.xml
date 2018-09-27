@@ -8,6 +8,8 @@
     <String name="Code" precision="20" notNull="true" unique="true" label="=code" />
     <String name="Name" precision="100" label="=name" />
 
+    <String name="ERPCode" precision="10" label="VVS kodas" />
+
     <Relation name="Branch" relation="Branches" label="=branch" />
     <String name="SupplierCode" precision="10" unique="true" label="=ecSupplierWarehouse" />
 
