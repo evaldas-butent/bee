@@ -25,6 +25,8 @@
     <Relation name="WarehouseFrom" relation="Warehouses" label="=trdWarehouseFrom" />
     <Relation name="WarehouseTo" relation="Warehouses" label="=trdWarehouseTo" />
 
+    <Relation name="TradeActWarehouse" relation="Warehouses" label="Nuomos sandėlis" />
+
     <Relation name="Currency" relation="Currencies" notNull="true" defExpr="MAIN_CURRENCY"
               label="=currency" />
 
@@ -50,4 +52,8 @@
     <Text name="Notes" label="=trdNotes" />
     <DateTime name="Exported" label="=trdExported" />
   </Fields>
+
+  <Constraints>
+    <Unique fields="Series Number" />
+  </Constraints>
 </Table>

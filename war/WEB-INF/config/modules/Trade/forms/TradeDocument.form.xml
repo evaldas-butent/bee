@@ -316,7 +316,12 @@
                             renderColumns="VehicleBrandName VehicleModelName VehicleNumber VehicleBodyNumber" />
             </FlowPanel>
 
+
             <FlowPanel style="&mfld; &mwn;">
+              <Label for="TradeActWarehouse" style="&flbl;" />
+              <DataSelector source="TradeActWarehouse" style="&finp;" visible="true"
+                            newRowEnabled="false" choiceColumns="Code Name"
+                            renderColumns="TradeActWarehouseCode TradeActWarehouseName" />
             </FlowPanel>
           </FlowPanel>
         </FlowPanel>

@@ -72,6 +72,12 @@
       <SimpleColumn name="Consignment" alias="WarehouseToConsignment" />
     </SimpleJoin>
 
+    <SimpleColumn name="TradeActWarehouse" />
+    <SimpleJoin joinType="LEFT" name="TradeActWarehouse">
+      <SimpleColumn name="Code" alias="TradeActWarehouseCode" />
+      <SimpleColumn name="Name" alias="TradeActWarehouseName" />
+    </SimpleJoin>
+
     <SimpleColumn name="Currency" />
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />

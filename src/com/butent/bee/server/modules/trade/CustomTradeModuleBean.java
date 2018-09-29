@@ -1,5 +1,10 @@
 package com.butent.bee.server.modules.trade;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Table;
+
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.finance.Dimensions.*;
@@ -8,9 +13,12 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Triplet;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -20,15 +28,18 @@ import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -42,6 +53,95 @@ public class CustomTradeModuleBean {
   @EJB QueryServiceBean qs;
   @EJB ParamHolderBean prm;
   @EJB TradeModuleBean trade;
+
+  public Multimap<Long, Triplet<Long, String, Double>> getErpStock(Collection<Long> items) {
+    Multimap<Long, Triplet<Long, String, Double>> result = ArrayListMultimap.create();
+
+    Pair<Long, String> erp = prm.getRelationInfo(PRM_ERP_WAREHOUSE);
+
+    if (erp.noNulls()) {
+      SimpleRowSet data = qs.getData(new SqlSelect()
+          .addField(TBL_ITEMS, sys.getIdName(TBL_ITEMS), COL_ITEM)
+          .addFields(TBL_ITEMS, COL_EXTERNAL_STOCK)
+          .addFrom(TBL_ITEMS)
+          .setWhere(SqlUtils.and(sys.idInList(TBL_ITEMS, items),
+              SqlUtils.notNull(TBL_ITEMS, COL_EXTERNAL_STOCK),
+              SqlUtils.notEqual(TBL_ITEMS, COL_EXTERNAL_STOCK, 0))));
+
+      if (!DataUtils.isEmpty(data)) {
+        data.forEach(row -> result.put(row.getLong(COL_ITEM),
+            Triplet.of(erp.getA(), erp.getB(), row.getDouble(COL_EXTERNAL_STOCK))));
+      }
+    }
+    return result;
+  }
+
+  public Table<Long, Long, Double> getTradeActStock(Collection<Long> items, Long... warehouses) {
+    String wrh = "TradeActWarehouse";
+
+    IsCondition phaseCondition = SqlUtils.inList(TBL_TRADE_DOCUMENTS, COL_TRADE_DOCUMENT_PHASE,
+        Arrays.stream(TradeDocumentPhase.values()).filter(TradeDocumentPhase::modifyStock)
+            .collect(Collectors.toSet()));
+
+    IsCondition producerCondition = SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE,
+        Arrays.stream(OperationType.values()).filter(OperationType::producesStock)
+            .collect(Collectors.toSet()));
+
+    IsCondition consumerCondition = SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE,
+        Arrays.stream(OperationType.values()).filter(OperationType::consumesStock)
+            .collect(Collectors.toSet()));
+
+    IsCondition itemsClause = SqlUtils.and(SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE),
+        BeeUtils.isEmpty(items) ? null
+            : SqlUtils.inList(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, items));
+
+    IsCondition wrhClause = SqlUtils.and(SqlUtils.notNull(TBL_TRADE_DOCUMENTS, wrh),
+        ArrayUtils.isEmpty(warehouses) ? null
+            : SqlUtils.inList(TBL_TRADE_DOCUMENTS, wrh, (Object[]) warehouses));
+
+    Table<Long, Long, Double> result = HashBasedTable.create();
+
+    SqlSelect union = new SqlSelect()
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
+        .addFields(TBL_TRADE_DOCUMENTS, wrh)
+        .addSum(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+        .addFromInner(TBL_TRADE_DOCUMENTS,
+            sys.joinTables(TBL_TRADE_DOCUMENTS, TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT))
+        .addFromInner(TBL_TRADE_OPERATIONS,
+            sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_DOCUMENTS, COL_TRADE_OPERATION))
+        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
+        .setWhere(SqlUtils.and(phaseCondition, producerCondition, wrhClause, itemsClause))
+        .addGroup(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
+        .addGroup(TBL_TRADE_DOCUMENTS, wrh)
+        .addUnion(new SqlSelect()
+            .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
+            .addFields(TBL_TRADE_DOCUMENTS, wrh)
+            .addSum(SqlUtils.multiply(SqlUtils.field(TBL_TRADE_DOCUMENT_ITEMS,
+                COL_TRADE_ITEM_QUANTITY), SqlUtils.constant(-1)), COL_TRADE_ITEM_QUANTITY)
+            .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+            .addFromInner(TBL_TRADE_DOCUMENTS,
+                sys.joinTables(TBL_TRADE_DOCUMENTS, TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT))
+            .addFromInner(TBL_TRADE_OPERATIONS,
+                sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_DOCUMENTS, COL_TRADE_OPERATION))
+            .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
+            .setWhere(SqlUtils.and(phaseCondition, consumerCondition, wrhClause, itemsClause))
+            .addGroup(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
+            .addGroup(TBL_TRADE_DOCUMENTS, wrh));
+
+    String subq = SqlUtils.uniqueName();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(subq, COL_ITEM, wrh)
+        .addSum(subq, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(union, subq)
+        .addGroup(subq, COL_ITEM, wrh);
+
+    qs.getData(query).forEach(row -> result.put(row.getLong(COL_ITEM), row.getLong(wrh),
+        row.getDouble(COL_STOCK_QUANTITY)));
+
+    return result;
+  }
 
   public ResponseObject sendDocumentToErp(Set<Long> ids) {
     ResponseObject response = ResponseObject.emptyResponse();

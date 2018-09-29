@@ -5613,22 +5613,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         }
       }
     }
-    Pair<Long, String> erp = prm.getRelationInfo(PRM_ERP_WAREHOUSE);
+    result.putAll(custom.getErpStock(items));
 
-    if (erp.noNulls()) {
-      data = qs.getData(new SqlSelect()
-          .addField(TBL_ITEMS, sys.getIdName(TBL_ITEMS), COL_ITEM)
-          .addFields(TBL_ITEMS, COL_EXTERNAL_STOCK)
-          .addFrom(TBL_ITEMS)
-          .setWhere(SqlUtils.and(sys.idInList(TBL_ITEMS, items),
-              SqlUtils.notNull(TBL_ITEMS, COL_EXTERNAL_STOCK),
-              SqlUtils.notEqual(TBL_ITEMS, COL_EXTERNAL_STOCK, 0))));
-
-      if (!DataUtils.isEmpty(data)) {
-        data.forEach(row -> result.put(row.getLong(COL_ITEM),
-            Triplet.of(erp.getA(), erp.getB(), row.getDouble(COL_EXTERNAL_STOCK))));
-      }
-    }
     return result;
   }
 
