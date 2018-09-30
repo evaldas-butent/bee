@@ -9,6 +9,7 @@
     <String name="Name" precision="100" label="=name" />
 
     <String name="ERPCode" precision="10" label="VVS kodas" />
+    <Boolean name="ForActs" label="Aktams" />
 
     <Relation name="Branch" relation="Branches" label="=branch" />
     <String name="SupplierCode" precision="10" unique="true" label="=ecSupplierWarehouse" />

@@ -267,7 +267,7 @@
             <FlowPanel style="&mfld; &mwn;">
               <Label for="WarehouseFrom" style="&flbl;" />
               <DataSelector source="WarehouseFrom" style="&finp;" newRowEnabled="false"
-                            visible="true" choiceColumns="Code Name"
+                            visible="true" choiceColumns="Code Name" filter="!(ForActs)"
                             renderColumns="WarehouseFromCode WarehouseFromName" />
             </FlowPanel>
           </FlowPanel>
@@ -283,7 +283,7 @@
             <FlowPanel style="&mfld; &mwn;">
               <Label for="WarehouseTo" style="&flbl;" />
               <DataSelector source="WarehouseTo" style="&finp;" visible="true"
-                            newRowEnabled="false" choiceColumns="Code Name"
+                            newRowEnabled="false" choiceColumns="Code Name" filter="!(ForActs)"
                             renderColumns="WarehouseToCode WarehouseToName" />
             </FlowPanel>
           </FlowPanel>
@@ -320,7 +320,7 @@
             <FlowPanel style="&mfld; &mwn;">
               <Label for="TradeActWarehouse" style="&flbl;" />
               <DataSelector source="TradeActWarehouse" style="&finp;" visible="true"
-                            newRowEnabled="false" choiceColumns="Code Name"
+                            newRowEnabled="false" choiceColumns="Code Name" filter="ForActs"
                             renderColumns="TradeActWarehouseCode TradeActWarehouseName" />
             </FlowPanel>
           </FlowPanel>

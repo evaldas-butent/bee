@@ -10,6 +10,7 @@
     <DataColumn name="Name" />
 
     <DataColumn name="ERPCode" />
+    <DataColumn name="ForActs" width="40" />
 
     <RelColumn name="Branch" module="Ec" />
     <DataColumn name="SupplierCode" module="Ec" />
