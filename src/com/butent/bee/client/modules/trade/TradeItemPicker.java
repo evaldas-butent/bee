@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.trade;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
@@ -572,12 +573,14 @@ public class TradeItemPicker extends Flow implements HasPaging {
         }
       }
     }
+    List<String> search = Splitter.on(BeeConst.CHAR_SPACE).omitEmptyStrings().trimResults()
+        .splitToList(query);
 
-    if (searchBy.isEmpty() && !BeeUtils.isEmpty(query)) {
+    if (searchBy.isEmpty() && !BeeUtils.isEmpty(search)) {
       searchBy.addAll(getDefaultSearchBy(query));
     }
 
-    Filter searchFilter = buildSearchFilter(query, searchBy);
+    Filter searchFilter = buildSearchFilter(search, searchBy);
 
     boolean showAnalogs;
     if (searchFilter == null) {
@@ -703,21 +706,21 @@ public class TradeItemPicker extends Flow implements HasPaging {
         });
   }
 
-  private static Filter buildSearchFilter(String query, List<TradeItemSearch> searchBy) {
-    if (BeeUtils.isEmpty(query) || BeeUtils.isEmpty(searchBy)) {
+  private static Filter buildSearchFilter(List<String> search, List<TradeItemSearch> searchBy) {
+    if (BeeUtils.isEmpty(search) || BeeUtils.isEmpty(searchBy)) {
       return null;
+    }
+    CompoundFilter full = Filter.and();
 
-    } else if (searchBy.size() == 1) {
-      return searchBy.get(0).getItemFilter(query);
-
-    } else {
+    search.forEach(query -> {
       CompoundFilter sf = Filter.or();
 
       for (TradeItemSearch by : searchBy) {
         sf.add(by.getItemFilter(query));
       }
-      return sf;
-    }
+      full.add(sf);
+    });
+    return full;
   }
 
   private Filter buildParentFilter() {
