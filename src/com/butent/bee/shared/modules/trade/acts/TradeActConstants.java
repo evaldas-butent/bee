@@ -118,6 +118,7 @@ public final class TradeActConstants {
   public static final String ALS_REMAINING_QTY = "RemainingQty";
   public static final String ALS_RENT_PROJECT_COMPANY = "RentProjectCompany";
   public static final String ALS_RETURNED_COUNT = "ReturnedCount";
+  public static final String ALS_RENT_PROJECT_DATE = "RentProjectDate";
 
   public static final String ALS_BASE_AMOUNT = "BaseAmount";
   public static final String ALS_DISCOUNT_AMOUNT = "DiscountAmount";
