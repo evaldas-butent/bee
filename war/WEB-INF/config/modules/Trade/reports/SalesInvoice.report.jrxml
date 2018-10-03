@@ -70,6 +70,9 @@
 		<variable name="amount" class="java.lang.Double">
 			<variableExpression><![CDATA[$V{totalizer}.getTotal($P{SaleItemsDataSet}.getRowValue())]]></variableExpression>
 		</variable>
+		<variable name="vatPercent" class="java.math.BigDecimal" calculation="Highest">
+			<variableExpression><![CDATA[$F{Vat}]]></variableExpression>
+		</variable>
 		<variable name="vatAmount" class="java.lang.Double">
 			<variableExpression><![CDATA[BeeUtils.unbox($V{totalizer}.getVat($P{SaleItemsDataSet}.getRowValue()))]]></variableExpression>
 		</variable>
@@ -439,7 +442,7 @@
 									<textElement textAlignment="Right">
 										<font size="8" isBold="true"/>
 									</textElement>
-									<textFieldExpression><![CDATA["PVM (21%) suma:"]]></textFieldExpression>
+									<textFieldExpression><![CDATA["PVM (" + BeeUtils.nvl($V{vatPercent}, BigDecimal.ZERO) + "%) suma:"]]></textFieldExpression>
 								</textField>
 								<textField isStretchWithOverflow="true" pattern="">
 									<reportElement style="TableDetail" x="553" y="0" width="169" height="15" uuid="59b487c9-9695-4f54-936b-adc5880af383">
@@ -811,10 +814,10 @@ $P{SaleItemsDataSet}.getRowValue().getProperty("TimeUnit"))]]></textFieldExpress
 				<reportElement positionType="Float" x="0" y="146" width="800" height="12" isRemoveLineWhenBlank="true" uuid="955ddcf0-0035-4191-9935-d8ead6cda196">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-					<printWhenExpression><![CDATA[$P{Notes} != null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$P{Notes} != null || $P{CashRegisterNo} != null]]></printWhenExpression>
 				</reportElement>
 				<textElement verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA["Pastabos: "+ $P{Notes}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Pastabos: "+ BeeUtils.join("\n", $P{Notes}, BeeUtils.isEmpty($P{CashRegisterNo}) ? "" : "Kasos aparato Nr. " + $P{CashRegisterNo})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement positionType="Float" x="1" y="130" width="798" height="12" isRemoveLineWhenBlank="true" uuid="d11f34c2-ba7e-4ebe-b0b0-6d682c64717b">

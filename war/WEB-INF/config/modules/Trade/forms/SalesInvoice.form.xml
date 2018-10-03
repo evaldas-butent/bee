@@ -87,7 +87,7 @@
 
       <row>
         <Label for="Operation" />
-        <DataSelector source="Operation"/>
+        <DataSelector source="Operation" renderColumns="OperationName" />
 
         <Label for="WarehouseFrom" />
         <DataSelector source="WarehouseFrom" style="&inp;"/>

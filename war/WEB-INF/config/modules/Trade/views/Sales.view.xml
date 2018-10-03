@@ -13,6 +13,7 @@
     <SimpleColumn name="Operation" />
     <SimpleJoin name="Operation" joinType="LEFT">
       <SimpleColumn name="OperationName" />
+      <SimpleColumn name="CashRegisterNo" />
     </SimpleJoin>
 
     <SimpleColumn name="SaleSeries" label="=trdInvoicePrefix" />

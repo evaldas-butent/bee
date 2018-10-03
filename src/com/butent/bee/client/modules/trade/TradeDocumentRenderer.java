@@ -674,10 +674,12 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     table.getRowFormatter().addStyleName(r, STYLE_PREFIX + "items-header");
 
+    double vatPrc = BeeConst.DOUBLE_ZERO;
     double vatSum = BeeConst.DOUBLE_ZERO;
     double totSum = BeeConst.DOUBLE_ZERO;
 
     for (int i = 0; i < items.getNumberOfRows(); i++) {
+      vatPrc = BeeUtils.max(vatPrc, items.getDouble(i, COL_ITEM_VAT));
       double vat = getItemVat(items, i);
       double total = getItemTotal(items, i);
 
@@ -705,7 +707,8 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       table.setText(r, 0, "Suma žodžiais:");
 
       r++;
-      table.setText(r, 1, Localized.dictionary().printDocumentVat(),
+      table.setText(r, 1, Localized.dictionary().printDocumentVat()
+              + " (" + Format.getDecimalFormat(0).format(vatPrc) + "%)",
           STYLE_PREFIX + "items-total-label");
       table.setText(r, 2, AMOUNT_FORMAT.format(vatSum),
           STYLE_PREFIX + "items-total-value");
