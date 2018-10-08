@@ -87,9 +87,6 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   private static final String STYLE_CREATE = STYLE_PREFIX + "create";
   private static final String STYLE_EDIT = STYLE_PREFIX + "edit";
 
-  private static final String STYLE_HAS_SERVICES = STYLE_PREFIX + "has-services";
-  private static final String STYLE_NO_SERVICES = STYLE_PREFIX + "no-services";
-
   private static final String STYLE_HAS_INVOICES = STYLE_PREFIX + "has-invoices";
   private static final String STYLE_NO_INVOICES = STYLE_PREFIX + "no-invoices";
 
@@ -587,34 +584,58 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   boolean validateBeforeSave(FormView form, IsRow row, boolean beforeSave) {
     boolean valid;
 
-    valid = !(isNewRow(row) && isReturnAct(row) && !TradeActUtils.getMultiReturnData(row).isNull()
-        && beforeSave);
+    return checkMultiReturnItems(form, row, beforeSave)
+            && checkContactField(form, row)
+            && checkRegistrationNumber(form, row)
+            && checkDateWithRentProject(form, row)
+            && createReqFields(form, !TradeActUtils.getMultiReturnData(row).isNull());
+  }
 
-    if (!valid) {
-      form.notifySevere(Localized.dictionary().allValuesEmpty(Localized.dictionary()
-          .list(), Localized.dictionary().tradeActItems()));
-      return false;
-    }
-
+  private boolean checkContactField(FormView form, IsRow row) {
+    boolean valid = true;
     if (DataUtils.isId(getCompany(row)) && !isReturnAct(row)) {
       valid = BeeUtils.unbox(getContactPhysical(row)) || DataUtils.isId(getContact(row));
     }
 
     if (!valid) {
       form.notifySevere(Localized.dictionary().contact() + " "
-          + Localized.dictionary().valueRequired());
-      return false;
+              + Localized.dictionary().valueRequired());
     }
 
-    valid = !isReturnAct(row) || !BeeUtils.isEmpty(getRegistrationNo(row));
+    return valid;
+  }
+
+  private boolean checkMultiReturnItems(FormView form, IsRow row, boolean beforeSave) {
+    boolean valid = !(isNewRow(row) && isReturnAct(row) && !TradeActUtils.getMultiReturnData(row).isNull()
+            && beforeSave);
+
+    if (!valid) {
+      form.notifySevere(Localized.dictionary().allValuesEmpty(Localized.dictionary()
+              .list(), Localized.dictionary().tradeActItems()));
+    }
+
+    return valid;
+  }
+
+  private boolean checkRegistrationNumber(FormView form, IsRow row) {
+    boolean valid = !isReturnAct(row) || !BeeUtils.isEmpty(getRegistrationNo(row));
 
     if (!valid) {
       form.notifySevere(Localized.dictionary().taRegistrationNo() + " "
-          + Localized.dictionary().valueRequired());
-      return false;
+              + Localized.dictionary().valueRequired());
     }
 
-    valid = createReqFields(form, !TradeActUtils.getMultiReturnData(row).isNull());
+    return valid;
+  }
+
+  private boolean checkDateWithRentProject(FormView form, IsRow row) {
+    boolean valid = !(DataUtils.isId(getRentProject(row)) && getRentProjectDate(row) != null)
+            || TimeUtils.isMeq(getDate(row), getRentProjectDate(row));
+
+    if (!valid) {
+      form.notifySevere(Localized.dictionary().invalidDate(), Localized.dictionary().taDate(),
+              "Data privalo būti vėlesnė už nuomos aktą");
+    }
 
     return valid;
   }
@@ -651,6 +672,10 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     return row.getLong(getDataIndex(COL_TA_CONTINUOUS));
   }
 
+  private DateTime getDate(IsRow row) {
+    return row.getDateTime(getDataIndex(COL_TA_DATE));
+  }
+
   private HeaderView getHeaderView(FormView formView) {
 
     if (headerView == null) {
@@ -672,6 +697,14 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     return Filter.in(Data.getIdColumn(DocumentConstants.VIEW_DOCUMENTS),
         DocumentConstants.VIEW_RELATED_DOCUMENTS, DocumentConstants.COL_DOCUMENT, Filter
             .equals(ClassifierConstants.COL_COMPANY, getCompany()));
+  }
+
+  private Long getRentProject(IsRow row) {
+    return row.getLong(getDataIndex(COL_TA_RENT_PROJECT));
+  }
+
+  private DateTime getRentProjectDate(IsRow row) {
+    return row.getDateTime(getDataIndex(ALS_RENT_PROJECT_DATE));
   }
 
   private Long getRentProjectCompany(IsRow row) {
