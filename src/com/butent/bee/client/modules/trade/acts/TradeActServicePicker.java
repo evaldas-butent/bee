@@ -81,15 +81,9 @@ class TradeActServicePicker extends TradeActItemPicker {
     getVisibleTableCols().add(TradeConstants.COL_TRADE_DISCOUNT);
     table.setText(r, c++, Localized.dictionary().discount());
 
-    StyleUtils.setDisplay(table.getCellFormatter().getElement(r, getVisibleTableCols().indexOf(
-        ClassifierConstants.COL_EXTERNAL_STOCK)), Display.NONE);
-
     r++;
     for (int i = r; i < table.getRowCount(); i++) {
       c = table.getCellCount(i);
-
-      StyleUtils.setDisplay(table.getCellFormatter().getElement(i, getVisibleTableCols().indexOf(
-          ClassifierConstants.COL_EXTERNAL_STOCK)), Display.NONE);
 
       Long itemId = BeeUtils.toLongOrNull(table.getCellFormatter().getElement(i,
           getVisibleTableCols().indexOf(DataUtils.ID_TAG)).getInnerText());
