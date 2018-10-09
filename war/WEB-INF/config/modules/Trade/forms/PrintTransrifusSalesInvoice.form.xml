@@ -135,11 +135,13 @@
         <Label name="TotalInWords" class="bee-trade-print-words-value" />
       </HorizontalPanel>
 
-      <TextLabel source="Notes" class="bee-trade-print-notes">
-        <render>
-          <ui:expression>(row.Notes || "") + (row.CashRegisterNo ? "\nKasos aparato Nr. " + row.CashRegisterNo : "")</ui:expression>
-        </render>
-      </TextLabel>
+      <FlowPanel class="bee-trade-print-notes">
+        <TextLabel source="CashRegisterNo">
+          <renderToken source="CashRegisterNo" prefix="Kasos aparato Nr. " />
+        </TextLabel>
+        <TextLabel name="VatAmount" />
+        <TextLabel source="Notes" />
+      </FlowPanel>
 
       <br/>
       <Table kind="output" class="bee-trade-print-dispenser-receiver" >
