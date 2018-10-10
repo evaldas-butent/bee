@@ -378,6 +378,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         response = getItemAnalogs(reqInfo);
         break;
 
+      case SVC_DEBT_REPORT:
+        response = custom.getDebtReport(reqInfo);
+        break;
+
       default:
         if (BeeUtils.same(svc, SVC_GET_SALE_AMOUNTS)) {
           response = getSaleAmounts(reqInfo.getParameter(VAR_VIEW_NAME),

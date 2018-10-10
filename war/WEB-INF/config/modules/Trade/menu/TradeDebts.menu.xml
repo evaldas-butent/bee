@@ -6,6 +6,7 @@
 >
   <Item name="Debts" label="=debts" service="grid" parameters="Debts" separator="true" />
   <Item name="DebtReports" label="=trdDebtReports" service="grid" parameters="DebtReports" />
+  <Item name="DebtReport" label="Skolų analizė" service="report"  parameters="DebtReport" />
   <Item name="ReminderTemplates" label="=trdReminderTemplates" service="grid"
         parameters="DebtReminderTemplates" />
   <!--Transrifus { -->

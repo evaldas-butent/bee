@@ -12,22 +12,29 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Triplet;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
+import com.butent.bee.shared.report.ReportInfo;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.webservice.ButentWS;
@@ -313,5 +320,82 @@ public class CustomTradeModuleBean {
 
   private static String encodeId(Long documentId) {
     return BeeUtils.toString(documentId + 1e9);
+  }
+
+  public ResponseObject getDebtReport(RequestInfo reqInfo) {
+    ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
+
+    HasConditions clause = SqlUtils.and(SqlUtils.more(SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES,
+        COL_TRADE_DEBT), 0), 0));
+
+    clause.add(report.getCondition(TBL_ERP_SALES, COL_TRADE_DATE));
+    clause.add(report.getCondition(TBL_ERP_SALES, COL_TRADE_TERM));
+    clause.add(report.getCondition(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME),
+        COL_TRADE_CUSTOMER));
+    clause.add(report.getCondition(TBL_ERP_SALES, COL_TRADE_ERP_INVOICE));
+    clause.add(report.getCondition(SqlUtils.field("CompanyBankruptRisks", "Name"),
+        "BankruptcyRisk"));
+    clause.add(report.getCondition(SqlUtils.field("DelayedPaymentRisks", "Name"),
+        "DelayedPaymentRisk"));
+    clause.add(report.getCondition(SqlUtils.field(VIEW_FINANCIAL_STATES, "Name"),
+        COL_COMPANY_FINANCIAL_STATE));
+
+    String tmp = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(TBL_ERP_SALES, COL_TRADE_DATE, COL_TRADE_TERM, COL_TRADE_ERP_INVOICE,
+            COL_TRADE_DEBT)
+        .addEmptyDouble(VAR_OVERDUE)
+        .addEmptyDouble(VAR_UNTOLERATED)
+        .addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(TBL_SALES_SERIES, COL_SERIES_NAME),
+            "''"), SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_INVOICE_NO), "''")),
+            COL_TRADE_INVOICE_NO)
+        .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_TRADE_CUSTOMER)
+        .addFields(TBL_COMPANIES, COL_COMPANY_CREDIT_DAYS, COL_COMPANY_TOLERATED_DAYS,
+            "ExternalAdvance")
+        .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
+            SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")), COL_TRADE_MANAGER)
+        .addField("CompanyBankruptRisks", "Name", "BankruptcyRisk")
+        .addField("DelayedPaymentRisks", "Name", "DelayedPaymentRisk")
+        .addField(VIEW_FINANCIAL_STATES, "Name", COL_COMPANY_FINANCIAL_STATE)
+        .addFrom(TBL_ERP_SALES)
+        .addFromLeft(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, TBL_ERP_SALES, COL_TRADE_CUSTOMER))
+        .addFromLeft("CompanyBankruptRisks",
+            sys.joinTables("CompanyBankruptRisks", TBL_COMPANIES, "BankruptcyRisk"))
+        .addFromLeft("DelayedPaymentRisks",
+            sys.joinTables("DelayedPaymentRisks", TBL_COMPANIES, "DelayedPaymentRisk"))
+        .addFromLeft(VIEW_FINANCIAL_STATES,
+            sys.joinTables(VIEW_FINANCIAL_STATES, TBL_COMPANIES, COL_COMPANY_FINANCIAL_STATE))
+        .addFromLeft(TBL_SALES_SERIES,
+            sys.joinTables(TBL_SALES_SERIES, TBL_ERP_SALES, COL_TRADE_SALE_SERIES))
+        .addFromLeft(TBL_USERS,
+            sys.joinTables(TBL_USERS, TBL_ERP_SALES, COL_TRADE_MANAGER))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS,
+            sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+        .setWhere(clause));
+
+    qs.updateData(new SqlUpdate(tmp)
+        .addExpression(COL_TRADE_TERM, SqlUtils.plus(SqlUtils.name(COL_TRADE_DATE),
+            SqlUtils.multiply(SqlUtils.nvl(SqlUtils.name(COL_COMPANY_CREDIT_DAYS), 0),
+                TimeUtils.MILLIS_PER_DAY)))
+        .setWhere(SqlUtils.isNull(tmp, COL_TRADE_TERM)));
+
+    qs.updateData(new SqlUpdate(tmp)
+        .addExpression(VAR_OVERDUE, SqlUtils.name(COL_TRADE_DEBT))
+        .setWhere(SqlUtils.less(tmp, COL_TRADE_TERM, System.currentTimeMillis())));
+
+    qs.updateData(new SqlUpdate(tmp)
+        .addExpression(VAR_UNTOLERATED, SqlUtils.name(COL_TRADE_DEBT))
+        .setWhere(SqlUtils.more(
+            SqlUtils.minus(System.currentTimeMillis(), SqlUtils.name(COL_TRADE_TERM)),
+            SqlUtils.multiply(SqlUtils.nvl(SqlUtils.name(COL_COMPANY_TOLERATED_DAYS), 0),
+                SqlUtils.cast(SqlUtils.constant(TimeUtils.MILLIS_PER_DAY),
+                    SqlConstants.SqlDataType.LONG, 0, 0)))));
+
+    return report.getResultResponse(qs, tmp,
+        Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)),
+        report.getCondition(tmp, COL_TRADE_MANAGER),
+        report.getCondition(tmp, COL_TRADE_INVOICE_NO));
   }
 }

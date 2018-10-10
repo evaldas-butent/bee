@@ -488,6 +488,8 @@ public final class TradeConstants {
   public static final String RP_AMOUNT_COLUMNS = "AmountColumns";
   public static final String RP_PRICE_COLUMN = "PriceColumn";
 
+  public static final String SVC_DEBT_REPORT = "DebtReport";
+
   public static String keyStockWarehouse(String warehouseCode) {
     return PROP_STOCK + BeeUtils.trim(warehouseCode);
   }
