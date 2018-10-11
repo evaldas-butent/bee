@@ -136,10 +136,16 @@
       </HorizontalPanel>
 
       <FlowPanel class="bee-trade-print-notes">
-        <TextLabel source="CashRegisterNo">
-          <renderToken source="CashRegisterNo" prefix="Kasos aparato Nr. " />
-        </TextLabel>
-        <TextLabel name="VatAmount" />
+        <FlowPanel>
+          <dynStyle>
+            <ui:inline>display:none</ui:inline>
+            <ui:expression>!row.CashRegisterNo</ui:expression>
+          </dynStyle>
+          <TextLabel source="CashRegisterNo">
+            <renderToken source="CashRegisterNo" prefix="Kasos aparato Nr. " />
+          </TextLabel>
+          <TextLabel name="VatAmount" />
+        </FlowPanel>
         <TextLabel source="Notes" />
       </FlowPanel>
 
