@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.trade.acts;
 
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.event.shared.GwtEvent;
 
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
@@ -125,6 +126,25 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
     }
 
     super.afterCreatePresenter(presenter);
+  }
+
+  @Override
+  public void afterInsertRow(IsRow result) {
+    super.afterInsertRow(result);
+
+    if (TradeActKind.RENT_PROJECT.equals(newActKind) && TradeActKind.RENT_PROJECT.equals(getKind(result))) {
+     Collection<RowInfo> ri = getGridView().getSelectedRows(GridView.SelectedRows.ALL);
+
+      if (!BeeUtils.isEmpty(ri)) {
+        for (RowInfo item : ri) {
+          if (item.getId() == result.getId()) {
+            continue;
+          }
+          assignToRentProject(Sets.newHashSet(item.getId()), result.getId());
+          break;
+        }
+      }
+    }
   }
 
   @Override
@@ -347,6 +367,19 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
   public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
     IsRow parentRow =
         ViewHelper.getParentRow(getGridPresenter().getMainView().asWidget(), VIEW_TRADE_ACTS);
+    if (parentRow == null && TradeActKind.RENT_PROJECT.equals(newActKind)) {
+     ArrayList<RowInfo> ri = (ArrayList<RowInfo>) gridView.getSelectedRows(GridView.SelectedRows.ALL);
+
+      if (!BeeUtils.isEmpty(ri)) {
+        for (RowInfo item : ri) {
+          parentRow = gridView.getGrid().getRowById(item.getId());
+          BeeKeeper.getScreen().notifyInfo("Pasirinktas aktas", BeeUtils.toString(item.getId()),
+                  "bus priskirtas po nuomos projekto formos išsaugojimo");
+          break;
+        }
+      }
+    }
+
     TradeActKeeper.prepareNewTradeAct(newRow, parentRow, newActKind);
     return super.onStartNewRow(gridView, oldRow, newRow, copy);
   }

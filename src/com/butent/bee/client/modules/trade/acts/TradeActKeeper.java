@@ -697,7 +697,10 @@ public final class TradeActKeeper {
     }
     setDefaultOperation(row, kind);
 
-    if (parent != null && TradeActKind.RENT_PROJECT.equals(getKind(VIEW_TRADE_ACTS, parent))) {
+    // if parent kind is rent project then copy fields from rent project
+    // if parent is any act an tagert is rent project copy fields from parent
+    if (parent != null && (TradeActKind.RENT_PROJECT.equals(getKind(VIEW_TRADE_ACTS, parent))
+            || TradeActKind.RENT_PROJECT.equals(kind))) {
 
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_NAME,
           Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_NAME));
