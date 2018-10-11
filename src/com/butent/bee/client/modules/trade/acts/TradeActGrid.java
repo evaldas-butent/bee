@@ -797,14 +797,7 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
           break;
 
         case COL_TA_DATE:
-          Long defTime = Global.getParameterTime(PRM_DEFAULT_RETURN_ACT_TIME);
           newRow.setValue(i, (DateTime) null);
-
-          if (!BeeUtils.isPositive(defTime)) {
-            break;
-          }
-
-          newRow.setValue(i, TimeUtils.combine(new DateTime(), defTime));
           break;
 
         case COL_TA_PARENT:

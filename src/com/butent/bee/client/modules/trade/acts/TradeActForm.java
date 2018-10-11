@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.butent.bee.client.view.edit.EditEndEvent;
+import com.butent.bee.client.widget.*;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
@@ -39,10 +41,6 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.InputTimeOfDay;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
@@ -133,6 +131,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         case COL_TA_RENT_PROJECT:
           rentProject = (DataSelector) widget;
           rentProject.addSelectorHandler(this);
+          break;
       }
     }
 
@@ -210,7 +209,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       }
     }
 
-    if (widget instanceof TabbedPages && name == "TabbedPages") {
+    if (widget instanceof TabbedPages && "TabbedPages".equals(name)) {
       tabbedPages = (TabbedPages) widget;
     }
     if (widget instanceof FaLabel && Objects.equals(name, "InputTime")) {
@@ -350,6 +349,19 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   }
 
   @Override
+  public void onEditEnd(EditEndEvent event, Object source) {
+    if (event == null || BeeUtils.isEmpty(event.getColumnId()))  {
+      return;
+    }
+
+    if (COL_TA_DATE.equals(event.getColumnId())) {
+      appendReturnTime(event);
+    }
+
+    super.onEditEnd(event, source);
+  }
+
+  @Override
   public void onCellUpdate(CellUpdateEvent event) {
   }
 
@@ -395,6 +407,15 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         form.refreshBySource(col[0]);
       }
     }
+  }
+
+  @Override
+  public void onSourceChange(IsRow row, String source, String value) {
+    if (COL_TA_DATE.equals(source)) {
+      getFormView().refreshBySource(source);
+    }
+
+    super.onSourceChange(row, source, value);
   }
 
   @Override
@@ -582,13 +603,30 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   }
 
   boolean validateBeforeSave(FormView form, IsRow row, boolean beforeSave) {
-    boolean valid;
-
-    return checkMultiReturnItems(form, row, beforeSave)
+     return checkMultiReturnItems(form, row, beforeSave)
             && checkContactField(form, row)
             && checkRegistrationNumber(form, row)
             && checkDateWithRentProject(form, row)
             && createReqFields(form, !TradeActUtils.getMultiReturnData(row).isNull());
+  }
+
+  private void appendReturnTime(EditEndEvent e) {
+    if (!TradeActKind.RETURN.equals(getKind(getActiveRow()))) {
+      return;
+    }
+
+    if (!BeeUtils.isEmpty(e.getOldValue())) {
+      return;
+    }
+
+    Long defTime = Global.getParameterTime(PRM_DEFAULT_RETURN_ACT_TIME);
+
+    if (!BeeUtils.isPositive(defTime)) {
+      return;
+    }
+
+    DateTime newTime = TimeUtils.combine(new DateTime(BeeUtils.toLong(e.getNewValue())), defTime);
+    e.setNewValue(BeeUtils.toString(newTime.getTime()));
   }
 
   private boolean checkContactField(FormView form, IsRow row) {
