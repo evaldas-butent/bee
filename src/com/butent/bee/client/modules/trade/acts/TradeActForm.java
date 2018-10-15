@@ -1031,14 +1031,17 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         StyleUtils.setColor(table.getCellFormatter().getElement(3, 1), "red");
         table.setText(4, 0, "Netoleruojama skola:");
         table.setText(4, 1, String.valueOf(untolerated));
-        StyleUtils.setColor(table.getCellFormatter().getElement(4, 1), "red");
+        StyleUtils.setBackgroundColor(table.getCellFormatter().getElement(4, 1), "red");
+        StyleUtils.setColor(table.getCellFormatter().getElement(4, 1), "white");
         table.setText(5, 0, "Seniausia neapmokėta sąskaita:");
         table.setText(5, 1, oldestDate);
 
         String cap = BeeUtils.joinWords(result.get(ClassifierConstants.COL_COMPANY_NAME),
             result.get(ClassifierConstants.COL_COMPANY_TYPE));
 
-        Global.showModalWidget(cap, table).hideOnEscape();
+        if (BeeUtils.isPositive(overdue) || BeeUtils.isPositive(untolerated)) {
+          Global.showModalWidget(cap, table).hideOnEscape();
+        }
       });
     }
   }

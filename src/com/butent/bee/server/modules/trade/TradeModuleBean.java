@@ -2906,11 +2906,15 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     Map<String, Object> creditInfo = Maps.newHashMap();
     ResponseObject resp = getCreditInfo(companyId);
     Double debt = null;
+    Double over = null;
 
     if (resp.getResponse() instanceof Map) {
       creditInfo = resp.getResponse(creditInfo, logger);
       if (creditInfo.get(VAR_DEBT) instanceof Double) {
         debt = (Double) creditInfo.get(VAR_DEBT);
+      }
+      if (creditInfo.get(VAR_OVERDUE) instanceof Double) {
+        over = (Double) creditInfo.get(VAR_OVERDUE);
       }
     }
 
@@ -3024,10 +3028,29 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     footer.append(td());
 
     footer.append(td().append(b().text(usr.getDictionary().total())));
-    footer.append(td().text(BeeUtils.notEmpty(BeeUtils.toString(debt), BeeConst.STRING_EMPTY)));
+    Td td = td().text(BeeUtils.notEmpty(BeeUtils.toString(debt), BeeConst.STRING_EMPTY))
+        .alignRight();
+    td.setPadding("0 5px 0 5px");
+    footer.append(td);
     table.append(footer);
     footer.append(td());
 
+    if (BeeUtils.isPositive(over)) {
+      footer = tr();
+      footer.setColor("red");
+
+      for (int i = 0; i < rs.getNumberOfColumns() - ignoreLast - 3; i++) {
+        footer.append(td());
+      }
+      footer.append(td());
+
+      footer.append(td().append(b().text("Pradelsta")));
+      td = td().text(BeeUtils.toString(over)).alignRight();
+      td.setPadding("0 5px 0 5px");
+      footer.append(td);
+      footer.append(td());
+      table.append(footer);
+    }
     table.setBorderWidth("1px;");
     table.setBorderStyle(BorderStyle.NONE);
     table.setBorderSpacing("0px;");
