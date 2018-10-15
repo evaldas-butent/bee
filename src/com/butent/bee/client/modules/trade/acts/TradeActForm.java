@@ -604,9 +604,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
   boolean validateBeforeSave(FormView form, IsRow row, boolean beforeSave) {
      return checkMultiReturnItems(form, row, beforeSave)
-            && checkContactField(form, row)
-            && checkRegistrationNumber(form, row)
-            && checkDateWithRentProject(form, row)
+            && TradeActValidator.validateTradeActForm(form, row, form.getViewName())
             && createReqFields(form, !TradeActUtils.getMultiReturnData(row).isNull());
   }
 
@@ -629,20 +627,6 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     e.setNewValue(BeeUtils.toString(newTime.getTime()));
   }
 
-  private boolean checkContactField(FormView form, IsRow row) {
-    boolean valid = true;
-    if (DataUtils.isId(getCompany(row)) && !isReturnAct(row)) {
-      valid = BeeUtils.unbox(getContactPhysical(row)) || DataUtils.isId(getContact(row));
-    }
-
-    if (!valid) {
-      form.notifySevere(Localized.dictionary().contact() + " "
-              + Localized.dictionary().valueRequired());
-    }
-
-    return valid;
-  }
-
   private boolean checkMultiReturnItems(FormView form, IsRow row, boolean beforeSave) {
     boolean valid = !(isNewRow(row) && isReturnAct(row) && !TradeActUtils.getMultiReturnData(row).isNull()
             && beforeSave);
@@ -650,29 +634,6 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     if (!valid) {
       form.notifySevere(Localized.dictionary().allValuesEmpty(Localized.dictionary()
               .list(), Localized.dictionary().tradeActItems()));
-    }
-
-    return valid;
-  }
-
-  private boolean checkRegistrationNumber(FormView form, IsRow row) {
-    boolean valid = !isReturnAct(row) || !BeeUtils.isEmpty(getRegistrationNo(row));
-
-    if (!valid) {
-      form.notifySevere(Localized.dictionary().taRegistrationNo() + " "
-              + Localized.dictionary().valueRequired());
-    }
-
-    return valid;
-  }
-
-  private boolean checkDateWithRentProject(FormView form, IsRow row) {
-    boolean valid = !(DataUtils.isId(getRentProject(row)) && getRentProjectDate(row) != null)
-            || TimeUtils.isMeq(getDate(row), getRentProjectDate(row));
-
-    if (!valid) {
-      form.notifySevere(Localized.dictionary().invalidDate(), Localized.dictionary().taDate(),
-              "Data privalo būti vėlesnė už nuomos aktą");
     }
 
     return valid;

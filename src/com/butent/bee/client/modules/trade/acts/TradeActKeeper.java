@@ -698,7 +698,7 @@ public final class TradeActKeeper {
     setDefaultOperation(row, kind);
 
     // if parent kind is rent project then copy fields from rent project
-    // if parent is any act an tagert is rent project copy fields from parent
+    // if parent is any act and target is rent project then copy fields from parent
     if (parent != null && (TradeActKind.RENT_PROJECT.equals(getKind(VIEW_TRADE_ACTS, parent))
             || TradeActKind.RENT_PROJECT.equals(kind))) {
 
@@ -706,9 +706,15 @@ public final class TradeActKeeper {
           Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_NAME));
       RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_NAME, row, parent);
 
-      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT, parent.getId());
-      RelationUtils.updateRow(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_RENT_PROJECT, row,
-          Data.getDataInfo(VIEW_TRADE_ACTS), row, false);
+      if (TradeActKind.RENT_PROJECT.equals(getKind(VIEW_TRADE_ACTS, parent))) {
+        Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT, parent.getId());
+        RelationUtils.updateRow(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_RENT_PROJECT, row,
+                Data.getDataInfo(VIEW_TRADE_ACTS), row, false);
+      } else {
+        Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT,
+                Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_RENT_PROJECT));
+        RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_RENT_PROJECT, row, parent);
+      }
 
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_COMPANY,
           Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_COMPANY));
@@ -732,6 +738,12 @@ public final class TradeActKeeper {
           Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_CONTRACT));
       RelationUtils
           .setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_CONTRACT, row, parent);
+
+      if (parent != null && !TradeActKind.RENT_PROJECT.equals(getKind(VIEW_TRADE_ACTS, parent))){
+        Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_DATE,
+                Data.getDateTime(VIEW_TRADE_ACTS, parent, COL_TA_DATE));
+      }
+
     } else if (parent != null) {
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT,
           Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_RENT_PROJECT));
