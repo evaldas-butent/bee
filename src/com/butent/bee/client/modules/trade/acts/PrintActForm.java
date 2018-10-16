@@ -92,6 +92,7 @@ public class PrintActForm extends AbstractFormInterceptor {
   Consumer<Double> totConsumer;
   CheckBox showRentActServices = new CheckBox("Nuomos projekto paslaugos");
   CheckBox showOtherActServices = new CheckBox("Kitos aktų paslaugos");
+  CheckBox showTariff = new CheckBox("Paslaugos. Tarfas");
 
 
   @Override
@@ -114,14 +115,21 @@ public class PrintActForm extends AbstractFormInterceptor {
     HeaderView headerView = form.getViewPresenter().getHeader();
     headerView.addCommandItem(showRentActServices);
     headerView.addCommandItem(showOtherActServices);
+    headerView.addCommandItem(showTariff);
 
     TradeActKeeper.ensureSendMailPrintableForm(form);
 
     showRentActServices.addClickHandler(e -> beforeRefresh(form, form.getActiveRow()));
     showOtherActServices.addClickHandler(e -> beforeRefresh(form, form.getActiveRow()));
+    showTariff.addClickHandler(e -> {
+      visibleServiceCols.put(form.getFormName(), COL_TA_SERVICE_TARIFF,
+              !isVisibleColumn(SERVICES_WIDGET_NAME, COL_TA_SERVICE_TARIFF));
+      renderItems(SERVICES_WIDGET_NAME);
+    });
 
     showRentActServices.setChecked(true);
     showOtherActServices.setChecked(true);
+    showTariff.setChecked(isVisibleColumn(SERVICES_WIDGET_NAME, COL_TA_SERVICE_TARIFF));
     super.onLoad(form);
   }
 
@@ -367,6 +375,25 @@ public class PrintActForm extends AbstractFormInterceptor {
           visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION + VAR_PRINT_RENTAL, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA + VAR_PRINT_RENTAL, column, true);
           break;
+        case COL_TA_SERVICE_TARIFF:
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_PHYSICAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_RETURN, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_RETURN_EXTRA, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_RENT, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
+
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_PHYSICAL + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_NO_STOCK + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_RETURN + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_RETURN_EXTRA + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_RENT + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_ADDITION + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA + VAR_PRINT_RENTAL, column, true);
+          break;
         case COL_ITEM_ARTICLE:
         case COL_ITEM_NAME:
         case COL_TA_SERVICE_FROM:
@@ -376,7 +403,7 @@ public class PrintActForm extends AbstractFormInterceptor {
         case COL_TRADE_TIME_UNIT:
         case COL_TA_RETURNED_QTY:
         case COL_TRADE_WEIGHT:
-        case COL_TA_SERVICE_TARIFF:
+
           visibleItemsCols.put(FORM_PRINT_TA_SALE_PHYSICAL, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_RETURN, column, true);
