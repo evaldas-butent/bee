@@ -292,7 +292,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       case SVC_SEND_INVOICES:
         response = sendInvoices(DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID_LIST)),
-            reqInfo.getParameter(MailConstants.COL_CONTENT));
+            reqInfo.getParameter(MailConstants.COL_CONTENT),
+            reqInfo.hasParameter(MailConstants.COL_CONTENT));
         break;
 
       case SVC_SEND_TO_ERP:
@@ -3188,7 +3189,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   //    return resp;
   //  }
 
-  private ResponseObject sendInvoices(Set<Long> ids, String content) {
+  private ResponseObject sendInvoices(Set<Long> ids, String content, boolean sendInstantly) {
     Long senderMailAccountId = mail.getSenderAccountId(SVC_SEND_INVOICES);
 
     if (!DataUtils.isId(senderMailAccountId)) {
@@ -3293,6 +3294,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           Filter.equals(COL_COMPANY, company.getId())).serialize());
     }
     ////////////////
+    Map<Long, FileInfo> invoiceFiles = new HashMap<>();
+
     for (BeeRow invoice : invoices) {
       Long invoiceId = invoice.getId();
       Map<String, String> params = new HashMap<>();
@@ -3366,25 +3369,38 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       if (Objects.isNull(fileInfo)) {
         return resp;
       }
+      invoiceFiles.put(invoiceId, fileInfo);
+    }
+    if (!sendInstantly) {
+      return response.setResponse(invoiceFiles);
+    }
+    for (Long invoiceId : invoiceFiles.keySet()) {
+      BeeRow invoice = invoices.getRowById(invoiceId);
+
+      Long customerId = invoice.getLong(idxCustomer);
+      Long fileId = invoiceFiles.get(invoiceId).getId();
+
       String subject = BeeUtils.join("_", Localized.dictionary().trdInvoice(),
           BeeUtils.join("", invoice.getString(idxPrefix), invoice.getString(idxNumber)));
 
-      resp = mail.sendMail(senderMailAccountId, emails.get(customerId).toArray(new String[0]),
-          null, null, subject, BeeUtils.notEmpty(content, ""),
-          Collections.singletonMap(fileInfo.getId(), subject + ".pdf"), false);
+      ResponseObject resp = mail.sendMail(senderMailAccountId,
+          emails.get(customerId).toArray(new String[0]), null, null, subject,
+          BeeUtils.notEmpty(content, ""), Collections.singletonMap(fileId, subject + ".pdf"),
+          false);
 
       if (resp.hasErrors()) {
         return resp;
       }
       qs.insertData(new SqlInsert(VIEW_SALE_FILES)
           .addConstant(COL_SALE, invoiceId)
-          .addConstant(COL_FILE, fileInfo.getId())
+          .addConstant(COL_FILE, fileId)
           .addConstant(COL_NOTES, TimeUtils.nowMinutes().toString()));
 
       qs.updateData(new SqlUpdate(TBL_SALES)
           .addConstant("IsSentToEmail", true)
           .setWhere(sys.idEquals(TBL_SALES, invoiceId)));
       count++;
+
     }
     return response.addInfo("Išsiųsta sąskaitų: ", count);
   }
