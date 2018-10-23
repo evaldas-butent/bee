@@ -769,6 +769,7 @@ public enum Report implements HasWidgetSupplier {
       return Arrays.asList(
           new ReportTextItem(COL_TRADE_ERP_INVOICE, "Dokumentas"),
           new ReportTextItem(COL_TRADE_CUSTOMER, "Klientas"),
+          new ReportTextItem(COL_COMPANY_USER_RESPONSIBILITY, "Atsakingas vadybininkas"),
           new ReportTextItem(COL_TRADE_MANAGER, "Vadybininkas"),
           new ReportTextItem(COL_TRADE_INVOICE_NO, "Sąskaitos nr."),
           new ReportTextItem("BankruptcyRisk", "Bankroto rizika"),

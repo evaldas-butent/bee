@@ -643,8 +643,9 @@ public final class CalendarKeeper {
                 : BeeUtils.joinWords(result.getCaption(),
                 BeeUtils.bracket(Localized.dictionary().rowIsReadOnly().trim()));
 
-            DialogBox box = Global.inputWidget(caption, result, builder.getModalCallback(null),
-                RowEditor.DIALOG_STYLE, null, enabledActions);
+            DialogBox box = Global.inputWidget(BeeUtils.joinWords(caption, result.getActiveRowId()),
+                result, builder.getModalCallback(null), RowEditor.DIALOG_STYLE, null,
+                enabledActions);
 
             box.addOpenHandler(event -> {
               result.refresh();

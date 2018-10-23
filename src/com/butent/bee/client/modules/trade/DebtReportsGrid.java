@@ -450,21 +450,16 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
     rpc.addDataItem(TradeConstants.VAR_ID_LIST, DataUtils.buildIdList(ids));
 
     BeeKeeper.getRpc().makePostRequest(rpc, response -> {
+      Popup.getActivePopup().close();
+      response.notify(getGridView());
+
       if (response.hasErrors()) {
-        getGridPresenter().getGridView().notifySevere(response.getErrors());
-        Popup.getActivePopup().close();
         return;
       }
-
       if (response.hasResponse() && response.getResponse() instanceof String) {
         getGridPresenter().getGridView().notifyInfo(response.getResponseAsString());
       }
-
-      if (Popup.getActivePopup() != null) {
-        Popup.getActivePopup().close();
-      }
+      Data.resetLocal(getViewName());
     });
-
   }
-
 }

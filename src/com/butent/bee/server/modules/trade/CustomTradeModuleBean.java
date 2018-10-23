@@ -341,10 +341,12 @@ public class CustomTradeModuleBean {
         COL_COMPANY_FINANCIAL_STATE));
 
     String tmp = qs.sqlCreateTemp(new SqlSelect()
+        .addField(TBL_ERP_SALES, COL_TRADE_CUSTOMER, COL_COMPANY)
         .addFields(TBL_ERP_SALES, COL_TRADE_DATE, COL_TRADE_TERM, COL_TRADE_ERP_INVOICE,
             COL_TRADE_DEBT)
         .addEmptyDouble(VAR_OVERDUE)
         .addEmptyDouble(VAR_UNTOLERATED)
+        .addEmptyString(COL_COMPANY_USER_RESPONSIBILITY, 61)
         .addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(TBL_SALES_SERIES, COL_SERIES_NAME),
             "''"), SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_INVOICE_NO), "''")),
             COL_TRADE_INVOICE_NO)
@@ -393,9 +395,27 @@ public class CustomTradeModuleBean {
                 SqlUtils.cast(SqlUtils.constant(TimeUtils.MILLIS_PER_DAY),
                     SqlConstants.SqlDataType.LONG, 0, 0)))));
 
+    String subq = "subq";
+
+    qs.updateData(new SqlUpdate(tmp)
+        .addExpression(COL_COMPANY_USER_RESPONSIBILITY, SqlUtils.concat(SqlUtils.field(subq,
+            COL_FIRST_NAME), "' '", SqlUtils.nvl(SqlUtils.field(subq, COL_LAST_NAME), "''")))
+        .setFrom(new SqlSelect()
+                .addFields(TBL_COMPANY_USERS, COL_COMPANY)
+                .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
+                .addFrom(TBL_COMPANY_USERS)
+                .addFromInner(TBL_USERS,
+                    sys.joinTables(TBL_USERS, TBL_COMPANY_USERS, COL_USER))
+                .addFromInner(TBL_COMPANY_PERSONS,
+                    sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+                .addFromInner(TBL_PERSONS,
+                    sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON)), subq,
+            SqlUtils.joinUsing(tmp, subq, COL_COMPANY)));
+
     return report.getResultResponse(qs, tmp,
         Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)),
         report.getCondition(tmp, COL_TRADE_MANAGER),
+        report.getCondition(tmp, COL_COMPANY_USER_RESPONSIBILITY),
         report.getCondition(tmp, COL_TRADE_INVOICE_NO));
   }
 }
