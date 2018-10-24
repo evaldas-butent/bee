@@ -409,8 +409,9 @@ public class CustomTradeModuleBean {
                 .addFromInner(TBL_COMPANY_PERSONS,
                     sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
                 .addFromInner(TBL_PERSONS,
-                    sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON)), subq,
-            SqlUtils.joinUsing(tmp, subq, COL_COMPANY)));
+                    sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+                .setWhere(SqlUtils.notNull(TBL_COMPANY_USERS, COL_COMPANY_USER_RESPONSIBILITY)),
+            subq, SqlUtils.joinUsing(tmp, subq, COL_COMPANY)));
 
     return report.getResultResponse(qs, tmp,
         Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)),
