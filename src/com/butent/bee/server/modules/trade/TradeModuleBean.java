@@ -383,6 +383,11 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         response = custom.getDebtReport(reqInfo);
         break;
 
+      case SVC_GET_ACT_EMAILS:
+        response = ResponseObject.response(custom.getTradeActEmails(
+            DataUtils.parseIdSet(reqInfo.getParameter(COL_EMAIL_INVOICES))));
+        break;
+
       default:
         if (BeeUtils.same(svc, SVC_GET_SALE_AMOUNTS)) {
           response = getSaleAmounts(reqInfo.getParameter(VAR_VIEW_NAME),
@@ -3374,6 +3379,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     if (!sendInstantly) {
       return response.setResponse(invoiceFiles);
     }
+    Multimap<Long, String> invoiceEmails = custom.getTradeActEmails(invoiceFiles.keySet());
+
     for (Long invoiceId : invoiceFiles.keySet()) {
       BeeRow invoice = invoices.getRowById(invoiceId);
 
@@ -3384,7 +3391,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           BeeUtils.join("", invoice.getString(idxPrefix), invoice.getString(idxNumber)));
 
       ResponseObject resp = mail.sendMail(senderMailAccountId,
-          emails.get(customerId).toArray(new String[0]), null, null, subject,
+          emails.get(customerId).toArray(new String[0]),
+          invoiceEmails.get(invoiceId).toArray(new String[0]), null, subject,
           BeeUtils.notEmpty(content, ""), Collections.singletonMap(fileId, subject + ".pdf"),
           false);
 

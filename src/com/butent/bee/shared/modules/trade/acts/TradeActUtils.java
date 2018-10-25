@@ -5,10 +5,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_ITEM_QUANTITY;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRow;
@@ -22,6 +25,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -417,6 +421,27 @@ public final class TradeActUtils {
             .findFirst().ifPresent(rs -> rs.forEach(beeRow ->
             emails.add(beeRow.getString(rs.getColumnIndex(COL_EMAIL_ADDRESS)))));
       }
+      emailsConsumer.accept(emails);
+    });
+  }
+
+  public static void getTradeActEmails(Set<Long> invoices, Consumer<Set<String>> emailsConsumer) {
+    Set<String> emails = new HashSet<>();
+
+    if (BeeUtils.isEmpty(invoices)) {
+      emailsConsumer.accept(emails);
+      return;
+    }
+    ParameterList args = TradeKeeper.createArgs(SVC_GET_ACT_EMAILS);
+    args.addDataItem(COL_EMAIL_INVOICES, DataUtils.buildIdList(invoices));
+
+    BeeKeeper.getRpc().makePostRequest(args, response -> {
+      response.notify(BeeKeeper.getScreen());
+
+      if (response.hasErrors()) {
+        return;
+      }
+      emails.addAll(Codec.deserializeMultiMap(response.getResponseAsString()).values());
       emailsConsumer.accept(emails);
     });
   }

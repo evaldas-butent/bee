@@ -131,27 +131,27 @@ public class SalesGrid extends InvoicesGrid {
       Codec.deserializeHashMap(response.getResponseAsString()).forEach((invoice, file) ->
           invoices.put(BeeUtils.toLong(invoice), FileInfo.restore(file)));
 
-      TradeActUtils.getInvoiceEmails(companyId, emails -> NewMailMessage.create(emails, null, null,
-          "Sąskaitos", null, invoices.values(), null, false, (messageId, saveMode) -> {
+      TradeActUtils.getInvoiceEmails(companyId, emails ->
+          TradeActUtils.getTradeActEmails(ids, cc -> NewMailMessage.create(emails, cc,
+              null, "Sąskaitos", null, invoices.values(), null, false, (messageId, saveMode) -> {
 
-            BeeRowSet files = new BeeRowSet(VIEW_SALE_FILES, Data.getColumns(VIEW_SALE_FILES,
-                Arrays.asList(COL_SALE, AdministrationConstants.COL_FILE, COL_NOTES,
-                    MailConstants.COL_MESSAGE)));
+                BeeRowSet files = new BeeRowSet(VIEW_SALE_FILES, Data.getColumns(VIEW_SALE_FILES,
+                    Arrays.asList(COL_SALE, AdministrationConstants.COL_FILE, COL_NOTES,
+                        MailConstants.COL_MESSAGE)));
 
-            invoices.forEach((invoiceId, fileInfo) -> {
-              BeeRow row = files.addEmptyRow();
-              row.setValue(files.getColumnIndex(COL_SALE), invoiceId);
-              row.setValue(files.getColumnIndex(AdministrationConstants.COL_FILE),
-                  fileInfo.getId());
-              row.setValue(files.getColumnIndex(COL_NOTES),
-                  Format.renderDateTime(TimeUtils.nowMinutes()));
-              row.setValue(files.getColumnIndex(MailConstants.COL_MESSAGE), messageId);
-            });
-            Queries.insertRows(files, result -> {
-              Queries.update(view.getViewName(), Filter.idIn(invoices.keySet()), "IsSentToEmail",
-                  BeeConst.STRING_TRUE, res -> Data.resetLocal(view.getViewName()));
-            });
-          }, Global.getParameterText(PRM_INVOICE_MAIL_SIGNATURE)));
+                invoices.forEach((invoiceId, fileInfo) -> {
+                  BeeRow row = files.addEmptyRow();
+                  row.setValue(files.getColumnIndex(COL_SALE), invoiceId);
+                  row.setValue(files.getColumnIndex(AdministrationConstants.COL_FILE),
+                      fileInfo.getId());
+                  row.setValue(files.getColumnIndex(COL_NOTES),
+                      Format.renderDateTime(TimeUtils.nowMinutes()));
+                  row.setValue(files.getColumnIndex(MailConstants.COL_MESSAGE), messageId);
+                });
+                Queries.insertRows(files, result -> Queries.update(view.getViewName(),
+                    Filter.idIn(invoices.keySet()), "IsSentToEmail", BeeConst.STRING_TRUE,
+                    res -> Data.resetLocal(view.getViewName())));
+              }, Global.getParameterText(PRM_INVOICE_MAIL_SIGNATURE))));
     });
   }
 }

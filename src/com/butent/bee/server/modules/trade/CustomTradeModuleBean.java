@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.trade;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 
@@ -9,6 +10,7 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.finance.Dimensions.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -418,5 +420,30 @@ public class CustomTradeModuleBean {
         report.getCondition(tmp, COL_TRADE_MANAGER),
         report.getCondition(tmp, COL_COMPANY_USER_RESPONSIBILITY),
         report.getCondition(tmp, COL_TRADE_INVOICE_NO));
+  }
+
+  public Multimap<Long, String> getTradeActEmails(Set<Long> invoices) {
+    HashMultimap<Long, String> emails = HashMultimap.create();
+
+    SimpleRowSet rs = qs.getData(new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_SALE_ITEMS, COL_SALE)
+        .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+        .addFrom(TBL_TRADE_ACT_INVOICES)
+        .addFromInner(TBL_SALE_ITEMS,
+            sys.joinTables(TBL_SALE_ITEMS, TBL_TRADE_ACT_INVOICES, "SaleItem"))
+        .addFromInner(TBL_TRADE_ACT_SERVICES,
+            sys.joinTables(TBL_TRADE_ACT_SERVICES, TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
+        .addFromInner(TBL_TRADE_ACTS,
+            sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT))
+        .addFromInner(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_TRADE_ACTS, COL_CONTACT))
+        .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
+        .addFromInner(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+        .setWhere(SqlUtils.and(SqlUtils.inList(TBL_SALE_ITEMS, COL_SALE, invoices),
+            SqlUtils.notNull(TBL_EMAILS, COL_EMAIL_ADDRESS))));
+
+    rs.forEach(row -> emails.put(row.getLong(COL_SALE), row.getValue(COL_EMAIL_ADDRESS)));
+
+    return emails;
   }
 }
