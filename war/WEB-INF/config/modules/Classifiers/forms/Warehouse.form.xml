@@ -18,12 +18,17 @@
         <InputText source="Code" style="width: 100px;" />
 
         <Label for="Name" />
-        <InputText source="Name" style="width: 350px;" />
+        <InputText source="Name" style="width: 300px;" />
 
         <Label for="ERPCode" />
         <InputText source="ERPCode" style="width: 100px;" />
 
-        <CheckBox source="Consignment" style="margin-left: 2em;" />
+        <cell>
+          <VerticalPanel style="margin-left: 2em;">
+            <CheckBox source="ForActs" />
+            <CheckBox source="Consignment" />
+          </VerticalPanel>
+        </cell>
       </row>
 
       <row module="Ec">

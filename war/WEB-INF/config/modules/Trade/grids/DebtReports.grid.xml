@@ -31,6 +31,6 @@
                caption="=clientDelayedPaymentRisk" label="=clientDelayedPaymentRisk"
                readOnly="true"/>
     <RelColumn name="FinancialState" renderColumns="FinancialStateName" caption="=financialState"
-               label="=financialState" readOnly="true"/>
+               label="=financialState" readOnly="true" filterSupplier="list"/>
   </g:columns>
 </g:Grid>

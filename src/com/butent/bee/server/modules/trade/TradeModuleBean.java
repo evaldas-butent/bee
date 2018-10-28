@@ -292,7 +292,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       case SVC_SEND_INVOICES:
         response = sendInvoices(DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID_LIST)),
-            reqInfo.getParameter(MailConstants.COL_CONTENT));
+            reqInfo.getParameter(MailConstants.COL_CONTENT),
+            reqInfo.hasParameter(MailConstants.COL_CONTENT));
         break;
 
       case SVC_SEND_TO_ERP:
@@ -376,6 +377,15 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       case SVC_GET_ITEM_ANALOGS:
         response = getItemAnalogs(reqInfo);
+        break;
+
+      case SVC_DEBT_REPORT:
+        response = custom.getDebtReport(reqInfo);
+        break;
+
+      case SVC_GET_ACT_EMAILS:
+        response = ResponseObject.response(custom.getTradeActEmails(
+            DataUtils.parseIdSet(reqInfo.getParameter(COL_EMAIL_INVOICES))));
         break;
 
       default:
@@ -2902,11 +2912,15 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     Map<String, Object> creditInfo = Maps.newHashMap();
     ResponseObject resp = getCreditInfo(companyId);
     Double debt = null;
+    Double over = null;
 
     if (resp.getResponse() instanceof Map) {
       creditInfo = resp.getResponse(creditInfo, logger);
       if (creditInfo.get(VAR_DEBT) instanceof Double) {
         debt = (Double) creditInfo.get(VAR_DEBT);
+      }
+      if (creditInfo.get(VAR_OVERDUE) instanceof Double) {
+        over = (Double) creditInfo.get(VAR_OVERDUE);
       }
     }
 
@@ -3020,10 +3034,29 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     footer.append(td());
 
     footer.append(td().append(b().text(usr.getDictionary().total())));
-    footer.append(td().text(BeeUtils.notEmpty(BeeUtils.toString(debt), BeeConst.STRING_EMPTY)));
+    Td td = td().text(BeeUtils.notEmpty(BeeUtils.toString(debt), BeeConst.STRING_EMPTY))
+        .alignRight();
+    td.setPadding("0 5px 0 5px");
+    footer.append(td);
     table.append(footer);
     footer.append(td());
 
+    if (BeeUtils.isPositive(over)) {
+      footer = tr();
+      footer.setColor("red");
+
+      for (int i = 0; i < rs.getNumberOfColumns() - ignoreLast - 3; i++) {
+        footer.append(td());
+      }
+      footer.append(td());
+
+      footer.append(td().append(b().text("Pradelsta")));
+      td = td().text(BeeUtils.toString(over)).alignRight();
+      td.setPadding("0 5px 0 5px");
+      footer.append(td);
+      footer.append(td());
+      table.append(footer);
+    }
     table.setBorderWidth("1px;");
     table.setBorderStyle(BorderStyle.NONE);
     table.setBorderSpacing("0px;");
@@ -3161,7 +3194,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   //    return resp;
   //  }
 
-  private ResponseObject sendInvoices(Set<Long> ids, String content) {
+  private ResponseObject sendInvoices(Set<Long> ids, String content, boolean sendInstantly) {
     Long senderMailAccountId = mail.getSenderAccountId(SVC_SEND_INVOICES);
 
     if (!DataUtils.isId(senderMailAccountId)) {
@@ -3266,6 +3299,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           Filter.equals(COL_COMPANY, company.getId())).serialize());
     }
     ////////////////
+    Map<Long, FileInfo> invoiceFiles = new HashMap<>();
+
     for (BeeRow invoice : invoices) {
       Long invoiceId = invoice.getId();
       Map<String, String> params = new HashMap<>();
@@ -3339,25 +3374,41 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       if (Objects.isNull(fileInfo)) {
         return resp;
       }
+      invoiceFiles.put(invoiceId, fileInfo);
+    }
+    if (!sendInstantly) {
+      return response.setResponse(invoiceFiles);
+    }
+    Multimap<Long, String> invoiceEmails = custom.getTradeActEmails(invoiceFiles.keySet());
+
+    for (Long invoiceId : invoiceFiles.keySet()) {
+      BeeRow invoice = invoices.getRowById(invoiceId);
+
+      Long customerId = invoice.getLong(idxCustomer);
+      Long fileId = invoiceFiles.get(invoiceId).getId();
+
       String subject = BeeUtils.join("_", Localized.dictionary().trdInvoice(),
           BeeUtils.join("", invoice.getString(idxPrefix), invoice.getString(idxNumber)));
 
-      resp = mail.sendMail(senderMailAccountId, emails.get(customerId).toArray(new String[0]),
-          null, null, subject, BeeUtils.notEmpty(content, ""),
-          Collections.singletonMap(fileInfo.getId(), subject + ".pdf"), false);
+      ResponseObject resp = mail.sendMail(senderMailAccountId,
+          emails.get(customerId).toArray(new String[0]),
+          invoiceEmails.get(invoiceId).toArray(new String[0]), null, subject,
+          BeeUtils.notEmpty(content, ""), Collections.singletonMap(fileId, subject + ".pdf"),
+          false);
 
       if (resp.hasErrors()) {
         return resp;
       }
       qs.insertData(new SqlInsert(VIEW_SALE_FILES)
           .addConstant(COL_SALE, invoiceId)
-          .addConstant(COL_FILE, fileInfo.getId())
+          .addConstant(COL_FILE, fileId)
           .addConstant(COL_NOTES, TimeUtils.nowMinutes().toString()));
 
       qs.updateData(new SqlUpdate(TBL_SALES)
           .addConstant("IsSentToEmail", true)
           .setWhere(sys.idEquals(TBL_SALES, invoiceId)));
       count++;
+
     }
     return response.addInfo("Išsiųsta sąskaitų: ", count);
   }
@@ -5613,22 +5664,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         }
       }
     }
-    Pair<Long, String> erp = prm.getRelationInfo(PRM_ERP_WAREHOUSE);
+    result.putAll(custom.getErpStock(items));
 
-    if (erp.noNulls()) {
-      data = qs.getData(new SqlSelect()
-          .addField(TBL_ITEMS, sys.getIdName(TBL_ITEMS), COL_ITEM)
-          .addFields(TBL_ITEMS, COL_EXTERNAL_STOCK)
-          .addFrom(TBL_ITEMS)
-          .setWhere(SqlUtils.and(sys.idInList(TBL_ITEMS, items),
-              SqlUtils.notNull(TBL_ITEMS, COL_EXTERNAL_STOCK),
-              SqlUtils.notEqual(TBL_ITEMS, COL_EXTERNAL_STOCK, 0))));
-
-      if (!DataUtils.isEmpty(data)) {
-        data.forEach(row -> result.put(row.getLong(COL_ITEM),
-            Triplet.of(erp.getA(), erp.getB(), row.getDouble(COL_EXTERNAL_STOCK))));
-      }
-    }
     return result;
   }
 

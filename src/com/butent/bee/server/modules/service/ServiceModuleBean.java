@@ -87,9 +87,11 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.cars.CarsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.service.ServiceUtils;
 import com.butent.bee.shared.modules.trade.ItemQuantities;
+import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.TradeDocument;
 import com.butent.bee.shared.report.ReportInfo;
@@ -1044,6 +1046,33 @@ public class ServiceModuleBean implements BeeModule {
   }
 
   private ResponseObject createInvoice(TradeDocument document, Map<Long, Double> items) {
+    OperationType opType = qs.getEnum(new SqlSelect()
+            .addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE)
+            .addFrom(TBL_TRADE_OPERATIONS)
+            .setWhere(sys.idEquals(TBL_TRADE_OPERATIONS, document.getOperation())),
+        OperationType.class);
+
+    if (OperationType.SALE.equals(opType)) {
+      SimpleRowSet data = qs.getData(new SqlSelect()
+          .addFields(TBL_TRADE_SERIES, COL_SERIES_NAME)
+          .addField(PayrollConstants.TBL_EMPLOYEES, sys.getIdName(PayrollConstants.TBL_EMPLOYEES),
+              COL_TRADE_MANAGER)
+          .addFrom(TBL_SERIES_MANAGERS)
+          .addFromInner(TBL_TRADE_SERIES,
+              sys.joinTables(TBL_TRADE_SERIES, TBL_SERIES_MANAGERS, COL_SERIES))
+          .addFromInner(TBL_USERS,
+              sys.joinTables(TBL_USERS, TBL_SERIES_MANAGERS, COL_SERIES_MANAGER))
+          .addFromLeft(PayrollConstants.TBL_EMPLOYEES,
+              SqlUtils.joinUsing(TBL_USERS, PayrollConstants.TBL_EMPLOYEES, COL_COMPANY_PERSON))
+          .setWhere(SqlUtils.and(SqlUtils.equals(TBL_SERIES_MANAGERS, COL_SERIES_MANAGER,
+              usr.getCurrentUserId()), SqlUtils.notNull(TBL_SERIES_MANAGERS, COL_SERIES_DEFAULT),
+              SqlUtils.isNull(TBL_TRADE_SERIES, COL_FOR_ACTS))));
+
+      if (!DataUtils.isEmpty(data)) {
+        document.setSeries(data.getValue(0, COL_SERIES_NAME));
+        document.setManager(data.getLong(0, COL_TRADE_MANAGER));
+      }
+    }
     ResponseObject response = trd.createDocument(document);
 
     if (response.hasErrors()) {

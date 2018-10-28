@@ -147,6 +147,13 @@ public final class TradeActKeeper {
                 public void onSuccess(String email) {
                   NewMailMessage.create(Collections.singleton(email), null, null, invoice, content,
                       Collections.singleton(fileInfo), null, false, (messageId, saveMode) -> {
+                        if (BeeUtils.same(form.getViewName(), VIEW_TRADE_ACTS)) {
+                          Queries.insert(AdministrationConstants.TBL_RELATIONS,
+                              Data.getColumns(AdministrationConstants.TBL_RELATIONS,
+                                  Arrays.asList(COL_TRADE_ACT, MailConstants.COL_MESSAGE)),
+                              Queries.asList(form.getActiveRowId(), messageId));
+                          return;
+                        }
                         if (!BeeUtils.same(form.getViewName(), VIEW_SALES)) {
                           return;
                         }
@@ -690,28 +697,31 @@ public final class TradeActKeeper {
     }
     setDefaultOperation(row, kind);
 
-    if (parent != null && TradeActKind.RENT_PROJECT.equals(getKind(VIEW_TRADE_ACTS, parent))) {
+    // if parent kind is rent project then copy fields from rent project
+    // if parent is any act an tagert is rent project copy fields from parent
+    if (parent != null && (TradeActKind.RENT_PROJECT.equals(getKind(VIEW_TRADE_ACTS, parent))
+            || TradeActKind.RENT_PROJECT.equals(kind))) {
 
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_NAME,
-              Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_NAME));
+          Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_NAME));
       RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_NAME, row, parent);
 
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT, parent.getId());
       RelationUtils.updateRow(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_RENT_PROJECT, row,
-                  Data.getDataInfo(VIEW_TRADE_ACTS), row, false);
+          Data.getDataInfo(VIEW_TRADE_ACTS), row, false);
 
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_COMPANY,
-              Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_COMPANY));
+          Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_COMPANY));
       RelationUtils
           .setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_COMPANY, row, parent);
 
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_CONTACT,
-              Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_CONTACT));
+          Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_CONTACT));
       RelationUtils
           .setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_CONTACT, row, parent);
 
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_OBJECT,
-              Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_OBJECT));
+          Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_OBJECT));
       RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_OBJECT, row, parent);
 
       Data.setValue(VIEW_TRADE_ACTS, row, ALS_RENT_PROJECT_COMPANY,
@@ -719,12 +729,14 @@ public final class TradeActKeeper {
               COL_TA_COMPANY));
 
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_CONTRACT,
-              Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_CONTRACT));
-      RelationUtils.setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_CONTRACT, row, parent);
-    } else if (parent != null) {
-      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT, Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_RENT_PROJECT));
+          Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_CONTRACT));
       RelationUtils
-              .setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_RENT_PROJECT, row, parent);
+          .setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_CONTRACT, row, parent);
+    } else if (parent != null) {
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT,
+          Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_RENT_PROJECT));
+      RelationUtils
+          .setRelatedValues(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_RENT_PROJECT, row, parent);
     }
   }
 

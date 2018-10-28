@@ -1,7 +1,6 @@
 package com.butent.bee.server.modules.trade;
 
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
@@ -19,7 +18,6 @@ import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Triplet;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -41,7 +39,7 @@ public class TradeActDataEventHandler implements DataEventHandler {
 
   @EJB SystemBean sys;
   @EJB QueryServiceBean qs;
-  @EJB TradeModuleBean trd;
+  @EJB CustomTradeModuleBean custom;
 
   public Table<Long, Long, Double> getStock(Collection<Long> items, Long... warehouses) {
     IsCondition itemsClause = BeeUtils.isEmpty(items) ? null
@@ -90,9 +88,10 @@ public class TradeActDataEventHandler implements DataEventHandler {
     qs.getData(query).forEach(row -> result.put(row.getLong(COL_TA_ITEM),
         row.getLong(COL_STOCK_WAREHOUSE), row.getDouble(COL_STOCK_QUANTITY)));
 
-    Multimap<Long, Triplet<Long, String, Double>> tradeStock = trd.getStockByWarehouse(items, null);
+    custom.getTradeActStock(items).rowMap().forEach((item, map) -> map.forEach((wrh, qty) ->
+        result.put(item, wrh, BeeUtils.unbox(result.get(item, wrh)) + qty)));
 
-    tradeStock.forEach((item, triplet) -> result.put(item, triplet.getA(),
+    custom.getErpStock(items).forEach((item, triplet) -> result.put(item, triplet.getA(),
         BeeUtils.unbox(result.get(item, triplet.getA())) + triplet.getC()));
 
     return result;

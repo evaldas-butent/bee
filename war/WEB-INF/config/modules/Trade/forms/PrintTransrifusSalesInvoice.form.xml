@@ -135,7 +135,19 @@
         <Label name="TotalInWords" class="bee-trade-print-words-value" />
       </HorizontalPanel>
 
-      <TextLabel source="Notes" class="bee-trade-print-notes" />
+      <FlowPanel class="bee-trade-print-notes">
+        <FlowPanel>
+          <dynStyle>
+            <ui:inline>display:none</ui:inline>
+            <ui:expression>!row.CashRegisterNo</ui:expression>
+          </dynStyle>
+          <TextLabel source="CashRegisterNo">
+            <renderToken source="CashRegisterNo" prefix="Kasos aparato Nr. " />
+          </TextLabel>
+          <TextLabel name="VatAmount" />
+        </FlowPanel>
+        <TextLabel source="Notes" />
+      </FlowPanel>
 
       <br/>
       <Table kind="output" class="bee-trade-print-dispenser-receiver" >

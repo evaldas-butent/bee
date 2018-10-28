@@ -1,8 +1,5 @@
 package com.butent.bee.client.modules.trade;
 
-import com.butent.bee.shared.css.values.FontWeight;
-import com.butent.bee.shared.data.*;
-import com.butent.bee.shared.time.JustDate;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
@@ -28,11 +25,18 @@ import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.values.FontWeight;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -154,7 +158,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
         } else {
           itemVat = 0;
         }
-          price -= itemVat;
+        price -= itemVat;
 
         return BeeUtils.toString(price);
       }
@@ -278,7 +282,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
           if (vatInPercents) {
             itemVat = price - price / (1d + itemVat / 100d);
           }
-        } else  {
+        } else {
           itemVat = 0;
         }
         price -= itemVat;
@@ -674,10 +678,12 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     table.getRowFormatter().addStyleName(r, STYLE_PREFIX + "items-header");
 
+    double vatPrc = BeeConst.DOUBLE_ZERO;
     double vatSum = BeeConst.DOUBLE_ZERO;
     double totSum = BeeConst.DOUBLE_ZERO;
 
     for (int i = 0; i < items.getNumberOfRows(); i++) {
+      vatPrc = BeeUtils.max(vatPrc, items.getDouble(i, COL_ITEM_VAT));
       double vat = getItemVat(items, i);
       double total = getItemTotal(items, i);
 
@@ -705,16 +711,23 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       table.setText(r, 0, "Suma žodžiais:");
 
       r++;
-      table.setText(r, 1, Localized.dictionary().printDocumentVat(),
+      table.setText(r, 1, Localized.dictionary().printDocumentVat()
+              + " (" + Format.getDecimalFormat(0).format(vatPrc) + "%)",
           STYLE_PREFIX + "items-total-label");
       table.setText(r, 2, AMOUNT_FORMAT.format(vatSum),
           STYLE_PREFIX + "items-total-value");
       table.getCellFormatter().setColSpan(r, 0, columnSize - 2);
 
+      Widget vatWidget = getWidgetByName("VatAmount");
+
+      if (vatWidget != null) {
+        vatWidget.getElement().setInnerHTML(Localized.dictionary().printDocumentVat()
+            + Format.getDecimalFormat(0).format(vatPrc) + "% " + AMOUNT_FORMAT.format(vatSum));
+      }
       Widget widget = namedWidgets.get(NAME_TOTAL_IN_WORDS);
       if (widget != null) {
         TradeUtils.getTotalInWords(getFormView().getDoubleValue(COL_TRADE_AMOUNT),
-                getFormView().getLongValue(AdministrationConstants.COL_CURRENCY), widget);
+            getFormView().getLongValue(AdministrationConstants.COL_CURRENCY), widget);
       }
       table.setWidget(r, 0, widget);
 
@@ -727,8 +740,9 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
       JustDate term = getFormView().getDateValue(COL_TRADE_TERM);
       if (term != null) {
-        table.setText(r, 0, Localized.dictionary().printDueDate() + " " + Format.renderDateLong(term),
-                StyleUtils.className(FontWeight.BOLD));
+        table.setText(r, 0,
+            Localized.dictionary().printDueDate() + " " + Format.renderDateLong(term),
+            StyleUtils.className(FontWeight.BOLD));
       }
     }
   }

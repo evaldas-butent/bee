@@ -188,27 +188,29 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
             : Localized.dictionary().tradeAct();
 
         TradeActUtils.getInvoiceEmails(companyId, emails ->
-            NewMailMessage.create(emails, null, null, invoice, content,
-                Collections.singleton(fileInfo), null, false, (messageId, saveMode) -> {
-                  if (!BeeUtils.same(form.getViewName(), VIEW_SALES)) {
-                    return;
-                  }
-                  Queries.insert(VIEW_SALE_FILES,
-                      Data.getColumns(VIEW_SALE_FILES, Arrays.asList(COL_SALE,
-                          AdministrationConstants.COL_FILE, COL_NOTES, MailConstants.COL_MESSAGE)),
-                      Queries.asList(id, fileInfo.getId(),
-                          Format.renderDateTime(TimeUtils.nowMinutes()), messageId),
-                      null, new RowInsertCallback(VIEW_SALE_FILES) {
-                        @Override
-                        public void onSuccess(BeeRow result) {
-                          Data.refreshLocal(VIEW_SALE_FILES);
-                          form.updateCell("IsSentToEmail", BeeConst.STRING_TRUE);
-                          form.refreshBySource("IsSentToEmail");
-                          form.getViewPresenter().handleAction(Action.SAVE);
-                          super.onSuccess(result);
-                        }
-                      });
-                }, Global.getParameterText(PRM_INVOICE_MAIL_SIGNATURE)));
+            TradeActUtils.getTradeActEmails(Collections.singleton(id), cc ->
+                NewMailMessage.create(emails, cc, null, invoice, content,
+                    Collections.singleton(fileInfo), null, false, (messageId, saveMode) -> {
+                      if (!BeeUtils.same(form.getViewName(), VIEW_SALES)) {
+                        return;
+                      }
+                      Queries.insert(VIEW_SALE_FILES,
+                          Data.getColumns(VIEW_SALE_FILES, Arrays.asList(COL_SALE,
+                              AdministrationConstants.COL_FILE, COL_NOTES,
+                              MailConstants.COL_MESSAGE)),
+                          Queries.asList(id, fileInfo.getId(),
+                              Format.renderDateTime(TimeUtils.nowMinutes()), messageId),
+                          null, new RowInsertCallback(VIEW_SALE_FILES) {
+                            @Override
+                            public void onSuccess(BeeRow result) {
+                              Data.refreshLocal(VIEW_SALE_FILES);
+                              form.updateCell("IsSentToEmail", BeeConst.STRING_TRUE);
+                              form.refreshBySource("IsSentToEmail");
+                              form.getViewPresenter().handleAction(Action.SAVE);
+                              super.onSuccess(result);
+                            }
+                          });
+                    }, Global.getParameterText(PRM_INVOICE_MAIL_SIGNATURE))));
       }
     };
   }

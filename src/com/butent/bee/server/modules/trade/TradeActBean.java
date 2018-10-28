@@ -124,6 +124,7 @@ public class TradeActBean implements HasTimerService {
   AdministrationModuleBean adm;
 
   @EJB TradeActDataEventHandler dataHandler;
+  @EJB CustomTradeModuleBean custom;
 
   @EJB
   ConcurrencyBean cb;
@@ -2775,6 +2776,29 @@ public class TradeActBean implements HasTimerService {
     servicesQuery.addGroup(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM);
 
     String tmp = qs.sqlCreateTemp(itemsQuery);
+
+    if (Objects.equals(colPrefix, PFX_END_STOCK)) {
+      Set<Long> itemIds = new HashSet<>();
+      SqlInsert insertTradeStock = new SqlInsert(tmp)
+          .addFields(COL_TA_ITEM, COL_OPERATION_WAREHOUSE_TO, COL_TRADE_ITEM_QUANTITY);
+
+      if (!BeeUtils.isEmpty(items)) {
+        itemIds.addAll(items);
+      } else if (!BeeUtils.isEmpty(categories)) {
+        itemIds = qs.getLongSet(new SqlSelect().setDistinctMode(true)
+            .addFields(TBL_ITEM_CATEGORIES, COL_ITEM)
+            .addFrom(TBL_ITEM_CATEGORIES)
+            .setWhere(SqlUtils.inList(TBL_ITEM_CATEGORIES, COL_CATEGORY, categories)));
+      }
+      custom.getTradeActStock(itemIds,
+          BeeUtils.isEmpty(warehouses) ? null : warehouses.toArray(new Long[0])).rowMap()
+          .forEach((item, map) ->
+              map.forEach((wrh, qty) -> insertTradeStock.addValues(item, wrh, qty)));
+
+      if (!insertTradeStock.isEmpty()) {
+        qs.insertData(insertTradeStock);
+      }
+    }
 
     SqlInsert insertServices = new SqlInsert(tmp)
         .addFields(COL_TA_ITEM, COL_OPERATION_WAREHOUSE_FROM, COL_TRADE_ITEM_QUANTITY)

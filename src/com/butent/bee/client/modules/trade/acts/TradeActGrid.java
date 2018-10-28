@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.trade.acts;
 
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.event.shared.GwtEvent;
 
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
@@ -125,6 +126,25 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
     }
 
     super.afterCreatePresenter(presenter);
+  }
+
+  @Override
+  public void afterInsertRow(IsRow result) {
+    super.afterInsertRow(result);
+
+    if (TradeActKind.RENT_PROJECT.equals(newActKind) && TradeActKind.RENT_PROJECT.equals(getKind(result))) {
+     Collection<RowInfo> ri = getGridView().getSelectedRows(GridView.SelectedRows.ALL);
+
+      if (!BeeUtils.isEmpty(ri)) {
+        for (RowInfo item : ri) {
+          if (item.getId() == result.getId()) {
+            continue;
+          }
+          assignToRentProject(Sets.newHashSet(item.getId()), result.getId());
+          break;
+        }
+      }
+    }
   }
 
   @Override
@@ -336,17 +356,26 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
 
   @Override
   public void onSelectionCountChange(SelectionCountChangeEvent event) {
-    int rowCount = getGridView().getRowData() != null ? getGridView().getRowData().size() : 0;
-
-    // if all selected rows disable all actions
-    refreshCommands(rowCount > 2 && rowCount == event.getCount()
-            ? null : getActiveRow(), event.getCount() > 0);
+    refreshCommands(getActiveRow(), event.getCount() > 0);
   }
 
   @Override
   public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
     IsRow parentRow =
         ViewHelper.getParentRow(getGridPresenter().getMainView().asWidget(), VIEW_TRADE_ACTS);
+    if (parentRow == null && TradeActKind.RENT_PROJECT.equals(newActKind)) {
+     ArrayList<RowInfo> ri = (ArrayList<RowInfo>) gridView.getSelectedRows(GridView.SelectedRows.ALL);
+
+      if (!BeeUtils.isEmpty(ri)) {
+        for (RowInfo item : ri) {
+          parentRow = gridView.getGrid().getRowById(item.getId());
+          BeeKeeper.getScreen().notifyInfo("Pasirinktas aktas", BeeUtils.toString(item.getId()),
+                  "bus priskirtas po nuomos projekto formos išsaugojimo");
+          break;
+        }
+      }
+    }
+
     TradeActKeeper.prepareNewTradeAct(newRow, parentRow, newActKind);
     return super.onStartNewRow(gridView, oldRow, newRow, copy);
   }
@@ -764,14 +793,7 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
           break;
 
         case COL_TA_DATE:
-          Long defTime = Global.getParameterTime(PRM_DEFAULT_RETURN_ACT_TIME);
           newRow.setValue(i, (DateTime) null);
-
-          if (!BeeUtils.isPositive(defTime)) {
-            break;
-          }
-
-          newRow.setValue(i, TimeUtils.combine(new DateTime(), defTime));
           break;
 
         case COL_TA_PARENT:
@@ -835,6 +857,9 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
               newRow.setValue(i, parentActs.getLong(0, i));
               RelationUtils.updateRow(viewTradeActs, colId, newRow, viewTradeActs,
                       parentActs.getRow(0), false);
+            } else if (parent != null) {
+              RelationUtils.updateRow(viewTradeActs, colId, newRow, viewTradeActs,
+                      parent, false);
             }
           break;
         case COL_TA_UNTIL:
@@ -1133,7 +1158,7 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
     TradeActKeeper.setCommandEnabled(supplementCommand, row != null && k != null
             && k.enableSupplement() && !multipleSelection);
     TradeActKeeper.setCommandEnabled(returnCommand, row != null && k != null && k.enableReturn()
-        && !DataUtils.isId(getContinuousAct(row)));
+        && !DataUtils.isId(getContinuousAct(row)) || multipleSelection);
     TradeActKeeper.setCommandEnabled(toRentProjectCommand, row != null && k != null && k.enableReturn()
         && !(isRentProjectAct(row) || DataUtils.isId(getRentProject(row))));
     TradeActKeeper.setCommandEnabled(alterCommand, row != null && k != null && k.enableAlter() && !multipleSelection);

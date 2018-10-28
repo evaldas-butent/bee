@@ -56,7 +56,7 @@
         <row>
           <Label text="=warehouses" style="&c1;" />
           <MultiSelector name="Warehouses" viewName="Warehouses" renderColumns="Code"
-                         choiceColumns="Code Name" newRowEnabled="false"
+                         choiceColumns="Code Name" newRowEnabled="false" filter="!(ForActs)"
                          style="&flt;" summarize="true" />
 
           <Label text="=itemTypes" />

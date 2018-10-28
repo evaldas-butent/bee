@@ -119,7 +119,7 @@ public enum Report implements HasWidgetSupplier {
       }
       ReportInfo report = new ReportInfo(getReportCaption());
 
-      for (String item : new String[]{
+      for (String item : new String[] {
           COL_COMPANY_TYPE,
           COL_COMPANY_CODE,
           COL_COMPANY_INFORMATION_SOURCE,
@@ -763,6 +763,47 @@ public enum Report implements HasWidgetSupplier {
     }
   },
 
+  DEBT_REPORT(ModuleAndSub.of(Module.TRADE), SVC_DEBT_REPORT) {
+    @Override
+    public List<ReportItem> getItems() {
+      return Arrays.asList(
+          new ReportTextItem(COL_TRADE_ERP_INVOICE, "Dokumentas"),
+          new ReportTextItem(COL_TRADE_CUSTOMER, "Klientas"),
+          new ReportTextItem(COL_COMPANY_USER_RESPONSIBILITY, "Atsakingas vadybininkas"),
+          new ReportTextItem(COL_TRADE_MANAGER, "Vadybininkas"),
+          new ReportTextItem(COL_TRADE_INVOICE_NO, "Sąskaitos nr."),
+          new ReportTextItem("BankruptcyRisk", "Bankroto rizika"),
+          new ReportTextItem("DelayedPaymentRisk", "Vėlavimo rizika"),
+          new ReportTextItem(COL_COMPANY_FINANCIAL_STATE, "Mokumas"),
+          new ReportDateItem(COL_TRADE_DATE, "Data"),
+          new ReportDateItem(COL_TRADE_TERM, "Terminas"),
+          new ReportNumericItem(COL_TRADE_DEBT, "Skola").setPrecision(2),
+          new ReportNumericItem(VAR_OVERDUE, "Pradelsta skola").setPrecision(2),
+          new ReportNumericItem(VAR_UNTOLERATED, "Netoleruotina skola").setPrecision(2),
+          new ReportNumericItem("ExternalAdvance", "Avansas").setPrecision(2)
+      );
+    }
+
+    @Override
+    public String getReportCaption() {
+      return "Skolos";
+    }
+
+    @Override
+    public Collection<ReportInfo> getReports() {
+      Map<String, ReportItem> items = new HashMap<>();
+
+      for (ReportItem item : getItems()) {
+        items.put(item.getExpression(), item);
+      }
+      ReportInfo report = new ReportInfo(getReportCaption());
+      report.addRowItem(items.get(COL_TRADE_CUSTOMER));
+      report.setDescending(report.addColItem(items.get(COL_TRADE_DEBT)), true);
+
+      return Collections.singletonList(report);
+    }
+  },
+
   PAYROLL_FUND_REPORT(ModuleAndSub.of(Module.PAYROLL), SVC_PAYROLL_FUND_REPORT) {
     @Override
     public List<ReportItem> getItems() {
@@ -814,7 +855,7 @@ public enum Report implements HasWidgetSupplier {
       Editor currencyEditor = getCurrencyEditor();
       if (currencyEditor instanceof UnboundSelector) {
         ((UnboundSelector) currencyEditor).setValue(Global.getParameterRelation(PRM_CURRENCY),
-          true);
+            true);
       }
       params.put(COL_CURRENCY, currencyEditor);
       return params;

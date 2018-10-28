@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.butent.bee.client.view.edit.EditEndEvent;
+import com.butent.bee.client.widget.*;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
@@ -39,10 +41,6 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.InputTimeOfDay;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
@@ -86,9 +84,6 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
   private static final String STYLE_CREATE = STYLE_PREFIX + "create";
   private static final String STYLE_EDIT = STYLE_PREFIX + "edit";
-
-  private static final String STYLE_HAS_SERVICES = STYLE_PREFIX + "has-services";
-  private static final String STYLE_NO_SERVICES = STYLE_PREFIX + "no-services";
 
   private static final String STYLE_HAS_INVOICES = STYLE_PREFIX + "has-invoices";
   private static final String STYLE_NO_INVOICES = STYLE_PREFIX + "no-invoices";
@@ -136,6 +131,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         case COL_TA_RENT_PROJECT:
           rentProject = (DataSelector) widget;
           rentProject.addSelectorHandler(this);
+          break;
       }
     }
 
@@ -213,7 +209,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       }
     }
 
-    if (widget instanceof TabbedPages && name == "TabbedPages") {
+    if (widget instanceof TabbedPages && "TabbedPages".equals(name)) {
       tabbedPages = (TabbedPages) widget;
     }
     if (widget instanceof FaLabel && Objects.equals(name, "InputTime")) {
@@ -353,6 +349,19 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   }
 
   @Override
+  public void onEditEnd(EditEndEvent event, Object source) {
+    if (event == null || BeeUtils.isEmpty(event.getColumnId()))  {
+      return;
+    }
+
+    if (COL_TA_DATE.equals(event.getColumnId())) {
+      appendReturnTime(event);
+    }
+
+    super.onEditEnd(event, source);
+  }
+
+  @Override
   public void onCellUpdate(CellUpdateEvent event) {
   }
 
@@ -398,6 +407,15 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         form.refreshBySource(col[0]);
       }
     }
+  }
+
+  @Override
+  public void onSourceChange(IsRow row, String source, String value) {
+    if (COL_TA_DATE.equals(source)) {
+      getFormView().refreshBySource(source);
+    }
+
+    super.onSourceChange(row, source, value);
   }
 
   @Override
@@ -585,36 +603,77 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   }
 
   boolean validateBeforeSave(FormView form, IsRow row, boolean beforeSave) {
-    boolean valid;
+     return checkMultiReturnItems(form, row, beforeSave)
+            && checkContactField(form, row)
+            && checkRegistrationNumber(form, row)
+            && checkDateWithRentProject(form, row)
+            && createReqFields(form, !TradeActUtils.getMultiReturnData(row).isNull());
+  }
 
-    valid = !(isNewRow(row) && isReturnAct(row) && !TradeActUtils.getMultiReturnData(row).isNull()
-        && beforeSave);
-
-    if (!valid) {
-      form.notifySevere(Localized.dictionary().allValuesEmpty(Localized.dictionary()
-          .list(), Localized.dictionary().tradeActItems()));
-      return false;
+  private void appendReturnTime(EditEndEvent e) {
+    if (!TradeActKind.RETURN.equals(getKind(getActiveRow()))) {
+      return;
     }
 
+    if (!BeeUtils.isEmpty(e.getOldValue())) {
+      return;
+    }
+
+    Long defTime = Global.getParameterTime(PRM_DEFAULT_RETURN_ACT_TIME);
+
+    if (!BeeUtils.isPositive(defTime)) {
+      return;
+    }
+
+    DateTime newTime = TimeUtils.combine(new DateTime(BeeUtils.toLong(e.getNewValue())), defTime);
+    e.setNewValue(BeeUtils.toString(newTime.getTime()));
+  }
+
+  private boolean checkContactField(FormView form, IsRow row) {
+    boolean valid = true;
     if (DataUtils.isId(getCompany(row)) && !isReturnAct(row)) {
       valid = BeeUtils.unbox(getContactPhysical(row)) || DataUtils.isId(getContact(row));
     }
 
     if (!valid) {
       form.notifySevere(Localized.dictionary().contact() + " "
-          + Localized.dictionary().valueRequired());
-      return false;
+              + Localized.dictionary().valueRequired());
     }
 
-    valid = !isReturnAct(row) || !BeeUtils.isEmpty(getRegistrationNo(row));
+    return valid;
+  }
+
+  private boolean checkMultiReturnItems(FormView form, IsRow row, boolean beforeSave) {
+    boolean valid = !(isNewRow(row) && isReturnAct(row) && !TradeActUtils.getMultiReturnData(row).isNull()
+            && beforeSave);
+
+    if (!valid) {
+      form.notifySevere(Localized.dictionary().allValuesEmpty(Localized.dictionary()
+              .list(), Localized.dictionary().tradeActItems()));
+    }
+
+    return valid;
+  }
+
+  private boolean checkRegistrationNumber(FormView form, IsRow row) {
+    boolean valid = !isReturnAct(row) || !BeeUtils.isEmpty(getRegistrationNo(row));
 
     if (!valid) {
       form.notifySevere(Localized.dictionary().taRegistrationNo() + " "
-          + Localized.dictionary().valueRequired());
-      return false;
+              + Localized.dictionary().valueRequired());
     }
 
-    valid = createReqFields(form, !TradeActUtils.getMultiReturnData(row).isNull());
+    return valid;
+  }
+
+  private boolean checkDateWithRentProject(FormView form, IsRow row) {
+    boolean valid = !(DataUtils.isId(getRentProject(row)) && getRentProjectDate(row) != null)
+            || TimeUtils.isMeq(getDate(row), getRentProjectDate(row));
+
+    if (!valid) {
+      form.notifySevere(Localized.dictionary().invalidDate(), Localized.dictionary().taDate(),
+              "Data privalo būti vėlesnė už nuomos aktą");
+    }
 
     return valid;
   }
@@ -651,6 +710,10 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     return row.getLong(getDataIndex(COL_TA_CONTINUOUS));
   }
 
+  private DateTime getDate(IsRow row) {
+    return row.getDateTime(getDataIndex(COL_TA_DATE));
+  }
+
   private HeaderView getHeaderView(FormView formView) {
 
     if (headerView == null) {
@@ -672,6 +735,14 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     return Filter.in(Data.getIdColumn(DocumentConstants.VIEW_DOCUMENTS),
         DocumentConstants.VIEW_RELATED_DOCUMENTS, DocumentConstants.COL_DOCUMENT, Filter
             .equals(ClassifierConstants.COL_COMPANY, getCompany()));
+  }
+
+  private Long getRentProject(IsRow row) {
+    return row.getLong(getDataIndex(COL_TA_RENT_PROJECT));
+  }
+
+  private DateTime getRentProjectDate(IsRow row) {
+    return row.getDateTime(getDataIndex(ALS_RENT_PROJECT_DATE));
   }
 
   private Long getRentProjectCompany(IsRow row) {
@@ -960,14 +1031,17 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         StyleUtils.setColor(table.getCellFormatter().getElement(3, 1), "red");
         table.setText(4, 0, "Netoleruojama skola:");
         table.setText(4, 1, String.valueOf(untolerated));
-        StyleUtils.setColor(table.getCellFormatter().getElement(4, 1), "red");
+        StyleUtils.setBackgroundColor(table.getCellFormatter().getElement(4, 1), "red");
+        StyleUtils.setColor(table.getCellFormatter().getElement(4, 1), "white");
         table.setText(5, 0, "Seniausia neapmokėta sąskaita:");
         table.setText(5, 1, oldestDate);
 
         String cap = BeeUtils.joinWords(result.get(ClassifierConstants.COL_COMPANY_NAME),
             result.get(ClassifierConstants.COL_COMPANY_TYPE));
 
-        Global.showModalWidget(cap, table).hideOnEscape();
+        if (BeeUtils.isPositive(overdue) || BeeUtils.isPositive(untolerated)) {
+          Global.showModalWidget(cap, table).hideOnEscape();
+        }
       });
     }
   }

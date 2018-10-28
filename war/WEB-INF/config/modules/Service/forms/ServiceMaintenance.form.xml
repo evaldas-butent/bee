@@ -234,7 +234,7 @@
             <FlowPanel class="&mrcl;" style="&mrst;" for="Warehouse">
               <FlowPanel style="&mfld; width: 21em;" >
                 <Label for="Warehouse" style="&flbl;"/>
-                <DataSelector source="Warehouse" style="&finp;" visible="true" tabIndex="100"/>
+                <DataSelector source="Warehouse" style="&finp;" visible="true" tabIndex="100" filter="!(ForActs)" />
               </FlowPanel>
             </FlowPanel>
 

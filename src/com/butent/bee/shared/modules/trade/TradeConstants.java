@@ -54,6 +54,8 @@ public final class TradeConstants {
 
   public static final String SVC_GET_ITEM_ANALOGS = "GetItemAnalogs";
 
+  public static final String SVC_GET_ACT_EMAILS = "GetActEmails";
+
   public static final String TBL_PURCHASES = "Purchases";
   public static final String TBL_PURCHASE_USAGE = "PurchaseUsage";
   public static final String TBL_PURCHASE_ITEMS = "PurchaseItems";
@@ -487,6 +489,8 @@ public final class TradeConstants {
   public static final String RP_QUANTITY_COLUMNS = "QuantityColumns";
   public static final String RP_AMOUNT_COLUMNS = "AmountColumns";
   public static final String RP_PRICE_COLUMN = "PriceColumn";
+
+  public static final String SVC_DEBT_REPORT = "DebtReport";
 
   public static String keyStockWarehouse(String warehouseCode) {
     return PROP_STOCK + BeeUtils.trim(warehouseCode);

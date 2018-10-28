@@ -5,7 +5,7 @@ import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.PRM_INVOICE_MAIL_SIGNATURE;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -55,6 +55,9 @@ import com.butent.bee.shared.i18n.PredefinedFormat;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
@@ -278,7 +281,12 @@ public class TradeDocumentForm extends PrintFormInterceptor {
       public void accept(FileInfo fileInfo) {
         TradeActUtils.getInvoiceEmails(getFormView().getLongValue(COL_TRADE_CUSTOMER), emails ->
             NewMailMessage.create(emails, null, null, "Sąskaita", null,
-                Collections.singleton(fileInfo), null, false, null,
+                Collections.singleton(fileInfo), null, false, (messageId, saveMode) -> {
+                  Queries.insert(GRID_TRADE_DOCUMENT_FILES,
+                      Data.getColumns(GRID_TRADE_DOCUMENT_FILES, Queries.asList(COL_TRADE_DOCUMENT,
+                          AdministrationConstants.COL_FILE)), Queries.asList(getActiveRowId(),
+                          fileInfo.getId()), null, result -> getFormView().refresh());
+                },
                 Global.getParameterText(PRM_INVOICE_MAIL_SIGNATURE)));
       }
     };
@@ -383,39 +391,32 @@ public class TradeDocumentForm extends PrintFormInterceptor {
 
   @Override
   public void onStartNewRow(final FormView form, IsRow row) {
-    GridView grid = (form == null) ? null : form.getBackingGrid();
-    IsRow oldRow = (grid == null) ? null : grid.getGrid().getActiveRow();
+    Queries.getDistinctLongs(VIEW_SERIES_MANAGERS, COL_SERIES,
+        Filter.and(Filter.equals(COL_SERIES_MANAGER, BeeKeeper.getUser().getUserId()),
+            Filter.notNull(COL_SERIES_DEFAULT)), series -> {
 
-    if (oldRow != null && row != null) {
-      final int index = getDataIndex(COL_TRADE_SERIES);
-      final String series = BeeUtils.trim(oldRow.getString(index));
+          if (!BeeUtils.isEmpty(series)) {
+            Queries.getRowSet(TBL_TRADE_SERIES, Collections.singletonList(COL_SERIES_NAME),
+                Filter.and(Filter.idIn(series), Filter.isNull(COL_FOR_ACTS)), result -> {
 
-      Long userId = BeeKeeper.getUser().getUserId();
-
-      if (!BeeUtils.isEmpty(series) && BeeUtils.isEmpty(row.getString(index))
-          && DataUtils.isId(userId)) {
-
-        Filter filter = Filter.and(
-            Filter.equals(COL_SERIES_MANAGER, userId),
-            Filter.notNull(COL_SERIES_DEFAULT),
-            Filter.in(COL_SERIES, VIEW_TRADE_SERIES, Data.getIdColumn(VIEW_TRADE_SERIES),
-                Filter.equals(COL_SERIES_NAME, series)));
-
-        Queries.getRowCount(VIEW_SERIES_MANAGERS, filter, result -> {
-          if (BeeUtils.isPositive(result) && form.getActiveRow() != null
-              && BeeUtils.isEmpty(form.getActiveRow().getString(index))) {
-
-            form.getActiveRow().setValue(index, series);
-            if (form.getOldRow() != null) {
-              form.getOldRow().setValue(index, series);
-            }
-
-            form.refreshBySource(COL_TRADE_SERIES);
+                  if (!DataUtils.isEmpty(result)) {
+                    row.setValue(getDataIndex(COL_TRADE_SERIES), result.getString(0, 0));
+                    form.refreshBySource(COL_TRADE_SERIES);
+                  }
+                });
           }
         });
-      }
-    }
+    Queries.getRowSet(PayrollConstants.TBL_EMPLOYEES, null,
+        Filter.equals(ClassifierConstants.COL_COMPANY_PERSON,
+            BeeKeeper.getUser().getUserData().getCompanyPerson()), empl -> {
 
+          if (!DataUtils.isEmpty(empl)) {
+            RelationUtils.updateRow(Data.getDataInfo(getViewName()), COL_TRADE_MANAGER, row,
+                Data.getDataInfo(PayrollConstants.TBL_EMPLOYEES), empl.getRow(0), true);
+
+            form.refreshBySource(COL_TRADE_MANAGER);
+          }
+        });
     super.onStartNewRow(form, row);
   }
 

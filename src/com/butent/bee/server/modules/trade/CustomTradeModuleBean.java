@@ -1,34 +1,54 @@
 package com.butent.bee.server.modules.trade;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Table;
+
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.finance.Dimensions.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.sql.HasConditions;
+import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.Triplet;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
+import com.butent.bee.shared.report.ReportInfo;
+import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -42,6 +62,95 @@ public class CustomTradeModuleBean {
   @EJB QueryServiceBean qs;
   @EJB ParamHolderBean prm;
   @EJB TradeModuleBean trade;
+
+  public Multimap<Long, Triplet<Long, String, Double>> getErpStock(Collection<Long> items) {
+    Multimap<Long, Triplet<Long, String, Double>> result = ArrayListMultimap.create();
+
+    Pair<Long, String> erp = prm.getRelationInfo(PRM_ERP_WAREHOUSE);
+
+    if (erp.noNulls()) {
+      SimpleRowSet data = qs.getData(new SqlSelect()
+          .addField(TBL_ITEMS, sys.getIdName(TBL_ITEMS), COL_ITEM)
+          .addFields(TBL_ITEMS, COL_EXTERNAL_STOCK)
+          .addFrom(TBL_ITEMS)
+          .setWhere(SqlUtils.and(sys.idInList(TBL_ITEMS, items),
+              SqlUtils.notNull(TBL_ITEMS, COL_EXTERNAL_STOCK),
+              SqlUtils.notEqual(TBL_ITEMS, COL_EXTERNAL_STOCK, 0))));
+
+      if (!DataUtils.isEmpty(data)) {
+        data.forEach(row -> result.put(row.getLong(COL_ITEM),
+            Triplet.of(erp.getA(), erp.getB(), row.getDouble(COL_EXTERNAL_STOCK))));
+      }
+    }
+    return result;
+  }
+
+  public Table<Long, Long, Double> getTradeActStock(Collection<Long> items, Long... warehouses) {
+    String wrh = "TradeActWarehouse";
+
+    IsCondition phaseCondition = SqlUtils.inList(TBL_TRADE_DOCUMENTS, COL_TRADE_DOCUMENT_PHASE,
+        Arrays.stream(TradeDocumentPhase.values()).filter(TradeDocumentPhase::modifyStock)
+            .collect(Collectors.toSet()));
+
+    IsCondition producerCondition = SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE,
+        Arrays.stream(OperationType.values()).filter(OperationType::producesStock)
+            .collect(Collectors.toSet()));
+
+    IsCondition consumerCondition = SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE,
+        Arrays.stream(OperationType.values()).filter(OperationType::consumesStock)
+            .collect(Collectors.toSet()));
+
+    IsCondition itemsClause = SqlUtils.and(SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE),
+        BeeUtils.isEmpty(items) ? null
+            : SqlUtils.inList(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, items));
+
+    IsCondition wrhClause = SqlUtils.and(SqlUtils.notNull(TBL_TRADE_DOCUMENTS, wrh),
+        ArrayUtils.isEmpty(warehouses) ? null
+            : SqlUtils.inList(TBL_TRADE_DOCUMENTS, wrh, (Object[]) warehouses));
+
+    Table<Long, Long, Double> result = HashBasedTable.create();
+
+    SqlSelect union = new SqlSelect()
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
+        .addFields(TBL_TRADE_DOCUMENTS, wrh)
+        .addSum(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+        .addFromInner(TBL_TRADE_DOCUMENTS,
+            sys.joinTables(TBL_TRADE_DOCUMENTS, TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT))
+        .addFromInner(TBL_TRADE_OPERATIONS,
+            sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_DOCUMENTS, COL_TRADE_OPERATION))
+        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
+        .setWhere(SqlUtils.and(phaseCondition, producerCondition, wrhClause, itemsClause))
+        .addGroup(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
+        .addGroup(TBL_TRADE_DOCUMENTS, wrh)
+        .addUnion(new SqlSelect()
+            .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
+            .addFields(TBL_TRADE_DOCUMENTS, wrh)
+            .addSum(SqlUtils.multiply(SqlUtils.field(TBL_TRADE_DOCUMENT_ITEMS,
+                COL_TRADE_ITEM_QUANTITY), SqlUtils.constant(-1)), COL_TRADE_ITEM_QUANTITY)
+            .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+            .addFromInner(TBL_TRADE_DOCUMENTS,
+                sys.joinTables(TBL_TRADE_DOCUMENTS, TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT))
+            .addFromInner(TBL_TRADE_OPERATIONS,
+                sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_DOCUMENTS, COL_TRADE_OPERATION))
+            .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
+            .setWhere(SqlUtils.and(phaseCondition, consumerCondition, wrhClause, itemsClause))
+            .addGroup(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
+            .addGroup(TBL_TRADE_DOCUMENTS, wrh));
+
+    String subq = SqlUtils.uniqueName();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(subq, COL_ITEM, wrh)
+        .addSum(subq, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(union, subq)
+        .addGroup(subq, COL_ITEM, wrh);
+
+    qs.getData(query).forEach(row -> result.put(row.getLong(COL_ITEM), row.getLong(wrh),
+        row.getDouble(COL_STOCK_QUANTITY)));
+
+    return result;
+  }
 
   public ResponseObject sendDocumentToErp(Set<Long> ids) {
     ResponseObject response = ResponseObject.emptyResponse();
@@ -213,5 +322,128 @@ public class CustomTradeModuleBean {
 
   private static String encodeId(Long documentId) {
     return BeeUtils.toString(documentId + 1e9);
+  }
+
+  public ResponseObject getDebtReport(RequestInfo reqInfo) {
+    ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
+
+    HasConditions clause = SqlUtils.and(SqlUtils.more(SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES,
+        COL_TRADE_DEBT), 0), 0));
+
+    clause.add(report.getCondition(TBL_ERP_SALES, COL_TRADE_DATE));
+    clause.add(report.getCondition(TBL_ERP_SALES, COL_TRADE_TERM));
+    clause.add(report.getCondition(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME),
+        COL_TRADE_CUSTOMER));
+    clause.add(report.getCondition(TBL_ERP_SALES, COL_TRADE_ERP_INVOICE));
+    clause.add(report.getCondition(SqlUtils.field("CompanyBankruptRisks", "Name"),
+        "BankruptcyRisk"));
+    clause.add(report.getCondition(SqlUtils.field("DelayedPaymentRisks", "Name"),
+        "DelayedPaymentRisk"));
+    clause.add(report.getCondition(SqlUtils.field(VIEW_FINANCIAL_STATES, "Name"),
+        COL_COMPANY_FINANCIAL_STATE));
+
+    String tmp = qs.sqlCreateTemp(new SqlSelect()
+        .addField(TBL_ERP_SALES, COL_TRADE_CUSTOMER, COL_COMPANY)
+        .addFields(TBL_ERP_SALES, COL_TRADE_DATE, COL_TRADE_TERM, COL_TRADE_ERP_INVOICE,
+            COL_TRADE_DEBT)
+        .addEmptyDouble(VAR_OVERDUE)
+        .addEmptyDouble(VAR_UNTOLERATED)
+        .addEmptyString(COL_COMPANY_USER_RESPONSIBILITY, 61)
+        .addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(TBL_SALES_SERIES, COL_SERIES_NAME),
+            "''"), SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_INVOICE_NO), "''")),
+            COL_TRADE_INVOICE_NO)
+        .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_TRADE_CUSTOMER)
+        .addFields(TBL_COMPANIES, COL_COMPANY_CREDIT_DAYS, COL_COMPANY_TOLERATED_DAYS,
+            "ExternalAdvance")
+        .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
+            SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")), COL_TRADE_MANAGER)
+        .addField("CompanyBankruptRisks", "Name", "BankruptcyRisk")
+        .addField("DelayedPaymentRisks", "Name", "DelayedPaymentRisk")
+        .addField(VIEW_FINANCIAL_STATES, "Name", COL_COMPANY_FINANCIAL_STATE)
+        .addFrom(TBL_ERP_SALES)
+        .addFromLeft(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, TBL_ERP_SALES, COL_TRADE_CUSTOMER))
+        .addFromLeft("CompanyBankruptRisks",
+            sys.joinTables("CompanyBankruptRisks", TBL_COMPANIES, "BankruptcyRisk"))
+        .addFromLeft("DelayedPaymentRisks",
+            sys.joinTables("DelayedPaymentRisks", TBL_COMPANIES, "DelayedPaymentRisk"))
+        .addFromLeft(VIEW_FINANCIAL_STATES,
+            sys.joinTables(VIEW_FINANCIAL_STATES, TBL_COMPANIES, COL_COMPANY_FINANCIAL_STATE))
+        .addFromLeft(TBL_SALES_SERIES,
+            sys.joinTables(TBL_SALES_SERIES, TBL_ERP_SALES, COL_TRADE_SALE_SERIES))
+        .addFromLeft(TBL_USERS,
+            sys.joinTables(TBL_USERS, TBL_ERP_SALES, COL_TRADE_MANAGER))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS,
+            sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+        .setWhere(clause));
+
+    qs.updateData(new SqlUpdate(tmp)
+        .addExpression(COL_TRADE_TERM, SqlUtils.plus(SqlUtils.name(COL_TRADE_DATE),
+            SqlUtils.multiply(SqlUtils.nvl(SqlUtils.name(COL_COMPANY_CREDIT_DAYS), 0),
+                TimeUtils.MILLIS_PER_DAY)))
+        .setWhere(SqlUtils.isNull(tmp, COL_TRADE_TERM)));
+
+    qs.updateData(new SqlUpdate(tmp)
+        .addExpression(VAR_OVERDUE, SqlUtils.name(COL_TRADE_DEBT))
+        .setWhere(SqlUtils.less(tmp, COL_TRADE_TERM, System.currentTimeMillis())));
+
+    qs.updateData(new SqlUpdate(tmp)
+        .addExpression(VAR_UNTOLERATED, SqlUtils.name(COL_TRADE_DEBT))
+        .setWhere(SqlUtils.more(
+            SqlUtils.minus(System.currentTimeMillis(), SqlUtils.name(COL_TRADE_TERM)),
+            SqlUtils.multiply(SqlUtils.nvl(SqlUtils.name(COL_COMPANY_TOLERATED_DAYS), 0),
+                SqlUtils.cast(SqlUtils.constant(TimeUtils.MILLIS_PER_DAY),
+                    SqlConstants.SqlDataType.LONG, 0, 0)))));
+
+    String subq = "subq";
+
+    qs.updateData(new SqlUpdate(tmp)
+        .addExpression(COL_COMPANY_USER_RESPONSIBILITY, SqlUtils.concat(SqlUtils.field(subq,
+            COL_FIRST_NAME), "' '", SqlUtils.nvl(SqlUtils.field(subq, COL_LAST_NAME), "''")))
+        .setFrom(new SqlSelect()
+                .addFields(TBL_COMPANY_USERS, COL_COMPANY)
+                .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
+                .addFrom(TBL_COMPANY_USERS)
+                .addFromInner(TBL_USERS,
+                    sys.joinTables(TBL_USERS, TBL_COMPANY_USERS, COL_USER))
+                .addFromInner(TBL_COMPANY_PERSONS,
+                    sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+                .addFromInner(TBL_PERSONS,
+                    sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+                .setWhere(SqlUtils.notNull(TBL_COMPANY_USERS, COL_COMPANY_USER_RESPONSIBILITY)),
+            subq, SqlUtils.joinUsing(tmp, subq, COL_COMPANY)));
+
+    return report.getResultResponse(qs, tmp,
+        Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)),
+        report.getCondition(tmp, COL_TRADE_MANAGER),
+        report.getCondition(tmp, COL_COMPANY_USER_RESPONSIBILITY),
+        report.getCondition(tmp, COL_TRADE_INVOICE_NO));
+  }
+
+  public Multimap<Long, String> getTradeActEmails(Set<Long> invoices) {
+    HashMultimap<Long, String> emails = HashMultimap.create();
+
+    SimpleRowSet rs = qs.getData(new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_SALE_ITEMS, COL_SALE)
+        .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+        .addFrom(TBL_TRADE_ACT_INVOICES)
+        .addFromInner(TBL_SALE_ITEMS,
+            sys.joinTables(TBL_SALE_ITEMS, TBL_TRADE_ACT_INVOICES, "SaleItem"))
+        .addFromInner(TBL_TRADE_ACT_SERVICES,
+            sys.joinTables(TBL_TRADE_ACT_SERVICES, TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
+        .addFromInner(TBL_TRADE_ACTS,
+            sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT))
+        .addFromInner(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_TRADE_ACTS, COL_CONTACT))
+        .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
+        .addFromInner(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+        .setWhere(SqlUtils.and(SqlUtils.inList(TBL_SALE_ITEMS, COL_SALE, invoices),
+            SqlUtils.notNull(TBL_EMAILS, COL_EMAIL_ADDRESS))));
+
+    rs.forEach(row -> emails.put(row.getLong(COL_SALE), row.getValue(COL_EMAIL_ADDRESS)));
+
+    return emails;
   }
 }

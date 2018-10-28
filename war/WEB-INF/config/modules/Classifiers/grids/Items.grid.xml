@@ -9,7 +9,7 @@
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="Items" viewName="Items"
-        newRowForm="Item" editForm="Item" editShowId="true"
+        newRowForm="Item" editForm="Item" editShowId="true" newRowWindow="modal"
         editInPlace="true"
 >
   <g:west size="200" splitterSize="2">
