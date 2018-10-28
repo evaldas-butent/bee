@@ -1,6 +1,10 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.butent.bee.client.data.*;
+import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.shared.data.*;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.google.common.collect.Lists;
@@ -8,13 +12,13 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.service.ServiceConstants.COL_SERVICE_OBJECT;
+import static com.butent.bee.shared.modules.service.ServiceConstants.VIEW_SERVICE_DATES;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
-import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -179,6 +183,29 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     if (commandApplyRental != null) {
       commandApplyRental.setVisible(parentRow != null
           && !DataUtils.isId(Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_CONTINUOUS)));
+    }
+  }
+
+  @Override
+  public void onEditStart(EditStartEvent event) {
+    IsRow row = event.getRowValue();
+    String value = Data.getString(getViewName(), row, COL_TA_RUN);
+    Long serviceObject = Data.getLong(getViewName(), row, COL_SERVICE_OBJECT);
+    String oldRun = Data.getString(getViewName(), row, COL_TA_RUN);
+
+    if (Objects.equals(event.getColumnId(), COL_TA_RUN)) {
+      event.consume();
+
+      if (BeeUtils.isPositive(serviceObject)) {
+        updateServiceObjectRun(serviceObject, value, oldRun);
+      } else {
+        getGridView().notifySevere(Localized.dictionary().fieldRequired(Localized.dictionary().svcDevice()));
+      }
+
+    } else if (Objects.equals(event.getColumnId(), COL_SERVICE_OBJECT) && !BeeUtils.isEmpty(oldRun)) {
+      event.consume();
+    } else {
+      super.onEditStart(event);
     }
   }
 
@@ -560,5 +587,35 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
 
       return true;
     }
+  }
+
+  private void updateServiceObjectRun(Long serviceObject, String newValue, String oldRun) {
+    Queries.getRowSet(VIEW_SERVICE_DATES, null,
+      Filter.equals("TradeActService", getActiveRowId()),null, (BeeRowSet rows) -> {
+
+      DataInfo info = Data.getDataInfo(VIEW_SERVICE_DATES);
+      BeeRow dateRow;
+
+      if (rows.isEmpty()) {
+        dateRow = RowFactory.createEmptyRow(info, true);
+        Data.setValue(VIEW_SERVICE_DATES, dateRow, COL_SERVICE_OBJECT, serviceObject);
+        Data.setValue(VIEW_SERVICE_DATES, dateRow, "TradeActService", getActiveRowId());
+        Data.setValue(VIEW_SERVICE_DATES, dateRow, COL_TA_RUN, newValue);
+
+        RowFactory.createRow(info, dateRow, Opener.MODAL, (BeeRow result) -> {
+          Queries.updateCellAndFire(getViewName(),
+            getActiveRowId(), getActiveRow().getVersion(), COL_TA_RUN, oldRun, Data.getString(VIEW_SERVICE_DATES,
+              result, COL_TA_RUN));
+        });
+
+      } else {
+        dateRow = rows.getRow(0);
+        Data.setValue(VIEW_SERVICE_DATES, dateRow, COL_TA_RUN, newValue);
+
+        RowEditor.open(VIEW_SERVICE_DATES, dateRow, Opener.MODAL, result ->
+          Queries.updateCellAndFire(getViewName(), getActiveRowId(), getActiveRow().getVersion(), COL_TA_RUN, oldRun,
+            Data.getString(VIEW_SERVICE_DATES, result, COL_TA_RUN)));
+      }
+    });
   }
 }

@@ -166,6 +166,8 @@
       <SimpleColumn name="Code" alias="WarehouseCode" />
       <SimpleColumn name="Name" alias="WarehouseName" />
     </SimpleJoin>
+
+    <SimpleColumn name="Run" />
     </Columns>
   <Order>
     <OrderBy column="Date" descending="true" />

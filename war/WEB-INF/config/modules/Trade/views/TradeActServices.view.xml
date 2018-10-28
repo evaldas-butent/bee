@@ -76,6 +76,8 @@
       <SimpleColumn name="Model" />
       <SimpleColumn name="Address" />
     </SimpleJoin>
+
+    <SimpleColumn name="Run" />
   </Columns>
   <Order>
     <OrderBy column="ItemOrdinal"/>

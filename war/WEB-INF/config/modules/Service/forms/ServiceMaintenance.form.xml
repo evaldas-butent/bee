@@ -192,8 +192,13 @@
         <FlowPanel class="flexBox-horizontal">
           <FlowPanel class="bee-svc-maintenance-panel" >
             <FlowPanel class="flexBox-horizontal &mrcl;" style="&mrst;">
-              <FlowPanel style="&mfld; width: 21em;" >
+              <FlowPanel style="&mfld; width: 21em;" class="flexBox-horizontal" >
                 <CheckBox name="Warranty" text="=svcWarrantyMaintenance" summarize="true" style="&finp;" tabIndex="90" />
+
+                <FlowPanel style="width: 9em;" class="flexBox-horizontal" >
+                  <InputDecimal source="Run" />
+                  <Label for="Run" style="margin-left: 5px; margin-top: 5px;" />
+                </FlowPanel>
               </FlowPanel>
 
               <FlowPanel name="WarrantyMaintenancePanel" style="&mfld;" for="WarrantyMaintenance">
