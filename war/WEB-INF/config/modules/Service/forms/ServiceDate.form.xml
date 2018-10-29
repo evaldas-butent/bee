@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY inp "width: 10em;">
+  ]>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+
+        name="ServiceDate" viewName="ServiceDates" showRowId="true"
+        width="480" height="200" caption="=svcDates"
+>
+  <FlowPanel class="flexBox-vertical" >
+    <Table kind="controls" cellStyle="vertical-align: middle;" >
+      <col index="0" kind="label" />
+      <col index="2" kind="label" />
+
+      <row>
+        <Label for="DateFrom" />
+        <InputDateTime source="DateFrom" style="&inp;" />
+
+        <Label for="DateUntil" />
+        <InputDateTime source="DateUntil" style="&inp;" />
+      </row>
+
+      <row>
+        <Label for="Color" />
+        <ColorEditor source="Color" />
+
+        <Label for="Run" />
+        <InputInteger source="Run" style="&inp;"/>
+      </row>
+
+      <row>
+        <Label for="Note" />
+        <cell colSpan="4">
+          <InputText source="Note" style="width: 31em;"/>
+        </cell>
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

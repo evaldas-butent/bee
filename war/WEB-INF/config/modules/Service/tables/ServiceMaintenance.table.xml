@@ -27,5 +27,6 @@
     <Relation name="Contact" relation="CompanyPersons" label="=personContact" />
     <Relation name="Department" relation="Departments" label="=department" />
     <Relation name="Warehouse" relation="Warehouses" label="=warehouse" />
+    <Integer name="Run" label="=trdRun" />
   </Fields>
 </Table>

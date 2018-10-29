@@ -1,5 +1,9 @@
 package com.butent.bee.client.modules.service;
 
+import com.butent.bee.client.data.*;
+import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.widget.*;
+import com.butent.bee.shared.data.*;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style;
@@ -16,6 +20,7 @@ import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_CREATOR;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_MESSAGE;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TA_RUN;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -23,10 +28,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.MultiSelector;
-import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowEditor;
-import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -54,26 +55,12 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.client.widget.CustomAction;
-import com.butent.bee.client.widget.DoubleLabel;
-import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.InlineLabel;
-import com.butent.bee.client.widget.InputBoolean;
-import com.butent.bee.client.widget.InputNumber;
-import com.butent.bee.client.widget.InputText;
-import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.values.FontStyle;
 import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.TextAlign;
-import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
@@ -185,6 +172,11 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     } else if (BeeUtils.same(editableWidget.getColumnId(), COL_REPAIRER)
         && widget instanceof DataSelector) {
       ServiceHelper.setRepairerFilter(widget);
+    } else if (BeeUtils.same(editableWidget.getColumnId(), COL_TA_RUN)) {
+      ((InputNumber) widget).addClickHandler(clickEvent -> {
+        String value = getStringValue(COL_TA_RUN);
+        updateServiceObjectRun(value);
+      });
     }
     super.afterCreateEditableWidget(editableWidget, widget);
   }
@@ -1348,5 +1340,36 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     if (warrantyWidget instanceof HasCheckedness) {
       ((HasCheckedness) warrantyWidget).setChecked(mandatory);
     }
+  }
+
+  private void updateServiceObjectRun(String value) {
+    Long serviceObject = Data.getLong(COL_SERVICE_MAINTENANCE, getActiveRow(), COL_SERVICE_OBJECT);
+
+    Queries.getRowSet(VIEW_SERVICE_DATES, null,
+      Filter.equals("ServiceMaintenance", getActiveRowId()),null, (BeeRowSet rows) -> {
+
+        DataInfo info = Data.getDataInfo(VIEW_SERVICE_DATES);
+        BeeRow dateRow;
+
+        if (rows.isEmpty()) {
+          dateRow = RowFactory.createEmptyRow(info, true);
+          Data.setValue(VIEW_SERVICE_DATES, dateRow, COL_SERVICE_OBJECT, serviceObject);
+          Data.setValue(VIEW_SERVICE_DATES, dateRow, "ServiceMaintenance", getActiveRowId());
+          Data.setValue(VIEW_SERVICE_DATES, dateRow, COL_TA_RUN, value);
+
+          RowFactory.createRow(info, dateRow, Opener.MODAL, (BeeRow result) ->
+            Queries.updateCellAndFire(getViewName(),
+            getActiveRowId(), getActiveRow().getVersion(), COL_TA_RUN, value, Data.getString(VIEW_SERVICE_DATES,
+              result, COL_TA_RUN)));
+        } else {
+          dateRow = rows.getRow(0);
+          Data.setValue(VIEW_SERVICE_DATES, dateRow, COL_TA_RUN, value);
+
+          RowEditor.open(VIEW_SERVICE_DATES, dateRow, Opener.MODAL, result
+            -> Queries.updateCellAndFire(getViewName(),
+            getActiveRowId(), getActiveRow().getVersion(), COL_TA_RUN, value, Data.getString(VIEW_SERVICE_DATES,
+              result, COL_TA_RUN)));
+        }
+      });
   }
 }

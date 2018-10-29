@@ -35,6 +35,8 @@
     <Numeric name="ItemValue" precision="12" scale="2" label="Prek. vertė" />
     <Relation name="ServiceObject" relation="ServiceObjects" label="=svcDevice" />
 
+    <Integer name="Run" label="=trdRun" />
+
     <Text name="Note" label="=note" />
   </Fields>
 </Table>

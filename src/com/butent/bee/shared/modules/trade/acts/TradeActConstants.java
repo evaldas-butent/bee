@@ -105,6 +105,7 @@ public final class TradeActConstants {
   public static final String COL_TA_SERVICE_DAYS = "DaysPerWeek";
   public static final String COL_TA_SERVICE_MIN = "MinTerm";
   public static final String COL_TA_ACT = "Act";
+  public static final String COL_TA_RUN = "Run";
 
   public static final String COL_TA_INVOICE_SERVICE = "TradeActService";
   public static final String COL_TA_INVOICE_ITEM = "SaleItem";

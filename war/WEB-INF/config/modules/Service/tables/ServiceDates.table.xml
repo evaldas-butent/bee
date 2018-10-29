@@ -15,5 +15,7 @@
     <String name="Note" precision="100" label="=note" />
     <Relation name="ServiceMaintenance" relation="ServiceMaintenance" cascade="SET_NULL"
               label="=svcMaintenance" />
+    <Integer name="Run" label="=trdRun" />
+    <Relation name="TradeActService" relation="TradeActServices" label="=tradeAct" />
   </Fields>
 </Table>

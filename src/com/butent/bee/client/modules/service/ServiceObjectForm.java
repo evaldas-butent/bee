@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.service;
 
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.shared.data.value.IntegerValue;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
@@ -17,6 +19,8 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TA_OBJECT;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TA_RUN;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.VIEW_TRADE_ACT_SERVICES;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -73,14 +77,8 @@ import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
 
 public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickHandler,
     RowActionEvent.Handler, SelectorEvent.Handler, RowUpdateEvent.Handler, DataChangeEvent.Handler {
@@ -200,6 +198,36 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
             } else {
               return true;
             }
+          }
+        });
+      } else if (widget instanceof ChildGrid && BeeUtils.same(name, VIEW_SERVICE_DATES)) {
+        ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+          @Override
+          public GridInterceptor getInstance() {
+            return null;
+          }
+
+          @Override
+          public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow, Collection<RowInfo> selectedRows, DeleteMode defMode) {
+            return DeleteMode.SINGLE;
+          }
+
+          @Override
+          public DeleteMode beforeDeleteRow(GridPresenter presenter, IsRow row) {
+            Long tradeService = Data.getLong(getViewName(), row, "TradeActService");
+            Long serviceMaintenance = Data.getLong(getViewName(), row, "ServiceMaintenance");
+
+            if (BeeUtils.isPositive(tradeService)) {
+              Queries.update(VIEW_TRADE_ACT_SERVICES, tradeService, COL_TA_RUN, new TextValue(""),
+                result -> Data.refreshLocal(VIEW_TRADE_ACT_SERVICES));
+            }
+
+            if (BeeUtils.isPositive(serviceMaintenance)) {
+              Queries.update("ServiceMaintenance", serviceMaintenance, COL_TA_RUN, new TextValue(""),
+                result -> Data.refreshLocal("ServiceMaintenance"));
+            }
+
+            return super.beforeDeleteRow(presenter, row);
           }
         });
       }
