@@ -4,6 +4,10 @@
   <!ENTITY bold "font-weight:bold;">
   <!ENTITY form "PrintTASaleSuggestion">
   <!ENTITY hdr ".bee-form-PrintTradeActSalePhysical .bee-trade-itemsInfo-header .bee-trade-itemsInfo-">
+  <!ENTITY formNo "(row.SeriesName + '-' + (row.Number ? row.Number : rowId))
+    + (row.RentProject
+      ? ' &lt;br\&gt;Projektas Nr. ' + (row.RentProjectSeriesName + '-' + (row.RentProjectNumber ? row.RentProjectNumber : rowId))
+    : '')">
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
   name="&form;" caption="Komercinis pasiūlymas" disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
@@ -15,9 +19,7 @@
         <FlowPanel style="padding: 10px; width:9cm;">
           <TextLabel style="text-align: center; &bold; ">
             <render>
-              <ui:expression>'Komercinis pasiūlymas Nr. ' + row.SeriesName + '-' + (row.Number ?
-                row.Number :
-                rowId)</ui:expression>
+              <ui:expression>'Komercinis pasiūlymas Nr. ' + String(&formNo;)</ui:expression>
             </render>
           </TextLabel>
           <DateTimeLabel source="Date" format="DATE_TIME_SHORT" style="text-align: center;" />
