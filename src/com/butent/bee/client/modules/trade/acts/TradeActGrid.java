@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.trade.acts;
 
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
+import com.butent.bee.shared.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.event.shared.GwtEvent;
@@ -32,10 +33,6 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.ListFilterSupplier;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -133,16 +130,10 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
     super.afterInsertRow(result);
 
     if (TradeActKind.RENT_PROJECT.equals(newActKind) && TradeActKind.RENT_PROJECT.equals(getKind(result))) {
-     Collection<RowInfo> ri = getGridView().getSelectedRows(GridView.SelectedRows.ALL);
+      IsRow selectAct = getFirstCheckSelectionAct(getGridView(), Sets.newHashSet(result.getId()));
 
-      if (!BeeUtils.isEmpty(ri)) {
-        for (RowInfo item : ri) {
-          if (item.getId() == result.getId()) {
-            continue;
-          }
-          assignToRentProject(Sets.newHashSet(item.getId()), result.getId());
-          break;
-        }
+      if (selectAct != null && TradeActValidator.canAssignRentProject(null, selectAct, getViewName())) {
+        assignToRentProject(Sets.newHashSet(selectAct.getId()), result.getId());
       }
     }
   }
@@ -259,6 +250,49 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
     return result;
   }
 
+  @Override
+  public GridInterceptor getInstance() {
+    return new TradeActGrid(kind);
+  }
+
+  @Override
+  public void onActiveRowChange(ActiveRowChangeEvent event) {
+    refreshCommands(event.getRowValue(), getGridView() != null
+            && !getGridView().getSelectedRows(GridView.SelectedRows.ALL).isEmpty());
+    super.onActiveRowChange(event);
+  }
+
+  @Override
+  public void onLoad(GridView gridView) {
+    super.onLoad(gridView);
+    if (gridView.getGrid() != null) {
+      gridView.getGrid().addSelectionCountChangeHandler(this);
+    }
+  }
+
+  @Override
+  public void onSelectionCountChange(SelectionCountChangeEvent event) {
+    refreshCommands(getActiveRow(), event.getCount() > 0);
+  }
+
+  @Override
+  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
+    IsRow parentRow =
+            ViewHelper.getParentRow(getGridPresenter().getMainView().asWidget(), VIEW_TRADE_ACTS);
+    if (parentRow == null && TradeActKind.RENT_PROJECT.equals(newActKind)) {
+      IsRow selectedAct = getFirstCheckSelectionAct(gridView, new HashSet<>());
+
+      if (selectedAct != null && TradeActValidator.canAssignRentProject(BeeKeeper.getScreen(), selectedAct, getViewName())) {
+        parentRow = selectedAct;
+        BeeKeeper.getScreen().notifyInfo("Pasirinktas aktas", BeeUtils.toString(selectedAct.getId()),
+                "bus priskirtas po nuomos projekto formos išsaugojimo");
+      }
+    }
+
+    TradeActKeeper.prepareNewTradeAct(newRow, parentRow, newActKind);
+    return super.onStartNewRow(gridView, oldRow, newRow, copy);
+  }
+
   private void buildInvoice() {
     final Set<Long> ids = new HashSet<>();
     GridView gridView = getGridView();
@@ -334,51 +368,7 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
     return new FilterComponent(COL_TA_STATUS, ListFilterSupplier.buildValue(items));
   }
 
-  @Override
-  public GridInterceptor getInstance() {
-    return new TradeActGrid(kind);
-  }
 
-  @Override
-  public void onActiveRowChange(ActiveRowChangeEvent event) {
-    refreshCommands(event.getRowValue(), getGridView() != null
-            && !getGridView().getSelectedRows(GridView.SelectedRows.ALL).isEmpty());
-    super.onActiveRowChange(event);
-  }
-
-  @Override
-  public void onLoad(GridView gridView) {
-    super.onLoad(gridView);
-    if (gridView.getGrid() != null) {
-      gridView.getGrid().addSelectionCountChangeHandler(this);
-    }
-  }
-
-  @Override
-  public void onSelectionCountChange(SelectionCountChangeEvent event) {
-    refreshCommands(getActiveRow(), event.getCount() > 0);
-  }
-
-  @Override
-  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
-    IsRow parentRow =
-        ViewHelper.getParentRow(getGridPresenter().getMainView().asWidget(), VIEW_TRADE_ACTS);
-    if (parentRow == null && TradeActKind.RENT_PROJECT.equals(newActKind)) {
-     ArrayList<RowInfo> ri = (ArrayList<RowInfo>) gridView.getSelectedRows(GridView.SelectedRows.ALL);
-
-      if (!BeeUtils.isEmpty(ri)) {
-        for (RowInfo item : ri) {
-          parentRow = gridView.getGrid().getRowById(item.getId());
-          BeeKeeper.getScreen().notifyInfo("Pasirinktas aktas", BeeUtils.toString(item.getId()),
-                  "bus priskirtas po nuomos projekto formos išsaugojimo");
-          break;
-        }
-      }
-    }
-
-    TradeActKeeper.prepareNewTradeAct(newRow, parentRow, newActKind);
-    return super.onStartNewRow(gridView, oldRow, newRow, copy);
-  }
 
   private Button ensureCopyCommand() {
     if (copyCommand == null) {
@@ -559,32 +549,9 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
           firstRow = row;
         }
 
-        if (getKind(row) == null || !getKind(row).enableReturn()) {
-          getGridView().notifyWarning(Localized.dictionary().taIsDifferent());
+        if (!TradeActValidator.canAssignRentProject(getGridView(), row, getViewName())
+         || !TradeActValidator.isSeriesAndCompanyMatch(getGridView(), firstRow, row, getViewName())) {
           return;
-        }
-
-        if (DataUtils.isId(getRentProject(row))) {
-          getGridView().notifyWarning("Aktas " + row.getId() + "priskirtas nuomos projektui "
-              + getRentProject(row));
-          return;
-        }
-
-        if (!Objects.equals(getSeries(firstRow), getSeries(row))
-            || !Objects.equals(getCompany(firstRow), getCompany(row))) {
-          getGridView().notifyWarning(Localized.dictionary().taIsDifferent());
-          return;
-        }
-
-        if (DataUtils.isId(getContinuousAct(row))) {
-          getGridView().notifyWarning("Aktas " + row.getId() + " susietas su tęstiniu "
-              + getContinuousAct(row));
-          return;
-        }
-
-        if (getKind(row) == null || isContinuousAct(row) || isRentProjectAct(row)) {
-          getGridView().notifyWarning("Aktas " + row.getId()
-              + (getKind(row) != null ? " yra " + getKind(row).getCaption() : ""));
         }
 
         rows.add(row);
@@ -920,6 +887,24 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
 
   private Long getContinuousAct(IsRow row) {
     return row.getLong(getDataIndex(COL_TA_CONTINUOUS));
+  }
+
+  private IsRow getFirstCheckSelectionAct(GridView gridView, Set<Long> exclude) {
+    Collection<RowInfo> ri = getGridView().getSelectedRows(GridView.SelectedRows.ALL);
+
+    if (BeeUtils.isEmpty(ri)) {
+      return null;
+    }
+
+    for (RowInfo item : ri) {
+      if (exclude.contains(item.getId())) {
+        continue;
+      }
+
+      return gridView.getGrid().getRowById(item.getId());
+    }
+
+    return null;
   }
 
   private TradeActKind getKind(IsRow row) {
