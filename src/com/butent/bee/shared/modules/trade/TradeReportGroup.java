@@ -226,6 +226,48 @@ public enum TradeReportGroup implements HasLocalizedCaption {
     }
   },
 
+  ERP("erp") {
+    @Override
+    public String getCaption(Dictionary dictionary) {
+      return "ERP likutis";
+    }
+
+    @Override
+    public ValueType getType() {
+      return ValueType.TEXT;
+    }
+
+    @Override
+    public String valueSource() {
+      return TBL_ITEMS;
+    }
+
+    @Override
+    public String valueColumn() {
+      return COL_EXTERNAL_STOCK;
+    }
+
+    @Override
+    public boolean primaryDocument() {
+      return true;
+    }
+
+    @Override
+    public String labelSource() {
+      return TBL_ITEMS;
+    }
+
+    @Override
+    public String labelColumn() {
+      return COL_EXTERNAL_STOCK;
+    }
+
+    @Override
+    public String editViewName() {
+      return null;
+    }
+  },
+
   WAREHOUSE("warehouse") {
     @Override
     public String getCaption(Dictionary dictionary) {

@@ -206,6 +206,10 @@ public class TradeReportsBean {
         rowGroups.add(TradeReportGroup.UNIT);
       }
 
+      if (showQuantity && !TradeReportGroup.ERP.equals(stockGroup)) {
+        rowGroups.add(TradeReportGroup.ERP);
+      }
+
     } else if (stockGroup != null && rowGroups.contains(stockGroup)) {
       rowGroups.remove(stockGroup);
     }

@@ -17,7 +17,7 @@
     <DataColumn name="InvoiceNo" />
 
     <RelColumn name="Supplier" visible="false" />
-    <RelColumn name="Customer" renderColumns="CustomerName CustomerTypeName" visible="true" />
+    <RelColumn name="Customer" renderColumns="CustomerName CustomerTypeName" searchBy="CustomerName" visible="true" />
     <RelColumn name="Payer" visible="false" />
 
     <DataColumn name="Amount" />
