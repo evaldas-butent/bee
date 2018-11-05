@@ -11,7 +11,8 @@
     <RelColumn name="Company" visible="true" renderColumns="CompanyName TypeName" searchBy="CompanyName" />
     <RelColumn name="Series" visible="true" filterSupplier="list" />
     <DataColumn name="Number" visible="true" />
-    <RelColumn name="RentProject" visible="true" renderColumns="RentProjectSeriesName RentProjectNumber" editEnabled="true"> </RelColumn>
+    <RelColumn name="RentProject" visible="true" renderColumns="RentProjectSeriesName RentProjectNumber"
+               filterOptions="empty" editEnabled="true" />
     <CalcColumn name="ReturnedCount" type="integer" caption="=tradeActReturnedCountShort">
       <render>
         <ui:expression>row.ReturnedCount - (row.ContinuousCount ? row.ContinuousCount
