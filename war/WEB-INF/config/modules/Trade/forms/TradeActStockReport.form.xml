@@ -29,6 +29,9 @@
       <cell style="padding-left: 1em;">
         <CheckBox name="Weight" text="=weight" />
       </cell>
+      <cell style="padding-left: 1em;">
+        <CheckBox name="DefaultQuantity" text="=defaultQuantity" />
+      </cell>
     </HorizontalPanel>
 
     <Disclosure open="true">

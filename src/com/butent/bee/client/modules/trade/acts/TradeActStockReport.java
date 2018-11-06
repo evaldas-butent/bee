@@ -271,6 +271,7 @@ public class TradeActStockReport extends ReportInterceptor {
 
     boolean qty = getBoolean(COL_TRADE_ITEM_QUANTITY);
     boolean weight = getBoolean(COL_ITEM_WEIGHT);
+    boolean defaultQty = getBoolean(COL_ITEM_DEFAULT_QUANTITY);
 
     final List<String> headers = StringList.uniqueCaseSensitive();
     headers.addAll(getCaptions(start, end, qty, weight));
@@ -292,6 +293,9 @@ public class TradeActStockReport extends ReportInterceptor {
     }
     if (weight) {
       params.addDataItem(COL_ITEM_WEIGHT, Codec.pack(weight));
+    }
+    if (defaultQty) {
+      params.addDataItem(COL_ITEM_DEFAULT_QUANTITY, Codec.pack(defaultQty));
     }
 
     Filter filter;

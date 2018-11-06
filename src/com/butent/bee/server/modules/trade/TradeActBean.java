@@ -3030,6 +3030,7 @@ public class TradeActBean implements HasTimerService {
 
     boolean showQuantity = reqInfo.hasParameter(COL_TRADE_ITEM_QUANTITY);
     boolean showWeight = reqInfo.hasParameter(COL_ITEM_WEIGHT);
+    boolean showDefaultQty = reqInfo.hasParameter(COL_ITEM_DEFAULT_QUANTITY);
 
     if (!showQuantity && !showWeight) {
       showQuantity = true;
@@ -3146,6 +3147,9 @@ public class TradeActBean implements HasTimerService {
 
       query.addFields(TBL_ITEMS, COL_EXTERNAL_STOCK);
 
+      if (showDefaultQty) {
+        query.addFields(TBL_ITEMS, COL_ITEM_DEFAULT_QUANTITY);
+      }
       query.addOrder(TBL_ITEMS, COL_ITEM_ORDINAL);
       query.addOrder(null, ALS_ITEM_TYPE_NAME);
       query.addOrder(null, ALS_ITEM_GROUP_NAME);
@@ -3156,7 +3160,8 @@ public class TradeActBean implements HasTimerService {
     HasConditions where = SqlUtils.or();
 
     if (!BeeUtils.isEmpty(startStock)) {
-      addStockColumns(query, startStock, PFX_START_STOCK, showQuantity, showWeight, sum);
+      addStockColumns(query, startStock, PFX_START_STOCK, showQuantity, showWeight, sum,
+          showDefaultQty);
 
       qs.sqlIndex(startStock, COL_TA_ITEM);
       query.addFromLeft(startStock,
@@ -3176,7 +3181,8 @@ public class TradeActBean implements HasTimerService {
     }
 
     if (!BeeUtils.isEmpty(endStock)) {
-      addStockColumns(query, endStock, PFX_END_STOCK, showQuantity, showWeight, sum);
+      addStockColumns(query, endStock, PFX_END_STOCK, showQuantity, showWeight, sum,
+          showDefaultQty);
 
       qs.sqlIndex(endStock, COL_TA_ITEM);
       query.addFromLeft(endStock,
@@ -3923,7 +3929,7 @@ public class TradeActBean implements HasTimerService {
   }
 
   private void addStockColumns(SqlSelect query, String tmp, String prefix,
-      boolean quantity, boolean weight, boolean sum) {
+      boolean quantity, boolean weight, boolean sum, boolean defaultQty) {
 
     List<String> input = qs.sqlColumns(tmp);
     List<String> columns = new ArrayList<>();
@@ -3960,6 +3966,20 @@ public class TradeActBean implements HasTimerService {
       String als = prefix + "viso" + SFX_QUANTITY;
       IsExpression xxx = SqlUtils.plus((Object[]) SqlUtils.fields(tmp,
           columns.toArray(new String[0])));
+
+      if (sum) {
+        query.addSum(xxx, als);
+      } else {
+        query.addExpr(xxx, als);
+      }
+    }
+    if (quantity && defaultQty) {
+      String als = prefix + "trukumas" + SFX_QUANTITY;
+
+      IsExpression xxx = SqlUtils.minus(columns.size() > 1
+          ? SqlUtils.plus((Object[]) SqlUtils.fields(tmp, columns.toArray(new String[0])))
+          : SqlUtils.field(tmp, columns.get(0)),
+          SqlUtils.field(TBL_ITEMS, COL_ITEM_DEFAULT_QUANTITY));
 
       if (sum) {
         query.addSum(xxx, als);

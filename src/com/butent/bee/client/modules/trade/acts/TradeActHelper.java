@@ -185,6 +185,9 @@ final class TradeActHelper {
       case COL_EXTERNAL_STOCK:
         return "ERP likutis";
 
+      case COL_ITEM_DEFAULT_QUANTITY:
+        return Localized.dictionary().defaultQuantity();
+
       default:
         logger.warning(NameUtils.getClassName(TradeActHelper.class), name, "label not defined");
         return name;
@@ -244,6 +247,7 @@ final class TradeActHelper {
       case TradeActConstants.ALS_RETURNED_QTY:
       case ALS_REMAINING_QTY:
       case COL_EXTERNAL_STOCK:
+      case COL_ITEM_DEFAULT_QUANTITY:
         return getQuantityFormat();
 
       case COL_TRADE_ITEM_PRICE:
