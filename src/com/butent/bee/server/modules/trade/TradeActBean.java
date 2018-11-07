@@ -64,6 +64,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
@@ -3031,8 +3032,10 @@ public class TradeActBean implements HasTimerService {
     boolean showQuantity = reqInfo.hasParameter(COL_TRADE_ITEM_QUANTITY);
     boolean showWeight = reqInfo.hasParameter(COL_ITEM_WEIGHT);
     boolean showDefaultQty = reqInfo.hasParameter(COL_ITEM_DEFAULT_QUANTITY);
+    ItemPrice price = EnumUtils.getEnumByIndex(ItemPrice.class,
+        reqInfo.getParameterInt(COL_ITEM_PRICE));
 
-    if (!showQuantity && !showWeight) {
+    if (!showQuantity && !showWeight && price == null) {
       showQuantity = true;
     }
 
@@ -3055,13 +3058,16 @@ public class TradeActBean implements HasTimerService {
       actCondition.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_OBJECT, objects));
     }
 
-    IsCondition itemCondition;
-    if (!showQuantity && showWeight) {
-      itemCondition = SqlUtils.positive(TBL_ITEMS, COL_ITEM_WEIGHT);
-    } else {
-      itemCondition = null;
-    }
+    HasConditions itemCondition = SqlUtils.or();
 
+    if (!showQuantity) {
+      if (showWeight) {
+        itemCondition.add(SqlUtils.positive(TBL_ITEMS, COL_ITEM_WEIGHT));
+      }
+      if (price != null) {
+        itemCondition.add(SqlUtils.positive(TBL_ITEMS, price.getPriceColumn()));
+      }
+    }
     String startStock = null;
     String movement = null;
     String endStock = null;
@@ -3150,6 +3156,9 @@ public class TradeActBean implements HasTimerService {
       if (showDefaultQty) {
         query.addFields(TBL_ITEMS, COL_ITEM_DEFAULT_QUANTITY);
       }
+      if (price != null) {
+        query.addFields(TBL_ITEMS, price.getPriceColumn());
+      }
       query.addOrder(TBL_ITEMS, COL_ITEM_ORDINAL);
       query.addOrder(null, ALS_ITEM_TYPE_NAME);
       query.addOrder(null, ALS_ITEM_GROUP_NAME);
@@ -3161,7 +3170,7 @@ public class TradeActBean implements HasTimerService {
 
     if (!BeeUtils.isEmpty(startStock)) {
       addStockColumns(query, startStock, PFX_START_STOCK, showQuantity, showWeight, sum,
-          showDefaultQty);
+          showDefaultQty, price);
 
       qs.sqlIndex(startStock, COL_TA_ITEM);
       query.addFromLeft(startStock,
@@ -3171,7 +3180,7 @@ public class TradeActBean implements HasTimerService {
     }
 
     if (!BeeUtils.isEmpty(movement)) {
-      addMovementColumns(query, movement, showQuantity, showWeight, sum);
+      addMovementColumns(query, movement, showQuantity, showWeight, sum, price);
 
       qs.sqlIndex(movement, COL_TA_ITEM);
       query.addFromLeft(movement,
@@ -3182,7 +3191,7 @@ public class TradeActBean implements HasTimerService {
 
     if (!BeeUtils.isEmpty(endStock)) {
       addStockColumns(query, endStock, PFX_END_STOCK, showQuantity, showWeight, sum,
-          showDefaultQty);
+          showDefaultQty, price);
 
       qs.sqlIndex(endStock, COL_TA_ITEM);
       query.addFromLeft(endStock,
@@ -3929,7 +3938,7 @@ public class TradeActBean implements HasTimerService {
   }
 
   private void addStockColumns(SqlSelect query, String tmp, String prefix,
-      boolean quantity, boolean weight, boolean sum, boolean defaultQty) {
+      boolean quantity, boolean weight, boolean sum, boolean defaultQty, ItemPrice price) {
 
     List<String> input = qs.sqlColumns(tmp);
     List<String> columns = new ArrayList<>();
@@ -3961,6 +3970,17 @@ public class TradeActBean implements HasTimerService {
           query.addExpr(expr, column + SFX_WEIGHT);
         }
       }
+
+      if (price != null) {
+        IsExpression expr = SqlUtils.multiply(SqlUtils.field(tmp, column),
+            SqlUtils.field(TBL_ITEMS, price.getPriceColumn()));
+
+        if (sum) {
+          query.addSum(expr, column + SFX_AMOUNT);
+        } else {
+          query.addExpr(expr, column + SFX_AMOUNT);
+        }
+      }
     }
     if (quantity && columns.size() > 1) {
       String als = prefix + "viso" + SFX_QUANTITY;
@@ -3990,7 +4010,7 @@ public class TradeActBean implements HasTimerService {
   }
 
   private void addMovementColumns(SqlSelect query, String tmp, boolean quantity, boolean weight,
-      boolean sum) {
+      boolean sum, ItemPrice price) {
 
     List<String> input = qs.sqlColumns(tmp);
     List<String> columns = new ArrayList<>();
@@ -4020,6 +4040,16 @@ public class TradeActBean implements HasTimerService {
           query.addSum(expr, column + SFX_WEIGHT);
         } else {
           query.addExpr(expr, column + SFX_WEIGHT);
+        }
+      }
+      if (price != null) {
+        IsExpression expr = SqlUtils.multiply(SqlUtils.field(tmp, column),
+            SqlUtils.field(TBL_ITEMS, price.getPriceColumn()));
+
+        if (sum) {
+          query.addSum(expr, column + SFX_AMOUNT);
+        } else {
+          query.addExpr(expr, column + SFX_AMOUNT);
         }
       }
     }

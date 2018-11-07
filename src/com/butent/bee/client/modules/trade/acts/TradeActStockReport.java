@@ -22,7 +22,6 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
-import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.view.form.FormView;
@@ -46,6 +45,7 @@ import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -83,6 +83,7 @@ public class TradeActStockReport extends ReportInterceptor {
 
   private static final String STYLE_QUANTITY = STYLE_PREFIX + "qty";
   private static final String STYLE_WEIGHT = STYLE_PREFIX + "wgt";
+  private static final String STYLE_AMOUNT = STYLE_PREFIX + "amt";
 
   private static final String STYLE_DATE = STYLE_PREFIX + "date";
   private static final String STYLE_START = STYLE_PREFIX + "start";
@@ -96,6 +97,8 @@ public class TradeActStockReport extends ReportInterceptor {
       return BeeUtils.removeSuffix(colName, SFX_QUANTITY);
     } else if (isWeightColumn(colName)) {
       return BeeUtils.removeSuffix(colName, SFX_WEIGHT);
+    } else if (isAmountColumn(colName)) {
+      return BeeUtils.removeSuffix(colName, SFX_AMOUNT);
     } else {
       return colName;
     }
@@ -146,6 +149,8 @@ public class TradeActStockReport extends ReportInterceptor {
       return STYLE_QUANTITY;
     } else if (isWeightColumn(colName)) {
       return STYLE_WEIGHT;
+    } else if (isAmountColumn(colName)) {
+      return STYLE_AMOUNT;
     } else {
       return STYLE_PREFIX + colName;
     }
@@ -187,6 +192,10 @@ public class TradeActStockReport extends ReportInterceptor {
       logger.warning("cannot parse warehouse", colName);
       return id;
     }
+  }
+
+  private static boolean isAmountColumn(String name) {
+    return name.endsWith(SFX_AMOUNT);
   }
 
   private static boolean isEndColumn(String name) {
@@ -272,6 +281,8 @@ public class TradeActStockReport extends ReportInterceptor {
     boolean qty = getBoolean(COL_TRADE_ITEM_QUANTITY);
     boolean weight = getBoolean(COL_ITEM_WEIGHT);
     boolean defaultQty = getBoolean(COL_ITEM_DEFAULT_QUANTITY);
+    boolean amount = getBoolean(COL_TRADE_AMOUNT);
+    Integer priceIndex = getSelectedIndex(COL_ITEM_PRICE);
 
     final List<String> headers = StringList.uniqueCaseSensitive();
     headers.addAll(getCaptions(start, end, qty, weight));
@@ -296,6 +307,9 @@ public class TradeActStockReport extends ReportInterceptor {
     }
     if (defaultQty) {
       params.addDataItem(COL_ITEM_DEFAULT_QUANTITY, Codec.pack(defaultQty));
+    }
+    if (amount) {
+      params.addDataItem(COL_ITEM_PRICE, BeeUtils.unbox(priceIndex));
     }
 
     Filter filter;
@@ -451,6 +465,7 @@ public class TradeActStockReport extends ReportInterceptor {
 
     List<Integer> quantityColumns = new ArrayList<>();
     List<Integer> weightColumns = new ArrayList<>();
+    List<Integer> amountColumns = new ArrayList<>();
 
     for (int j = 0; j < data.getNumberOfColumns(); j++) {
       String colName = data.getColumnName(j);
@@ -475,6 +490,10 @@ public class TradeActStockReport extends ReportInterceptor {
 
       } else if (isWeightColumn(colName)) {
         weightColumns.add(j);
+        totals.put(j, BeeConst.DOUBLE_ZERO);
+
+      } else if (isAmountColumn(colName)) {
+        amountColumns.add(j);
         totals.put(j, BeeConst.DOUBLE_ZERO);
       }
     }
@@ -506,16 +525,19 @@ public class TradeActStockReport extends ReportInterceptor {
     for (int j = 0; j < data.getNumberOfColumns(); j++) {
       String colName = data.getColumnName(j);
 
-      if (weightColumns.contains(j) && !quantityColumns.isEmpty()) {
-        text = Localized.dictionary().kilogramShort();
-
-      } else if (quantityColumns.contains(j) || weightColumns.contains(j)) {
+      if (quantityColumns.contains(j) || weightColumns.contains(j) || amountColumns.contains(j)) {
         if (movementColumns.contains(j)) {
           text = getOperationLabel(colName);
         } else {
           text = getWarehouseLabel(colName);
         }
+        if (weightColumns.contains(j)) {
+          text = (quantityColumns.isEmpty() ? text + " " : "")
+              + Localized.dictionary().kilogramShort();
 
+        } else if (amountColumns.contains(j)) {
+          text = (quantityColumns.isEmpty() ? text + " " : "") + "suma";
+        }
       } else {
         text = TradeActHelper.getLabel(colName);
       }
@@ -618,6 +640,8 @@ public class TradeActStockReport extends ReportInterceptor {
               format = TradeActHelper.getQuantityFormat();
             } else if (weightColumns.contains(j)) {
               format = TradeActHelper.getWeightFormat();
+            } else if (amountColumns.contains(j)) {
+              format = TradeActHelper.getAmountFormat();
             } else {
               format = TradeActHelper.getNumberFormat(colName);
             }
@@ -696,6 +720,8 @@ public class TradeActStockReport extends ReportInterceptor {
           format = TradeActHelper.getQuantityFormat();
         } else if (weightColumns.contains(index)) {
           format = TradeActHelper.getWeightFormat();
+        } else if (amountColumns.contains(index)) {
+          format = TradeActHelper.getAmountFormat();
         } else {
           format = TradeActHelper.getNumberFormat(colName);
         }

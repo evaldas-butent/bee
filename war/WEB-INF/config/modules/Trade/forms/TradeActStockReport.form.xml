@@ -32,6 +32,10 @@
       <cell style="padding-left: 1em;">
         <CheckBox name="DefaultQuantity" text="=defaultQuantity" />
       </cell>
+      <cell style="padding-left: 1em;">
+        <CheckBox name="Amount" text="=amount" />
+      </cell>
+      <ListBox name="Price" enumKey="ItemPrice" value="-" />
     </HorizontalPanel>
 
     <Disclosure open="true">

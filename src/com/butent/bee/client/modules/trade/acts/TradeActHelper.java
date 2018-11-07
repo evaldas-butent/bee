@@ -189,6 +189,9 @@ final class TradeActHelper {
         return Localized.dictionary().defaultQuantity();
 
       default:
+        if (BeeUtils.startsWith(name, COL_ITEM_PRICE) || COL_ITEM_COST.equalsIgnoreCase(name)) {
+          return Data.getColumnLabel(TBL_ITEMS, name);
+        }
         logger.warning(NameUtils.getClassName(TradeActHelper.class), name, "label not defined");
         return name;
     }
@@ -251,6 +254,7 @@ final class TradeActHelper {
         return getQuantityFormat();
 
       case COL_TRADE_ITEM_PRICE:
+      case COL_ITEM_COST:
       case "SaleFactor":
         return getPriceFormat();
 
@@ -280,6 +284,9 @@ final class TradeActHelper {
         return getDecimalFormat(VIEW_TRADE_ACT_SERVICES, name);
 
       default:
+        if (BeeUtils.startsWith(name, COL_ITEM_PRICE)) {
+          return getPriceFormat();
+        }
         logger.warning(NameUtils.getClassName(TradeActHelper.class), name, "format not defined");
         return null;
     }
