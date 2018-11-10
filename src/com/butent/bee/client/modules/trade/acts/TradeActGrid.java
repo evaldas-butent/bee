@@ -1,9 +1,15 @@
 package com.butent.bee.client.modules.trade.acts;
 
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
+import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.tree.TreeItem;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.*;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.collect.TreeMultimap;
+import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.shared.GwtEvent;
 
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
@@ -60,8 +66,11 @@ import com.butent.bee.shared.utils.StringList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -74,6 +83,8 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
       TradeActKind.RESERVE,
       TradeActKind.RENT_PROJECT
   );
+
+  Tree tree;
 
   private final TradeActKind kind;
 
@@ -121,8 +132,19 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
             e -> buildInvoice()));
       }
     }
-
     super.afterCreatePresenter(presenter);
+  }
+
+  @Override
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      FormFactory.WidgetDescriptionCallback callback) {
+
+    if (widget instanceof Tree) {
+      tree = (Tree) widget;
+      tree.addSelectionHandler(this::handleSelection);
+      initTree();
+    }
+    super.afterCreateWidget(name, widget, callback);
   }
 
   @Override
@@ -925,6 +947,56 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
 
   private Long getSeries(IsRow row) {
     return row.getLong(getDataIndex(COL_TA_SERIES));
+  }
+
+  private void handleSelection(SelectionEvent<TreeItem> selectionEvent) {
+    TreeItem item = selectionEvent.getSelectedItem();
+    Filter filter;
+
+    if (Objects.isNull(item)) {
+      filter = null;
+    } else if (item.getParentItem() != null) {
+      filter = Filter.and(Filter.equals(COL_TA_STATUS, (Long) item.getUserObject()),
+          Filter.equals(COL_TA_OPERATION, (Long) item.getParentItem().getUserObject()));
+    } else {
+      filter = Filter.equals(COL_TA_OPERATION, (Long) item.getUserObject());
+    }
+    if (getGridPresenter().getDataProvider().setDefaultParentFilter(filter)) {
+      getGridPresenter().refresh(false, true);
+    }
+  }
+
+  private void initTree() {
+    if (tree == null) {
+      return;
+    }
+    Queries.getRowSet("DistinctTradeActOperations", null, kind == null ? null : kind.getFilter(),
+        result -> {
+          int operationName = result.getColumnIndex(TradeConstants.COL_OPERATION_NAME);
+          int operationId = result.getColumnIndex(COL_TA_OPERATION);
+          int statusName = result.getColumnIndex(TradeConstants.COL_STATUS_NAME);
+          int statusId = result.getColumnIndex(COL_TA_STATUS);
+
+          Map<String, Long> operations = new HashMap<>();
+          Multimap<String, Pair<String, Long>> map = TreeMultimap.create(String::compareTo,
+              Comparator.comparing(Pair::getA));
+
+          result.forEach(row -> {
+            String operation = row.getString(operationName);
+            operations.put(operation, row.getLong(operationId));
+            map.put(operation, Pair.of(BeeUtils.nvl(row.getString(statusName), "(nėra)"),
+                row.getLong(statusId)));
+          });
+          tree.clear();
+
+          map.keySet().forEach(operation -> {
+            TreeItem branch = tree.addItem(operation);
+            branch.setUserObject(operations.get(operation));
+
+            map.get(operation).forEach(status ->
+                branch.addItem(new TreeItem("<i>" + status.getA() + "</i>", status.getB())));
+          });
+        });
   }
 
   private boolean isContinuousAct(IsRow row) {

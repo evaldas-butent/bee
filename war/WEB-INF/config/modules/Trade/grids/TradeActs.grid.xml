@@ -1,22 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
-  name="TradeActs" viewName="TradeActs" caption="=tradeActs"
+        xmlns:ui="http://www.butent.com/ui" xmlns:w="http://www.butent.com/widget"
+
+        name="TradeActs" viewName="TradeActs" caption="=tradeActs"
         newRowWindow="on-top" editWindow="on-top"
-  >
+>
+  <g:west size="160" splitterSize="2">
+    <w:Tree caption="Operacijos, būsenos" />
+  </g:west>
+
   <g:columns>
     <SelectionColumn name="Select" />
     <IdColumn name="Id" />
     <RelColumn name="Operation" renderColumns="OperationName" />
-    <RelColumn name="Company" visible="true" renderColumns="CompanyName TypeName" searchBy="CompanyName" />
+    <RelColumn name="Company" visible="true" renderColumns="CompanyName TypeName"
+               searchBy="CompanyName" />
     <RelColumn name="Series" visible="true" filterSupplier="list" />
     <DataColumn name="Number" visible="true" />
-    <RelColumn name="RentProject" visible="true" renderColumns="RentProjectSeriesName RentProjectNumber"
+    <RelColumn name="RentProject" visible="true"
+               renderColumns="RentProjectSeriesName RentProjectNumber"
                filterOptions="empty" editEnabled="true" />
     <CalcColumn name="ReturnedCount" type="integer" caption="=tradeActReturnedCountShort">
       <render>
         <ui:expression>row.ReturnedCount - (row.ContinuousCount ? row.ContinuousCount
-        : 0)</ui:expression>
+          : 0)
+        </ui:expression>
       </render>
     </CalcColumn>
     <RelColumn name="Name" visible="true" />
@@ -25,7 +33,7 @@
     <RelColumn name="Status" renderColumns="StatusName" visible="true" filterSupplier="list" />
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
     <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
-      choiceColumns="FirstName LastName CompanyName" />
+               choiceColumns="FirstName LastName CompanyName" />
 
     <DataColumn name="Parent" />
     <DataColumn name="Kind" visible="true" />
@@ -34,7 +42,7 @@
     <RelColumn name="Currency" renderColumns="CurrencyName" />
 
     <RelColumn name="InputVehicle" />
-    <RelColumn name="InputDriver"  />
+    <RelColumn name="InputDriver" />
 
     <PropColumn type="datetime" name="LastInvoiceDate" caption="Paskutinė sąskaita"
                 filterSupplier="customDateTime" filterOptions="LastInvoiceDate"

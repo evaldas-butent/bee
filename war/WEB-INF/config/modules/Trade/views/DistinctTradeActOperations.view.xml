@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="DistinctTradeActOperations" source="TradeActs" filter="Operation"
+>
+  <Columns>
+    <SimpleColumn name="Operation" />
+    <SimpleJoin joinType="INNER" name="Operation">
+      <SimpleColumn name="OperationName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Status" />
+    <SimpleJoin joinType="LEFT" name="Status">
+      <SimpleColumn name="StatusName" />
+    </SimpleJoin>
+
+    <HiddenColumn name="Kind" />
+  </Columns>
+  <GroupBy columns="OperationName Operation StatusName Status" />
+</View>

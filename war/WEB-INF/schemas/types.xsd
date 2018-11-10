@@ -382,6 +382,7 @@
       <xs:enumeration value="DistinctCriterionValues" />
       <xs:enumeration value="DistinctDocumentItems" />
       <xs:enumeration value="DistinctForwarderVehicles" />
+      <xs:enumeration value="DistinctTradeActOperations" />
       <xs:enumeration value="DocumentData" />
       <xs:enumeration value="DocumentFiles" />
       <xs:enumeration value="DocumentItems" />
