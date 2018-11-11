@@ -847,6 +847,7 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
               RelationUtils.updateRow(viewTradeActs, colId, newRow, viewTradeActs,
                       parentActs.getRow(0), false);
             } else if (parent != null) {
+              newRow.setValue(i, parent.getLong(i));
               RelationUtils.updateRow(viewTradeActs, colId, newRow, viewTradeActs,
                       parent, false);
             }
