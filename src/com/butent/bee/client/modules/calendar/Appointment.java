@@ -94,7 +94,7 @@ public class Appointment extends CalendarItem {
   private static final String KEY_CREATOR_NAME = "CreatorName";
 
   static {
-    SIMPLE_HEADER_TEMPLATE = BeeUtils.joinWords(wrap(Service.VAR_ID), wrap(COL_SUMMARY));
+    SIMPLE_HEADER_TEMPLATE = wrap(COL_SUMMARY);
     SIMPLE_BODY_TEMPLATE = BeeUtils.buildLines(wrap(COL_APPOINTMENT_LOCATION),
         wrap(ALS_COMPANY_NAME), BeeUtils.joinWords(wrap(COL_VEHICLE_BRAND),
             wrap(COL_VEHICLE_MODEL)),
@@ -108,8 +108,7 @@ public class Appointment extends CalendarItem {
         wrap(COL_VEHICLE_NUMBER), wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES),
         wrap(KEY_OWNERS), wrap(COL_DESCRIPTION));
 
-    MULTI_HEADER_TEMPLATE = BeeUtils.joinWords(wrap(Service.VAR_ID), wrap(KEY_PERIOD),
-        wrap(COL_SUMMARY));
+    MULTI_HEADER_TEMPLATE = BeeUtils.joinWords(wrap(KEY_PERIOD), wrap(COL_SUMMARY));
     MULTI_BODY_TEMPLATE = BeeUtils.joinWords(wrap(COL_APPOINTMENT_LOCATION),
         wrap(ALS_COMPANY_NAME), wrap(COL_VEHICLE_BRAND), wrap(COL_VEHICLE_MODEL),
         wrap(COL_VEHICLE_NUMBER), wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), wrap(KEY_OWNERS));
