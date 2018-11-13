@@ -52,10 +52,14 @@
 
     <DataColumn name="RegistrationNo" />
   </g:columns>
+  <g:rowStyle>
+    <ui:inline>color: darkblue</ui:inline>
+    <ui:expression>row.RentProject</ui:expression>
+  </g:rowStyle>
   <g:rowEditable>
-    <ui:expression>
-      (!row.ContinuousAct &amp;&amp; !row.ReturnAct &amp;&amp; !row.ReturnedCount)
-      || (row.Kind == 7 &amp;&amp; !row.ContinuousAct)
-    </ui:expression>
+    <ui:expression><![CDATA[
+      (!row.ContinuousAct && !row.ReturnAct && !row.ReturnedCount)
+      || (row.Kind == 7 && !row.ContinuousAct)
+    ]]></ui:expression>
   </g:rowEditable>
 </g:Grid>
