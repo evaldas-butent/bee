@@ -20,7 +20,7 @@
   <DataColumn name="Note" minWidth="100" flexGrow="1" />
 
   <DataColumn name="Run" minWidth="100" flexGrow="1" >
-    <footer aggregate="sum" />
+    <footer aggregate="subtract" />
   </DataColumn>
   <RelColumn name="TradeActService" renderColumns="TradeSeriesName TradeNumber" editSource="TradeAct" editEnabled="true"
              visible="true" />
