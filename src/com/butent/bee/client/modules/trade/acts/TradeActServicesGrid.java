@@ -203,7 +203,9 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
       }
 
     } else if (Objects.equals(event.getColumnId(), COL_SERVICE_OBJECT) && !BeeUtils.isEmpty(oldRun)) {
-      event.consume();
+      if(event.isDelete()) {
+        event.consume();
+      }
     } else {
       super.onEditStart(event);
     }

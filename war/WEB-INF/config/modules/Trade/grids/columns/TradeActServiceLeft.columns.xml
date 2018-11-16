@@ -26,6 +26,7 @@
   <DataColumn name="TimeUnit" flexGrow="0" />
 
   <DataColumn name="Tariff" flexGrow="0" />
-  <RelColumn name="ServiceObject" choiceColumns="Model Address" renderColumns="Model Address" flexGrow="0"/>
+  <RelColumn name="ServiceObject" choiceColumns="Model Address" editEnabled="true" renderColumns="Model Address"
+             flexGrow="0"/>
   <DataColumn name="Run" flexGrow="0" />
 </g:columns>

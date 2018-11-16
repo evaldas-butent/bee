@@ -1,5 +1,6 @@
 package com.butent.bee.client.grid;
 
+import com.butent.bee.shared.data.value.*;
 import com.google.gwt.i18n.client.NumberFormat;
 
 import com.butent.bee.client.grid.cell.FooterCell;
@@ -29,13 +30,6 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.HasRowValue;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.value.DateTimeValue;
-import com.butent.bee.shared.data.value.DateValue;
-import com.butent.bee.shared.data.value.HasValueType;
-import com.butent.bee.shared.data.value.LongValue;
-import com.butent.bee.shared.data.value.NumberValue;
-import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -54,7 +48,7 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
     HasValueFormatter {
 
   public enum Aggregate {
-    SUM, COUNT, MIN, MAX, AVG
+    SUM, COUNT, MIN, MAX, AVG, SUBTRACT
   }
 
   private enum EvaluatorType {
@@ -280,6 +274,8 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
     double total = BeeConst.DOUBLE_ZERO;
     long count = 0;
     Value reduced = null;
+    Integer min = null;
+    Integer max = null;
 
     for (IsRow row : data) {
       Value value = getRowValue(row);
@@ -290,6 +286,17 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
             break;
 
           case COUNT:
+            break;
+
+          case SUBTRACT:
+            if (max == null || BeeUtils.isMore(value.getInteger(), max)) {
+              max = value.getInteger();
+            }
+
+            if (min == null || BeeUtils.isLess(value.getInteger(), min)) {
+              min = value.getInteger();
+            }
+
             break;
 
           case MAX:
@@ -312,6 +319,10 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
       }
     }
 
+    if (getAggregate() == Aggregate.SUBTRACT) {
+      reduced = new IntegerValue((max == null ? 0 : max) - (min == null ? 0 : min));
+    }
+
     if (count <= 0) {
       return null;
     }
@@ -331,6 +342,7 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
       case COUNT:
         return new LongValue(count);
 
+      case SUBTRACT:
       case MAX:
       case MIN:
         return reduced;
