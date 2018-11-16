@@ -12,6 +12,7 @@ import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.COL_COMMENT;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.COL_EVENT_NOTE;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TRADE_ACT;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -45,6 +46,7 @@ import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.finance.FinanceConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
@@ -799,6 +801,46 @@ public enum Report implements HasWidgetSupplier {
       ReportInfo report = new ReportInfo(getReportCaption());
       report.addRowItem(items.get(COL_TRADE_CUSTOMER));
       report.setDescending(report.addColItem(items.get(COL_TRADE_DEBT)), true);
+
+      return Collections.singletonList(report);
+    }
+  },
+
+  APPOINTMENT_REPORT(ModuleAndSub.of(Module.CALENDAR), CalendarConstants.SVC_APPOINTMENT_REPORT) {
+    @Override
+    public List<ReportItem> getItems() {
+      return Arrays.asList(
+          new ReportTextItem(CalendarConstants.COL_APPOINTMENT_TYPE, "Įvykio tipas"),
+          new ReportTextItem(CalendarConstants.COL_SUMMARY, "Santrauka"),
+          new ReportTextItem(CalendarConstants.COL_DESCRIPTION, "Aprašymas"),
+          new ReportEnumItem(CalendarConstants.COL_STATUS, "Būsena",
+              CalendarConstants.AppointmentStatus.class),
+          new ReportTextItem(CalendarConstants.COL_APPOINTMENT_LOCATION, "Vieta"),
+          new ReportDateTimeItem(CalendarConstants.COL_START_DATE_TIME, "Pradžia"),
+          new ReportDateTimeItem(CalendarConstants.COL_END_DATE_TIME, "Pabaiga"),
+          new ReportTextItem(CalendarConstants.COL_CREATOR, "Registravo"),
+          new ReportTextItem(COL_COMPANY, "Klientas"),
+          new ReportTextItem(CalendarConstants.COL_ATTENDEE, "Resursas"),
+          new ReportTextItem(CalendarConstants.COL_ATTENDEE_TYPE, "Resurso tipas"),
+          new ReportTextItem(COL_TRADE_ACT, "Aktas"),
+          new ReportTextItem(COL_SERVICE_OBJECT, "Įrenginys"),
+          new ReportTextItem(COL_SERVICE_MAINTENANCE, "Remontas")
+      );
+    }
+
+    @Override
+    public String getReportCaption() {
+      return "Kalendoriaus įvykiai";
+    }
+
+    @Override
+    public Collection<ReportInfo> getReports() {
+      Map<String, ReportItem> items = new HashMap<>();
+
+      for (ReportItem item : getItems()) {
+        items.put(item.getExpression(), item);
+      }
+      ReportInfo report = new ReportInfo(getReportCaption());
 
       return Collections.singletonList(report);
     }

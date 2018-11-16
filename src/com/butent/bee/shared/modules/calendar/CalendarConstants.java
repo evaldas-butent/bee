@@ -193,6 +193,8 @@ public final class CalendarConstants {
   public static final String SVC_GET_REPORT_OPTIONS = "get_report_options";
   public static final String SVC_DO_REPORT = "do_report";
 
+  public static final String SVC_APPOINTMENT_REPORT = "AppointmentReport";
+
   public static final String PARAM_CALENDAR_ID = "calendar_id";
   public static final String PARAM_USER_CALENDAR_ID = "user_calendar_id";
   public static final String PARAM_ACTIVE_VIEW = "active_view";

@@ -11,4 +11,5 @@ name="CalendarReports" label="=reports" order="30" parent="Calendar" separator="
     parameters="2" />
   <Item name="ReportCancelHours" label="=calReportTypeCancelHours" service="calendar_reports"
     parameters="3" />
+  <Item name="AppointmentReport" label="Įvykių analizė" service="report"  parameters="AppointmentReport" />
 </Entry>

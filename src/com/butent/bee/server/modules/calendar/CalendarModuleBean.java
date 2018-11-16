@@ -299,6 +299,8 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
   @EJB
   NewsBean news;
 
+  @EJB CustomCalendarModuleBean custom;
+
   @Resource
   TimerService timerService;
 
@@ -454,6 +456,8 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
       response = getReportOptions(reqInfo);
     } else if (BeeUtils.same(svc, SVC_DO_REPORT)) {
       response = doReport(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_APPOINTMENT_REPORT)) {
+      response = custom.getAppointmentReport(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("Calendar service not recognized:", svc);
