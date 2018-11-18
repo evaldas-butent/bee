@@ -15,6 +15,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.report.ReportInfo;
@@ -35,6 +36,9 @@ public class CustomCalendarModuleBean {
 
     HasConditions clause = SqlUtils.and();
 
+    clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_APPOINTMENTS,
+        sys.getIdName(TBL_APPOINTMENTS)), SqlConstants.SqlDataType.STRING, 20, 0),
+        COL_APPOINTMENT));
     clause.add(report.getCondition(SqlUtils.field(TBL_APPOINTMENT_TYPES, COL_APPOINTMENT_TYPE_NAME),
         COL_APPOINTMENT_TYPE));
     clause.add(report.getCondition(TBL_APPOINTMENTS, COL_SUMMARY));
@@ -51,6 +55,7 @@ public class CustomCalendarModuleBean {
         COL_SERVICE_OBJECT));
 
     String tmp = qs.sqlCreateTemp(new SqlSelect()
+        .addField(TBL_APPOINTMENTS, sys.getIdName(TBL_APPOINTMENTS), COL_APPOINTMENT)
         .addField(TBL_APPOINTMENT_TYPES, COL_APPOINTMENT_TYPE_NAME, COL_APPOINTMENT_TYPE)
         .addFields(TBL_APPOINTMENTS, COL_SUMMARY, COL_DESCRIPTION, COL_STATUS,
             COL_APPOINTMENT_LOCATION, COL_START_DATE_TIME, COL_END_DATE_TIME)

@@ -810,6 +810,7 @@ public enum Report implements HasWidgetSupplier {
     @Override
     public List<ReportItem> getItems() {
       return Arrays.asList(
+          new ReportTextItem(CalendarConstants.COL_APPOINTMENT, "Įvykio ID"),
           new ReportTextItem(CalendarConstants.COL_APPOINTMENT_TYPE, "Įvykio tipas"),
           new ReportTextItem(CalendarConstants.COL_SUMMARY, "Santrauka"),
           new ReportTextItem(CalendarConstants.COL_DESCRIPTION, "Aprašymas"),

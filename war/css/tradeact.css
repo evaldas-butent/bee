@@ -404,6 +404,14 @@
   font-size: smaller !important;
 }
 
+.bee-ChildGrid .bee-grid-TradeActs .bee-Tree,
+.bee-ChildGrid .bee-grid-TradeActs .bee-Splitter {
+  display: none;
+}
+.bee-ChildGrid .bee-grid-TradeActs .bee-GridView {
+  left: 0 !important;
+}
+
 .bee-form-SalesInvoice-container .bee-Action-print {
   display:none;
 }
