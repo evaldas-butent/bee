@@ -19,8 +19,12 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.classifiers.CompanyTypeReport;
 import com.butent.bee.client.modules.classifiers.CompanyUsageReport;
 import com.butent.bee.client.modules.trade.acts.TradeActItemsByCompanyReport;
@@ -42,6 +46,7 @@ import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -77,6 +82,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public enum Report implements HasWidgetSupplier {
@@ -804,6 +810,20 @@ public enum Report implements HasWidgetSupplier {
 
       return Collections.singletonList(report);
     }
+
+    @Override
+    public Map<String, Consumer<String>> getReportActions(String itemName) {
+      Map<String, Consumer<String>> actions = new LinkedHashMap<>();
+
+      switch (itemName) {
+        case COL_TRADE_CUSTOMER:
+          actions.put("Kliento kortelė",
+              name -> Queries.getRow(TBL_COMPANIES, Filter.equals(COL_COMPANY_NAME, name), null,
+                  result -> RowEditor.open(TBL_COMPANIES, result)));
+          break;
+      }
+      return actions;
+    }
   },
 
   APPOINTMENT_REPORT(ModuleAndSub.of(Module.CALENDAR), CalendarConstants.SVC_APPOINTMENT_REPORT) {
@@ -830,20 +850,28 @@ public enum Report implements HasWidgetSupplier {
     }
 
     @Override
+    public Map<String, Consumer<String>> getReportActions(String itemName) {
+      Map<String, Consumer<String>> actions = new LinkedHashMap<>();
+
+      switch (itemName) {
+        case CalendarConstants.COL_APPOINTMENT:
+          actions.put("Įvykio kortelė",
+              id -> Queries.getRow(CalendarConstants.TBL_APPOINTMENTS, BeeUtils.toLong(id),
+                  result -> CalendarKeeper.openAppointment(Appointment.create(result), null, null,
+                      null)));
+          break;
+      }
+      return actions;
+    }
+
+    @Override
     public String getReportCaption() {
       return "Kalendoriaus įvykiai";
     }
 
     @Override
     public Collection<ReportInfo> getReports() {
-      Map<String, ReportItem> items = new HashMap<>();
-
-      for (ReportItem item : getItems()) {
-        items.put(item.getExpression(), item);
-      }
-      ReportInfo report = new ReportInfo(getReportCaption());
-
-      return Collections.singletonList(report);
+      return Collections.singletonList(new ReportInfo(getReportCaption()));
     }
   },
 
@@ -959,6 +987,10 @@ public enum Report implements HasWidgetSupplier {
     this.moduleAndSub = Assert.notNull(moduleAndSub);
     this.reportName = Assert.notEmpty(reportName);
     this.formName = formName;
+  }
+
+  public Map<String, Consumer<String>> getReportActions(String itemName) {
+    return new HashMap<>();
   }
 
   public String getFormName() {
