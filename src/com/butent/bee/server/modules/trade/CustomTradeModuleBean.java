@@ -348,7 +348,9 @@ public class CustomTradeModuleBean {
             COL_TRADE_DEBT)
         .addEmptyDouble(VAR_OVERDUE)
         .addEmptyDouble(VAR_UNTOLERATED)
+        .addEmptyInt(VAR_OVERDUE_DAYS)
         .addEmptyString(COL_COMPANY_USER_RESPONSIBILITY, 61)
+        .addEmptyString(COL_TRADE_DEBT + COL_TRADE_MANAGER, 61)
         .addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(TBL_SALES_SERIES, COL_SERIES_NAME),
             "''"), SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_INVOICE_NO), "''")),
             COL_TRADE_INVOICE_NO)
@@ -385,40 +387,74 @@ public class CustomTradeModuleBean {
                 TimeUtils.MILLIS_PER_DAY)))
         .setWhere(SqlUtils.isNull(tmp, COL_TRADE_TERM)));
 
-    qs.updateData(new SqlUpdate(tmp)
-        .addExpression(VAR_OVERDUE, SqlUtils.name(COL_TRADE_DEBT))
-        .setWhere(SqlUtils.less(tmp, COL_TRADE_TERM, System.currentTimeMillis())));
+    long now = System.currentTimeMillis();
 
-    qs.updateData(new SqlUpdate(tmp)
-        .addExpression(VAR_UNTOLERATED, SqlUtils.name(COL_TRADE_DEBT))
-        .setWhere(SqlUtils.more(
-            SqlUtils.minus(System.currentTimeMillis(), SqlUtils.name(COL_TRADE_TERM)),
-            SqlUtils.multiply(SqlUtils.nvl(SqlUtils.name(COL_COMPANY_TOLERATED_DAYS), 0),
-                SqlUtils.cast(SqlUtils.constant(TimeUtils.MILLIS_PER_DAY),
-                    SqlConstants.SqlDataType.LONG, 0, 0)))));
-
+    if (report.requiresField(VAR_OVERDUE)) {
+      qs.updateData(new SqlUpdate(tmp)
+          .addExpression(VAR_OVERDUE, SqlUtils.name(COL_TRADE_DEBT))
+          .setWhere(SqlUtils.less(tmp, COL_TRADE_TERM, now)));
+    }
+    if (report.requiresField(VAR_UNTOLERATED)) {
+      qs.updateData(new SqlUpdate(tmp)
+          .addExpression(VAR_UNTOLERATED, SqlUtils.name(COL_TRADE_DEBT))
+          .setWhere(SqlUtils.more(SqlUtils.minus(now, SqlUtils.name(COL_TRADE_TERM)),
+              SqlUtils.multiply(SqlUtils.nvl(SqlUtils.name(COL_COMPANY_TOLERATED_DAYS), 0),
+                  SqlUtils.cast(SqlUtils.constant(TimeUtils.MILLIS_PER_DAY),
+                      SqlConstants.SqlDataType.LONG, 0, 0)))));
+    }
+    if (report.requiresField(VAR_OVERDUE_DAYS)) {
+      qs.updateData(new SqlUpdate(tmp)
+          .addExpression(VAR_OVERDUE_DAYS, SqlUtils.divide(SqlUtils.minus(now,
+              SqlUtils.name(COL_TRADE_TERM)), TimeUtils.MILLIS_PER_DAY))
+          .setWhere(SqlUtils.less(tmp, COL_TRADE_TERM, now)));
+    }
     String subq = "subq";
 
-    qs.updateData(new SqlUpdate(tmp)
-        .addExpression(COL_COMPANY_USER_RESPONSIBILITY, SqlUtils.concat(SqlUtils.field(subq,
-            COL_FIRST_NAME), "' '", SqlUtils.nvl(SqlUtils.field(subq, COL_LAST_NAME), "''")))
-        .setFrom(new SqlSelect()
-                .addFields(TBL_COMPANY_USERS, COL_COMPANY)
-                .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
-                .addFrom(TBL_COMPANY_USERS)
-                .addFromInner(TBL_USERS,
-                    sys.joinTables(TBL_USERS, TBL_COMPANY_USERS, COL_USER))
-                .addFromInner(TBL_COMPANY_PERSONS,
-                    sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
-                .addFromInner(TBL_PERSONS,
-                    sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
-                .setWhere(SqlUtils.notNull(TBL_COMPANY_USERS, COL_COMPANY_USER_RESPONSIBILITY)),
-            subq, SqlUtils.joinUsing(tmp, subq, COL_COMPANY)));
+    if (report.requiresField(COL_COMPANY_USER_RESPONSIBILITY)) {
+      qs.updateData(new SqlUpdate(tmp)
+          .addExpression(COL_COMPANY_USER_RESPONSIBILITY, SqlUtils.concat(SqlUtils.field(subq,
+              COL_FIRST_NAME), "' '", SqlUtils.nvl(SqlUtils.field(subq, COL_LAST_NAME), "''")))
+          .setFrom(new SqlSelect()
+                  .addFields(TBL_COMPANY_USERS, COL_COMPANY)
+                  .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
+                  .addFrom(TBL_COMPANY_USERS)
+                  .addFromInner(TBL_USERS,
+                      sys.joinTables(TBL_USERS, TBL_COMPANY_USERS, COL_USER))
+                  .addFromInner(TBL_COMPANY_PERSONS,
+                      sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+                  .addFromInner(TBL_PERSONS,
+                      sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+                  .setWhere(SqlUtils.notNull(TBL_COMPANY_USERS, COL_COMPANY_USER_RESPONSIBILITY)),
+              subq, SqlUtils.joinUsing(tmp, subq, COL_COMPANY)));
+    }
+    if (report.requiresField(COL_TRADE_DEBT + COL_TRADE_MANAGER)) {
+      String debts = qs.sqlCreateTemp(new SqlSelect()
+          .addFields(tmp, COL_COMPANY, COL_TRADE_MANAGER)
+          .addSum(tmp, COL_TRADE_DEBT)
+          .addFrom(tmp)
+          .addGroup(tmp, COL_COMPANY, COL_TRADE_MANAGER));
 
+      qs.updateData(new SqlUpdate(tmp)
+          .addExpression(COL_TRADE_DEBT + COL_TRADE_MANAGER,
+              SqlUtils.field(subq, COL_TRADE_MANAGER))
+          .setFrom(new SqlSelect()
+                  .addFields(debts, COL_COMPANY, COL_TRADE_MANAGER)
+                  .addFrom(debts)
+                  .addFromInner(new SqlSelect()
+                          .addFields(debts, COL_COMPANY)
+                          .addMax(debts, COL_TRADE_DEBT)
+                          .addFrom(debts)
+                          .addGroup(debts, COL_COMPANY), "xxx",
+                      SqlUtils.joinUsing(debts, "xxx", COL_COMPANY, COL_TRADE_DEBT)),
+              subq, SqlUtils.joinUsing(tmp, subq, COL_COMPANY)));
+
+      qs.sqlDropTemp(debts);
+    }
     return report.getResultResponse(qs, tmp,
         Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)),
         report.getCondition(tmp, COL_TRADE_MANAGER),
         report.getCondition(tmp, COL_COMPANY_USER_RESPONSIBILITY),
+        report.getCondition(tmp, COL_TRADE_DEBT + COL_TRADE_MANAGER),
         report.getCondition(tmp, COL_TRADE_INVOICE_NO));
   }
 

@@ -31,7 +31,7 @@
     <RelColumn name="ServiceManufacturer" renderColumns="ManufacturerName" visible="true"/>
     <DataColumn name="SerialNo" visible="true"/>
     <DataColumn name="Address" visible="true" />
-    <DataColumn name="CategoryName" visible="false" />
+    <DataColumn name="CategoryName" visible="true" />
 
     <DataColumn name="YearOfManufacture" caption="=svcYearOfManufacture" />
     <DataColumn name="InventNo" caption="=svcInventNo" />

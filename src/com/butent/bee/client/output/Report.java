@@ -778,6 +778,7 @@ public enum Report implements HasWidgetSupplier {
           new ReportTextItem(COL_TRADE_ERP_INVOICE, "Dokumentas"),
           new ReportTextItem(COL_TRADE_CUSTOMER, "Klientas"),
           new ReportTextItem(COL_COMPANY_USER_RESPONSIBILITY, "Atsakingas vadybininkas"),
+          new ReportTextItem(COL_TRADE_DEBT + COL_TRADE_MANAGER, "Skolų vadybininkas"),
           new ReportTextItem(COL_TRADE_MANAGER, "Vadybininkas"),
           new ReportTextItem(COL_TRADE_INVOICE_NO, "Sąskaitos nr."),
           new ReportTextItem("BankruptcyRisk", "Bankroto rizika"),
@@ -788,6 +789,7 @@ public enum Report implements HasWidgetSupplier {
           new ReportNumericItem(COL_TRADE_DEBT, "Skola").setPrecision(2),
           new ReportNumericItem(VAR_OVERDUE, "Pradelsta skola").setPrecision(2),
           new ReportNumericItem(VAR_UNTOLERATED, "Netoleruotina skola").setPrecision(2),
+          new ReportNumericItem(VAR_OVERDUE_DAYS, "Pradelstos dienos"),
           new ReportNumericItem("ExternalAdvance", "Avansas").setPrecision(2)
       );
     }

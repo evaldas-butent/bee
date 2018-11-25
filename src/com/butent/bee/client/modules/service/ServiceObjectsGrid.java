@@ -7,6 +7,7 @@ import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
@@ -16,6 +17,10 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ServiceObjectsGrid extends TreeGridInterceptor {
 
@@ -71,9 +76,16 @@ public class ServiceObjectsGrid extends TreeGridInterceptor {
   @Override
   protected Filter getFilter(Long treeItemId) {
     if (treeItemId != null) {
-      return Filter.equals(ServiceConstants.COL_SERVICE_CATEGORY, treeItemId);
+      TreeView tree = getTreeView();
+
+      Set<Long> categories = tree.getChildItems(BeeUtils.getLast(tree.getPath(treeItemId)), true)
+          .stream().map(IsRow::getId).collect(Collectors.toSet());
+
+      categories.add(treeItemId);
+
+      return Filter.any(ServiceConstants.COL_SERVICE_CATEGORY, categories);
     } else {
-      return Filter.isFalse();
+      return Filter.isTrue();
     }
   }
 
