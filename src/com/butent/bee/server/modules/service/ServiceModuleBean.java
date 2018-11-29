@@ -405,6 +405,26 @@ public class ServiceModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    BeeView.registerConditionProvider(COL_SERVICE_MAIN_CRITERIA, (view, args) -> {
+      Map<String, String> crit = Codec.deserializeHashMap(BeeUtils.getQuietly(args, 0));
+
+      HasConditions clause = SqlUtils.or();
+
+      SqlSelect query = new SqlSelect()
+          .addFields(VIEW_SERVICE_OBJECT_MAIN_CRITERIA, COL_SERVICE_OBJECT)
+          .addFrom(VIEW_SERVICE_OBJECT_MAIN_CRITERIA)
+          .setWhere(clause)
+          .addGroup(VIEW_SERVICE_OBJECT_MAIN_CRITERIA, COL_SERVICE_OBJECT)
+          .setHaving(SqlUtils.equals(SqlUtils.aggregate(SqlConstants.SqlFunction.COUNT, null),
+              crit.size()));
+
+      crit.forEach((id, val) -> clause.add(SqlUtils.and(
+          SqlUtils.equals(VIEW_SERVICE_OBJECT_MAIN_CRITERIA, COL_SERVICE_MAIN_CRITERIA, id),
+          SqlUtils.contains(VIEW_SERVICE_OBJECT_MAIN_CRITERIA, COL_SERVICE_CRITERION_VALUE, val))));
+
+      return SqlUtils.in(view.getSourceAlias(), view.getSourceIdName(), query);
+    });
+
     BeeView.registerConditionProvider(FILTER_MAINTENANCE_DOCUMENTS, (view, args) -> {
       Long maintenanceId = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, 0));
 
@@ -447,11 +467,10 @@ public class ServiceModuleBean implements BeeModule {
           BeeRowSet rowSet = event.getRowset();
           List<Long> rowIds = rowSet.getRowIds();
 
-          BeeView view = sys.getView(VIEW_SERVICE_OBJECT_CRITERIA);
+          BeeView view = sys.getView(VIEW_SERVICE_OBJECT_MAIN_CRITERIA);
           SqlSelect query = view.getQuery(usr.getCurrentUserId());
 
           query.setWhere(SqlUtils.and(query.getWhere(),
-              SqlUtils.isNull(view.getSourceAlias(), COL_SERVICE_CRITERIA_GROUP_NAME),
               SqlUtils.inList(view.getSourceAlias(), COL_SERVICE_OBJECT, rowIds)));
 
           SimpleRowSet criteria = qs.getData(query);
@@ -462,7 +481,7 @@ public class ServiceModuleBean implements BeeModule {
 
               if (r != null) {
                 r.setProperty(COL_SERVICE_CRITERION_NAME
-                        + row.getValue(COL_SERVICE_CRITERION_NAME),
+                        + row.getValue(COL_SERVICE_MAIN_CRITERIA + "Name"),
                     row.getValue(COL_SERVICE_CRITERION_VALUE));
               }
             }

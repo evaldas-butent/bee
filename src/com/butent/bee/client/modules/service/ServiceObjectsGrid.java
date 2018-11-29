@@ -11,14 +11,17 @@ import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
+import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -45,6 +48,16 @@ public class ServiceObjectsGrid extends TreeGridInterceptor {
     } else {
       return super.beforeAction(action, presenter);
     }
+  }
+
+  @Override
+  public AbstractFilterSupplier getFilterSupplier(String columnName,
+      ColumnDescription columnDescription) {
+
+    if (Objects.equals(columnName, ServiceConstants.COL_SERVICE_MAIN_CRITERIA)) {
+      return new ServiceObjectCriteriaFilter(null, null, null, null);
+    }
+    return super.getFilterSupplier(columnName, columnDescription);
   }
 
   @Override

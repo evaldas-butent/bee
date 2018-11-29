@@ -43,6 +43,7 @@
     <RelColumn name="Customer" renderColumns="CustomerName" visible="true" />
     <RelColumn name="Contractor" searchBy="ContractorName" />
     <RelColumn name="ContactPerson" renderColumns="ContactFirstName ContactLastName" visible="true" />
+    <PropColumn name="MainCriteria" type="string" label="Kriterijai:" />
     <PropColumn name="Criterion" type="string" dynamic="true" />
   </g:columns>
 </g:Grid>
