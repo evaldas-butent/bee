@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.trade;
 
+import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.data.value.TimeOfDayValue;
 import com.butent.bee.shared.time.AbstractDate;
 import com.google.common.collect.Lists;
@@ -464,6 +465,76 @@ public class TradeActBean implements HasTimerService {
                     }
                   }
                 }
+              }
+            }
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void maybeSetReturnedQtyGrouped(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_TRADE_ACT_ITEMS_GROUPED) && event.hasData()
+            && event.getColumnCount() >= sys.getView(event.getTargetName()).getColumnCount()) {
+          BeeRowSet rowSet = event.getRowset();
+          IsExpression sep = SqlUtils.constant("|");
+
+          SimpleRowSet itemData = qs.getData(new SqlSelect()
+                  .addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, COL_ITEM, COL_ITEM_PRICE, COL_ITEM_RENTAL_PRICE,
+                          COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_DISCOUNT)
+                  .addFrom(TBL_TRADE_ACT_ITEMS)
+                  .addFromLeft(TBL_TRADE_ACTS, sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
+                  .setWhere(SqlUtils.and(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_RENT_PROJECT, DataUtils.getDistinct(rowSet, COL_TA_RENT_PROJECT)),
+                          SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_KIND, Arrays.asList(TradeActKind.SALE, TradeActKind.SUPPLEMENT))))
+          );
+
+          List<Long> actIds = Lists.newArrayList(itemData.getLongColumn(COL_TRADE_ACT));
+          int itemIndex = rowSet.getColumnIndex(COL_TA_ITEM);
+          int qtyScale = rowSet.getColumn(COL_TRADE_ITEM_QUANTITY).getScale();
+          Set<String> keySet = new HashSet<>();
+
+          itemData.forEach(rs -> {
+            keySet.add(rs.getValue(COL_TRADE_ACT) + "|" + rs.getValue(COL_ITEM)
+              + "|" + rs.getDouble(COL_ITEM_PRICE)
+              + "|" + rs.getBoolean(COL_TRADE_VAT_PLUS)
+              + "|" + rs.getDouble( COL_TRADE_VAT)
+              + "|" + rs.getBoolean(COL_TRADE_VAT_PERC)
+              + "|" + rs.getDouble(COL_TRADE_DISCOUNT)
+            );
+          });
+
+          for (Long actId : actIds) {
+            TradeActKind kind = getActKind(actId);
+
+            if (kind == null || !kind.enableReturn()) {
+              continue;
+            }
+
+            Map<Pair<Long, Long>, Double> returnedItems = getReturnedItems(actId);
+
+            if (returnedItems.isEmpty()) {
+              continue;
+            }
+
+            for (BeeRow row : rowSet) {
+              Long itemId = row.getLong(itemIndex);
+              Double aQty = returnedItems.get(Pair.of(actId, itemId));
+              String key = actId + "|" + itemId
+                + "|" + row.getDouble(rowSet.getColumnIndex(COL_ITEM_PRICE))
+                + "|" + row.getBoolean(rowSet.getColumnIndex(COL_TRADE_VAT_PLUS))
+                + "|" + row.getDouble(rowSet.getColumnIndex(COL_TRADE_VAT))
+                + "|" + row.getBoolean(rowSet.getColumnIndex(COL_TRADE_VAT_PERC))
+                + "|" + row.getDouble(rowSet.getColumnIndex(COL_TRADE_DISCOUNT))
+              ;
+              double qty = BeeUtils.unbox(row.getPropertyDouble(PRP_RETURNED_QTY));
+
+              if (BeeUtils.isPositive(aQty) && keySet.contains(key)) {
+                qty += aQty;
+                keySet.remove(key);
+              }
+
+              if (BeeUtils.isPositive(qty)) {
+                row.setProperty(PRP_RETURNED_QTY, BeeUtils.toString(qty, qtyScale));
               }
             }
           }

@@ -52,6 +52,7 @@ public final class TradeActConstants {
   public static final String VIEW_TRADE_ACTS = "TradeActs";
   public static final String VIEW_TRADE_ACT_FILES = "TradeActFiles";
   public static final String VIEW_TRADE_ACT_ITEMS = "TradeActItems";
+  public static final String VIEW_TRADE_ACT_ITEMS_GROUPED = "ActItemsGrouped";
   public static final String VIEW_TRADE_ACT_SERVICES = "TradeActServices";
 
   public static final String VIEW_TRADE_ACT_TEMPLATES = "TradeActTemplates";

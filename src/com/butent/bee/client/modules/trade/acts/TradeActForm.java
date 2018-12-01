@@ -934,6 +934,9 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       if (getTabWidgetByKey("RelTradeActServices") != null) {
         getTabWidgetByKey("RelTradeActServices").setVisible(hasRelatedServices);
       }
+      if(getTabWidgetByKey(VIEW_TRADE_ACT_ITEMS_GROUPED) != null) {
+        getTabWidgetByKey(VIEW_TRADE_ACT_ITEMS_GROUPED).setVisible(TradeActKind.RENT_PROJECT.equals(kind));
+      }
 
       boolean hasInvoices = kind != null && kind.enableInvoices();
       form.setStyleName(STYLE_HAS_INVOICES, hasInvoices);

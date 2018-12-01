@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Columns xmlns="http://www.butent.com/view">
+  <SimpleJoin name="Parent" joinType="LEFT">
+    <IdColumn name="ParentId" />
+    <SimpleColumn name="Number" alias="ParentNumber" />
+    <SimpleJoin joinType="LEFT" name="Series">
+      <SimpleColumn name="SeriesName" alias="ParentSeriesName" />
+    </SimpleJoin>
+    <SimpleColumn name="ContinuousAct" />
+    <SimpleColumn name="ReturnAct" />
+  </SimpleJoin>
+</Columns>

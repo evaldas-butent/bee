@@ -1,73 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="TradeActItems" source="TradeActItems" module="Trade.Acts"
   caption="=tradeActItems"
   >
   <Columns>
     <SimpleColumn name="TradeAct" />
-    <SimpleJoin name="TradeAct" joinType="LEFT">
-      <SimpleColumn name="Date" />
-      <SimpleColumn name="Parent" alias="TAParent"/>
-      <SimpleColumn name="Kind" />
-
-      <SimpleJoin joinType="LEFT" name="Series">
-        <SimpleColumn name="SeriesName" alias="TradeSeriesName" />
-      </SimpleJoin>
-      <SimpleColumn name="Number" alias="TradeNumber" />
-
-      <SimpleJoin joinType="LEFT" name="Object">
-        <SimpleColumn name="ObjectName" />
-        <SimpleColumn name="ObjectAddress" />
-      </SimpleJoin>
-
-      <SimpleJoin name="Contract" joinType="LEFT">
-        <SimpleColumn name="Name" alias="ContractName" />
-        <SimpleColumn name="Number" alias="ContractNumber" />
-      </SimpleJoin>
-
-      <SimpleColumn name="RentProject" />
-    </SimpleJoin>
+    <xi:include href="viewcolumns/TradeAct.viewcolumns.xml" />
 
     <SimpleColumn name="Parent" />
-    <SimpleJoin name="Parent" joinType="LEFT">
-      <IdColumn name="ParentId" />
-      <SimpleColumn name="Number" alias="ParentNumber" />
-      <SimpleJoin joinType="LEFT" name="Series">
-        <SimpleColumn name="SeriesName" alias="ParentSeriesName" />
-      </SimpleJoin>
-      <SimpleColumn name="ContinuousAct" />
-      <SimpleColumn name="ReturnAct" />
-    </SimpleJoin>
+    <xi:include href="viewcolumns/ParentAct.viewcolumns.xml" />
 
     <SimpleColumn name="Item" />
-    <SimpleJoin joinType="INNER" name="Item">
-      <SimpleColumn name="Name" alias="ItemName" />
-      <SimpleColumn name="Article" />
-
-      <SimpleJoin joinType="INNER" name="Unit">
-        <SimpleColumn name="Name" alias="UnitName" />
-      </SimpleJoin>
-
-      <SimpleColumn name="Weight" />
-      <SimpleColumn name="Area" />
-
-      <SimpleColumn name="Price" alias="ItemPrice" />
-      <SimpleColumn name="Currency" alias="ItemCurrency" />
-      <SimpleColumn name="Cost" alias="ItemCost" />
-      <SimpleColumn name="CostCurrency" alias="ItemCostCurrency" />
-
-      <SimpleColumn name="RentalPrice" alias="ItemRentalPrice" />
-      <SimpleColumn name="RentalPriceCurrency" alias="ItemRentalPriceCurrency" />
-
-      <SimpleColumn name="Price1" alias="ItemPrice1" />
-      <SimpleColumn name="Currency1" alias="ItemCurrency1" />
-      <SimpleColumn name="Price2" alias="ItemPrice2" />
-      <SimpleColumn name="Currency2" alias="ItemCurrency2" />
-      <SimpleColumn name="Price3" alias="ItemPrice3" />
-      <SimpleColumn name="Currency3" alias="ItemCurrency3" />
-      <SimpleColumn name="Ordinal" alias="ItemOrdinal" />
-    </SimpleJoin>
+    <xi:include href="viewcolumns/ActItem.viewcolumns.xml" />
 
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Price" />

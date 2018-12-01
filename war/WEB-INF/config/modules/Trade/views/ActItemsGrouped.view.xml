@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:xpr="http://www.butent.com/expression"
+
+  name="ActItemsGrouped" source="TradeActItems" module="Trade.Acts"
+  caption="=tradeActItems" readOnly="true"
+  >
+  <Columns>
+
+    <SimpleJoin name="TradeAct" filter="Kind = 0 OR Kind = 1" joinType="LEFT">
+      <HiddenColumn name="Kind" />
+      <SimpleColumn name="RentProject" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Item" />
+    <xi:include href="viewcolumns/ActItem.viewcolumns.xml" />
+
+    <AggregateColumn name="Quantity" aggregate="SUM" />
+    <SimpleColumn name="Price" />
+    <!-- SimpleColumn name="RentalPrice" /-->
+
+    <SimpleColumn name="VatPlus" />
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatPercent" />
+
+    <SimpleColumn name="Discount" />
+  </Columns>
+  <GroupBy columns="RentProject Kind Item ItemName Article ItemOrdinal Price VatPlus Vat VatPercent Discount"></GroupBy>
+  <Order>
+    <OrderBy column="ItemOrdinal"/>
+  </Order>
+</View>
