@@ -31,6 +31,7 @@
     <SimpleColumn name="Series" />
     <SimpleJoin joinType="LEFT" name="Series">
       <SimpleColumn name="SeriesName" />
+      <SimpleColumn name="Address" alias="SeriesAddress" />
     </SimpleJoin>
 
     <SimpleColumn name="Number" />

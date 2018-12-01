@@ -54,7 +54,7 @@ public class PrintServiceDefect extends AbstractFormInterceptor {
     Widget widget = form.getWidgetByName(source);
 
     if (DataUtils.isId(company) && widget != null) {
-      ClassifierUtils.getCompanyInfo(company, widget);
+      ClassifierUtils.getCompanyInfo(company, widget, null);
     }
   }
 

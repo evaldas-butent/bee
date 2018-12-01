@@ -54,7 +54,7 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
       if (!DataUtils.isId(id) && !BeeUtils.same(name, COL_SALE_PAYER)) {
         id = BeeKeeper.getUser().getUserData().getCompany();
       }
-      ClassifierUtils.getCompanyInfo(id, companies.get(name));
+      ClassifierUtils.getCompanyInfo(id, companies.get(name), null);
     }
     if (invoiceDetails != null) {
       TradeUtils.getDocumentItems(getViewName(), row.getId(),

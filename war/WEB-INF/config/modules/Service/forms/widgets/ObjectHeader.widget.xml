@@ -85,7 +85,7 @@
 
         <FlowPanel style="&mfld; width: 17em;" for="Item">
           <Label for="Item" style="&flbl;" />
-          <DataSelector source="Item" viewName="Items" style="&finp;"/>
+          <DataSelector source="Item" viewName="Items" searchableColumns="Name Article" style="&finp;"/>
         </FlowPanel>
 
         <FlowPanel style="margin-left: 1em; margin-top: 2em;">
@@ -105,7 +105,7 @@
                         style="&finp;"/>
         </FlowPanel>
 
-        <FlowPanel style="&mfld; width: 20em;" for="SerialNo">
+        <FlowPanel style="&mfld; width: 20em; display:none" for="SerialNo">
           <Label for="SerialNo" style="&flbl;" />
           <InputText source="SerialNo" style="&finp;" />
         </FlowPanel>
@@ -118,7 +118,7 @@
         </FlowPanel>
 
         <FlowPanel style="&mfld; width: 41em;" for="Address">
-          <Label text="=svcDeviceAddress" style="&flbl;" />
+          <Label for="Address" style="&flbl;" />
           <InputText source="Address" style="&finp;" />
         </FlowPanel>
       </FlowPanel>

@@ -13,6 +13,8 @@
 
     <SimpleColumn name="Notes" />
 
+    <SimpleColumn name="Address" />
+
     <SimpleColumn name="ForActs" />
   </Columns>
 

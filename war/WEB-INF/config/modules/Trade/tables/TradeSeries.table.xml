@@ -12,6 +12,8 @@
 
     <Text name="Notes" label="=notes" />
 
+    <String name="Address" precision="100" label="=address" />
+
     <Boolean name="ForActs" label="Aktams" />
   </Fields>
 </Table>

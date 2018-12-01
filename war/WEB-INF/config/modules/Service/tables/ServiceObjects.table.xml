@@ -6,7 +6,7 @@
   >
   <Fields>
     <Relation name="Category" relation="ServiceTree" notNull="true" label="=category" />
-    <String name="Address" precision="100" label="=address" />
+    <String name="Address" precision="100" label="Įrenginio Nr." />
 
     <Relation name="Customer" relation="Companies" label="=svcUser" />
     <Relation name="Contractor" relation="Companies" label="=owner" />

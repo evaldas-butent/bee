@@ -33,6 +33,13 @@
           <InputArea source="Notes" visibleLines="3" style="width: 350px;" />
         </cell>
       </row>
+
+      <row>
+        <Label for="Address" />
+        <cell colSpan="3">
+          <InputText source="Address" style="width: 350px;" />
+        </cell>
+      </row>
     </Table>
 
     <ChildGrid class="flexible" name="SeriesManagers" relColumn="Series" />
