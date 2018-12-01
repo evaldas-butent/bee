@@ -132,6 +132,8 @@ public final class TradeActConstants {
   public static final String ALS_TA_PARENT_KIND = "ParentKind";
   public static final String ALS_ITEM_ORDINAL = "ItemOrdinal";
 
+  public static final String ALS_SERVICE_INVOICE_RANGE = "ServiceInvoiceRange";
+
   public static final String GRID_TRADE_ACTS = "TradeActs";
   public static final String GRID_TRADE_ACT_TEMPLATES = "TradeActTemplates";
 
@@ -156,6 +158,9 @@ public final class TradeActConstants {
   public static final String PRP_INVOICE_PERIODS = "invoice_periods";
   public static final String PRP_CONTINUOUS_COUNT = "ContinuousCount";
   public static final String PRP_MULTI_RETURN_DATA = "MultiReturnData";
+
+  public static final String PRP_SERVICE_RANGE = "ServiceRange";
+
 
   public static final String PRM_IMPORT_TA_ITEM_RX = "ImportActItemRegEx";
   public static final String RX_IMPORT_ACT_ITEM = "^(.+);(.*);(\\d+\\.*\\d*)$";

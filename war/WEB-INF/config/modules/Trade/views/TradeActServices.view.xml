@@ -10,6 +10,8 @@
     <SimpleJoin name="TradeAct" joinType="LEFT">
       <SimpleColumn name="ContinuousAct" />
       <SimpleColumn name="RentProject" />
+      <SimpleColumn name="Date" />
+      <SimpleColumn name="Until" />
 
       <SimpleJoin joinType="LEFT" name="Series">
         <SimpleColumn name="SeriesName" alias="TradeSeriesName" />
@@ -78,6 +80,13 @@
     </SimpleJoin>
 
     <SimpleColumn name="Run" />
+
+    <ExternalJoin name="TradeActService" joinType="LEFT" source="TradeActInvoices">
+      <SimpleJoin name="SaleItem" joinType="LEFT">
+        <AggregateColumn name="Factor" aggregate="SUM" alias="ServiceInvoiceRange" label="=ordCompleted"></AggregateColumn>
+      </SimpleJoin>
+    </ExternalJoin>
+
   </Columns>
   <Order>
     <OrderBy column="ItemOrdinal"/>

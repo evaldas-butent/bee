@@ -3,11 +3,15 @@ package com.butent.bee.client.modules.trade.acts;
 import com.butent.bee.client.data.*;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditStartEvent;
+import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.shared.data.*;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.google.common.collect.Lists;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
@@ -102,6 +106,8 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
   private TradeActServicePicker picker;
   private Button commandApplyTariff;
   private Button commandApplyRental;
+  private final CheckBox showFinishedServices = new CheckBox("Rodyti baigtas paslaugas");
+  private final CheckBox showCompletedServices = new CheckBox("Rodyti įvykdytas paslaugas");
 
   TradeActServicesGrid() {
   }
@@ -123,6 +129,44 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
   public void afterCreatePresenter(GridPresenter presenter) {
     GridView gridView = presenter.getGridView();
 
+    if (gridView != null) {
+      presenter.getHeader().addCommandItem(showCompletedServices);
+      presenter.getHeader().addCommandItem(showFinishedServices);
+      ClickHandler svcFilter = new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent clickEvent) {
+          Filter f = Filter.and();
+
+          if (showCompletedServices.isChecked()) {
+             ((CompoundFilter) f).add(
+                      Filter.or(
+                              Filter.and(Filter.isNull(COL_TIME_UNIT), Filter.notNull(COL_DATE_FROM), Filter.isNull(ALS_SERVICE_INVOICE_RANGE)),
+                              Filter.and(Filter.notNull(COL_TIME_UNIT), Filter.notNull(COL_DATE_TO), Filter.isNull(ALS_SERVICE_INVOICE_RANGE))
+                      )
+             );
+          }
+
+          if (showFinishedServices.isChecked()) {
+            ((CompoundFilter) f).add(
+                    Filter.or(
+                            Filter.and(Filter.isNull(COL_TIME_UNIT), Filter.notNull(COL_DATE_FROM), Filter.notNull(ALS_SERVICE_INVOICE_RANGE)),
+                            Filter.and(Filter.notNull(COL_TIME_UNIT), Filter.notNull(COL_DATE_TO), Filter.notNull(ALS_SERVICE_INVOICE_RANGE))
+                    )
+            );
+          }
+
+          if (((CompoundFilter) f).isEmpty()) {
+            getGridPresenter().tryFilter(null, null, false);
+          } else {
+            getGridPresenter().tryFilter(f, null, false);
+          }
+        }
+      };
+
+      showCompletedServices.addClickHandler(svcFilter);
+      showFinishedServices.addClickHandler(svcFilter);
+    }
+
     if (gridView != null && !gridView.isReadOnly()) {
       commandApplyTariff = new Button(Localized.dictionary().taTariff());
       commandApplyTariff.addStyleName(STYLE_COMMAND_RECALCULATE_PRICES);
@@ -135,6 +179,8 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
       presenter.getHeader().addCommandItem(commandApplyTariff);
       presenter.getHeader().addCommandItem(commandApplyRental);
     }
+
+
   }
 
   @Override

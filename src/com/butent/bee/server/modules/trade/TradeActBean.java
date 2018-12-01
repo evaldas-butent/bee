@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.trade;
 
 import com.butent.bee.shared.data.value.TimeOfDayValue;
+import com.butent.bee.shared.time.AbstractDate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
@@ -325,6 +326,76 @@ public class TradeActBean implements HasTimerService {
 
             if (!BeeUtils.isEmpty(prop)) {
               row.setProperty(PRP_CONTINUOUS_COUNT, prop);
+            }
+          }
+        }
+
+        if (BeeUtils.same(event.getTargetName(), VIEW_TRADE_ACT_SERVICES)) {
+          BeeRowSet rs = event.getRowset();
+          Set<Integer> holidays = new HashSet<>();
+          Long country = prm.getRelation(PRM_COUNTRY);
+
+          if (DataUtils.isId(country)) {
+            SqlSelect holidayQuery = new SqlSelect()
+                    .addFields(TBL_HOLIDAYS, COL_HOLY_DAY)
+                    .addFrom(TBL_HOLIDAYS)
+                    .setWhere(SqlUtils.equals(TBL_HOLIDAYS, COL_HOLY_COUNTRY, country));
+
+            Integer[] days = qs.getIntColumn(holidayQuery);
+            if (days != null) {
+              for (Integer day : days) {
+                if (BeeUtils.isPositive(day)) {
+                  holidays.add(day);
+                }
+              }
+            }
+          }
+
+          int factorScale = sys.getFieldScale(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FACTOR);
+          for (int i = 0; i < rs.getNumberOfRows(); i++) {
+            TradeActTimeUnit tu = rs.getEnum(i, COL_TIME_UNIT, TradeActTimeUnit.class);
+            Range<DateTime> actRange = TradeActUtils.createRange(rs.getDateTime(i,COL_TA_DATE),
+                    rs.getDateTime(i, COL_TA_UNTIL));
+            JustDate dateFrom = rs.getDate(i, COL_TA_SERVICE_FROM);
+            JustDate dateTo = rs.getDate(i, COL_TA_SERVICE_TO);
+
+            JustDate fromr = BeeUtils.nvl(rs.getDate(i, COL_TA_SERVICE_FROM), rs.getDate(i, COL_TA_SERVICE_TO));
+            JustDate tor = BeeUtils.nvl(rs.getDate(i, COL_TA_SERVICE_TO), rs.getDate(i, COL_TA_SERVICE_FROM));
+            Range<DateTime> rRange = TradeActUtils.createRange(fromr, tor);
+            Range<DateTime> serviceRange = TradeActUtils.createServiceRange(
+                    dateFrom, dateTo, tu, rRange, actRange);
+
+            if (tu == null || serviceRange == null) {
+              continue;
+            }
+
+            Double factor = rs.getDouble(i, COL_TA_SERVICE_FACTOR);
+
+            switch(tu) {
+              case DAY:
+                if (!BeeUtils.isPositive(factor)) {
+                  Integer dpw = rs.getInteger(i, COL_TA_SERVICE_DAYS);
+                  if (TradeActUtils.validDpw(dpw)) {
+                    int days = TradeActUtils.countServiceDays(serviceRange, holidays, dpw);
+
+                    if (days > 0) {
+                      rs.getRow(i).setProperty(PRP_SERVICE_RANGE, (double) days);
+                    }
+                  }
+                }
+                break;
+
+              case MONTH:
+                double mf = TradeActUtils.getMonthFactor(serviceRange, holidays);
+
+                if (BeeUtils.isPositive(mf)) {
+                  if (BeeUtils.isPositive(factor)) {
+                    mf *= factor;
+                  }
+                  factor = BeeUtils.round(mf, factorScale);
+                  rs.getRow(i).setProperty(PRP_SERVICE_RANGE, factor);
+                }
+                break;
             }
           }
         }
