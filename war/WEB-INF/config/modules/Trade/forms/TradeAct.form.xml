@@ -163,7 +163,7 @@
                    contentEditable="false"></ChildGrid>
       </page>
 
-      <page>
+      <page key="TradeActItems">
         <text>=goods</text>
         <FlowPanel>
           <ChildGrid style="height:100%" name="TradeActItems" relColumn="TradeAct" disablable="true">

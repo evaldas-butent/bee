@@ -220,6 +220,42 @@ public final class TradeActUtils {
   }
 
   public static Range<DateTime> createServiceRange(JustDate serviceFrom, JustDate serviceTo,
+                                                   TradeActTimeUnit timeUnit, Range<DateTime> actRange) {
+    if (timeUnit == null) {
+      DateTime date;
+
+      if (serviceFrom != null) {
+        date = serviceFrom.getDateTime();
+      } else if (serviceTo != null) {
+        date = serviceTo.getDateTime();
+      } else {
+        return null;
+      }
+
+      return Range.singleton(date);
+
+    } else {
+      DateTime start;
+      if (serviceFrom != null) {
+        start = TimeUtils.startOfDay(serviceFrom);
+      } else {
+        start = actRange.lowerEndpoint();
+      }
+
+      DateTime end;
+      if (serviceTo != null) {
+        end = TimeUtils.startOfDay(serviceTo);
+      } else if (actRange.hasUpperBound()) {
+        end = actRange.upperEndpoint();
+      } else {
+        end = null;
+      }
+
+      return createRange(start, end);
+    }
+  }
+
+  public static Range<DateTime> createServiceRange(JustDate serviceFrom, JustDate serviceTo,
       TradeActTimeUnit timeUnit, Range<DateTime> builderRange, Range<DateTime> actRange) {
 
     if (timeUnit == null) {
