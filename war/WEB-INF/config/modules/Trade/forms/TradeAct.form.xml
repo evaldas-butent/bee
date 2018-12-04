@@ -16,7 +16,7 @@
   width="1050" height="700"
   >
   <f:properties reports="PrintTradeActSalePhysical, PrintTradeActReturn, PrintTradeActReturnExtra, PrintTASaleNoStock,
-     PrintTASaleRent, PrintTASaleAddition, PrintTASaleSuggestion, PrintTASaleProforma,
+     PrintTASaleNoStockDelivery, PrintTASaleRent, PrintTASaleAddition, PrintTASaleSuggestion, PrintTASaleProforma,
 
      PrintTradeActSalePhysicalPRent, PrintTradeActReturnPRent, PrintTradeActReturnExtraPRent, PrintTASaleNoStockPRent,
      PrintTASaleRentPRent, PrintTASaleAdditionPRent, PrintTASaleSuggestionPRent, PrintTASaleProformaPRent" />

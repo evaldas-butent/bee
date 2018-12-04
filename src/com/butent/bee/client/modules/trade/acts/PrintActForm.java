@@ -53,6 +53,8 @@ public class PrintActForm extends AbstractFormInterceptor {
    */
   private static final String FORM_PRINT_TA_NO_STOCK = "PrintTASaleNoStock";
 
+  private static final String FORM_PRINT_TA_DELIVERY = "PrintTASaleNoStockDelivery";
+
   /**
    * Perdavimo aktas
    */
@@ -407,6 +409,7 @@ public class PrintActForm extends AbstractFormInterceptor {
 
           visibleItemsCols.put(FORM_PRINT_TA_SALE_PHYSICAL, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_DELIVERY, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_RETURN, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_RETURN_EXTRA, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_SALE_RENT, column, true);
@@ -416,6 +419,7 @@ public class PrintActForm extends AbstractFormInterceptor {
 
           visibleServiceCols.put(FORM_PRINT_TA_SALE_PHYSICAL, column, true);
           visibleServiceCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_DELIVERY, column, true);
           visibleServiceCols.put(FORM_PRINT_TA_RETURN, column, true);
           visibleServiceCols.put(FORM_PRINT_TA_RETURN_EXTRA, column, true);
           visibleServiceCols.put(FORM_PRINT_TA_SALE_RENT, column, true);

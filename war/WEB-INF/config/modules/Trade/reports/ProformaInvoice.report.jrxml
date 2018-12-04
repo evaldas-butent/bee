@@ -161,13 +161,11 @@
 				<textFieldExpression><![CDATA[DateTimeFormat.of(PredefinedFormat.DATE_LONG, SupportedLocale.getByLanguage($P{REPORT_LOCALE}.getLanguage()).getDateTimeFormatInfo()).format(new DateTime(BeeUtils.toLong($P{Date})))]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="20" width="555" height="14" uuid="864089b8-b115-4b3d-9879-37a3c2410a3d">
-					<printWhenExpression><![CDATA[false]]></printWhenExpression>
-				</reportElement>
+				<reportElement positionType="Float" x="0" y="20" width="555" height="14" uuid="864089b8-b115-4b3d-9879-37a3c2410a3d"/>
 				<textElement textAlignment="Center">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{docNo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Nr. " + $P{ID}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="MMMM d, yyyy">
 				<reportElement x="360" y="20" width="195" height="14" uuid="e8e8a75e-c164-4028-abe4-6ba8beffd5c9"/>
