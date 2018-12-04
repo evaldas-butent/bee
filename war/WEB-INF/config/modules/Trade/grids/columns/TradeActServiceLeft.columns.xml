@@ -11,7 +11,7 @@
       <ui:inline>color: #008000;</ui:inline>
       <ui:expression><![CDATA[
         row.DateFrom != null && row.TimeUnit == null && row.ServiceInvoiceRange
-        || row.DateTo != null && row.TimeUnit != null && row.ServiceRange == row.ServiceInvoiceRange
+        || row.DateTo != null && row.TimeUnit != null && row.ServiceInvoiceRange && row.ServiceRange == row.ServiceInvoiceRange
       ]]></ui:expression>
     </dynStyle>
     <dynStyle>
@@ -30,7 +30,7 @@
       <ui:inline>color: #008000;</ui:inline>
       <ui:expression><![CDATA[
         row.DateFrom != null && row.TimeUnit == null && row.ServiceInvoiceRange
-        || row.DateTo != null && row.TimeUnit != null && row.ServiceRange == row.ServiceInvoiceRange
+        || row.DateTo != null && row.TimeUnit != null && row.ServiceInvoiceRange && row.ServiceRange == row.ServiceInvoiceRange
       ]]></ui:expression>
     </dynStyle>
     <dynStyle>
@@ -47,7 +47,7 @@
       <ui:inline>color: #008000;</ui:inline>
       <ui:expression><![CDATA[
         row.DateFrom != null && row.TimeUnit == null && row.ServiceInvoiceRange
-        || row.DateTo != null && row.TimeUnit != null && row.ServiceRange == row.ServiceInvoiceRange
+        || row.DateTo != null && row.TimeUnit != null && row.ServiceInvoiceRange && row.ServiceRange == row.ServiceInvoiceRange
       ]]></ui:expression>
     </dynStyle>
     <dynStyle>

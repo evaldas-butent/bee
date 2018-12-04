@@ -362,9 +362,9 @@ public class TradeActBean implements HasTimerService {
 
             JustDate fromr = BeeUtils.nvl(rs.getDate(i, COL_TA_SERVICE_FROM), rs.getDate(i, COL_TA_SERVICE_TO));
             JustDate tor = BeeUtils.nvl(rs.getDate(i, COL_TA_SERVICE_TO), rs.getDate(i, COL_TA_SERVICE_FROM));
-            Range<DateTime> rRange = TradeActUtils.createRange(fromr, tor);
+           // Range<DateTime> rRange = TradeActUtils.createRange(fromr, tor);
             Range<DateTime> serviceRange = TradeActUtils.createServiceRange(
-                    dateFrom, dateTo, tu, rRange, actRange);
+                    dateFrom, dateTo, tu, actRange);
 
             if (tu == null || serviceRange == null) {
               continue;
