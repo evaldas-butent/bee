@@ -9,6 +9,7 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
+import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -106,8 +107,9 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
   private TradeActServicePicker picker;
   private Button commandApplyTariff;
   private Button commandApplyRental;
-  private final CheckBox showFinishedServices = new CheckBox("Rodyti baigtas paslaugas");
-  private final CheckBox showCompletedServices = new CheckBox("Rodyti įvykdytas paslaugas");
+  private final CheckBox showAllServices = new CheckBox("Visos paslaugos");
+  private final CheckBox hideFinishedServices = new CheckBox("Slėpti baigtas paslaugas");
+  private final CheckBox hideCompletedServices = new CheckBox("Slėpti įvykdytas paslaugas");
 
   TradeActServicesGrid() {
   }
@@ -130,41 +132,76 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     GridView gridView = presenter.getGridView();
 
     if (gridView != null) {
-      presenter.getHeader().addCommandItem(showCompletedServices);
-      presenter.getHeader().addCommandItem(showFinishedServices);
+      presenter.getHeader().addCommandItem(showAllServices);
+      presenter.getHeader().addCommandItem(hideCompletedServices);
+      presenter.getHeader().addCommandItem(hideFinishedServices);
+      final Set<Long> ids = new HashSet<>();
+      final Set<Long> ids1 = new HashSet<>();
+
       ClickHandler svcFilter = new ClickHandler() {
         @Override
         public void onClick(ClickEvent clickEvent) {
-          Filter f = Filter.and();
 
-          if (showCompletedServices.isChecked()) {
-             ((CompoundFilter) f).add(
-                      Filter.or(
-                              Filter.and(Filter.isNull(COL_TIME_UNIT), Filter.notNull(COL_DATE_FROM), Filter.isNull(ALS_SERVICE_INVOICE_RANGE)),
-                              Filter.and(Filter.notNull(COL_TIME_UNIT), Filter.notNull(COL_DATE_TO), Filter.isNull(ALS_SERVICE_INVOICE_RANGE))
-                      )
-             );
+          if (gridView == null || gridView.getRowData() == null) {
+            return;
           }
 
-          if (showFinishedServices.isChecked()) {
-            ((CompoundFilter) f).add(
-                    Filter.or(
-                            Filter.and(Filter.isNull(COL_TIME_UNIT), Filter.notNull(COL_DATE_FROM), Filter.notNull(ALS_SERVICE_INVOICE_RANGE)),
-                            Filter.and(Filter.notNull(COL_TIME_UNIT), Filter.notNull(COL_DATE_TO), Filter.notNull(ALS_SERVICE_INVOICE_RANGE))
-                    )
-            );
-          }
-
-          if (((CompoundFilter) f).isEmpty()) {
+          if (Objects.equals(clickEvent.getSource(), showAllServices) && showAllServices.isChecked()
+                  || !hideCompletedServices.isChecked() && !hideFinishedServices.isChecked()) {
+            hideCompletedServices.setChecked(false);
+            hideFinishedServices.setChecked(false);
+            ids.clear();
+            ids1.clear();
             getGridPresenter().tryFilter(null, null, false);
-          } else {
-            getGridPresenter().tryFilter(f, null, false);
+            return;
           }
+
+
+          for (IsRow row : gridView.getRowData()) {
+            TradeActTimeUnit tu = Data.getEnum(gridView.getViewName(), row, COL_TIME_UNIT, TradeActTimeUnit.class);
+            Double propServiceRange = row.getPropertyDouble(PRP_SERVICE_RANGE);
+            Double serviceInvoiceRange = Data.getDouble(gridView.getViewName(), row, ALS_SERVICE_INVOICE_RANGE);
+            JustDate dateFrom = Data.getDate(gridView.getViewName(), row, COL_TA_SERVICE_FROM);
+            JustDate dateTo = Data.getDate(gridView.getViewName(), row, COL_TA_SERVICE_TO);
+
+            if (hideCompletedServices.isChecked()) {
+              showAllServices.setChecked(false);
+              if (tu == null && dateFrom != null && serviceInvoiceRange == null) {
+                ids.add(row.getId());
+              } else if ( tu!= null && dateTo != null && serviceInvoiceRange == null
+              || tu!= null && dateTo != null && serviceInvoiceRange != null && !Objects.equals(serviceInvoiceRange, propServiceRange)) {
+                ids.add(row.getId());
+              }
+            } else {
+              ids.clear();
+            }
+
+            if (hideFinishedServices.isChecked()) {
+              showAllServices.setChecked(false);
+              if (tu == null && dateFrom != null && serviceInvoiceRange != null) {
+                ids1.add(row.getId());
+              } else if (tu!= null && dateTo != null && serviceInvoiceRange != null && Objects.equals(serviceInvoiceRange, propServiceRange)) {
+                ids1.add(row.getId());
+              }
+            } else {
+              ids1.clear();
+            }
+          }
+
+          Set<Long> idsAll = new HashSet<>();
+          idsAll.addAll(ids);
+          idsAll.addAll(ids1);
+
+         if (!idsAll.isEmpty()) {
+           getGridPresenter().tryFilter(Filter.isNot(Filter.idIn(idsAll)), null, true);
+         }
         }
       };
 
-      showCompletedServices.addClickHandler(svcFilter);
-      showFinishedServices.addClickHandler(svcFilter);
+
+      showAllServices.addClickHandler(svcFilter);
+      hideCompletedServices.addClickHandler(svcFilter);
+      hideFinishedServices.addClickHandler(svcFilter);
     }
 
     if (gridView != null && !gridView.isReadOnly()) {

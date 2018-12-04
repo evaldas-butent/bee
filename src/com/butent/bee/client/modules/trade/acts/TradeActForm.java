@@ -923,10 +923,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
       boolean hasServices = kind != null && kind.enableServices();
       boolean hasRelatedServices = kind != null && kind.enableRelatedServices();
-
-      if (tabbedPages != null) {
-        tabbedPages.selectPage(0, TabbedPages.SelectionOrigin.CLICK);
-      }
+      int selPage = tabbedPages != null ? tabbedPages.getTabIndexByDataKey(GRID_TRADE_ACT_ITEMS) : 0;
 
       if (getTabWidgetByKey(GRID_TRADE_ACT_SERVICES) != null) {
         getTabWidgetByKey(GRID_TRADE_ACT_SERVICES).setVisible(hasServices);
@@ -936,6 +933,14 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       }
       if(getTabWidgetByKey(VIEW_TRADE_ACT_ITEMS_GROUPED) != null) {
         getTabWidgetByKey(VIEW_TRADE_ACT_ITEMS_GROUPED).setVisible(TradeActKind.RENT_PROJECT.equals(kind));
+
+        selPage = TradeActKind.RENT_PROJECT.equals(kind)
+                ? tabbedPages.getTabIndexByDataKey(VIEW_TRADE_ACT_ITEMS_GROUPED) : selPage;
+      }
+
+
+      if (tabbedPages != null) {
+        tabbedPages.selectPage(selPage, TabbedPages.SelectionOrigin.CLICK);
       }
 
       boolean hasInvoices = kind != null && kind.enableInvoices();

@@ -26,7 +26,7 @@
 
     <SimpleColumn name="Discount" />
   </Columns>
-  <GroupBy columns="RentProject Kind Item ItemName Article ItemOrdinal Price VatPlus Vat VatPercent Discount"></GroupBy>
+  <GroupBy columns="RentProject Item ItemName Article ItemOrdinal Price VatPlus Vat VatPercent Discount"></GroupBy>
   <Order>
     <OrderBy column="ItemOrdinal"/>
   </Order>
