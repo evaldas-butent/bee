@@ -130,7 +130,7 @@
 			<band height="397">
 				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" x="0" y="0" width="555" height="16" isRemoveLineWhenBlank="true" uuid="0794ed00-876e-428e-9dce-f891d8d9772f">
+					<reportElement positionType="Float" x="80" y="0" width="360" height="16" isRemoveLineWhenBlank="true" uuid="0794ed00-876e-428e-9dce-f891d8d9772f">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
 					<textElement textAlignment="Center" markup="html">
@@ -588,6 +588,11 @@
 						<text><![CDATA[Išvykimo laikas:_______h______min         Spidometro parodymai grįžus______________          km______h______min]]></text>
 					</staticText>
 				</frame>
+				<textField>
+					<reportElement positionType="Float" x="440" y="0" width="114" height="16" uuid="fe28409c-d591-4691-9b09-9736dc5302e2"/>
+					<textElement verticalAlignment="Middle"/>
+					<textFieldExpression><![CDATA["Data_________________"]]></textFieldExpression>
+				</textField>
 			</band>
 		</groupHeader>
 	</group>
