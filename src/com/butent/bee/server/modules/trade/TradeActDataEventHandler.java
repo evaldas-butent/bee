@@ -24,7 +24,9 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.function.Function;
 
 import javax.ejb.EJB;
@@ -130,6 +132,41 @@ public class TradeActDataEventHandler implements DataEventHandler {
               .addFromInner(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
               .setWhere(dateClause)));
     });
+
+    BeeView.registerConditionProvider(TBL_TRADE_ACT_ITEMS, (view, args) -> {
+      String col = BeeUtils.getQuietly(args, 0);
+      String val = BeeUtils.getQuietly(args, 1);
+
+      if (BeeUtils.anyEmpty(col, val)) {
+        return null;
+      }
+      return SqlUtils.in(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS),
+          new SqlSelect().setDistinctMode(true)
+              .addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT)
+              .addFrom(TBL_TRADE_ACT_ITEMS)
+              .addFromInner(TBL_ITEMS,
+                  sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_ITEMS, COL_TA_ITEM))
+              .setWhere(SqlUtils.containsAny(TBL_ITEMS,
+                  Arrays.asList(COL_ITEM_NAME, COL_ITEM_ARTICLE), Collections.singleton(val))));
+    });
+  }
+
+  @Subscribe
+  @AllowConcurrentEvents
+  public void setItemCount(DataEvent.ViewQueryEvent event) {
+    if (event.isAfter(TBL_TRADE_ACTS) && event.hasData()) {
+      BeeRowSet rowSet = event.getRowset();
+
+      SimpleRowSet rs = qs.getData(new SqlSelect()
+          .addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT)
+          .addCount(COL_TA_ITEM)
+          .addFrom(TBL_TRADE_ACT_ITEMS)
+          .setWhere(SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, rowSet.getRowIds()))
+          .addGroup(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT));
+
+      rowSet.forEach(beeRow -> beeRow.setProperty(TBL_TRADE_ACT_ITEMS,
+          rs.getValueByKey(COL_TRADE_ACT, BeeUtils.toString(beeRow.getId()), COL_TA_ITEM)));
+    }
   }
 
   @Subscribe

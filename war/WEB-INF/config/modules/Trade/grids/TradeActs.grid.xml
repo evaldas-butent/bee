@@ -51,6 +51,9 @@
     <DataColumn name="Notes" />
 
     <DataColumn name="RegistrationNo" />
+
+    <PropColumn name="TradeActItems" type="integer" caption="Prekių" label="Pavadinimas/artikulas"
+                filterSupplier="custom" filterOptions="TradeActItems" />
   </g:columns>
   <g:rowStyle>
     <ui:inline>color: darkblue</ui:inline>
