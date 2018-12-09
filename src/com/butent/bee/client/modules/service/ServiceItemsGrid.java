@@ -172,6 +172,8 @@ public class ServiceItemsGrid extends OrderItemsGrid {
 
     OperationType operationType = OperationType.SALE;
     Long serviceObject = parentForm.getLongValue(COL_SERVICE_OBJECT);
+    Long repairer = BeeUtils.nvl(Data.getLong(COL_SERVICE_MAINTENANCE, parentForm.getActiveRow(),
+      "RepairerCompanyPerson"), BeeKeeper.getUser().getUserData().getCompanyPerson());
 
     getVatPercent(Global.getParameterRelation(PRM_SERVICE_OPERATION), (vatMode, vatPercent) ->
         Global.getParameterRelation(PRM_CURRENCY, (currency, currencyName) -> {
@@ -186,7 +188,7 @@ public class ServiceItemsGrid extends OrderItemsGrid {
             List<BeeColumn> columns = DataUtils.getColumns(getDataColumns(),
                 Arrays.asList(COL_SERVICE_MAINTENANCE, COL_SERVICE_OBJECT, COL_ITEM,
                     COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT,
-                    COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC));
+                    COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_REPAIRER));
 
             BeeRowSet rowSet = new BeeRowSet(getViewName(), columns);
 
@@ -207,7 +209,7 @@ public class ServiceItemsGrid extends OrderItemsGrid {
                   Queries.asList(docId, serviceObject, id, quantity, price, discountInfo.getA(),
                       (Objects.nonNull(vatMode) && Objects.nonNull(vatInfo.getA()))
                           ? Objects.equals(vatMode, TradeVatMode.PLUS) : null,
-                      vatInfo.getA(), vatInfo.getB()));
+                      vatInfo.getA(), vatInfo.getB(), repairer));
             }
             Queries.insertRows(rowSet, new DataChangeCallback(rowSet.getViewName()));
           });
