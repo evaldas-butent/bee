@@ -39,7 +39,16 @@ public class TradeDocumentsGrid extends AbstractGridInterceptor {
 
   private Supplier<Filter> filterSupplier;
 
+  private Filter operationsFilter;
+
   public TradeDocumentsGrid() {
+  }
+
+  public TradeDocumentsGrid(long typeId) {
+    super();
+    Queries.getDistinctLongs(TradeConstants.TBL_TRADE_TYPE_OPERATIONS,
+        TradeConstants.COL_TRADE_OPERATION, Filter.equals(TradeConstants.COL_DOCUMENT_TYPE, typeId),
+        result -> this.setOperationsFilter(Filter.idIn(result)));
   }
 
   @Override
@@ -76,7 +85,11 @@ public class TradeDocumentsGrid extends AbstractGridInterceptor {
 
   @Override
   public GridInterceptor getInstance() {
-    return new TradeDocumentsGrid();
+    return new TradeDocumentsGrid().setOperationsFilter(getOperationsFilter());
+  }
+
+  public Filter getOperationsFilter() {
+    return operationsFilter;
   }
 
   @Override
@@ -92,6 +105,11 @@ public class TradeDocumentsGrid extends AbstractGridInterceptor {
 
   public TradeDocumentsGrid setFilterSupplier(Supplier<Filter> filterSupplier) {
     this.filterSupplier = filterSupplier;
+    return this;
+  }
+
+  public TradeDocumentsGrid setOperationsFilter(Filter operationsFilter) {
+    this.operationsFilter = operationsFilter;
     return this;
   }
 

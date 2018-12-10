@@ -414,7 +414,7 @@ public final class TradeKeeper implements HandlesAllDataEvents {
 
         String supplierKey = getDocumentGridSupplierKey(typeId);
 
-        GridFactory.createGrid(GRID_TRADE_DOCUMENTS, supplierKey, new TradeDocumentsGrid(),
+        GridFactory.createGrid(GRID_TRADE_DOCUMENTS, supplierKey, new TradeDocumentsGrid(typeId),
             EnumSet.of(UiOption.GRID), GridOptions.forCaptionAndFilter(caption, filter),
             callback);
       }

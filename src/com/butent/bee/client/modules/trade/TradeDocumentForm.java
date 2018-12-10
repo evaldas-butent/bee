@@ -46,6 +46,7 @@ import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -444,15 +445,21 @@ public class TradeDocumentForm extends PrintFormInterceptor {
   }
 
   private Filter getOperationFilter() {
+    CompoundFilter filter = Filter.and();
+
+    if (getGridView() != null
+        && getGridView().getGridInterceptor() instanceof TradeDocumentsGrid) {
+      filter.add(((TradeDocumentsGrid) getGridView().getGridInterceptor()).getOperationsFilter());
+    }
     if (DataUtils.isId(getActiveRowId())) {
       OperationType operationType = getOperationType();
       TradeDocumentPhase phase = getPhase();
 
       if (operationType != null && phase != null && phase.modifyStock()) {
-        return Filter.equals(COL_OPERATION_TYPE, operationType);
+        filter.add(Filter.equals(COL_OPERATION_TYPE, operationType));
       }
     }
-    return null;
+    return filter;
   }
 
   private OperationType getOperationType() {
