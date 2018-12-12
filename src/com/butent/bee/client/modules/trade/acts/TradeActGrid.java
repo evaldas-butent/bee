@@ -66,6 +66,7 @@ import com.butent.bee.shared.utils.StringList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,6 +74,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TradeActGrid extends AbstractGridInterceptor implements SelectionCountChangeEvent.Handler {
 
@@ -219,18 +221,14 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
 
   @Override
   public DeleteMode beforeDeleteRow(GridPresenter presenter, IsRow row) {
-    revertStatuses(row.getId());
+    revertStatuses(Collections.singleton(new RowInfo(row)));
     return DeleteMode.CANCEL;
   }
 
   @Override
   public DeleteMode beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
       Collection<RowInfo> selectedRows) {
-    List<Long> ids = new ArrayList<>(selectedRows.size());
-
-    selectedRows.forEach(info -> ids.add(info.getId()));
-
-    revertStatuses(ids.toArray(new Long[0]));
+    revertStatuses(selectedRows);
     return DeleteMode.CANCEL;
   }
 
@@ -1274,9 +1272,10 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
     }
   }
 
-  private void revertStatuses(Long... acts) {
+  private void revertStatuses(Collection<RowInfo> acts) {
     ParameterList prm = TradeActKeeper.createArgs(SVC_REVERT_ACTS_STATUS_BEFORE_DELETE);
-    prm.addDataItem(TradeConstants.VAR_ID_LIST, DataUtils.buildIdList(acts));
+    prm.addDataItem(TradeConstants.VAR_ID_LIST,
+        DataUtils.buildIdList(acts.stream().map(RowInfo::getId).collect(Collectors.toList())));
 
     BeeKeeper.getRpc().makePostRequest(prm, response -> {
       if (response.hasErrors()) {
@@ -1287,8 +1286,7 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
       if (getGridView() != null && getGridView().getGrid() != null) {
         getGridView().getGrid().clearSelection();
       }
-
-      Queries.delete(VIEW_TRADE_ACTS, Filter.idIn(Lists.newArrayList(acts)),
+      Queries.deleteRows(VIEW_TRADE_ACTS, acts,
           result -> DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS));
     });
   }
