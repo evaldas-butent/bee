@@ -677,7 +677,7 @@ public class ServiceModuleBean implements BeeModule {
           if (!BeeUtils.isEmpty(itemIds)) {
             SimpleRowSet rs = qs.getData(new SqlSelect()
                 .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
-                .addFields(TBL_TRADE_ACTS, COL_TA_COMPANY)
+                .addFields(TBL_TRADE_ACTS, COL_TA_COMPANY, COL_TA_CONTACT, COL_TA_OBJECT)
                 .addFields(TBL_SERVICE_STATES, sys.getIdName(TBL_SERVICE_STATES))
                 .addFrom(TBL_TRADE_ACTS)
                 .addFromInner(TBL_TRADE_ACT_ITEMS,
@@ -688,16 +688,16 @@ public class ServiceModuleBean implements BeeModule {
                 .addOrder(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
                 .addOrderDesc(TBL_TRADE_ACTS, COL_TA_DATE));
 
-            Map<Long, Pair<Long, Long>> map = new HashMap<>();
+            Map<Long, SimpleRow> map = new HashMap<>();
 
-            rs.forEach(row -> map.putIfAbsent(row.getLong(COL_TA_ITEM),
-                Pair.of(row.getLong(COL_TA_COMPANY),
-                    row.getLong(sys.getIdName(TBL_SERVICE_STATES)))));
+            rs.forEach(row -> map.putIfAbsent(row.getLong(COL_TA_ITEM), row));
 
-            map.forEach((item, pair) ->
+            map.forEach((item, row) ->
                 qs.updateData(new SqlUpdate(TBL_SERVICE_OBJECTS)
-                    .addConstant(COL_SERVICE_CUSTOMER, pair.getA())
-                    .addConstant(COL_STATE, pair.getB())
+                    .addConstant(COL_SERVICE_CUSTOMER, row.getLong(COL_TA_COMPANY))
+                    .addConstant(COL_STATE, row.getLong(sys.getIdName(TBL_SERVICE_STATES)))
+                    .addConstant(ALS_CONTACT_PERSON, row.getLong(COL_TA_CONTACT))
+                    .addConstant(COL_OBJECT, row.getLong(COL_TA_OBJECT))
                     .setWhere(SqlUtils.equals(TBL_SERVICE_OBJECTS, COL_ITEM, item))));
           }
         }
