@@ -12,6 +12,7 @@
         <SimpleColumn alias="RepairerLastName" name="LastName" />
       </SimpleJoin>
     </SimpleJoin>
+    <SimpleColumn name="UnitTariff" />
     <SimpleColumn name="Tariff" />
     <SimpleColumn name="DateFrom" />
     <SimpleColumn name="DateTo" />

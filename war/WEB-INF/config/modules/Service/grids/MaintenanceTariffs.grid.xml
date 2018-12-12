@@ -11,6 +11,7 @@
   <g:columns>
     <IdColumn name="Id" visible="true"/>
     <RelColumn name="Repairer" renderColumns="RepairerFirstName RepairerLastName" visible="true" />
+    <DataColumn name="UnitTariff" scale="&tarifscale;" visible="true"/>
     <DataColumn name="Tariff" scale="&tarifscale;" visible="true"/>
     <DataColumn name="DateFrom" visible="true" />
     <DataColumn name="DateTo" visible="true" />

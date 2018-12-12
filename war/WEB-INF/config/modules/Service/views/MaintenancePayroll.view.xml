@@ -8,6 +8,14 @@
     <SimpleColumn name="ServiceMaintenance" />
     <SimpleJoin name="ServiceMaintenance" joinType="LEFT">
       <SimpleColumn name="EndingDate" />
+
+      <SimpleJoin joinType="LEFT" name="Type">
+        <SimpleColumn name="Name" alias="TypeName" />
+      </SimpleJoin>
+
+      <SimpleJoin name="Department" joinType="LEFT">
+        <SimpleColumn name="DepartmentName" />
+      </SimpleJoin>
     </SimpleJoin>
     <SimpleColumn name="Repairer" editable="true" />
     <SimpleJoin name="Repairer" joinType="LEFT">
@@ -15,6 +23,9 @@
         <SimpleColumn alias="RepairerFirstName" name="FirstName" />
         <SimpleColumn alias="RepairerLastName" name="LastName" />
       </SimpleJoin>
+      <ExternalJoin name="Repairer" joinType="LEFT" source="MaintenanceTariffs">
+        <SimpleColumn name="UnitTariff" />
+      </ExternalJoin>
     </SimpleJoin>
     <SimpleColumn name="Date" />
     <SimpleColumn name="BasicAmount" />
@@ -43,6 +54,9 @@
       <SimpleJoin name="Item" joinType="LEFT" >
         <SimpleColumn name="Name" alias="ItemName" />
       </SimpleJoin>
+
+      <SimpleColumn name="Quantity" />
+      <SimpleColumn name="Price" />
     </ExternalJoin>
   </Columns>
   <Order>

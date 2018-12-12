@@ -8,7 +8,7 @@
 
   name="MaintenancePayroll" viewName="MaintenancePayroll"
   caption="=payroll" newRowCaption="=svcNewSalary"
-  flexGrow="1" flexShrink="1"
+  flexGrow="1"
 >
   <g:columns>
     <RelColumn name="ServiceMaintenance" renderColumns="ServiceMaintenance" choiceColumns="ID" visible="true" filterSupplier="value" filter="EndingDate"
@@ -16,10 +16,17 @@
     <RelColumn name="Repairer" renderColumns="RepairerFirstName RepairerLastName" visible="true" />
     <DataColumn name="Date" visible="true" />
     <DataColumn name="PayrollDate" visible="true" required="true"/>
+    <DataColumn name="Quantity" visible="true"/>
+    <DataColumn name="Price" visible="true"/>
     <DataColumn name="BasicAmount" scale="&numberscale;" visible="true" readOnly="true"/>
     <DataColumn name="Tariff" scale="&numberscale;" visible="true"/>
     <DataColumn name="Salary" scale="&numberscale;" visible="true"/>
     <RelColumn name="Currency" visible="true"/>
+    <DataColumn name="TypeName" visible="true"/>
+    <DataColumn name="DepartmentName" visible="true"/>
+    <CalcColumn name="Total" type="decimal" caption="=trdAmount" scale="2">
+      <render><ui:expression>row.Quantity * row.UnitTariff</ui:expression></render>
+    </CalcColumn>
     <DataColumn name="Confirmed" visible="true" >
       <editable>
         <ui:function>
