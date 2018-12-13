@@ -633,17 +633,6 @@ public class ServiceModuleBean implements BeeModule {
 
       @Subscribe
       @AllowConcurrentEvents
-      public void filterBiggestAct(ViewQueryEvent event) {
-        if (event.isAfter("ServicePlace")) {
-          BeeRowSet rowSet = event.getRowset();
-          if (rowSet.getNumberOfRows() > 1) {
-            rowSet.removeRows(0, rowSet.getNumberOfRows() - 1);
-          }
-        }
-      }
-
-      @Subscribe
-      @AllowConcurrentEvents
       public void updateServiceObjectByTradeAct(DataEvent.ViewModifyEvent event) {
         if (event.isBefore(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS)
             && event instanceof DataEvent.ViewDeleteEvent) {

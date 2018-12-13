@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-      name="ServicePlace" source="TradeActItems" caption="=svcServicePlace"
+      name="TradeServiceObjects" source="TradeActItems" caption="=tradeActs"
 >
   <Columns>
 
@@ -11,30 +11,25 @@
 
       <SimpleColumn name="Date" />
 
-      <SimpleColumn name="Name" />
       <SimpleJoin joinType="LEFT" name="Name">
         <SimpleColumn name="ActName" />
       </SimpleJoin>
 
       <SimpleColumn name="Number" />
 
-      <SimpleColumn name="Series" />
       <SimpleJoin joinType="LEFT" name="Series">
         <SimpleColumn name="SeriesName" />
       </SimpleJoin>
 
-      <SimpleColumn name="Company" />
       <SimpleJoin joinType="LEFT" name="Company">
         <SimpleColumn name="Name" alias="CompanyName" />
-        <SimpleJoin joinType="LEFT" name="CompanyType">
-          <SimpleColumn name="Name" alias="TypeName" />
-        </SimpleJoin>
       </SimpleJoin>
 
-      <SimpleColumn name="Status" />
       <SimpleJoin joinType="LEFT" name="Status">
         <SimpleColumn name="StatusName" />
       </SimpleJoin>
     </SimpleJoin>
   </Columns>
+
+  <GroupBy columns="TradeAct Item Date ActName Number SeriesName CompanyName StatusName" />
 </View>

@@ -45,6 +45,10 @@
             <text>=svcDates</text>
             <ChildGrid name="ServiceDates" relColumn="ServiceObject" />
           </page>
+          <page>
+            <text>=tradeActs</text>
+            <ChildGrid name="TradeServiceObjects" relColumn="Item" source="Item" />
+          </page>
         </TabbedPages>
       </FlowPanel>
     </south>

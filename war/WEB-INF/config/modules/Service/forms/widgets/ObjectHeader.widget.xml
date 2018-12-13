@@ -67,10 +67,6 @@
                         style="&finp;"/>
         </FlowPanel>
       </FlowPanel>
-
-      <FlowPanel >
-        <ChildGrid name="ServicePlace" relColumn="Item" source="Item" style="&mrst;" />
-      </FlowPanel>
     </FlowPanel>
   </east>
 
