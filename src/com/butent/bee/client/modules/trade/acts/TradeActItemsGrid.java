@@ -1056,15 +1056,12 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
                       new DateValue(new JustDate(dateTime)), result -> DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
                           VIEW_TRADE_ACT_SERVICES));
                 }
+                if ((parentAct != null) && allReturned) {
+                  maybeMarkAsReturned(parentAct,
+                      Data.getDateTime(VIEW_TRADE_ACTS, parentRow, COL_TA_DATE));
+                }
               });
-
-              if ((parentAct != null)
-                  && allReturned) {
-                maybeMarkAsReturned(parentAct, Data.getDateTime(VIEW_TRADE_ACTS, parentRow,
-                    COL_TA_DATE));
-              }
-            });
-
+         });
       } else {
         getGridView().notifyWarning(Localized.dictionary().noData());
       }
