@@ -117,6 +117,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -1674,43 +1675,101 @@ public class ServiceModuleBean implements BeeModule {
   }
 
   private ResponseObject getReportData(RequestInfo reqInfo) {
-    String repairerCompanyPerson = SqlUtils.uniqueName();
-    String repairerPerson = SqlUtils.uniqueName();
-    String confirmedCompanyPerson = SqlUtils.uniqueName();
-    String confirmedPerson = SqlUtils.uniqueName();
+    ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
+    HasConditions clause = SqlUtils.and();
+
+    String TRANSPORT = "Transport";
+
+    IsExpression object = SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(TBL_SERVICE_OBJECTS,
+        COL_MODEL), "''"), "' '", SqlUtils.nvl(SqlUtils.field(TBL_SERVICE_OBJECTS, COL_ADDRESS),
+        "''"));
+    IsExpression transport = SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(TRANSPORT, COL_MODEL),
+        "''"), "' '", SqlUtils.nvl(SqlUtils.field(TRANSPORT, COL_ADDRESS), "''"));
+    IsExpression repairer = SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME),
+        "' '", SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''"));
 
     SqlSelect select = new SqlSelect()
-        .addFields(TBL_MAINTENANCE_PAYROLL, COL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE,
+        .addFields(TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE, CarsConstants.COL_RESERVE)
+        .addFields(TBL_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_ITEM_PRICE, COL_TRADE_DISCOUNT,
+            "SupplierTerm", COL_TRADE_ITEM_NOTE)
+        .addField(COL_TRADE_SUPPLIER, COL_COMPANY_NAME, COL_TRADE_SUPPLIER)
+        .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_ARTICLE, COL_ITEM_COST)
+
+        .addFields(TBL_MAINTENANCE_PAYROLL, COL_MAINTENANCE_DATE,
             COL_PAYROLL_DATE, COL_PAYROLL_BASIC_AMOUNT, COL_PAYROLL_TARIFF, COL_PAYROLL_SALARY,
             COL_PAYROLL_CONFIRMED, COL_PAYROLL_CONFIRMATION_DATE, COL_NOTES)
         .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, ALS_CURRENCY_NAME)
-        .addFrom(TBL_MAINTENANCE_PAYROLL)
+
+        .addFields(TBL_SERVICE_MAINTENANCE, COL_WARRANTY_MAINTENANCE)
+        .addField(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE, COL_CREATOR + COL_MAINTENANCE_DATE)
+        .addField(TBL_MAINTENANCE_TYPES, COL_TYPE_NAME, COL_MAINTENANCE_TYPE)
+        .addField(VIEW_MAINTENANCE_STATES, COL_TYPE_NAME, COL_MAINTENANCE_STATE)
+        .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY)
+        .addExpr(object, COL_SERVICE_OBJECT)
+        .addExpr(transport, TRANSPORT)
+        .addExpr(repairer, COL_REPAIRER)
+
+        .addFrom(TBL_SERVICE_ITEMS)
+        .addFromInner(TBL_SERVICE_MAINTENANCE,
+            sys.joinTables(TBL_SERVICE_MAINTENANCE, TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE))
+        .addFromLeft(TBL_MAINTENANCE_PAYROLL,
+            sys.joinTables(TBL_SERVICE_ITEMS, TBL_MAINTENANCE_PAYROLL, COL_SERVICE_ITEM))
+        .addFromLeft(TBL_ORDER_ITEMS,
+            sys.joinTables(TBL_SERVICE_ITEMS, TBL_ORDER_ITEMS, COL_SERVICE_ITEM))
+        .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
+        .addFromLeft(TBL_COMPANIES, COL_TRADE_SUPPLIER,
+            sys.joinTables(TBL_COMPANIES, COL_TRADE_SUPPLIER, TBL_ORDER_ITEMS, COL_TRADE_SUPPLIER))
+
         .addFromLeft(TBL_CURRENCIES,
             sys.joinTables(TBL_CURRENCIES, TBL_MAINTENANCE_PAYROLL, COL_CURRENCY))
-        .addFromLeft(TBL_COMPANY_PERSONS, repairerCompanyPerson,
-            sys.joinTables(TBL_COMPANY_PERSONS, repairerCompanyPerson,
-                TBL_MAINTENANCE_PAYROLL, COL_REPAIRER))
-        .addFromLeft(TBL_PERSONS, repairerPerson,
-            sys.joinTables(TBL_PERSONS, repairerPerson, repairerCompanyPerson, COL_PERSON))
-        .addFromLeft(TBL_USERS,
-            sys.joinTables(TBL_USERS, TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_CONFIRMED + COL_USER))
-        .addFromLeft(TBL_COMPANY_PERSONS, confirmedCompanyPerson, sys.joinTables(
-            TBL_COMPANY_PERSONS, confirmedCompanyPerson, TBL_USERS, COL_COMPANY_PERSON))
-        .addFromLeft(TBL_PERSONS, confirmedPerson,
-            sys.joinTables(TBL_PERSONS, confirmedPerson, confirmedCompanyPerson, COL_PERSON));
 
-    select.addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(repairerPerson, COL_FIRST_NAME),
-        SqlUtils.constant(BeeConst.STRING_EMPTY)), SqlUtils.constant(BeeConst.STRING_SPACE),
-        SqlUtils.nvl(SqlUtils.field(repairerPerson, COL_LAST_NAME),
-            SqlUtils.constant(BeeConst.STRING_EMPTY))), COL_REPAIRER);
-    select.addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(confirmedPerson, COL_FIRST_NAME),
-        SqlUtils.constant(BeeConst.STRING_EMPTY)), SqlUtils.constant(BeeConst.STRING_SPACE),
-        SqlUtils.nvl(SqlUtils.field(confirmedPerson, COL_LAST_NAME),
-            SqlUtils.constant(BeeConst.STRING_EMPTY))), COL_PAYROLL_CONFIRMED + COL_USER);
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_SERVICE_ITEMS, COL_REPAIRER))
+        .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
 
-    ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
-    HasConditions clause = SqlUtils.and();
-    clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_MAINTENANCE_PAYROLL,
+        .addFromLeft(TBL_MAINTENANCE_TYPES,
+            sys.joinTables(TBL_MAINTENANCE_TYPES, TBL_SERVICE_MAINTENANCE, COL_TYPE))
+        .addFromLeft(VIEW_MAINTENANCE_STATES,
+            sys.joinTables(VIEW_MAINTENANCE_STATES, TBL_SERVICE_MAINTENANCE, COL_STATE))
+        .addFromLeft(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, TBL_SERVICE_MAINTENANCE, COL_COMPANY))
+        .addFromLeft(TBL_SERVICE_OBJECTS,
+            sys.joinTables(TBL_SERVICE_OBJECTS, TBL_SERVICE_MAINTENANCE, COL_SERVICE_OBJECT))
+        .addFromLeft(TBL_SERVICE_OBJECTS, TRANSPORT,
+            sys.joinTables(TBL_SERVICE_OBJECTS, TRANSPORT, TBL_SERVICE_MAINTENANCE, TRANSPORT));
+
+    BiFunction<String, String, IsExpression> addUser = (tbl, fld) -> {
+      String users = SqlUtils.uniqueName();
+      String companyPersons = SqlUtils.uniqueName();
+      String persons = SqlUtils.uniqueName();
+
+      select.addFromLeft(TBL_USERS, users, sys.joinTables(TBL_USERS, users, tbl, fld))
+          .addFromLeft(TBL_COMPANY_PERSONS, companyPersons,
+              sys.joinTables(TBL_COMPANY_PERSONS, companyPersons, users, COL_COMPANY_PERSON))
+          .addFromLeft(TBL_PERSONS, persons,
+              sys.joinTables(TBL_PERSONS, persons, companyPersons, COL_PERSON));
+
+      return SqlUtils.concat(SqlUtils.field(persons, COL_FIRST_NAME), "' '",
+          SqlUtils.nvl(SqlUtils.field(persons, COL_LAST_NAME), "''"));
+    };
+    IsExpression creator = addUser.apply(TBL_SERVICE_MAINTENANCE, COL_CREATOR);
+    select.addExpr(creator, COL_CREATOR);
+    clause.add(report.getCondition(creator, COL_CREATOR));
+
+    IsExpression repairer1 = addUser.apply(TBL_SERVICE_MAINTENANCE, COL_REPAIRER);
+    select.addExpr(repairer1, COL_REPAIRER + "1");
+    clause.add(report.getCondition(repairer1, COL_REPAIRER + "1"));
+
+    IsExpression repairer2 = addUser.apply(TBL_SERVICE_MAINTENANCE, COL_REPAIRER + "2");
+    select.addExpr(repairer2, COL_REPAIRER + "2");
+    clause.add(report.getCondition(repairer2, COL_REPAIRER + "2"));
+
+    IsExpression confirmedUser = addUser.apply(TBL_MAINTENANCE_PAYROLL,
+        COL_PAYROLL_CONFIRMED + COL_USER);
+    select.addExpr(confirmedUser, COL_PAYROLL_CONFIRMED + COL_USER);
+    clause.add(report.getCondition(confirmedUser, COL_PAYROLL_CONFIRMED + COL_USER));
+
+    clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_SERVICE_ITEMS,
         COL_SERVICE_MAINTENANCE), SqlConstants.SqlDataType.STRING, 20, 0),
         COL_SERVICE_MAINTENANCE));
     clause.add(report.getCondition(TBL_MAINTENANCE_PAYROLL, COL_MAINTENANCE_DATE));
@@ -1720,17 +1779,10 @@ public class ServiceModuleBean implements BeeModule {
     clause.add(report.getCondition(TBL_MAINTENANCE_PAYROLL, COL_NOTES));
     clause.add(report.getCondition(SqlUtils.field(TBL_CURRENCIES, COL_CURRENCY_NAME),
         ALS_CURRENCY_NAME));
-    clause.add(report.getCondition(
-        SqlUtils.concat(SqlUtils.field(repairerPerson, COL_FIRST_NAME), "' '",
-            SqlUtils.nvl(SqlUtils.field(repairerPerson, COL_LAST_NAME), "''")),
-        COL_REPAIRER));
-    clause.add(report.getCondition(
-        SqlUtils.concat(SqlUtils.field(confirmedPerson, COL_FIRST_NAME), "' '",
-            SqlUtils.nvl(SqlUtils.field(confirmedPerson, COL_LAST_NAME), "''")),
-        COL_PAYROLL_CONFIRMED + COL_USER));
+    clause.add(report.getCondition(repairer, COL_REPAIRER));
 
     if (!usr.isAdministrator()) {
-      clause.add(SqlUtils.equals(TBL_MAINTENANCE_PAYROLL, COL_REPAIRER,
+      clause.add(SqlUtils.equals(TBL_SERVICE_ITEMS, COL_REPAIRER,
           usr.getCompanyPerson(usr.getCurrentUserId())));
     }
 

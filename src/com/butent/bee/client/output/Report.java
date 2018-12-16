@@ -52,6 +52,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
+import com.butent.bee.shared.modules.cars.CarsConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.finance.FinanceConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
@@ -744,7 +745,30 @@ public enum Report implements HasWidgetSupplier {
           new ReportTextItem(COL_PAYROLL_CONFIRMED + COL_USER,
               Data.getColumnLabel(TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_CONFIRMED + COL_USER)),
           new ReportTextItem(COL_NOTES,
-              Data.getColumnLabel(TBL_MAINTENANCE_PAYROLL, COL_NOTES))
+              Data.getColumnLabel(TBL_MAINTENANCE_PAYROLL, COL_NOTES)),
+
+          new ReportTextItem(COL_MAINTENANCE_TYPE, "Serviso tipas"),
+          new ReportTextItem(COL_MAINTENANCE_STATE, "Būsena"),
+          new ReportTextItem(COL_COMPANY, "Klientas"),
+          new ReportTextItem(COL_SERVICE_OBJECT, "Įrenginys"),
+          new ReportTextItem("Transport", "Transportas"),
+
+          new ReportTextItem(COL_CREATOR, "Remonto kūrėjas"),
+          new ReportDateTimeItem(COL_CREATOR + COL_MAINTENANCE_DATE, "Sukūrimo data"),
+          new ReportTextItem(COL_REPAIRER + "1", "Meistras1"),
+          new ReportTextItem(COL_REPAIRER + "2", "Meistras2"),
+          new ReportTextItem(COL_WARRANTY_MAINTENANCE, "Garantinis remontas"),
+
+          new ReportTextItem(COL_TRADE_SUPPLIER, "Tiekėjas"),
+          new ReportDateItem("SupplierTerm", "Tiekimo terimnas"),
+          new ReportBooleanItem(CarsConstants.COL_RESERVE, "Rezervuoti"),
+          new ReportTextItem(COL_ITEM_NAME, "Prekė"),
+          new ReportTextItem(COL_TRADE_ITEM_NOTE, "Pastaba"),
+          new ReportTextItem(COL_ITEM_ARTICLE, "Artikulas"),
+          new ReportNumericItem(COL_ITEM_COST, "Savikaina").setPrecision(2),
+          new ReportNumericItem(COL_TRADE_ITEM_QUANTITY, "Kiekis").setPrecision(3),
+          new ReportNumericItem(COL_ITEM_PRICE, "Kaina").setPrecision(2),
+          new ReportNumericItem(COL_TRADE_DISCOUNT, "Nuolaida%").setPrecision(1)
       );
     }
 
@@ -768,6 +792,20 @@ public enum Report implements HasWidgetSupplier {
           COL_PAYROLL_CONFIRMATION_DATE, COL_PAYROLL_CONFIRMED + COL_USER, COL_NOTES)
           .forEach(item -> report.addColItem(items.get(item)));
       return Collections.singletonList(report);
+    }
+
+    @Override
+    public Map<String, Consumer<String>> getReportActions(String itemName) {
+      Map<String, Consumer<String>> actions = new LinkedHashMap<>();
+
+      switch (itemName) {
+        case COL_SERVICE_MAINTENANCE:
+        case COL_WARRANTY_MAINTENANCE:
+          actions.put("Remonto kortelė",
+              id -> RowEditor.open(TBL_SERVICE_MAINTENANCE, BeeUtils.toLong(id)));
+          break;
+      }
+      return actions;
     }
   },
 
