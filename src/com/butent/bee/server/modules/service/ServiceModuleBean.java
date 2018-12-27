@@ -1691,7 +1691,8 @@ public class ServiceModuleBean implements BeeModule {
     SqlSelect select = new SqlSelect()
         .addFields(TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE, CarsConstants.COL_RESERVE)
         .addFields(TBL_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_ITEM_PRICE, COL_TRADE_DISCOUNT,
-            "SupplierTerm", COL_TRADE_ITEM_NOTE)
+            "SupplierTerm", COL_TRADE_ITEM_NOTE, COL_SERVICE_ITEM)
+        .addEmptyDouble(COL_COMPLETED)
         .addField(COL_TRADE_SUPPLIER, COL_COMPANY_NAME, COL_TRADE_SUPPLIER)
         .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_ARTICLE, COL_ITEM_COST)
 
@@ -1779,6 +1780,8 @@ public class ServiceModuleBean implements BeeModule {
     clause.add(report.getCondition(TBL_MAINTENANCE_PAYROLL, COL_NOTES));
     clause.add(report.getCondition(SqlUtils.field(TBL_CURRENCIES, COL_CURRENCY_NAME),
         ALS_CURRENCY_NAME));
+    clause.add(report.getCondition(object, COL_SERVICE_OBJECT));
+    clause.add(report.getCondition(transport, TRANSPORT));
     clause.add(report.getCondition(repairer, COL_REPAIRER));
 
     if (!usr.isAdministrator()) {
@@ -1789,8 +1792,19 @@ public class ServiceModuleBean implements BeeModule {
     if (!clause.isEmpty()) {
       select.setWhere(clause);
     }
-    return ResponseObject.response(report.getResult(qs.getData(select),
-        Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE))));
+    String tmp = qs.sqlCreateTemp(select);
+
+    qs.updateData(new SqlUpdate(tmp)
+        .addExpression(COL_COMPLETED, SqlUtils.field("als", COL_TRADE_ITEM_QUANTITY))
+        .setFrom(new SqlSelect()
+                .addFields(TBL_MAINTENANCE_INVOICES, COL_SERVICE_ITEM)
+                .addSum(TBL_MAINTENANCE_INVOICES, COL_TRADE_ITEM_QUANTITY)
+                .addFrom(TBL_MAINTENANCE_INVOICES)
+                .addGroup(TBL_MAINTENANCE_INVOICES, COL_SERVICE_ITEM), "als",
+            SqlUtils.joinUsing(tmp, "als", COL_SERVICE_ITEM)));
+
+    return report.getResultResponse(qs, tmp,
+        Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)));
   }
 
   private BeeRowSet getSettings() {

@@ -767,6 +767,7 @@ public enum Report implements HasWidgetSupplier {
           new ReportTextItem(COL_ITEM_ARTICLE, "Artikulas"),
           new ReportNumericItem(COL_ITEM_COST, "Savikaina").setPrecision(2),
           new ReportNumericItem(COL_TRADE_ITEM_QUANTITY, "Kiekis").setPrecision(3),
+          new ReportNumericItem(COL_COMPLETED, "Įvykdyta").setPrecision(3),
           new ReportNumericItem(COL_ITEM_PRICE, "Kaina").setPrecision(2),
           new ReportNumericItem(COL_TRADE_DISCOUNT, "Nuolaida%").setPrecision(1)
       );
