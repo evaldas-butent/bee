@@ -864,8 +864,9 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       Long warehouse = Data.getLong(VIEW_TRADE_DOCUMENTS, parentRow, COL_TRADE_WAREHOUSE_FROM);
 
       if (DataUtils.isId(warehouse)) {
-        getStock(tds.getItemIds(), warehouse, options, stock ->
-            addItems(parentRow, selectedItems, tds, true, stock));
+        getStock(tds.getItemIds(), warehouse, options,
+            stock -> TradeItemPicker.makeStockSelections(stock, tds,
+                () -> addItems(parentRow, selectedItems, tds, true, stock)));
       }
 
     } else {
@@ -883,7 +884,6 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     int itemArticleIndex = Data.getColumnIndex(VIEW_ITEM_SELECTION, COL_ITEM_ARTICLE);
 
     int stockArticleIndex = Data.getColumnIndex(VIEW_TRADE_STOCK, COL_TRADE_ITEM_ARTICLE);
-    int stockQuantityIndex = Data.getColumnIndex(VIEW_TRADE_STOCK, COL_STOCK_QUANTITY);
     int costIndex = Data.getColumnIndex(VIEW_TRADE_STOCK, COL_TRADE_ITEM_COST);
     int costCurrencyIndex = Data.getColumnIndex(VIEW_TRADE_STOCK, COL_TRADE_ITEM_COST_CURRENCY);
     int parentIndex = Data.getColumnIndex(VIEW_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM);
@@ -916,11 +916,9 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       if (stockRequired && !row.isTrue(serviceIndex)) {
         if (stock != null && stock.containsKey(id)) {
           for (IsRow stockRow : stock.get(id)) {
-            Double stockQuantity = stockRow.getDouble(stockQuantityIndex);
+            Double stockQuantity = stockRow.getPropertyDouble(VIEW_ITEM_SELECTION);
 
             if (BeeUtils.isPositive(stockQuantity)) {
-              double qty = Math.min(quantity, stockQuantity);
-
               if (priceIsParentCost) {
                 Double cost = stockRow.getDouble(costIndex);
                 Long costCurrency = stockRow.getLong(costCurrencyIndex);
@@ -937,20 +935,13 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
                   price = null;
                 }
               }
-
               rowSet.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
-                  Queries.asList(parentRow.getId(), id, row.getString(stockArticleIndex),
-                      qty, price, discountInfo.getA(), discountInfo.getB(),
+                  Queries.asList(parentRow.getId(), id, stockRow.getString(stockArticleIndex),
+                      stockQuantity, price, discountInfo.getA(), discountInfo.getB(),
                       vatInfo.getA(), vatInfo.getB(), stockRow.getLong(parentIndex)));
-
-              quantity -= qty;
-              if (!BeeUtils.isPositive(quantity)) {
-                break;
-              }
             }
           }
         }
-
       } else {
         rowSet.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
             Queries.asList(parentRow.getId(), id, row.getString(itemArticleIndex),
@@ -958,7 +949,6 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
                 vatInfo.getA(), vatInfo.getB(), null));
       }
     }
-
     Queries.insertRows(rowSet, result -> {
       if (result != null && result.size() == rowSet.getNumberOfRows()) {
         for (int i = 0; i < result.size(); i++) {
@@ -968,11 +958,9 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
           row.setId(rowInfo.getId());
           row.setVersion(rowInfo.getVersion());
         }
-
         tdsSupplier.get().addItems(rowSet);
         fireTdsChange(true);
       }
-
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getViewName(), parentRow.getId());
     });
   }

@@ -19,12 +19,6 @@
     </SimpleJoin>
 
     <SimpleColumn name="Article" />
-    <ExternalJoin joinType="LEFT" targetName="Parent" source="TradeStock"
-                  name="TradeDocumentItem">
-      <SimpleJoin joinType="LEFT" name="PrimaryDocumentItem">
-        <SimpleColumn name="Article" alias="PrimaryArticle" />
-      </SimpleJoin>
-    </ExternalJoin>
 
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Price" />
@@ -41,6 +35,9 @@
     </ExternalJoin>
     <ExternalJoin joinType="LEFT" targetName="Parent" source="TradeStock"
                   name="TradeDocumentItem">
+      <SimpleJoin joinType="LEFT" name="PrimaryDocumentItem">
+        <SimpleColumn name="Article" alias="PrimaryArticle" />
+      </SimpleJoin>
       <ExternalJoin joinType="LEFT" targetName="PrimaryDocumentItem" source="TradeItemCost"
                     name="TradeDocumentItem">
         <SimpleColumn name="Cost" alias="ParentCost" />
@@ -69,7 +66,7 @@
           <SimpleColumn name="LastName" alias="EmployeeLastName" />
         </SimpleJoin>
       </SimpleJoin>
-      
+
       <SimpleColumn name="TabNumber" alias="EmployeeTabNumber" />
     </SimpleJoin>
 

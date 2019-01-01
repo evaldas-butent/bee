@@ -29,6 +29,8 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.DialogConstants;
+import com.butent.bee.client.dialog.InputBoxes;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
@@ -40,6 +42,7 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.navigation.HasPaging;
@@ -51,9 +54,12 @@ import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.Overflow;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -65,6 +71,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -91,6 +98,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -369,6 +377,111 @@ public class TradeItemPicker extends Flow implements HasPaging {
 
   public TradeDocumentSums getTds() {
     return tds;
+  }
+
+  public static void makeStockSelections(Multimap<Long, IsRow> stock, TradeDocumentSums tds,
+      Runnable consumer) {
+
+    int stockQuantityIndex = Data.getColumnIndex(VIEW_TRADE_STOCK, COL_STOCK_QUANTITY);
+
+    Map<IsRow, InputNumber> items = new LinkedHashMap<>();
+    HtmlTable table = new HtmlTable(STYLE_ITEM_TABLE);
+
+    for (Long item : tds.getItemIds()) {
+      double quantity = tds.getQuantity(item);
+
+      for (IsRow row : stock.get(item)) {
+        Double stockQuantity = row.getDouble(stockQuantityIndex);
+        double qty = Math.min(quantity, stockQuantity);
+        quantity -= qty;
+
+        InputNumber input = new InputNumber();
+        input.setWidth("80px");
+        input.setMinValue("0");
+        input.setMaxValue(BeeUtils.toString(stockQuantity));
+
+        input.addValueChangeHandler(ev -> {
+          TableRowElement rowElement = DomUtils.getParentRow(input.getElement(), true);
+
+          if (BeeUtils.isEmpty(ev.getValue())) {
+            rowElement.removeClassName(STYLE_SELECTED_ROW);
+          } else {
+            rowElement.addClassName(STYLE_SELECTED_ROW);
+          }
+        });
+        if (BeeUtils.isPositive(qty)) {
+          input.setValue(qty);
+        }
+        items.put(row, input);
+      }
+    }
+    Dictionary d = Localized.dictionary();
+    Latch rNo = new Latch(0);
+    int c = 0;
+    table.setText(rNo.get(), c++, d.date());
+    table.setText(rNo.get(), c++, d.document());
+    table.setText(rNo.get(), c++, d.supplier());
+    table.setText(rNo.get(), c++, d.name());
+    table.setText(rNo.get(), c++, d.article());
+    table.setText(rNo.get(), c++, d.cost());
+    table.setText(rNo.get(), c++, d.quantity());
+    table.setText(rNo.get(), c, d.actionSelect());
+
+    table.getRowFormatter().addStyleName(rNo.get(), STYLE_HEADER_ROW);
+
+    items.forEach((row, input) -> {
+      rNo.increment();
+      int cNo = 0;
+      table.setText(rNo.get(), cNo++, Data.getDateTime(VIEW_TRADE_STOCK, row, COL_TRADE_DATE)
+          .toString());
+      table.setText(rNo.get(), cNo++, Data.getString(VIEW_TRADE_STOCK, row, COL_TRADE_DOCUMENT));
+      table.setText(rNo.get(), cNo++, Data.getString(VIEW_TRADE_STOCK, row, ALS_SUPPLIER_NAME));
+      table.setText(rNo.get(), cNo++, Data.getString(VIEW_TRADE_STOCK, row, ALS_ITEM_NAME));
+      table.setText(rNo.get(), cNo++, Data.getString(VIEW_TRADE_STOCK, row, COL_ITEM_ARTICLE));
+      table.setText(rNo.get(), cNo++, renderPrice(Data.getDouble(VIEW_TRADE_STOCK, row,
+          COL_TRADE_ITEM_COST)), STYLE_PRICE + STYLE_CELL_SUFFIX);
+      table.setText(rNo.get(), cNo++, Data.getString(VIEW_TRADE_STOCK, row, COL_STOCK_QUANTITY),
+          STYLE_STOCK + STYLE_CELL_SUFFIX);
+      table.setWidget(rNo.get(), cNo, input);
+
+      table.getRowFormatter().addStyleName(rNo.get(), STYLE_ITEM_ROW);
+
+      if (!input.isEmpty()) {
+        table.getRowFormatter().addStyleName(rNo.get(), STYLE_SELECTED_ROW);
+      }
+    });
+    Flow cont = new Flow();
+    StyleUtils.setMaxHeight(cont, 80, CssUnit.VH);
+    StyleUtils.setOverflow(cont, StyleUtils.ScrollBars.VERTICAL, Overflow.AUTO);
+    cont.add(table);
+    Notification notification = new Notification();
+    cont.add(notification);
+
+    Global.inputWidget("Likučiai pagal pajamavimus", cont, new InputCallback() {
+      @Override
+      public String getErrorMessage() {
+        for (InputNumber input : items.values()) {
+          List<String> messages = input.validate(true);
+
+          if (!BeeUtils.isEmpty(messages)) {
+            input.setFocus(true);
+            notification.warning(ArrayUtils.toArray(messages));
+            return InputBoxes.SILENT_ERROR;
+          }
+        }
+        return InputCallback.super.getErrorMessage();
+      }
+
+      @Override
+      public void onSuccess() {
+        items.forEach((row, input) -> {
+          if (!input.isEmpty()) {
+            row.setProperty(VIEW_ITEM_SELECTION, input.getValue());
+          }
+        });
+        consumer.run();
+      }
+    });
   }
 
   public boolean hasSelection() {
