@@ -280,14 +280,6 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         }
       });
 
-    } else if (widget instanceof DataSelector
-        && BeeUtils.same(name, AdministrationConstants.COL_DEPARTMENT)) {
-      Filter departmentFilter =
-          Filter.in(Data.getIdColumn(AdministrationConstants.VIEW_DEPARTMENTS),
-              VIEW_DEPARTMENT_EMPLOYEES, COL_DEPARTMENT, Filter.equals(COL_COMPANY_PERSON,
-                  BeeKeeper.getUser().getUserData().getCompanyPerson()));
-      ((DataSelector) widget).setAdditionalFilter(departmentFilter);
-
     } else if (BeeUtils.same(name, COL_WARRANTY_MAINTENANCE + WIDGET_PANEL_NAME)
         && widget instanceof FlowPanel) {
       warrantyMaintenancePanel = (FlowPanel) widget;

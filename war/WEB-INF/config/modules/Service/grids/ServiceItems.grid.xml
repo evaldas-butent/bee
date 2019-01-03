@@ -15,10 +15,6 @@
     <RelColumn name="Item" renderColumns="ItemName"
                choiceColumns="Name Article" filter="!(IsService)" editEnabled="true"
                visible="true" readOnly="true">
-      <dynStyle>
-        <ui:inline>color: #ff5252; font-weight: bold;</ui:inline>
-        <ui:expression>!row.IsService &amp;&amp; (row.Quantity - row.CompletedInvoices) &gt; (row.FreeRemainder + row.ResRemainder)</ui:expression>
-      </dynStyle>
       <footer text="=totalOf" horizontalAlignment="right" />
     </RelColumn>
   </g:columns>
