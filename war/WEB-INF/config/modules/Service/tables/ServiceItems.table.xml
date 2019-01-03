@@ -13,5 +13,6 @@
 
     <Relation name="Repairer" relation="CompanyPersons" label="=svcMaster"/>
     <Boolean name="Reserve" label="=reserve" defValue="1" />
+    <String name="Article" precision="30" label="=article" />
   </Fields>
 </Table>

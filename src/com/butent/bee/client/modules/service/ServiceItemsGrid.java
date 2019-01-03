@@ -187,6 +187,7 @@ public class ServiceItemsGrid extends OrderItemsGrid {
           itemsPicker.open((selectedItems, tds) -> {
             List<BeeColumn> columns = DataUtils.getColumns(getDataColumns(),
                 Arrays.asList(COL_SERVICE_MAINTENANCE, COL_SERVICE_OBJECT, COL_ITEM,
+                    COL_TRADE_ITEM_ARTICLE,
                     COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT,
                     COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_REPAIRER));
 
@@ -194,6 +195,7 @@ public class ServiceItemsGrid extends OrderItemsGrid {
 
             for (BeeRow row : selectedItems) {
               long id = row.getId();
+              String article = Data.getString(VIEW_ITEM_SELECTION, row, COL_TRADE_ITEM_ARTICLE);
               double quantity = tds.getQuantity(id);
 
               Double price = tds.getPrice(id);
@@ -206,7 +208,8 @@ public class ServiceItemsGrid extends OrderItemsGrid {
                   TradeUtils.normalizeDiscountOrVatInfo(tds.getVatInfo(id));
 
               rowSet.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
-                  Queries.asList(docId, serviceObject, id, quantity, price, discountInfo.getA(),
+                  Queries.asList(docId, serviceObject, id, article, quantity, price,
+                      discountInfo.getA(),
                       (Objects.nonNull(vatMode) && Objects.nonNull(vatInfo.getA()))
                           ? Objects.equals(vatMode, TradeVatMode.PLUS) : null,
                       vatInfo.getA(), vatInfo.getB(), repairer));

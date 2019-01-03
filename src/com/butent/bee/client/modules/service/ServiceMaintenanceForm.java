@@ -1,6 +1,10 @@
 package com.butent.bee.client.modules.service;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Table;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.shared.HasHandlers;
@@ -99,7 +103,6 @@ import com.butent.bee.shared.modules.trade.TradeDocumentItem;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
 import com.butent.bee.shared.rights.ModuleAndSub;
-import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.ui.UiConstants;
@@ -927,14 +930,14 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         BeeKeeper.getUser().getUserId(), UiConstants.ATTR_VALUE);
   }
 
-  private void renderInvoiceTable(BeeRowSet rs, Map<Long, Pair<Double, Double>> quantities) {
+  private void renderInvoiceTable(BeeRowSet rs, Multimap<Long, ItemQuantities> quantities) {
     Map<IsRow, InputNumber> items = new HashMap<>();
     DoubleLabel itemsTotal = new DoubleLabel(true);
     String view = rs.getViewName();
+    Table<Long, String, Double> stocks = HashBasedTable.create();
 
-    HashMap<Long, Double> stocks = new HashMap<>();
-    quantities.forEach((item, pair) ->
-        stocks.put(item, Double.max(pair.getA() - pair.getB(), BeeConst.DOUBLE_ZERO)));
+    quantities.forEach((item, info) -> stocks.put(item, info.getArticle(),
+        BeeUtils.unbox(stocks.get(item, info.getArticle())) + info.getStock()));
 
     Consumer<Map<IsRow, InputNumber>> totalizer = map -> {
       Totalizer tot = new Totalizer(Data.getColumns(view));
@@ -950,12 +953,13 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       if (BeeUtils.isPositive(qty)) {
         row.setProperty(CarsConstants.COL_RESERVE, qty);
         Long item = row.getLong(rs.getColumnIndex(COL_ITEM));
+        String article = BeeUtils.notEmpty(row.getString(rs.getColumnIndex(COL_ITEM_ARTICLE)), "");
 
-        double stock = stocks.getOrDefault(item,
-            row.isTrue(rs.getColumnIndex(COL_ITEM_IS_SERVICE)) ? Double.MAX_VALUE
-                : BeeConst.DOUBLE_ZERO);
+        double stock = row.isTrue(rs.getColumnIndex(COL_ITEM_IS_SERVICE))
+            ? Double.MAX_VALUE : BeeUtils.unbox(stocks.get(item, article));
+
         qty = BeeUtils.min(qty, stock);
-        stocks.put(item, stock - qty);
+        stocks.put(item, article, stock - qty);
 
         InputNumber input = new InputNumber();
         input.addInputHandler(event -> totalizer.accept(items));
@@ -1023,11 +1027,9 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
           TradeKeeper.getReservationsInfo(getLongValue(COL_WAREHOUSE),
               Data.getLong(view, row, COL_ITEM), Data.isTrue(view, row, CarsConstants.COL_RESERVE)
                   ? getDateTimeValue(COL_MAINTENANCE_DATE) : null, reservations ->
-                  showReservations(BeeUtils.joinWords(Data.getString(view, row,
-                      ALS_ITEM_NAME), BeeUtils.parenthesize(Localized.dictionary()
-                          .trdStock() + ": " + quantities.getOrDefault(Data.getLong(view,
-                      row, COL_ITEM), Pair.of(BeeConst.DOUBLE_ZERO, null)).getA())),
-                      reservations)));
+                  showReservations(BeeUtils.joinWords(Data.getString(view, row, ALS_ITEM_NAME),
+                      BeeUtils.parenthesize(Localized.dictionary().trdStock() + ": "
+                          + quantities.get(Data.getLong(view, row, COL_ITEM)))), reservations)));
 
       if (Data.isTrue(view, row, COL_ITEM_IS_SERVICE)) {
         info.getElement().getStyle().setVisibility(Style.Visibility.HIDDEN);
@@ -1049,16 +1051,18 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       @Override
       public String getErrorMessage() {
         stocks.clear();
-        quantities.forEach((item, pair) ->
-            stocks.put(item, Double.max(pair.getA() - pair.getB(), BeeConst.DOUBLE_ZERO)));
+        quantities.forEach((item, info) -> stocks.put(item, info.getArticle(),
+            BeeUtils.unbox(stocks.get(item, info.getArticle())) + info.getStock()));
 
         for (Map.Entry<IsRow, InputNumber> entry : items.entrySet()) {
           IsRow row = entry.getKey();
           InputNumber input = entry.getValue();
           Long item = Data.getLong(view, row, COL_ITEM);
+          String article = BeeUtils.notEmpty(Data.getString(view, row, COL_ITEM_ARTICLE), "");
 
-          double stock = stocks.getOrDefault(item, Data.isTrue(view, row,
-              COL_ITEM_IS_SERVICE) ? Double.MAX_VALUE : BeeConst.DOUBLE_ZERO);
+          double stock = Data.isTrue(view, row, COL_ITEM_IS_SERVICE)
+              ? Double.MAX_VALUE : BeeUtils.unbox(stocks.get(item, article));
+
           double qty = BeeUtils.min(row.getPropertyDouble(CarsConstants.COL_RESERVE), stock);
 
           input.setMaxValue(BeeUtils.toString(qty));
@@ -1068,7 +1072,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
             input.setFocus(true);
             return BeeUtils.joinItems(messages);
           }
-          stocks.put(item, stock - BeeUtils.unbox(input.getNumber()));
+          stocks.put(item, article, stock - BeeUtils.unbox(input.getNumber()));
         }
         return InputCallback.super.getErrorMessage();
       }
@@ -1147,28 +1151,12 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     Queries.getRowSet(TBL_SERVICE_ITEMS, null,
         Filter.equals(COL_SERVICE_MAINTENANCE, getActiveRowId()), itemsRs -> {
           Set<Long> items = itemsRs.getDistinctLongs(itemsRs.getColumnIndex(COL_ITEM));
-          Map<Long, Pair<Double, Double>> stocks = new HashMap<>();
 
           if (items.isEmpty()) {
-            renderInvoiceTable(itemsRs, stocks);
+            renderInvoiceTable(itemsRs, HashMultimap.create());
           } else {
-            DateTime dateTime = getDateTimeValue(COL_MAINTENANCE_DATE);
-            Set<Long> rsv = new HashSet<>();
-            itemsRs.getRows().stream()
-                .filter(beeRow -> beeRow.isTrue(itemsRs.getColumnIndex(CarsConstants.COL_RESERVE)))
-                .forEach(beeRow -> rsv.add(beeRow.getLong(itemsRs.getColumnIndex(COL_ITEM))));
-
-            TradeKeeper.getStock(getLongValue(COL_WAREHOUSE), items, true, stockMultimap -> {
-              stockMultimap.asMap().forEach((item, quantities) -> stocks.put(item,
-                  Pair.of(quantities.stream().mapToDouble(ItemQuantities::getStock).sum(),
-                      quantities.stream().mapToDouble(itemQuantities ->
-                          itemQuantities.getReservedMap().entrySet().stream().filter(entry ->
-                              !rsv.contains(item) || TimeUtils.isLess(entry.getKey(), dateTime))
-                              .mapToDouble(Map.Entry::getValue).sum())
-                          .sum())));
-
-              renderInvoiceTable(itemsRs, stocks);
-            });
+            TradeKeeper.getStock(getLongValue(COL_WAREHOUSE), items, true,
+                stocks -> renderInvoiceTable(itemsRs, stocks));
           }
         });
   }

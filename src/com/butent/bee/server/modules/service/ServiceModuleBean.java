@@ -1689,12 +1689,13 @@ public class ServiceModuleBean implements BeeModule {
         "' '", SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''"));
 
     SqlSelect select = new SqlSelect()
-        .addFields(TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE, CarsConstants.COL_RESERVE)
+        .addFields(TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE, CarsConstants.COL_RESERVE,
+            COL_ITEM_ARTICLE)
         .addFields(TBL_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_ITEM_PRICE, COL_TRADE_DISCOUNT,
             "SupplierTerm", COL_TRADE_ITEM_NOTE, COL_SERVICE_ITEM)
         .addEmptyDouble(COL_COMPLETED)
         .addField(COL_TRADE_SUPPLIER, COL_COMPANY_NAME, COL_TRADE_SUPPLIER)
-        .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_ARTICLE, COL_ITEM_COST)
+        .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_COST)
 
         .addFields(TBL_MAINTENANCE_PAYROLL, COL_MAINTENANCE_DATE,
             COL_PAYROLL_DATE, COL_PAYROLL_BASIC_AMOUNT, COL_PAYROLL_TARIFF, COL_PAYROLL_SALARY,

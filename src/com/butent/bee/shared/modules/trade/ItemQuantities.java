@@ -102,11 +102,10 @@ public class ItemQuantities implements BeeSerializable {
 
   @Override
   public String toString() {
-    return "a=" + article + " s=" + BeeUtils.toString(stock)
-        + " r=" + BeeUtils.toString(getReserved());
+    return article + "=" + BeeUtils.toString(stock);
   }
 
   private void setArticle(String article) {
-    this.article = article;
+    this.article = BeeUtils.notEmpty(article, "");
   }
 }

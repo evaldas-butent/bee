@@ -24,12 +24,12 @@
       </ExternalJoin>
 
       <SimpleColumn name="Reserve" editable="true" />
+      <SimpleColumn name="Article" editable="true" />
     </SimpleJoin>
 
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="LEFT" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />
-      <SimpleColumn name="Article" />
 
       <SimpleJoin joinType="LEFT" name="Unit">
         <SimpleColumn name="Name" alias="UnitName" />
