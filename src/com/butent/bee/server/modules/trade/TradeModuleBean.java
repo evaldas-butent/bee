@@ -18,9 +18,9 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.COL_DOCUMENT_TYPE;
 import static com.butent.bee.shared.modules.trade.TradeConstants.COL_DOCUMENT_TYPE_NAME;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.server.SystemServiceBean;
@@ -1702,6 +1702,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     BeeView.registerConditionProvider(FILTER_ITEM_HAS_STOCK, (view, args) -> {
       Set<Long> warehouses = new HashSet<>();
+      String article = null;
       Set<Long> suppliers = new HashSet<>();
       Set<Long> customers = new HashSet<>();
 
@@ -1756,6 +1757,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             case COL_WAREHOUSE_CONSIGNMENT:
               consignment = Codec.unpack(value);
               break;
+
+            case COL_STOCK_ARTICLE:
+              article = value;
+              break;
           }
         }
       }
@@ -1772,7 +1777,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       if (!warehouses.isEmpty()) {
         where.add(SqlUtils.inList(aliasStock, COL_STOCK_WAREHOUSE, warehouses));
       }
-
+      if (!BeeUtils.isEmpty(article)) {
+        where.add(SqlUtils.contains(aliasPrimaryDocumentItems, COL_TRADE_ITEM_ARTICLE, article));
+      }
       SqlSelect query = new SqlSelect().setDistinctMode(true)
           .addFields(aliasPrimaryDocumentItems, COL_ITEM)
           .addFrom(TBL_TRADE_STOCK, aliasStock)

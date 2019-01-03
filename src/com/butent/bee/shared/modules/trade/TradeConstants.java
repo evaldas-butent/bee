@@ -268,6 +268,7 @@ public final class TradeConstants {
   public static final String COL_TAG_NAME = "TagName";
 
   public static final String COL_PRIMARY_DOCUMENT_ITEM = "PrimaryDocumentItem";
+  public static final String COL_STOCK_ARTICLE = "Article";
   public static final String COL_STOCK_QUANTITY = "Quantity";
   public static final String COL_STOCK_WAREHOUSE = "Warehouse";
   public static final String COL_STOCK_ACCOUNT = "CostAccount";

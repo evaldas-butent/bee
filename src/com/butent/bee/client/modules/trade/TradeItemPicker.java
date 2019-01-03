@@ -726,7 +726,6 @@ public class TradeItemPicker extends Flow implements HasPaging {
           doQuery(Filter.and(buildParentFilter(), Filter.or(searchFilter, analogFilter)), searchBy);
         }
       });
-
     } else {
       doQuery(Filter.and(buildParentFilter(), searchFilter), searchBy);
     }
@@ -819,18 +818,26 @@ public class TradeItemPicker extends Flow implements HasPaging {
         });
   }
 
-  private static Filter buildSearchFilter(List<String> search, List<TradeItemSearch> searchBy) {
+  private Filter buildSearchFilter(List<String> search, List<TradeItemSearch> searchBy) {
     if (BeeUtils.isEmpty(search) || BeeUtils.isEmpty(searchBy)) {
       return null;
     }
     CompoundFilter full = Filter.and();
+    boolean needsStock = needsStock();
 
     search.forEach(query -> {
       CompoundFilter sf = Filter.or();
 
-      for (TradeItemSearch by : searchBy) {
-        sf.add(by.getItemFilter(query));
-      }
+      searchBy.forEach(by -> {
+        if (needsStock && by == TradeItemSearch.ARTICLE) {
+          Multimap<String, String> options = ArrayListMultimap.create();
+          options.put(COL_STOCK_ARTICLE, query);
+
+          sf.add(Filter.custom(FILTER_ITEM_HAS_STOCK, options));
+        } else {
+          sf.add(by.getItemFilter(query));
+        }
+      });
       full.add(sf);
     });
     return full;
