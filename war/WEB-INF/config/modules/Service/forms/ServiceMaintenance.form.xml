@@ -200,12 +200,6 @@
                   <Label for="Run" style="margin-left: 5px; margin-top: 5px;" />
                 </FlowPanel>
               </FlowPanel>
-
-              <FlowPanel name="WarrantyMaintenancePanel" style="&mfld;" for="WarrantyMaintenance">
-                <Label for="WarrantyMaintenance" style="&flbl;" class="bee-required"/>
-                <DataSelector name="WarrantyMaintenance" source="WarrantyMaintenance" choiceColumns="Id"
-                              filter="WarrantyValidTo > {t}" style="&finp;" tabIndex="130" />
-              </FlowPanel>
             </FlowPanel>
           </FlowPanel>
 
@@ -229,7 +223,17 @@
           </FlowPanel>
         </FlowPanel>
 
-        <FlowPanel class="flexBox-horizontal">
+      <FlowPanel class="flexBox-horizontal">
+        <FlowPanel class="bee-svc-maintenance-panel" >
+          <FlowPanel name="WarrantyMaintenancePanel" style="&mfld;" for="WarrantyMaintenance">
+            <Label for="WarrantyMaintenance" style="&flbl;" class="bee-required"/>
+            <DataSelector name="WarrantyMaintenance" source="WarrantyMaintenance" choiceColumns="Id"
+                          filter="WarrantyValidTo > {t}" style="&finp;" tabIndex="130" />
+          </FlowPanel>
+        </FlowPanel>
+      </FlowPanel>
+
+      <FlowPanel class="flexBox-horizontal">
           <FlowPanel class="bee-svc-maintenance-panel" style="margin-bottom: 1em;">
             <FlowPanel class="&mrcl;" style="&mrst;" for="Warehouse">
               <FlowPanel style="&mfld; width: 21em;" >

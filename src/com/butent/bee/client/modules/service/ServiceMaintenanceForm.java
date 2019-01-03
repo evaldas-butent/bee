@@ -1087,6 +1087,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
           if (BeeUtils.isPositive(qty)) {
             TradeDocumentItem tradeItem = doc.addItem(Data.getLong(view, row, COL_ITEM), qty);
+            tradeItem.setArticle(Data.getString(view, row, COL_TRADE_ITEM_ARTICLE));
 
             tradeItem.setPrice(Data.getDouble(view, row, COL_ITEM_PRICE));
 
@@ -1103,6 +1104,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
             }
             tradeItem.setVat(Data.getDouble(view, row, COL_TRADE_VAT));
             tradeItem.setVatIsPercent(Data.getBoolean(view, row, COL_TRADE_VAT_PERC));
+            tradeItem.setNote(Data.getString(view, row, COL_TRADE_ITEM_NOTE));
 
             data.put(Data.getLong(view, row, COL_SERVICE_ITEM), qty);
           }
