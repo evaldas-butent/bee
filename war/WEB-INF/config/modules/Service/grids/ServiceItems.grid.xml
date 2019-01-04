@@ -20,6 +20,7 @@
   </g:columns>
 
   <xi:include href="../../Orders/grids/columns/ItemsReservation.columns.xml" />
+  <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
 
   <g:columns>
     <RelColumn name="Repairer" renderColumns="RepairerFirstName RepairerLastName"

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View
-    xmlns="http://www.butent.com/view"
+    xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
     name="ServiceItems" source="OrderItems"
     module="Service" caption="=feedGoods">
   <Columns>
@@ -25,6 +25,8 @@
 
       <SimpleColumn name="Reserve" editable="true" />
       <SimpleColumn name="Article" editable="true" />
+
+      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
     </SimpleJoin>
 
     <SimpleColumn name="Item" />

@@ -14,5 +14,8 @@
     <Relation name="Repairer" relation="CompanyPersons" label="=svcMaster"/>
     <Boolean name="Reserve" label="=reserve" defValue="1" />
     <String name="Article" precision="30" label="=article" />
+
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
+              label="=dimensions" />
   </Fields>
 </Table>

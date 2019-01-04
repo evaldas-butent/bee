@@ -8,5 +8,8 @@
     <String name="Name" precision="200" notNull="true" label="=type" />
     <Boolean name="AddressRequired" label="=scvAddressRequired" />
     <Text name="Conditions" label="=conditions" />
+
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
+              label="=dimensions" />
   </Fields>
 </Table>

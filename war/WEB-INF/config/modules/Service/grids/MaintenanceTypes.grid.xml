@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
         xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="MaintenanceTypes" viewName="MaintenanceTypes"
   caption="=svcServiceTypes" newRowCaption="=svcNewServiceType"
@@ -13,4 +14,6 @@
       <style><bodyStyle><ui:inline>overflow:auto;</ui:inline></bodyStyle></style>
     </DataColumn>
   </g:columns>
+
+  <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
 </g:Grid>

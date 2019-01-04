@@ -94,6 +94,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.cars.CarsConstants;
+import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.trade.ItemQuantities;
 import com.butent.bee.shared.modules.trade.Totalizer;
@@ -1109,6 +1110,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
             tradeItem.setVat(Data.getDouble(view, row, COL_TRADE_VAT));
             tradeItem.setVatIsPercent(Data.getBoolean(view, row, COL_TRADE_VAT_PERC));
             tradeItem.setNote(Data.getString(view, row, COL_TRADE_ITEM_NOTE));
+            tradeItem.setExtraDimensions(Dimensions.create(rs, row));
 
             data.put(Data.getLong(view, row, COL_SERVICE_ITEM), qty);
           }
@@ -1130,6 +1132,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
         doc.setDocumentDiscountMode(TradeDiscountMode.FROM_AMOUNT);
         doc.setDocumentVatMode(vatMode.getA());
+        doc.setExtraDimensions(Dimensions.create(getDataColumns(), getActiveRow()));
 
         args.addDataItem(VAR_DOCUMENT, Codec.beeSerialize(doc));
         createInvoice.running();
