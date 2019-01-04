@@ -6,6 +6,7 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_DEPARTMENT;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_COMPANY_TYPE_NAME;
+import static com.butent.bee.shared.modules.finance.Dimensions.*;
 import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
@@ -769,7 +770,10 @@ public enum Report implements HasWidgetSupplier {
           new ReportNumericItem(COL_TRADE_ITEM_QUANTITY, "Kiekis").setPrecision(3),
           new ReportNumericItem(COL_COMPLETED, "Įvykdyta").setPrecision(3),
           new ReportNumericItem(COL_ITEM_PRICE, "Kaina").setPrecision(2),
-          new ReportNumericItem(COL_TRADE_DISCOUNT, "Nuolaida%").setPrecision(1)
+          new ReportNumericItem(COL_TRADE_DISCOUNT, "Nuolaida%").setPrecision(1),
+
+          new ReportTextItem(getNameColumn(1), singular(1)),
+          new ReportTextItem(getNameColumn(2), singular(2))
       );
     }
 

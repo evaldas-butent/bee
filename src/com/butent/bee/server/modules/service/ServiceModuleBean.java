@@ -16,6 +16,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_CONTACT_LAST_NAME;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
+import static com.butent.bee.shared.modules.finance.Dimensions.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.TBL_ORDER_ITEMS;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.COL_INCOME_ITEM;
@@ -1679,6 +1680,11 @@ public class ServiceModuleBean implements BeeModule {
     HasConditions clause = SqlUtils.and();
 
     String TRANSPORT = "Transport";
+    String dim1 = getTableName(1);
+    String dim2 = getTableName(2);
+    String dimAls = SqlUtils.uniqueName();
+    String dim1Als = SqlUtils.uniqueName();
+    String dim2Als = SqlUtils.uniqueName();
 
     IsExpression object = SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(TBL_SERVICE_OBJECTS,
         COL_MODEL), "''"), "' '", SqlUtils.nvl(SqlUtils.field(TBL_SERVICE_OBJECTS, COL_ADDRESS),
@@ -1711,7 +1717,18 @@ public class ServiceModuleBean implements BeeModule {
         .addExpr(transport, TRANSPORT)
         .addExpr(repairer, COL_REPAIRER)
 
+        .addExpr(SqlUtils.nvl(SqlUtils.field(dim1, getNameColumn(1)),
+            SqlUtils.field(dim1Als, getNameColumn(1))), getNameColumn(1))
+        .addExpr(SqlUtils.nvl(SqlUtils.field(dim2, getNameColumn(2)),
+            SqlUtils.field(dim2Als, getNameColumn(2))), getNameColumn(2))
+
         .addFrom(TBL_SERVICE_ITEMS)
+
+        .addFromLeft(TBL_EXTRA_DIMENSIONS,
+            sys.joinTables(TBL_EXTRA_DIMENSIONS, TBL_SERVICE_ITEMS, COL_EXTRA_DIMENSIONS))
+        .addFromLeft(dim1, sys.joinTables(dim1, TBL_EXTRA_DIMENSIONS, getRelationColumn(1)))
+        .addFromLeft(dim2, sys.joinTables(dim2, TBL_EXTRA_DIMENSIONS, getRelationColumn(2)))
+
         .addFromInner(TBL_SERVICE_MAINTENANCE,
             sys.joinTables(TBL_SERVICE_MAINTENANCE, TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE))
         .addFromLeft(TBL_MAINTENANCE_PAYROLL,
@@ -1731,6 +1748,12 @@ public class ServiceModuleBean implements BeeModule {
 
         .addFromLeft(TBL_MAINTENANCE_TYPES,
             sys.joinTables(TBL_MAINTENANCE_TYPES, TBL_SERVICE_MAINTENANCE, COL_TYPE))
+
+        .addFromLeft(TBL_EXTRA_DIMENSIONS, dimAls, sys.joinTables(TBL_EXTRA_DIMENSIONS, dimAls,
+            TBL_MAINTENANCE_TYPES, COL_EXTRA_DIMENSIONS))
+        .addFromLeft(dim1, dim1Als, sys.joinTables(dim1, dim1Als, dimAls, getRelationColumn(1)))
+        .addFromLeft(dim2, dim2Als, sys.joinTables(dim2, dim2Als, dimAls, getRelationColumn(2)))
+
         .addFromLeft(VIEW_MAINTENANCE_STATES,
             sys.joinTables(VIEW_MAINTENANCE_STATES, TBL_SERVICE_MAINTENANCE, COL_STATE))
         .addFromLeft(TBL_COMPANIES,
