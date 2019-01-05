@@ -742,7 +742,8 @@ public final class SqlUtils {
   }
 
   public static IsCondition same(IsExpression expr, String value) {
-    return and(startsWith(expr, value), endsWith(expr, value));
+    return and(startsWith(expr, value), endsWith(expr, value),
+        equals(length(expr), BeeUtils.length(value)));
   }
 
   public static IsCondition same(String source, String field, String value) {

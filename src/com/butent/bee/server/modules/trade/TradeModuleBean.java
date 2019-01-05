@@ -164,6 +164,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.Timer;
@@ -205,8 +206,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   @EJB SystemServiceBean srv;
   @EJB CustomTradeModuleBean custom;
 
-  @Resource
-  TimerService timerService;
+  @Resource TimerService timerService;
+  @Resource EJBContext ctx;
 
   public static String buildMessage(Stopwatch stopwatch, Object... args) {
     List<Object> words = Lists.newArrayList(args);
@@ -401,6 +402,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           logger.warning(msg);
           response = ResponseObject.error(msg);
         }
+    }
+    if (Objects.isNull(response) || response.hasErrors()) {
+      ctx.setRollbackOnly();
     }
     return response;
   }
@@ -790,6 +794,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       for (int i = 0; i < tradeDocumentItems.size(); i++) {
         TradeDocumentItem tradeDocumentItem = tradeDocumentItems.get(i);
         Long item = tradeDocumentItem.getItem();
+        String article = tradeDocumentItem.getArticle();
 
         if (isStockItem(item)) {
           double quantity = tradeDocumentItem.getQuantity();
@@ -799,8 +804,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           Long consignor = getConsignor(warehouse, operationType,
               document.getSupplier(), document.getCustomer());
 
-          Map<Long, Double> parentQuantities = getParentQuantities(item, warehouse, consignor,
-              usedParents);
+          Map<Long, Double> parentQuantities = getParentQuantities(item, article, warehouse,
+              consignor, usedParents);
 
           double totalStock = parentQuantities.values().stream().mapToDouble(d -> d).sum();
 
@@ -3814,12 +3819,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     if (!DataUtils.isEmpty(itemData)) {
       Dictionary dictionary = usr.getDictionary();
 
-      Map<Long, Double> usedParents = new HashMap<>();
       ResponseObject response;
 
       for (SimpleRow itemRow : itemData) {
         Long id = itemRow.getLong(idName);
         Long item = itemRow.getLong(COL_ITEM);
+        String article = itemRow.getValue(COL_TRADE_ITEM_ARTICLE);
 
         double quantity = BeeUtils.unbox(itemRow.getDouble(COL_TRADE_ITEM_QUANTITY));
 
@@ -3831,8 +3836,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
           Long consignor = getConsignor(warehouseFrom, operationType, supplier, customer);
 
-          Map<Long, Double> parentQuantities = getParentQuantities(item, warehouseFrom, consignor,
-              usedParents);
+          Map<Long, Double> parentQuantities = getParentQuantities(item, article, warehouseFrom,
+              consignor, null);
 
           double totalStock = BeeUtils.sum(parentQuantities.values());
 
@@ -3850,16 +3855,15 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               double q = Math.min(quantity, stock);
 
               itemParents.put(parent, q);
-              usedParents.merge(parent, q, Double::sum);
 
               quantity -= q;
             }
 
           } else {
             return ResponseObject.error(BeeUtils.joinOptions(dictionary.trdDocumentItem(), id,
-                dictionary.item(), item, dictionary.trdQuantity(), quantity,
-                dictionary.warehouse(), warehouseFrom, dictionary.consignor(), consignor,
-                dictionary.trdQuantityStock(), totalStock));
+                dictionary.item(), item, dictionary.article(), article,
+                dictionary.trdQuantity(), quantity, dictionary.warehouse(), warehouseFrom,
+                dictionary.consignor(), consignor, dictionary.trdQuantityStock(), totalStock));
           }
 
           for (Map.Entry<Long, Double> entry : itemParents.entrySet()) {
@@ -3993,8 +3997,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return ResponseObject.response(count);
   }
 
-  private Map<Long, Double> getParentQuantities(Long item, Long warehouse, Long consignor,
-      Map<Long, Double> exclude) {
+  private Map<Long, Double> getParentQuantities(Long item, String article, Long warehouse,
+      Long consignor, Map<Long, Double> exclude) {
 
     Map<Long, Double> result = new LinkedHashMap<>();
 
@@ -4022,6 +4026,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     if (DataUtils.isId(warehouse)) {
       where.add(SqlUtils.equals(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE, warehouse));
+    }
+
+    if (!BeeUtils.isEmpty(article)) {
+      where.add(SqlUtils.equals(aliasPrimaryDocumentItems, COL_TRADE_ITEM_ARTICLE, article));
     }
 
     if (DataUtils.isId(consignor)) {
@@ -4238,8 +4246,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     String idName = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
 
     SqlSelect itemQuery = new SqlSelect()
-        .addFields(TBL_TRADE_DOCUMENT_ITEMS, idName, COL_ITEM, COL_TRADE_ITEM_WAREHOUSE_FROM,
-            COL_TRADE_ITEM_QUANTITY)
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, idName, COL_ITEM, COL_TRADE_ITEM_ARTICLE,
+            COL_TRADE_ITEM_WAREHOUSE_FROM, COL_TRADE_ITEM_QUANTITY)
         .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
         .setWhere(SqlUtils.and(itemCondition, SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE)))
@@ -4253,6 +4261,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       for (SimpleRow itemRow : itemData) {
         Long id = itemRow.getLong(idName);
         Long item = itemRow.getLong(COL_ITEM);
+        String article = itemRow.getValue(COL_TRADE_ITEM_ARTICLE);
 
         double quantity = BeeUtils.unbox(itemRow.getDouble(COL_TRADE_ITEM_QUANTITY));
 
@@ -4264,8 +4273,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
           Long consignor = getConsignor(warehouseFrom, operationType, supplier, customer);
 
-          Map<Long, Double> parentQuantities = getParentQuantities(item, warehouseFrom, consignor,
-              usedParents);
+          Map<Long, Double> parentQuantities = getParentQuantities(item, article, warehouseFrom,
+              consignor, usedParents);
 
           double totalStock = BeeUtils.sum(parentQuantities.values());
 
@@ -4286,9 +4295,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
           } else {
             messages.add(BeeUtils.joinOptions(dictionary.trdDocumentItem(), id,
-                dictionary.item(), item, dictionary.trdQuantity(), quantity,
-                dictionary.warehouse(), warehouseFrom, dictionary.consignor(), consignor,
-                dictionary.trdQuantityStock(), totalStock));
+                dictionary.item(), item, dictionary.article(), article,
+                dictionary.trdQuantity(), quantity, dictionary.warehouse(), warehouseFrom,
+                dictionary.consignor(), consignor, dictionary.trdQuantityStock(), totalStock));
           }
 
         } else {
