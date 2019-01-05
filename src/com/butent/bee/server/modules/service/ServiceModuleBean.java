@@ -2254,11 +2254,11 @@ public class ServiceModuleBean implements BeeModule {
         Long responseResult = null;
 
         if (DataUtils.isId(maintenanceId)) {
-          update = new SqlUpdate(TBL_SERVICE_OBJECTS)
-              .addConstant(COL_SERVICE_CUSTOMER, maintenanceCompany)
-              .addConstant(ALS_CONTACT_PERSON, maintenanceContact)
-              .setWhere(sys.idEquals(TBL_SERVICE_OBJECTS,
-                  maintenanceRow.getLong(COL_SERVICE_OBJECT)));
+//          update = new SqlUpdate(TBL_SERVICE_OBJECTS)
+//              .addConstant(COL_SERVICE_CUSTOMER, maintenanceCompany)
+//              .addConstant(ALS_CONTACT_PERSON, maintenanceContact)
+//              .setWhere(sys.idEquals(TBL_SERVICE_OBJECTS,
+//                  maintenanceRow.getLong(COL_SERVICE_OBJECT)));
           responseResult = maintenanceRow.getLong(COL_SERVICE_OBJECT);
 
         } else {

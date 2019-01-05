@@ -829,10 +829,13 @@ public class TradeItemPicker extends Flow implements HasPaging {
       CompoundFilter sf = Filter.or();
 
       searchBy.forEach(by -> {
-        if (needsStock && by == TradeItemSearch.ARTICLE) {
+        if (by == TradeItemSearch.ARTICLE && needsStock()) {
           Multimap<String, String> options = ArrayListMultimap.create();
           options.put(COL_STOCK_ARTICLE, query);
 
+          if (DataUtils.isId(getWarehouse())) {
+            options.put(COL_STOCK_WAREHOUSE, BeeUtils.toString(getWarehouse()));
+          }
           sf.add(Filter.custom(FILTER_ITEM_HAS_STOCK, options));
         } else {
           sf.add(by.getItemFilter(query));

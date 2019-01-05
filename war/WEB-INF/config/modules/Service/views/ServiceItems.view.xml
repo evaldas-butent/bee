@@ -26,7 +26,7 @@
       <SimpleColumn name="Reserve" editable="true" />
       <SimpleColumn name="Article" editable="true" />
 
-      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+      <xi:include href="../../Administration/views/viewcolumns/EditableDimensions.viewcolumns.xml" />
     </SimpleJoin>
 
     <SimpleColumn name="Item" />
