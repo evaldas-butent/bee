@@ -54,6 +54,9 @@
 		<variable name="amount" class="java.lang.Double">
 			<variableExpression><![CDATA[$P{tds}.getItemTotal($V{id}) - $P{tds}.getItemVat($V{id})]]></variableExpression>
 		</variable>
+		<variable name="price" class="java.lang.Double">
+			<variableExpression><![CDATA[$V{amount} / $F{Quantity}.doubleValue()]]></variableExpression>
+		</variable>
 		<variable name="totalVat" class="java.lang.Double">
 			<variableExpression><![CDATA[$P{tds}.getVat()]]></variableExpression>
 		</variable>
@@ -504,7 +507,6 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 			<componentElement>
 				<reportElement x="0" y="0" width="555" height="105" isRemoveLineWhenBlank="true" uuid="27e58c44-ea91-48cd-b747-a2da1e5c2b90">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
-					<property name="com.jaspersoft.studio.components.autoresize.proportional" value="true"/>
 					<property name="com.jaspersoft.studio.components.autoresize.next" value="true"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
@@ -525,35 +527,35 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 						<returnValue fromVariable="vat" toVariable="vatPercent"/>
 						<returnValue fromVariable="totalVat" toVariable="vatAmount"/>
 					</datasetRun>
-					<jr:column width="47" uuid="f42af0ff-657d-4229-865b-6798fba3eee2">
+					<jr:column width="29" uuid="f42af0ff-657d-4229-865b-6798fba3eee2">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
 						<jr:tableFooter height="60" rowSpan="1"/>
 						<jr:columnHeader style="TableCell" height="30" rowSpan="1">
 							<textField isStretchWithOverflow="true">
-								<reportElement style="TableHeader" x="0" y="0" width="47" height="30" uuid="0d6b3d88-fc17-41c4-ad0b-411ad6a18c6d"/>
+								<reportElement style="TableHeader" x="0" y="0" width="29" height="30" uuid="0d6b3d88-fc17-41c4-ad0b-411ad6a18c6d"/>
 								<textFieldExpression><![CDATA[$P{d}.printItemOrdinal()]]></textFieldExpression>
 							</textField>
 						</jr:columnHeader>
 						<jr:detailCell style="TableCell" height="15">
 							<textField isStretchWithOverflow="true">
-								<reportElement style="TableDetail" x="0" y="0" width="47" height="15" uuid="eaf8fbb7-efe6-4ea2-98e6-f0de31791e83"/>
+								<reportElement style="TableDetail" x="0" y="0" width="29" height="15" uuid="eaf8fbb7-efe6-4ea2-98e6-f0de31791e83"/>
 								<textElement textAlignment="Center"/>
 								<textFieldExpression><![CDATA[$V{counter}]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="164" uuid="59ae16a1-edb9-455e-b309-0239c29bc3f1">
+					<jr:column width="171" uuid="59ae16a1-edb9-455e-b309-0239c29bc3f1">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
 						<jr:tableFooter height="60" rowSpan="1"/>
 						<jr:columnHeader style="TableCell" height="30" rowSpan="1">
 							<textField isStretchWithOverflow="true">
-								<reportElement style="TableHeader" x="0" y="0" width="164" height="30" uuid="edb6842b-135d-4943-82ab-3b257ce6a907"/>
+								<reportElement style="TableHeader" x="0" y="0" width="171" height="30" uuid="edb6842b-135d-4943-82ab-3b257ce6a907"/>
 								<textFieldExpression><![CDATA[$P{d}.printInvoiceItemName()]]></textFieldExpression>
 							</textField>
 						</jr:columnHeader>
 						<jr:detailCell style="TableCell" height="15">
 							<textField isStretchWithOverflow="true">
-								<reportElement style="TableDetail" x="0" y="0" width="164" height="15" uuid="9a5a2ba3-26fe-4a53-8e02-ce5fc63b4cfe">
+								<reportElement style="TableDetail" x="0" y="0" width="171" height="15" uuid="9a5a2ba3-26fe-4a53-8e02-ce5fc63b4cfe">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 								</reportElement>
@@ -561,18 +563,18 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="82" uuid="02f2ad15-0560-4be2-ae53-5008ece98862">
+					<jr:column width="56" uuid="02f2ad15-0560-4be2-ae53-5008ece98862">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
 						<jr:tableFooter height="60" rowSpan="1"/>
 						<jr:columnHeader style="TableCell" height="30" rowSpan="1">
 							<textField isStretchWithOverflow="true">
-								<reportElement style="TableHeader" x="0" y="0" width="82" height="30" uuid="9d5f1d91-e21b-4e28-b654-7c975667394c"/>
+								<reportElement style="TableHeader" x="0" y="0" width="56" height="30" uuid="9d5f1d91-e21b-4e28-b654-7c975667394c"/>
 								<textFieldExpression><![CDATA[$P{d}.article()]]></textFieldExpression>
 							</textField>
 						</jr:columnHeader>
 						<jr:detailCell style="TableCell" height="15">
 							<textField isStretchWithOverflow="true">
-								<reportElement style="TableDetail" x="0" y="0" width="82" height="15" uuid="8bc1e73c-03c4-4cb9-bf0c-c9f5df48fd61">
+								<reportElement style="TableDetail" x="0" y="0" width="56" height="15" uuid="8bc1e73c-03c4-4cb9-bf0c-c9f5df48fd61">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 								</reportElement>
@@ -580,13 +582,13 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:columnGroup width="187" uuid="eefa76a8-53b4-4880-a1a1-f122e91f688b">
-						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Columns [4]"/>
+					<jr:columnGroup width="227" uuid="eefa76a8-53b4-4880-a1a1-f122e91f688b">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Columns [5]"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<jr:tableFooter style="TableCell" height="60">
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
 							<textField>
-								<reportElement style="TableDetail" x="0" y="0" width="187" height="20" uuid="508622fb-5e00-407c-9bf9-7fba0ffabf60">
+								<reportElement style="TableDetail" x="0" y="0" width="227" height="20" uuid="508622fb-5e00-407c-9bf9-7fba0ffabf60">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -595,7 +597,7 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 								<textFieldExpression><![CDATA[$P{d}.printDocumentSubtotal()]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement style="TableDetail" x="0" y="20" width="187" height="20" uuid="1cf68d21-bed0-439b-91ff-1ce4e472c483">
+								<reportElement style="TableDetail" x="0" y="20" width="227" height="20" uuid="1cf68d21-bed0-439b-91ff-1ce4e472c483">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 								</reportElement>
@@ -603,7 +605,7 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 								<textFieldExpression><![CDATA[$P{d}.printDocumentVat() + " " + $V{vat} + "%"]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement style="TableDetail" x="0" y="40" width="187" height="20" uuid="7c71f427-e745-4526-a2ac-16eb8c7c024f">
+								<reportElement style="TableDetail" x="0" y="40" width="227" height="20" uuid="7c71f427-e745-4526-a2ac-16eb8c7c024f">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 								</reportElement>
@@ -647,8 +649,27 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="40" uuid="3af8347b-d882-4845-befc-9f73ad590fd2">
+						<jr:column width="40" uuid="61246567-931f-4842-a621-712b8c0ae219">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column6"/>
+							<printWhenExpression><![CDATA[$V{tds}.getDiscount() != 0]]></printWhenExpression>
+							<jr:columnHeader style="TableCell" height="30">
+								<textField isStretchWithOverflow="true">
+									<reportElement style="TableHeader" x="0" y="0" width="40" height="30" uuid="7cb59f1f-5767-40bd-ba74-b9a958224cd6"/>
+									<textFieldExpression><![CDATA[BeeUtils.joinWords($P{d}.price(), "be nuol.")]]></textFieldExpression>
+								</textField>
+							</jr:columnHeader>
+							<jr:detailCell style="TableCell" height="15">
+								<textField isStretchWithOverflow="true" pattern="#0.####" isBlankWhenNull="true">
+									<reportElement key="" style="TableDetail" x="0" y="0" width="40" height="15" uuid="6f4ca7ff-0d68-4052-ab21-3f3e7dcf2bef">
+										<printWhenExpression><![CDATA[Objects.nonNull($F{Discount})]]></printWhenExpression>
+									</reportElement>
+									<textElement textAlignment="Right"/>
+									<textFieldExpression><![CDATA[$V{price} + ($P{tds}.getItemDiscount($V{id}) / $F{Quantity}.doubleValue())]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="40" uuid="3af8347b-d882-4845-befc-9f73ad590fd2">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column7"/>
 							<printWhenExpression><![CDATA[$V{tds}.getDiscount() != 0]]></printWhenExpression>
 							<jr:columnHeader style="TableCell" height="30">
 								<textField isStretchWithOverflow="true">
@@ -667,7 +688,7 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 							</jr:detailCell>
 						</jr:column>
 						<jr:column width="55" uuid="f16aa5ba-6e88-4321-b9ee-46efe247a2b8">
-							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column7"/>
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column8"/>
 							<jr:columnHeader style="TableCell" height="30" rowSpan="1">
 								<textField isStretchWithOverflow="true">
 									<reportElement style="TableHeader" x="0" y="0" width="55" height="30" uuid="dfa4f167-c6d7-4d39-890f-aad089900aa8"/>
@@ -678,32 +699,32 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 								<textField isStretchWithOverflow="true" pattern="#0.####" isBlankWhenNull="true">
 									<reportElement key="" style="TableDetail" x="0" y="0" width="55" height="15" uuid="fa37743e-b14d-4962-b100-332262b6281a"/>
 									<textElement textAlignment="Right"/>
-									<textFieldExpression><![CDATA[$V{amount} / $F{Quantity}.doubleValue()]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$V{price}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
 					</jr:columnGroup>
-					<jr:column width="75" uuid="c73a9834-69b6-44a6-a208-28c10e43c449">
-						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column8"/>
+					<jr:column width="72" uuid="c73a9834-69b6-44a6-a208-28c10e43c449">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column9"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<jr:tableFooter style="TableCell" height="60" rowSpan="1">
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
 							<textField pattern="#0.00">
-								<reportElement style="TableDetail" x="0" y="0" width="75" height="20" uuid="055d8617-294a-4334-b8b3-14402090b2fc"/>
+								<reportElement style="TableDetail" x="0" y="0" width="72" height="20" uuid="055d8617-294a-4334-b8b3-14402090b2fc"/>
 								<textElement textAlignment="Right">
 									<font isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$P{tds}.getTotal() - $V{totalVat}]]></textFieldExpression>
 							</textField>
 							<textField pattern="#0.00">
-								<reportElement style="TableDetail" x="0" y="20" width="75" height="20" uuid="01d2a00d-0c67-4b01-8951-46cf5e630872"/>
+								<reportElement style="TableDetail" x="0" y="20" width="72" height="20" uuid="01d2a00d-0c67-4b01-8951-46cf5e630872"/>
 								<textElement textAlignment="Right">
 									<font isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{totalVat}]]></textFieldExpression>
 							</textField>
 							<textField pattern="#0.00">
-								<reportElement style="TableDetail" x="0" y="40" width="75" height="20" uuid="95194d68-3ffe-487a-97ba-fb5f05a68349"/>
+								<reportElement style="TableDetail" x="0" y="40" width="72" height="20" uuid="95194d68-3ffe-487a-97ba-fb5f05a68349"/>
 								<textElement textAlignment="Right">
 									<font isBold="true"/>
 								</textElement>
@@ -712,13 +733,13 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 						</jr:tableFooter>
 						<jr:columnHeader style="TableCell" height="30" rowSpan="1">
 							<textField isStretchWithOverflow="true">
-								<reportElement style="TableHeader" x="0" y="0" width="75" height="30" uuid="b752a7b4-8907-4e45-92d7-601a2c0358ae"/>
+								<reportElement style="TableHeader" x="0" y="0" width="72" height="30" uuid="b752a7b4-8907-4e45-92d7-601a2c0358ae"/>
 								<textFieldExpression><![CDATA[BeeUtils.joinWords($P{d}.amount(), $P{currency})]]></textFieldExpression>
 							</textField>
 						</jr:columnHeader>
 						<jr:detailCell style="TableCell" height="15">
 							<textField isStretchWithOverflow="true" pattern="#0.00" isBlankWhenNull="true">
-								<reportElement key="" style="TableDetail" x="0" y="0" width="75" height="15" uuid="6a2e27dc-aff9-4a33-a68c-23f637632458"/>
+								<reportElement key="" style="TableDetail" x="0" y="0" width="72" height="15" uuid="6a2e27dc-aff9-4a33-a68c-23f637632458"/>
 								<textElement textAlignment="Right"/>
 								<textFieldExpression><![CDATA[$V{amount}]]></textFieldExpression>
 							</textField>
