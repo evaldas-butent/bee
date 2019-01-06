@@ -21,6 +21,7 @@
       <SimpleColumn name="OperationType" />
       <SimpleColumn name="Background" alias="OperationBackground" />
       <SimpleColumn name="Foreground" alias="OperationForeground" />
+      <SimpleColumn name="CashRegisterNo" />
     </SimpleJoin>
 
     <SimpleColumn name="Phase" />

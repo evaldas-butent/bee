@@ -54,6 +54,9 @@
 		<variable name="amount" class="java.lang.Double">
 			<variableExpression><![CDATA[$P{tds}.getItemTotal($V{id}) - $P{tds}.getItemVat($V{id})]]></variableExpression>
 		</variable>
+		<variable name="totalVat" class="java.lang.Double">
+			<variableExpression><![CDATA[$P{tds}.getVat()]]></variableExpression>
+		</variable>
 	</subDataset>
 	<subDataset name="CompanyBankAccounts" whenResourceMissingType="Error" uuid="308c900a-2f38-4be3-bc8c-41b38297546d">
 		<queryString>
@@ -133,6 +136,7 @@
 	<parameter name="PayerPostIndex" class="java.lang.String"/>
 	<parameter name="PayerCityName" class="java.lang.String"/>
 	<parameter name="PayerCountryName" class="java.lang.String"/>
+	<parameter name="CashRegisterNo" class="java.lang.String"/>
 	<variable name="loc" class="com.butent.bee.shared.i18n.Dictionary">
 		<variableExpression><![CDATA[$V{loc}]]></variableExpression>
 		<initialValueExpression><![CDATA[Localizations.getDictionary($P{REPORT_LOCALE}.getLanguage())]]></initialValueExpression>
@@ -145,6 +149,8 @@
 		<variableExpression><![CDATA[$V{tds}]]></variableExpression>
 		<initialValueExpression><![CDATA[new com.butent.bee.shared.modules.trade.TradeDocumentSums(EnumUtils.getEnumByIndex(com.butent.bee.shared.modules.trade.TradeVatMode.class, $P{DocumentVatMode}), EnumUtils.getEnumByIndex(com.butent.bee.shared.modules.trade.TradeDiscountMode.class, $P{DocumentDiscountMode}), null).addItems($P{TradeDocumentItemsDataSet}.getRowSet())]]></initialValueExpression>
 	</variable>
+	<variable name="vatPercent" class="java.math.BigDecimal"/>
+	<variable name="vatAmount" class="java.lang.Double"/>
 	<title>
 		<band height="262">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -442,7 +448,7 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 		</band>
 	</pageFooter>
 	<summary>
-		<band height="225">
+		<band height="244">
 			<textField isStretchWithOverflow="true">
 				<reportElement positionType="Float" x="0" y="135" width="555" height="14" isRemoveLineWhenBlank="true" uuid="5cdf30e4-29ae-4976-a5be-ff78d2bf9b3e">
 					<printWhenExpression><![CDATA[$P{Term} != null]]></printWhenExpression>
@@ -460,11 +466,11 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 				<textFieldExpression><![CDATA[$V{loc}.printTotalInWords() + ": " + com.butent.bee.server.Invocation.locateRemoteBean(com.butent.bee.server.modules.administration.AdministrationModuleBean.class).getTotalInWords(BeeUtils.toDouble($P{Amount}), BeeUtils.toLongOrNull($P{Currency}), $P{REPORT_LOCALE}.getLanguage())]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="0" y="183" width="80" height="12" uuid="cf68b22e-feff-4070-bc5f-40a363878e32"/>
+				<reportElement positionType="Float" x="0" y="203" width="80" height="12" uuid="cf68b22e-feff-4070-bc5f-40a363878e32"/>
 				<textFieldExpression><![CDATA[$V{loc}.printDocumentDispenser()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="80" y="195" width="179" height="13" uuid="a4b50305-7431-4bc1-9875-fa37256eb102"/>
+				<reportElement positionType="Float" x="80" y="215" width="179" height="13" uuid="a4b50305-7431-4bc1-9875-fa37256eb102"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 				</box>
@@ -474,11 +480,11 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 				<textFieldExpression><![CDATA[$V{loc}.printSignature()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="280" y="183" width="80" height="12" uuid="3a8318e4-2d27-4220-a0c9-9fca69a36087"/>
+				<reportElement positionType="Float" x="280" y="203" width="80" height="12" uuid="3a8318e4-2d27-4220-a0c9-9fca69a36087"/>
 				<textFieldExpression><![CDATA[$V{loc}.printDocumentReceiver()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="360" y="195" width="183" height="13" uuid="4325cbe3-b484-470d-9f71-108ce32905ac"/>
+				<reportElement positionType="Float" x="360" y="215" width="183" height="13" uuid="4325cbe3-b484-470d-9f71-108ce32905ac"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 				</box>
@@ -488,11 +494,11 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 				<textFieldExpression><![CDATA[$V{loc}.printSignature()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="80" y="183" width="178" height="12" uuid="08446029-9964-4625-936c-3e2f477f0160"/>
+				<reportElement positionType="Float" x="80" y="203" width="178" height="12" uuid="08446029-9964-4625-936c-3e2f477f0160"/>
 				<textFieldExpression><![CDATA[BeeUtils.joinWords($P{PositionName}, $P{ManagerFirstName}, $P{ManagerLastName})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="212" width="554" height="12" isRemoveLineWhenBlank="true" uuid="11dda54f-2352-43ce-8192-9b339d9e0009"/>
+				<reportElement positionType="Float" x="0" y="232" width="554" height="12" isRemoveLineWhenBlank="true" uuid="11dda54f-2352-43ce-8192-9b339d9e0009"/>
 				<textFieldExpression><![CDATA[$R{invoicePreparationAndValidation}]]></textFieldExpression>
 			</textField>
 			<componentElement>
@@ -516,6 +522,8 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 							<datasetParameterExpression><![CDATA[$V{tds}]]></datasetParameterExpression>
 						</datasetParameter>
 						<dataSourceExpression><![CDATA[$P{TradeDocumentItemsDataSet}]]></dataSourceExpression>
+						<returnValue fromVariable="vat" toVariable="vatPercent"/>
+						<returnValue fromVariable="totalVat" toVariable="vatAmount"/>
 					</datasetRun>
 					<jr:column width="47" uuid="f42af0ff-657d-4229-865b-6798fba3eee2">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
@@ -549,7 +557,7 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 								</reportElement>
-								<textFieldExpression><![CDATA[BeeUtils.join("\n", $F{ItemName}, $F{Note})]]></textFieldExpression>
+								<textFieldExpression><![CDATA[BeeUtils.joinWords($F{ItemName}, BeeUtils.parenthesize($F{Note}))]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -685,14 +693,14 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 								<textElement textAlignment="Right">
 									<font isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$P{tds}.getTotal() - $P{tds}.getVat()]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$P{tds}.getTotal() - $V{totalVat}]]></textFieldExpression>
 							</textField>
 							<textField pattern="#0.00">
 								<reportElement style="TableDetail" x="0" y="20" width="75" height="20" uuid="01d2a00d-0c67-4b01-8951-46cf5e630872"/>
 								<textElement textAlignment="Right">
 									<font isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$P{tds}.getVat()]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{totalVat}]]></textFieldExpression>
 							</textField>
 							<textField pattern="#0.00">
 								<reportElement style="TableDetail" x="0" y="40" width="75" height="20" uuid="95194d68-3ffe-487a-97ba-fb5f05a68349"/>
@@ -719,11 +727,29 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 				</jr:table>
 			</componentElement>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="160" width="555" height="14" isRemoveLineWhenBlank="true" uuid="5de222c8-e3ae-4d6e-85c5-b971492eb7c3"/>
+				<reportElement positionType="Float" x="0" y="180" width="555" height="14" isRemoveLineWhenBlank="true" uuid="5de222c8-e3ae-4d6e-85c5-b971492eb7c3"/>
 				<textElement>
 					<font isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Notes}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="0" y="150" width="554" height="12" isRemoveLineWhenBlank="true" uuid="5ba86c0c-930d-4b53-bfd5-ebf700b142bf">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{CashRegisterNo})]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA["Kasos aparato Nr. " + $P{CashRegisterNo}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" evaluationTime="Report">
+				<reportElement positionType="Float" x="0" y="163" width="554" height="12" isRemoveLineWhenBlank="true" uuid="9408e96c-bcbf-4489-b81a-23665068f216">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{CashRegisterNo})]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA["PVM " + BeeUtils.nvl($V{vatPercent}, BigDecimal.ZERO) + "% " + BeeUtils.round($V{vatAmount}, 2)]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>
