@@ -79,6 +79,7 @@
     <SimpleColumn name="DefaultQuantity" />
 
     <SimpleColumn name="Ordinal" />
+    <SimpleColumn name="ExternalCode" />
 
     <SimpleColumn name="Description" />
   </Columns>

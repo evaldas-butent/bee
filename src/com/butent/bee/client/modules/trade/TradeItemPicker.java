@@ -823,12 +823,13 @@ public class TradeItemPicker extends Flow implements HasPaging {
       return null;
     }
     CompoundFilter full = Filter.and();
-    boolean needsStock = needsStock();
 
     search.forEach(query -> {
       CompoundFilter sf = Filter.or();
 
       searchBy.forEach(by -> {
+        sf.add(by.getItemFilter(query));
+
         if (by == TradeItemSearch.ARTICLE && needsStock()) {
           Multimap<String, String> options = ArrayListMultimap.create();
           options.put(COL_STOCK_ARTICLE, query);
@@ -836,9 +837,8 @@ public class TradeItemPicker extends Flow implements HasPaging {
           if (DataUtils.isId(getWarehouse())) {
             options.put(COL_STOCK_WAREHOUSE, BeeUtils.toString(getWarehouse()));
           }
-          sf.add(Filter.custom(FILTER_ITEM_HAS_STOCK, options));
-        } else {
-          sf.add(by.getItemFilter(query));
+          sf.add(Filter.and(Filter.isNull(COL_ITEM_IS_SERVICE),
+              Filter.custom(FILTER_ITEM_HAS_STOCK, options)));
         }
       });
       full.add(sf);
@@ -1023,6 +1023,9 @@ public class TradeItemPicker extends Flow implements HasPaging {
     }
     if (items.containsColumn(COL_ITEM_BARCODE) && by.contains(TradeItemSearch.BARCODE)) {
       columns.add(COL_ITEM_BARCODE);
+    }
+    if (items.containsColumn(COL_ITEM_EXTERNAL_CODE)) {
+      columns.add(COL_ITEM_EXTERNAL_CODE);
     }
 
     if (items.containsColumn(COL_ITEM_DESCRIPTION) && by.contains(TradeItemSearch.DESCRIPTION)) {

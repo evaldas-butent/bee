@@ -163,6 +163,18 @@ public enum TradeItemSearch implements HasLocalizedCaption {
     }
   },
 
+  EXTERNAL_CODE {
+    @Override
+    public String getCaption(Dictionary dictionary) {
+      return dictionary.externalCode();
+    }
+
+    @Override
+    public Filter getItemFilter(String query) {
+      return Filter.equals(COL_ITEM_EXTERNAL_CODE, query);
+    }
+  },
+
   ID {
     @Override
     public String getCaption(Dictionary dictionary) {
