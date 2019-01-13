@@ -10,6 +10,8 @@
       <item value="item">=item</item>
       <item value="article">=article</item>
       <item value="unit">=unit</item>
+      <item value="external_code">Išorinis kodas</item>
+      <item value="erp">ERP likutis</item>
       <item value="warehouse">=warehouse</item>
       <item value="supplier">=supplier</item>
       <item value="customer">=trdCustomer</item>

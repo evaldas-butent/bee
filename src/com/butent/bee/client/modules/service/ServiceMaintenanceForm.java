@@ -1133,6 +1133,12 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         doc.setDocumentDiscountMode(TradeDiscountMode.FROM_AMOUNT);
         doc.setDocumentVatMode(vatMode.getA());
         doc.setExtraDimensions(Dimensions.create(getDataColumns(), getActiveRow()));
+        doc.setNotes(BeeUtils.join("\n",
+            BeeUtils.joinWords("Įrenginys:", getStringValue(COL_MODEL),
+                getStringValue(COL_ADDRESS)),
+            BeeUtils.joinWords("Kėbulo Nr.:", getStringValue(COL_SERVICE_BODY_NO)),
+            BeeUtils.joinWords("Moto val.:", getStringValue(COL_TA_RUN)),
+            BeeUtils.joinWords("Darbų aktas Nr.", getActiveRowId())));
 
         args.addDataItem(VAR_DOCUMENT, Codec.beeSerialize(doc));
         createInvoice.running();

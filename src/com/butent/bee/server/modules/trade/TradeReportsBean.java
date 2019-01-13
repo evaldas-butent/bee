@@ -206,6 +206,10 @@ public class TradeReportsBean {
         rowGroups.add(TradeReportGroup.UNIT);
       }
 
+      if (showQuantity && !TradeReportGroup.EXTERNAL_CODE.equals(stockGroup)) {
+        rowGroups.add(TradeReportGroup.EXTERNAL_CODE);
+      }
+
       if (showQuantity && !TradeReportGroup.ERP.equals(stockGroup)) {
         rowGroups.add(TradeReportGroup.ERP);
       }
