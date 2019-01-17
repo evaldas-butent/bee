@@ -22,6 +22,7 @@
 
     <DataColumn name="ItemName" flexGrow="2" editSource="Item" editViewName="Items"
                 visible="true" />
+    <DataColumn name="ExternalCode" />
     <DataColumn name="Article" flexGrow="1" />
 
     <DataColumn name="WarehouseCode" label="=warehouse" editEnabled="true" />

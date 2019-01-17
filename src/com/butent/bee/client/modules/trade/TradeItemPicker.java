@@ -686,8 +686,8 @@ public class TradeItemPicker extends Flow implements HasPaging {
         }
       }
     }
-    List<String> search = Splitter.on(BeeConst.CHAR_SPACE).omitEmptyStrings().trimResults()
-        .splitToList(query);
+    List<String> search = BeeUtils.isEmpty(query) ? null
+        : Splitter.on(BeeConst.CHAR_SPACE).omitEmptyStrings().trimResults().splitToList(query);
 
     if (searchBy.isEmpty() && !BeeUtils.isEmpty(search)) {
       searchBy.addAll(getDefaultSearchBy(query));

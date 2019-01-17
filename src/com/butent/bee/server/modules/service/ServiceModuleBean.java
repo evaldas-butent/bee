@@ -11,20 +11,20 @@ import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_CONTACT_FIRST_NAME;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_CONTACT_LAST_NAME;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 import static com.butent.bee.shared.modules.finance.Dimensions.*;
-import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.TBL_ORDER_ITEMS;
+import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.COL_INCOME_ITEM;
-import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_COMMENT;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_EVENT_NOTE;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_PUBLISH_TIME;
 import static com.butent.bee.shared.modules.service.ServiceConstants.SVC_CREATE_INVOICE_ITEMS;
+import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
@@ -786,7 +786,8 @@ public class ServiceModuleBean implements BeeModule {
         SqlUtils.field(TBL_MAINTENANCE_INVOICES, COL_TRADE_ITEM_QUANTITY));
 
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE)
+        .addFields(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE,
+            sys.getIdName(TBL_SERVICE_MAINTENANCE))
         .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
         .addFields(TBL_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY)
         .addExpr(xpr, CarsConstants.ALS_COMPLETED)
@@ -805,7 +806,8 @@ public class ServiceModuleBean implements BeeModule {
             SqlUtils.notNull(TBL_SERVICE_ITEMS, CarsConstants.COL_RESERVE),
             SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE),
             SqlUtils.positive(TBL_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY)))
-        .addGroup(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE)
+        .addGroup(TBL_SERVICE_MAINTENANCE, sys.getIdName(TBL_SERVICE_MAINTENANCE),
+            COL_MAINTENANCE_DATE)
         .addGroup(TBL_COMPANIES, COL_COMPANY_NAME)
         .addGroup(TBL_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY)
         .setHaving(SqlUtils.or(SqlUtils.isNull(xpr),
@@ -826,7 +828,8 @@ public class ServiceModuleBean implements BeeModule {
 
     qs.getData(query).forEach(row -> {
       String key = BeeUtils.joinItems(Formatter.renderDateTime(dtfInfo,
-          row.getDateTime(COL_MAINTENANCE_DATE)), row.getValue(COL_COMPANY_NAME));
+          row.getDateTime(COL_MAINTENANCE_DATE)),
+          row.getValue(sys.getIdName(TBL_SERVICE_MAINTENANCE)), row.getValue(COL_COMPANY_NAME));
 
       map.put(key, BeeUtils.unbox(map.get(key)) + row.getDouble(COL_TRADE_ITEM_QUANTITY)
           - BeeUtils.unbox(row.getDouble(CarsConstants.ALS_COMPLETED)));
@@ -2254,11 +2257,11 @@ public class ServiceModuleBean implements BeeModule {
         Long responseResult = null;
 
         if (DataUtils.isId(maintenanceId)) {
-//          update = new SqlUpdate(TBL_SERVICE_OBJECTS)
-//              .addConstant(COL_SERVICE_CUSTOMER, maintenanceCompany)
-//              .addConstant(ALS_CONTACT_PERSON, maintenanceContact)
-//              .setWhere(sys.idEquals(TBL_SERVICE_OBJECTS,
-//                  maintenanceRow.getLong(COL_SERVICE_OBJECT)));
+          //          update = new SqlUpdate(TBL_SERVICE_OBJECTS)
+          //              .addConstant(COL_SERVICE_CUSTOMER, maintenanceCompany)
+          //              .addConstant(ALS_CONTACT_PERSON, maintenanceContact)
+          //              .setWhere(sys.idEquals(TBL_SERVICE_OBJECTS,
+          //                  maintenanceRow.getLong(COL_SERVICE_OBJECT)));
           responseResult = maintenanceRow.getLong(COL_SERVICE_OBJECT);
 
         } else {

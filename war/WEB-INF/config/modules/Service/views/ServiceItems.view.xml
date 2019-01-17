@@ -70,6 +70,7 @@
       <SimpleColumn name="PackageUnits" />
       <SimpleColumn name="Attribute" />
       <SimpleColumn name="IsService" />
+      <SimpleColumn name="ExternalCode" />
     </SimpleJoin>
 
     <SimpleColumn name="ResRemainder" />

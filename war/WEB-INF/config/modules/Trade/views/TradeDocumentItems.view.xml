@@ -16,6 +16,7 @@
       </SimpleJoin>
 
       <SimpleColumn name="IsService" />
+      <SimpleColumn name="ExternalCode" />
     </SimpleJoin>
 
     <SimpleColumn name="Article" />

@@ -14,6 +14,8 @@
       <footer text="=totalOf" horizontalAlignment="right" />
     </DataColumn>
 
+    <DataColumn name="ExternalCode" />
+
     <DataColumn name="Article" sortBy="PrimaryArticle Article" searchBy="Article PrimaryArticle"
                 flexGrow="1">
       <render>

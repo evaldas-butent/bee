@@ -991,6 +991,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     container.add(clear);
     int c = 0;
     table.setText(rNo.get(), c++, d.name());
+    table.setText(rNo.get(), c++, d.externalCode());
     table.setText(rNo.get(), c++, d.article());
     table.setText(rNo.get(), c++, d.ordUncompleted());
     table.setText(rNo.get(), c++, d.unitShort());
@@ -999,12 +1000,12 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     table.setText(rNo.get(), c++, d.discount());
     table.setText(rNo.get(), c, d.vat());
 
-    Stream.of(2, 5, 6, 7).forEach(col ->
+    Stream.of(3, 6, 7, 8).forEach(col ->
         table.setColumnCellClasses(col, StyleUtils.className(TextAlign.RIGHT)));
 
     rNo.increment();
     table.getRowFormatter().addStyleName(rNo.get(), StyleUtils.className(FontStyle.ITALIC));
-    table.getCellFormatter().setColSpan(rNo.get(), 0, 8);
+    table.getCellFormatter().setColSpan(rNo.get(), 0, c + 1);
     Flow flow = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
     flow.add(new Label(Localized.dictionary().productsServices()));
     flow.getWidget(0).addStyleName(StyleUtils.NAME_FLEXIBLE);
@@ -1016,6 +1017,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       rNo.increment();
       int cNo = 0;
       table.setText(rNo.get(), cNo++, Data.getString(view, row, ALS_ITEM_NAME));
+      table.setText(rNo.get(), cNo++, Data.getString(view, row, COL_ITEM_EXTERNAL_CODE));
       table.setText(rNo.get(), cNo++, Data.getString(view, row, COL_ITEM_ARTICLE));
       table.setText(rNo.get(), cNo++, row.getProperty(CarsConstants.COL_RESERVE));
       table.setText(rNo.get(), cNo++, Data.getString(view, row, ALS_UNIT_NAME));
