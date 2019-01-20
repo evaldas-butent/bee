@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-        xmlns:ui="http://www.butent.com/ui"
+        xmlns:ui="http://www.butent.com/ui" xmlns:w="http://www.butent.com/widget"
 
         name="TradeStock" viewName="TradeStock" caption="=trdStock"
         filter="Quantity > 0" readOnly="true"
 >
+  <g:west size="200" splitterSize="2">
+    <w:DataTree name="Categories" caption="=categories" viewName="CategoryTree"
+                parentColumn="Parent">
+      <w:calc>
+        <ui:expression>row.Name</ui:expression>
+      </w:calc>
+    </w:DataTree>
+  </g:west>
+
   <g:columns>
     <DataColumn name="PrimaryDocumentItem" visible="false" />
     <DataColumn name="PrimaryDocument" editSource="PrimaryDocument" editViewName="TradeDocuments"
@@ -23,6 +32,8 @@
     <DataColumn name="ItemName" flexGrow="2" editSource="Item" editViewName="Items"
                 visible="true" />
     <DataColumn name="ExternalCode" />
+    <DataColumn name="ItemArticle" />
+    <DataColumn name="ItemPrice" />
     <DataColumn name="Article" flexGrow="1" />
 
     <DataColumn name="WarehouseCode" label="=warehouse" editEnabled="true" />

@@ -422,6 +422,7 @@ public class TradeItemPicker extends Flow implements HasPaging {
     table.setText(rNo.get(), c++, d.document());
     table.setText(rNo.get(), c++, d.supplier());
     table.setText(rNo.get(), c++, d.name());
+    table.setText(rNo.get(), c++, d.externalCode());
     table.setText(rNo.get(), c++, d.article());
     table.setText(rNo.get(), c++, d.cost());
     table.setText(rNo.get(), c++, d.quantity());
@@ -437,6 +438,8 @@ public class TradeItemPicker extends Flow implements HasPaging {
       table.setText(rNo.get(), cNo++, Data.getString(VIEW_TRADE_STOCK, row, COL_TRADE_DOCUMENT));
       table.setText(rNo.get(), cNo++, Data.getString(VIEW_TRADE_STOCK, row, ALS_SUPPLIER_NAME));
       table.setText(rNo.get(), cNo++, Data.getString(VIEW_TRADE_STOCK, row, ALS_ITEM_NAME));
+      table.setText(rNo.get(), cNo++, Data.getString(VIEW_TRADE_STOCK, row,
+          COL_ITEM_EXTERNAL_CODE));
       table.setText(rNo.get(), cNo++, Data.getString(VIEW_TRADE_STOCK, row, COL_ITEM_ARTICLE));
       table.setText(rNo.get(), cNo++, renderPrice(Data.getDouble(VIEW_TRADE_STOCK, row,
           COL_TRADE_ITEM_COST)), STYLE_PRICE + STYLE_CELL_SUFFIX);

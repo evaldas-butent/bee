@@ -73,6 +73,10 @@
           <SimpleColumn name="Name" alias="UnitName" />
         </SimpleJoin>
         <SimpleColumn name="ExternalCode" />
+        <SimpleColumn name="Article" alias="ItemArticle" label="Prekės artikulas" />
+        <SimpleColumn name="Price" alias="ItemPrice" />
+        <HiddenColumn name="Type" alias="ItemType" />
+        <HiddenColumn name="Group" alias="ItemGroup" />
       </SimpleJoin>
     </SimpleJoin>
 

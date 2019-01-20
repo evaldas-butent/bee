@@ -1188,7 +1188,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     String tbl;
     String fld;
 
-    if (BeeUtils.same(column, getSourceIdName()) || BeeUtils.same(column, ColumnInFilter.ID_TAG)) {
+    if (BeeUtils.same(column, ColumnInFilter.ID_TAG)) {
       tbl = getSourceAlias();
       fld = getSourceIdName();
     } else {
