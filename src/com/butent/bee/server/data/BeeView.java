@@ -1188,11 +1188,11 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     String tbl;
     String fld;
 
-    if (BeeUtils.same(column, ColumnInFilter.ID_TAG)) {
+    if (BeeUtils.same(column, getSourceIdName()) || BeeUtils.same(column, ColumnInFilter.ID_TAG)) {
       tbl = getSourceAlias();
       fld = getSourceIdName();
     } else {
-      tbl = getColumnTable(column);
+      tbl = getColumnSource(column);
       fld = getColumnField(column);
     }
 
@@ -1204,7 +1204,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       inTbl = inView.getSourceAlias();
       inFld = inView.getSourceIdName();
     } else {
-      inTbl = inView.getColumnTable(inColumn);
+      inTbl = inView.getColumnSource(inColumn);
       inFld = inView.getColumnField(inColumn);
     }
 
