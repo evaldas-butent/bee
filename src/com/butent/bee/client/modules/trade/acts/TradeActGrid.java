@@ -730,10 +730,23 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
   }
 
   private void createReturn(final IsRow parent, BeeRowSet parentActs, BeeRowSet parentItems) {
-
     if (!DataUtils.isEmpty(parentActs) && !DataUtils.isEmpty(parentItems) && !isRentProjectAct(
         parent)) {
-      createReturnActForm(parentActs, parentItems);
+
+      boolean allIsInRent  = true;
+      boolean oneHasContinous = false;
+
+      for(IsRow pAct : parentActs.getRows()) {
+          allIsInRent &= DataUtils.isId(getRentProject(pAct));
+          oneHasContinous |= DataUtils.isId(getContinuousAct(pAct));
+      }
+
+      if (allIsInRent || oneHasContinous) {
+        createReturnActForm(parentActs, parentItems);
+        return;
+      }
+
+      getGridView().notifySevere("Pažymėti aktai nesusiję su Nuomos proj. arba Tęstiniais aktais");
       return;
     } else if (parent == null) {
       Assert.untouchable();
