@@ -1284,6 +1284,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     int statusNameIndex = dataInfo.getColumnIndex(COL_STATUS_NAME);
 
     int objectNameIndex = dataInfo.getColumnIndex(COL_COMPANY_OBJECT_NAME);
+    int rentProjectIndex = dataInfo.getColumnIndex(COL_TA_RENT_PROJECT);
 
     boolean hasEnabledActs = false;
     for (Act act : acts) {
@@ -1408,6 +1409,9 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       table.getRowFormatter().addStyleName(r, STYLE_ACT_ROW);
       DomUtils.setDataIndex(table.getRow(r), act.id());
 
+      DomUtils.setDataProperty(table.getRow(r), COL_TA_RENT_PROJECT,
+          act.row.getString(rentProjectIndex));
+
       r++;
     }
 
@@ -1437,9 +1441,11 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       boolean checked;
 
       for (Toggle t : UiHelper.getChildren(table, Toggle.class)) {
-        Long act = DomUtils.getDataIndexLong(DomUtils.getParentRow(t.getElement(), false));
+        TableRowElement element = DomUtils.getParentRow(t.getElement(), false);
+        Long act = DomUtils.getDataIndexLong(element);
+        Long rentProject = DomUtils.getDataPropertyLong(element, COL_TA_RENT_PROJECT);
 
-        if (!t.isChecked() && actId.contains(act)) {
+        if (!t.isChecked() && (actId.contains(act) || actId.contains(rentProject))) {
           checked = true;
           t.setChecked(checked);
           onToggle(t, STYLE_ACT_SELECTED);
