@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.butent.bee.client.data.*;
+import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
@@ -18,10 +20,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.composite.UnboundSelector;
-import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowEditor;
-import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.dialog.StringCallback;
@@ -74,6 +72,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class TradeActGrid extends AbstractGridInterceptor implements SelectionCountChangeEvent.Handler {
@@ -98,10 +97,17 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
   private Button toRentProjectCommand;
   private Button removeFromRentCommand;
 
+  private Supplier<Filter> filterSupplier;
+
   private TradeActKind newActKind;
 
-  TradeActGrid(TradeActKind kind) {
+  public TradeActGrid(TradeActKind kind) {
     this.kind = kind;
+  }
+
+  public TradeActGrid(TradeActKind kind, Supplier<Filter> filterSupplier) {
+    this(kind);
+    this.filterSupplier = filterSupplier;
   }
 
   @Override
@@ -134,6 +140,9 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
             e -> buildInvoice()));
       }
     }
+
+    maybeRefresh(presenter, filterSupplier);
+
     super.afterCreatePresenter(presenter);
   }
 
@@ -311,6 +320,17 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
 
     TradeActKeeper.prepareNewTradeAct(newRow, parentRow, newActKind);
     return super.onStartNewRow(gridView, oldRow, newRow, copy);
+  }
+
+  @Override
+  public void onParentRow(ParentRowEvent event) {
+    maybeRefresh(getGridPresenter(), filterSupplier);
+    super.onParentRow(event);
+  }
+
+  public TradeActGrid setFilterSupplier(Supplier<Filter> filterSupplier) {
+    this.filterSupplier = filterSupplier;
+    return this;
   }
 
   private void buildInvoice() {
@@ -1289,5 +1309,12 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
       Queries.deleteRows(VIEW_TRADE_ACTS, acts,
           result -> DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS));
     });
+  }
+
+  public static void maybeRefresh(GridPresenter presenter, Supplier<Filter> supplier) {
+    if (BeeUtils.allNotNull(presenter, supplier)) {
+      presenter.getDataProvider().setDefaultParentFilter(supplier.get());
+      presenter.handleAction(Action.REFRESH);
+    }
   }
 }

@@ -1,8 +1,7 @@
 package com.butent.bee.server.modules.trade;
 
-import com.butent.bee.client.data.Data;
+import com.butent.bee.server.data.*;
 import com.butent.bee.shared.data.value.TimeOfDayValue;
-import com.butent.bee.shared.time.AbstractDate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
@@ -21,13 +20,8 @@ import static com.butent.bee.shared.time.TimeUtils.*;
 
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
-import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
-import com.butent.bee.server.data.DataEventHandler;
-import com.butent.bee.server.data.QueryServiceBean;
-import com.butent.bee.server.data.SystemBean;
-import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.AdministrationModuleBean;
@@ -601,6 +595,26 @@ public class TradeActBean implements HasTimerService {
         }
       }
 
+    });
+
+    BeeView.registerConditionProvider(FILTER_TRADE_ACTS, (view, args) -> {
+      IsCondition clause;
+      Long item = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, 0));
+
+      if (DataUtils.isId(item)) {
+        SqlSelect query = new SqlSelect().setDistinctMode(true)
+          .addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT)
+          .addFrom(TBL_TRADE_ACTS)
+          .addFromInner(TBL_TRADE_ACT_ITEMS,
+            SqlUtils.and(sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS,
+              COL_TRADE_ACT)))
+          .setWhere(SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_ITEM, item));
+
+        clause = SqlUtils.in(view.getSourceAlias(), view.getSourceIdName(), query);
+      } else {
+        clause = SqlUtils.sqlFalse();
+      }
+      return clause;
     });
   }
 
