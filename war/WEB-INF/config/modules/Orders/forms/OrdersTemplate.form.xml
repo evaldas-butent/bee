@@ -15,8 +15,8 @@
       </row>
 
       <row>
-        <Label for="Series" style="&lbl;" class="bee-required" />
-        <DataSelector source="Series" newRowEnabled="true" style="width: &inpw;" required="true" />
+        <Label for="Series" style="&lbl;" />
+        <DataSelector source="Series" newRowEnabled="true" style="width: &inpw;" />
 
         <Label for="Number" visible="true" style="&lbl;" />
         <InputText source="Number" style="&inpw;" visible="true" />
@@ -34,7 +34,7 @@
         <Label for="Company" visible="true" style="&lbl;" />
         <DataSelector source="Company" style="&inpw;" visible="true" choiceColumns="Name TypeName"
           renderColumns="CompanyName TypeName" />
-        
+
         <Label for="Contact" style="&lbl;" />
         <DataSelector source="Contact" newRowEnabled="false" style="&inpw;" renderColumns="ContactFirstName ContactLastName"
           choiceColumns="FirstName LastName CompanyName" options="Company" />

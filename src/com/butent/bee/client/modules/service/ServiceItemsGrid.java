@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.cars.CarsConstants.COL_RESERVE;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
@@ -26,6 +27,7 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.CustomAction;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
@@ -36,6 +38,8 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.DateValue;
+import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
@@ -45,16 +49,19 @@ import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.function.BiConsumer;
 
 public class ServiceItemsGrid extends OrderItemsGrid {
 
   private ServiceItemsPicker picker;
+  private CustomAction template = new CustomAction(FontAwesome.CUBES, ev -> addItemsFromTemplate());
 
   @Override
   public void afterCreateEditor(String source, Editor editor, boolean embedded) {
@@ -70,6 +77,14 @@ public class ServiceItemsGrid extends OrderItemsGrid {
     }
 
     super.afterCreateEditor(source, editor, embedded);
+  }
+
+  @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    super.afterCreatePresenter(presenter);
+
+    template.setTitle("Šablonai");
+    presenter.getHeader().addCommandItem(template);
   }
 
   @Override
@@ -143,6 +158,7 @@ public class ServiceItemsGrid extends OrderItemsGrid {
       getInvoice().add(new InvoiceCreator(VIEW_SERVICE_SALES,
           Filter.equals(COL_SERVICE_MAINTENANCE, getOrderForm())));
     }
+    template.setVisible(DataUtils.isId(getOrderForm()));
   }
 
   @Override
@@ -173,7 +189,7 @@ public class ServiceItemsGrid extends OrderItemsGrid {
     OperationType operationType = OperationType.SALE;
     Long serviceObject = parentForm.getLongValue(COL_SERVICE_OBJECT);
     Long repairer = BeeUtils.nvl(Data.getLong(COL_SERVICE_MAINTENANCE, parentForm.getActiveRow(),
-      "RepairerCompanyPerson"), BeeKeeper.getUser().getUserData().getCompanyPerson());
+        "RepairerCompanyPerson"), BeeKeeper.getUser().getUserData().getCompanyPerson());
 
     getVatPercent(Global.getParameterRelation(PRM_SERVICE_OPERATION), (vatMode, vatPercent) ->
         Global.getParameterRelation(PRM_CURRENCY, (currency, currencyName) -> {
@@ -217,6 +233,51 @@ public class ServiceItemsGrid extends OrderItemsGrid {
             Queries.insertRows(rowSet, new DataChangeCallback(rowSet.getViewName()));
           });
         }));
+  }
+
+  private void addItemsFromTemplate() {
+    template.running();
+
+    Queries.getRowSet(VIEW_ORDERS_TEMPLATES, null, templateRs -> {
+      if (!templateRs.isEmpty()) {
+        int nameIdx = templateRs.getColumnIndex(COL_TEMPLATE);
+        Map<String, Long> values = new TreeMap<>();
+        templateRs.forEach(beeRow -> values.put(beeRow.getString(nameIdx), beeRow.getId()));
+        List<String> choices = new ArrayList<>(values.keySet());
+
+        Global.choice("Pasirinkite šabloną", null, choices,
+            idx -> Queries.getRowSet(VIEW_ORDER_TMPL_ITEMS, null,
+                Filter.equals(COL_TEMPLATE, values.get(choices.get(idx))), itemsRs -> {
+                  String view = getViewName();
+                  List<String> cols = Arrays.asList(COL_ITEM, COL_ITEM_ARTICLE,
+                      COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_SERVICE_OBJECT,
+                      COL_SERVICE_MAINTENANCE);
+
+                  FormView parentForm = ViewHelper.getForm(getGridView());
+                  Long serviceObject = parentForm.getLongValue(COL_SERVICE_OBJECT);
+                  Long docId = parentForm.getActiveRowId();
+                  BeeRowSet newRs = new BeeRowSet(view, Data.getColumns(view, cols));
+
+                  itemsRs.forEach(beeRow -> {
+                    BeeRow newRow = newRs.addEmptyRow();
+                    newRow.setValue(newRs.getColumnIndex(COL_SERVICE_OBJECT), serviceObject);
+                    newRow.setValue(newRs.getColumnIndex(COL_SERVICE_MAINTENANCE), docId);
+
+                    cols.stream()
+                        .filter(s ->
+                            !BeeUtils.inList(s, COL_SERVICE_OBJECT, COL_SERVICE_MAINTENANCE))
+                        .forEach(col -> newRow.setValue(newRs.getColumnIndex(col),
+                            Data.getString(VIEW_ORDER_TMPL_ITEMS, beeRow, col)));
+                  });
+                  if (!DataUtils.isEmpty(newRs)) {
+                    Queries.insertRows(newRs, result -> getGridPresenter().refresh(false, true));
+                  }
+                }));
+      } else {
+        getGridView().notifyWarning(Localized.dictionary().noData());
+      }
+      template.idle();
+    });
   }
 
   private static void getVatPercent(Long operation, BiConsumer<TradeVatMode, Double> vatConsumer) {
