@@ -1,7 +1,8 @@
 package com.butent.bee.client.modules.service;
 
+import com.butent.bee.client.grid.GridPanel;
+import com.butent.bee.client.modules.trade.acts.TradeActGrid;
 import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -20,6 +21,8 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TA_OBJECT;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TA_RUN;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.FILTER_TRADE_ACTS;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.GRID_TRADE_ACTS;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.VIEW_TRADE_ACT_SERVICES;
 
 import com.butent.bee.client.BeeKeeper;
@@ -79,6 +82,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.function.Supplier;
 
 public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickHandler,
     RowActionEvent.Handler, SelectorEvent.Handler, RowUpdateEvent.Handler, DataChangeEvent.Handler {
@@ -238,6 +242,10 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
       relations = (Relations) widget;
     } else if (widget instanceof FaLabel && BeeUtils.same(name, "NewItem")) {
         ((FaLabel) widget).addClickHandler(clickEvent -> fillNewItemWithValues());
+    } else if (widget instanceof GridPanel && BeeUtils.same(name, GRID_TRADE_ACTS)) {
+      Supplier<Filter> filterSupplier = () -> Filter.custom(FILTER_TRADE_ACTS, Data.getLong(VIEW_SERVICE_OBJECTS, getActiveRow(), COL_ITEM));
+      ((GridPanel) widget).setGridInterceptor(new TradeActGrid(null, filterSupplier) {
+      });
     }
   }
 

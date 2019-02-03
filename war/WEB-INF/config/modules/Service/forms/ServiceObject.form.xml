@@ -47,7 +47,7 @@
           </page>
           <page>
             <text>=tradeActs</text>
-            <ChildGrid name="TradeServiceObjects" relColumn="Item" source="Item" />
+            <GridPanel name="TradeActs" />
           </page>
         </TabbedPages>
       </FlowPanel>

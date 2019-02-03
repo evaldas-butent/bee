@@ -37,6 +37,8 @@ public final class TradeActConstants {
   public static final String SVC_REVERT_ACTS_STATUS_BEFORE_DELETE = "RevertActsStatusBeforeDelete";
   public static final String SVC_ASSIGN_RENT_PROJECT = "AssignRentProject";
 
+  public static final String FILTER_TRADE_ACTS = "filter_trade_acts";
+
   public static final String TBL_TRADE_ACTS = "TradeActs";
   public static final String TBL_TRADE_ACT_ITEMS = "TradeActItems";
   public static final String TBL_TRADE_ACT_SERVICES = "TradeActServices";

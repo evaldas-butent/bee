@@ -405,10 +405,14 @@
 }
 
 .bee-ChildGrid .bee-grid-TradeActs .bee-Tree,
-.bee-ChildGrid .bee-grid-TradeActs .bee-Splitter {
+.bee-ChildGrid .bee-grid-TradeActs .bee-Splitter,
+.bee-GridPanel > .bee-grid-TradeActs > .bee-Tree,
+.bee-GridPanel .bee-grid-TradeActs .bee-Splitter {
   display: none;
 }
-.bee-ChildGrid .bee-grid-TradeActs .bee-GridView {
+
+.bee-ChildGrid .bee-grid-TradeActs .bee-GridView,
+.bee-GridPanel .bee-grid-TradeActs .bee-GridView {
   left: 0 !important;
 }
 

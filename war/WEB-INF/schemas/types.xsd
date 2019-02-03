@@ -674,7 +674,6 @@
       <xs:enumeration value="TradePaymentTerms" />
       <xs:enumeration value="TradePayments" />
       <xs:enumeration value="TradeSeries" />
-      <xs:enumeration value="TradeServiceObjects" />
       <xs:enumeration value="TradeStatuses" />
       <xs:enumeration value="TradeStock" />
       <xs:enumeration value="TradeTags" />
