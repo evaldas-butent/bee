@@ -29,7 +29,7 @@
     <DataColumn name="Paid" />
     <DataColumn name="Debt" format="0.00" />
 
-    <DataColumn name="Exported" />
+    <DataColumn name="Exported" editInPlace="true" />
 
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
 

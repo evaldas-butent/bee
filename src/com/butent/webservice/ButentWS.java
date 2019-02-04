@@ -71,6 +71,7 @@ public final class ButentWS {
     }
     dispatch = service.createDispatch(portName, SOAPMessage.class, Service.Mode.MESSAGE);
     dispatch.getRequestContext().put(Dispatch.SOAPACTION_USE_PROPERTY, Boolean.TRUE);
+    dispatch.getRequestContext().put("javax.xml.ws.client.receiveTimeout", "300000");
   }
 
   public static ButentWS connect(String address, String login, String pass) throws BeeException {
