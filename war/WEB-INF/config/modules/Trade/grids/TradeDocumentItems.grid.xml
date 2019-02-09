@@ -100,9 +100,8 @@
     <IdColumn name="Id" visible="false" />
     <DataColumn name="Parent" visible="false" />
 
-    <RelColumn name="ServiceMaintenanceID" source="ServiceMaintenance" label="Remonto ID"
-               choiceColumns="ID Date CompanyName ObjectName" renderColumns="ServiceMaintenance" />
-    <RelColumn name="ServiceMaintenance" editEnabled="true" readOnly="true" />
+    <RelColumn name="ServiceMaintenance" choiceColumns="ID Date CompanyName ObjectName"
+               editEnabled="true" />
   </g:columns>
 
   <g:rowMessage>

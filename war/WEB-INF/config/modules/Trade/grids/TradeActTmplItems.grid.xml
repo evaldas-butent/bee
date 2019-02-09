@@ -11,7 +11,26 @@
 
   <xi:include href="columns/TradeActQuantity.columns.xml" />
   <xi:include href="columns/TradeActWeight.columns.xml" />
-  <xi:include href="columns/TradeActPrice.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="Price" visible="true">
+      <dynStyle>
+        <ui:inline>
+          background-color: #fcc;
+        </ui:inline>
+        <ui:expression>!(row.Price)</ui:expression>
+      </dynStyle>
+      <dynStyle>
+        <ui:class>bee-ta-command-apply-rent</ui:class>
+        <ui:expression>(row.IsRentalPrice)</ui:expression>
+      </dynStyle>
+      <dynStyle>
+        <ui:class>bee-ta-command-apply-tariff</ui:class>
+        <ui:expression>(row.IsApplyTariff)</ui:expression>
+      </dynStyle>
+      <footer expression="row.Quantity * row.Price" />
+    </DataColumn>
+  </g:columns>
 
   <xi:include href="columns/TradeActDiscount.columns.xml" />
   <xi:include href="columns/TradeActVat.columns.xml" />
