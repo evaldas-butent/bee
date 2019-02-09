@@ -470,6 +470,7 @@
       <xs:enumeration value="Locations" />
       <xs:enumeration value="LossReasons" />
       <xs:enumeration value="Maintenance" />
+      <xs:enumeration value="MaintenanceDocumentItems" />
       <xs:enumeration value="MaintenanceFiles" />
       <xs:enumeration value="MaintenancePayroll" />
       <xs:enumeration value="MaintenanceStates" />

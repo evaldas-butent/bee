@@ -34,5 +34,8 @@
     <Text name="Note" label="=trdNote" />
 
     <Relation name="Parent" relation="TradeDocumentItems" label="=captionPid" />
+
+    <Relation name="ServiceMaintenance" relation="ServiceMaintenance" cascade="SET_NULL"
+              label="Remontas" />
   </Fields>
 </Table>

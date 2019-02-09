@@ -1,10 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
 
-      name="TradeDocumentItems" source="TradeDocumentItems" caption="=trdDocumentItems"
+      name="MaintenanceDocumentItems" source="TradeDocumentItems" caption="=trdDocumentItems"
 >
   <Columns>
+    <SimpleColumn name="ServiceMaintenance" />
+
     <SimpleColumn name="TradeDocument" />
+    <SimpleJoin name="TradeDocument" joinType="INNER">
+      <SimpleColumn name="Date" />
+      <SimpleColumn name="Series" />
+      <SimpleColumn name="Number" />
+
+      <SimpleJoin name="Operation" joinType="LEFT">
+        <SimpleColumn name="OperationName" />
+        <SimpleColumn name="OperationType" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Phase" />
+    </SimpleJoin>
 
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="LEFT" name="Item">
@@ -86,20 +100,8 @@
     </SimpleJoin>
 
     <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
-    <SimpleJoin name="TradeAccounts" joinType="LEFT">
-      <xi:include href="../../Classifiers/views/viewcolumns/TradeAccounts.viewcolumns.xml" />
-    </SimpleJoin>
 
     <SimpleColumn name="Note" />
-
     <SimpleColumn name="Parent" />
-
-    <SimpleColumn name="ServiceMaintenance" />
-    <SimpleJoin name="ServiceMaintenance" joinType="LEFT">
-      <SimpleColumn name="Date" />
-      <SimpleJoin joinType="LEFT" name="Company">
-        <SimpleColumn name="Name" alias="CompanyName" />
-      </SimpleJoin>
-    </SimpleJoin>
   </Columns>
 </View>

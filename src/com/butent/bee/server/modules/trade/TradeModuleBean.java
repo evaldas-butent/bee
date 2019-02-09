@@ -3808,7 +3808,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             COL_TRADE_ITEM_WAREHOUSE_FROM, COL_TRADE_ITEM_WAREHOUSE_TO,
             COL_TRADE_ITEM_EMPLOYEE, COL_TRADE_ITEM_VEHICLE,
             Dimensions.COL_EXTRA_DIMENSIONS, TradeAccounts.COL_TRADE_ACCOUNTS,
-            COL_TRADE_ITEM_NOTE)
+            COL_TRADE_ITEM_NOTE, COL_SERVICE_MAINTENANCE)
         .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
         .setWhere(SqlUtils.and(itemCondition, SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE)))
@@ -3920,6 +3920,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             tdiValues.put(COL_TRADE_ITEM_VEHICLE, itemRow.getLong(COL_TRADE_ITEM_VEHICLE));
 
             tdiValues.put(COL_TRADE_ITEM_NOTE, itemRow.getValue(COL_TRADE_ITEM_NOTE));
+            tdiValues.put(COL_SERVICE_MAINTENANCE, itemRow.getValue(COL_SERVICE_MAINTENANCE));
 
             Long edId = itemRow.getLong(Dimensions.COL_EXTRA_DIMENSIONS);
             if (DataUtils.isId(edId)) {

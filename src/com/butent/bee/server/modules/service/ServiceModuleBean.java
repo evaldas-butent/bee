@@ -1098,6 +1098,15 @@ public class ServiceModuleBean implements BeeModule {
         .addConstant(COL_SERVICE_ITEM, id)
         .addConstant(COL_TRADE_ITEM_QUANTITY, qty)));
 
+    Long maintenanceId = qs.getLong(new SqlSelect()
+        .addMax(TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE)
+        .addFrom(TBL_SERVICE_ITEMS)
+        .setWhere(sys.idInList(TBL_SERVICE_ITEMS, items.keySet())));
+
+    qs.updateData(new SqlUpdate(TBL_TRADE_DOCUMENT_ITEMS)
+        .addConstant(COL_SERVICE_MAINTENANCE, maintenanceId)
+        .setWhere(SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT, tradeId)));
+
     return ResponseObject.response(tradeId);
   }
 

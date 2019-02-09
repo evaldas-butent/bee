@@ -31,9 +31,13 @@
             <text>=goods</text>
             <ChildGrid name="ServiceItems" relColumn="ServiceMaintenance" />
           </page>
-          <page>
+          <page visible="false">
             <text>=trInvoices</text>
             <GridPanel name="TradeDocuments" child="true" parent="{form}" />
+          </page>
+          <page>
+            <text>Sąskaitų prekės</text>
+            <ChildGrid name="MaintenanceDocumentItems" relColumn="ServiceMaintenance" />
           </page>
           <page module="Tasks">
             <text>=crmTasks</text>
