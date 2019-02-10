@@ -503,6 +503,10 @@ public class ScreenImpl implements Screen {
     if (userPanel instanceof NotificationUserPanel) {
       NotificationUserPanel notificationUserPanel = (NotificationUserPanel) userPanel;
 
+      if (notificationUserPanel.getInfoAction() != null) {
+        bindShellActivation(notificationUserPanel.getInfoAction());
+      }
+
       if (notificationUserPanel.getSettingsAction() != null) {
         notificationUserPanel.getSettingsAction()
             .addClickHandler(this::onUserSignatureClick);
@@ -612,8 +616,7 @@ public class ScreenImpl implements Screen {
     final String id = widget.getId();
 
     Binder.addClickHandler(widget.asWidget(), event -> {
-      if (EventUtils.hasModifierKey(event.getNativeEvent())
-          && EventUtils.isTargetId(event, id)) {
+      if (event.getNativeEvent().getCtrlKey() && EventUtils.isTargetId(event, id)) {
         activateShell();
       }
     });
@@ -705,7 +708,6 @@ public class ScreenImpl implements Screen {
     Pair<? extends IdentifiableWidget, Integer> north = initNorth();
     if (north != null) {
       p.addNorth(north.getA(), north.getB());
-      bindShellActivation(north.getA());
     }
 
     Pair<? extends IdentifiableWidget, Integer> south = initSouth();

@@ -376,6 +376,10 @@ public class NotificationUserPanel extends SimpleUserPanel {
     return settingsAction;
   }
 
+  public FaLabel getInfoAction() {
+    return infoAction;
+  }
+
   private void showPopup() {
     if (popup == null) {
       createPopup();
