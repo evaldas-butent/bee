@@ -45,5 +45,6 @@
       <footer aggregate="sum" />
     </CalcColumn>
 
+    <DataColumn name="Note" />
   </g:columns>
 </g:Grid>

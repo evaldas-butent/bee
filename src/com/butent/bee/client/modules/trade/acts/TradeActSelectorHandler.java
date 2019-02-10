@@ -124,7 +124,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
       }
 
       if (!BeeConst.isUndef(priceIndex)) {
-        Double price = actItem.getDouble(priceIndex);
+        Double price = null; // actItem.getDouble(priceIndex);
 
         if (BeeUtils.nonZero(price)) {
           if (DataUtils.isId(templCurrency) && DataUtils.isId(actCurrency)

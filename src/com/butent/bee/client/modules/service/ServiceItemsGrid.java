@@ -251,7 +251,7 @@ public class ServiceItemsGrid extends OrderItemsGrid {
                   String view = getViewName();
                   List<String> cols = Arrays.asList(COL_ITEM, COL_ITEM_ARTICLE,
                       COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_SERVICE_OBJECT,
-                      COL_SERVICE_MAINTENANCE);
+                      COL_SERVICE_MAINTENANCE, COL_TRADE_ITEM_NOTE);
 
                   FormView parentForm = ViewHelper.getForm(getGridView());
                   Long serviceObject = parentForm.getLongValue(COL_SERVICE_OBJECT);
@@ -271,6 +271,14 @@ public class ServiceItemsGrid extends OrderItemsGrid {
                   });
                   if (!DataUtils.isEmpty(newRs)) {
                     Queries.insertRows(newRs, result -> getGridPresenter().refresh(false, true));
+                  }
+                  String notes = templateRs.getStringByRowId(values.get(choices.get(idx)),
+                      COL_NOTES);
+
+                  if (!BeeUtils.isEmpty(notes)) {
+                    FormView form = ViewHelper.getForm(getGridView());
+                    form.updateCell(COL_MAINTENANCE_DESCRIPTION, BeeUtils.join(BeeConst.STRING_EOL,
+                        form.getStringValue(COL_MAINTENANCE_DESCRIPTION), notes));
                   }
                 }));
       } else {

@@ -30,7 +30,7 @@
             <ChildGrid name="Maintenance" relColumn="ServiceObject" />
           </page>
           <page>
-            <text>=svcInvoices</text>
+            <text>Nuomos sąskaitos</text>
             <ChildGrid name="ObjectInvoices" relColumn="ServiceObject" />
           </page>
           <page>
