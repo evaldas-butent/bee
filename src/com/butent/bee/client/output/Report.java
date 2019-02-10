@@ -779,7 +779,7 @@ public enum Report implements HasWidgetSupplier {
 
     @Override
     public String getReportCaption() {
-      return Localized.dictionary().svcPayrollReport();
+      return "Remontų ataskaita";
     }
 
     @Override

@@ -13,7 +13,7 @@
       <SimpleJoin name="ServiceMaintenance" joinType="LEFT">
         <SimpleColumn name="Date" />
       </SimpleJoin>
-      <SimpleColumn name="Repairer" editable="true" />
+      <SimpleColumn name="Repairer" />
       <SimpleJoin name="Repairer" joinType="LEFT">
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn alias="RepairerFirstName" name="FirstName" />
@@ -25,10 +25,10 @@
         <AggregateColumn name="Quantity" alias="Completed" aggregate="SUM" />
       </ExternalJoin>
 
-      <SimpleColumn name="Reserve" editable="true" />
-      <SimpleColumn name="Article" editable="true" />
+      <SimpleColumn name="Reserve" />
+      <SimpleColumn name="Article" />
 
-      <xi:include href="../../Administration/views/viewcolumns/EditableDimensions.viewcolumns.xml" />
+      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
     </SimpleJoin>
 
     <SimpleColumn name="Item" />

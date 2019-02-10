@@ -1745,9 +1745,9 @@ public class ServiceModuleBean implements BeeModule {
             sys.joinTables(TBL_SERVICE_MAINTENANCE, TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE))
         .addFromLeft(TBL_MAINTENANCE_PAYROLL,
             sys.joinTables(TBL_SERVICE_ITEMS, TBL_MAINTENANCE_PAYROLL, COL_SERVICE_ITEM))
-        .addFromLeft(TBL_ORDER_ITEMS,
+        .addFromInner(TBL_ORDER_ITEMS,
             sys.joinTables(TBL_SERVICE_ITEMS, TBL_ORDER_ITEMS, COL_SERVICE_ITEM))
-        .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
+        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
         .addFromLeft(TBL_COMPANIES, COL_TRADE_SUPPLIER,
             sys.joinTables(TBL_COMPANIES, COL_TRADE_SUPPLIER, TBL_ORDER_ITEMS, COL_TRADE_SUPPLIER))
 
