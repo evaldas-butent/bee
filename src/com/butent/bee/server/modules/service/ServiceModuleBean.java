@@ -119,6 +119,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -1694,32 +1695,19 @@ public class ServiceModuleBean implements BeeModule {
     String TRANSPORT = "Transport";
     String dim1 = getTableName(1);
     String dim2 = getTableName(2);
-    String dimAls = SqlUtils.uniqueName();
-    String dim1Als = SqlUtils.uniqueName();
-    String dim2Als = SqlUtils.uniqueName();
+    String dim1col = getNameColumn(1);
+    String dim2col = getNameColumn(2);
 
     IsExpression object = SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(TBL_SERVICE_OBJECTS,
         COL_MODEL), "''"), "' '", SqlUtils.nvl(SqlUtils.field(TBL_SERVICE_OBJECTS, COL_ADDRESS),
         "''"));
     IsExpression transport = SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(TRANSPORT, COL_MODEL),
         "''"), "' '", SqlUtils.nvl(SqlUtils.field(TRANSPORT, COL_ADDRESS), "''"));
-    IsExpression repairer = SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME),
-        "' '", SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''"));
 
+    //==== MAINTENANCE
     SqlSelect select = new SqlSelect()
-        .addFields(TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE, CarsConstants.COL_RESERVE,
-            COL_ITEM_ARTICLE)
-        .addFields(TBL_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_ITEM_PRICE, COL_TRADE_DISCOUNT,
-            "SupplierTerm", COL_TRADE_ITEM_NOTE, COL_SERVICE_ITEM)
-        .addEmptyDouble(COL_COMPLETED)
-        .addField(COL_TRADE_SUPPLIER, COL_COMPANY_NAME, COL_TRADE_SUPPLIER)
-        .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_COST)
-
-        .addFields(TBL_MAINTENANCE_PAYROLL, COL_MAINTENANCE_DATE,
-            COL_PAYROLL_DATE, COL_PAYROLL_BASIC_AMOUNT, COL_PAYROLL_TARIFF, COL_PAYROLL_SALARY,
-            COL_PAYROLL_CONFIRMED, COL_PAYROLL_CONFIRMATION_DATE, COL_NOTES)
-        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, ALS_CURRENCY_NAME)
-
+        .addField(TBL_SERVICE_MAINTENANCE, sys.getIdName(TBL_SERVICE_MAINTENANCE),
+            COL_SERVICE_MAINTENANCE)
         .addFields(TBL_SERVICE_MAINTENANCE, COL_WARRANTY_MAINTENANCE)
         .addField(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE, COL_CREATOR + COL_MAINTENANCE_DATE)
         .addField(TBL_MAINTENANCE_TYPES, COL_TYPE_NAME, COL_MAINTENANCE_TYPE)
@@ -1727,45 +1715,16 @@ public class ServiceModuleBean implements BeeModule {
         .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY)
         .addExpr(object, COL_SERVICE_OBJECT)
         .addExpr(transport, TRANSPORT)
-        .addExpr(repairer, COL_REPAIRER)
+        .addFields(dim1, dim1col)
+        .addFields(dim2, dim2col)
 
-        .addExpr(SqlUtils.nvl(SqlUtils.field(dim1, getNameColumn(1)),
-            SqlUtils.field(dim1Als, getNameColumn(1))), getNameColumn(1))
-        .addExpr(SqlUtils.nvl(SqlUtils.field(dim2, getNameColumn(2)),
-            SqlUtils.field(dim2Als, getNameColumn(2))), getNameColumn(2))
-
-        .addFrom(TBL_SERVICE_ITEMS)
-
-        .addFromLeft(TBL_EXTRA_DIMENSIONS,
-            sys.joinTables(TBL_EXTRA_DIMENSIONS, TBL_SERVICE_ITEMS, COL_EXTRA_DIMENSIONS))
-        .addFromLeft(dim1, sys.joinTables(dim1, TBL_EXTRA_DIMENSIONS, getRelationColumn(1)))
-        .addFromLeft(dim2, sys.joinTables(dim2, TBL_EXTRA_DIMENSIONS, getRelationColumn(2)))
-
-        .addFromInner(TBL_SERVICE_MAINTENANCE,
-            sys.joinTables(TBL_SERVICE_MAINTENANCE, TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE))
-        .addFromLeft(TBL_MAINTENANCE_PAYROLL,
-            sys.joinTables(TBL_SERVICE_ITEMS, TBL_MAINTENANCE_PAYROLL, COL_SERVICE_ITEM))
-        .addFromInner(TBL_ORDER_ITEMS,
-            sys.joinTables(TBL_SERVICE_ITEMS, TBL_ORDER_ITEMS, COL_SERVICE_ITEM))
-        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
-        .addFromLeft(TBL_COMPANIES, COL_TRADE_SUPPLIER,
-            sys.joinTables(TBL_COMPANIES, COL_TRADE_SUPPLIER, TBL_ORDER_ITEMS, COL_TRADE_SUPPLIER))
-
-        .addFromLeft(TBL_CURRENCIES,
-            sys.joinTables(TBL_CURRENCIES, TBL_MAINTENANCE_PAYROLL, COL_CURRENCY))
-
-        .addFromLeft(TBL_COMPANY_PERSONS,
-            sys.joinTables(TBL_COMPANY_PERSONS, TBL_SERVICE_ITEMS, COL_REPAIRER))
-        .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
-
+        .addFrom(TBL_SERVICE_MAINTENANCE)
         .addFromLeft(TBL_MAINTENANCE_TYPES,
             sys.joinTables(TBL_MAINTENANCE_TYPES, TBL_SERVICE_MAINTENANCE, COL_TYPE))
-
-        .addFromLeft(TBL_EXTRA_DIMENSIONS, dimAls, sys.joinTables(TBL_EXTRA_DIMENSIONS, dimAls,
-            TBL_MAINTENANCE_TYPES, COL_EXTRA_DIMENSIONS))
-        .addFromLeft(dim1, dim1Als, sys.joinTables(dim1, dim1Als, dimAls, getRelationColumn(1)))
-        .addFromLeft(dim2, dim2Als, sys.joinTables(dim2, dim2Als, dimAls, getRelationColumn(2)))
-
+        .addFromLeft(TBL_EXTRA_DIMENSIONS,
+            sys.joinTables(TBL_EXTRA_DIMENSIONS, TBL_MAINTENANCE_TYPES, COL_EXTRA_DIMENSIONS))
+        .addFromLeft(dim1, sys.joinTables(dim1, TBL_EXTRA_DIMENSIONS, getRelationColumn(1)))
+        .addFromLeft(dim2, sys.joinTables(dim2, TBL_EXTRA_DIMENSIONS, getRelationColumn(2)))
         .addFromLeft(VIEW_MAINTENANCE_STATES,
             sys.joinTables(VIEW_MAINTENANCE_STATES, TBL_SERVICE_MAINTENANCE, COL_STATE))
         .addFromLeft(TBL_COMPANIES,
@@ -1773,7 +1732,8 @@ public class ServiceModuleBean implements BeeModule {
         .addFromLeft(TBL_SERVICE_OBJECTS,
             sys.joinTables(TBL_SERVICE_OBJECTS, TBL_SERVICE_MAINTENANCE, COL_SERVICE_OBJECT))
         .addFromLeft(TBL_SERVICE_OBJECTS, TRANSPORT,
-            sys.joinTables(TBL_SERVICE_OBJECTS, TRANSPORT, TBL_SERVICE_MAINTENANCE, TRANSPORT));
+            sys.joinTables(TBL_SERVICE_OBJECTS, TRANSPORT, TBL_SERVICE_MAINTENANCE, TRANSPORT))
+        .setWhere(clause);
 
     BiFunction<String, String, IsExpression> addUser = (tbl, fld) -> {
       String users = SqlUtils.uniqueName();
@@ -1789,6 +1749,7 @@ public class ServiceModuleBean implements BeeModule {
       return SqlUtils.concat(SqlUtils.field(persons, COL_FIRST_NAME), "' '",
           SqlUtils.nvl(SqlUtils.field(persons, COL_LAST_NAME), "''"));
     };
+
     IsExpression creator = addUser.apply(TBL_SERVICE_MAINTENANCE, COL_CREATOR);
     select.addExpr(creator, COL_CREATOR);
     clause.add(report.getCondition(creator, COL_CREATOR));
@@ -1801,34 +1762,71 @@ public class ServiceModuleBean implements BeeModule {
     select.addExpr(repairer2, COL_REPAIRER + "2");
     clause.add(report.getCondition(repairer2, COL_REPAIRER + "2"));
 
-    IsExpression confirmedUser = addUser.apply(TBL_MAINTENANCE_PAYROLL,
-        COL_PAYROLL_CONFIRMED + COL_USER);
-    select.addExpr(confirmedUser, COL_PAYROLL_CONFIRMED + COL_USER);
-    clause.add(report.getCondition(confirmedUser, COL_PAYROLL_CONFIRMED + COL_USER));
-
-    clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_SERVICE_ITEMS,
-        COL_SERVICE_MAINTENANCE), SqlConstants.SqlDataType.STRING, 20, 0),
+    clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_SERVICE_MAINTENANCE,
+        sys.getIdName(TBL_SERVICE_MAINTENANCE)), SqlConstants.SqlDataType.STRING, 20, 0),
         COL_SERVICE_MAINTENANCE));
-    clause.add(report.getCondition(TBL_MAINTENANCE_PAYROLL, COL_MAINTENANCE_DATE));
-    clause.add(report.getCondition(TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_DATE));
-    clause.add(report.getCondition(TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_CONFIRMED));
-    clause.add(report.getCondition(TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_CONFIRMATION_DATE));
-    clause.add(report.getCondition(TBL_MAINTENANCE_PAYROLL, COL_NOTES));
-    clause.add(report.getCondition(SqlUtils.field(TBL_CURRENCIES, COL_CURRENCY_NAME),
-        ALS_CURRENCY_NAME));
     clause.add(report.getCondition(object, COL_SERVICE_OBJECT));
     clause.add(report.getCondition(transport, TRANSPORT));
-    clause.add(report.getCondition(repairer, COL_REPAIRER));
 
-    if (!usr.isAdministrator()) {
-      clause.add(SqlUtils.equals(TBL_SERVICE_ITEMS, COL_REPAIRER,
-          usr.getCompanyPerson(usr.getCurrentUserId())));
-    }
+    String maintenance = qs.sqlCreateTemp(select);
 
-    if (!clause.isEmpty()) {
-      select.setWhere(clause);
-    }
-    String tmp = qs.sqlCreateTemp(select);
+    List<String> maintenanceCols = Arrays.stream(qs.getData(new SqlSelect()
+        .addAllFields(maintenance)
+        .addFrom(maintenance)
+        .setWhere(SqlUtils.sqlFalse())).getColumnNames())
+        .filter(s -> !BeeUtils.inList(s, dim1col, dim2col))
+        .collect(Collectors.toList());
+
+    //==== MAINTENANCE ITEMS
+    select.reset()
+        .addFields(maintenance, maintenanceCols)
+        .addFields(TBL_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_ITEM_PRICE, COL_TRADE_DISCOUNT,
+            COL_TRADE_ITEM_NOTE)
+        .addFields(TBL_SERVICE_ITEMS, COL_ITEM_ARTICLE)
+        .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_COST)
+        .addExpr(SqlUtils.nvl(SqlUtils.field(dim1, dim1col),
+            SqlUtils.field(maintenance, dim1col)), dim1col)
+        .addExpr(SqlUtils.nvl(SqlUtils.field(dim2, dim2col),
+            SqlUtils.field(maintenance, dim2col)), dim2col)
+        .addEmptyDouble(COL_COMPLETED)
+        .addFields(TBL_ORDER_ITEMS, COL_SERVICE_ITEM)
+
+        .addFrom(maintenance)
+        .addFromInner(TBL_SERVICE_ITEMS,
+            SqlUtils.joinUsing(maintenance, TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE))
+        .addFromLeft(TBL_EXTRA_DIMENSIONS,
+            sys.joinTables(TBL_EXTRA_DIMENSIONS, TBL_SERVICE_ITEMS, COL_EXTRA_DIMENSIONS))
+        .addFromLeft(dim1, sys.joinTables(dim1, TBL_EXTRA_DIMENSIONS, getRelationColumn(1)))
+        .addFromLeft(dim2, sys.joinTables(dim2, TBL_EXTRA_DIMENSIONS, getRelationColumn(2)))
+        .addFromInner(TBL_ORDER_ITEMS,
+            sys.joinTables(TBL_SERVICE_ITEMS, TBL_ORDER_ITEMS, COL_SERVICE_ITEM))
+        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM));
+
+    //=== TRADE ITEMS
+    SqlSelect tradeSelect = new SqlSelect()
+        .addFields(maintenance, maintenanceCols)
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_ITEM_PRICE,
+            COL_TRADE_DISCOUNT, COL_TRADE_ITEM_NOTE)
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM_ARTICLE)
+        .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_COST)
+        .addExpr(SqlUtils.nvl(SqlUtils.field(dim1, dim1col),
+            SqlUtils.field(maintenance, dim1col)), dim1col)
+        .addExpr(SqlUtils.nvl(SqlUtils.field(dim2, dim2col),
+            SqlUtils.field(maintenance, dim2col)), dim2col)
+        .addEmptyDouble(COL_COMPLETED)
+        .addEmptyLong(COL_SERVICE_ITEM)
+
+        .addFrom(maintenance)
+        .addFromInner(TBL_TRADE_DOCUMENT_ITEMS,
+            SqlUtils.joinUsing(maintenance, TBL_TRADE_DOCUMENT_ITEMS, COL_SERVICE_MAINTENANCE))
+        .addFromLeft(TBL_EXTRA_DIMENSIONS,
+            sys.joinTables(TBL_EXTRA_DIMENSIONS, TBL_TRADE_DOCUMENT_ITEMS, COL_EXTRA_DIMENSIONS))
+        .addFromLeft(dim1, sys.joinTables(dim1, TBL_EXTRA_DIMENSIONS, getRelationColumn(1)))
+        .addFromLeft(dim2, sys.joinTables(dim2, TBL_EXTRA_DIMENSIONS, getRelationColumn(2)))
+        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM));
+
+    String tmp = qs.sqlCreateTemp(select.addUnion(tradeSelect));
+    qs.sqlDropTemp(maintenance);
 
     qs.updateData(new SqlUpdate(tmp)
         .addExpression(COL_COMPLETED, SqlUtils.field("als", COL_TRADE_ITEM_QUANTITY))
@@ -1839,7 +1837,45 @@ public class ServiceModuleBean implements BeeModule {
                 .addGroup(TBL_MAINTENANCE_INVOICES, COL_SERVICE_ITEM), "als",
             SqlUtils.joinUsing(tmp, "als", COL_SERVICE_ITEM)));
 
-    return report.getResultResponse(qs, tmp,
+    //=== MAINTENANCE PAYROLL
+    IsExpression repairer = SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME),
+        "' '", SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''"));
+
+    select.reset()
+        .addAllFields(tmp)
+        .addConstant(prm.getRelationInfo(PRM_CURRENCY).getB(), ALS_CURRENCY_NAME)
+        .addFields(TBL_ORDER_ITEMS, "SupplierTerm")
+        .addFields(TBL_SERVICE_ITEMS, CarsConstants.COL_RESERVE)
+        .addField(COL_TRADE_SUPPLIER, COL_COMPANY_NAME, COL_TRADE_SUPPLIER)
+        .addFields(TBL_MAINTENANCE_PAYROLL, COL_MAINTENANCE_DATE,
+            COL_PAYROLL_DATE, COL_PAYROLL_BASIC_AMOUNT, COL_PAYROLL_TARIFF, COL_PAYROLL_SALARY,
+            COL_PAYROLL_CONFIRMED, COL_PAYROLL_CONFIRMATION_DATE, COL_NOTES)
+        .addExpr(repairer, COL_REPAIRER)
+
+        .addFrom(tmp)
+        .addFromLeft(TBL_SERVICE_ITEMS, sys.joinTables(TBL_SERVICE_ITEMS, tmp, COL_SERVICE_ITEM))
+        .addFromLeft(TBL_MAINTENANCE_PAYROLL,
+            sys.joinTables(TBL_SERVICE_ITEMS, TBL_MAINTENANCE_PAYROLL, COL_SERVICE_ITEM))
+        .addFromLeft(TBL_ORDER_ITEMS,
+            sys.joinTables(TBL_SERVICE_ITEMS, TBL_ORDER_ITEMS, COL_SERVICE_ITEM))
+        .addFromLeft(TBL_COMPANIES, COL_TRADE_SUPPLIER,
+            sys.joinTables(TBL_COMPANIES, COL_TRADE_SUPPLIER, TBL_ORDER_ITEMS, COL_TRADE_SUPPLIER))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_SERVICE_ITEMS, COL_REPAIRER))
+        .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON));
+
+    IsExpression confirmedUser = addUser.apply(TBL_MAINTENANCE_PAYROLL,
+        COL_PAYROLL_CONFIRMED + COL_USER);
+    select.addExpr(confirmedUser, COL_PAYROLL_CONFIRMED + COL_USER);
+
+    if (!usr.isAdministrator()) {
+      select.setWhere(SqlUtils.equals(TBL_SERVICE_ITEMS, COL_REPAIRER,
+          usr.getCompanyPerson(usr.getCurrentUserId())));
+    }
+    String tmp2 = qs.sqlCreateTemp(select);
+    qs.sqlDropTemp(tmp);
+
+    return report.getResultResponse(qs, tmp2,
         Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)));
   }
 

@@ -782,6 +782,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
   @Override
   public SqlSelect reset() {
     resetFields();
+    getFrom().clear();
     resetGroup();
     resetOrder();
     resetUnion();
