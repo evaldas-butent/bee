@@ -265,8 +265,16 @@ public class CustomTradeModuleBean {
               COL_TRADE_DOCUMENT_ITEM_VAT, COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT,
               COL_TRADE_DOCUMENT_ITEM_DISCOUNT, COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT,
               COL_TRADE_ITEM_ARTICLE, COL_TRADE_ITEM_NOTE)
+          .addField(getTableName(1), getNameColumn(1), ACTION)
+          .addField(getTableName(2), getNameColumn(2), CENTER)
           .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
           .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
+          .addFromLeft(TBL_EXTRA_DIMENSIONS,
+              sys.joinTables(TBL_EXTRA_DIMENSIONS, TBL_TRADE_DOCUMENT_ITEMS, COL_EXTRA_DIMENSIONS))
+          .addFromLeft(getTableName(1),
+              sys.joinTables(getTableName(1), TBL_EXTRA_DIMENSIONS, getRelationColumn(1)))
+          .addFromLeft(getTableName(2),
+              sys.joinTables(getTableName(2), TBL_EXTRA_DIMENSIONS, getRelationColumn(2)))
           .setWhere(SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT, documentId));
 
       TradeVatMode vatMode = invoice.getEnum(COL_TRADE_DOCUMENT_VAT_MODE, TradeVatMode.class);
@@ -297,6 +305,8 @@ public class CustomTradeModuleBean {
         }
         wsItem.setArticle(item.getValue(COL_TRADE_ITEM_ARTICLE));
         wsItem.setNote(item.getValue(COL_TRADE_ITEM_NOTE));
+        wsItem.setAction(item.getValue(ACTION));
+        wsItem.setCenter(item.getValue(CENTER));
       }
       if (response.hasErrors()) {
         break;

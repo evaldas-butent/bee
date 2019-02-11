@@ -22,13 +22,24 @@ public class WSDocument {
     private String discount;
     private String discountPercent;
 
+    private String action;
+    private String center;
+
     private WSDocumentItem(String itemId, String quantity) {
       this.itemId = itemId;
       this.quantity = quantity;
     }
 
+    public void setAction(String action) {
+      this.action = action;
+    }
+
     public void setArticle(String article) {
       this.article = article;
+    }
+
+    public void setCenter(String center) {
+      this.center = center;
     }
 
     public void setDiscount(String discountAmount, Boolean isPercent) {
@@ -129,8 +140,8 @@ public class WSDocument {
           .append(XmlUtils.tag("terminas", term))
           .append(XmlUtils.tag("valiuta", currency))
           .append(XmlUtils.tag("padalinys", department))
-          .append(XmlUtils.tag("veikla", action))
-          .append(XmlUtils.tag("centras", center))
+          .append(XmlUtils.tag("veikla", BeeUtils.notEmpty(item.action, action)))
+          .append(XmlUtils.tag("centras", BeeUtils.notEmpty(item.center, center)))
           .append(XmlUtils.tag("preke", item.itemId))
           .append(XmlUtils.tag("kiekis", item.quantity))
           .append(XmlUtils.tag("artikulas", item.article))
