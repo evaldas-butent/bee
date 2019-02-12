@@ -1086,7 +1086,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         TradeDocument doc = new TradeDocument(Global.getParameterRelation(PRM_SERVICE_OPERATION),
             TradeDocumentPhase.COMPLETED);
 
-        Map<Long, Double> data = new HashMap<>();
+        Set<Long> ids = new HashSet<>();
         Pair<TradeVatMode, TradeVatMode> vatMode = Pair.empty();
 
         items.forEach((row, input) -> {
@@ -1114,10 +1114,10 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
             tradeItem.setNote(Data.getString(view, row, COL_TRADE_ITEM_NOTE));
             tradeItem.setExtraDimensions(Dimensions.create(rs, row));
 
-            data.put(Data.getLong(view, row, COL_SERVICE_ITEM), qty);
+            ids.add(Data.getLong(view, row, COL_SERVICE_ITEM));
           }
         });
-        args.addDataItem(view, Codec.beeSerialize(data));
+        args.addDataItem(view, Codec.beeSerialize(ids));
 
         if (Objects.nonNull(vatMode.getB())) {
           getFormView().notifySevere("PVM+ požymis visoms prekėms turi būti vienodas");

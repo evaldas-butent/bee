@@ -1,11 +1,13 @@
 package com.butent.bee.server.modules.service;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
@@ -57,6 +59,7 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -211,13 +214,8 @@ public class ServiceModuleBean implements BeeModule {
       response = getItemsInfo(reqInfo);
 
     } else if (BeeUtils.same(svc, CarsConstants.SVC_CREATE_INVOICE)) {
-      TradeDocument doc = TradeDocument.restore(reqInfo.getParameter(VAR_DOCUMENT));
-      Map<Long, Double> items = new HashMap<>();
-
-      Codec.deserializeHashMap(reqInfo.getParameter(TBL_SERVICE_ITEMS))
-          .forEach((id, qty) -> items.put(BeeUtils.toLong(id), BeeUtils.toDouble(qty)));
-
-      response = createInvoice(doc, items);
+      response = createInvoice(TradeDocument.restore(reqInfo.getParameter(VAR_DOCUMENT)),
+          Codec.deserializeIdList(reqInfo.getParameter(TBL_SERVICE_ITEMS)));
 
     } else if (BeeUtils.same(svc, SVC_GET_REPAIRER_TARIFF)) {
       Long repairerId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_REPAIRER));
@@ -1059,7 +1057,7 @@ public class ServiceModuleBean implements BeeModule {
     return response;
   }
 
-  private ResponseObject createInvoice(TradeDocument document, Map<Long, Double> items) {
+  private ResponseObject createInvoice(TradeDocument document, Collection<Long> items) {
     OperationType opType = qs.getEnum(new SqlSelect()
             .addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE)
             .addFrom(TBL_TRADE_OPERATIONS)
@@ -1094,15 +1092,48 @@ public class ServiceModuleBean implements BeeModule {
     }
     Long tradeId = response.getResponseAsLong();
 
-    items.forEach((id, qty) -> qs.insertData(new SqlInsert(TBL_MAINTENANCE_INVOICES)
-        .addConstant(COL_TRADE_DOCUMENT, tradeId)
-        .addConstant(COL_SERVICE_ITEM, id)
-        .addConstant(COL_TRADE_ITEM_QUANTITY, qty)));
+    SimpleRowSet tradeItems = qs.getData(new SqlSelect()
+        .addField(TBL_TRADE_DOCUMENT_ITEMS, sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS),
+            COL_TRADE_DOCUMENT_ITEM)
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+        .setWhere(SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT, tradeId)));
+
+    Table<Long, Long, Double> srvItems = HashBasedTable.create();
+
+    SimpleRowSet serviceItems = qs.getData(new SqlSelect()
+        .addFields(TBL_ORDER_ITEMS, COL_SERVICE_ITEM, COL_ITEM, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(TBL_ORDER_ITEMS)
+        .setWhere(SqlUtils.inList(TBL_ORDER_ITEMS, COL_SERVICE_ITEM, items)));
+
+    serviceItems.forEach(row -> srvItems.put(row.getLong(COL_ITEM), row.getLong(COL_SERVICE_ITEM),
+        row.getDouble(COL_TRADE_ITEM_QUANTITY)));
+
+    tradeItems.forEach(row -> {
+      Long itemId = row.getLong(COL_ITEM);
+      Long tradeItem = row.getLong(COL_TRADE_DOCUMENT_ITEM);
+      Holder<Double> qty = Holder.of(row.getDouble(COL_TRADE_ITEM_QUANTITY));
+
+      srvItems.row(itemId).forEach((serviceItem, serviceQty) -> {
+        Double quantity = BeeUtils.unbox(BeeUtils.min(serviceQty, qty.get()));
+
+        if (BeeUtils.isPositive(quantity)) {
+          qty.set(qty.get() - quantity);
+          srvItems.put(itemId, serviceItem, serviceQty - quantity);
+
+          qs.insertData(new SqlInsert(TBL_MAINTENANCE_INVOICES)
+              .addConstant(COL_TRADE_DOCUMENT, tradeId)
+              .addConstant(COL_TRADE_DOCUMENT_ITEM, tradeItem)
+              .addConstant(COL_SERVICE_ITEM, serviceItem)
+              .addConstant(COL_TRADE_ITEM_QUANTITY, quantity));
+        }
+      });
+    });
 
     Long maintenanceId = qs.getLong(new SqlSelect()
         .addMax(TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE)
         .addFrom(TBL_SERVICE_ITEMS)
-        .setWhere(sys.idInList(TBL_SERVICE_ITEMS, items.keySet())));
+        .setWhere(sys.idInList(TBL_SERVICE_ITEMS, items)));
 
     qs.updateData(new SqlUpdate(TBL_TRADE_DOCUMENT_ITEMS)
         .addConstant(COL_SERVICE_MAINTENANCE, maintenanceId)
@@ -1823,7 +1854,11 @@ public class ServiceModuleBean implements BeeModule {
             sys.joinTables(TBL_EXTRA_DIMENSIONS, TBL_TRADE_DOCUMENT_ITEMS, COL_EXTRA_DIMENSIONS))
         .addFromLeft(dim1, sys.joinTables(dim1, TBL_EXTRA_DIMENSIONS, getRelationColumn(1)))
         .addFromLeft(dim2, sys.joinTables(dim2, TBL_EXTRA_DIMENSIONS, getRelationColumn(2)))
-        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM));
+        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
+        .setWhere(SqlUtils.not(SqlUtils.in(TBL_TRADE_DOCUMENT_ITEMS,
+            sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS), TBL_MAINTENANCE_INVOICES,
+            COL_TRADE_DOCUMENT_ITEM, SqlUtils.notNull(TBL_MAINTENANCE_INVOICES,
+                COL_TRADE_DOCUMENT_ITEM))));
 
     String tmp = qs.sqlCreateTemp(select.addUnion(tradeSelect));
     qs.sqlDropTemp(maintenance);
