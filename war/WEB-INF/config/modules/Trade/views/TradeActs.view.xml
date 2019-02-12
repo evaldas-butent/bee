@@ -49,6 +49,8 @@
     <SimpleJoin joinType="LEFT" name="Status">
       <SimpleColumn name="StatusName" />
       <SimpleColumn name="StatusActive" />
+      <SimpleColumn name="PhaseCompleted" />
+      <SimpleColumn name="PhaseApproved" />
       <SimpleColumn name="Background" alias="StatusBackground" />
       <SimpleColumn name="Foreground" alias="StatusForeground" />
     </SimpleJoin>

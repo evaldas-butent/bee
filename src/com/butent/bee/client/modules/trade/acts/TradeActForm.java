@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.trade.acts;
 
 import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.widget.*;
+import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
@@ -604,7 +605,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
   boolean validateBeforeSave(FormView form, IsRow row, boolean beforeSave) {
      return checkMultiReturnItems(form, row, beforeSave)
-            && TradeActValidator.validateTradeActForm(form, row, form.getViewName())
+            && TradeActValidator.validateTradeActForm(form, getItemsGrid(row), row, form.getViewName())
             && createReqFields(form, !TradeActUtils.getMultiReturnData(row).isNull());
   }
 
@@ -682,6 +683,12 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     }
 
     return headerView;
+  }
+
+  private GridView getItemsGrid(IsRow row) {
+    return TradeActKind.RENT_PROJECT.equals(getKind(row))
+            ? ViewHelper.getChildGrid(getFormView().asWidget(), "RPTradeActItems")
+            : ViewHelper.getChildGrid(getFormView().asWidget(), GRID_TRADE_ACT_ITEMS);
   }
 
   private TradeActKind getKind(IsRow row) {
@@ -862,6 +869,14 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
   private boolean isReturnAct(IsRow row) {
     return TradeActKind.RETURN == getKind(row);
+  }
+
+  private boolean isStatusPhaseApproved(IsRow row) {
+    return BeeUtils.unbox(row.getBoolean(getDataIndex(TradeDocumentPhase.APPROVED.getStatusColumnName())));
+  }
+
+  private boolean isStatusPhaseCompleted(IsRow row) {
+    return BeeUtils.unbox(row.getBoolean(getDataIndex(TradeDocumentPhase.COMPLETED.getStatusColumnName())));
   }
 
   private void onCommandComposeClick(IsRow row) {
