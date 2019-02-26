@@ -25,4 +25,54 @@
     <Text name="Note" label="=note" />
     <Relation name="Sale" relation="Sales" cascade="SET_NULL" label="=trdInvoiceId" />
   </Fields>
+  <Triggers>
+    <Trigger timing="AFTER" events="INSERT UPDATE DELETE" scope="ROW">
+      <PostgreSql><![CDATA[
+DECLARE _id BIGINT;
+DECLARE _rId BIGINT;
+BEGIN
+  IF(TG_OP='DELETE') THEN
+    _id:=COALESCE(OLD."Parent", OLD."TradeAct");
+   ELSE
+    _id:=COALESCE(NEW."Parent", NEW."TradeAct");
+   END IF;
+
+   UPDATE "TradeActs" SET "RemainItemQuantity" = (
+      SELECT
+        SUM(COALESCE("Quantity", 0)) - COALESCE((
+              SELECT
+                SUM("ti"."Quantity")
+              FROM "TradeActs" AS "ta"
+              INNER JOIN "TradeActItems" AS "ti" ON "ta"."TradeActID" = "ti"."TradeAct"
+              WHERE "ti"."Parent" = _id AND "ta"."Kind" = 2
+             ), 0)
+      FROM "TradeActItems" WHERE "TradeAct" = _id
+    )
+   WHERE "TradeActID"=_id AND "Kind" IN (0, 1, 7);
+
+   _rId:=(SELECT
+      "ta1"."RentProject"
+     FROM "TradeActs" AS "ta1"
+     WHERE "ta1"."TradeActID" = _id AND "ta1"."RentProject" IS NOT NULL
+     LIMIT 1);
+
+   IF(_rId IS NULL) THEN
+      RETURN NULL;
+   END IF;
+
+   UPDATE "TradeActs" SET "RemainItemQuantity" = (
+      SELECT
+        SUM(COALESCE("ta2"."RemainItemQuantity", 0))
+      FROM "TradeActs" as "ta2"
+      WHERE ("ta2"."RentProject" =_rId) AND "ta2"."Kind" IN (0, 1, 7)
+    )
+   WHERE "TradeActID" = _rId AND "Kind" = 8;
+
+   RETURN NULL;
+END;
+      ]]></PostgreSql>
+      <MsSql></MsSql>
+      <Oracle></Oracle>
+    </Trigger>
+  </Triggers>
 </Table>

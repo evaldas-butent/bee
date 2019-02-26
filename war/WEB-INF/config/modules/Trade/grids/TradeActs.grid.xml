@@ -51,6 +51,12 @@
     <DataColumn name="Notes" />
 
     <DataColumn name="RegistrationNo" />
+    <DataColumn name="RemainItemQuantity">
+      <dynStyle>
+        <ui:inline>display:none</ui:inline>
+        <ui:expression>row.Kind == 2</ui:expression>
+      </dynStyle>
+    </DataColumn>
 
     <PropColumn name="TradeActItems" type="integer" caption="Prekių" label="Pavadinimas/artikulas"
                 filterSupplier="custom" filterOptions="TradeActItems" />

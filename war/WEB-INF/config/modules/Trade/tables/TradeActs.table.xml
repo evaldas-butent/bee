@@ -40,6 +40,7 @@
     <Relation name="RentProject" relation="TradeActs" label="Nuomos projektas" />
 
     <String name="RegistrationNo" label="=taRegistrationNo" precision="30" />
+    <Numeric name="RemainItemQuantity" precision="12" scale="3" defValue="NULL" label="=taQuantityRemained" />
   </Fields>
   <Constraints>
     <Unique fields="Series Number" />
