@@ -251,21 +251,25 @@ public class ServiceItemsGrid extends OrderItemsGrid {
                   String view = getViewName();
                   List<String> cols = Arrays.asList(COL_ITEM, COL_ITEM_ARTICLE,
                       COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_SERVICE_OBJECT,
-                      COL_SERVICE_MAINTENANCE, COL_TRADE_ITEM_NOTE);
+                      COL_SERVICE_MAINTENANCE, COL_TRADE_ITEM_NOTE, COL_REPAIRER);
 
                   FormView parentForm = ViewHelper.getForm(getGridView());
                   Long serviceObject = parentForm.getLongValue(COL_SERVICE_OBJECT);
                   Long docId = parentForm.getActiveRowId();
+                  Long repairer = BeeUtils.nvl(parentForm.getLongValue("RepairerCompanyPerson"),
+                      BeeKeeper.getUser().getUserData().getCompanyPerson());
+
                   BeeRowSet newRs = new BeeRowSet(view, Data.getColumns(view, cols));
 
                   itemsRs.forEach(beeRow -> {
                     BeeRow newRow = newRs.addEmptyRow();
                     newRow.setValue(newRs.getColumnIndex(COL_SERVICE_OBJECT), serviceObject);
                     newRow.setValue(newRs.getColumnIndex(COL_SERVICE_MAINTENANCE), docId);
+                    newRow.setValue(newRs.getColumnIndex(COL_REPAIRER), repairer);
 
                     cols.stream()
-                        .filter(s ->
-                            !BeeUtils.inList(s, COL_SERVICE_OBJECT, COL_SERVICE_MAINTENANCE))
+                        .filter(s -> !BeeUtils.inList(s, COL_SERVICE_OBJECT,
+                            COL_SERVICE_MAINTENANCE, COL_REPAIRER))
                         .forEach(col -> newRow.setValue(newRs.getColumnIndex(col),
                             Data.getString(VIEW_ORDER_TMPL_ITEMS, beeRow, col)));
                   });

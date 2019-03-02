@@ -405,7 +405,6 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
 
     CompoundFilter filter = Filter.and();
-    filter.add(Filter.isNull(COL_ITEM_IS_SERVICE));
 
     if (!BeeUtils.isEmpty(where)) {
       filter.add(Filter.restore(where));
