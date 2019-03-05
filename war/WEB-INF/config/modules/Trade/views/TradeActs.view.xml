@@ -41,6 +41,7 @@
     <SimpleColumn name="Operation" />
     <SimpleJoin joinType="LEFT" name="Operation">
       <SimpleColumn name="OperationName" />
+      <SimpleColumn name="ReturnedItems" alias="OperationReturnedItems"/>
       <SimpleColumn name="Background" alias="OperationBackground" />
       <SimpleColumn name="Foreground" alias="OperationForeground" />
     </SimpleJoin>

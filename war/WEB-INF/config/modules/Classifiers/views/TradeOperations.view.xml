@@ -41,6 +41,7 @@
     </SimpleJoin>
 
     <SimpleColumn name="IsDefault" />
+    <SimpleColumn name="ReturnedItems" />
 
     <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
     <SimpleJoin name="TradeAccounts" joinType="LEFT">

@@ -16,8 +16,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Objects;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_CONTACT;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_STATUS_NAME;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_ITEM_QUANTITY;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 public class TradeActValidator {
@@ -153,7 +152,7 @@ public class TradeActValidator {
         }
 
         // check is TA items all returned
-        valid = isAllItemsReturned(itemsGrid);
+        valid = isAllItemsReturned(row, viewName, itemsGrid);
 
         if (!valid && canNotify) {
             notify.notifySevere("Akto būsena", getStatusName(row, viewName), "negalima. Yra negrąžintų prekių");
@@ -190,6 +189,10 @@ public class TradeActValidator {
         return TradeActKeeper.getKind(viewName, row);
     }
 
+    private static boolean getOperationReturnedItems(IsRow row, String viewName) {
+        return BeeUtils.unbox(Data.getBoolean(viewName, row, ALS_OPERATION_RETURNED_ITEMS));
+    }
+
     private static String getRegistrationNo(IsRow row, String viewName) {
         return Data.getString(viewName, row, COL_TA_REGISTRATION_NO);
     }
@@ -210,7 +213,13 @@ public class TradeActValidator {
         return Data.getString(viewName, row, COL_STATUS_NAME);
     }
 
-    private static boolean isAllItemsReturned(GridView itemsGrid) {
+    private static boolean isAllItemsReturned(IsRow row, String viewName, GridView itemsGrid) {
+        boolean operationReturnedItems = getOperationReturnedItems(row, viewName);
+
+        if (!operationReturnedItems) {
+            return true;
+        }
+
         if (itemsGrid == null || !VIEW_TRADE_ACT_ITEMS.equals(itemsGrid.getViewName()) || itemsGrid.isEmpty()) {
             return true;
         }

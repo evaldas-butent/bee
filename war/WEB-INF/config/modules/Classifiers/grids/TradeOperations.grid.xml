@@ -25,6 +25,7 @@
     <DataColumn name="CashRegisterNo" />
 
     <DataColumn name="Join" module="Orders" />
+    <DataColumn name="ReturnedItems" module="Trade.Acts" />
 
     <RelColumn name="Series" visible="true" filterSupplier="list" editInPlace="true" />
     <DataColumn name="IsDefault" module="Trade.Acts" />
