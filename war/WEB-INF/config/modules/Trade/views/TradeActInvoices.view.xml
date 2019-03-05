@@ -25,6 +25,7 @@
           <SimpleColumn name="Number" alias="ContractNumber" />
           <SimpleColumn name="DocumentDate" />
         </SimpleJoin>
+        <SimpleColumn name="RentProject"/>
       </SimpleJoin>
 
       <SimpleColumn name="Item" />
@@ -35,6 +36,13 @@
         <SimpleColumn name="TimeUnit" />
       </SimpleJoin>
     </SimpleJoin>
+
+    <SimpleColumn name="RelRentAct" >
+      <x:nvl type="LONG">
+        <x:number>"RentProject"</x:number>
+        <x:number>"TradeAct"</x:number>
+      </x:nvl>
+    </SimpleColumn>
 
     <SimpleColumn name="DateFrom" />
     <SimpleColumn name="DateTo" />

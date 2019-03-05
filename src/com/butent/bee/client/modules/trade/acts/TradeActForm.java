@@ -952,6 +952,13 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         selPage = TradeActKind.RENT_PROJECT.equals(kind)
                 ? tabbedPages.getTabIndexByDataKey(VIEW_TRADE_ACT_ITEMS_GROUPED) : selPage;
       }
+      if(getTabWidgetByKey(VIEW_TRADE_ACT_INVOICES) != null) {
+        getTabWidgetByKey(VIEW_TRADE_ACT_INVOICES).setVisible(hasServices);
+      }
+
+      if(getTabWidgetByKey("RPTradeActInvoices") != null) {
+        getTabWidgetByKey("RPTradeActInvoices").setVisible(hasRelatedServices);
+      }
 
 
       if (tabbedPages != null) {

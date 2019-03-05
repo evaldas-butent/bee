@@ -194,9 +194,14 @@
         </ChildGrid>
       </page>
 
-      <page class="bee-ta-invoices-tab">
+      <page class="bee-ta-invoices-tab" key="TradeActInvoices">
         <text>=trdInvoices</text>
-        <ChildGrid name="TradeActInvoices" relColumn="TradeAct" disablable="false"/>
+        <ChildGrid style="height:100%" name="TradeActInvoices" relColumn="TradeAct" disablable="false" />
+      </page>
+
+      <page class="bee-ta-invoices-tab" key="RPTradeActInvoices">
+        <text>Proj. sąskaitos</text>
+        <ChildGrid style="height:100%" name="RPTradeActInvoices" gridName="TradeActInvoices" relColumn="RelRentAct" disablable="false" />
       </page>
 
       <page>

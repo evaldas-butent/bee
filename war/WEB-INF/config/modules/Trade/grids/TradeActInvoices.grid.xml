@@ -16,9 +16,14 @@
 
     <RelColumn name="Sale" renderColumns="Sale" label="=trdInvoiceId"
       editEnabled="true" editViewName="Sales" editSource="Sale" readOnly="true" />
+    <RelColumn name="TradeAct" editEnabled="true" editViewName="TradeActs" editSource="TradeAct" readOnly="true">
+      <renderToken source="TradeSeriesName"  suffix=" " />
+      <renderToken source="TradeNumber" suffix="/" />
+      <renderToken source="TradeAct" prefix="=captionId" />
+    </RelColumn>
     <DataColumn name="Date" />
 
-    <RelColumn name="SaleSeries" />
+    <RelColumn name="SaleSeries" renderColumns="SeriesName"/>
     <DataColumn name="InvoiceNo" />
 
     <DataColumn name="CustomerName" label="=trdCustomer" />
