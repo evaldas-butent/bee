@@ -175,6 +175,7 @@
     </SimpleJoin>
 
     <SimpleColumn name="RegistrationNo" />
+    <SimpleColumn name="RemainItemQuantity" />
   </Columns>
 
   <Order>
