@@ -18,6 +18,7 @@ import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -27,7 +28,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -44,8 +47,14 @@ public class TradeActDataEventHandler implements DataEventHandler {
   @EJB CustomTradeModuleBean custom;
 
   public Table<Long, Long, Double> getStock(Collection<Long> items, Long... warehouses) {
-    IsCondition itemsClause = BeeUtils.isEmpty(items) ? null
-        : SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_ITEM, items);
+    Function<String, IsCondition> itemsClause = table -> {
+      IsCondition cl = BeeUtils.isEmpty(items) ? null : SqlUtils.inList(table, COL_ITEM, items);
+
+      if (Objects.equals(table, TBL_TRADE_ACT_SERVICES)) {
+        cl = SqlUtils.and(cl, SqlUtils.notNull(table, COL_DATE_FROM));
+      }
+      return cl;
+    };
 
     Function<String, IsCondition> whClause = field ->
         SqlUtils.and(SqlUtils.notNull(TBL_TRADE_OPERATIONS, field), ArrayUtils.isEmpty(warehouses)
@@ -53,38 +62,48 @@ public class TradeActDataEventHandler implements DataEventHandler {
 
     Table<Long, Long, Double> result = HashBasedTable.create();
 
-    SqlSelect union = new SqlSelect()
-        .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
-        .addField(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO, COL_STOCK_WAREHOUSE)
-        .addSum(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY)
-        .addFrom(TBL_TRADE_ACT_ITEMS)
-        .addFromInner(TBL_TRADE_ACTS,
-            sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
-        .addFromInner(TBL_TRADE_OPERATIONS,
-            sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION))
-        .setWhere(SqlUtils.and(itemsClause, whClause.apply(COL_OPERATION_WAREHOUSE_TO)))
-        .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
-        .addGroup(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO)
-        .addUnion(new SqlSelect()
-            .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
-            .addField(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM, COL_STOCK_WAREHOUSE)
-            .addSum(SqlUtils.multiply(SqlUtils.field(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY),
-                SqlUtils.constant(-1)), COL_TRADE_ITEM_QUANTITY)
-            .addFrom(TBL_TRADE_ACT_ITEMS)
-            .addFromInner(TBL_TRADE_ACTS,
-                sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
-            .addFromInner(TBL_TRADE_OPERATIONS,
-                sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION))
-            .setWhere(SqlUtils.and(itemsClause, whClause.apply(COL_OPERATION_WAREHOUSE_FROM)))
-            .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
-            .addGroup(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM));
+    Holder<SqlSelect> union = Holder.absent();
+
+    Stream.of(TBL_TRADE_ACT_ITEMS, TBL_TRADE_ACT_SERVICES).forEach(tbl -> {
+      SqlSelect select = new SqlSelect()
+          .addFields(tbl, COL_TA_ITEM)
+          .addField(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO, COL_STOCK_WAREHOUSE)
+          .addSum(tbl, COL_TRADE_ITEM_QUANTITY)
+          .addFrom(tbl)
+          .addFromInner(TBL_TRADE_ACTS, sys.joinTables(TBL_TRADE_ACTS, tbl, COL_TRADE_ACT))
+          .addFromInner(TBL_TRADE_OPERATIONS,
+              sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION))
+          .setWhere(SqlUtils.and(itemsClause.apply(tbl),
+              whClause.apply(COL_OPERATION_WAREHOUSE_TO)))
+          .addGroup(tbl, COL_TA_ITEM)
+          .addGroup(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO);
+
+      if (union.isNull()) {
+        union.set(select);
+      } else {
+        union.get().addUnion(select);
+      }
+      union.get().addUnion(new SqlSelect()
+          .addFields(tbl, COL_TA_ITEM)
+          .addField(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM, COL_STOCK_WAREHOUSE)
+          .addSum(SqlUtils.multiply(SqlUtils.field(tbl, COL_TRADE_ITEM_QUANTITY),
+              SqlUtils.constant(-1)), COL_TRADE_ITEM_QUANTITY)
+          .addFrom(tbl)
+          .addFromInner(TBL_TRADE_ACTS, sys.joinTables(TBL_TRADE_ACTS, tbl, COL_TRADE_ACT))
+          .addFromInner(TBL_TRADE_OPERATIONS,
+              sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION))
+          .setWhere(SqlUtils.and(itemsClause.apply(tbl),
+              whClause.apply(COL_OPERATION_WAREHOUSE_FROM)))
+          .addGroup(tbl, COL_TA_ITEM)
+          .addGroup(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM));
+    });
 
     String subq = SqlUtils.uniqueName();
 
     SqlSelect query = new SqlSelect()
         .addFields(subq, COL_TA_ITEM, COL_STOCK_WAREHOUSE)
         .addSum(subq, COL_TRADE_ITEM_QUANTITY, COL_STOCK_QUANTITY)
-        .addFrom(union, subq)
+        .addFrom(union.get(), subq)
         .addGroup(subq, COL_TA_ITEM, COL_STOCK_WAREHOUSE);
 
     qs.getData(query).forEach(row -> result.put(row.getLong(COL_TA_ITEM),

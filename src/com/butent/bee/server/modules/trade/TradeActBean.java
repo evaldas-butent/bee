@@ -1,7 +1,5 @@
 package com.butent.bee.server.modules.trade;
 
-import com.butent.bee.server.data.*;
-import com.butent.bee.shared.data.value.TimeOfDayValue;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
@@ -20,8 +18,14 @@ import static com.butent.bee.shared.time.TimeUtils.*;
 
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
+import com.butent.bee.server.data.BeeView;
+import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
+import com.butent.bee.server.data.DataEventHandler;
+import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.AdministrationModuleBean;
@@ -51,6 +55,7 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.data.value.TimeOfDayValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -256,9 +261,9 @@ public class TradeActBean implements HasTimerService {
         BeeParameter.createNumber(module, PRM_SYNC_ERP_STOCK),
         BeeParameter.createText(module, PRM_INVOICE_MAIL_SIGNATURE),
         BeeParameter.createTimeOfDay(module, PRM_TRADE_SERVICE_TRANSITION_TIME, false,
-                new TimeOfDayValue(14).getLong()),
+            new TimeOfDayValue(14).getLong()),
         BeeParameter.createTimeOfDay(module, PRM_DEFAULT_RETURN_ACT_TIME)
-        );
+    );
   }
 
   @Override
@@ -315,7 +320,7 @@ public class TradeActBean implements HasTimerService {
 
           SimpleRowSet continuousCounts = qs.getData(continuousCountsQuery);
 
-          for (BeeRow row  : rs) {
+          for (BeeRow row : rs) {
             String prop = continuousCounts.getValueByKey(COL_TA_PARENT,
                 BeeUtils.toString(row.getId()), count);
 
@@ -332,9 +337,9 @@ public class TradeActBean implements HasTimerService {
 
           if (DataUtils.isId(country)) {
             SqlSelect holidayQuery = new SqlSelect()
-                    .addFields(TBL_HOLIDAYS, COL_HOLY_DAY)
-                    .addFrom(TBL_HOLIDAYS)
-                    .setWhere(SqlUtils.equals(TBL_HOLIDAYS, COL_HOLY_COUNTRY, country));
+                .addFields(TBL_HOLIDAYS, COL_HOLY_DAY)
+                .addFrom(TBL_HOLIDAYS)
+                .setWhere(SqlUtils.equals(TBL_HOLIDAYS, COL_HOLY_COUNTRY, country));
 
             Integer[] days = qs.getIntColumn(holidayQuery);
             if (days != null) {
@@ -349,16 +354,18 @@ public class TradeActBean implements HasTimerService {
           int factorScale = sys.getFieldScale(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FACTOR);
           for (int i = 0; i < rs.getNumberOfRows(); i++) {
             TradeActTimeUnit tu = rs.getEnum(i, COL_TIME_UNIT, TradeActTimeUnit.class);
-            Range<DateTime> actRange = TradeActUtils.createRange(rs.getDateTime(i,COL_TA_DATE),
-                    rs.getDateTime(i, COL_TA_UNTIL));
+            Range<DateTime> actRange = TradeActUtils.createRange(rs.getDateTime(i, COL_TA_DATE),
+                rs.getDateTime(i, COL_TA_UNTIL));
             JustDate dateFrom = rs.getDate(i, COL_TA_SERVICE_FROM);
             JustDate dateTo = rs.getDate(i, COL_TA_SERVICE_TO);
 
-            JustDate fromr = BeeUtils.nvl(rs.getDate(i, COL_TA_SERVICE_FROM), rs.getDate(i, COL_TA_SERVICE_TO));
-            JustDate tor = BeeUtils.nvl(rs.getDate(i, COL_TA_SERVICE_TO), rs.getDate(i, COL_TA_SERVICE_FROM));
-           // Range<DateTime> rRange = TradeActUtils.createRange(fromr, tor);
+            JustDate fromr =
+                BeeUtils.nvl(rs.getDate(i, COL_TA_SERVICE_FROM), rs.getDate(i, COL_TA_SERVICE_TO));
+            JustDate tor =
+                BeeUtils.nvl(rs.getDate(i, COL_TA_SERVICE_TO), rs.getDate(i, COL_TA_SERVICE_FROM));
+            // Range<DateTime> rRange = TradeActUtils.createRange(fromr, tor);
             Range<DateTime> serviceRange = TradeActUtils.createServiceRange(
-                    dateFrom, dateTo, tu, actRange);
+                dateFrom, dateTo, tu, actRange);
 
             if (tu == null || serviceRange == null) {
               continue;
@@ -366,7 +373,7 @@ public class TradeActBean implements HasTimerService {
 
             Double factor = rs.getDouble(i, COL_TA_SERVICE_FACTOR);
 
-            switch(tu) {
+            switch (tu) {
               case DAY:
                 if (!BeeUtils.isPositive(factor)) {
                   Integer dpw = rs.getInteger(i, COL_TA_SERVICE_DAYS);
@@ -474,12 +481,16 @@ public class TradeActBean implements HasTimerService {
           IsExpression sep = SqlUtils.constant("|");
 
           SimpleRowSet itemData = qs.getData(new SqlSelect()
-                  .addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, COL_ITEM, COL_ITEM_PRICE, COL_ITEM_RENTAL_PRICE,
-                          COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_DISCOUNT)
-                  .addFrom(TBL_TRADE_ACT_ITEMS)
-                  .addFromLeft(TBL_TRADE_ACTS, sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
-                  .setWhere(SqlUtils.and(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_RENT_PROJECT, DataUtils.getDistinct(rowSet, COL_TA_RENT_PROJECT)),
-                          SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_KIND, Arrays.asList(TradeActKind.SALE, TradeActKind.SUPPLEMENT))))
+              .addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, COL_ITEM, COL_ITEM_PRICE,
+                  COL_ITEM_RENTAL_PRICE,
+                  COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_DISCOUNT)
+              .addFrom(TBL_TRADE_ACT_ITEMS)
+              .addFromLeft(TBL_TRADE_ACTS,
+                  sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
+              .setWhere(SqlUtils.and(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_RENT_PROJECT,
+                  DataUtils.getDistinct(rowSet, COL_TA_RENT_PROJECT)),
+                  SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_KIND,
+                      Arrays.asList(TradeActKind.SALE, TradeActKind.SUPPLEMENT))))
           );
 
           List<Long> actIds = Lists.newArrayList(itemData.getLongColumn(COL_TRADE_ACT));
@@ -489,11 +500,11 @@ public class TradeActBean implements HasTimerService {
 
           itemData.forEach(rs -> {
             keySet.add(rs.getValue(COL_TRADE_ACT) + "|" + rs.getValue(COL_ITEM)
-              + "|" + rs.getDouble(COL_ITEM_PRICE)
-              + "|" + rs.getBoolean(COL_TRADE_VAT_PLUS)
-              + "|" + rs.getDouble( COL_TRADE_VAT)
-              + "|" + rs.getBoolean(COL_TRADE_VAT_PERC)
-              + "|" + rs.getDouble(COL_TRADE_DISCOUNT)
+                + "|" + rs.getDouble(COL_ITEM_PRICE)
+                + "|" + rs.getBoolean(COL_TRADE_VAT_PLUS)
+                + "|" + rs.getDouble(COL_TRADE_VAT)
+                + "|" + rs.getBoolean(COL_TRADE_VAT_PERC)
+                + "|" + rs.getDouble(COL_TRADE_DISCOUNT)
             );
           });
 
@@ -514,12 +525,11 @@ public class TradeActBean implements HasTimerService {
               Long itemId = row.getLong(itemIndex);
               Double aQty = returnedItems.get(Pair.of(actId, itemId));
               String key = actId + "|" + itemId
-                + "|" + row.getDouble(rowSet.getColumnIndex(COL_ITEM_PRICE))
-                + "|" + row.getBoolean(rowSet.getColumnIndex(COL_TRADE_VAT_PLUS))
-                + "|" + row.getDouble(rowSet.getColumnIndex(COL_TRADE_VAT))
-                + "|" + row.getBoolean(rowSet.getColumnIndex(COL_TRADE_VAT_PERC))
-                + "|" + row.getDouble(rowSet.getColumnIndex(COL_TRADE_DISCOUNT))
-              ;
+                  + "|" + row.getDouble(rowSet.getColumnIndex(COL_ITEM_PRICE))
+                  + "|" + row.getBoolean(rowSet.getColumnIndex(COL_TRADE_VAT_PLUS))
+                  + "|" + row.getDouble(rowSet.getColumnIndex(COL_TRADE_VAT))
+                  + "|" + row.getBoolean(rowSet.getColumnIndex(COL_TRADE_VAT_PERC))
+                  + "|" + row.getDouble(rowSet.getColumnIndex(COL_TRADE_DISCOUNT));
               double qty = BeeUtils.unbox(row.getPropertyDouble(PRP_RETURNED_QTY));
 
               if (BeeUtils.isPositive(aQty) && keySet.contains(key)) {
@@ -603,12 +613,12 @@ public class TradeActBean implements HasTimerService {
 
       if (DataUtils.isId(item)) {
         SqlSelect query = new SqlSelect().setDistinctMode(true)
-          .addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT)
-          .addFrom(TBL_TRADE_ACTS)
-          .addFromInner(TBL_TRADE_ACT_ITEMS,
-            SqlUtils.and(sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS,
-              COL_TRADE_ACT)))
-          .setWhere(SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_ITEM, item));
+            .addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT)
+            .addFrom(TBL_TRADE_ACTS)
+            .addFromInner(TBL_TRADE_ACT_ITEMS,
+                SqlUtils.and(sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS,
+                    COL_TRADE_ACT)))
+            .setWhere(SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_ITEM, item));
 
         clause = SqlUtils.in(view.getSourceAlias(), view.getSourceIdName(), query);
       } else {
@@ -619,7 +629,7 @@ public class TradeActBean implements HasTimerService {
   }
 
   private static SqlInsert appendInsertConstants(SqlInsert query, BeeRowSet values, Long valueId,
-                                                 Collection<BeeColumn> columns) {
+      Collection<BeeColumn> columns) {
     int valueIndex = values.getRowIndex(valueId);
     if (BeeConst.isUndef(valueIndex)) {
       return query;
@@ -646,7 +656,7 @@ public class TradeActBean implements HasTimerService {
   }
 
   private static SqlUpdate appendUpdateConstants(SqlUpdate query, BeeRowSet values, Long valueId,
-                                                 Collection<BeeColumn> columns) {
+      Collection<BeeColumn> columns) {
     int valueIndex = values.getRowIndex(valueId);
     if (BeeConst.isUndef(valueIndex)) {
       return query;
@@ -747,22 +757,24 @@ public class TradeActBean implements HasTimerService {
     Long rentProject = reqInfo.getParameterLong(COL_TRADE_ACT);
     Set<Long> acts = DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID_LIST));
     Integer kind = qs.getInt(new SqlSelect().addFields(TBL_TRADE_ACTS, COL_TA_KIND)
-            .addFrom(TBL_TRADE_ACTS).setWhere(sys.idEquals(TBL_TRADE_ACTS, rentProject)));
+        .addFrom(TBL_TRADE_ACTS).setWhere(sys.idEquals(TBL_TRADE_ACTS, rentProject)));
 
     if (!Objects.equals(kind, TradeActKind.RENT_PROJECT.ordinal())) {
       return ResponseObject.error("Aktas " + rentProject + "nėra nuomos proj.");
     }
 
     SimpleRow rentProjectAct = qs.getRow(new SqlSelect()
-            .addFields(TBL_TRADE_ACTS, COL_TA_CONTRACT)
-            .addFrom(TBL_TRADE_ACTS)
-            .setWhere(sys.idEquals(TBL_TRADE_ACTS, rentProject)));
+        .addFields(TBL_TRADE_ACTS, COL_TA_CONTRACT)
+        .addFrom(TBL_TRADE_ACTS)
+        .setWhere(sys.idEquals(TBL_TRADE_ACTS, rentProject)));
 
     SqlUpdate upd = new SqlUpdate(TBL_TRADE_ACTS)
-            .addConstant(COL_TA_RENT_PROJECT, rentProject)
-            .addExpression(COL_TA_CONTRACT, SqlUtils.sqlIf(SqlUtils.isNull(TBL_TRADE_ACTS, COL_TA_CONTRACT),
-                    rentProjectAct.getLong(COL_TA_CONTRACT), SqlUtils.field(TBL_TRADE_ACTS, COL_TA_CONTRACT)))
-            .setWhere(sys.idInList(TBL_TRADE_ACTS, acts));
+        .addConstant(COL_TA_RENT_PROJECT, rentProject)
+        .addExpression(COL_TA_CONTRACT,
+            SqlUtils.sqlIf(SqlUtils.isNull(TBL_TRADE_ACTS, COL_TA_CONTRACT),
+                rentProjectAct.getLong(COL_TA_CONTRACT),
+                SqlUtils.field(TBL_TRADE_ACTS, COL_TA_CONTRACT)))
+        .setWhere(sys.idInList(TBL_TRADE_ACTS, acts));
 
     ResponseObject resp = qs.updateDataWithResponse(upd);
 
@@ -770,7 +782,8 @@ public class TradeActBean implements HasTimerService {
       return resp;
     }
 
-    resp = ResponseObject.response(qs.getViewData(VIEW_TRADE_ACTS, Filter.idIn(acts)), BeeRowSet.class);
+    resp = ResponseObject
+        .response(qs.getViewData(VIEW_TRADE_ACTS, Filter.idIn(acts)), BeeRowSet.class);
 
     return resp;
   }
@@ -831,13 +844,13 @@ public class TradeActBean implements HasTimerService {
 
     String number = fifoAct.getString(parentActs.getColumnIndex(COL_TA_NUMBER));
     Long series = fifoAct.getLong(parentActs.getColumnIndex(COL_TA_SERIES));
-//    DateTime now = nowMinutes();
+    //    DateTime now = nowMinutes();
     Long combStatus = prm.getRelation(PRM_COMBINED_ACT_STATUS);
     Long returnedActStatus = prm.getRelation(PRM_RETURNED_ACT_STATUS);
     Long continuousStatus = prm.getRelation(PRM_CONTINUOUS_ACT_STATUS);
 
     SqlSelect actNumbersQuery = new SqlSelect()
-//        .addFields(TBL_TRADE_ACTS, COL_TA_NUMBER)
+        //        .addFields(TBL_TRADE_ACTS, COL_TA_NUMBER)
         .addExpr(SqlUtils.concat("'" + usr.getDictionary().taContinuousFrom() + "'", "' '",
             SqlUtils.field(TBL_TRADE_ACTS, COL_TA_NUMBER)), COL_TA_NOTES)
         .addFrom(TBL_TRADE_ACTS)
@@ -994,20 +1007,23 @@ public class TradeActBean implements HasTimerService {
       Set<Long> objects = DataUtils.parseIdSet(sales.getString(0, COL_TRADE_NOTES));
 
       SqlSelect selectObjUsers = new SqlSelect()
-        .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
-        .addFrom(TBL_COMPANY_OBJECTS)
-        .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_OBJECTS, "ObjectPerson"))
-        .setWhere(SqlUtils.and(sys.idInList(TBL_COMPANY_OBJECTS, objects), SqlUtils.or(SqlUtils.notNull(TBL_PERSONS,
-          COL_FIRST_NAME), SqlUtils.notNull(TBL_PERSONS, COL_LAST_NAME))));
+          .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
+          .addFrom(TBL_COMPANY_OBJECTS)
+          .addFromLeft(TBL_PERSONS,
+              sys.joinTables(TBL_PERSONS, TBL_COMPANY_OBJECTS, "ObjectPerson"))
+          .setWhere(SqlUtils.and(sys.idInList(TBL_COMPANY_OBJECTS, objects),
+              SqlUtils.or(SqlUtils.notNull(TBL_PERSONS,
+                  COL_FIRST_NAME), SqlUtils.notNull(TBL_PERSONS, COL_LAST_NAME))));
 
       SimpleRowSet rowSet = qs.getData(selectObjUsers);
       int count = rowSet.getNumberOfRows();
       if (count > 0) {
         String persons = "Atsakingas asmuo";
         for (int i = 0; i < count; i++) {
-          persons = BeeUtils.joinWords(persons, rowSet.getRow(i).getValue(0), rowSet.getRow(i).getValue(1));
+          persons = BeeUtils
+              .joinWords(persons, rowSet.getRow(i).getValue(0), rowSet.getRow(i).getValue(1));
           if (i < count - 1) {
-             persons += ", ";
+            persons += ", ";
           }
         }
         sales.setValue(0, DataUtils.getColumnIndex(COL_TRADE_NOTES, sales.getColumns()), persons);
@@ -1049,7 +1065,7 @@ public class TradeActBean implements HasTimerService {
         /* Transrifus TID31400 { */
         if (saleItem.hasPropertyValue(COL_TA_SERVICE_FACTOR)) {
           insert.addConstant(COL_TA_SERVICE_FACTOR,
-            saleItem.getPropertyDouble(COL_TA_SERVICE_FACTOR));
+              saleItem.getPropertyDouble(COL_TA_SERVICE_FACTOR));
         }
         /* } Transrifus TID31400 */
 
@@ -1243,20 +1259,21 @@ public class TradeActBean implements HasTimerService {
     List<Long> contServices = new ArrayList<>();
     double itemValue = 0.0;
 
-   for (BeeRow row : items) {
+    for (BeeRow row : items) {
       double price = BeeUtils.unbox(row.getDouble(items.getColumnIndex(COL_ITEM_PRICE)));
       double qty = BeeUtils.unbox(row.getDouble(items.getColumnIndex("Quantity"))) /*-
               (row.hasPropertyValue("returned_qty") ? BeeUtils.unbox(row.getPropertyDouble("returned_qty")) : 0D)*/;
 
       double sum = price * qty;
-      double dscSum = sum / 100 * BeeUtils.unbox(row.getDouble(items.getColumnIndex(COL_TRADE_DISCOUNT)));
+      double dscSum =
+          sum / 100 * BeeUtils.unbox(row.getDouble(items.getColumnIndex(COL_TRADE_DISCOUNT)));
       double vat = BeeUtils.unbox(row.getDouble(items.getColumnIndex(COL_TRADE_VAT)));
 
       sum -= dscSum;
 
       if (BeeUtils.unbox(row.getBoolean(items.getColumnIndex(COL_TRADE_VAT_PLUS)))) {
         if (BeeUtils.unbox(row.getBoolean(items.getColumnIndex(COL_TRADE_VAT_PERC)))) {
-            vat = sum /100 * vat;
+          vat = sum / 100 * vat;
         }
       } else {
         if (BeeUtils.unbox(row.getBoolean(items.getColumnIndex(COL_TRADE_VAT_PERC)))) {
@@ -1332,11 +1349,11 @@ public class TradeActBean implements HasTimerService {
       if (BeeUtils.isPositive(itemValue)) {
         updateService.addConstant("ItemValue", itemValue);
       }
-          updateService.setWhere(SqlUtils.and(
-              SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, actIds),
-              SqlUtils.isNull(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO),
-              SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_ITEM, contServices)
-          ));
+      updateService.setWhere(SqlUtils.and(
+          SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, actIds),
+          SqlUtils.isNull(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO),
+          SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_ITEM, contServices)
+      ));
 
       return qs.updateDataWithResponse(updateService);
     }
@@ -1614,11 +1631,12 @@ public class TradeActBean implements HasTimerService {
     Assert.notNull(childKind);
 
     TradeActKind parentKind = qs.getEnum(new SqlSelect().addFields(TBL_TRADE_ACTS, COL_TA_KIND)
-      .addFrom(TBL_TRADE_ACTS).setWhere(sys.idEquals(TBL_TRADE_ACTS, parentId)), TradeActKind.class);
+            .addFrom(TBL_TRADE_ACTS).setWhere(sys.idEquals(TBL_TRADE_ACTS, parentId)),
+        TradeActKind.class);
 
     String parentTbl = TradeActKind.CONTINUOUS.equals(childKind)
         || (TradeActKind.RETURN.equals(childKind) && !TradeActKind.RENT_PROJECT.equals(parentKind))
-            ? TBL_TRADE_ACT_ITEMS : TBL_TRADE_ACTS;
+        ? TBL_TRADE_ACT_ITEMS : TBL_TRADE_ACTS;
 
     IsCondition where =
         SqlUtils.and(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_SERIES, seriesId),
@@ -1664,7 +1682,7 @@ public class TradeActBean implements HasTimerService {
       big = big.max(bigMax);
     }
 
-     return big.add(BigInteger.ONE).toString();
+    return big.add(BigInteger.ONE).toString();
   }
 
   private ResponseObject getActsForInvoice(RequestInfo reqInfo) {
@@ -1729,7 +1747,8 @@ public class TradeActBean implements HasTimerService {
       svcObjectFilter = Filter.equals(COL_SERVICE_OBJECT, serviceObject);
     }
 
-    filter.add(Filter.in(sys.getIdName(VIEW_TRADE_ACTS), VIEW_TRADE_ACT_SERVICES, COL_TRADE_ACT, svcObjectFilter));
+    filter.add(Filter.in(sys.getIdName(VIEW_TRADE_ACTS), VIEW_TRADE_ACT_SERVICES, COL_TRADE_ACT,
+        svcObjectFilter));
 
     BeeRowSet acts = qs.getViewData(VIEW_TRADE_ACTS, filter);
     if (DataUtils.isEmpty(acts)) {
@@ -2065,7 +2084,8 @@ public class TradeActBean implements HasTimerService {
           COL_SERIES_NAME, COL_TA_NUMBER, COL_OPERATION_NAME,
           ALS_COMPANY_NAME, COL_COMPANY_OBJECT_NAME,
           itemIdName, ALS_ITEM_NAME, COL_ITEM_ARTICLE,
-          COL_TRADE_ITEM_QUANTITY, ALS_UNIT_NAME, TradeConstants.ALS_RETURNED_QTY, ALS_REMAINING_QTY,
+          COL_TRADE_ITEM_QUANTITY, ALS_UNIT_NAME, TradeConstants.ALS_RETURNED_QTY,
+          ALS_REMAINING_QTY,
           COL_TRADE_ITEM_PRICE, ALS_BASE_AMOUNT, COL_TRADE_DISCOUNT, ALS_DISCOUNT_AMOUNT,
           ALS_TOTAL_AMOUNT);
 
@@ -2178,13 +2198,13 @@ public class TradeActBean implements HasTimerService {
     }
 
     if (reqInfo.hasParameter("DEBUG")) {
-      logger.debug(reqInfo.getParameter("DEBUG"), "START" ,acts.size());
+      logger.debug(reqInfo.getParameter("DEBUG"), "START", acts.size());
     }
 
     BeeRowSet items = getRemainingItems(acts.toArray(new Long[acts.size()]));
 
     if (reqInfo.hasParameter("DEBUG")) {
-      logger.debug(reqInfo.getParameter("DEBUG"), "END",acts.size());
+      logger.debug(reqInfo.getParameter("DEBUG"), "END", acts.size());
     }
 
     if (DataUtils.isEmpty(items)) {
@@ -2201,8 +2221,8 @@ public class TradeActBean implements HasTimerService {
     List<String> fillCols = null;
 
     if (!BeeUtils.isEmpty(reqInfo.getParameter(PRP_INSERT_COLS))) {
-        fillCols = Lists.newArrayList(Codec.beeDeserializeCollection(
-              reqInfo.getParameter(PRP_INSERT_COLS)));
+      fillCols = Lists.newArrayList(Codec.beeDeserializeCollection(
+          reqInfo.getParameter(PRP_INSERT_COLS)));
     }
 
     if (BeeUtils.isEmpty(input)) {
@@ -2255,13 +2275,13 @@ public class TradeActBean implements HasTimerService {
         .setWhere(sys.idEquals(TBL_TRADE_ACTS, actId)));
 
     if (prm.hasParameter(PRM_TRADE_SERVICE_TRANSITION_TIME)) {
-        TimeOfDayValue transitionTime = new TimeOfDayValue(
-                TimeUtils.renderTime(prm.getTime(PRM_TRADE_SERVICE_TRANSITION_TIME), true));
-        TimeOfDayValue actTime = new TimeOfDayValue(date);
+      TimeOfDayValue transitionTime = new TimeOfDayValue(
+          TimeUtils.renderTime(prm.getTime(PRM_TRADE_SERVICE_TRANSITION_TIME), true));
+      TimeOfDayValue actTime = new TimeOfDayValue(date);
 
-        if (actTime.compareTo(transitionTime) > 0) {
-            date = TimeUtils.nextDay(date).getDateTime();
-        }
+      if (actTime.compareTo(transitionTime) > 0) {
+        date = TimeUtils.nextDay(date).getDateTime();
+      }
     }
 
     for (BeeRow parentAct : parentActs) {
@@ -2304,7 +2324,7 @@ public class TradeActBean implements HasTimerService {
                                 SqlUtils.and(
                                     SqlUtils.notNull(TBL_ITEMS, COL_TIME_UNIT),
                                     SqlUtils.equals(svcAls, COL_TRADE_ACT, parentId)
-                                    )
+                                )
                             ))
                 )));
 
@@ -2317,7 +2337,7 @@ public class TradeActBean implements HasTimerService {
             .setWhere(sys.idEquals(TBL_TRADE_ACTS, parentId));
 
         if (DataUtils.isId(retStatus) && !retStatus.equals(parentAct.getLong(statusIndex))) {
-           updAct.addConstant(COL_TA_STATUS, retStatus);
+          updAct.addConstant(COL_TA_STATUS, retStatus);
         }
 
         updSvc = qs.updateDataWithResponse(updAct);
@@ -2336,9 +2356,9 @@ public class TradeActBean implements HasTimerService {
     }
 
     if (DataUtils.isId(fifoAct.getLong(parentActs.getColumnIndex(COL_TA_RENT_PROJECT)))) {
-      return updateRentProjectAct(parentActs, fifoAct.getLong(parentActs.getColumnIndex(COL_TA_RENT_PROJECT)), date);
+      return updateRentProjectAct(parentActs,
+          fifoAct.getLong(parentActs.getColumnIndex(COL_TA_RENT_PROJECT)), date);
     }
-
 
     return createContinuousAct(parentActs, fifoAct.getId(), date);
   }
@@ -2362,7 +2382,7 @@ public class TradeActBean implements HasTimerService {
     CompoundFilter filter = Filter.and();
 
     Set<Long> actItems =
-        BeeUtils.same(source, TBL_TRADE_ACT_SERVICES) ? new HashSet<>()  : getActItems(actId);
+        BeeUtils.same(source, TBL_TRADE_ACT_SERVICES) ? new HashSet<>() : getActItems(actId);
     if (!actItems.isEmpty()) {
       filter.add(Filter.idNotIn(actItems));
     }
@@ -2536,7 +2556,7 @@ public class TradeActBean implements HasTimerService {
                 sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
             .setWhere(
                 SqlUtils.and(SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT, Lists
-                    .newArrayList(actId)),
+                        .newArrayList(actId)),
                     SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.RETURN.ordinal())))
             .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT, COL_TA_ITEM);
 
@@ -2687,7 +2707,7 @@ public class TradeActBean implements HasTimerService {
 
     query.addFields(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_TA_SERVICE_FACTOR);
     query.addExpr(SqlUtils.multiply(SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_ITEM_PRICE),
-      SqlUtils.field(TBL_SALE_ITEMS, COL_TA_SERVICE_FACTOR)), COL_TRADE_ITEM_PRICE);
+        SqlUtils.field(TBL_SALE_ITEMS, COL_TA_SERVICE_FACTOR)), COL_TRADE_ITEM_PRICE);
 
     query.addFields(TBL_SALES, COL_TRADE_CURRENCY);
 
@@ -2868,7 +2888,7 @@ public class TradeActBean implements HasTimerService {
 
     /* Selects all items items from */
     SqlSelect itemsQuery = getStockQuery(TBL_TRADE_ACT_ITEMS, true);
-    SqlSelect servicesQuery = getStockQuery(TBL_TRADE_ACT_SERVICES, false);
+    SqlSelect servicesQuery = getStockQuery(TBL_TRADE_ACT_SERVICES, true);
 
     servicesQuery.addFromInner(TBL_ITEMS,
         sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_SERVICES, COL_TA_ITEM));
@@ -2888,8 +2908,7 @@ public class TradeActBean implements HasTimerService {
           SqlUtils.inList(TBL_ITEM_CATEGORIES, COL_CATEGORY, categories)));
 
       servicesWhere.add(SqlUtils.in(TBL_TRADE_ACT_SERVICES, COL_TA_ITEM, TBL_ITEM_CATEGORIES,
-          COL_ITEM,
-          SqlUtils.inList(TBL_ITEM_CATEGORIES, COL_CATEGORY, categories)));
+          COL_ITEM, SqlUtils.inList(TBL_ITEM_CATEGORIES, COL_CATEGORY, categories)));
     }
 
     if (!BeeUtils.isEmpty(items)) {
@@ -2913,13 +2932,16 @@ public class TradeActBean implements HasTimerService {
       where.add(SqlUtils.or(
           SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM),
           SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO)));
-      servicesWhere.add(SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM));
+      servicesWhere.add(SqlUtils.or(
+          SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM),
+          SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO)));
     } else {
       where.add(SqlUtils.or(
           SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM, warehouses),
           SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO, warehouses)));
-      servicesWhere.add(SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM,
-          warehouses));
+      servicesWhere.add(SqlUtils.or(
+          SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM, warehouses),
+          SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO, warehouses)));
     }
 
     itemsQuery.setWhere(where);
@@ -2930,7 +2952,8 @@ public class TradeActBean implements HasTimerService {
         COL_OPERATION_WAREHOUSE_TO);
 
     servicesQuery.addGroup(TBL_TRADE_ACT_SERVICES, COL_TA_ITEM);
-    servicesQuery.addGroup(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM);
+    servicesQuery.addGroup(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM,
+        COL_OPERATION_WAREHOUSE_TO);
 
     String tmp = qs.sqlCreateTemp(itemsQuery);
 
@@ -2958,7 +2981,8 @@ public class TradeActBean implements HasTimerService {
     }
 
     SqlInsert insertServices = new SqlInsert(tmp)
-        .addFields(COL_TA_ITEM, COL_OPERATION_WAREHOUSE_FROM, COL_TRADE_ITEM_QUANTITY)
+        .addFields(COL_TA_ITEM, COL_OPERATION_WAREHOUSE_FROM, COL_OPERATION_WAREHOUSE_TO,
+            COL_TRADE_ITEM_QUANTITY)
         .setDataSource(servicesQuery);
 
     qs.insertData(insertServices);
@@ -3518,11 +3542,11 @@ public class TradeActBean implements HasTimerService {
 
     actQuery.setWhere(SqlUtils.and(actConditions,
         SqlUtils.in(TBL_TRADE_ACTS, actIdName,
-                new SqlSelect().addFields(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT)
-                        .addFrom(TBL_TRADE_ACT_SERVICES)
-                        .addFromLeft(TBL_ITEMS,
-                                sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_SERVICES, COL_TA_ITEM))
-                        .setWhere(serviceConditions)
+            new SqlSelect().addFields(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT)
+                .addFrom(TBL_TRADE_ACT_SERVICES)
+                .addFromLeft(TBL_ITEMS,
+                    sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_SERVICES, COL_TA_ITEM))
+                .setWhere(serviceConditions)
         )));
 
     String acts = qs.sqlCreateTemp(actQuery);
@@ -3640,8 +3664,9 @@ public class TradeActBean implements HasTimerService {
     SqlSelect query = new SqlSelect();
 
     if (groupBy.isEmpty()) {
-      query.addFields(tmp, COL_TRADE_ACT, COL_TRADE_ACT_NAME, COL_OPERATION_NAME, COL_STATUS_NAME ,COL_TA_DATE,
-              COL_TA_UNTIL,  COL_SERIES_NAME, COL_TA_NUMBER,
+      query.addFields(tmp, COL_TRADE_ACT, COL_TRADE_ACT_NAME, COL_OPERATION_NAME, COL_STATUS_NAME,
+          COL_TA_DATE,
+          COL_TA_UNTIL, COL_SERIES_NAME, COL_TA_NUMBER,
           ALS_COMPANY_NAME, COL_COMPANY_OBJECT_NAME);
 
       if (hasManager) {
@@ -3649,15 +3674,18 @@ public class TradeActBean implements HasTimerService {
       }
 
       query.addFields(tmp, COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO, COL_TA_ITEM, ALS_ITEM_NAME,
-              COL_ITEM_ARTICLE, COL_TIME_UNIT, ALS_SUPPLIER_NAME, COL_COST_AMOUNT, COL_TRADE_ITEM_QUANTITY,
-              ALS_UNIT_NAME, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, COL_TA_SERVICE_FACTOR,
-              ALS_BASE_AMOUNT, "Arr" + COL_TRADE_INVOICE_PREFIX, "Arr" + COL_TRADE_INVOICE_NO, "ArrInvoiceDate", "ArrSaleItemDiscount",
-              "Arr" + COL_TRADE_AMOUNT, ALS_ITEM_TOTAL, "SaleFactor", COL_TA_SERVICE_TARIFF, COL_TA_SERVICE_DAYS,
-              COL_TA_SERVICE_MIN,
-              "Arr" + COL_SALE, "ArrTotalAmount" // hidden column
+          COL_ITEM_ARTICLE, COL_TIME_UNIT, ALS_SUPPLIER_NAME, COL_COST_AMOUNT,
+          COL_TRADE_ITEM_QUANTITY,
+          ALS_UNIT_NAME, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, COL_TA_SERVICE_FACTOR,
+          ALS_BASE_AMOUNT, "Arr" + COL_TRADE_INVOICE_PREFIX, "Arr" + COL_TRADE_INVOICE_NO,
+          "ArrInvoiceDate", "ArrSaleItemDiscount",
+          "Arr" + COL_TRADE_AMOUNT, ALS_ITEM_TOTAL, "SaleFactor", COL_TA_SERVICE_TARIFF,
+          COL_TA_SERVICE_DAYS,
+          COL_TA_SERVICE_MIN,
+          "Arr" + COL_SALE, "ArrTotalAmount" // hidden column
       );
 
-     // query.addOrder(tmp, COL_TA_DATE, COL_TRADE_ACT, ALS_ITEM_NAME, COL_ITEM_ARTICLE, COL_TA_ITEM);
+      // query.addOrder(tmp, COL_TA_DATE, COL_TRADE_ACT, ALS_ITEM_NAME, COL_ITEM_ARTICLE, COL_TA_ITEM);
       query.addOrder(tmp, COL_TA_SERVICE_FROM, ALS_COMPANY_NAME);
 
     } else {
@@ -3722,21 +3750,24 @@ public class TradeActBean implements HasTimerService {
 
     // ID 2 Don't add empty single time service
     query.setWhere(
+        SqlUtils.and(
             SqlUtils.and(
-              SqlUtils.and(
-              SqlUtils.notNull(
-                      SqlUtils.sqlIf(
+                SqlUtils.notNull(
+                    SqlUtils.sqlIf(
                         SqlUtils.isNull(tmp, COL_TA_SERVICE_FROM),
-                        SqlUtils.sqlIf(SqlUtils.notNull(tmp, COL_TIME_UNIT), SqlUtils.sqlTrue(), null),
+                        SqlUtils
+                            .sqlIf(SqlUtils.notNull(tmp, COL_TIME_UNIT), SqlUtils.sqlTrue(), null),
                         SqlUtils.sqlTrue()
-                      )
-              ),
-              SqlUtils.or(SqlUtils.positive(tmp, COL_TRADE_ITEM_QUANTITY), SqlUtils.notNull(tmp, COL_TIME_UNIT))
+                    )
+                ),
+                SqlUtils.or(SqlUtils.positive(tmp, COL_TRADE_ITEM_QUANTITY),
+                    SqlUtils.notNull(tmp, COL_TIME_UNIT))
             ),
-                    SqlUtils.or(SqlUtils.isNull(tmp, COL_TA_SERVICE_FROM),
-                            SqlUtils.moreEqual(tmp, COL_TA_SERVICE_FROM, startDate)),
-                    SqlUtils.or(SqlUtils.isNull(tmp, COL_TA_SERVICE_TO), SqlUtils.lessEqual(tmp, COL_TA_SERVICE_TO, endDate))
-          )
+            SqlUtils.or(SqlUtils.isNull(tmp, COL_TA_SERVICE_FROM),
+                SqlUtils.moreEqual(tmp, COL_TA_SERVICE_FROM, startDate)),
+            SqlUtils.or(SqlUtils.isNull(tmp, COL_TA_SERVICE_TO),
+                SqlUtils.lessEqual(tmp, COL_TA_SERVICE_TO, endDate))
+        )
     );
 
     SimpleRowSet data = qs.getData(query);
@@ -3850,10 +3881,10 @@ public class TradeActBean implements HasTimerService {
     SqlUpdate upd = new SqlUpdate(TBL_TRADE_ACTS)
         .addConstant(COL_TA_STATUS, apprId)
         .setWhere(
-          SqlUtils.and(
-            SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_STATUS, retId),
-            SqlUtils.inList(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS), actsForApprove)
-          ));
+            SqlUtils.and(
+                SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_STATUS, retId),
+                SqlUtils.inList(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS), actsForApprove)
+            ));
 
     qs.updateData(upd);
   }
@@ -3869,36 +3900,38 @@ public class TradeActBean implements HasTimerService {
 
     String saleId = sys.getIdName(TBL_SALES);
 
-    IsExpression amountExpression = SqlUtils.multiply(SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY), SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_ITEM_PRICE),
-      SqlUtils.field(TBL_SALE_ITEMS, COL_TA_SERVICE_FACTOR));
+    IsExpression amountExpression = SqlUtils
+        .multiply(SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY),
+            SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_ITEM_PRICE),
+            SqlUtils.field(TBL_SALE_ITEMS, COL_TA_SERVICE_FACTOR));
 
     SqlSelect invoicesQuery = new SqlSelect()
-            .addFields(TBL_TRADE_ACT_SERVICES, idName)
-            .addFields(TBL_SALES, COL_TRADE_INVOICE_NO, saleId)
-            .addField(TBL_SALES, COL_TRADE_DATE, "InvoiceDate")
-            .addExpr(SqlUtils.minus(amountExpression, SqlUtils.multiply(amountExpression, SqlUtils.divide(SqlUtils.nvl(
-              SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_DISCOUNT), 0), 100))),COL_TRADE_AMOUNT)
-            .addField(TBL_SALE_ITEMS, COL_TRADE_DISCOUNT, "SaleItemDiscount")
-            .addField(TBL_SALES_SERIES, COL_SERIES_NAME, COL_TRADE_INVOICE_PREFIX)
-            .addFrom(TBL_TRADE_ACT_SERVICES)
-            .addFromInner(TBL_TRADE_ACT_INVOICES,
-                    sys.joinTables(TBL_TRADE_ACT_SERVICES, TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
-            .addFromLeft(TBL_SALE_ITEMS,
-                    sys.joinTables(TBL_SALE_ITEMS, TBL_TRADE_ACT_INVOICES, "SaleItem"))
-            .addFromLeft(TBL_SALES,
-                    sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
-            .addFromLeft(TBL_SALES_SERIES,
-                    sys.joinTables(TBL_SALES_SERIES, TBL_SALES, COL_TRADE_SALE_SERIES));
-
+        .addFields(TBL_TRADE_ACT_SERVICES, idName)
+        .addFields(TBL_SALES, COL_TRADE_INVOICE_NO, saleId)
+        .addField(TBL_SALES, COL_TRADE_DATE, "InvoiceDate")
+        .addExpr(SqlUtils.minus(amountExpression,
+            SqlUtils.multiply(amountExpression, SqlUtils.divide(SqlUtils.nvl(
+                SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_DISCOUNT), 0), 100))), COL_TRADE_AMOUNT)
+        .addField(TBL_SALE_ITEMS, COL_TRADE_DISCOUNT, "SaleItemDiscount")
+        .addField(TBL_SALES_SERIES, COL_SERIES_NAME, COL_TRADE_INVOICE_PREFIX)
+        .addFrom(TBL_TRADE_ACT_SERVICES)
+        .addFromInner(TBL_TRADE_ACT_INVOICES,
+            sys.joinTables(TBL_TRADE_ACT_SERVICES, TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
+        .addFromLeft(TBL_SALE_ITEMS,
+            sys.joinTables(TBL_SALE_ITEMS, TBL_TRADE_ACT_INVOICES, "SaleItem"))
+        .addFromLeft(TBL_SALES,
+            sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+        .addFromLeft(TBL_SALES_SERIES,
+            sys.joinTables(TBL_SALES_SERIES, TBL_SALES, COL_TRADE_SALE_SERIES));
 
     SimpleRowSet data = qs.getData(query);
     SimpleRowSet invoicesData = qs.getData(invoicesQuery
-              .setWhere(SqlUtils.and(
-                      SqlUtils.inList(TBL_TRADE_ACT_SERVICES, idName, (Object[]) data.getLongColumn(idName)),
-                      SqlUtils.more(TBL_SALES, COL_TRADE_DATE, startDate),
-                      SqlUtils.less(TBL_SALES, COL_TRADE_DATE, endDate)
-                      )
-              )
+        .setWhere(SqlUtils.and(
+            SqlUtils.inList(TBL_TRADE_ACT_SERVICES, idName, (Object[]) data.getLongColumn(idName)),
+            SqlUtils.more(TBL_SALES, COL_TRADE_DATE, startDate),
+            SqlUtils.less(TBL_SALES, COL_TRADE_DATE, endDate)
+            )
+        )
     );
 
     Map<String, Map<String, String>> collectedInvoicesData = new HashMap<>();
@@ -3906,8 +3939,7 @@ public class TradeActBean implements HasTimerService {
     for (SimpleRow row : invoicesData) {
       Map<String, String> collData = collectedInvoicesData.get(row.getValue(idName));
 
-
-      if (collData == null){
+      if (collData == null) {
         collData = new HashMap<>();
         collectedInvoicesData.put(row.getValue(idName), collData);
         collData.put("Arr" + COL_TRADE_AMOUNT, "");
@@ -3922,31 +3954,39 @@ public class TradeActBean implements HasTimerService {
       boolean hasData = collData.containsKey("HasData");
       String sale = row.getValue(saleId);
 
-      collData.put("Arr" + COL_TRADE_AMOUNT, (hasData ? collData.get("Arr" + COL_TRADE_AMOUNT) + "\n" : "")
+      collData.put("Arr" + COL_TRADE_AMOUNT,
+          (hasData ? collData.get("Arr" + COL_TRADE_AMOUNT) + "\n" : "")
               + BeeUtils.toString(BeeUtils.unbox(row.getDouble(COL_TRADE_AMOUNT)), 2));
 
       collData.put("ArrInvoiceDate", (hasData ? collData.get("ArrInvoiceDate") + "\n" : "")
-              + row.getDate("InvoiceDate").toString());
+          + row.getDate("InvoiceDate").toString());
 
       if (row.getDouble("SaleItemDiscount") != null) {
-        collData.put("ArrSaleItemDiscount", (hasData ? collData.get("ArrSaleItemDiscount") + "\n" : "")
+        collData
+            .put("ArrSaleItemDiscount", (hasData ? collData.get("ArrSaleItemDiscount") + "\n" : "")
                 + BeeUtils.toString(row.getDouble("SaleItemDiscount"), 2));
       } else {
-        collData.put("ArrSaleItemDiscount", (hasData ? collData.get("ArrSaleItemDiscount") + "\n" : "")
+        collData
+            .put("ArrSaleItemDiscount", (hasData ? collData.get("ArrSaleItemDiscount") + "\n" : "")
                 + "");
       }
 
-      collData.put("Arr" + COL_TRADE_INVOICE_PREFIX, (hasData ? collData.get("Arr" + COL_TRADE_INVOICE_PREFIX) + "\n" : "")
-              + (BeeUtils.isEmpty(row.getValue(COL_TRADE_INVOICE_PREFIX)) ? "" : row.getValue(COL_TRADE_INVOICE_PREFIX))
+      collData.put("Arr" + COL_TRADE_INVOICE_PREFIX,
+          (hasData ? collData.get("Arr" + COL_TRADE_INVOICE_PREFIX) + "\n" : "")
+              + (BeeUtils.isEmpty(row.getValue(COL_TRADE_INVOICE_PREFIX)) ? "" :
+              row.getValue(COL_TRADE_INVOICE_PREFIX))
       );
 
-      collData.put("Arr" + COL_TRADE_INVOICE_NO, (hasData ? collData.get("Arr" + COL_TRADE_INVOICE_NO) + "\n" : "")
-              + (BeeUtils.isEmpty(row.getValue(COL_TRADE_INVOICE_NO)) ? "" : row.getValue(COL_TRADE_INVOICE_NO)));
+      collData.put("Arr" + COL_TRADE_INVOICE_NO,
+          (hasData ? collData.get("Arr" + COL_TRADE_INVOICE_NO) + "\n" : "")
+              + (BeeUtils.isEmpty(row.getValue(COL_TRADE_INVOICE_NO)) ? "" :
+              row.getValue(COL_TRADE_INVOICE_NO)));
 
       collData.put("Arr" + COL_SALE, (hasData ? collData.get("Arr" + COL_SALE) + "\n" : "")
-        + (BeeUtils.isEmpty(sale) ? "" : sale));
+          + (BeeUtils.isEmpty(sale) ? "" : sale));
 
-      collData.put("ArrTotalAmount", BeeUtils.toString(BeeUtils.toDouble(collData.get("ArrTotalAmount"))
+      collData
+          .put("ArrTotalAmount", BeeUtils.toString(BeeUtils.toDouble(collData.get("ArrTotalAmount"))
               + BeeUtils.unbox(row.getDouble(COL_TRADE_AMOUNT))));
 
       collData.put("HasData", BeeConst.STRING_TRUE);
@@ -3993,101 +4033,102 @@ public class TradeActBean implements HasTimerService {
       JustDate dateFrom = row.getDate(COL_TA_SERVICE_FROM);
       JustDate dateTo = row.getDate(COL_TA_SERVICE_TO);
       Range<DateTime> serviceRange = TradeActUtils.createServiceRange(
-        dateFrom, dateTo, tu, reportRange, actRange);
+          dateFrom, dateTo, tu, reportRange, actRange);
 
-        SqlUpdate update = new SqlUpdate(tmp);
+      SqlUpdate update = new SqlUpdate(tmp);
 
-        if (serviceRange != null) {
-          update.addConstant(COL_TA_SERVICE_FROM, serviceRange.lowerEndpoint().getTime())
+      if (serviceRange != null) {
+        update.addConstant(COL_TA_SERVICE_FROM, serviceRange.lowerEndpoint().getTime())
             .addConstant(COL_TA_SERVICE_TO, serviceRange.upperEndpoint().getTime());
+      }
+
+      Double quantity = row.getDouble(COL_TRADE_ITEM_QUANTITY);
+      Double price = row.getDouble(COL_TRADE_ITEM_PRICE);
+      Double discount = row.getDouble(COL_TRADE_DISCOUNT);
+      Double itemTotal = row.getDouble(ALS_ITEM_TOTAL);
+      Double factor = row.getDouble(COL_TA_SERVICE_FACTOR);
+      Double continuousFactor = 1D;  // jei mėn, tai 1 jei diena 30
+
+      if (tu != null && serviceRange != null) {
+        boolean ok = true;
+
+        switch (tu) {
+          case DAY:
+            if (!BeeUtils.isPositive(factor)) {
+              Integer dpw = row.getInt(COL_TA_SERVICE_DAYS);
+              if (TradeActUtils.validDpw(dpw)) {
+                int days = TradeActUtils.countServiceDays(serviceRange, holidays, dpw);
+
+                if (days > 0) {
+                  factor = (double) days;
+                  update.addConstant(COL_TA_SERVICE_FACTOR, days);
+                } else {
+                  ok = false;
+                }
+              }
+            }
+            continuousFactor = 30D;
+            break;
+
+          case MONTH:
+            double mf = TradeActUtils.getMonthFactor(serviceRange, holidays);
+
+            if (BeeUtils.isPositive(mf)) {
+              if (BeeUtils.isPositive(factor)) {
+                mf *= factor;
+              }
+              factor = BeeUtils.round(mf, factorScale);
+              update.addConstant(COL_TA_SERVICE_FACTOR, factor);
+            } else {
+              ok = false;
+            }
+            break;
         }
 
-        Double quantity = row.getDouble(COL_TRADE_ITEM_QUANTITY);
-        Double price = row.getDouble(COL_TRADE_ITEM_PRICE);
-        Double discount = row.getDouble(COL_TRADE_DISCOUNT);
-        Double itemTotal = row.getDouble(ALS_ITEM_TOTAL);
-        Double factor = row.getDouble(COL_TA_SERVICE_FACTOR);
-        Double continuousFactor = 1D;  // jei mėn, tai 1 jei diena 30
+        if (!ok) {
+          continue;
+        }
+      }
 
+      Double amount = TradeActUtils.serviceAmount(quantity, price, discount, tu, factor);
+      if (BeeUtils.isPositive(amount)) {
+        update.addConstant(ALS_BASE_AMOUNT, amount);
+      }
 
-        if (tu != null && serviceRange != null) {
-          boolean ok = true;
-
-          switch (tu) {
-            case DAY:
-              if (!BeeUtils.isPositive(factor)) {
-                Integer dpw = row.getInt(COL_TA_SERVICE_DAYS);
-                if (TradeActUtils.validDpw(dpw)) {
-                  int days = TradeActUtils.countServiceDays(serviceRange, holidays, dpw);
-
-                  if (days > 0) {
-                    factor = (double) days;
-                    update.addConstant(COL_TA_SERVICE_FACTOR, days);
-                  } else {
-                    ok = false;
-                  }
-                }
-              }
-              continuousFactor = 30D;
-              break;
-
-            case MONTH:
-              double mf = TradeActUtils.getMonthFactor(serviceRange, holidays);
-
-              if (BeeUtils.isPositive(mf)) {
-                if (BeeUtils.isPositive(factor)) {
-                  mf *= factor;
-                }
-                factor = BeeUtils.round(mf, factorScale);
-                update.addConstant(COL_TA_SERVICE_FACTOR, factor);
-              } else {
-                ok = false;
-              }
-              break;
-          }
-
-          if (!ok) {
+      Double saleTotals = null;
+      Map<String, String> collInvoices = collectedInvoicesData.get(row.getValue(idName));
+      if (collInvoices != null) {
+        saleTotals = BeeUtils.toDoubleOrNull(collInvoices.get("ArrTotalAmount"));
+        for (String colName : collInvoices.keySet()) {
+          if (colName == idName || colName == "HasData") {
             continue;
           }
+
+          update.addConstant(colName, collInvoices.get(colName));
         }
+      }
 
-        Double amount = TradeActUtils.serviceAmount(quantity, price, discount, tu, factor);
-        if (BeeUtils.isPositive(amount)) {
-          update.addConstant(ALS_BASE_AMOUNT, amount);
-        }
+      Double saleFactor = null;
 
-        Double saleTotals = null;
-        Map<String, String> collInvoices = collectedInvoicesData.get(row.getValue(idName));
-        if (collInvoices != null) {
-          saleTotals = BeeUtils.toDoubleOrNull(collInvoices.get("ArrTotalAmount"));
-          for (String colName : collInvoices.keySet()) {
-            if (colName == idName || colName == "HasData") {
-              continue;
-            }
+      if (tu != null && BeeUtils.unbox(saleTotals) > 0 && BeeUtils.unbox(factor) > 0
+          && BeeUtils.unbox(row.getDouble(ALS_ITEM_TOTAL)) > 0) {
+        saleFactor = BeeUtils.unbox(saleTotals) / factor / row.getDouble(ALS_ITEM_TOTAL) * 100
+            * continuousFactor;
+        update.addConstant("SaleFactor", saleFactor);
+      }
 
-            update.addConstant(colName, collInvoices.get(colName));
-          }
-        }
+      Double tariff = null;
+      if (tu != null && BeeUtils.isPositive(factor) && BeeUtils.isPositive(itemTotal)) {
+        tariff = BeeUtils.unbox(amount) / factor / itemTotal * 100;
+      }
 
-        Double saleFactor = null;
+      update.addConstant(COL_TA_SERVICE_TARIFF, tariff);
 
-        if (tu != null && BeeUtils.unbox(saleTotals) > 0 && BeeUtils.unbox(factor) > 0 && BeeUtils.unbox(row.getDouble(ALS_ITEM_TOTAL)) > 0) {
-          saleFactor = BeeUtils.unbox(saleTotals) / factor / row.getDouble(ALS_ITEM_TOTAL) * 100 * continuousFactor;
-          update.addConstant("SaleFactor", saleFactor);
-        }
+      update.setWhere(SqlUtils.equals(tmp, idName, row.getLong(idName)));
 
-        Double tariff = null;
-        if (tu != null && BeeUtils.isPositive(factor) && BeeUtils.isPositive(itemTotal)) {
-            tariff = BeeUtils.unbox(amount) / factor / itemTotal * 100;
-        }
-
-        update.addConstant(COL_TA_SERVICE_TARIFF, tariff);
-
-        update.setWhere(SqlUtils.equals(tmp, idName, row.getLong(idName)));
-
-        if (!update.isEmpty()) {
-          qs.updateData(update);
-        }
+      if (!update.isEmpty()) {
+        qs.updateData(update);
+      }
 
     }
     logger.debug("<<< prepareTransferReport");
@@ -4153,8 +4194,8 @@ public class TradeActBean implements HasTimerService {
       String als = prefix + "trukumas" + SFX_QUANTITY;
 
       IsExpression xxx = SqlUtils.minus(columns.size() > 1
-          ? SqlUtils.plus((Object[]) SqlUtils.fields(tmp, columns.toArray(new String[0])))
-          : SqlUtils.field(tmp, columns.get(0)),
+              ? SqlUtils.plus((Object[]) SqlUtils.fields(tmp, columns.toArray(new String[0])))
+              : SqlUtils.field(tmp, columns.get(0)),
           SqlUtils.field(TBL_ITEMS, COL_ITEM_DEFAULT_QUANTITY));
 
       if (sum) {
@@ -4352,21 +4393,24 @@ public class TradeActBean implements HasTimerService {
 
     for (BeeRow parentItem : parentItems) {
       ResponseObject itemsResp = ResponseObject.emptyResponse();
-      SimpleRowSet itemRow = qs.getData(new SqlSelect().addFields(TBL_TRADE_ACT_ITEMS, sys.getIdName(TBL_TRADE_ACT_ITEMS),
+      SimpleRowSet itemRow = qs.getData(
+          new SqlSelect().addFields(TBL_TRADE_ACT_ITEMS, sys.getIdName(TBL_TRADE_ACT_ITEMS),
               COL_TRADE_ITEM_QUANTITY)
-        .addFrom(TBL_TRADE_ACT_ITEMS).setWhere(
-                SqlUtils.and(SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, actId),
-                        SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT, parentItem.getLong(itemActIndex)),
-                        SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM, parentItem.getLong(itemIndex)))));
+              .addFrom(TBL_TRADE_ACT_ITEMS).setWhere(
+              SqlUtils.and(SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, actId),
+                  SqlUtils
+                      .equals(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT, parentItem.getLong(itemActIndex)),
+                  SqlUtils
+                      .equals(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM, parentItem.getLong(itemIndex)))));
 
       if (!DataUtils.isEmpty(itemRow) && DataUtils.isId(itemRow.getLong(0, 0))) {
         SqlUpdate itemUpdate = new SqlUpdate(TBL_TRADE_ACT_ITEMS)
-                .setWhere(sys.idEquals(TBL_TRADE_ACT_ITEMS, itemRow.getLong(0, 0)));
+            .setWhere(sys.idEquals(TBL_TRADE_ACT_ITEMS, itemRow.getLong(0, 0)));
         appendUpdateConstants(itemUpdate, parentItems, parentItem.getId(), colData);
         //itemUpdate.
         itemUpdate.updExpression(COL_TRADE_ITEM_QUANTITY, SqlUtils.constant(
-                BeeUtils.unbox(parentItem.getLong(parentItems.getColumnIndex(COL_TRADE_ITEM_QUANTITY)))
-                        + BeeUtils.unbox(itemRow.getLong(0, 1))));
+            BeeUtils.unbox(parentItem.getLong(parentItems.getColumnIndex(COL_TRADE_ITEM_QUANTITY)))
+                + BeeUtils.unbox(itemRow.getLong(0, 1))));
 
         itemsResp = qs.updateDataWithResponse(itemUpdate);
       } else {
@@ -4376,11 +4420,11 @@ public class TradeActBean implements HasTimerService {
             .addConstant(COL_TA_PARENT, parentItem.getLong(itemActIndex));
         appendInsertConstants(itemInsert, parentItems, parentItem.getId(), colData);
 
-       itemsResp = qs.insertDataWithResponse(itemInsert);
+        itemsResp = qs.insertDataWithResponse(itemInsert);
       }
-        if (itemsResp.hasErrors()) {
-          return itemsResp;
-        }
+      if (itemsResp.hasErrors()) {
+        return itemsResp;
+      }
     }
 
     return ResponseObject.response(parentItems.getNumberOfRows());
@@ -4419,7 +4463,7 @@ public class TradeActBean implements HasTimerService {
         ? SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_RETURN, delIds)
         : sys.idInList(TBL_TRADE_ACTS, acts);
 
-          /* Restoring primary act statuses */
+    /* Restoring primary act statuses */
     SqlUpdate query = new SqlUpdate(TBL_TRADE_ACTS)
         .addConstant(COL_TA_STATUS,
             new SqlSelect()
@@ -4446,12 +4490,12 @@ public class TradeActBean implements HasTimerService {
       return resp;
     }
 
-          /* if updated any row of primary acts then states of act is restored */
+    /* if updated any row of primary acts then states of act is restored */
     if (resp.getResponseAsInt() > 0) {
       return resp;
     }
 
-          /* if multi-return act derived from continuous */
+    /* if multi-return act derived from continuous */
     acts = qs.getDistinctLongs(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT,
         SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, delIds));
 
@@ -4631,7 +4675,7 @@ public class TradeActBean implements HasTimerService {
         Double price;
         if (BeeUtils.isPositive(itemTotal) && BeeUtils.isPositive(tariff)) {
           price = TradeActUtils.calculateServicePrice(null, null, itemTotal, tariff, quantity,
-            priceScale);
+              priceScale);
         } else {
           price = null;
         }
@@ -4693,13 +4737,13 @@ public class TradeActBean implements HasTimerService {
       if (!BeeUtils.isEmpty(avansSask)) {
         rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .getSQLData("SELECT klientai.klientas AS kl, klientai.kodas AS kd,"
-                + " SUM(CASE WHEN debetas LIKE '" + avansSask
-                + "%' THEN (-1) ELSE 1 END * suma)"
-                + " AS av"
-                + " FROM finans INNER JOIN klientai ON klientai.klientas = finans.klientas"
-                + " WHERE debetas LIKE '" + avansSask + "%' OR kreditas LIKE '" + avansSask
-                + "%'"
-                + " GROUP BY klientai.klientas, klientai.kodas HAVING av > 0",
+                    + " SUM(CASE WHEN debetas LIKE '" + avansSask
+                    + "%' THEN (-1) ELSE 1 END * suma)"
+                    + " AS av"
+                    + " FROM finans INNER JOIN klientai ON klientai.klientas = finans.klientas"
+                    + " WHERE debetas LIKE '" + avansSask + "%' OR kreditas LIKE '" + avansSask
+                    + "%'"
+                    + " GROUP BY klientai.klientas, klientai.kodas HAVING av > 0",
                 new String[] {"kl", "kd", "av"});
       } else {
         rs = null;
@@ -4890,7 +4934,7 @@ public class TradeActBean implements HasTimerService {
             .addConstant(COL_SERVICE_OBJECT, objects.get(row.getLong("ob")))
             .addConstant(COL_ITEM_EXTERNAL_CODE, row.getLong("id"))
             .addConstant(COL_MAINTENANCE_DATE, parseDateTime(row.getValue("dt"),
-              usr.getDateOrdering()))
+                usr.getDateOrdering()))
             .addConstant(COL_MAINTENANCE_ITEM, items.get(item))
             .addConstant(COL_TRADE_ITEM_QUANTITY, row.getDouble("kk"))
             .addConstant("Description", row.getValue("ar"))
@@ -4967,7 +5011,7 @@ public class TradeActBean implements HasTimerService {
                 .addConstant(COL_SERVICE_OBJECT, objects.get(row.getLong("ob")))
                 .addConstant(COL_ITEM_EXTERNAL_CODE, row.getLong("id"))
                 .addConstant(COL_MAINTENANCE_DATE, parseDateTime(row.getValue("dt"),
-                  usr.getDateOrdering()))
+                    usr.getDateOrdering()))
                 .addConstant(COL_MAINTENANCE_ITEM, items.get(row.getValue("pr")))
                 .addConstant(COL_TRADE_ITEM_QUANTITY, row.getDouble("kk"))
                 .addConstant("Description", row.getValue("ar"))
@@ -4993,7 +5037,7 @@ public class TradeActBean implements HasTimerService {
     try {
       rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
           .getSQLData("SELECT preke AS pr, sum(kiekis) AS lk"
-              + " FROM likuciai GROUP BY preke HAVING lk > 0",
+                  + " FROM likuciai GROUP BY preke HAVING lk > 0",
               new String[] {"pr", "lk"});
     } catch (BeeException e) {
       logger.error(e);
@@ -5024,8 +5068,8 @@ public class TradeActBean implements HasTimerService {
       SimpleRowSet erpCompanies =
           ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
               .getSQLData("SELECT klientai.klientas AS klientas, klientai.kodas AS kodas"
-                  + " FROM klientai"
-                  + " WHERE klientai.kodas IS NOT NULL",
+                      + " FROM klientai"
+                      + " WHERE klientai.kodas IS NOT NULL",
                   new String[] {"klientas", "kodas"});
       // @deprecated due 24 month turnover limit
       // ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
@@ -5084,7 +5128,7 @@ public class TradeActBean implements HasTimerService {
 
         lastestPayments.put(erpInvoice.getValue("gavejas"), BeeUtils.max(lastestPayments.get(
             erpInvoice.getValue("gavejas")), parseDate(erpInvoice.getValue("apm_data"),
-          usr.getDateOrdering())));
+            usr.getDateOrdering())));
 
         if (BeeUtils.unbox(debt) == BeeUtils.unbox(erpInvoice.getDouble("skola_w"))) {
           continue;
@@ -5189,7 +5233,7 @@ public class TradeActBean implements HasTimerService {
     try {
       rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
           .getSQLData("SELECT preke AS pr, sum(kiekis) AS lk"
-              + " FROM likuciai GROUP BY preke HAVING lk > 0",
+                  + " FROM likuciai GROUP BY preke HAVING lk > 0",
               new String[] {"pr", "lk"});
     } catch (BeeException e) {
       logger.error(e);
@@ -5272,7 +5316,7 @@ public class TradeActBean implements HasTimerService {
   }
 
   private ResponseObject updateMultiReturnAct(Long actId, BeeRowSet parentActs, BeeRow fifoAct,
-                                              List<String> fillCols) {
+      List<String> fillCols) {
     int idxSeries = parentActs.getColumnIndex(COL_TA_SERIES);
     int idxNumber = parentActs.getColumnIndex(COL_TA_NUMBER);
     long sourceId = fifoAct.getId();
@@ -5323,23 +5367,23 @@ public class TradeActBean implements HasTimerService {
     Long returnedActStatus = prm.getRelation(PRM_RETURNED_ACT_STATUS);
 
     BeeRowSet services = qs.getViewData(VIEW_TRADE_ACT_SERVICES,
+        Filter.and(
+            Filter.or(
+                Filter.and(
+                    Filter.isNull(COL_TA_SERVICE_FROM),
+                    Filter.isNull(COL_TA_SERVICE_TO),
+                    Filter.isNull(COL_TIME_UNIT)
+                ),
+                Filter.and(
+                    Filter.isNull(COL_TA_SERVICE_TO),
+                    Filter.notNull(COL_TIME_UNIT)
+                )
+            ),
             Filter.and(
-                    Filter.or(
-                            Filter.and(
-                                    Filter.isNull(COL_TA_SERVICE_FROM),
-                                    Filter.isNull(COL_TA_SERVICE_TO),
-                                    Filter.isNull(COL_TIME_UNIT)
-                            ),
-                            Filter.and(
-                                    Filter.isNull(COL_TA_SERVICE_TO),
-                                    Filter.notNull(COL_TIME_UNIT)
-                            )
-                    ),
-                    Filter.and(
-                            Filter.any(COL_TRADE_ACT, lockActData),
-                            Filter.isNull(COL_TA_CONTINUOUS)
-                    )
+                Filter.any(COL_TRADE_ACT, lockActData),
+                Filter.isNull(COL_TA_CONTINUOUS)
             )
+        )
     );
 
     if (!DataUtils.isEmpty(services)) {
