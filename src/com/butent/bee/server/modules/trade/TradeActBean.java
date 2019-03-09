@@ -2590,6 +2590,8 @@ public class TradeActBean implements HasTimerService {
 
     Set<Long> suppliers = DataUtils.parseIdSet(reqInfo.getParameter(COL_TRADE_SUPPLIER));
 
+    Set<Long> series = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_SERIES));
+
     List<String> groupBy = NameUtils.toList(reqInfo.getParameter(Service.VAR_GROUP_BY));
 
     SqlSelect rangeQuery = new SqlSelect()
@@ -2626,6 +2628,9 @@ public class TradeActBean implements HasTimerService {
     }
     if (!managers.isEmpty()) {
       where.add(SqlUtils.inList(TBL_SALES, COL_TRADE_MANAGER, managers));
+    }
+    if (!series.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_SALES, COL_TRADE_SALE_SERIES, series));
     }
 
     if (!categories.isEmpty()) {
@@ -2706,16 +2711,19 @@ public class TradeActBean implements HasTimerService {
     }
 
     query.addFields(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_TA_SERVICE_FACTOR);
+
     query.addExpr(SqlUtils.multiply(SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_ITEM_PRICE),
-        SqlUtils.field(TBL_SALE_ITEMS, COL_TA_SERVICE_FACTOR)), COL_TRADE_ITEM_PRICE);
+        SqlUtils.field(TBL_SALE_ITEMS, COL_TA_SERVICE_FACTOR)), COL_TRADE_ITEM_FULL_PRICE);
 
     query.addFields(TBL_SALES, COL_TRADE_CURRENCY);
 
-    query.addFields(TBL_SALE_ITEMS, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC);
+    query.addFields(TBL_SALE_ITEMS, COL_TRADE_DISCOUNT, COL_TRADE_VAT_PLUS, COL_TRADE_VAT,
+        COL_TRADE_VAT_PERC);
 
     int amountPrecision = 15;
     int amountScale = 2;
 
+    query.addEmptyNumeric(COL_TRADE_ITEM_PRICE, amountPrecision, amountScale);
     query.addEmptyNumeric(ALS_WITHOUT_VAT, amountPrecision, amountScale);
     query.addEmptyNumeric(ALS_VAT_AMOUNT, amountPrecision, amountScale);
     query.addEmptyNumeric(ALS_TOTAL_AMOUNT, amountPrecision, amountScale);
@@ -2732,6 +2740,10 @@ public class TradeActBean implements HasTimerService {
       qs.sqlDropTemp(tmp);
       return ResponseObject.emptyResponse();
     }
+    qs.updateData(new SqlUpdate(tmp).addExpression(COL_TRADE_ITEM_PRICE,
+        SqlUtils.minus(SqlUtils.field(tmp, COL_TRADE_ITEM_FULL_PRICE),
+            SqlUtils.multiply(SqlUtils.divide(SqlUtils.field(tmp, COL_TRADE_ITEM_FULL_PRICE), 100),
+                SqlUtils.nvl(SqlUtils.field(tmp, COL_TRADE_DISCOUNT), 0)))));
 
     SqlUpdate update = new SqlUpdate(tmp)
         .addExpression(ALS_WITHOUT_VAT,
@@ -2772,7 +2784,7 @@ public class TradeActBean implements HasTimerService {
     }
     if (DataUtils.isId(currency)) {
       exchange(tmp, COL_TRADE_CURRENCY, currency, System.currentTimeMillis(),
-          COL_TRADE_ITEM_PRICE, ALS_WITHOUT_VAT, ALS_VAT_AMOUNT);
+          COL_TRADE_ITEM_FULL_PRICE, COL_TRADE_ITEM_PRICE, ALS_WITHOUT_VAT, ALS_VAT_AMOUNT);
     }
 
     update = new SqlUpdate(tmp)
@@ -2805,7 +2817,7 @@ public class TradeActBean implements HasTimerService {
           COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO,
           itemIdName, ALS_ITEM_NAME, COL_TRADE_ITEM_ARTICLE,
           ALS_SUPPLIER_NAME, COL_COST_AMOUNT,
-          COL_TRADE_ITEM_QUANTITY, ALS_UNIT_NAME, COL_TRADE_ITEM_PRICE,
+          COL_TRADE_ITEM_QUANTITY, ALS_UNIT_NAME, COL_TRADE_ITEM_FULL_PRICE, COL_TRADE_ITEM_PRICE,
           ALS_WITHOUT_VAT, ALS_VAT_AMOUNT, ALS_TOTAL_AMOUNT);
 
       query.addOrder(tmp, COL_TRADE_DATE, COL_SALE, itemIdName);

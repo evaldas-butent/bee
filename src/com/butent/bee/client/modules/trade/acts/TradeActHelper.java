@@ -124,6 +124,9 @@ final class TradeActHelper {
       case ALS_REMAINING_QTY:
         return Localized.dictionary().taQuantityRemained();
 
+      case COL_TRADE_ITEM_FULL_PRICE:
+        return "Kaina be nuol.";
+
       case COL_TRADE_ITEM_PRICE:
         return Localized.dictionary().price();
 
@@ -253,6 +256,7 @@ final class TradeActHelper {
       case COL_ITEM_DEFAULT_QUANTITY:
         return getQuantityFormat();
 
+      case COL_TRADE_ITEM_FULL_PRICE:
       case COL_TRADE_ITEM_PRICE:
       case COL_ITEM_COST:
       case "SaleFactor":
