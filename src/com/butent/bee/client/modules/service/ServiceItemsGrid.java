@@ -61,7 +61,8 @@ import java.util.function.BiConsumer;
 public class ServiceItemsGrid extends OrderItemsGrid {
 
   private ServiceItemsPicker picker;
-  private CustomAction template = new CustomAction(FontAwesome.CUBES, ev -> addItemsFromTemplate());
+  private CustomAction template = new CustomAction(FontAwesome.CUBES,
+      ev -> getGridPresenter().getGridView().ensureRelId(this::addItemsFromTemplate));
 
   @Override
   public void afterCreateEditor(String source, Editor editor, boolean embedded) {
@@ -158,7 +159,6 @@ public class ServiceItemsGrid extends OrderItemsGrid {
       getInvoice().add(new InvoiceCreator(VIEW_SERVICE_SALES,
           Filter.equals(COL_SERVICE_MAINTENANCE, getOrderForm())));
     }
-    template.setVisible(DataUtils.isId(getOrderForm()));
   }
 
   @Override
@@ -235,7 +235,7 @@ public class ServiceItemsGrid extends OrderItemsGrid {
         }));
   }
 
-  private void addItemsFromTemplate() {
+  private void addItemsFromTemplate(Long docId) {
     template.running();
 
     Queries.getRowSet(VIEW_ORDERS_TEMPLATES, null, templateRs -> {
@@ -255,7 +255,6 @@ public class ServiceItemsGrid extends OrderItemsGrid {
 
                   FormView parentForm = ViewHelper.getForm(getGridView());
                   Long serviceObject = parentForm.getLongValue(COL_SERVICE_OBJECT);
-                  Long docId = parentForm.getActiveRowId();
                   Long repairer = BeeUtils.nvl(parentForm.getLongValue("RepairerCompanyPerson"),
                       BeeKeeper.getUser().getUserData().getCompanyPerson());
 
