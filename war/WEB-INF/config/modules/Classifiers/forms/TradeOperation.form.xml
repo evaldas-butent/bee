@@ -87,7 +87,7 @@
         <DataSelector source="TradeStatus" style="&lstw;"/>
 
         &empty;
-        &empty;
+        <CheckBox source="ReturnedItems" text="Visos prekės grąžintos" style="&lstw;" module="Trade.Acts" />
       </row>
 
       <row>

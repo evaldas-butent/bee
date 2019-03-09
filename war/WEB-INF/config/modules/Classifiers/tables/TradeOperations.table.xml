@@ -26,6 +26,7 @@
     <String name="CashRegisterNo" precision="50" label="=trdCashRegisterNo" />
 
     <Boolean name="Join" label="=join" />
+    <Boolean name="ReturnedItems" label="Visos grąžintos prekės" />
 
     <Relation name="Series" relation="TradeSeries" label="=trdSeries" />
     <Boolean name="IsDefault" label="=trdOperationDefault" />

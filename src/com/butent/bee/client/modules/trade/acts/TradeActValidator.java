@@ -1,10 +1,13 @@
 package com.butent.bee.client.modules.trade.acts;
 
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -13,6 +16,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Objects;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_CONTACT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 public class TradeActValidator {
@@ -78,10 +82,11 @@ public class TradeActValidator {
         return true;
     }
 
-    public static boolean validateTradeActForm(NotificationListener notify, IsRow row, String viewName) {
+    public static boolean validateTradeActForm(NotificationListener notify, GridView itemsGrid, IsRow row, String viewName) {
         return   checkContactField(notify, row, viewName)
                 && checkRegistrationNumber(notify, row, viewName)
-                && checkDateWithRentProject(notify, row, viewName);
+                && checkDateWithRentProject(notify, row, viewName)
+                && checkStatuses(notify, itemsGrid, row, viewName);
     }
 
     private static boolean checkContactField(NotificationListener notify, IsRow row, String viewName) {
@@ -99,6 +104,19 @@ public class TradeActValidator {
         return valid;
     }
 
+    private static boolean checkDateWithRentProject(NotificationListener notify, IsRow row, String viewName) {
+        boolean valid = !DataUtils.isId(getRentProject(row, viewName))
+                || TimeUtils.isMeq(getDate(row, viewName), getRentProjectDate(row, viewName));
+        boolean canNotify = notify != null;
+
+        if (!valid && canNotify) {
+            notify.notifySevere(Localized.dictionary().invalidDate(), Localized.dictionary().taDate(),
+                    "Data privalo būti vėlesnė už nuomos aktą");
+        }
+
+        return valid;
+    }
+
     private static boolean checkRegistrationNumber(NotificationListener notify, IsRow row, String viewName) {
         boolean valid = !isReturnAct(row, viewName) || !BeeUtils.isEmpty(getRegistrationNo(row, viewName));
         boolean canNotify = notify != null;
@@ -110,14 +128,34 @@ public class TradeActValidator {
         return valid;
     }
 
-    private static boolean checkDateWithRentProject(NotificationListener notify, IsRow row, String viewName) {
-        boolean valid = !DataUtils.isId(getRentProject(row, viewName))
-                || TimeUtils.isMeq(getDate(row, viewName), getRentProjectDate(row, viewName));
+    private static boolean checkStatuses(NotificationListener notify, GridView itemsGrid, IsRow row, String viewName) {
+        TradeActKind kind = getKind(row, viewName);
         boolean canNotify = notify != null;
+        boolean valid = kind != null;
 
         if (!valid && canNotify) {
-            notify.notifySevere(Localized.dictionary().invalidDate(), Localized.dictionary().taDate(),
-                    "Data privalo būti vėlesnė už nuomos aktą");
+            notify.notifySevere(Localized.dictionary().valueRequired(), Localized.dictionary().taKind());
+        }
+
+        // Check TA has return actions
+        if (valid && !kind.enableReturn()) {
+            return true;
+        }
+
+        // checks is TA statuses is not approved or completed
+        if (valid && !isStatusPhaseApproved(row, viewName) && !isStatusPhaseCompleted(row, viewName)) {
+            return true;
+        }
+
+        if (!valid) {
+            return false;
+        }
+
+        // check is TA items all returned
+        valid = isAllItemsReturned(row, viewName, itemsGrid);
+
+        if (!valid && canNotify) {
+            notify.notifySevere("Akto būsena", getStatusName(row, viewName), "negalima. Yra negrąžintų prekių");
         }
 
         return valid;
@@ -151,6 +189,10 @@ public class TradeActValidator {
         return TradeActKeeper.getKind(viewName, row);
     }
 
+    private static boolean getOperationReturnedItems(IsRow row, String viewName) {
+        return BeeUtils.unbox(Data.getBoolean(viewName, row, ALS_OPERATION_RETURNED_ITEMS));
+    }
+
     private static String getRegistrationNo(IsRow row, String viewName) {
         return Data.getString(viewName, row, COL_TA_REGISTRATION_NO);
     }
@@ -167,6 +209,38 @@ public class TradeActValidator {
         return Data.getLong(viewName, row, COL_TA_SERIES);
     }
 
+    private static String getStatusName(IsRow row, String viewName) {
+        return Data.getString(viewName, row, COL_STATUS_NAME);
+    }
+
+    private static boolean isAllItemsReturned(IsRow row, String viewName, GridView itemsGrid) {
+        boolean operationReturnedItems = getOperationReturnedItems(row, viewName);
+
+        if (!operationReturnedItems) {
+            return true;
+        }
+
+        if (itemsGrid == null || !VIEW_TRADE_ACT_ITEMS.equals(itemsGrid.getViewName()) || itemsGrid.isEmpty()) {
+            return true;
+        }
+
+        int qtyIndex = itemsGrid.getDataIndex(COL_TRADE_ITEM_QUANTITY);
+        double remained = BeeConst.DOUBLE_ZERO;
+        QuantityReader quantityReader = new QuantityReader(qtyIndex);
+
+        for (IsRow itemRow : itemsGrid.getRowData()) {
+            Double amount = quantityReader.apply(itemRow);
+            if (BeeUtils.isDouble(amount)) {
+                remained += amount;
+            }
+        }
+
+        double part = Math.pow(10, BeeUtils.unbox(itemsGrid.getDataInfo().getColumnScale(COL_TRADE_ITEM_QUANTITY)) + 1);
+        double fraction = 1D /  part;
+
+        return Math.abs(BeeConst.DOUBLE_ZERO - remained) < fraction;
+    }
+
     private static boolean isContinuousAct(IsRow row, String viewName) {
         return TradeActKind.CONTINUOUS.equals(getKind(row, viewName));
     }
@@ -177,5 +251,13 @@ public class TradeActValidator {
 
     private static boolean isReturnAct(IsRow row, String viewName) {
         return TradeActKind.RETURN.equals(getKind(row,viewName));
+    }
+
+    private static boolean isStatusPhaseApproved(IsRow row, String viewName) {
+        return BeeUtils.unbox(Data.getBoolean(viewName, row, TradeDocumentPhase.APPROVED.getStatusColumnName()));
+    }
+
+    private static boolean isStatusPhaseCompleted(IsRow row, String viewName) {
+        return BeeUtils.unbox(Data.getBoolean(viewName, row, TradeDocumentPhase.COMPLETED.getStatusColumnName()));
     }
 }

@@ -41,6 +41,7 @@
     <SimpleColumn name="Operation" />
     <SimpleJoin joinType="LEFT" name="Operation">
       <SimpleColumn name="OperationName" />
+      <SimpleColumn name="ReturnedItems" alias="OperationReturnedItems"/>
       <SimpleColumn name="Background" alias="OperationBackground" />
       <SimpleColumn name="Foreground" alias="OperationForeground" />
     </SimpleJoin>
@@ -49,6 +50,8 @@
     <SimpleJoin joinType="LEFT" name="Status">
       <SimpleColumn name="StatusName" />
       <SimpleColumn name="StatusActive" />
+      <SimpleColumn name="PhaseCompleted" />
+      <SimpleColumn name="PhaseApproved" />
       <SimpleColumn name="Background" alias="StatusBackground" />
       <SimpleColumn name="Foreground" alias="StatusForeground" />
     </SimpleJoin>
