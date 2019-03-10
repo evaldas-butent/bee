@@ -77,6 +77,8 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
+import com.butent.bee.shared.modules.payroll.PayrollConstants;
+import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocument;
@@ -96,13 +98,16 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import elemental.html.File;
 
@@ -638,54 +643,90 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     FormView pForm = ViewHelper.getForm(presenter.getMainView());
     IsRow pRow = getParentRow(presenter.getGridView());
 
-    TradeDocument doc = new TradeDocument(pRow.getLong(pForm
-        .getDataIndex(COL_TA_OPERATION)), TradeDocumentPhase.PENDING);
+    Map<String, Filter> filters = new HashMap<>();
+    filters.put(PayrollConstants.TBL_EMPLOYEES,
+        Filter.equals(COL_COMPANY_PERSON, BeeKeeper.getUser().getUserData().getCompanyPerson()));
+    filters.put(TBL_TRADE_OPERATIONS,
+        Filter.and(Filter.any(COL_OPERATION_TYPE,
+            EnumSet.copyOf(Arrays.stream(OperationType.values())
+                .filter(type -> type.consumesStock() && !type.producesStock())
+                .collect(Collectors.toList()))),
+            Filter.idIn(TBL_TRADE_TYPE_OPERATIONS, COL_TRADE_OPERATION, null)));
 
-    doc.setDocumentDiscountMode(TradeDiscountMode.FROM_AMOUNT);
+    Queries.getData(filters.keySet(), filters, result -> {
+      Map<String, Long> op = new TreeMap<>();
+      Holder<Long> mng = Holder.absent();
 
-    doc.setDate(TimeUtils.nowMinutes());
-    doc.setCurrency(pRow.getLong(pForm.getDataIndex(COL_TA_CURRENCY)));
-    doc.setCustomer(pRow.getLong(pForm.getDataIndex(COL_TA_COMPANY)));
-    doc.setNotes("Akto ID: " + pRow.getId());
-
-    int itemIdx = items.getColumnIndex(COL_TA_ITEM);
-    int qtyIdx = items.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
-    int prcIdx = items.getColumnIndex(COL_TRADE_ITEM_PRICE);
-    int discIdx = items.getColumnIndex(COL_TRADE_DISCOUNT);
-    int vatPlusIdx = items.getColumnIndex(COL_TRADE_VAT_PLUS);
-    int vatIdx = items.getColumnIndex(COL_TRADE_VAT);
-    int vatPrcIdx = items.getColumnIndex(COL_TRADE_VAT_PERC);
-    int noteIdx = items.getColumnIndex(COL_TRADE_ITEM_NOTE);
-
-    Holder<Boolean> vatMode = Holder.absent();
-
-    items.forEach(row -> {
-      TradeDocumentItem item = doc.addItem(row.getLong(itemIdx), row.getDouble(qtyIdx));
-
-      item.setPrice(row.getDouble(prcIdx));
-      item.setNote(row.getString(noteIdx));
-
-      Double discount = row.getDouble(discIdx);
-
-      if (BeeUtils.nonZero(discount)) {
-        item.setDiscount(discount);
-        item.setDiscountIsPercent(true);
+      result.forEach(rs -> {
+        switch (rs.getViewName()) {
+          case PayrollConstants.TBL_EMPLOYEES:
+            if (!rs.isEmpty()) {
+              mng.set(rs.getRow(0).getId());
+            }
+            break;
+          case TBL_TRADE_OPERATIONS:
+            int opIdx = rs.getColumnIndex(COL_OPERATION_NAME);
+            rs.forEach(beeRow -> op.put(beeRow.getString(opIdx), beeRow.getId()));
+            break;
+        }
+      });
+      if (op.isEmpty()) {
+        presenter.getGridView().notifySevere("Nerasta tinkamų operacijų");
+        return;
       }
-      Double vat = row.getDouble(vatIdx);
+      Global.choice("Pasirinkite dokumento operaciją", null, new ArrayList<>(op.keySet()),
+          value -> {
+            TradeDocument doc = new TradeDocument(new ArrayList<>(op.values()).get(value),
+                TradeDocumentPhase.PENDING);
 
-      if (BeeUtils.nonZero(vat)) {
-        vatMode.set(row.getBoolean(vatPlusIdx));
-        item.setVat(vat);
-        item.setVatIsPercent(row.getBoolean(vatPrcIdx));
-      }
-    });
-    doc.setDocumentVatMode(BeeUtils.unbox(vatMode.get())
-        ? TradeVatMode.PLUS : TradeVatMode.INCLUSIVE);
+            doc.setDocumentDiscountMode(TradeDiscountMode.FROM_AMOUNT);
 
-    TradeKeeper.createDocument(doc, tradeId -> {
-      DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), VIEW_TRADE_DOCUMENTS);
-      approveTradeAct(pForm, pRow);
-      RowEditor.open(VIEW_TRADE_DOCUMENTS, tradeId);
+            doc.setDate(TimeUtils.nowMinutes());
+            doc.setCurrency(pRow.getLong(pForm.getDataIndex(COL_TA_CURRENCY)));
+            doc.setCustomer(pRow.getLong(pForm.getDataIndex(COL_TA_COMPANY)));
+            doc.setManager(mng.get());
+            doc.setNotes("Akto ID: " + pRow.getId());
+
+            int itemIdx = items.getColumnIndex(COL_TA_ITEM);
+            int qtyIdx = items.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+            int prcIdx = items.getColumnIndex(COL_TRADE_ITEM_PRICE);
+            int discIdx = items.getColumnIndex(COL_TRADE_DISCOUNT);
+            int vatPlusIdx = items.getColumnIndex(COL_TRADE_VAT_PLUS);
+            int vatIdx = items.getColumnIndex(COL_TRADE_VAT);
+            int vatPrcIdx = items.getColumnIndex(COL_TRADE_VAT_PERC);
+            int noteIdx = items.getColumnIndex(COL_TRADE_ITEM_NOTE);
+
+            Holder<Boolean> vatMode = Holder.absent();
+
+            items.forEach(row -> {
+              TradeDocumentItem item = doc.addItem(row.getLong(itemIdx), row.getDouble(qtyIdx));
+
+              item.setPrice(row.getDouble(prcIdx));
+              item.setNote(row.getString(noteIdx));
+
+              Double discount = row.getDouble(discIdx);
+
+              if (BeeUtils.nonZero(discount)) {
+                item.setDiscount(discount);
+                item.setDiscountIsPercent(true);
+              }
+              Double vat = row.getDouble(vatIdx);
+
+              if (BeeUtils.nonZero(vat)) {
+                vatMode.set(row.getBoolean(vatPlusIdx));
+                item.setVat(vat);
+                item.setVatIsPercent(row.getBoolean(vatPrcIdx));
+              }
+            });
+            doc.setDocumentVatMode(BeeUtils.unbox(vatMode.get())
+                ? TradeVatMode.PLUS : TradeVatMode.INCLUSIVE);
+
+            TradeKeeper.createDocument(doc, tradeId -> {
+              DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), VIEW_TRADE_DOCUMENTS);
+              approveTradeAct(pForm, pRow);
+              RowEditor.open(VIEW_TRADE_DOCUMENTS, tradeId);
+            });
+          });
     });
   }
 
@@ -873,6 +914,10 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     return getKind(row) == TradeActKind.SALE;
   }
 
+  protected boolean isTenderTradeAct(IsRow row) {
+    return getKind(row) == TradeActKind.TENDER;
+  }
+
   private void readImport(Collection<? extends FileInfo> input,
       final Consumer<List<String>> consumer) {
 
@@ -1002,8 +1047,11 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
     HeaderView formHeader = getFormHeader(gridView);
 
-    if (formHeader != null && isSaleTradeAct(parentRow) && BeeKeeper.getUser().canCreateData(
-        VIEW_SALES) && !TradeActKeeper.isClientArea() && !hasContinuousAct(parentRow)) {
+    if (formHeader != null
+        && (isSaleTradeAct(parentRow) || isReturnAct(parentRow) || isTenderTradeAct(parentRow))
+        && BeeKeeper.getUser().canCreateData(VIEW_SALES) && !TradeActKeeper.isClientArea()
+        && !hasContinuousAct(parentRow)) {
+
       if (!TradeActKind.RENT_PROJECT.equals(getKind(parentRow))) {
         formHeader.addCommandItem(commandSale);
       } else {
