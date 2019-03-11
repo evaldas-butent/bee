@@ -49,7 +49,8 @@ class MaintenanceItemsDataProvider implements QueryServiceBean.ViewDataProvider 
         .addEmptyString(COL_TRADE_NUMBER, 50)
         .addFields(TBL_ORDER_ITEMS, COL_ITEM, COL_TRADE_ITEM_QUANTITY, COL_ITEM_PRICE,
             COL_TRADE_DISCOUNT, COL_TRADE_DOCUMENT_ITEM_VAT)
-        .addConstant(true, COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT)
+        .addExpr(SqlUtils.sqlIf(SqlUtils.isNull(TBL_ORDER_ITEMS, COL_TRADE_DISCOUNT), null, 1),
+            COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT)
         .addField(TBL_ORDER_ITEMS, COL_ITEM_VAT_PERCENT, COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT)
         .addFields(TBL_SERVICE_ITEMS, COL_ITEM_ARTICLE)
         .addField(TBL_ITEMS, COL_ITEM_NAME, ALS_ITEM_NAME)
