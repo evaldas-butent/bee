@@ -22,8 +22,10 @@
 
     <SimpleColumn name="Discount" />
     <SimpleColumn name="Vat" />
-    <SimpleColumn name="DiscountIsPercent" />
-    <SimpleColumn name="VatIsPercent" />
+
+    <SimpleColumn name="VatIsPercent" alias="DiscountPercent" />
+    <SimpleColumn name="VatIsPercent" alias="VatPlus" />
+    <SimpleColumn name="VatIsPercent" alias="VatPercent" />
 
     <SimpleColumn name="Article" />
 

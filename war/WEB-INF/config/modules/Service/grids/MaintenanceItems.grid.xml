@@ -35,10 +35,23 @@
     <DataColumn name="Price" scale="2" />
 
     <DataColumn name="Discount" scale="0" />
-    <DataColumn name="DiscountIsPercent" width="20" sortable="false" format="%" />
+    <DataColumn name="DiscountPercent" width="20" sortable="false" format="%" />
 
+
+    <DataColumn name="VatPlus" width="20" sortable="false" caption="+" format="+" />
     <DataColumn name="Vat" scale="0" />
-    <DataColumn name="VatIsPercent" width="20" sortable="false" format="%" />
+    <DataColumn name="VatPercent" width="20" sortable="false" format="%" />
+
+    <CalcColumn name="Total" type="decimal" caption="=trdAmount" scale="2">
+      <style>
+        <bodyStyle>
+          <ui:font>bold</ui:font>
+        </bodyStyle>
+      </style>
+      <renderer type="total" />
+      <footer aggregate="sum" />
+    </CalcColumn>
+
     <DataColumn name="Note" />
   </g:columns>
 </g:Grid>
