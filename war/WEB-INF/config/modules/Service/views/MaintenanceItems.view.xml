@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="MaintenanceItems" source="TradeDocumentItems" caption="=trdDocumentItems"
+>
+  <Columns>
+    <SimpleColumn name="ServiceMaintenance" />
+    <SimpleJoin name="ServiceMaintenance" joinType="LEFT">
+      <SimpleColumn name="ServiceObject" />
+      <SimpleColumn name="Date" />
+    </SimpleJoin>
+
+    <SimpleColumn name="TradeDocument" />
+    <SimpleJoin name="TradeDocument" joinType="LEFT">
+      <SimpleColumn name="Series" />
+      <SimpleColumn name="Number" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Item" />
+    <SimpleColumn name="Quantity" />
+    <SimpleColumn name="Price" />
+
+    <SimpleColumn name="Discount" />
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="DiscountIsPercent" />
+    <SimpleColumn name="VatIsPercent" />
+
+    <SimpleColumn name="Article" />
+
+    <SimpleJoin joinType="LEFT" name="Item">
+      <SimpleColumn name="Name" alias="ItemName" />
+
+      <SimpleColumn name="ExternalCode" />
+      <SimpleColumn name="IsService" />
+
+      <SimpleJoin joinType="LEFT" name="Unit">
+        <SimpleColumn name="Name" alias="UnitName" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Note" />
+  </Columns>
+</View>

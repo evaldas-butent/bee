@@ -23,7 +23,7 @@
           </page>
           <page>
             <text>=goods</text>
-            <ChildGrid name="ServiceItems" relColumn="ServiceObject" />
+            <ChildGrid name="MaintenanceItems" relColumn="ServiceObject" />
           </page>
           <page>
             <text>=svcMaintenanceItemsServices</text>

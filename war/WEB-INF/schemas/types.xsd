@@ -472,6 +472,7 @@
       <xs:enumeration value="Maintenance" />
       <xs:enumeration value="MaintenanceDocumentItems" />
       <xs:enumeration value="MaintenanceFiles" />
+      <xs:enumeration value="MaintenanceItems" />
       <xs:enumeration value="MaintenancePayroll" />
       <xs:enumeration value="MaintenanceStates" />
       <xs:enumeration value="MaintenanceTariffs" />

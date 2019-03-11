@@ -406,6 +406,9 @@ public class ServiceModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    QueryServiceBean.registerViewDataProvider("MaintenanceItems",
+        new MaintenanceItemsDataProvider());
+
     BeeView.registerConditionProvider(COL_SERVICE_MAIN_CRITERIA, (view, args) -> {
       Map<String, String> crit = Codec.deserializeHashMap(BeeUtils.getQuietly(args, 0));
 
@@ -2440,4 +2443,5 @@ public class ServiceModuleBean implements BeeModule {
     }
     return ResponseObject.response(dataId);
   }
+
 }

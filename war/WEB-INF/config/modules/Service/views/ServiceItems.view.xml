@@ -10,9 +10,7 @@
     <SimpleJoin joinType="LEFT" name="ServiceItem">
       <SimpleColumn name="ServiceObject" />
       <SimpleColumn name="ServiceMaintenance" />
-      <SimpleJoin name="ServiceMaintenance" joinType="LEFT">
-        <SimpleColumn name="Date" />
-      </SimpleJoin>
+
       <SimpleColumn name="Repairer" />
       <SimpleJoin name="Repairer" joinType="LEFT">
         <SimpleJoin name="Person" joinType="LEFT">

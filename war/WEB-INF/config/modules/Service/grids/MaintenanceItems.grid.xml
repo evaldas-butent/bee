@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="MaintenanceItems" viewName="MaintenanceItems" autoFlex="true" readOnly="true"
+        disabledActions="filter"
+>
+  <g:columns>
+    <DataColumn name="Date" />
+    <DataColumn name="ServiceMaintenance" editSource="ServiceMaintenance" />
+
+    <DataColumn name="TradeDocument" editSource="TradeDocument">
+      <render>
+        <ui:expression>[row.TradeDocument, row.Series, row.Number].join(' ')</ui:expression>
+      </render>
+    </DataColumn>
+
+    <DataColumn name="ItemName" editSource="Item" flexGrow="2" visible="true"
+                label="Prekė/Paslauga">
+      <dynStyle>
+        <ui:inline>color: blue;</ui:inline>
+        <ui:expression>row.IsService</ui:expression>
+      </dynStyle>
+    </DataColumn>
+
+    <DataColumn name="ExternalCode" />
+
+    <DataColumn name="Article" flexGrow="1" />
+
+    <DataColumn name="Quantity" visible="true">
+      <footer aggregate="sum" />
+    </DataColumn>
+    <DataColumn name="UnitName" label="=unitShort" />
+
+    <DataColumn name="Price" scale="2" />
+
+    <DataColumn name="Discount" scale="0" />
+    <DataColumn name="DiscountIsPercent" width="20" sortable="false" format="%" />
+
+    <DataColumn name="Vat" scale="0" />
+    <DataColumn name="VatIsPercent" width="20" sortable="false" format="%" />
+    <DataColumn name="Note" />
+  </g:columns>
+</g:Grid>
