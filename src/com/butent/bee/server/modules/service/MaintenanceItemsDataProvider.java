@@ -65,6 +65,7 @@ class MaintenanceItemsDataProvider implements QueryServiceBean.ViewDataProvider 
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
         .addFromInner(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
         .setWhere(wh)
+        .addOrderDesc(null, COL_MAINTENANCE_DATE)
 
         .addUnion(new SqlSelect()
             .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_SERVICE_MAINTENANCE)
@@ -94,8 +95,7 @@ class MaintenanceItemsDataProvider implements QueryServiceBean.ViewDataProvider 
             .setWhere(SqlUtils.and(wh, SqlUtils.not(SqlUtils.in(TBL_TRADE_DOCUMENT_ITEMS,
                 sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS), TBL_MAINTENANCE_INVOICES,
                 COL_TRADE_DOCUMENT_ITEM, SqlUtils.notNull(TBL_MAINTENANCE_INVOICES,
-                    COL_TRADE_DOCUMENT_ITEM)))))
-            .addOrderDesc(null, COL_MAINTENANCE_DATE));
+                    COL_TRADE_DOCUMENT_ITEM))))));
   }
 
   private static Map<String, String> getFilterValues(Filter filter) {
