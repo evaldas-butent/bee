@@ -37,6 +37,7 @@ import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.math.BigDecimal;
@@ -979,9 +980,8 @@ public class PrintActForm extends AbstractFormInterceptor {
 //      case FORM_PRINT_TA_RETURN:
 //      case FORM_PRINT_TA_RETURN_EXTRA:
         return BeeUtils.same(SERVICES_WIDGET_NAME, typeTable) ? row.getValue(typeTable)
-            : BeeUtils.toString(Objects.hash(row.getLong(COL_ITEM),
-            row.getDouble(COL_TRADE_ITEM_PRICE),
-            row.getBoolean(COL_TRADE_VAT_PLUS),
+            : Codec.md5(BeeUtils.joinWords(row.getLong(COL_ITEM),
+            row.getDouble(COL_TRADE_ITEM_PRICE), row.getBoolean(COL_TRADE_VAT_PLUS),
             row.getDouble(COL_TRADE_VAT), row.getBoolean(COL_TRADE_VAT_PERC),
             row.getDouble(COL_TRADE_DISCOUNT), row.getValue(COL_TRADE_ITEM_NOTE)));
 
