@@ -43,6 +43,8 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PrintActForm extends AbstractFormInterceptor {
 
@@ -980,10 +982,9 @@ public class PrintActForm extends AbstractFormInterceptor {
 //      case FORM_PRINT_TA_RETURN:
 //      case FORM_PRINT_TA_RETURN_EXTRA:
         return BeeUtils.same(SERVICES_WIDGET_NAME, typeTable) ? row.getValue(typeTable)
-            : Codec.md5(BeeUtils.joinWords(row.getLong(COL_ITEM),
-            row.getDouble(COL_TRADE_ITEM_PRICE), row.getBoolean(COL_TRADE_VAT_PLUS),
-            row.getDouble(COL_TRADE_VAT), row.getBoolean(COL_TRADE_VAT_PERC),
-            row.getDouble(COL_TRADE_DISCOUNT), row.getValue(COL_TRADE_ITEM_NOTE)));
+            : Codec.md5(Stream.of(COL_ITEM, COL_TRADE_ITEM_PRICE, COL_TRADE_VAT_PLUS,
+            COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_DISCOUNT, COL_TRADE_ITEM_NOTE)
+            .map(row::getValue).collect(Collectors.joining(",")));
 
 //      default: return  row.getValue(typeTable);
     }

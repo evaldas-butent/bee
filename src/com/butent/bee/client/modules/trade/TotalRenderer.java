@@ -16,7 +16,9 @@ import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.RendererType;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 
@@ -33,10 +35,16 @@ public class TotalRenderer extends AbstractCellRenderer implements HasRowValue {
   }
 
   private final Totalizer totalizer;
+  private final RendererType minus;
 
   public TotalRenderer(List<? extends IsColumn> columns) {
+    this(null, null);
+  }
+
+  public TotalRenderer(List<? extends IsColumn> columns, String options) {
     super(null);
     this.totalizer = new Totalizer(columns);
+    this.minus = EnumUtils.getEnumByName(RendererType.class, BeeUtils.removePrefix(options, "-"));
   }
 
   @Override
@@ -98,6 +106,14 @@ public class TotalRenderer extends AbstractCellRenderer implements HasRowValue {
   }
 
   protected Double evaluate(IsRow row) {
-    return getTotal(row);
+    Double total = getTotal(row);
+
+    if (minus != null) {
+      switch (minus) {
+        case VAT:
+          total = total - BeeUtils.unbox(getVat(row));
+      }
+    }
+    return total;
   }
 }

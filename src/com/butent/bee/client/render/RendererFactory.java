@@ -274,7 +274,7 @@ public final class RendererFactory {
         break;
 
       case TOTAL:
-        renderer = new TotalRenderer(dataColumns);
+        renderer = new TotalRenderer(dataColumns, description.getOptions());
         break;
 
       case VAT:

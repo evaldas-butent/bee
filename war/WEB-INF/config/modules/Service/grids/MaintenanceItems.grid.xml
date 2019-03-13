@@ -48,7 +48,7 @@
           <ui:font>bold</ui:font>
         </bodyStyle>
       </style>
-      <renderer type="total" />
+      <renderer type="total" options="-vat" />
       <footer aggregate="sum" />
     </CalcColumn>
 
