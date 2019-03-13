@@ -50,7 +50,8 @@
 
     <DataColumn name="Notes" visible="false" />
 
-
+    <PropColumn name="CompanyObjects" type="integer" caption="Objektų" label="Objektas"
+                filterSupplier="custom" filterOptions="CompanyObjects" />
   </g:columns>
 
   <g:rowStyle>

@@ -168,6 +168,24 @@ public class TradeActDataEventHandler implements DataEventHandler {
               .setWhere(SqlUtils.containsAny(TBL_ITEMS,
                   Arrays.asList(COL_ITEM_NAME, COL_ITEM_ARTICLE), Collections.singleton(val))));
     });
+
+    BeeView.registerConditionProvider(TBL_COMPANY_OBJECTS, (view, args) -> {
+      String col = BeeUtils.getQuietly(args, 0);
+      String val = BeeUtils.getQuietly(args, 1);
+
+      if (BeeUtils.anyEmpty(col, val)) {
+        return null;
+      }
+      return SqlUtils.in(TBL_SALES, sys.getIdName(TBL_SALES),
+          new SqlSelect().setDistinctMode(true)
+              .addFields(TBL_SALE_ITEMS, COL_SALE)
+              .addFrom(TBL_SALE_ITEMS)
+              .addFromInner(TBL_COMPANY_OBJECTS,
+                  sys.joinTables(TBL_COMPANY_OBJECTS, TBL_SALE_ITEMS, COL_TA_OBJECT))
+              .setWhere(SqlUtils.containsAny(TBL_COMPANY_OBJECTS,
+                  Arrays.asList(COL_COMPANY_OBJECT_NAME, COL_COMPANY_OBJECT_ADDRESS),
+                  Collections.singleton(val))));
+    });
   }
 
   @Subscribe
@@ -242,6 +260,24 @@ public class TradeActDataEventHandler implements DataEventHandler {
 
       rowSet.forEach(beeRow -> beeRow.setProperty(ALS_RETURNED_COUNT,
           ret.getValueByKey(COL_TA_PARENT, BeeUtils.toString(beeRow.getId()), COL_TRADE_ACT)));
+    }
+  }
+
+  @Subscribe
+  @AllowConcurrentEvents
+  public void setObjectCount(DataEvent.ViewQueryEvent event) {
+    if (event.isAfter(TBL_SALES) && event.hasData()) {
+      BeeRowSet rowSet = event.getRowset();
+
+      SimpleRowSet rs = qs.getData(new SqlSelect()
+          .addFields(TBL_SALE_ITEMS, COL_SALE)
+          .addCountDistinct(TBL_SALE_ITEMS, COL_TA_OBJECT, COL_TA_OBJECT)
+          .addFrom(TBL_SALE_ITEMS)
+          .setWhere(SqlUtils.inList(TBL_SALE_ITEMS, COL_SALE, rowSet.getRowIds()))
+          .addGroup(TBL_SALE_ITEMS, COL_SALE));
+
+      rowSet.forEach(beeRow -> beeRow.setProperty(TBL_COMPANY_OBJECTS,
+          rs.getValueByKey(COL_SALE, BeeUtils.toString(beeRow.getId()), COL_TA_OBJECT)));
     }
   }
 }
