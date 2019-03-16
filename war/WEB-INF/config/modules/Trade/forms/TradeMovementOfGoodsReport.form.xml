@@ -61,7 +61,11 @@
         <InputDateTime name="EndDate" style="&dt;" />
 
         <cell style="&cbc;">
-          <CheckBox name="Amount" text="=amount" />
+          <ListBox name="Amount">
+            <item>-</item>
+            <item value="Amount">=amount</item>
+            <item value="Weight">=weight</item>
+          </ListBox>
         </cell>
 
         <Label text="=currency" />

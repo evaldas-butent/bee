@@ -7,8 +7,10 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.data.BeeView;
+import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.AdministrationModuleBean;
 import com.butent.bee.server.sql.HasConditions;
@@ -19,26 +21,24 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeMovementColumn;
 import com.butent.bee.shared.modules.trade.TradeMovementGroup;
 import com.butent.bee.shared.modules.trade.TradeReportGroup;
 import com.butent.bee.shared.report.ReportParameters;
-import com.butent.bee.server.data.QueryServiceBean;
-import com.butent.bee.server.http.RequestInfo;
-import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.logging.BeeLogger;
-import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -125,14 +126,17 @@ public class TradeReportsBean {
     }
 
     boolean showQuantity = parameters.getBoolean(RP_SHOW_QUANTITY);
-    boolean showAmount = parameters.getBoolean(RP_SHOW_AMOUNT);
+    String amountOrWeight = parameters.getText(RP_SHOW_AMOUNT);
+    boolean showAmount = !BeeUtils.isEmpty(amountOrWeight);
+    boolean showWeight = Objects.equals(amountOrWeight, COL_ITEM_WEIGHT);
 
     if (!showQuantity && !showAmount) {
       showQuantity = true;
       showAmount = true;
+      amountOrWeight = COL_TRADE_AMOUNT;
 
       parameters.add(RP_SHOW_QUANTITY, showQuantity);
-      parameters.add(RP_SHOW_AMOUNT, showAmount);
+      parameters.add(RP_SHOW_AMOUNT, amountOrWeight);
     }
 
     ItemPrice itemPrice = parameters.getEnum(RP_ITEM_PRICE, ItemPrice.class);
@@ -257,7 +261,7 @@ public class TradeReportsBean {
 
     IsCondition itemCondition = parseItemFilter(itemFilter);
 
-    boolean needsCost = showAmount && itemPrice == null;
+    boolean needsCost = showAmount && !showWeight && itemPrice == null;
 
     boolean needsDocuments = documentCondition != null
         || TradeReportGroup.needsDocument(stockGroup) || TradeReportGroup.needsDocument(rowGroups);
@@ -265,7 +269,7 @@ public class TradeReportsBean {
     boolean needsDocumentItems = needsDocuments || documentItemCondition != null;
 
     boolean needsItems = itemTypeCondition != null || itemGroupCondition != null
-        || itemCondition != null || showAmount && itemPrice != null
+        || itemCondition != null || showAmount && (showWeight || itemPrice != null)
         || TradeReportGroup.needsItem(stockGroup) || TradeReportGroup.needsItem(rowGroups);
 
     boolean needsPrimaryDocuments = primaryDocumentCondition != null
@@ -363,11 +367,13 @@ public class TradeReportsBean {
       if (needsCost) {
         query.addField(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST, aliasPrice);
         query.addField(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST_CURRENCY, aliasCurrency);
-      } else {
+      } else if (!showWeight) {
         query.addField(TBL_ITEMS, itemPrice.getPriceColumn(), aliasPrice);
         query.addField(TBL_ITEMS, itemPrice.getCurrencyColumn(), aliasCurrency);
+      } else {
+        query.addField(TBL_ITEMS, COL_ITEM_WEIGHT, aliasPrice);
+        query.addEmptyLong(aliasCurrency);
       }
-
       if (movement) {
         query.addExpr(zero(amountPrecision, amountScale), aliasStartAmount);
         query.addExpr(zero(amountPrecision, amountScale), aliasEndAmount);
@@ -472,10 +478,12 @@ public class TradeReportsBean {
     }
 
     if (showAmount) {
-      qs.sqlIndex(tmp, aliasCurrency);
+      ResponseObject response = ResponseObject.emptyResponse();
 
-      ResponseObject response = maybeExchange(tmp, aliasPrice, aliasCurrency, endDate, currency);
-
+      if (!showWeight) {
+        qs.sqlIndex(tmp, aliasCurrency);
+        response = maybeExchange(tmp, aliasPrice, aliasCurrency, endDate, currency);
+      }
       if (!showQuantity && !response.hasErrors()) {
         SqlDelete delete = new SqlDelete(tmp)
             .setWhere(SqlUtils.or(SqlUtils.isNull(tmp, aliasPrice),

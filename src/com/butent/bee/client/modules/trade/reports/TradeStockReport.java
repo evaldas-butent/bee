@@ -57,6 +57,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class TradeStockReport extends ReportInterceptor {
@@ -112,7 +113,7 @@ public class TradeStockReport extends ReportInterceptor {
 
   protected static void commonLoad(ReportParameters parameters, FormView form) {
     loadBoolean(parameters, RP_SHOW_QUANTITY, form);
-    loadBoolean(parameters, RP_SHOW_AMOUNT, form);
+    loadListByValue(parameters, RP_SHOW_AMOUNT, form);
 
     loadListByIndex(parameters, RP_ITEM_PRICE, form);
     loadId(parameters, RP_CURRENCY, form);
@@ -138,7 +139,9 @@ public class TradeStockReport extends ReportInterceptor {
 
   protected void commonStore() {
     storeDateTimeValues(RP_RECEIVED_FROM, RP_RECEIVED_TO);
-    storeBooleanValues(RP_SHOW_QUANTITY, RP_SHOW_AMOUNT, RP_SUMMARY);
+    storeBooleanValues(RP_SHOW_QUANTITY, RP_SUMMARY);
+
+    storeSelectedValue(RP_SHOW_AMOUNT, 1);
 
     storeSelectedIndex(RP_ITEM_PRICE, 0);
     storeSelectedValue(RP_STOCK_COLUMNS, 1);
@@ -251,7 +254,9 @@ public class TradeStockReport extends ReportInterceptor {
 
   protected void addCommonParameters(ReportParameters parameters) {
     addDateTimeValues(parameters, RP_RECEIVED_FROM, RP_RECEIVED_TO);
-    addBooleanValues(parameters, RP_SHOW_QUANTITY, RP_SHOW_AMOUNT, RP_SUMMARY);
+    addBooleanValues(parameters, RP_SHOW_QUANTITY, RP_SUMMARY);
+
+    addSelectedValue(parameters, RP_SHOW_AMOUNT, 1);
 
     addSelectedIndex(parameters, RP_ITEM_PRICE, 0);
     addSelectedValue(parameters, RP_STOCK_COLUMNS, 1);
@@ -364,8 +369,11 @@ public class TradeStockReport extends ReportInterceptor {
     List<String> labels = StringList.uniqueCaseSensitive();
 
     labels.addAll(getCaptions(getDateCaption(),
-        getBoolean(RP_SHOW_QUANTITY), getBoolean(RP_SHOW_AMOUNT),
+        getBoolean(RP_SHOW_QUANTITY),
+        Objects.equals(getSelectedItemValue(RP_SHOW_AMOUNT), RP_SHOW_AMOUNT),
         getItemPrice(), getSelectorLabel(RP_CURRENCY)));
+
+    labels.add(getSelectedItemText(RP_SHOW_AMOUNT));
 
     SELECTOR_NAMES.forEach(name -> labels.add(getSelectorLabel(name)));
 
@@ -514,7 +522,9 @@ public class TradeStockReport extends ReportInterceptor {
 
     if (hasPrice) {
       ItemPrice itemPrice = parameters.getEnum(RP_ITEM_PRICE, ItemPrice.class);
-      text = (itemPrice == null) ? Localized.dictionary().cost() : itemPrice.getCaption();
+      text = Objects.equals(getSelectedItemValue(RP_SHOW_AMOUNT), COL_TRADE_WEIGHT)
+          ? Localized.dictionary().weight()
+          : (itemPrice == null) ? Localized.dictionary().cost() : itemPrice.getCaption();
 
       table.setText(r, c, text, stylePrice);
       xr.add(new XCell(c, text, headerStyleRef));

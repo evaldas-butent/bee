@@ -34,7 +34,11 @@
         <CheckBox name="Quantity" text="=quantity" />
       </cell>
       <cell style="padding-left: 1em; padding-right: 2em; vertical-align: top;">
-        <CheckBox name="Amount" text="=amount" />
+        <ListBox name="Amount">
+          <item>-</item>
+          <item value="Amount">=amount</item>
+          <item value="Weight">=weight</item>
+        </ListBox>
       </cell>
 
       <cell kind="label">

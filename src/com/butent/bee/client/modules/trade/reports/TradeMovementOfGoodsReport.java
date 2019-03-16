@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class TradeMovementOfGoodsReport extends TradeStockReport {
@@ -314,7 +315,9 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
 
     if (hasPrice) {
       ItemPrice itemPrice = parameters.getEnum(RP_ITEM_PRICE, ItemPrice.class);
-      text = (itemPrice == null) ? Localized.dictionary().cost() : itemPrice.getCaption();
+      text = Objects.equals(getSelectedItemValue(RP_SHOW_AMOUNT), COL_TRADE_WEIGHT)
+          ? Localized.dictionary().weight()
+          : (itemPrice == null) ? Localized.dictionary().cost() : itemPrice.getCaption();
 
       table.setText(r, c, text, stylePrice());
       xr.add(new XCell(c, text, headerStyleRef));
