@@ -99,6 +99,7 @@ public final class TradeActConstants {
   public static final String COL_TA_TEMPLATE_NAME = "Template";
 
   public static final String COL_TA_ITEM = "Item";
+  public static final String COL_TA_ITEM_VALUE = "ItemValue";
   public static final String COL_FOR_ACTS = "ForActs";
 
   public static final String COL_TA_SERVICE_FROM = "DateFrom";

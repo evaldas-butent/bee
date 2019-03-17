@@ -8,6 +8,14 @@
       </ui:inline>
       <ui:expression>!(row.Price)</ui:expression>
     </dynStyle>
+    <dynStyle>
+      <ui:class>bee-ta-command-apply-rent</ui:class>
+      <ui:expression>(row.IsRentalPrice)</ui:expression>
+    </dynStyle>
+    <dynStyle>
+      <ui:class>bee-ta-command-apply-tariff</ui:class>
+      <ui:expression>(row.IsApplyTariff)</ui:expression>
+    </dynStyle>
     <footer expression="row.Quantity * row.Price" />
   </DataColumn>
 </g:columns>

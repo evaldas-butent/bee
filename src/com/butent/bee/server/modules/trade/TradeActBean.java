@@ -4650,7 +4650,7 @@ public class TradeActBean implements HasTimerService {
         COL_TA_SERVICE_TARIFF, COL_TA_SERVICE_FACTOR, COL_TA_SERVICE_DAYS,
         COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
         COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_DISCOUNT,
-        COL_TRADE_SUPPLIER, COL_COST_AMOUNT);
+        COL_TRADE_SUPPLIER, COL_COST_AMOUNT, COL_IS_ITEM_APPLY_TARIFF, COL_IS_ITEM_RENTAL_PRICE);
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_ACT_SERVICES, idName)
@@ -4682,18 +4682,25 @@ public class TradeActBean implements HasTimerService {
             .addConstant(COL_TA_SERVICE_FROM, date);
 
         Double tariff = row.getDouble(COL_TA_SERVICE_TARIFF);
+        boolean isApplyTariff = BeeUtils.unbox(row.getBoolean(COL_IS_ITEM_APPLY_TARIFF));
         Double quantity = row.getDouble(COL_TRADE_ITEM_QUANTITY);
-        Double price;
-        if (BeeUtils.isPositive(itemTotal) && BeeUtils.isPositive(tariff)) {
-          price = TradeActUtils.calculateServicePrice(null, null, itemTotal, tariff, quantity,
-              priceScale);
-        } else {
-          price = null;
+        Double price = row.getDouble(COL_ITEM_PRICE);
+        if (BeeUtils.isPositive(itemTotal) && BeeUtils.isPositive(tariff) && isApplyTariff) {
+          price = TradeActUtils.calculateServicePrice(price, null, itemTotal, tariff, quantity,
+            priceScale);
+        } else if(BeeUtils.isPositive(itemTotal) && BeeUtils.isPositive(price) && !isApplyTariff) {
+          tariff = price * BeeUtils.unbox(quantity) * 100 / itemTotal;
+        }
+
+        if (BeeUtils.isPositive(itemTotal)) {
+          insert.addConstant(COL_TA_ITEM_VALUE, itemTotal);
         }
 
         for (String field : fields) {
           if (COL_TRADE_ITEM_PRICE.equals(field) && BeeUtils.isPositive(price)) {
             insert.addConstant(field, price);
+          } else if (COL_TA_SERVICE_TARIFF.equals(field) && BeeUtils.isPositive(tariff)){
+            insert.addConstant(field, tariff);
           } else {
             String value = row.getValue(field);
             if (value != null) {

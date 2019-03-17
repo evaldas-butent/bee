@@ -57,6 +57,7 @@
     <SimpleColumn name="Price" />
 
     <SimpleColumn name="IsRentalPrice" />
+    <SimpleColumn name="IsApplyTariff" />
 
     <SimpleColumn name="VatPlus" />
     <SimpleColumn name="Vat" />

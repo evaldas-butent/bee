@@ -419,3 +419,15 @@
 .bee-form-SalesInvoice-container .bee-Action-print {
   display:none;
 }
+
+.bee-Button.bee-ta-command-apply-tariff,
+.bee-CellGridCell.bee-ta-command-apply-tariff{
+    background-color: #1eb2d8;
+    border-width: 2px;
+}
+
+.bee-Button.bee-ta-command-apply-rent,
+.bee-CellGridCell.bee-ta-command-apply-rent {
+    background-color: #408080;
+    border-width: 2px;
+}

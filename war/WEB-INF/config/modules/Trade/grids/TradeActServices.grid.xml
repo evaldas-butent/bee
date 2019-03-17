@@ -46,6 +46,7 @@
 
     <RelColumn name="Supplier" newRowEnabled="false" caching="none" />
     <DataColumn name="CostAmount" />
+    <DataColumn name="ItemValue" readOnly="true"/>
   </g:columns>
   <xi:include href="columns/TradeActVat.columns.xml" />
   <xi:include href="columns/TradeActTotal.columns.xml" />
