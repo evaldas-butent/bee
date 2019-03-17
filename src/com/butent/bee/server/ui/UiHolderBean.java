@@ -182,6 +182,9 @@ public class UiHolderBean {
       return ResponseObject.error("From name doesn't match resource name:",
           formElement.getAttribute(UiConstants.ATTR_NAME), "!=", formName);
     }
+    if (!checkRights(SysObject.FORM, formName)) {
+      return ResponseObject.error("Insufficient form rights:", formName);
+    }
     String viewName = getFormViewName(formName);
     BeeView view = sys.isView(viewName) ? sys.getView(viewName) : null;
 
@@ -225,6 +228,9 @@ public class UiHolderBean {
     if (!BeeUtils.same(gridElement.getAttribute(UiConstants.ATTR_NAME), gridName)) {
       return ResponseObject.error("Grid name doesn't match resource name:",
           gridElement.getAttribute(UiConstants.ATTR_NAME), "!=", gridName);
+    }
+    if (!checkRights(SysObject.GRID, gridName)) {
+      return ResponseObject.error("Insufficient grid rights:", gridName);
     }
     GridDescription grid = gridBean.getGridDescription(gridElement, getHiddenColumns());
 
@@ -388,6 +394,25 @@ public class UiHolderBean {
 
   public boolean isReport(String reportName) {
     return !BeeUtils.isEmpty(reportName) && reportCache.containsKey(key(reportName));
+  }
+
+  private boolean checkRights(SysObject obj, String objName) {
+    String name = key(objName);
+    UiObjectInfo objectInfo;
+
+    switch (obj) {
+      case GRID:
+        objectInfo = gridCache.get(name);
+        break;
+
+      case FORM:
+        objectInfo = formCache.get(name);
+        break;
+
+      default:
+        return true;
+    }
+    return usr.isAnyModuleVisible(objectInfo.getModule());
   }
 
   private void checkWidgetChildrenVisibility(Element parent, BeeView view,
