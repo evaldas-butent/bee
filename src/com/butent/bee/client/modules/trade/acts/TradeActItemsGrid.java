@@ -624,18 +624,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
         presenter.getGridView().notifyWarning(Localized.dictionary().rowIsReadOnly());
         return;
       }
-
-      Global.choice("Pasirinkite prekybos modulį", null,
-          Arrays.asList("Sena prekyba", "Nauja prekyba"), value -> {
-            switch (value) {
-              case 0:
-                createOldSale(presenter, result.getRowIds());
-                break;
-              case 1:
-                createNewSale(presenter, result);
-                break;
-            }
-          });
+      createNewSale(presenter, result);
     });
   }
 
