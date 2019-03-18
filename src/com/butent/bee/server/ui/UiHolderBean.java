@@ -35,6 +35,7 @@ import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.SysObject;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.ui.GridDescription;
@@ -412,7 +413,10 @@ public class UiHolderBean {
       default:
         return true;
     }
-    return usr.isAnyModuleVisible(objectInfo.getModule());
+    ModuleAndSub moduleAndSub = ModuleAndSub.parse(objectInfo.getModule());
+
+    return Objects.equals(moduleAndSub.getModule(), Module.ADMINISTRATION)
+        || usr.isModuleVisible(moduleAndSub);
   }
 
   private void checkWidgetChildrenVisibility(Element parent, BeeView view,

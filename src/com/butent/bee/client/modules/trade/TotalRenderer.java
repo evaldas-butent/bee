@@ -38,7 +38,7 @@ public class TotalRenderer extends AbstractCellRenderer implements HasRowValue {
   private final RendererType minus;
 
   public TotalRenderer(List<? extends IsColumn> columns) {
-    this(null, null);
+    this(columns, null);
   }
 
   public TotalRenderer(List<? extends IsColumn> columns, String options) {
