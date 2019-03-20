@@ -68,13 +68,6 @@
             renderColumns="Name Article" newRowEnabled="false"
             style="&multi;" summarize="true" />
         </row>
-
-        <row>
-          <Label text="=suppliers" />
-          <MultiSelector name="Supplier" viewName="Companies" renderColumns="Name"
-                         newRowEnabled="false" style="&multi;" summarize="true" />
-        </row>
-
         <row>
           <Label text="=seriesPlural" />
           <MultiSelector name="Series" viewName="SaleSeries" renderColumns="SeriesName"

@@ -2587,34 +2587,12 @@ public class TradeActBean implements HasTimerService {
     Set<Long> categories = DataUtils.parseIdSet(reqInfo.getParameter(COL_CATEGORY));
     Set<Long> items = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_ITEM));
 
-    Set<Long> suppliers = DataUtils.parseIdSet(reqInfo.getParameter(COL_TRADE_SUPPLIER));
-
     Set<Long> series = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_SERIES));
 
     List<String> groupBy = NameUtils.toList(reqInfo.getParameter(Service.VAR_GROUP_BY));
 
-    SqlSelect rangeQuery = new SqlSelect()
-        .addFields(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_ITEM)
-        .addMin(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM)
-        .addMax(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_TO)
-        .addMax(TBL_TRADE_ACT_SERVICES, COL_TRADE_SUPPLIER)
-        .addMax(TBL_COMPANIES, COL_COMPANY_NAME, ALS_SUPPLIER_NAME)
-        .addMax(TBL_TRADE_ACT_SERVICES, COL_COST_AMOUNT)
-        .addFrom(TBL_TRADE_ACT_INVOICES)
-        .addFromLeft(TBL_TRADE_ACT_SERVICES,
-            sys.joinTables(TBL_TRADE_ACT_SERVICES, TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
-        .addFromLeft(TBL_COMPANIES,
-            sys.joinTables(TBL_COMPANIES, TBL_TRADE_ACT_SERVICES, COL_TRADE_SUPPLIER))
-        .addGroup(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_ITEM);
+    HasConditions where = SqlUtils.and();
 
-    String rangeAlias = "rng_" + SqlUtils.uniqueName();
-
-    HasConditions where = SqlUtils.and(SqlUtils.notNull(rangeAlias, COL_TA_INVOICE_FROM),
-        SqlUtils.notNull(rangeAlias, COL_TA_INVOICE_TO));
-
-    if (!suppliers.isEmpty()) {
-      where.add(SqlUtils.inList(rangeAlias, COL_TRADE_SUPPLIER, suppliers));
-    }
     if (startDate != null) {
       where.add(SqlUtils.moreEqual(TBL_SALES, COL_TRADE_DATE, startDate));
     }
@@ -2645,9 +2623,6 @@ public class TradeActBean implements HasTimerService {
     query.addFrom(TBL_SALES);
     query.addFromLeft(TBL_SALE_ITEMS,
         sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE));
-    query.addFromLeft(rangeQuery, rangeAlias,
-        SqlUtils.join(TBL_SALE_ITEMS, sys.getIdName(TBL_SALE_ITEMS),
-            rangeAlias, COL_TA_INVOICE_ITEM));
 
     if (groupBy.isEmpty()) {
       query.addFromLeft(TBL_SALES_SERIES,
@@ -2657,7 +2632,6 @@ public class TradeActBean implements HasTimerService {
       query.addFields(TBL_SALES, COL_TRADE_DATE);
       query.addField(TBL_SALES_SERIES, COL_SERIES_NAME, COL_TRADE_INVOICE_PREFIX);
       query.addFields(TBL_SALES, COL_TRADE_INVOICE_NO);
-      query.addFields(rangeAlias, COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO);
     }
 
     if (groupBy.isEmpty() || groupBy.contains(COL_TA_COMPANY)) {
@@ -2706,7 +2680,6 @@ public class TradeActBean implements HasTimerService {
       query.addField(TBL_ITEMS, COL_ITEM_NAME, ALS_ITEM_NAME);
       query.addFields(TBL_SALE_ITEMS, COL_TRADE_ITEM_ARTICLE);
       query.addField(TBL_UNITS, COL_UNIT_NAME, ALS_UNIT_NAME);
-      query.addFields(rangeAlias, ALS_SUPPLIER_NAME, COL_COST_AMOUNT);
     }
 
     query.addFields(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_TA_SERVICE_FACTOR);
@@ -2813,9 +2786,7 @@ public class TradeActBean implements HasTimerService {
     if (groupBy.isEmpty()) {
       query.addFields(tmp, COL_SALE, COL_TRADE_DATE,
           COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO, ALS_COMPANY_NAME,
-          COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO,
           itemIdName, ALS_ITEM_NAME, COL_TRADE_ITEM_ARTICLE,
-          ALS_SUPPLIER_NAME, COL_COST_AMOUNT,
           COL_TRADE_ITEM_QUANTITY, ALS_UNIT_NAME, COL_TRADE_ITEM_FULL_PRICE, COL_TRADE_ITEM_PRICE,
           ALS_WITHOUT_VAT, ALS_VAT_AMOUNT, ALS_TOTAL_AMOUNT);
 
@@ -2839,7 +2810,6 @@ public class TradeActBean implements HasTimerService {
             fields.add(ALS_ITEM_NAME);
             fields.add(COL_TRADE_ITEM_ARTICLE);
             fields.add(ALS_UNIT_NAME);
-            fields.add(ALS_SUPPLIER_NAME);
             break;
 
           case COL_TA_COMPANY:
@@ -2866,9 +2836,6 @@ public class TradeActBean implements HasTimerService {
           query.addGroup(tmp, field);
           query.addOrder(tmp, field);
         }
-      }
-      if (groupBy.contains(COL_TA_ITEM)) {
-        query.addSum(tmp, COL_COST_AMOUNT);
       }
       query.addSum(tmp, COL_TRADE_ITEM_QUANTITY);
       query.addSum(tmp, ALS_WITHOUT_VAT);
@@ -4687,8 +4654,8 @@ public class TradeActBean implements HasTimerService {
         Double price = row.getDouble(COL_ITEM_PRICE);
         if (BeeUtils.isPositive(itemTotal) && BeeUtils.isPositive(tariff) && isApplyTariff) {
           price = TradeActUtils.calculateServicePrice(price, null, itemTotal, tariff, quantity,
-            priceScale);
-        } else if(BeeUtils.isPositive(itemTotal) && BeeUtils.isPositive(price) && !isApplyTariff) {
+              priceScale);
+        } else if (BeeUtils.isPositive(itemTotal) && BeeUtils.isPositive(price) && !isApplyTariff) {
           tariff = price * BeeUtils.unbox(quantity) * 100 / itemTotal;
         }
 
@@ -4699,7 +4666,7 @@ public class TradeActBean implements HasTimerService {
         for (String field : fields) {
           if (COL_TRADE_ITEM_PRICE.equals(field) && BeeUtils.isPositive(price)) {
             insert.addConstant(field, price);
-          } else if (COL_TA_SERVICE_TARIFF.equals(field) && BeeUtils.isPositive(tariff)){
+          } else if (COL_TA_SERVICE_TARIFF.equals(field) && BeeUtils.isPositive(tariff)) {
             insert.addConstant(field, tariff);
           } else {
             String value = row.getValue(field);

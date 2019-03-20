@@ -62,7 +62,7 @@ public class TradeActServicesReport extends ReportInterceptor {
   private static final String NAME_CURRENCY = COL_TA_CURRENCY;
 
   private static final List<String> FILTER_NAMES = Arrays.asList(COL_TA_COMPANY, COL_TA_MANAGER,
-      COL_CATEGORY, COL_TA_ITEM, COL_TRADE_SUPPLIER, COL_TA_SERIES);
+      COL_CATEGORY, COL_TA_ITEM, COL_TA_SERIES);
 
   private static final List<String> GROUP_NAMES =
       Arrays.asList("Group0", "Group1", "Group2", "Group3");
@@ -70,7 +70,7 @@ public class TradeActServicesReport extends ReportInterceptor {
       COL_ITEM_TYPE, COL_ITEM_GROUP, COL_TA_ITEM);
 
   private static final List<String> TOTAL_COLUMNS = Arrays.asList(COL_TRADE_ITEM_QUANTITY,
-      ALS_WITHOUT_VAT, ALS_VAT_AMOUNT, ALS_TOTAL_AMOUNT, COL_COST_AMOUNT);
+      ALS_WITHOUT_VAT, ALS_VAT_AMOUNT, ALS_TOTAL_AMOUNT);
 
   private static final List<String> MONEY_COLUMNS = Arrays.asList(COL_TRADE_ITEM_FULL_PRICE,
       COL_TRADE_ITEM_PRICE, ALS_WITHOUT_VAT, ALS_VAT_AMOUNT, ALS_TOTAL_AMOUNT);
