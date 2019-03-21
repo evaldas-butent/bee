@@ -2685,7 +2685,8 @@ public class TradeActBean implements HasTimerService {
     query.addFields(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_TA_SERVICE_FACTOR);
 
     query.addExpr(SqlUtils.multiply(SqlUtils.field(TBL_SALE_ITEMS, COL_TRADE_ITEM_PRICE),
-        SqlUtils.field(TBL_SALE_ITEMS, COL_TA_SERVICE_FACTOR)), COL_TRADE_ITEM_FULL_PRICE);
+        SqlUtils.nvl(SqlUtils.field(TBL_SALE_ITEMS, COL_TA_SERVICE_FACTOR), 1)),
+        COL_TRADE_ITEM_FULL_PRICE);
 
     query.addFields(TBL_SALES, COL_TRADE_CURRENCY);
 

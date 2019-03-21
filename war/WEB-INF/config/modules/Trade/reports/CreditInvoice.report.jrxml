@@ -473,7 +473,7 @@ BeeUtils.isEmpty($P{PayerEmail}) ? "" : BeeUtils.join(": ", $V{loc}.email(), $P{
 				<textElement>
 					<font isBold="false" isItalic="true" isUnderline="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{loc}.printTotalInWords() + ": (-1) " + com.butent.bee.server.Invocation.locateRemoteBean(com.butent.bee.server.modules.administration.AdministrationModuleBean.class).getTotalInWords(BeeUtils.toDouble($P{Amount}), BeeUtils.toLongOrNull($P{Currency}), $P{REPORT_LOCALE}.getLanguage())]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{loc}.printTotalInWords() + ": (-) " + com.butent.bee.server.Invocation.locateRemoteBean(com.butent.bee.server.modules.administration.AdministrationModuleBean.class).getTotalInWords(BeeUtils.toDouble($P{Amount}), BeeUtils.toLongOrNull($P{Currency}), $P{REPORT_LOCALE}.getLanguage())]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" x="0" y="203" width="80" height="12" uuid="cf68b22e-feff-4070-bc5f-40a363878e32"/>
