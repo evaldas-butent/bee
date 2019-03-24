@@ -267,6 +267,12 @@ public class CustomTradeModuleBean {
               COL_TRADE_ITEM_ARTICLE, COL_TRADE_ITEM_NOTE)
           .addField(getTableName(1), getNameColumn(1), ACTION)
           .addField(getTableName(2), getNameColumn(2), CENTER)
+          .addExpr(SqlUtils.nvl(SqlUtils.field(COL_TRADE_WAREHOUSE_FROM, "ERPCode"),
+              SqlUtils.field(COL_TRADE_WAREHOUSE_FROM, COL_WAREHOUSE_CODE)),
+              COL_TRADE_ITEM_WAREHOUSE_FROM)
+          .addExpr(SqlUtils.nvl(SqlUtils.field(COL_TRADE_WAREHOUSE_TO, "ERPCode"),
+              SqlUtils.field(COL_TRADE_WAREHOUSE_TO, COL_WAREHOUSE_CODE)),
+              COL_TRADE_ITEM_WAREHOUSE_TO)
           .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
           .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
           .addFromLeft(TBL_EXTRA_DIMENSIONS,
@@ -275,6 +281,12 @@ public class CustomTradeModuleBean {
               sys.joinTables(getTableName(1), TBL_EXTRA_DIMENSIONS, getRelationColumn(1)))
           .addFromLeft(getTableName(2),
               sys.joinTables(getTableName(2), TBL_EXTRA_DIMENSIONS, getRelationColumn(2)))
+          .addFromLeft(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM,
+              sys.joinTables(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM, TBL_TRADE_DOCUMENT_ITEMS,
+                  COL_TRADE_ITEM_WAREHOUSE_FROM))
+          .addFromLeft(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_TO,
+              sys.joinTables(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_TO, TBL_TRADE_DOCUMENT_ITEMS,
+                  COL_TRADE_ITEM_WAREHOUSE_TO))
           .setWhere(SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT, documentId));
 
       TradeVatMode vatMode = invoice.getEnum(COL_TRADE_DOCUMENT_VAT_MODE, TradeVatMode.class);
@@ -307,6 +319,8 @@ public class CustomTradeModuleBean {
         wsItem.setNote(item.getValue(COL_TRADE_ITEM_NOTE));
         wsItem.setAction(item.getValue(ACTION));
         wsItem.setCenter(item.getValue(CENTER));
+        wsItem.setWarehouseFrom(item.getValue(COL_TRADE_ITEM_WAREHOUSE_FROM));
+        wsItem.setWarehouseTo(item.getValue(COL_TRADE_ITEM_WAREHOUSE_TO));
       }
       if (response.hasErrors()) {
         break;

@@ -24,6 +24,8 @@ public class WSDocument {
 
     private String action;
     private String center;
+    private String warehouseFrom;
+    private String warehouseTo;
 
     private WSDocumentItem(String itemId, String quantity) {
       this.itemId = itemId;
@@ -63,6 +65,14 @@ public class WSDocument {
         this.vatPercent = BeeUtils.unbox(isPercent) ? "%" : null;
         this.vatMode = BeeUtils.unbox(isPlus) ? "S" : "T";
       }
+    }
+
+    public void setWarehouseFrom(String warehouse) {
+      this.warehouseFrom = warehouse;
+    }
+
+    public void setWarehouseTo(String warehouse) {
+      this.warehouseTo = warehouse;
     }
   }
 
@@ -145,7 +155,9 @@ public class WSDocument {
           .append(XmlUtils.tag("preke", item.itemId))
           .append(XmlUtils.tag("kiekis", item.quantity))
           .append(XmlUtils.tag("artikulas", item.article))
-          .append(XmlUtils.tag("pastaba", item.note));
+          .append(XmlUtils.tag("pastaba", item.note))
+          .append(XmlUtils.tag("tiek_sand", item.warehouseFrom))
+          .append(XmlUtils.tag("gav_sand", item.warehouseTo));
 
       if (!BeeUtils.isEmpty(bolSeries)) {
         sb.append(XmlUtils.tag("vaz_serija", bolSeries));

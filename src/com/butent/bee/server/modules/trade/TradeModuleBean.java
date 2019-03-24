@@ -836,7 +836,24 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         }
       }
     }
+    if (document.getTerm() == null) {
+      Long company;
+      String col;
 
+      if (operationType.producesStock()) {
+        company = document.getSupplier();
+        col = COL_COMPANY_SUPPLIER_DAYS;
+      } else {
+        company = document.getCustomer();
+        col = COL_COMPANY_CREDIT_DAYS;
+      }
+      String days = qs.getValueById(TBL_COMPANIES, company, col);
+
+      if (!BeeUtils.isEmpty(days)) {
+        document.setTerm(TimeUtils.startOfNextDay(TimeUtils.nextDay(document.getDate(),
+            BeeUtils.toInt(days))));
+      }
+    }
     SqlInsert insertDocument = new SqlInsert(TBL_TRADE_DOCUMENTS).addAll(document.getValues());
 
     ResponseObject insertDocumentResponse = qs.insertDataWithResponse(insertDocument);

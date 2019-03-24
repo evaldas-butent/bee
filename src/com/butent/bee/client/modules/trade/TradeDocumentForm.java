@@ -4,6 +4,7 @@ import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
@@ -16,6 +17,7 @@ import com.butent.bee.client.composite.TabGroup;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Direction;
@@ -26,6 +28,7 @@ import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
@@ -66,6 +69,7 @@ import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -106,6 +110,20 @@ public class TradeDocumentForm extends PrintFormInterceptor {
   private int southExpandedFrom;
 
   TradeDocumentForm() {
+  }
+
+  @Override
+  public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
+    if (widget instanceof DataSelector) {
+      switch (editableWidget.getColumnId()) {
+        case COL_TRADE_SUPPLIER:
+        case COL_TRADE_CUSTOMER:
+          ((DataSelector) widget).addSelectorHandler(ev ->
+              onCompanySelection(editableWidget.getColumnId(), ev));
+          break;
+      }
+    }
+    super.afterCreateEditableWidget(editableWidget, widget);
   }
 
   @Override
@@ -337,6 +355,40 @@ public class TradeDocumentForm extends PrintFormInterceptor {
   @Override
   public boolean isRowEditable(IsRow row) {
     return super.isRowEditable(row) && TradeUtils.isDocumentEditable(row);
+  }
+
+  private void onCompanySelection(String source, SelectorEvent event) {
+    if (event.isChanged()) {
+      long id = event.getValue();
+      IsRow dataRow = getActiveRow();
+
+      OperationType operationType = EnumUtils.getEnumByIndex(OperationType.class,
+          dataRow.getInteger(getDataIndex(COL_OPERATION_TYPE)));
+
+      if (operationType == null || !DataUtils.isId(id)) {
+        return;
+      }
+      String col;
+
+      if (operationType.consumesStock() && Objects.equals(source, COL_TRADE_CUSTOMER)) {
+        col = COL_COMPANY_CREDIT_DAYS;
+
+      } else if (operationType.producesStock() && Objects.equals(source, COL_TRADE_SUPPLIER)) {
+        col = COL_COMPANY_SUPPLIER_DAYS;
+
+      } else {
+        return;
+      }
+      Queries.getValue(TBL_COMPANIES, id, col, days -> {
+        String term = null;
+
+        if (!BeeUtils.isEmpty(days)) {
+          term = TimeUtils.startOfNextDay(TimeUtils.nextDay(getDateTimeValue(COL_TRADE_DATE),
+              BeeUtils.toInt(days))).serialize();
+        }
+        getFormView().updateCell(COL_TRADE_TERM, term);
+      });
+    }
   }
 
   @Override
