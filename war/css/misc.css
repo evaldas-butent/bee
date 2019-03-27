@@ -724,21 +724,31 @@
   cursor: default;
 }
 
-.bee-reminder-dialog-panel{
+/* @deprecated('bee-reminder-dialog-panel') */
+.bee-reminder-dialog-panel,
+.bee-reminder-dialog-panel-buttons,
+.bee-reminder-dialog-panel-dt,
+.bee-reminder-dialog-panel-info {
   padding: 10px 0px;
 }
 
-.bee-reminder-dialog-infoPanel{
+/* @deprecated('bee-reminder-dialog-infoPanel')*/
+.bee-reminder-dialog-infoPanel,
+.bee-reminder-dialog-panel-info {
   background-color: #FEF9D3;
-  padding: 10px 10px;
+  margin: 10px 10px;
   height: 40px;
 }
 
-.bee-reminder-dialog-infoText{
+/* @deprecated('bee-reminder-dialog-infoText') */
+.bee-reminder-dialog-infoText,
+.bee-reminder-dialog-label-info {
   display: table-cell;
 }
 
-.bee-reminder-dialog-dateText{
+/* @deprecated('bee-reminder-dialog-dateText') */
+.bee-reminder-dialog-dateText,
+.bee-reminder-dialog-label-dt {
   font-weight: bold;
   font-size: 14px;
 }
@@ -761,7 +771,9 @@
    padding-right: 8px;
 }
 
-.bee-reminder-dialog-component {
+/* @deprecated('bee-reminder-dialog-component')*/
+.bee-reminder-dialog-component,
+.bee-reminder-dialog-widget {
    margin-right: 10px;
 }
 

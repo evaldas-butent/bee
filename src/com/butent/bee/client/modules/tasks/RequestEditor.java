@@ -102,6 +102,7 @@ public class RequestEditor extends ProductSupportInterceptor {
   private static final BeeLogger logger = LogUtils.getLogger(RequestEditor.class);
 
   private final UserInfo currentUser = BeeKeeper.getUser();
+  private final RequestReminder requestReminder = new RequestReminder();
 
   private RequestEventsHandler eventsHandler;
   private Flow requestComments;
@@ -186,17 +187,15 @@ public class RequestEditor extends ProductSupportInterceptor {
     }
 
     setCommentsLayout();
-
-    final RequestReminder requestReminder = new RequestReminder(row.getId());
-    requestReminder.getReminderLabel().addClickHandler(event -> {
-      requestReminder.showDialog();
-    });
+    requestReminder.setRequestID(row.getId());
 
     HeaderView header = form.getViewPresenter().getHeader();
+
     header.clearCommandPanel();
+    header.addCommandItem(requestReminder.getDialogAction());
 
-    header.addCommandItem(requestReminder.getReminderLabel());
-
+    requestReminder.getDialogAction().setEnabled(false);
+    requestReminder.loadData(result -> requestReminder.getDialogAction().setEnabled(true));
     eventsHandler = new RequestEventsHandler(header, !readStorage(NAME_ORDER));
 
     boolean finished =
