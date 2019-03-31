@@ -49,6 +49,13 @@
                         choiceColumns="ID Model ObjectName ObjectAddress"
                         style="&absolute; left: 80px; top: 160px; width: 240px;" />
 
+          <Label for="Supplier" style="&absolute; left: 360px; top: 144px; width: 76px;" />
+          <UnboundSelector name="Suppliers" viewName="Companies" renderColumns="Name" choiceColumns="Name" newRowEnabled="false"
+                           style="&absolute; left: 360px; top: 161px; width: 235px;" />
+
+          <Label for="CostAmount" style="&absolute; left: 655px; top: 145px; width: 76px;" />
+          <InputDecimal source="CostAmount" scale="2" style="&absolute; left: 655px; top: 160px; width: 8em;" />
+
           <InputArea source="Description" placeholder="=description" visibleLines="5"
                      style="&absolute; left: 360px; top: 55px; width: 400px;" />
 

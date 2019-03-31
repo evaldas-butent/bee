@@ -81,6 +81,10 @@
     </SimpleJoin>
 
     <SimpleColumn name="Run" />
+    <SimpleColumn name="Appointment" />
+    <SimpleJoin name="Appointment" joinType="LEFT">
+      <SimpleColumn name="Summary" />
+    </SimpleJoin>
 
     <ExternalJoin name="TradeActService" joinType="LEFT" source="TradeActInvoices">
       <SimpleJoin name="SaleItem" joinType="LEFT">

@@ -1,5 +1,8 @@
 package com.butent.bee.client.modules.calendar;
 
+import com.butent.bee.client.composite.UnboundSelector;
+import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.gwt.dom.client.Style.Visibility;
@@ -516,6 +519,11 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
     }
     if (!BeeUtils.isEmpty(getEndTimeWidgetId())) {
       getInputTime(getEndTimeWidgetId()).setTime(end);
+    }
+
+    Long supplier = getFormView().getLongValue(TradeConstants.COL_TRADE_SUPPLIER);
+    if (BeeUtils.isPositive(supplier)) {
+      ((UnboundSelector) getFormView().getWidgetByName("Suppliers")).setValue(supplier, true);
     }
 
     checkOverlap(false);
@@ -1347,9 +1355,45 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
         serviceTypes), getSelectedId(getRepairTypeWidgetId(), repairTypes));
     final Long reminderType = getSelectedId(getReminderWidgetId(), reminderTypes);
 
+    maybeUpdateTradeActService();
+
     return CalendarUtils.saveAppointment(callback, isNew, this, getFormView().getActiveRow(),
         getStart(), getEnd(getStart()), propList, reminderType, getFormView(), appointmentView);
 
+  }
+
+  private void maybeUpdateTradeActService() {
+    IsRow oldRow = getFormView().getOldRow();
+    IsRow activeRow = getFormView().getActiveRow();
+    Long tradeActService = getLongValue("TradeActService");
+
+    if (tradeActService != null && oldRow != null && activeRow !=null) {
+
+      List<String> columns = new ArrayList<>();
+      List<String> values = new ArrayList<>();
+
+      Double costOld = Data.getDouble(VIEW_APPOINTMENTS, oldRow, TradeActConstants.COL_COST_AMOUNT);
+      Double costNew = Data.getDouble(VIEW_APPOINTMENTS, activeRow, TradeActConstants.COL_COST_AMOUNT);
+
+      if (!Objects.equals(costNew, costOld)) {
+        values.add(costNew == null ? "" : BeeUtils.toString(costNew));
+        columns.add(TradeActConstants.COL_COST_AMOUNT);
+      }
+
+      Long supplierOld = Data.getLong(VIEW_APPOINTMENTS, oldRow, TradeConstants.COL_TRADE_SUPPLIER);
+      UnboundSelector selector = (UnboundSelector) getFormView().getWidgetByName("Suppliers");
+      Long supplier = selector.getRelatedId();
+
+      if (!Objects.equals(supplierOld, supplier)) {
+        values.add(supplier == null ? "" : BeeUtils.toString(supplier));
+        columns.add(TradeConstants.COL_TRADE_SUPPLIER);
+      }
+
+      if (!values.isEmpty()) {
+        Queries.update(TradeActConstants.VIEW_TRADE_ACT_SERVICES, Filter.compareId(tradeActService), columns,
+          values, result -> Data.refreshLocal(TradeActConstants.VIEW_TRADE_ACT_SERVICES));
+      }
+    }
   }
 
   private void setBuildInfoWidgetId(String buildInfoWidgetId) {

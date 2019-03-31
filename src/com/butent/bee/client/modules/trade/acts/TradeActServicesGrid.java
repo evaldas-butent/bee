@@ -2,13 +2,17 @@ package com.butent.bee.client.modules.trade.acts;
 
 
 import com.butent.bee.client.data.*;
+import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.shared.data.*;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.google.common.collect.Lists;
@@ -17,6 +21,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.TBL_APPOINTMENT_OWNERS;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_SERVICE_OBJECT;
 import static com.butent.bee.shared.modules.service.ServiceConstants.VIEW_SERVICE_DATES;
@@ -51,6 +56,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class TradeActServicesGrid extends AbstractGridInterceptor implements
     SelectionHandler<BeeRowSet> {
@@ -125,6 +131,13 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
         if (event.isOpened()) {
           event.getSelector().setAdditionalFilter(Filter.idIn(VIEW_ITEM_SUPPLIERS,
               COL_TRADE_SUPPLIER, Filter.equals(COL_ITEM, getLongValue(COL_ITEM))));
+        }
+      });
+    } else if (Objects.equals(source, CalendarConstants.COL_APPOINTMENT)) {
+      ((DataSelector) editor).addSelectorHandler(event -> {
+        if (event.isNewRow()) {
+          event.consume();
+          createAppointment();
         }
       });
     }
@@ -416,6 +429,21 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
           }
           break;
       }
+    } else if (BeeUtils.same(CalendarConstants.COL_APPOINTMENT, column.getId())) {
+
+      Long tradeActService = null;
+      String appointment = null;
+
+      if (BeeUtils.isEmpty(oldValue) && newValue != null) {
+        tradeActService = getActiveRowId();
+        appointment = newValue;
+      } else if (BeeUtils.isEmpty(newValue) && oldValue != null) {
+        tradeActService = null;
+        appointment = oldValue;
+      }
+
+      Queries.update(CalendarConstants.VIEW_APPOINTMENTS, BeeUtils.toLong(appointment), "TradeActService",
+        new LongValue(tradeActService));
     }
   }
 
@@ -835,6 +863,66 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
           Queries.updateCellAndFire(getViewName(), getActiveRowId(), getActiveRow().getVersion(), COL_TA_RUN, oldRun,
             Data.getString(VIEW_SERVICE_DATES, result, COL_TA_RUN)));
       }
+    });
+  }
+
+  private void createAppointment() {
+    Consumer<BeeRow> initializer = eventRow -> {
+      IsRow serviceRow = getActiveRow();
+
+      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, "TradeActService", getActiveRowId());
+
+      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_TRADE_SUPPLIER,
+        Data.getLong(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_TRADE_SUPPLIER));
+
+      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, ALS_SUPPLIER_NAME,
+        Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, ALS_SUPPLIER_NAME));
+
+      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_COST_AMOUNT,
+        Data.getDouble(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_COST_AMOUNT));
+
+      String seriesName = Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, "TradeSeriesName");
+      String itemName = Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, "ItemName");
+      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, CalendarConstants.COL_SUMMARY,
+        BeeUtils.joinWords(seriesName, itemName));
+
+      FormView tradeActForm = ViewHelper.getForm(getGridView());
+      if (tradeActForm != null) {
+        Long company = tradeActForm.getLongValue(COL_COMPANY);
+        String companyName = tradeActForm.getStringValue(ALS_COMPANY_NAME);
+        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_COMPANY, company);
+        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, ALS_COMPANY_NAME, companyName);
+
+        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_COMPANY_PERSON,
+          tradeActForm.getLongValue(COL_CONTACT));
+        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, TaskConstants.ALS_PERSON_FIRST_NAME,
+          tradeActForm.getStringValue(ALS_CONTACT_FIRST_NAME));
+        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, TaskConstants.ALS_PERSON_LAST_NAME,
+          tradeActForm.getStringValue(ALS_CONTACT_LAST_NAME));
+
+        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_TRADE_ACT, tradeActForm.getActiveRowId());
+        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, "TradeNumber",
+          tradeActForm.getStringValue(COL_TA_NUMBER));
+        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, "TradeCompanyName", companyName);
+        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_SERIES_NAME, seriesName);
+
+        String tradeActName = tradeActForm.getStringValue(COL_TRADE_ACT_NAME);
+        String objectName = tradeActForm.getStringValue(COL_COMPANY_OBJECT_NAME);
+        String objectAddress = tradeActForm.getStringValue(COL_COMPANY_OBJECT_ADDRESS);
+
+        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_ITEM_DESCRIPTION,
+          BeeUtils.joinWords(objectName, objectAddress) + "\n" + tradeActName);
+
+        Long manager = tradeActForm.getLongValue(COL_TRADE_MANAGER);
+        if (manager != null) {
+          eventRow.setProperty(TBL_APPOINTMENT_OWNERS, manager);
+        }
+      }
+    };
+
+    CalendarKeeper.createAppointment(initializer, null, appointment -> {
+      Queries.update(VIEW_TRADE_ACT_SERVICES, getActiveRowId(), CalendarConstants.COL_APPOINTMENT,
+        new LongValue(appointment.getId()), result -> Data.refreshLocal(getViewName()));
     });
   }
 }
