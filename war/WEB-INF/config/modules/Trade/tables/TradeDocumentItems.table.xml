@@ -23,6 +23,9 @@
     <Relation name="ItemWarehouseFrom" relation="Warehouses" label="=trdItemWarehouseFrom" />
     <Relation name="ItemWarehouseTo" relation="Warehouses" label="=trdItemWarehouseTo" />
 
+    <Relation name="TradeActWarehouseFrom" relation="Warehouses" label="Nuoma-tiekėjas" />
+    <Relation name="TradeActWarehouseTo" relation="Warehouses" label="Nuoma-gavėjas" />
+
     <Relation name="Employee" relation="Employees" label="=employee" />
     <Relation name="ItemVehicle" relation="Vehicles" label="=trdItemVehicle" />
 

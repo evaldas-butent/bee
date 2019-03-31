@@ -98,6 +98,8 @@ public class WSDocument {
   private String department;
   private String action;
   private String center;
+  private String warehouseFrom;
+  private String warehouseTo;
 
   private String bolSeries;
   private String bolNumber;
@@ -156,8 +158,8 @@ public class WSDocument {
           .append(XmlUtils.tag("kiekis", item.quantity))
           .append(XmlUtils.tag("artikulas", item.article))
           .append(XmlUtils.tag("pastaba", item.note))
-          .append(XmlUtils.tag("tiek_sand", item.warehouseFrom))
-          .append(XmlUtils.tag("gav_sand", item.warehouseTo));
+          .append(XmlUtils.tag("tiek_sand", BeeUtils.notEmpty(item.warehouseFrom, warehouseFrom)))
+          .append(XmlUtils.tag("gav_sand", BeeUtils.notEmpty(item.warehouseTo, warehouseTo)));
 
       if (!BeeUtils.isEmpty(bolSeries)) {
         sb.append(XmlUtils.tag("vaz_serija", bolSeries));
@@ -307,5 +309,13 @@ public class WSDocument {
 
   public void setTerm(JustDate term) {
     this.term = term;
+  }
+
+  public void setWarehouseFrom(String warehouse) {
+    this.warehouseFrom = warehouse;
+  }
+
+  public void setWarehouseTo(String warehouse) {
+    this.warehouseTo = warehouse;
   }
 }

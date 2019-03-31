@@ -86,8 +86,6 @@ public class CustomTradeModuleBean {
   }
 
   public Table<Long, Long, Double> getTradeActStock(Collection<Long> items, Long... warehouses) {
-    String wrh = "TradeActWarehouse";
-
     IsCondition phaseCondition = SqlUtils.inList(TBL_TRADE_DOCUMENTS, COL_TRADE_DOCUMENT_PHASE,
         Arrays.stream(TradeDocumentPhase.values()).filter(TradeDocumentPhase::modifyStock)
             .collect(Collectors.toSet()));
@@ -104,29 +102,26 @@ public class CustomTradeModuleBean {
         BeeUtils.isEmpty(items) ? null
             : SqlUtils.inList(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, items));
 
-    IsCondition wrhClause = SqlUtils.and(SqlUtils.notNull(TBL_TRADE_DOCUMENTS, wrh),
-        ArrayUtils.isEmpty(warehouses) ? null
-            : SqlUtils.inList(TBL_TRADE_DOCUMENTS, wrh, (Object[]) warehouses));
-
     Table<Long, Long, Double> result = HashBasedTable.create();
 
     SqlSelect union = new SqlSelect()
         .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
-        .addFields(TBL_TRADE_DOCUMENTS, wrh)
-        .addSum(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ACT_WAREHOUSE_TO),
+            SqlUtils.field(TBL_TRADE_DOCUMENTS, COL_TRADE_ACT_WAREHOUSE_TO)), COL_WAREHOUSE)
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY)
         .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
         .addFromInner(TBL_TRADE_DOCUMENTS,
             sys.joinTables(TBL_TRADE_DOCUMENTS, TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT))
         .addFromInner(TBL_TRADE_OPERATIONS,
             sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_DOCUMENTS, COL_TRADE_OPERATION))
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
-        .setWhere(SqlUtils.and(phaseCondition, producerCondition, wrhClause, itemsClause))
-        .addGroup(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
-        .addGroup(TBL_TRADE_DOCUMENTS, wrh)
+        .setWhere(SqlUtils.and(phaseCondition, producerCondition, itemsClause))
         .addUnion(new SqlSelect()
             .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
-            .addFields(TBL_TRADE_DOCUMENTS, wrh)
-            .addSum(SqlUtils.multiply(SqlUtils.field(TBL_TRADE_DOCUMENT_ITEMS,
+            .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRADE_DOCUMENT_ITEMS,
+                COL_TRADE_ACT_WAREHOUSE_FROM), SqlUtils.field(TBL_TRADE_DOCUMENTS,
+                COL_TRADE_ACT_WAREHOUSE_FROM)), COL_WAREHOUSE)
+            .addExpr(SqlUtils.multiply(SqlUtils.field(TBL_TRADE_DOCUMENT_ITEMS,
                 COL_TRADE_ITEM_QUANTITY), SqlUtils.constant(-1)), COL_TRADE_ITEM_QUANTITY)
             .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
             .addFromInner(TBL_TRADE_DOCUMENTS,
@@ -134,19 +129,20 @@ public class CustomTradeModuleBean {
             .addFromInner(TBL_TRADE_OPERATIONS,
                 sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_DOCUMENTS, COL_TRADE_OPERATION))
             .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
-            .setWhere(SqlUtils.and(phaseCondition, consumerCondition, wrhClause, itemsClause))
-            .addGroup(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
-            .addGroup(TBL_TRADE_DOCUMENTS, wrh));
+            .setWhere(SqlUtils.and(phaseCondition, consumerCondition, itemsClause)));
 
     String subq = SqlUtils.uniqueName();
 
     SqlSelect query = new SqlSelect()
-        .addFields(subq, COL_ITEM, wrh)
+        .addFields(subq, COL_ITEM, COL_WAREHOUSE)
         .addSum(subq, COL_TRADE_ITEM_QUANTITY)
         .addFrom(union, subq)
-        .addGroup(subq, COL_ITEM, wrh);
+        .setWhere(SqlUtils.and(SqlUtils.notNull(subq, COL_WAREHOUSE),
+            ArrayUtils.isEmpty(warehouses) ? null
+                : SqlUtils.inList(subq, COL_WAREHOUSE, (Object[]) warehouses)))
+        .addGroup(subq, COL_ITEM, COL_WAREHOUSE);
 
-    qs.getData(query).forEach(row -> result.put(row.getLong(COL_ITEM), row.getLong(wrh),
+    qs.getData(query).forEach(row -> result.put(row.getLong(COL_ITEM), row.getLong(COL_WAREHOUSE),
         row.getDouble(COL_STOCK_QUANTITY)));
 
     return result;
@@ -258,6 +254,8 @@ public class CustomTradeModuleBean {
       wsDoc.setDepartment(invoice.getValue(COL_DEPARTMENT_NAME));
       wsDoc.setAction(invoice.getValue(ACTION));
       wsDoc.setCenter(invoice.getValue(CENTER));
+      wsDoc.setWarehouseFrom(invoice.getValue(COL_TRADE_WAREHOUSE_FROM));
+      wsDoc.setWarehouseTo(invoice.getValue(COL_TRADE_WAREHOUSE_TO));
 
       SqlSelect itemsQuery = new SqlSelect()
           .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE)

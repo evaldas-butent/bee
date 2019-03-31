@@ -148,6 +148,8 @@ public final class TradeConstants {
   public static final String COL_TRADE_CURRENCY = "Currency";
   public static final String COL_TRADE_WAREHOUSE_FROM = "WarehouseFrom";
   public static final String COL_TRADE_WAREHOUSE_TO = "WarehouseTo";
+  public static final String COL_TRADE_ACT_WAREHOUSE_FROM = "TradeActWarehouseFrom";
+  public static final String COL_TRADE_ACT_WAREHOUSE_TO = "TradeActWarehouseTo";
   public static final String COL_TRADE_SUPPLIER = "Supplier";
   public static final String COL_TRADE_CUSTOMER = "Customer";
   public static final String COL_TRADE_PAYER = "Payer";

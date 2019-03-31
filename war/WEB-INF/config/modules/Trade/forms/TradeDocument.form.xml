@@ -3,7 +3,7 @@
     <!ENTITY mrcl "flexBox-horizontal-top">
     <!ENTITY mrst "margin-top: 0.5vh;">
     <!ENTITY mfld "margin-left: 1em; min-width: 5em;">
-    <!ENTITY mwn "width: 16em;">
+    <!ENTITY mwn "width: 9em;">
     <!ENTITY flbl "margin-bottom: 1px;">
     <!ENTITY finp "width: 100&#37;;">
     <!ENTITY fmax "max-width: 50em;">
@@ -268,7 +268,14 @@
               <Label for="WarehouseFrom" style="&flbl;" />
               <DataSelector source="WarehouseFrom" style="&finp;" newRowEnabled="false"
                             visible="true" choiceColumns="Code Name" filter="!(ForActs)"
-                            renderColumns="WarehouseFromCode WarehouseFromName" />
+                            renderColumns="WarehouseFromCode" />
+            </FlowPanel>
+
+            <FlowPanel style="&mfld; &mwn;">
+              <Label for="TradeActWarehouseFrom" style="&flbl;" />
+              <DataSelector source="TradeActWarehouseFrom" style="&finp;" visible="true"
+                            newRowEnabled="false" choiceColumns="Code Name" filter="ForActs"
+                            renderColumns="TradeActWarehouseFromCode" />
             </FlowPanel>
           </FlowPanel>
 
@@ -284,7 +291,14 @@
               <Label for="WarehouseTo" style="&flbl;" />
               <DataSelector source="WarehouseTo" style="&finp;" visible="true"
                             newRowEnabled="false" choiceColumns="Code Name" filter="!(ForActs)"
-                            renderColumns="WarehouseToCode WarehouseToName" />
+                            renderColumns="WarehouseToCode" />
+            </FlowPanel>
+
+            <FlowPanel style="&mfld; &mwn;">
+              <Label for="TradeActWarehouseTo" style="&flbl;" />
+              <DataSelector source="TradeActWarehouseTo" style="&finp;" visible="true"
+                            newRowEnabled="false" choiceColumns="Code Name" filter="ForActs"
+                            renderColumns="TradeActWarehouseToCode" />
             </FlowPanel>
           </FlowPanel>
 
@@ -302,7 +316,7 @@
               <Label text="=tags" style="&flbl;" listName="TradeDocumentTags" />
               <ChildSelector childTable="TradeDocumentTags" viewName="TradeTags"
                              targetRelColumn="TradeDocument" sourceRelColumn="TradeTag"
-                             renderColumns="TagName"
+                             renderColumns="TFagName"
                              newRowEnabled="false" style="&finp;" />
             </FlowPanel>
           </FlowPanel>
@@ -314,14 +328,6 @@
                             newRowEnabled="false" editViewName="Cars"
                             choiceColumns="BrandName ModelName Number BodyNumber"
                             renderColumns="VehicleBrandName VehicleModelName VehicleNumber VehicleBodyNumber" />
-            </FlowPanel>
-
-
-            <FlowPanel style="&mfld; &mwn;">
-              <Label for="TradeActWarehouse" style="&flbl;" />
-              <DataSelector source="TradeActWarehouse" style="&finp;" visible="true"
-                            newRowEnabled="false" choiceColumns="Code Name" filter="ForActs"
-                            renderColumns="TradeActWarehouseCode TradeActWarehouseName" />
             </FlowPanel>
           </FlowPanel>
         </FlowPanel>

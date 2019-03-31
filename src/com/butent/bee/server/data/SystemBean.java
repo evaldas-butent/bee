@@ -11,6 +11,7 @@ import com.google.common.eventbus.EventBus;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
@@ -71,6 +72,7 @@ import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.SysObject;
+import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.rights.RightsUtils;
@@ -96,6 +98,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
 import javax.ejb.Lock;
@@ -1548,6 +1551,7 @@ public class SystemBean {
   private void updateTransformations() {
     updateVehicleModels();
     updateConfOptionTypes();
+    updateTradeDocumentWarehouses();
   }
 
   private void updateConfOptionTypes() {
@@ -1608,6 +1612,47 @@ public class SystemBean {
       makeStructureChanges(SqlUtils.dropTable(TBL_CONF_OPTIONS));
       makeStructureChanges(SqlUtils.renameTable(tmp, TBL_CONF_OPTIONS));
       rebuildTable(TBL_CONF_OPTIONS);
+    }
+  }
+
+  private void updateTradeDocumentWarehouses() {
+    if (getTable(TBL_TRADE_DOCUMENTS).isActive()
+        && Objects.isNull(qs.dbFields(getDbName(), getDbSchema(), TBL_TRADE_DOCUMENTS)
+        .getRowByKey(SqlConstants.FLD_NAME, COL_TRADE_ACT_WAREHOUSE_FROM))) {
+
+      String tmp = SqlUtils.uniqueName();
+      String wrh = "TradeActWarehouse";
+
+      qs.updateData(new SqlCreate(tmp, false)
+          .setDataSource(new SqlSelect()
+              .addAllFields(TBL_TRADE_DOCUMENTS)
+              .addField(TBL_TRADE_DOCUMENTS, wrh, COL_TRADE_ACT_WAREHOUSE_FROM)
+              .addField(TBL_TRADE_DOCUMENTS, wrh, COL_TRADE_ACT_WAREHOUSE_TO)
+              .addFrom(TBL_TRADE_DOCUMENTS)));
+
+      qs.updateData(new SqlUpdate(tmp)
+          .addConstant(COL_TRADE_ACT_WAREHOUSE_FROM, null)
+          .setFrom(TBL_TRADE_OPERATIONS,
+              SqlUtils.and(joinTables(TBL_TRADE_OPERATIONS, tmp, COL_TRADE_OPERATION)))
+          .setWhere(SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE,
+              Arrays.stream(OperationType.values()).filter(OperationType::producesStock)
+                  .collect(Collectors.toSet()))));
+
+      qs.updateData(new SqlUpdate(tmp)
+          .addConstant(COL_TRADE_ACT_WAREHOUSE_TO, null)
+          .setFrom(TBL_TRADE_OPERATIONS,
+              SqlUtils.and(joinTables(TBL_TRADE_OPERATIONS, tmp, COL_TRADE_OPERATION)))
+          .setWhere(SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE,
+              Arrays.stream(OperationType.values()).filter(OperationType::consumesStock)
+                  .collect(Collectors.toSet()))));
+
+      for (SimpleRow fk : qs.dbForeignKeys(getDbName(), getDbSchema(), null, TBL_TRADE_DOCUMENTS)) {
+        makeStructureChanges(SqlUtils.dropForeignKey(fk.getValue(SqlConstants.TBL_NAME),
+            fk.getValue(SqlConstants.KEY_NAME)));
+      }
+      makeStructureChanges(SqlUtils.dropTable(TBL_TRADE_DOCUMENTS));
+      makeStructureChanges(SqlUtils.renameTable(tmp, TBL_TRADE_DOCUMENTS));
+      rebuildTable(TBL_TRADE_DOCUMENTS);
     }
   }
 

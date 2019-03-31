@@ -58,6 +58,16 @@
       <SimpleColumn name="Name" alias="ItemWarehouseToName" />
     </SimpleJoin>
 
+    <SimpleColumn name="TradeActWarehouseFrom" />
+    <SimpleJoin joinType="LEFT" name="TradeActWarehouseFrom">
+      <SimpleColumn name="Code" alias="TradeActWarehouseFromCode" />
+    </SimpleJoin>
+
+    <SimpleColumn name="TradeActWarehouseTo" />
+    <SimpleJoin joinType="LEFT" name="TradeActWarehouseTo">
+      <SimpleColumn name="Code" alias="TradeActWarehouseToCode" />
+    </SimpleJoin>
+
     <SimpleColumn name="Employee" />
     <SimpleJoin name="Employee" joinType="LEFT">
       <SimpleColumn name="CompanyPerson" alias="EmployeeCompanyPerson" />

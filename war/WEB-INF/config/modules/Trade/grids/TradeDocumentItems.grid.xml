@@ -80,9 +80,18 @@
     </CalcColumn>
 
     <RelColumn name="ItemWarehouseFrom" caption="=trdWarehouseFromShort" choiceColumns="Code Name"
-               renderColumns="ItemWarehouseFromCode" newRowEnabled="false" visible="false" />
+               renderColumns="ItemWarehouseFromCode" newRowEnabled="false" visible="false"
+               filter="!(ForActs)" />
     <RelColumn name="ItemWarehouseTo" caption="=trdWarehouseToShort" choiceColumns="Code Name"
-               renderColumns="ItemWarehouseToCode" newRowEnabled="false" visible="false" />
+               renderColumns="ItemWarehouseToCode" newRowEnabled="false" visible="false"
+               filter="!(ForActs)" />
+
+    <RelColumn name="TradeActWarehouseFrom" caption="Nuom.tiek." choiceColumns="Code Name"
+               renderColumns="TradeActWarehouseFromCode" newRowEnabled="false" visible="false"
+               filter="ForActs"/>
+    <RelColumn name="TradeActWarehouseTo" caption="Nuom.gav." choiceColumns="Code Name"
+               renderColumns="TradeActWarehouseToCode" newRowEnabled="false" visible="false"
+               filter="ForActs"/>
 
     <RelColumn name="Employee" renderColumns="EmployeeFirstName EmployeeLastName"
                sortBy="EmployeeLastName EmployeeFirstName" newRowEnabled="false" visible="false" />

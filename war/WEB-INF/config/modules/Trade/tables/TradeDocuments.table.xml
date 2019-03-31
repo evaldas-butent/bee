@@ -25,7 +25,8 @@
     <Relation name="WarehouseFrom" relation="Warehouses" label="=trdWarehouseFrom" />
     <Relation name="WarehouseTo" relation="Warehouses" label="=trdWarehouseTo" />
 
-    <Relation name="TradeActWarehouse" relation="Warehouses" label="Nuomos sandėlis" />
+    <Relation name="TradeActWarehouseFrom" relation="Warehouses" label="Nuoma-tiekėjas" />
+    <Relation name="TradeActWarehouseTo" relation="Warehouses" label="Nuoma-gavėjas" />
 
     <Relation name="Currency" relation="Currencies" notNull="true" defExpr="MAIN_CURRENCY"
               label="=currency" />
