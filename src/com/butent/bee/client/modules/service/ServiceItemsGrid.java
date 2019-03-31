@@ -250,7 +250,8 @@ public class ServiceItemsGrid extends OrderItemsGrid {
                 Filter.equals(COL_TEMPLATE, values.get(choices.get(idx))), itemsRs -> {
                   String view = getViewName();
                   List<String> cols = Arrays.asList(COL_ITEM, COL_ITEM_ARTICLE,
-                      COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_SERVICE_OBJECT,
+                      COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT,
+                      COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_SERVICE_OBJECT,
                       COL_SERVICE_MAINTENANCE, COL_TRADE_ITEM_NOTE, COL_REPAIRER);
 
                   FormView parentForm = ViewHelper.getForm(getGridView());
