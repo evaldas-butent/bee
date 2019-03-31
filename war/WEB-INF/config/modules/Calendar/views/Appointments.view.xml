@@ -150,6 +150,15 @@
       </SimpleJoin>
     </SimpleJoin>
 
+    <SimpleColumn name="TradeActService" />
+    <SimpleJoin name="TradeActService" joinType="LEFT">
+      <SimpleColumn name="Supplier" />
+      <SimpleJoin joinType="LEFT" name="Supplier">
+        <SimpleColumn name="Name" alias="SupplierName" />
+      </SimpleJoin>
+      <SimpleColumn name="CostAmount" />
+    </SimpleJoin>
+
     <SimpleColumn name="ServiceObject" />
     <SimpleJoin name="ServiceObject" joinType="LEFT">
       <SimpleColumn name="Address" />
