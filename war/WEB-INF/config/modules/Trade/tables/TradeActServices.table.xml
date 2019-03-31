@@ -37,6 +37,7 @@
     <Relation name="ServiceObject" relation="ServiceObjects" label="=svcDevice" />
 
     <Integer name="Run" label="=trdRun" />
+    <Relation name="Appointment" relation="Appointments" label="=calAppointment" />
 
     <Text name="Note" label="=note" />
   </Fields>

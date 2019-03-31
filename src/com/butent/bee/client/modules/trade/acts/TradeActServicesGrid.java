@@ -2,13 +2,16 @@ package com.butent.bee.client.modules.trade.acts;
 
 
 import com.butent.bee.client.data.*;
+import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.shared.data.*;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.google.common.collect.Lists;
@@ -51,6 +54,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class TradeActServicesGrid extends AbstractGridInterceptor implements
     SelectionHandler<BeeRowSet> {
@@ -125,6 +129,13 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
         if (event.isOpened()) {
           event.getSelector().setAdditionalFilter(Filter.idIn(VIEW_ITEM_SUPPLIERS,
               COL_TRADE_SUPPLIER, Filter.equals(COL_ITEM, getLongValue(COL_ITEM))));
+        }
+      });
+    } else if (Objects.equals(source, CalendarConstants.COL_APPOINTMENT)) {
+      ((DataSelector) editor).addSelectorHandler(event -> {
+        if (event.isNewRow()) {
+          event.consume();
+          createAppointment();
         }
       });
     }
@@ -416,6 +427,21 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
           }
           break;
       }
+    } else if (BeeUtils.same(CalendarConstants.COL_APPOINTMENT, column.getId())) {
+
+      Long tradeActService = null;
+      String appointment = null;
+
+      if (BeeUtils.isEmpty(oldValue) && newValue != null) {
+        tradeActService = getActiveRowId();
+        appointment = newValue;
+      } else if (BeeUtils.isEmpty(newValue) && oldValue != null) {
+        tradeActService = null;
+        appointment = oldValue;
+      }
+
+      Queries.update(CalendarConstants.VIEW_APPOINTMENTS, BeeUtils.toLong(appointment), "TradeActService",
+        new LongValue(tradeActService));
     }
   }
 
@@ -835,6 +861,27 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
           Queries.updateCellAndFire(getViewName(), getActiveRowId(), getActiveRow().getVersion(), COL_TA_RUN, oldRun,
             Data.getString(VIEW_SERVICE_DATES, result, COL_TA_RUN)));
       }
+    });
+  }
+
+  private void createAppointment() {
+    Consumer<BeeRow> initializer = eventRow -> {
+      IsRow serviceRow = getActiveRow();
+
+      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, "TradeActService", getActiveRowId());
+
+      Long supplier = Data.getLong(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_TRADE_SUPPLIER);
+      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_TRADE_SUPPLIER, supplier);
+      String supplierName = Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, ALS_SUPPLIER_NAME);
+      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, ALS_SUPPLIER_NAME, supplierName);
+
+      Double costAmount = Data.getDouble(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_COST_AMOUNT);
+      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_COST_AMOUNT, costAmount);
+    };
+
+    CalendarKeeper.createAppointment(initializer, null, appointment -> {
+      Queries.update(VIEW_TRADE_ACT_SERVICES, getActiveRowId(), CalendarConstants.COL_APPOINTMENT,
+        new LongValue(appointment.getId()), result -> Data.refreshLocal(getViewName()));
     });
   }
 }
