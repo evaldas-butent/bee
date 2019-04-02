@@ -53,11 +53,9 @@ public final class DocumentConstants {
   public static final String COL_DOCUMENT_USER = "User";
 
   public static final String COL_DOCUMENT_REMINDER_ISTASK = "IsTask";
-  public static final String COL_DOCUMENT_REMINDER_USER = "User";
   public static final String COL_DOCUMENT_REMINDER_TASK_TEMPLATE = "TaskTemplate";
   public static final String COL_DOCUMENT_REMINDER_EXECUTORS = "Executors";
-  public static final String COL_DOCUMENT_REMINDER_DATE = "ReminderDate";
-  public static final String COL_DOCUMENT_REMINDER_ACTIVE = "Active";
+
   public static final String COL_DOCUMENT_REMINDER_USER_DATE = "UserDate";
 
   public static final String COL_DOCUMENT_TEMPLATE = "Template";

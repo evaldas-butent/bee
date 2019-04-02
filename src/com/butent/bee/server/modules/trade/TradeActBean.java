@@ -1,5 +1,22 @@
 package com.butent.bee.server.modules.trade;
 
+import com.butent.bee.server.communication.ChatBean;
+import com.butent.bee.server.data.*;
+import com.butent.bee.server.modules.classifiers.TimerBuilder;
+import com.butent.bee.server.modules.mail.MailModuleBean;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.FontWeight;
+import com.butent.bee.shared.css.values.VerticalAlign;
+import com.butent.bee.shared.css.values.WhiteSpace;
+import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.html.Tags;
+import com.butent.bee.shared.html.builder.Document;
+import com.butent.bee.shared.html.builder.Element;
+import com.butent.bee.shared.html.builder.elements.Div;
+import com.butent.bee.shared.html.builder.elements.Tbody;
+import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
+import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.i18n.Formatter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
@@ -8,6 +25,7 @@ import com.google.common.collect.Table;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
@@ -18,14 +36,8 @@ import static com.butent.bee.shared.time.TimeUtils.*;
 
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
-import com.butent.bee.server.data.BeeView;
-import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
-import com.butent.bee.server.data.DataEventHandler;
-import com.butent.bee.server.data.QueryServiceBean;
-import com.butent.bee.server.data.SystemBean;
-import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.AdministrationModuleBean;
@@ -100,15 +112,11 @@ import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
+import javax.ejb.*;
 
 @Stateless
 @LocalBean
-public class TradeActBean implements HasTimerService {
+public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
 
   private static BeeLogger logger = LogUtils.getLogger(TradeActBean.class);
 
@@ -120,6 +128,10 @@ public class TradeActBean implements HasTimerService {
   UserServiceBean usr;
   @EJB
   DataEditorBean deb;
+  @EJB
+  MailModuleBean mail;
+  @EJB
+  ChatBean chat;
   @EJB
   ParamHolderBean prm;
   @EJB
@@ -267,13 +279,88 @@ public class TradeActBean implements HasTimerService {
   }
 
   @Override
+  protected List<Timer> createTimers(String timerIdentifier, IsCondition wh) {
+    List<Timer> timersList = new ArrayList<>();
+
+    switch (timerIdentifier) {
+      case TIMER_REMIND_TRADE_ACT:
+        SimpleRowSet data = qs.getData(new SqlSelect()
+                .addFields(VIEW_TRADE_ACT_REMINDERS, sys.getIdName(VIEW_TRADE_ACT_REMINDERS),
+                        COL_USER_REMINDER_USER, COL_REMINDER_DATE, COL_TRADE_ACT)
+                .addFrom(VIEW_TRADE_ACT_REMINDERS)
+                .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, VIEW_TRADE_ACT_REMINDERS,
+                        COL_USER_REMINDER_USER))
+                .setWhere(SqlUtils.and(wh, SqlUtils.equals(VIEW_TRADE_ACT_REMINDERS, COL_USER_REMINDER_ACTIVE, true))));
+
+        for (SimpleRowSet.SimpleRow row : data) {
+          Long timerId = row.getLong(COL_TRADE_ACT);
+          DateTime timerTime = row.getDateTime(COL_REMINDER_DATE);
+
+          if (timerTime == null) {
+            continue;
+          }
+
+          if (timerTime.getTime() > System.currentTimeMillis()) {
+            Timer timer = getTimerService().createSingleActionTimer(timerTime.getJava(),
+                    new TimerConfig(timerIdentifier + timerId, false));
+
+            logger.info("Created timer:", timerTime, timer.getInfo());
+
+            if (timer != null) {
+              timersList.add(timer);
+            }
+          }
+        }
+        break;
+    }
+
+    return timersList;
+  }
+
+  @Override
   public void ejbTimeout(Timer timer) {
+    if (!BeeUtils.isPrefix(Objects.toString(timer.getInfo()), TIMER_REMIND_TRADE_ACT)) {
+      super.ejbTimeout(timer);
+    } else {
+      onTimeout((String) timer.getInfo());
+    }
     syncERP(timer);
+  }
+
+  @Override
+  protected Pair<IsCondition, List<String>> getConditionAndTimerIdForUpdate(String timerIdentifier, String viewName, Long relationId) {
+    IsCondition condition = null;
+
+    switch (timerIdentifier) {
+      case TIMER_REMIND_TRADE_ACT:
+        Long reminderId = relationId;
+        condition = SqlUtils.equals(VIEW_TRADE_ACT_REMINDERS, sys.getIdName(VIEW_TRADE_ACT_REMINDERS), reminderId);
+        List<String> timerIdentifiersIds = new ArrayList<>();
+        timerIdentifiersIds.add(timerIdentifier + reminderId);
+        return Pair.of(condition, timerIdentifiersIds);
+    }
+
+    return null;
   }
 
   @Override
   public TimerService getTimerService() {
     return timerService;
+  }
+
+  @Override
+  public void onTimeout(String timerInfo) {
+    if (BeeUtils.isPrefix(timerInfo, TIMER_REMIND_TRADE_ACT)) {
+      logger.info("expired trade act reminder timeout", timerInfo);
+      Long tradeAct = BeeUtils.toLong(BeeUtils.removePrefix(timerInfo, TIMER_REMIND_TRADE_ACT));
+
+      if (DataUtils.isId(tradeAct)
+              && DataUtils.isId(mail.getSenderAccountId(TIMER_REMIND_TRADE_ACT))) {
+        createTradeActReminderMail(tradeAct);
+      }
+
+      deleteTradeActReminder(tradeAct);
+    }
   }
 
   public void init() {
@@ -605,7 +692,25 @@ public class TradeActBean implements HasTimerService {
         }
       }
 
+      @Subscribe
+      @AllowConcurrentEvents
+      public void updateTimers(DataEvent.ViewModifyEvent event) {
+        if (event.isAfter(VIEW_TRADE_ACT_REMINDERS)) {
+          if (event instanceof DataEvent.ViewUpdateEvent) {
+            DataEvent.ViewUpdateEvent updateEvent = (DataEvent.ViewUpdateEvent) event;
+            if (DataUtils.contains(updateEvent.getColumns(), COL_REMINDER_DATE)
+                    || DataUtils.contains(updateEvent.getColumns(), COL_USER_REMINDER_ACTIVE)) {
+              createOrUpdateTimers(TIMER_REMIND_TRADE_ACT, VIEW_TRADE_ACT_REMINDERS, updateEvent.getRow().getId());
+            }
+          } else if (event instanceof DataEvent.ViewInsertEvent) {
+            createOrUpdateTimers(TIMER_REMIND_TRADE_ACT, VIEW_TRADE_ACT_REMINDERS,
+                    ((DataEvent.ViewInsertEvent) event).getRow().getId());
+          }
+        }
+      }
     });
+
+    buildTimers(TIMER_REMIND_TRADE_ACT);
 
     BeeView.registerConditionProvider(FILTER_TRADE_ACTS, (view, args) -> {
       IsCondition clause;
@@ -680,6 +785,11 @@ public class TradeActBean implements HasTimerService {
     }
 
     return query;
+  }
+
+  private void deleteTradeActReminder(Long tradeAct) {
+    qs.updateData(new SqlDelete(VIEW_TRADE_ACT_REMINDERS)
+            .setWhere(SqlUtils.equals(VIEW_TRADE_ACT_REMINDERS, COL_TRADE_ACT, tradeAct)));
   }
 
   private Map<String, Long> getReferences(String tableName, String keyName) {
@@ -1247,6 +1357,103 @@ public class TradeActBean implements HasTimerService {
     }
 
     return ResponseObject.emptyResponse();
+  }
+
+  private void createTradeActReminderMail(Long tradeAct) {
+
+    SqlSelect query = new SqlSelect()
+            .addFields(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS), COL_TA_DATE, COL_TA_UNTIL, COL_TA_MANAGER,
+                    COL_TA_NUMBER, COL_TA_KIND)
+            .addFields(TBL_TRADE_ACT_NAMES, COL_TRADE_ACT_NAME)
+            .addFields(TBL_TRADE_SERIES, COL_SERIES_NAME)
+            .addFields(TBL_TRADE_STATUSES, COL_STATUS_NAME)
+            .addField(ClassifierConstants.TBL_COMPANIES,
+                    ClassifierConstants.COL_COMPANY_NAME, ALS_COMPANY_NAME)
+            .addFields(VIEW_TRADE_ACT_REMINDERS, COL_USER_REMINDER_USER)
+            .addFrom(TBL_TRADE_ACTS)
+            .addFromLeft(TBL_TRADE_ACT_NAMES, sys.joinTables(TBL_TRADE_ACT_NAMES, TBL_TRADE_ACTS, COL_TA_NAME))
+            .addFromLeft(TBL_TRADE_SERIES, sys.joinTables(TBL_TRADE_SERIES, TBL_TRADE_ACTS, COL_TA_SERIES))
+            .addFromLeft(TBL_TRADE_STATUSES, sys.joinTables(TBL_TRADE_STATUSES, TBL_TRADE_ACTS, COL_TA_STATUS))
+            .addFromLeft(ClassifierConstants.TBL_COMPANIES,
+                    sys.joinTables(ClassifierConstants.TBL_COMPANIES, TBL_TRADE_ACTS, COL_COMAPNY))
+            .addFromLeft(VIEW_TRADE_ACT_REMINDERS, sys.joinTables(TBL_TRADE_ACTS, VIEW_TRADE_ACT_REMINDERS, COL_TRADE_ACT))
+            .setWhere(SqlUtils.and(sys.idEquals(TBL_TRADE_ACTS, tradeAct), SqlUtils.equals(VIEW_TRADE_ACT_REMINDERS,
+                    COL_USER_REMINDER_ACTIVE, true)));
+
+    Long senderAccountId = mail.getSenderAccountId(TIMER_REMIND_TRADE_ACT);
+
+    SimpleRowSet data = qs.getData(query);
+    if (data.getNumberOfRows() > 0 && DataUtils.isId(senderAccountId)) {
+
+      SimpleRow dRow = data.getRow(0);
+      Document doc = new Document();
+
+      Long userId = dRow.getLong(COL_USER_REMINDER_USER);
+      Dictionary dic = usr.getDictionary(userId);
+      DateTimeFormatInfo dtfInfo = usr.getDateTimeFormatInfo(userId);
+
+      doc.getHead().append(meta().encodingDeclarationUtf8());
+
+      Div panel = div();
+      doc.getBody().append(panel);
+
+      Tbody fields = tbody().append(
+              tr().append(
+                      td().text(dic.date()),
+                      td().text(Formatter.renderDateTime(dtfInfo, dRow.getDateTime(COL_TA_DATE)))),
+              tr().append(
+                      td().text(dic.taUntil()),
+                      td().text(Formatter.renderDateTime(dtfInfo, dRow.getDateTime(COL_TA_UNTIL)))));
+
+      fields.append(tr().append(
+              td().text(dic.tradeAct()),
+              td().text(BeeUtils.joinWords(
+                      dRow.getValue(COL_SERIES_NAME),
+                      dRow.getValue(COL_TA_NUMBER),
+                      dRow.getValue(sys.getIdName(TBL_TRADE_ACTS))
+              ))
+      ));
+
+      fields.append(
+              tr().append(
+                      td().verticalAlign(VerticalAlign.TOP).text(dic.taKind()),
+                      td().whiteSpace(WhiteSpace.PRE_LINE).text(EnumUtils.getLocalizedCaption(
+                              TradeActKind.class, dRow.getInt(COL_TA_KIND), dic))),
+              tr().append(
+                      td().text(dic.company()),
+                      td().text(dRow.getValue(ALS_COMPANY_NAME))));
+
+      List<Element> cells = fields.queryTag(Tags.TD);
+      for (Element cell : cells) {
+        if (cell.index() == 0) {
+          cell.setPaddingRight(1, CssUnit.EM);
+          cell.setFontWeight(FontWeight.BOLDER);
+        }
+      }
+
+      panel.append(table().append(fields));
+
+      String content = doc.buildLines();
+      String headerCaption = BeeUtils.joinWords(dic.tradeAct(), dRow.getValue(sys.getIdName(TBL_TRADE_ACTS)));
+
+      String recipientEmail;
+      if (userId != null && usr.isActive(userId)) {
+        recipientEmail = usr.getUserEmail(userId, false);
+      } else {
+        recipientEmail = mail.getSenderAccountEmail(senderAccountId);
+      }
+
+      ResponseObject mailResponse = mail.sendStyledMail(senderAccountId, recipientEmail,
+              dic.documentExpireReminderMailSubject(), content, headerCaption);
+
+      if (mailResponse.hasErrors()) {
+        logger.severe(TIMER_REMIND_TRADE_ACT, "mail error - canceled");
+      }
+
+      Map<String, String> linkData = new HashMap<>();
+      linkData.put(VIEW_TRADE_ACT_REMINDERS, dRow.getValue(sys.getIdName(TBL_TRADE_ACTS)));
+      chat.putMessage(mail.styleMailHeader(headerCaption), userId, linkData);
+    }
   }
 
   private ResponseObject createServices(Long continuousId, BeeRowSet services, DateTime svcTimes) {

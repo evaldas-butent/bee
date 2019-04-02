@@ -429,8 +429,8 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
         } else if (event.isAfter(VIEW_DOCUMENT_REMINDERS)) {
           if (event instanceof DataEvent.ViewUpdateEvent) {
             DataEvent.ViewUpdateEvent ev = (DataEvent.ViewUpdateEvent) event;
-            if (DataUtils.contains(ev.getColumns(), COL_DOCUMENT_REMINDER_DATE)
-                || DataUtils.contains(ev.getColumns(), COL_DOCUMENT_REMINDER_ACTIVE)) {
+            if (DataUtils.contains(ev.getColumns(), COL_REMINDER_DATE)
+                || DataUtils.contains(ev.getColumns(), COL_USER_REMINDER_ACTIVE)) {
               createOrUpdateTimers(TIMER_REMIND_DOCUMENT_END, VIEW_DOCUMENT_REMINDERS,
                   ev.getRow().getId());
             }
@@ -518,7 +518,7 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
         .addFields(VIEW_DOCUMENT_REMINDERS, COL_DOCUMENT_REMINDER_USER_DATE)
         .addFrom(VIEW_DOCUMENT_REMINDERS)
         .setWhere(SqlUtils.and(SqlUtils.equals(VIEW_DOCUMENT_REMINDERS, COL_DOCUMENT, documentId),
-            SqlUtils.equals(VIEW_DOCUMENT_REMINDERS, COL_DOCUMENT_REMINDER_ACTIVE, true)));
+            SqlUtils.equals(VIEW_DOCUMENT_REMINDERS, COL_USER_REMINDER_ACTIVE, true)));
 
     SimpleRowSet data = qs.getData(select);
 
@@ -531,16 +531,16 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
       if (timerTime != null) {
         if (update && !emptyReminder) {
           SqlUpdate updateSql = new SqlUpdate(VIEW_DOCUMENT_REMINDERS)
-              .addConstant(COL_DOCUMENT_REMINDER_DATE, timerTime)
+              .addConstant(COL_REMINDER_DATE, timerTime)
               .setWhere(SqlUtils.equals(VIEW_DOCUMENT_REMINDERS, COL_DOCUMENT, documentId));
 
           qs.updateData(updateSql);
         } else {
           SqlInsert insert = new SqlInsert(VIEW_DOCUMENT_REMINDERS)
-              .addConstant(COL_DOCUMENT_REMINDER_USER, usr.getCurrentUserId())
+              .addConstant(COL_USER_REMINDER_USER, usr.getCurrentUserId())
               .addConstant(COL_DOCUMENT, documentId)
-              .addConstant(COL_DOCUMENT_REMINDER_DATE, timerTime)
-              .addConstant(COL_DOCUMENT_REMINDER_ACTIVE, 1);
+              .addConstant(COL_REMINDER_DATE, timerTime)
+              .addConstant(COL_USER_REMINDER_ACTIVE, 1);
 
           qs.insertData(insert);
         }
@@ -569,8 +569,8 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
 
         SqlSelect select = new SqlSelect()
             .addFields(VIEW_DOCUMENT_REMINDERS, COL_DOCUMENT_REMINDER_ISTASK,
-                COL_DOCUMENT_REMINDER_USER, COL_DOCUMENT_REMINDER_EXECUTORS,
-                COL_DOCUMENT_REMINDER_TASK_TEMPLATE, COL_DOCUMENT_REMINDER_DATE, COL_DOCUMENT)
+                    COL_USER_REMINDER_USER, COL_DOCUMENT_REMINDER_EXECUTORS,
+                COL_DOCUMENT_REMINDER_TASK_TEMPLATE, COL_REMINDER_DATE, COL_DOCUMENT)
             .addFields(TBL_DOCUMENTS, COL_DOCUMENT_COMPANY, COL_DOCUMENT_NAME,
                 DocumentConstants.COL_DESCRIPTION, COL_DOCUMENT_EXPIRES)
             .addField(TBL_DOCUMENTS, COL_USER, COL_DOCUMENT + COL_USER)
@@ -579,7 +579,7 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
                 COL_DOCUMENT))
             .setWhere(SqlUtils.and(SqlUtils.equals(VIEW_DOCUMENT_REMINDERS,
                 COL_DOCUMENT, documentId), SqlUtils.equals(VIEW_DOCUMENT_REMINDERS,
-                COL_DOCUMENT_REMINDER_ACTIVE, true)));
+                    COL_USER_REMINDER_ACTIVE, true)));
 
         SimpleRowSet data = qs.getData(select);
 
@@ -589,7 +589,7 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
           if (isTask) {
             createReminderTasks(data.getRow(0));
           } else {
-            Long reminderUser = data.getRow(0).getLong(COL_DOCUMENT_REMINDER_USER);
+            Long reminderUser = data.getRow(0).getLong(COL_USER_REMINDER_USER);
             sendExpiredDocumentsReminders(documentId, reminderUser);
           }
 
@@ -684,13 +684,13 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
     values.add(null);
 
     columns.add(DataUtils.getColumn(COL_START_TIME, taskColumns));
-    values.add(row.getValue(COL_DOCUMENT_REMINDER_DATE));
+    values.add(row.getValue(COL_REMINDER_DATE));
 
     columns.add(DataUtils.getColumn(COL_FINISH_TIME, taskColumns));
     DateTime expires = row.getDateTime(COL_DOCUMENT_EXPIRES);
 
-    if (expires == null || TimeUtils.isMeq(row.getDateTime(COL_DOCUMENT_REMINDER_DATE), expires)) {
-      DateTime finishDate = row.getDateTime(COL_DOCUMENT_REMINDER_DATE);
+    if (expires == null || TimeUtils.isMeq(row.getDateTime(COL_REMINDER_DATE), expires)) {
+      DateTime finishDate = row.getDateTime(COL_REMINDER_DATE);
       TimeUtils.addDay(finishDate, 30);
       values.add(BeeUtils.toString(finishDate.getTime()));
     } else {
@@ -833,21 +833,21 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
     if (BeeUtils.same(timerIdentifier, TIMER_REMIND_DOCUMENT_END)) {
       SimpleRowSet data = qs.getData(new SqlSelect()
           .addFields(VIEW_DOCUMENT_REMINDERS, sys.getIdName(VIEW_DOCUMENT_REMINDERS),
-              COL_DOCUMENT_REMINDER_USER, COL_DOCUMENT_REMINDER_DATE, COL_DOCUMENT_REMINDER_ISTASK,
+                  COL_USER_REMINDER_USER, COL_REMINDER_DATE, COL_DOCUMENT_REMINDER_ISTASK,
               COL_DOCUMENT, COL_DOCUMENT_REMINDER_USER_DATE)
           .addFields(TBL_DOCUMENTS, COL_DOCUMENT_EXPIRES)
           .addFrom(VIEW_DOCUMENT_REMINDERS)
           .addFromLeft(TBL_DOCUMENTS, sys.joinTables(TBL_DOCUMENTS,
               VIEW_DOCUMENT_REMINDERS, COL_DOCUMENT))
           .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, VIEW_DOCUMENT_REMINDERS,
-              COL_DOCUMENT_REMINDER_USER))
+                  COL_USER_REMINDER_USER))
           .setWhere(SqlUtils.and(wh,
-              SqlUtils.equals(VIEW_DOCUMENT_REMINDERS, COL_DOCUMENT_REMINDER_ACTIVE, true))));
+              SqlUtils.equals(VIEW_DOCUMENT_REMINDERS, COL_USER_REMINDER_ACTIVE, true))));
 
       for (SimpleRowSet.SimpleRow row : data) {
         Long timerId = row.getLong(COL_DOCUMENT);
 
-        DateTime expDate = TimeUtils.toDateTimeOrNull(row.getValue(COL_DOCUMENT_REMINDER_DATE));
+        DateTime expDate = TimeUtils.toDateTimeOrNull(row.getValue(COL_REMINDER_DATE));
         boolean userDate = BeeUtils.unbox(row.getBoolean(COL_DOCUMENT_REMINDER_USER_DATE));
 
         DateTime timerTime = calculateTimerTime(userDate, expDate);

@@ -1,22 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
-
+      xmlns:xi="http://www.w3.org/2001/XInclude"
       name="RequestReminders" source="RequestReminders"
 >
   <Columns>
-    <SimpleColumn name="User" />
-    <SimpleJoin name="User" joinType="LEFT">
-      <SimpleJoin name="CompanyPerson" joinType="LEFT">
-        <SimpleJoin name="Contact" joinType="LEFT">
-          <SimpleJoin name="Email" joinType="LEFT">
-            <SimpleColumn name="Email" />
-          </SimpleJoin>
-        </SimpleJoin>
-      </SimpleJoin>
-    </SimpleJoin>
-    
+    <xi:include href="../../Administration/views/viewcolumns/Reminders.viewcolumns.xml"/>
     <SimpleColumn name="Request" />
-    <SimpleColumn name="ReminderDate" />
-    <SimpleColumn name="Active" />
   </Columns>
 </View>

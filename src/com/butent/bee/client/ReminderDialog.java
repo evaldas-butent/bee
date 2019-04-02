@@ -15,6 +15,8 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.google.gwt.user.client.ui.Widget;
 
+import java.util.Collections;
+
 /**
  * Reminder dialog class
  */
@@ -23,15 +25,13 @@ public abstract class ReminderDialog extends DialogBox {
     private static final String STYLE_DIALOG_BUTTONS_PANEL = STYLE_DIALOG + "-panel-buttons";
     private static final String STYLE_DIALOG_DATE_LABEL = STYLE_DIALOG + "-label-dt";
     private static final String STYLE_DIALOG_ELEMENT_NOT_VISIBLE = STYLE_DIALOG + "-not-visible";
-    private static final String STYLE_DIALOG_DT_PANEL = STYLE_DIALOG + "-panel-dt";
 
-    private static final String STYLE_DIALOG_INFO_LABEL = STYLE_DIALOG + "-label-info";
     private static final String STYLE_DIALOG_INFO_PANEL = STYLE_DIALOG + "-panel-info";
     private static final String STYLE_DIALOG_REMIND_BUTTON = STYLE_DIALOG + "-remindButton";
     private static final String STYLE_DIALOG_SUSPEND_BUTTON = STYLE_DIALOG + "-suspendButton";
-    private static final String STYLE_DIALOG_TEXT = STYLE_DIALOG + "-text";
 
     private static final String STYLE_DIALOG_WIDGET = STYLE_DIALOG + "-widget";
+    private static final String STYLE_REMINDER_ACTIVE = "bee-reminder-dialog-active";
 
     private final FaLabel dialogAction;
     private final Flow reminderUIContent = new Flow();
@@ -48,6 +48,10 @@ public abstract class ReminderDialog extends DialogBox {
     private final InputDate reminderDate = new InputDate();
     private final InputTime reminderTime = new InputTime();
 
+    protected static final String STYLE_DIALOG_INFO_LABEL = STYLE_DIALOG + "-label-info";
+    protected static final String STYLE_DIALOG_DT_PANEL = STYLE_DIALOG + "-panel-dt";
+    protected static final String STYLE_DIALOG_TEXT = STYLE_DIALOG + "-text";
+
     protected final Button cancelButton = new Button(Localized.dictionary().userReminderCancel(), e->close());
     protected final Button createButton = new Button(Localized.dictionary().userRemind());
     protected final Button suspendButton = new Button(Localized.dictionary().userReminderSuspend());
@@ -58,8 +62,8 @@ public abstract class ReminderDialog extends DialogBox {
         dialogAction = new FaLabel(FontAwesome.BELL_O);
         dialogAction.setTitle(this.getCaption());
         dialogAction.addClickHandler(e-> onDialogActionClicked());
-
         initDialog();
+        addDefaultCloseBox();
     }
 
     public final FaLabel getDialogAction() {
@@ -90,6 +94,10 @@ public abstract class ReminderDialog extends DialogBox {
         return reminderUIContent;
     }
 
+    public void markAsActive(boolean active) {
+        getDialogAction().setStyleName(STYLE_REMINDER_ACTIVE, active);
+    }
+
     public void setReminderDT(DateTime dt) {
         if (dt == null) {
             reminderDate.setDate(null);
@@ -108,11 +116,24 @@ public abstract class ReminderDialog extends DialogBox {
 
     protected abstract void afterButtonPanelRender(Button create, Button update, Button suspend, Button cancel);
 
-    private static TextLabel renderLabel(TextLabel textLabel, String label, String styleName) {
+    protected static void notifyReminderCreated() {
+        BeeKeeper.getScreen().notifyInfo(Localized.dictionary().userReminderCreated());
+    }
+
+    protected static void notifyReminderSuspend() {
+        BeeKeeper.getScreen().notifyInfo(Localized.dictionary().userReminderDisabled());
+    }
+
+    protected static TextLabel renderLabel(TextLabel textLabel, String label, String styleName) {
         textLabel.setText(label);
         textLabel.setStyleName(styleName);
 
         return textLabel;
+    }
+
+    protected static void showDateError() {
+        Global.showError(Localized.dictionary().error(), Collections.singletonList(
+                Localized.dictionary().userReminderSendRemindDateError()));
     }
 
     private void initDialog() {

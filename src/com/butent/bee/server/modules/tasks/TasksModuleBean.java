@@ -493,8 +493,8 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         if (event.isAfter(VIEW_REQUEST_REMINDERS)) {
           if (event instanceof DataEvent.ViewUpdateEvent) {
             DataEvent.ViewUpdateEvent ev = (DataEvent.ViewUpdateEvent) event;
-            if (DataUtils.contains(ev.getColumns(), COL_REQUEST_REMINDER_DATE)
-              || DataUtils.contains(ev.getColumns(), COL_REQUEST_REMINDER_ACTIVE)) {
+            if (DataUtils.contains(ev.getColumns(), COL_REMINDER_DATE)
+              || DataUtils.contains(ev.getColumns(), COL_USER_REMINDER_ACTIVE)) {
               createOrUpdateTimers(TIMER_REMIND_REQUEST_END, VIEW_REQUEST_REMINDERS, ev.getRow().getId());
             }
           } else if (event instanceof DataEvent.ViewInsertEvent) {
@@ -1027,15 +1027,15 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     } else if (BeeUtils.same(timerIdentifier, TIMER_REMIND_REQUEST_END)) {
       SimpleRowSet data = qs.getData(new SqlSelect()
         .addFields(VIEW_REQUEST_REMINDERS, sys.getIdName(VIEW_REQUEST_REMINDERS),
-          COL_REQUEST_REMINDER_USER, COL_REQUEST_REMINDER_DATE, COL_REQUEST)
+                COL_USER_REMINDER_USER, COL_REMINDER_DATE, COL_REQUEST)
         .addFrom(VIEW_REQUEST_REMINDERS)
         .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, VIEW_REQUEST_REMINDERS,
-          COL_REQUEST_REMINDER_USER))
-        .setWhere(SqlUtils.and(wh, SqlUtils.equals(VIEW_REQUEST_REMINDERS, COL_REQUEST_REMINDER_ACTIVE, true))));
+                COL_USER_REMINDER_USER))
+        .setWhere(SqlUtils.and(wh, SqlUtils.equals(VIEW_REQUEST_REMINDERS, COL_USER_REMINDER_ACTIVE, true))));
 
       for (SimpleRowSet.SimpleRow row : data) {
         Long timerId = row.getLong(COL_REQUEST);
-        DateTime timerTime = row.getDateTime(COL_REQUEST_REMINDER_DATE);
+        DateTime timerTime = row.getDateTime(COL_REMINDER_DATE);
 
         if (timerTime == null) {
           continue;
@@ -1535,7 +1535,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         sys.joinTables(ClassifierConstants.TBL_COMPANIES, TBL_REQUESTS, COL_REQUEST_CUSTOMER))
       .addFromLeft(VIEW_REQUEST_REMINDERS, sys.joinTables(TBL_REQUESTS, VIEW_REQUEST_REMINDERS, COL_REQUEST))
       .setWhere(SqlUtils.and(sys.idEquals(TBL_REQUESTS, requestId), SqlUtils.equals(VIEW_REQUEST_REMINDERS,
-        COL_REQUEST_REMINDER_ACTIVE, true)));
+              COL_USER_REMINDER_ACTIVE, true)));
 
     Long senderAccountId = mail.getSenderAccountId(TIMER_REMIND_REQUEST_END);
 

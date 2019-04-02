@@ -906,9 +906,6 @@ public final class TaskConstants {
   public static final String COL_REQUEST_RESULT_PROPERTIES = "ResultProperties";
   public static final String COL_REQUEST_FINISHED = "Finished";
   public static final String COL_REQUEST_TYPE = "RequestType";
-  public static final String COL_REQUEST_REMINDER_ACTIVE = "Active";
-  public static final String COL_REQUEST_REMINDER_DATE = "ReminderDate";
-  public static final String COL_REQUEST_REMINDER_USER = "User";
 
   public static final String COL_RECURRING_TASK = "RecurringTask";
   public static final String COL_TASK_TEMPLATE = "TaskTemplate";

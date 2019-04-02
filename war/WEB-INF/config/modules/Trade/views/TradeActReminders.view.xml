@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
       xmlns:xi="http://www.w3.org/2001/XInclude"
-      name="DocumentReminders" source="DocumentReminders"
+      name="TradeActReminders" source="TradeActReminders"
 >
   <Columns>
-    <SimpleColumn name="IsTask" />
     <xi:include href="../../Administration/views/viewcolumns/Reminders.viewcolumns.xml"/>
-    <SimpleColumn name="TaskTemplate" />
-    <SimpleColumn name="Document" />
-    <SimpleColumn name="Executors" />
-    <SimpleColumn name="UserDate" />
+    <SimpleColumn name="TradeAct" />
   </Columns>
 </View>
