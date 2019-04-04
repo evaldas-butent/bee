@@ -40,5 +40,7 @@
 
     <Relation name="ServiceMaintenance" relation="ServiceMaintenance" cascade="SET_NULL"
               label="Remontas" />
+    <Relation name="ServiceObject" relation="ServiceObjects" cascade="SET_NULL"
+              label="=svcDevice" />
   </Fields>
 </Table>

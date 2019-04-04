@@ -95,7 +95,35 @@ class MaintenanceItemsDataProvider implements QueryServiceBean.ViewDataProvider 
             .setWhere(SqlUtils.and(wh, SqlUtils.not(SqlUtils.in(TBL_TRADE_DOCUMENT_ITEMS,
                 sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS), TBL_MAINTENANCE_INVOICES,
                 COL_TRADE_DOCUMENT_ITEM, SqlUtils.notNull(TBL_MAINTENANCE_INVOICES,
-                    COL_TRADE_DOCUMENT_ITEM))))));
+                    COL_TRADE_DOCUMENT_ITEM))))))
+
+        .addUnion(new SqlSelect()
+            .addEmptyLong(COL_SERVICE_MAINTENANCE)
+            .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_SERVICE_OBJECT)
+            .addFields(TBL_TRADE_DOCUMENTS, COL_TRADE_DATE)
+            .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT)
+            .addFields(TBL_TRADE_DOCUMENTS, COL_SERIES, COL_TRADE_NUMBER)
+            .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, COL_TRADE_ITEM_QUANTITY,
+                COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, COL_TRADE_DOCUMENT_ITEM_VAT)
+            .addField(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT,
+                COL_TRADE_DISCOUNT_PERC)
+            .addExpr(SqlUtils.sqlIf(SqlUtils.equals(TBL_TRADE_DOCUMENTS,
+                COL_TRADE_DOCUMENT_VAT_MODE, 0), 1, null), COL_TRADE_VAT_PLUS)
+            .addField(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT,
+                COL_TRADE_VAT_PERC)
+            .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM_ARTICLE)
+            .addField(TBL_ITEMS, COL_ITEM_NAME, ALS_ITEM_NAME)
+            .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE, COL_ITEM_IS_SERVICE)
+            .addField(TBL_UNITS, COL_UNIT_NAME, ALS_UNIT_NAME)
+            .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_NOTE)
+            .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+            .addFromInner(TBL_TRADE_DOCUMENTS,
+                sys.joinTables(TBL_TRADE_DOCUMENTS, TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT))
+            .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
+            .addFromInner(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
+            .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_SERVICE_OBJECT,
+                values.get(COL_SERVICE_OBJECT)),
+                SqlUtils.isNull(TBL_TRADE_DOCUMENT_ITEMS, COL_SERVICE_MAINTENANCE))));
   }
 
   private static Map<String, String> getFilterValues(Filter filter) {

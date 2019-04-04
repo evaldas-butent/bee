@@ -110,7 +110,17 @@
     <DataColumn name="Parent" visible="false" />
 
     <RelColumn name="ServiceMaintenance" choiceColumns="ID Date CompanyName ObjectName"
-               renderColumns="ServiceMaintenance Date CompanyName" editEnabled="true" />
+               renderColumns="ServiceMaintenance Date CompanyName" editEnabled="true">
+      <editable>
+        <ui:expression>!row.ServiceObject</ui:expression>
+      </editable>
+    </RelColumn>
+
+    <RelColumn name="ServiceObject" editEnabled="true">
+      <editable>
+        <ui:expression>!row.ServiceMaintenance</ui:expression>
+      </editable>
+    </RelColumn>
   </g:columns>
 
   <g:rowMessage>

@@ -111,5 +111,11 @@
         <SimpleColumn name="Name" alias="CompanyName" />
       </SimpleJoin>
     </SimpleJoin>
+
+    <SimpleColumn name="ServiceObject" />
+    <SimpleJoin joinType="LEFT" name="ServiceObject">
+      <SimpleColumn name="Model" />
+      <SimpleColumn name="Address" />
+    </SimpleJoin>
   </Columns>
 </View>
