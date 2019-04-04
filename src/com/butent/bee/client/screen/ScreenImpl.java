@@ -778,9 +778,11 @@ public class ScreenImpl implements Screen {
       panel.add(logo);
     }
 
-    Widget search = createSearch();
-    if (search != null) {
-      panel.add(search);
+    if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.SEARCH)) {
+      Widget search = createSearch();
+      if (search != null) {
+        panel.add(search);
+      }
     }
 
     Panel commandContainer = createCommandPanel();

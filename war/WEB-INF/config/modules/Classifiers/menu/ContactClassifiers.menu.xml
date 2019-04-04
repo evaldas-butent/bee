@@ -17,4 +17,6 @@ name="ContactClassifiers" label="=settings" parent="Contacts" order="20" separat
   <Item name="Versions" label="=softwareVersions" service="grid" parameters="Versions" />
   <Item name="Connections" label="=connections" service="grid" parameters="Connections" />
   <Item name="Modules" label="=modules" service="grid" parameters="Modules" />
+  <Item name="Parameters" label="=parameters" service="parameters" parameters="Classifiers"
+        separator="true" module="Classifiers" />
 </Entry>

@@ -49,6 +49,12 @@ public enum RegulatedWidget implements HasLocalizedCaption {
       return constants.exportToMsExcel();
     }
   },
+  SEARCH {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.crmSearchVisibility();
+    }
+  },
   TIME_SHEET {
     @Override
     public String getCaption(Dictionary constants) {

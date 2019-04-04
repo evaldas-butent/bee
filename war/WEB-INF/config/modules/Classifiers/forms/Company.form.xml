@@ -321,7 +321,13 @@
             <InputText source="ContractNumber" style="&inp;" summarize="true" />
 
             <Label for="CancelDate" />
-            <InputDate source="CancelDate" style="&inp;" summarize="true" />
+            <InputDate name="CancelDate" source="CancelDate" style="&inp;" summarize="true" />
+
+            <cell rowSpan="3">
+              <InputArea name="InformationInputText" visibleLines="6" summarize="true" readOnly="true"
+                         style="width: 300px; color: red; font-weight: bold; border-color: black;
+                         border-width: thick; text-align: center;" />
+            </cell>
           </row>
 
           <row>

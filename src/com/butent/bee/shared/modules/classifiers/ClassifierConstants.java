@@ -403,6 +403,8 @@ public final class ClassifierConstants {
   public static final String QR_COMPANY = "qrCompany";
   public static final String QR_PERSON = "qrPerson";
 
+  public static final String PRM_INFORMATION_INPUT_TEXT = "InformationInputText";
+
   public static final String TREE_ITEM_CATEGORIES = "ItemCategoryTree";
 
   public static void register() {

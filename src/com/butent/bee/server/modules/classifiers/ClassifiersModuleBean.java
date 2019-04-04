@@ -286,9 +286,15 @@ public class ClassifiersModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return Collections.singletonList(BeeParameter.createMap(getModule().getName(),
+
+    String module = getModule().getName();
+
+    return Lists.newArrayList(
+      BeeParameter.createText(module, PRM_INFORMATION_INPUT_TEXT),
+      BeeParameter.createMap(getModule().getName(),
         PRM_RECORD_DEPENDENCY, false, ImmutableMap.of(TBL_DOCUMENTS, COL_DOCUMENT_CATEGORY,
-            VIEW_RELATED_DOCUMENTS, COL_DOCUMENT)));
+          VIEW_RELATED_DOCUMENTS, COL_DOCUMENT))
+      );
   }
 
   @Override

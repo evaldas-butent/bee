@@ -1043,6 +1043,8 @@ public interface Dictionary {
 
   default String crmFinishTimeMustBeGreaterThanStart() {return g("crmFinishTimeMustBeGreaterThanStart");}
 
+  default String crmSearchVisibility() {return g("crmSearchVisibility");}
+
   default String crmMailAssignedTasks() {return g("crmMailAssignedTasks");}
 
   default String crmMailTaskSubject() {return g("crmMailTaskSubject");}
@@ -4854,6 +4856,8 @@ public interface Dictionary {
   default String prmCountry() {return g("prmCountry");}
 
   default String prmCreatePrivateTaskFirst() {return g("prmCreatePrivateTaskFirst");}
+
+  default String prmInformationInputText() {return g("prmCrmSearchVisibility");}
 
   default String prmCurrencyRefreshHours() {return g("prmCurrencyRefreshHours");}
 

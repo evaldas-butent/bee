@@ -1,7 +1,10 @@
 package com.butent.bee.client.modules.classifiers;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.ChildSelector;
 import com.butent.bee.client.data.*;
+import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.google.gwt.event.shared.HasHandlers;
@@ -67,6 +70,9 @@ class CompanyForm extends AbstractFormInterceptor {
   private FaLabel switchAction;
   private static List<String> columns = Arrays.asList(COL_COMPANY_TERMINAL, COL_COMPANY_NETWORK, COL_COMPANY_DBNUMBER,
     COL_COMPANY_POS_PLACES);
+
+  private InputArea informationInput;
+  private InputDate cancelDate;
 
   CompanyForm() {
   }
@@ -217,6 +223,25 @@ class CompanyForm extends AbstractFormInterceptor {
           return null;
         }
       });
+    } else if (BeeUtils.same(name, PRM_INFORMATION_INPUT_TEXT) && widget instanceof InputArea) {
+
+      String text = Global.getParameterText(PRM_INFORMATION_INPUT_TEXT);
+      informationInput = (InputArea) widget;
+      informationInput.setValue(text);
+    } else if (BeeUtils.same(name, "CancelDate") && widget instanceof InputDate) {
+      cancelDate = (InputDate) widget;
+
+      cancelDate.addEditStopHandler(event -> {
+        if (event.isChanged()) {
+          checkInformationInputTextVisibility();
+        }
+      });
+
+      cancelDate.addValueChangeHandler(valueChangeEvent -> {
+        if (BeeUtils.isEmpty(valueChangeEvent.getValue())) {
+          checkInformationInputTextVisibility();
+        }
+      });
     }
   }
 
@@ -259,6 +284,8 @@ class CompanyForm extends AbstractFormInterceptor {
       }
       switchAction.setVisible(!form.isAdding()
           && (presenter instanceof GridFormPresenter || presenter instanceof RowPresenter));
+
+      checkInformationInputTextVisibility();
     }
     super.afterRefresh(form, row);
   }
@@ -478,5 +505,11 @@ class CompanyForm extends AbstractFormInterceptor {
     row.setValue(Data.getColumnIndex(TBL_COMPANY_HISTORY, MailConstants.COL_DATE),
       TimeUtils.nowMinutes());
     row.setValue(Data.getColumnIndex(TBL_COMPANY_HISTORY, COL_COMPANY_USER_USER), BeeKeeper.getUser().getUserId());
+  }
+
+  private void checkInformationInputTextVisibility() {
+    if (cancelDate != null) {
+      informationInput.setVisible(!cancelDate.isEmpty());
+    }
   }
 }
