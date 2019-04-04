@@ -318,10 +318,25 @@ public class TradeDocumentForm extends PrintFormInterceptor {
         result -> {
           result.addColumn(Data.getColumn(getViewName(), COL_TRADE_DOCUMENT_VAT_MODE));
           String mode = getStringValue(COL_TRADE_DOCUMENT_VAT_MODE);
-          Integer idx = result.getNumberOfColumns() - 1;
-          result.forEach(beeRow -> beeRow.setValue(idx, mode));
+          int idx = result.getNumberOfColumns() - 1;
+          Map<Long, Double> prices = new HashMap<>();
 
-          dataConsumer.accept(new BeeRowSet[] {result});
+          result.forEach(beeRow -> {
+            prices.put(beeRow.getId(), beeRow.getDouble(result.getColumnIndex(COL_ITEM_PRICE)));
+            beeRow.setValue(idx, mode);
+          });
+          if (prices.values().stream().anyMatch(Objects::isNull)) {
+            Global.choiceWithCancel("Spausdinti prekes be kainos?", null,
+                Arrays.asList("Taip", "Ne"), (choice) -> {
+                  if (choice == 1) {
+                    prices.entrySet().stream().filter(e -> Objects.isNull(e.getValue()))
+                        .forEach(e -> result.removeRowById(e.getKey()));
+                  }
+                  dataConsumer.accept(new BeeRowSet[] {result});
+                });
+          } else {
+            dataConsumer.accept(new BeeRowSet[] {result});
+          }
         });
   }
 
