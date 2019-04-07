@@ -16,8 +16,7 @@ import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.google.common.collect.Lists;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
@@ -137,6 +136,12 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
       ((DataSelector) editor).addSelectorHandler(event -> {
         if (event.isNewRow()) {
           event.consume();
+          createAppointment();
+        }
+      });
+
+      ((DataSelector) editor).addKeyDownHandler(keyDownEvent -> {
+        if (keyDownEvent.getNativeKeyCode() == KeyCodes.KEY_X) {
           createAppointment();
         }
       });
@@ -911,7 +916,9 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
         String objectAddress = tradeActForm.getStringValue(COL_COMPANY_OBJECT_ADDRESS);
 
         Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_ITEM_DESCRIPTION,
-          BeeUtils.joinWords(objectName, objectAddress) + "\n" + tradeActName);
+          BeeUtils.joinWords(objectName, objectAddress) + "\n" + BeeUtils.joinWords("Kontaktas:",
+            tradeActForm.getStringValue(ALS_CONTACT_FIRST_NAME), tradeActForm.getStringValue(ALS_CONTACT_LAST_NAME),
+            tradeActForm.getStringValue("ContactMobile")) + "\n" + tradeActName);
 
         Long manager = tradeActForm.getLongValue(COL_TRADE_MANAGER);
         if (manager != null) {
