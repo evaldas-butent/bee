@@ -6,12 +6,7 @@ import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.gwt.dom.client.Style.Visibility;
-import com.google.gwt.event.dom.client.HasChangeHandlers;
-import com.google.gwt.event.dom.client.HasClickHandlers;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.event.dom.client.MouseDownHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
@@ -382,6 +377,8 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
   private DateTime lastCheckStart;
   private DateTime lastCheckEnd;
 
+  private InputDate dateFrom;
+
   private final Set<String> requiredFields = new HashSet<>();
 
   private final List<Long> ucAttendees = new ArrayList<>();
@@ -493,6 +490,15 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
       }
     } else if (BeeUtils.same(name, NAME_BUILD_INFO)) {
       setBuildInfoWidgetId(widget.getId());
+    } else if (BeeUtils.same(name, ClassifierConstants.COL_DATE_FROM) && widget instanceof InputDate) {
+      dateFrom = (InputDate) widget;
+      dateFrom.addFocusHandler(focusEvent -> {
+        JustDate endDate = getDateTimeValue(COL_END_DATE_TIME).getDate();
+        if (dateFrom.getDate() == null) {
+          dateFrom.setDate(endDate);
+          Data.setValue(VIEW_APPOINTMENTS, getActiveRow(), ClassifierConstants.COL_DATE_FROM, endDate);
+        }
+      });
     }
 
     super.afterCreateWidget(name, widget, callback);
@@ -526,6 +532,8 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
       ((UnboundSelector) getFormView().getWidgetByName("Suppliers")).setValue(supplier, true);
     }
 
+    setDateFromEditing(row);
+
     checkOverlap(false);
   }
 
@@ -554,6 +562,13 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
   public boolean beforeCreateWidget(String name, Element description) {
     return isNew || BeeUtils.isEmpty(name)
         || !BeeUtils.inListSame(name, NAME_BUILD_SEPARATOR, NAME_BUILD, NAME_BUILD_INFO);
+  }
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    setDateFromEditing(row);
+
+    super.beforeRefresh(form, row);
   }
 
   @Override
@@ -1005,6 +1020,15 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
     return widget;
   }
 
+  private void setDateFromEditing(IsRow row) {
+    Long supplier = getFormView().getLongValue(TradeConstants.COL_TRADE_SUPPLIER);
+    if (!DataUtils.isNewRow(row) && dateFrom != null && BeeUtils.isPositive(supplier)) {
+      dateFrom.setEnabled(true);
+    } else {
+      dateFrom.setEnabled(false);
+    }
+  }
+
   private boolean hasValue(String widgetId) {
     Widget widget = getWidget(widgetId);
 
@@ -1387,6 +1411,14 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
       if (!Objects.equals(supplierOld, supplier)) {
         values.add(supplier == null ? "" : BeeUtils.toString(supplier));
         columns.add(TradeConstants.COL_TRADE_SUPPLIER);
+      }
+
+      JustDate oldDateFrom = Data.getDate(VIEW_APPOINTMENTS, oldRow, ClassifierConstants.COL_DATE_FROM);
+      JustDate newDateFrom = Data.getDate(VIEW_APPOINTMENTS, activeRow, ClassifierConstants.COL_DATE_FROM);
+
+      if (!Objects.equals(oldDateFrom, newDateFrom)) {
+        values.add(newDateFrom == null ? "" : BeeUtils.toString(newDateFrom.getDays()));
+        columns.add(ClassifierConstants.COL_DATE_FROM);
       }
 
       if (!values.isEmpty()) {

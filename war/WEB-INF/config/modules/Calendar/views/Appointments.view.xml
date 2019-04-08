@@ -157,6 +157,7 @@
         <SimpleColumn name="Name" alias="SupplierName" />
       </SimpleJoin>
       <SimpleColumn name="CostAmount" />
+      <SimpleColumn name="DateFrom" />
     </SimpleJoin>
 
     <SimpleColumn name="ServiceObject" />
