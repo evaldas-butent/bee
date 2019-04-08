@@ -888,6 +888,9 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
       Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_COST_AMOUNT,
         Data.getDouble(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_COST_AMOUNT));
 
+      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_DATE_FROM,
+        Data.getDate(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_DATE_FROM));
+
       String seriesName = Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, "TradeSeriesName");
       String itemName = Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, "ItemName");
       Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, CalendarConstants.COL_SUMMARY,
