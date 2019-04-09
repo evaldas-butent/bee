@@ -709,7 +709,7 @@ public final class TradeActKeeper {
       if (TradeActKind.RENT_PROJECT.equals(getKind(VIEW_TRADE_ACTS, parent))) {
         Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT, parent.getId());
         RelationUtils.updateRow(Data.getDataInfo(VIEW_TRADE_ACTS), COL_TA_RENT_PROJECT, row,
-                Data.getDataInfo(VIEW_TRADE_ACTS), row, false);
+                Data.getDataInfo(VIEW_TRADE_ACTS), parent, false);
       } else {
         Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_RENT_PROJECT,
                 Data.getLong(VIEW_TRADE_ACTS, parent, COL_TA_RENT_PROJECT));
