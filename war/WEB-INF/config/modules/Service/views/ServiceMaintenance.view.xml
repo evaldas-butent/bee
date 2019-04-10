@@ -170,6 +170,12 @@
     </SimpleJoin>
 
     <SimpleColumn name="Run" />
+
+    <SimpleColumn name="Contract" />
+    <SimpleJoin name="Contract" joinType="LEFT">
+      <SimpleColumn name="Name" alias="ContractName" />
+      <SimpleColumn name="Number" alias="ContractNumber" />
+    </SimpleJoin>
     </Columns>
   <Order>
     <OrderBy column="Date" descending="true" />

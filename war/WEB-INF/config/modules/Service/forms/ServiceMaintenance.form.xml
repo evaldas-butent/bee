@@ -82,6 +82,10 @@
                               choiceColumns="Name TypeName"
                               renderColumns="CompanyName CompanyTypeName" style="&finp;" tabIndex="30"/>
               </FlowPanel>
+
+              <FlowPanel style="&mfld; margin-top: 5ex;" for="Urgent" >
+                <CheckBox source="Urgent" summarize="true" tabIndex="60"/>
+              </FlowPanel>
             </FlowPanel>
 
             <FlowPanel class="&mrcl;" style="&mrst;">
@@ -120,8 +124,16 @@
                 <FaLabel name="ContactAdd" char="plus_circle" class="bee-MultiSelector-plus bee-svc-add-button"/>
               </FlowPanel>
             </FlowPanel>
-            <FlowPanel style="&mfld; margin-top: 5.6ex;" for="Urgent">
-              <CheckBox source="Urgent" summarize="true" tabIndex="60"/>
+
+            <FlowPanel class="&mrcl;" style="&mrst;" for="Contract">
+              <FlowPanel style="&mfld; width: 21em;" >
+                <Label for="Contract" class="bee-svc-panel-title" style="&flbl;"/>
+                <DataSelector name="Contract" source="Contract" style="&finp;"
+                              renderColumns="ContractName ContractNumber"
+                              choiceColumns="Name Number DocumentDate Expires StatusName"
+                              viewName="Documents" caching="none" module="Documents"
+                              newRowEnabled="false" tabIndex="60" />
+              </FlowPanel>
             </FlowPanel>
           </FlowPanel>
         </FlowPanel>

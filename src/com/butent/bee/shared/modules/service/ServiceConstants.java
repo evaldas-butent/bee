@@ -39,6 +39,7 @@ public final class ServiceConstants {
   public static final String PRM_EXTERNAL_MAINTENANCE_URL = "ExternalMaintenanceUrl";
   public static final String PRM_SMS_REQUEST_CONTACT_INFO_FROM = "SmsRequestContactInfoFrom";
   public static final String PRM_ROLE = "Role";
+  public static final String PRM_MAINTENANCE_DOC_STATUS = "MaintenanceDocumentStatus";
 
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_CREATE_DEFECT_ITEMS = "CreateDefectItems";

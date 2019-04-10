@@ -20,7 +20,7 @@ import static com.butent.bee.shared.modules.service.ServiceConstants.COL_CREATOR
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_MESSAGE;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TA_RUN;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -30,6 +30,7 @@ import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.InputCallback;
@@ -94,6 +95,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.cars.CarsConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.trade.ItemQuantities;
@@ -189,16 +191,81 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         return true;
       });
 
-    } else if (BeeUtils.same(editableWidget.getColumnId(), COL_REPAIRER)
-        && widget instanceof DataSelector) {
-      ServiceHelper.setRepairerFilter(widget);
     } else if (BeeUtils.same(editableWidget.getColumnId(), COL_TA_RUN)) {
       ((InputNumber) widget).addClickHandler(clickEvent -> {
         String value = getStringValue(COL_TA_RUN);
         updateServiceObjectRun(value);
       });
+    } else if (widget instanceof DataSelector) {
+      switch (editableWidget.getColumnId()) {
+        case COL_REPAIRER:
+          ServiceHelper.setRepairerFilter(widget);
+          break;
+        case COL_COMPANY:
+          ((DataSelector) widget).addSelectorHandler(this::updateContract);
+          break;
+        case COL_TA_CONTRACT:
+          ((DataSelector) widget).addSelectorHandler(this::setContractFilter);
+          break;
+      }
     }
     super.afterCreateEditableWidget(editableWidget, widget);
+  }
+
+  private static Filter getContractFilter(Long company) {
+    if (!DataUtils.isId(company)) {
+      return Filter.isFalse();
+    }
+    Filter filter = Filter.in(Data.getIdColumn(DocumentConstants.TBL_DOCUMENTS),
+        DocumentConstants.VIEW_RELATED_DOCUMENTS, DocumentConstants.COL_DOCUMENT,
+        Filter.equals(COL_COMPANY, company));
+
+    Long status = Global.getParameterRelation(PRM_MAINTENANCE_DOC_STATUS);
+
+    if (DataUtils.isId(status)) {
+      filter = Filter.and(filter, Filter.equals(DocumentConstants.COL_DOCUMENT_STATUS, status));
+    }
+    return filter;
+  }
+
+  private void setContractFilter(SelectorEvent ev) {
+    if (ev.isOpened()) {
+      ev.getSelector().setAdditionalFilter(getContractFilter(getLongValue(COL_COMPANY)));
+    }
+  }
+
+  private void updateContract(SelectorEvent ev) {
+    if (ev.isChanged()) {
+      DataInfo target = Data.getDataInfo(getViewName());
+      IsRow targetRow = getActiveRow();
+
+      Runnable clearContract = () -> {
+        Data.clearCell(getViewName(), targetRow, COL_TA_CONTRACT);
+        RelationUtils.clearRelatedValues(target, COL_TA_CONTRACT, targetRow);
+        getFormView().refreshBySource(COL_TA_CONTRACT);
+      };
+
+      if (!DataUtils.isId(ev.getValue())) {
+        clearContract.run();
+        return;
+      }
+      DataInfo source = Data.getDataInfo(DocumentConstants.TBL_DOCUMENTS);
+
+      Queries.getRow(DocumentConstants.TBL_DOCUMENTS, getContractFilter(ev.getValue()), null,
+          new RowCallback() {
+            @Override
+            public void onFailure(String... reason) {
+              Global.showError("Nėra tinkamos sutarties");
+              clearContract.run();
+            }
+
+            @Override
+            public void onSuccess(BeeRow result) {
+              RelationUtils.updateRow(target, COL_TA_CONTRACT, targetRow, source, result, true);
+              getFormView().refreshBySource(COL_TA_CONTRACT);
+            }
+          });
+    }
   }
 
   @Override
@@ -1136,11 +1203,12 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         doc.setDocumentVatMode(vatMode.getA());
         doc.setExtraDimensions(Dimensions.create(getDataColumns(), getActiveRow()));
         doc.setNotes(BeeUtils.join("\n",
-            BeeUtils.joinWords("Įrenginys:", getStringValue(COL_MODEL),
+            BeeUtils.joinWords("Įrenginys", getStringValue(COL_MODEL),
                 getStringValue(COL_ADDRESS)),
-            BeeUtils.joinWords("Kėbulo Nr.:", getStringValue(COL_SERVICE_BODY_NO)),
-            BeeUtils.joinWords("Moto val.:", getStringValue(COL_TA_RUN)),
-            BeeUtils.joinWords("Darbų aktas Nr.", getActiveRowId())));
+            BeeUtils.joinWords("Kėbulo Nr.", getStringValue(COL_SERVICE_BODY_NO)),
+            BeeUtils.joinWords("Moto val.", getStringValue(COL_TA_RUN)),
+            BeeUtils.joinWords("Darbų aktas Nr.", getActiveRowId()),
+            BeeUtils.joinWords("Sutarties Nr.", getStringValue("ContractNumber"))));
 
         args.addDataItem(VAR_DOCUMENT, Codec.beeSerialize(doc));
         createInvoice.running();
