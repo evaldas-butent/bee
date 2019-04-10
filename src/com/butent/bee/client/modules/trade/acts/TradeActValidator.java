@@ -83,9 +83,10 @@ public class TradeActValidator {
     }
 
     public static boolean validateTradeActForm(NotificationListener notify, GridView itemsGrid, IsRow row, String viewName) {
-        return   checkContactField(notify, row, viewName)
-                && checkRegistrationNumber(notify, row, viewName)
+        return  checkContactField(notify, row, viewName)
                 && checkDateWithRentProject(notify, row, viewName)
+                && checkObject(notify, row, viewName)
+                && checkRegistrationNumber(notify, row, viewName)
                 && checkStatuses(notify, itemsGrid, row, viewName);
     }
 
@@ -112,6 +113,26 @@ public class TradeActValidator {
         if (!valid && canNotify) {
             notify.notifySevere(Localized.dictionary().invalidDate(), Localized.dictionary().taDate(),
                     "Data privalo būti vėlesnė už nuomos aktą");
+        }
+
+        return valid;
+    }
+
+    private static boolean checkObject(NotificationListener notify, IsRow row, String viewName) {
+        /* All objects is valid except*/
+        boolean valid = !DataUtils.isId(getRentProject(row, viewName));
+        boolean canNotify = notify != null;
+
+        if (valid) {
+            return true;
+        }
+
+        /* There is not match with Rent act project object*/
+        valid = Objects.equals(getObject(row,viewName), getRentProjectObject(row, viewName));
+
+        if (!valid && canNotify) {
+            notify.notifySevere(Localized.dictionary().object(), "Nesutampa su nuomos aktu",
+                    BeeUtils.parenthesize(getRentProjectObjectName(row, viewName)));
         }
 
         return valid;
@@ -189,6 +210,10 @@ public class TradeActValidator {
         return TradeActKeeper.getKind(viewName, row);
     }
 
+    public static Long getObject(IsRow row, String viewName) {
+        return Data.getLong(viewName, row, COL_TA_OBJECT);
+    }
+
     private static boolean getOperationReturnedItems(IsRow row, String viewName) {
         return BeeUtils.unbox(Data.getBoolean(viewName, row, ALS_OPERATION_RETURNED_ITEMS));
     }
@@ -203,6 +228,14 @@ public class TradeActValidator {
 
     private static DateTime getRentProjectDate(IsRow row, String viewName) {
         return Data.getDateTime(viewName, row, ALS_RENT_PROJECT_DATE);
+    }
+
+    private static Long getRentProjectObject(IsRow row, String viewName) {
+        return Data.getLong(viewName, row, ALS_RENT_PROJECT_OBJECT);
+    }
+
+    private static String getRentProjectObjectName(IsRow row, String viewName) {
+        return Data.getString(viewName, row, ALS_RENT_PROJECT_OBJECT_NAME);
     }
 
     private static Long getSeries(IsRow row, String viewName) {
