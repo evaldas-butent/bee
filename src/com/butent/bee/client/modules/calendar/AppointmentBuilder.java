@@ -533,6 +533,7 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
     }
 
     setDateFromEditing(row);
+    disableWidgetEditing();
 
     checkOverlap(false);
   }
@@ -567,6 +568,7 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
     setDateFromEditing(row);
+    disableWidgetEditing();
 
     super.beforeRefresh(form, row);
   }
@@ -1026,6 +1028,13 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
       dateFrom.setEnabled(true);
     } else {
       dateFrom.setEnabled(false);
+    }
+  }
+
+  private void disableWidgetEditing() {
+    if (DataUtils.isNewRow(getActiveRow())) {
+      ((InputNumber) getFormView().getWidgetBySource(TradeActConstants.COL_COST_AMOUNT)).setEnabled(false);
+      ((UnboundSelector) getFormView().getWidgetByName("Suppliers")).setEnabled(false);
     }
   }
 

@@ -438,19 +438,25 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
       }
     } else if (BeeUtils.same(CalendarConstants.COL_APPOINTMENT, column.getId())) {
 
-      Long tradeActService = null;
-      String appointment = null;
+      Long appointment = null;
+      List<String> columns = new ArrayList<>();
+      List<String> values = new ArrayList<>();
 
       if (BeeUtils.isEmpty(oldValue) && newValue != null) {
-        tradeActService = getActiveRowId();
-        appointment = newValue;
+        appointment = BeeUtils.toLong(newValue);
+        columns.add("TradeActService");
+        columns.add(COL_TRADE_ACT);
+
+        values.add(BeeUtils.toString(getActiveRowId()));
+        values.add(Data.getString(VIEW_TRADE_ACT_SERVICES, getActiveRow(), COL_TRADE_ACT));
+
       } else if (BeeUtils.isEmpty(newValue) && oldValue != null) {
-        tradeActService = null;
-        appointment = oldValue;
+        appointment = BeeUtils.toLong(oldValue);
+        columns.add("TradeActService");
+        values.add("");
       }
 
-      Queries.update(CalendarConstants.VIEW_APPOINTMENTS, BeeUtils.toLong(appointment), "TradeActService",
-        new LongValue(tradeActService));
+      Queries.update(CalendarConstants.VIEW_APPOINTMENTS, Filter.compareId(appointment), columns, values, null);
     }
   }
 
