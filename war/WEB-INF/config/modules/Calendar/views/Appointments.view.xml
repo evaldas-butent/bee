@@ -6,6 +6,8 @@
 >
   <Relation renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime" newRowEnabled="false" />
   <Columns>
+    <IdColumn name="Appointment" />
+
     <SimpleColumn name="AppointmentType" />
     <SimpleJoin joinType="LEFT" name="AppointmentType">
       <SimpleColumn alias="TypeName" name="Name" />
