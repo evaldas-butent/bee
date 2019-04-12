@@ -144,16 +144,36 @@ public class TradeActDataEventHandler implements DataEventHandler {
         dateClause = SqlUtils.and(dateClause,
             SqlUtils.lessEqual(TBL_SALES, COL_TRADE_DATE, end));
       }
-      return SqlUtils.not(SqlUtils.in(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS),
-          new SqlSelect().setDistinctMode(true)
-              .addFields(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT)
-              .addFrom(TBL_TRADE_ACT_INVOICES)
-              .addFromInner(TBL_TRADE_ACT_SERVICES, sys.joinTables(TBL_TRADE_ACT_SERVICES,
-                  TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
-              .addFromInner(TBL_SALE_ITEMS, sys.joinTables(TBL_SALE_ITEMS, TBL_TRADE_ACT_INVOICES,
-                  COL_TA_INVOICE_ITEM))
-              .addFromInner(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
-              .setWhere(dateClause)));
+
+      IsCondition isCondition1 = /*SqlUtils.not(*/SqlUtils.in(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS),
+              new SqlSelect().setDistinctMode(true)
+                      .addFields(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT)
+                      .addFrom(TBL_TRADE_ACT_INVOICES)
+                      .addFromInner(TBL_TRADE_ACT_SERVICES, sys.joinTables(TBL_TRADE_ACT_SERVICES,
+                              TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
+                      .addFromInner(TBL_SALE_ITEMS, sys.joinTables(TBL_SALE_ITEMS, TBL_TRADE_ACT_INVOICES,
+                              COL_TA_INVOICE_ITEM))
+                      .addFromInner(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+                      .setWhere(dateClause));
+
+      IsCondition isCondition2 = /*SqlUtils.not(*/SqlUtils.in(
+              TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS),
+              new SqlSelect().setDistinctMode(true)
+              .addFields("RentPActs", sys.getIdName(TBL_TRADE_ACTS))
+                      .addFrom(TBL_TRADE_ACT_INVOICES)
+                      .addFromInner(TBL_TRADE_ACT_SERVICES, sys.joinTables(TBL_TRADE_ACT_SERVICES,
+                              TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
+                      .addFromInner(TBL_TRADE_ACTS,
+                              sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT))
+                      .addFromInner(TBL_TRADE_ACTS, "RentPActs",
+                              SqlUtils.join("RentPActs", sys.getIdName(TBL_TRADE_ACTS), TBL_TRADE_ACTS, COL_TA_RENT_PROJECT))
+                      .addFromInner(TBL_SALE_ITEMS, sys.joinTables(TBL_SALE_ITEMS, TBL_TRADE_ACT_INVOICES,
+                              COL_TA_INVOICE_ITEM))
+                      .addFromInner(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+              .setWhere(dateClause)
+      );
+
+      return SqlUtils.not(SqlUtils.or(isCondition1, isCondition2));
     });
 
     BeeView.registerConditionProvider(TBL_TRADE_ACT_ITEMS, (view, args) -> {
