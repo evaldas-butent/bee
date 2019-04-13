@@ -236,36 +236,39 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
   private void updateContract(SelectorEvent ev) {
     if (ev.isChanged()) {
-      DataInfo target = Data.getDataInfo(getViewName());
-      IsRow targetRow = getActiveRow();
-
-      Runnable clearContract = () -> {
-        Data.clearCell(getViewName(), targetRow, COL_TA_CONTRACT);
-        RelationUtils.clearRelatedValues(target, COL_TA_CONTRACT, targetRow);
-        getFormView().refreshBySource(COL_TA_CONTRACT);
-      };
-
-      if (!DataUtils.isId(ev.getValue())) {
-        clearContract.run();
-        return;
-      }
-      DataInfo source = Data.getDataInfo(DocumentConstants.TBL_DOCUMENTS);
-
-      Queries.getRow(DocumentConstants.TBL_DOCUMENTS, getContractFilter(ev.getValue()), null,
-          new RowCallback() {
-            @Override
-            public void onFailure(String... reason) {
-              Global.showError("Nėra tinkamos sutarties");
-              clearContract.run();
-            }
-
-            @Override
-            public void onSuccess(BeeRow result) {
-              RelationUtils.updateRow(target, COL_TA_CONTRACT, targetRow, source, result, true);
-              getFormView().refreshBySource(COL_TA_CONTRACT);
-            }
-          });
+      updateContract(ev.getValue(), getFormView(), getFormView().getActiveRow());
     }
+  }
+
+  private static void updateContract(Long company, FormView formView, IsRow targetRow) {
+    DataInfo target = Data.getDataInfo(formView.getViewName());
+
+    Runnable clearContract = () -> {
+      Data.clearCell(formView.getViewName(), targetRow, COL_TA_CONTRACT);
+      RelationUtils.clearRelatedValues(target, COL_TA_CONTRACT, targetRow);
+      formView.refreshBySource(COL_TA_CONTRACT);
+    };
+
+    if (!DataUtils.isId(company)) {
+      clearContract.run();
+      return;
+    }
+    DataInfo source = Data.getDataInfo(DocumentConstants.TBL_DOCUMENTS);
+
+    Queries.getRow(DocumentConstants.TBL_DOCUMENTS, getContractFilter(company), null,
+        new RowCallback() {
+          @Override
+          public void onFailure(String... reason) {
+            Global.showError("Nėra tinkamos sutarties");
+            clearContract.run();
+          }
+
+          @Override
+          public void onSuccess(BeeRow result) {
+            RelationUtils.updateRow(target, COL_TA_CONTRACT, targetRow, source, result, true);
+            formView.refreshBySource(COL_TA_CONTRACT);
+          }
+        });
   }
 
   @Override
@@ -851,6 +854,8 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
       getFormView().refresh(false, false);
     });
+
+    updateContract(row.getLong(form.getDataIndex(COL_COMPANY)), form, row);
   }
 
   @Override
@@ -1208,7 +1213,9 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
             BeeUtils.joinWords("Kėbulo Nr.", getStringValue(COL_SERVICE_BODY_NO)),
             BeeUtils.joinWords("Moto val.", getStringValue(COL_TA_RUN)),
             BeeUtils.joinWords("Darbų aktas Nr.", getActiveRowId()),
-            BeeUtils.joinWords("Sutarties Nr.", getStringValue("ContractNumber"))));
+            DataUtils.isId(getLongValue(COL_TA_CONTRACT)) ?
+              BeeUtils.joinWords("Sutarties Nr.", getStringValue("ContractName"),
+                  getStringValue("ContractNumber")): null));
 
         args.addDataItem(VAR_DOCUMENT, Codec.beeSerialize(doc));
         createInvoice.running();
