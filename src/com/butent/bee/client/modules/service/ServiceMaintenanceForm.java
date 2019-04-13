@@ -1213,9 +1213,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
             BeeUtils.joinWords("Kėbulo Nr.", getStringValue(COL_SERVICE_BODY_NO)),
             BeeUtils.joinWords("Moto val.", getStringValue(COL_TA_RUN)),
             BeeUtils.joinWords("Darbų aktas Nr.", getActiveRowId()),
-            DataUtils.isId(getLongValue(COL_TA_CONTRACT)) ?
-              BeeUtils.joinWords("Sutarties Nr.", getStringValue("ContractName"),
-                  getStringValue("ContractNumber")): null));
+            BeeUtils.joinWords(getStringValue("ContractName"), getStringValue("ContractNumber"))));
 
         args.addDataItem(VAR_DOCUMENT, Codec.beeSerialize(doc));
         createInvoice.running();

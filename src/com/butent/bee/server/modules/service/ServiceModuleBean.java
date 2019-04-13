@@ -1086,6 +1086,8 @@ public class ServiceModuleBean implements BeeModule {
 
       if (!DataUtils.isEmpty(data)) {
         document.setSeries(data.getValue(0, COL_SERIES_NAME));
+        document.setNumber(trd.getNextDocumentNumber(document.getId(), document.getDate(),
+            document.getSeries()));
         document.setManager(data.getLong(0, COL_TRADE_MANAGER));
       }
     }

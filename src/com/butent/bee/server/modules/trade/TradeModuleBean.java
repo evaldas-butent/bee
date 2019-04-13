@@ -1493,29 +1493,17 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           String number = DataUtils.getStringQuietly(row, numberIndex);
 
           if (!BeeUtils.isEmpty(series) && BeeUtils.isEmpty(number)) {
-            SqlSelect query = new SqlSelect()
-                .addFields(TBL_TRADE_SERIES,
-                    COL_SERIES_NUMBER_PREFIX, COL_SERIES_NUMBER_LENGTH)
-                .addFrom(TBL_TRADE_SERIES)
-                .setWhere(SqlUtils.equals(TBL_TRADE_SERIES, COL_SERIES_NAME, series));
+            int dateIndex = DataUtils.getColumnIndex(COL_TRADE_DATE, columns);
+            DateTime date = DataUtils.getDateTimeQuietly(row, dateIndex);
 
-            SimpleRowSet seriesData = qs.getData(query);
+            number = getNextDocumentNumber(row.getId(), date, series);
 
-            if (!DataUtils.isEmpty(seriesData)) {
-              int dateIndex = DataUtils.getColumnIndex(COL_TRADE_DATE, columns);
-              DateTime date = DataUtils.getDateTimeQuietly(row, dateIndex);
-
-              number = getNextDocumentNumber(row.getId(), date, series,
-                  seriesData.getValue(0, COL_SERIES_NUMBER_PREFIX),
-                  seriesData.getInt(0, COL_SERIES_NUMBER_LENGTH));
-
-              if (!BeeUtils.isEmpty(number)) {
-                if (row.isIndex(numberIndex)) {
-                  row.setValue(numberIndex, number);
-                } else {
-                  BeeColumn col = sys.getView(VIEW_TRADE_DOCUMENTS).getBeeColumn(COL_TRADE_NUMBER);
-                  ((InsertOrUpdate) event).addValue(col, new TextValue(number));
-                }
+            if (!BeeUtils.isEmpty(number)) {
+              if (row.isIndex(numberIndex)) {
+                row.setValue(numberIndex, number);
+              } else {
+                BeeColumn col = sys.getView(VIEW_TRADE_DOCUMENTS).getBeeColumn(COL_TRADE_NUMBER);
+                ((InsertOrUpdate) event).addValue(col, new TextValue(number));
               }
             }
           }
@@ -5902,8 +5890,20 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return result;
   }
 
-  private String getNextDocumentNumber(long id, DateTime date, String series, String prefix,
-      Integer length) {
+  public String getNextDocumentNumber(long id, DateTime date, String series) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_SERIES,
+            COL_SERIES_NUMBER_PREFIX, COL_SERIES_NUMBER_LENGTH)
+        .addFrom(TBL_TRADE_SERIES)
+        .setWhere(SqlUtils.equals(TBL_TRADE_SERIES, COL_SERIES_NAME, series));
+
+    SimpleRowSet seriesData = qs.getData(query);
+
+    if (DataUtils.isEmpty(seriesData)) {
+      return null;
+    }
+    String prefix = seriesData.getValue(0, COL_SERIES_NUMBER_PREFIX);
+    Integer length = seriesData.getInt(0, COL_SERIES_NUMBER_LENGTH);
 
     String tbl = TBL_TRADE_DOCUMENTS;
 
