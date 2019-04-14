@@ -528,6 +528,9 @@ public class CompanyForm extends AbstractFormInterceptor {
     if (widget != null) {
       widget.getElement().setInnerText(null);
 
+      if (!DataUtils.isId(companyId)) {
+        return;
+      }
       ParameterList args = TradeKeeper.createArgs(SVC_CREDIT_INFO);
       args.addDataItem(COL_COMPANY, companyId);
 
