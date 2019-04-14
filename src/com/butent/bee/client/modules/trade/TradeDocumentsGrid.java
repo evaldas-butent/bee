@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.trade;
 
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
@@ -25,6 +27,7 @@ import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -41,11 +44,20 @@ public class TradeDocumentsGrid extends AbstractGridInterceptor {
 
   private Filter operationsFilter;
 
+  private TradeDocumentPhase defaultPhase;
+
   public TradeDocumentsGrid() {
   }
 
   public TradeDocumentsGrid(long typeId) {
     super();
+    Queries.getRow(VIEW_TRADE_DOCUMENT_TYPES, typeId, result ->
+        this.setDefaultPhase(Arrays.stream(TradeDocumentPhase.values())
+            .filter(phase ->
+                Data.isTrue(VIEW_TRADE_DOCUMENT_TYPES, result, phase.getDocumentTypeColumnName()))
+            .findFirst()
+            .orElse(TradeDocumentPhase.PENDING)));
+
     Queries.getDistinctLongs(TradeConstants.TBL_TRADE_TYPE_OPERATIONS,
         TradeConstants.COL_TRADE_OPERATION, Filter.equals(TradeConstants.COL_DOCUMENT_TYPE, typeId),
         result -> this.setOperationsFilter(Filter.idIn(result)));
@@ -85,7 +97,8 @@ public class TradeDocumentsGrid extends AbstractGridInterceptor {
 
   @Override
   public GridInterceptor getInstance() {
-    return new TradeDocumentsGrid().setOperationsFilter(getOperationsFilter());
+    return new TradeDocumentsGrid().setDefaultPhase(this.defaultPhase)
+        .setOperationsFilter(getOperationsFilter());
   }
 
   public Filter getOperationsFilter() {
@@ -103,13 +116,14 @@ public class TradeDocumentsGrid extends AbstractGridInterceptor {
     super.onParentRow(event);
   }
 
-  public TradeDocumentsGrid setFilterSupplier(Supplier<Filter> filterSupplier) {
-    this.filterSupplier = filterSupplier;
-    return this;
+  @Override
+  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
+    newRow.setValue(gridView.getDataIndex(COL_TRADE_DOCUMENT_PHASE), this.defaultPhase);
+    return super.onStartNewRow(gridView, oldRow, newRow, copy);
   }
 
-  public TradeDocumentsGrid setOperationsFilter(Filter operationsFilter) {
-    this.operationsFilter = operationsFilter;
+  public TradeDocumentsGrid setFilterSupplier(Supplier<Filter> filterSupplier) {
+    this.filterSupplier = filterSupplier;
     return this;
   }
 
@@ -118,6 +132,16 @@ public class TradeDocumentsGrid extends AbstractGridInterceptor {
       presenter.getDataProvider().setDefaultParentFilter(supplier.get());
       presenter.handleAction(Action.REFRESH);
     }
+  }
+
+  private TradeDocumentsGrid setDefaultPhase(TradeDocumentPhase phase) {
+    this.defaultPhase = phase;
+    return this;
+  }
+
+  private TradeDocumentsGrid setOperationsFilter(Filter operationsFilter) {
+    this.operationsFilter = operationsFilter;
+    return this;
   }
 
   private void toErp() {

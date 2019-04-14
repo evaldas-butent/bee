@@ -645,6 +645,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     String module = getModule().getName();
 
     Collection<BeeParameter> params = new ArrayList<>();
+    params.add(BeeParameter.createRelation(module, PRM_TRADE_WAREHOUSE, true, TBL_WAREHOUSES,
+        COL_WAREHOUSE_CODE));
+    params.add(BeeParameter.createRelation(module, PRM_TRADE_ACT_WAREHOUSE, true, TBL_WAREHOUSES,
+        COL_WAREHOUSE_CODE));
     params.add(BeeParameter.createDate(module, PRM_PROTECT_TRADE_DOCUMENTS_BEFORE, true, null));
     params.add(BeeParameter.createRelation(module, PRM_ERP_WAREHOUSE, TBL_WAREHOUSES,
         COL_WAREHOUSE_CODE));

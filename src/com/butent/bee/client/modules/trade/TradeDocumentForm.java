@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.trade;
 
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
+import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -28,7 +29,9 @@ import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
@@ -78,11 +81,12 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class TradeDocumentForm extends PrintFormInterceptor {
 
@@ -372,6 +376,45 @@ public class TradeDocumentForm extends PrintFormInterceptor {
     return super.isRowEditable(row) && TradeUtils.isDocumentEditable(row);
   }
 
+  private boolean missingRequired(TradeDocumentPhase phase) {
+    OperationType operationType = getOperationType();
+
+    if (operationType != null && TradeDocumentPhase.getStockPhases().contains(phase)) {
+      Set<String> required = new HashSet<>();
+      required.add(COL_TRADE_MANAGER);
+
+      switch (operationType) {
+        case SALE:
+          required.add(COL_TRADE_SERIES);
+          required.add(COL_TRADE_CUSTOMER);
+
+          if (TradeDocumentPhase.APPROVED.equals(phase)) {
+            required.add(COL_TRADE_NUMBER);
+          }
+          break;
+
+        case PURCHASE:
+          required.add(COL_TRADE_SUPPLIER);
+          break;
+
+        default:
+          required.clear();
+      }
+      IsRow row = getActiveRow();
+
+      String missing = required.stream()
+          .filter(s -> row.isNull(getDataIndex(s)))
+          .map(s -> Data.getColumnLabel(getViewName(), s))
+          .collect(Collectors.joining(", "));
+
+      if (!BeeUtils.isEmpty(missing)) {
+        getFormView().notifySevere(Localized.dictionary().valueRequired(), missing);
+        return true;
+      }
+    }
+    return false;
+  }
+
   private void onCompanySelection(String source, SelectorEvent event) {
     if (event.isChanged()) {
       long id = event.getValue();
@@ -404,6 +447,24 @@ public class TradeDocumentForm extends PrintFormInterceptor {
         getFormView().updateCell(COL_TRADE_TERM, term);
       });
     }
+  }
+
+  @Override
+  public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
+    if (missingRequired(getPhase())) {
+      event.consume();
+      return;
+    }
+    super.onReadyForInsert(listener, event);
+  }
+
+  @Override
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
+    if (missingRequired(getPhase())) {
+      event.consume();
+      return;
+    }
+    super.onSaveChanges(listener, event);
   }
 
   @Override
@@ -459,21 +520,24 @@ public class TradeDocumentForm extends PrintFormInterceptor {
 
   @Override
   public void onStartNewRow(final FormView form, IsRow row) {
-    Queries.getDistinctLongs(VIEW_SERIES_MANAGERS, COL_SERIES,
-        Filter.and(Filter.equals(COL_SERIES_MANAGER, BeeKeeper.getUser().getUserId()),
-            Filter.notNull(COL_SERIES_DEFAULT)), series -> {
+    if (row.getEnum(form.getDataIndex(COL_TRADE_DOCUMENT_PHASE), TradeDocumentPhase.class)
+        .modifyStock()) {
+      Queries.getDistinctLongs(VIEW_SERIES_MANAGERS, COL_SERIES,
+          Filter.and(Filter.equals(COL_SERIES_MANAGER, BeeKeeper.getUser().getUserId()),
+              Filter.notNull(COL_SERIES_DEFAULT)), series -> {
 
-          if (!BeeUtils.isEmpty(series)) {
-            Queries.getRowSet(TBL_TRADE_SERIES, Collections.singletonList(COL_SERIES_NAME),
-                Filter.and(Filter.idIn(series), Filter.isNull(COL_FOR_ACTS)), result -> {
+            if (!BeeUtils.isEmpty(series)) {
+              Queries.getRowSet(TBL_TRADE_SERIES, Collections.singletonList(COL_SERIES_NAME),
+                  Filter.and(Filter.idIn(series), Filter.isNull(COL_FOR_ACTS)), result -> {
 
-                  if (!DataUtils.isEmpty(result)) {
-                    row.setValue(getDataIndex(COL_TRADE_SERIES), result.getString(0, 0));
-                    form.refreshBySource(COL_TRADE_SERIES);
-                  }
-                });
-          }
-        });
+                    if (!DataUtils.isEmpty(result)) {
+                      row.setValue(getDataIndex(COL_TRADE_SERIES), result.getString(0, 0));
+                      form.refreshBySource(COL_TRADE_SERIES);
+                    }
+                  });
+            }
+          });
+    }
     Queries.getRowSet(PayrollConstants.TBL_EMPLOYEES, null,
         Filter.equals(ClassifierConstants.COL_COMPANY_PERSON,
             BeeKeeper.getUser().getUserData().getCompanyPerson()), empl -> {
@@ -485,6 +549,20 @@ public class TradeDocumentForm extends PrintFormInterceptor {
             form.refreshBySource(COL_TRADE_MANAGER);
           }
         });
+    if (DataUtils.isId(Global.getParameterRelation(PRM_TRADE_WAREHOUSE))) {
+      Queries.getRow(TBL_WAREHOUSES, Global.getParameterRelation(PRM_TRADE_WAREHOUSE), res -> {
+        RelationUtils.updateRow(Data.getDataInfo(getViewName()), COL_TRADE_WAREHOUSE_FROM, row,
+            Data.getDataInfo(TBL_WAREHOUSES), res, true);
+        form.refreshBySource(COL_TRADE_WAREHOUSE_FROM);
+      });
+    }
+    if (DataUtils.isId(Global.getParameterRelation(PRM_TRADE_ACT_WAREHOUSE))) {
+      Queries.getRow(TBL_WAREHOUSES, Global.getParameterRelation(PRM_TRADE_ACT_WAREHOUSE), res -> {
+        RelationUtils.updateRow(Data.getDataInfo(getViewName()), COL_TRADE_ACT_WAREHOUSE_FROM,
+            row, Data.getDataInfo(TBL_WAREHOUSES), res, true);
+        form.refreshBySource(COL_TRADE_ACT_WAREHOUSE_FROM);
+      });
+    }
     super.onStartNewRow(form, row);
   }
 
@@ -676,17 +754,9 @@ public class TradeDocumentForm extends PrintFormInterceptor {
       return;
     }
 
-    if (Objects.equals(to, TradeDocumentPhase.APPROVED)) {
-      String missing = Stream.of(COL_TRADE_SERIES, COL_TRADE_NUMBER, COL_TRADE_MANAGER)
-          .filter(s -> row.isNull(getDataIndex(s)))
-          .map(s -> Data.getColumnLabel(getViewName(), s))
-          .collect(Collectors.joining(", "));
-
-      if (!BeeUtils.isEmpty(missing)) {
-        getFormView().notifySevere(Localized.dictionary().valueRequired(), missing);
-        event.cancel();
-        return;
-      }
+    if (missingRequired(to)) {
+      event.cancel();
+      return;
     }
 
     if (DataUtils.isNewRow(row)) {

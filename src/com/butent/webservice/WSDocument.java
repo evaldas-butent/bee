@@ -159,7 +159,8 @@ public class WSDocument {
           .append(XmlUtils.tag("artikulas", item.article))
           .append(XmlUtils.tag("pastaba", item.note))
           .append(XmlUtils.tag("tiek_sand", BeeUtils.notEmpty(item.warehouseFrom, warehouseFrom)))
-          .append(XmlUtils.tag("gav_sand", BeeUtils.notEmpty(item.warehouseTo, warehouseTo)));
+          .append(XmlUtils.tag("gav_sand", BeeUtils.notEmpty(item.warehouseTo, warehouseTo)))
+          .append(XmlUtils.tag("prek_sand", BeeUtils.notEmpty(item.warehouseFrom, item.warehouseTo)));
 
       if (!BeeUtils.isEmpty(bolSeries)) {
         sb.append(XmlUtils.tag("vaz_serija", bolSeries));
