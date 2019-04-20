@@ -37,7 +37,7 @@
             return null;
           }
 
-          diff = start - end.getTime();
+          diff = end.getTime() - start;
 
           days = parseInt(diff / 1000 / 60 / 60 / 24, 10);
 
@@ -47,12 +47,14 @@
 		  </render>
 		</CalcColumn>
 
-		<PropColumn name="AverageOverdue" type="string" caption="=trdInvoiceAverageOverdue" cellType="html"
-		label="=trdInvoiceAverageOverdue">
+		<PropColumn name="AverageOverdue" type="string" caption="=trdInvoiceAverageOverdue"
+								cellType="html" label="=trdInvoiceAverageOverdue" horizontalAlignment="right">
 		  <style>
 		    <bodyStyle><ui:class>bee-ActionCellLink</ui:class></bodyStyle>
 		  </style>
 		</PropColumn>
+		<PropColumn name="AverageOverdue2" type="string" label="=trdInvoiceAverageOverdue+2"
+            		horizontalAlignment="right" />
 
 		<DataColumn name="Amount" />
 		<DataColumn name="CurrencyName" />

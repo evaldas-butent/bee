@@ -124,7 +124,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       switch (editableWidget.getColumnId()) {
         case COL_TA_COMPANY:
           editableWidget.getRelation().setCaching(Caching.NONE);
-          ((DataSelector) widget).addSelectorHandler(this::showCompanyFinancialState);
+          ((DataSelector) widget).addSelectorHandler(TradeActForm::showCompanyFinancialState);
           break;
         case COL_TRADE_SERIES:
           ((DataSelector) widget).addSelectorHandler(this);
@@ -977,13 +977,12 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     }
   }
 
-  private void showCompanyFinancialState(SelectorEvent event) {
+  public static void showCompanyFinancialState(SelectorEvent event) {
     if (event.isChanged() && event.getRelatedRow() != null) {
       ParameterList args = TradeActKeeper.createArgs(SVC_CREDIT_INFO);
       args.addDataItem(ClassifierConstants.COL_COMPANY, event.getRelatedRow().getId());
 
       BeeKeeper.getRpc().makePostRequest(args, response -> {
-        response.notify(getFormView());
         if (response.hasErrors()) {
           return;
         }
@@ -1019,6 +1018,9 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         StyleUtils.setColor(table.getCellFormatter().getElement(4, 1), "white");
         table.setText(5, 0, "Seniausia neapmokėta sąskaita:");
         table.setText(5, 1, oldestDate);
+        table.setText(6, 0, "Vidutinis vėlavimas d.");
+        table.setText(6, 1, result.get(PROP_AVERAGE_OVERDUE));
+        StyleUtils.setColor(table.getCellFormatter().getElement(6, 1), "red");
 
         String cap = BeeUtils.joinWords(result.get(ClassifierConstants.COL_COMPANY_NAME),
             result.get(ClassifierConstants.COL_COMPANY_TYPE));

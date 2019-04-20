@@ -634,6 +634,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       resp.put(VAR_DEBT, BeeUtils.round(debt, 2));
       resp.put(VAR_OVERDUE, BeeUtils.round(overdue, 2));
       resp.put(VAR_UNTOLERATED, BeeUtils.round(untolerated, 2));
+      resp.put(PROP_AVERAGE_OVERDUE,
+          getDebtsAverageOverdue(Collections.singleton(companyId)).get(companyId));
       resp.put(COL_COMPANY_FINANCIAL_STATE, company.getValue(COL_COMPANY_FINANCIAL_STATE));
       resp.put(COL_BACKGROUND, company.getValue(COL_COLOR));
     }
@@ -1278,6 +1280,17 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
           if (gridRowset.isEmpty()) {
             return;
+          }
+          Set<Long> companies = gridRowset
+              .getDistinctLongs(gridRowset.getColumnIndex(COL_TRADE_CUSTOMER)).stream()
+              .filter(Objects::nonNull)
+              .collect(Collectors.toSet());
+
+          Map<Long, Integer> averageOverdue = getDebtsAverageOverdue(companies);
+
+          for (BeeRow gridRow : gridRowset) {
+            gridRow.setProperty(PROP_AVERAGE_OVERDUE + 2,
+                averageOverdue.get(DataUtils.getLong(gridRowset, gridRow, COL_TRADE_CUSTOMER)));
           }
 
           List<Long> companiesId = Lists.newArrayList();
@@ -2352,6 +2365,30 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     } else {
       return ResponseObject.response(simpleRowSet);
     }
+  }
+
+  private Map<Long, Integer> getDebtsAverageOverdue(Set<Long> companies) {
+    Map<Long, Integer> map = new HashMap<>();
+
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addFields(TBL_ERP_SALES, COL_TRADE_CUSTOMER)
+        .addCount(ALS_OVERDUE_COUNT)
+        .addSum(SqlUtils.divide(
+            SqlUtils.minus(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_PAYMENT_TIME),
+                SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_TERM),
+                    SqlUtils.field(TBL_ERP_SALES, COL_TRADE_DATE))),
+            TimeUtils.MILLIS_PER_DAY), ALS_OVERDUE_SUM)
+        .addFrom(TBL_ERP_SALES)
+        .setWhere(SqlUtils.and(
+            SqlUtils.or(SqlUtils.isNull(TBL_ERP_SALES, COL_TRADE_DEBT),
+                SqlUtils.not(SqlUtils.positive(TBL_ERP_SALES, COL_TRADE_DEBT))),
+            SqlUtils.inList(TBL_ERP_SALES, COL_TRADE_CUSTOMER, companies)))
+        .addGroup(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_CUSTOMER)));
+
+    data.forEach(row -> map.put(row.getLong(COL_TRADE_CUSTOMER),
+        BeeUtils.round(row.getLong(ALS_OVERDUE_SUM) / row.getLong(ALS_OVERDUE_COUNT))));
+
+    return map;
   }
 
   private SimpleRowSet getDebtsOverdueCount(List<Long> companyIds) {

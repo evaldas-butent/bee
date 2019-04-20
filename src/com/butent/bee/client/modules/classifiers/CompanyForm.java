@@ -586,6 +586,10 @@ public class CompanyForm extends AbstractFormInterceptor {
             table.setHtml(c, 1, result.get(COL_TRADE_PAYMENT_TIME));
             StyleUtils.setColor(table.getCellFormatter().getElement(c, 1), "black");
           }
+          if (!BeeUtils.isEmpty(result.get(PROP_AVERAGE_OVERDUE))) {
+            table.setHtml(++c, 0, "Vidutinis vėlavimas d.");
+            table.setHtml(c, 1, result.get(PROP_AVERAGE_OVERDUE));
+          }
           widget.getElement().setInnerHTML(table.getElement().getString());
         }
       });

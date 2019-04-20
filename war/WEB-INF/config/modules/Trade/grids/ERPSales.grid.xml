@@ -27,7 +27,7 @@
     <DataColumn name="Term" />
     <DataColumn name="PaymentTime" />
 
-    <DataColumn name="Delay">
+    <DataColumn name="Delay"  horizontalAlignment="right">
       <render>
         <ui:expression>row.Delay > 0 ? Math.floor(row.Delay) : Math.ceil(row.Delay)</ui:expression>
       </render>

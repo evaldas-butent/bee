@@ -25,6 +25,7 @@ import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
+import com.butent.bee.client.modules.trade.acts.TradeActForm;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -124,6 +125,10 @@ public class TradeDocumentForm extends PrintFormInterceptor {
         case COL_TRADE_CUSTOMER:
           ((DataSelector) widget).addSelectorHandler(ev ->
               onCompanySelection(editableWidget.getColumnId(), ev));
+
+          if (COL_TRADE_CUSTOMER.equals(editableWidget.getColumnId())) {
+            ((DataSelector) widget).addSelectorHandler(TradeActForm::showCompanyFinancialState);
+          }
           break;
       }
     }
