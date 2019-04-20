@@ -29,7 +29,7 @@
 
     <DataColumn name="Delay">
       <render>
-        <ui:expression>row.Delay > 0 ? row.Delay : ''</ui:expression>
+        <ui:expression>row.Delay > 0 ? Math.floor(row.Delay) : Math.ceil(row.Delay)</ui:expression>
       </render>
     </DataColumn>
 

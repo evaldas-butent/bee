@@ -34,7 +34,7 @@
         <x:minus>
           <x:nvl type="LONG">
             <x:switch type="LONG">
-              <x:boolean>"Paid">0</x:boolean>
+              <x:boolean>"Debt">0</x:boolean>
               <x:case>
                 <x:boolean>true</x:boolean>
                 <x:then>
