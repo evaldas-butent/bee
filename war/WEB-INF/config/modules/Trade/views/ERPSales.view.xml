@@ -2,8 +2,8 @@
 <View xmlns="http://www.butent.com/view"
       xmlns:x="http://www.butent.com/expression"
 
-  name="ERPSales" source="ERPSales" caption="=trdERPSales"
-  >
+      name="ERPSales" source="ERPSales" caption="=trdERPSales"
+>
   <Columns>
     <SimpleColumn name="Date" />
 
@@ -29,6 +29,33 @@
     <SimpleColumn name="PaymentTime" />
     <SimpleColumn name="Paid" />
 
+    <SimpleColumn name="Delay" label="Pradelsta">
+      <x:divide>
+        <x:minus>
+          <x:nvl type="LONG">
+            <x:switch type="LONG">
+              <x:boolean>"Paid">0</x:boolean>
+              <x:case>
+                <x:boolean>true</x:boolean>
+                <x:then>
+                  <x:number>NULL</x:number>
+                </x:then>
+              </x:case>
+              <x:else>
+                <x:number>"PaymentTime"</x:number>
+              </x:else>
+            </x:switch>
+            <x:number>floor(extract(epoch from now())/(24*60*60))*24*60*60*1000</x:number>
+          </x:nvl>
+          <x:nvl type="LONG">
+            <x:number>"Term"</x:number>
+            <x:number>"Date"</x:number>
+          </x:nvl>
+        </x:minus>
+        <x:number>24*60*60*1000</x:number>
+      </x:divide>
+    </SimpleColumn>
+
     <SimpleColumn name="Debt" label="=trdDebt" />
 
     <SimpleColumn name="Supplier" />
@@ -45,7 +72,7 @@
     <SimpleJoin joinType="LEFT" name="Payer">
       <SimpleColumn name="Name" alias="PayerName" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="Manager" />
     <SimpleJoin name="Manager" joinType="LEFT">
       <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />

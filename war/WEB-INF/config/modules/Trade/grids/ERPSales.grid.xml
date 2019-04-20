@@ -10,7 +10,7 @@
   readOnly="true"
   >
   <g:columns>
-  
+
      <DataColumn name="Date" visible="true" />
 
     <DataColumn name="Number" visible="false" />
@@ -27,10 +27,15 @@
     <DataColumn name="Term" />
     <DataColumn name="PaymentTime" />
 
+    <DataColumn name="Delay">
+      <render>
+        <ui:expression>row.Delay > 0 ? row.Delay : ''</ui:expression>
+      </render>
+    </DataColumn>
+
     <DataColumn name="Paid" format="0.00" />
     <DataColumn name="Debt" format="0.00" />
 
-  
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
 
     <DataColumn name="Proforma" visible="false" />
