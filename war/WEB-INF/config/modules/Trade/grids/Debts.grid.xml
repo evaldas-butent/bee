@@ -49,11 +49,14 @@
 
 		<PropColumn name="AverageOverdue" type="string" caption="=trdInvoiceAverageOverdue"
 								cellType="html" label="=trdInvoiceAverageOverdue" horizontalAlignment="right">
-		  <style>
-		    <bodyStyle><ui:class>bee-ActionCellLink</ui:class></bodyStyle>
-		  </style>
+			<style>
+				<bodyStyle><ui:class>bee-ActionCellLink</ui:class></bodyStyle>
+			</style>
+			<render>
+				<ui:expression>row.AverageOverdue * (-1)</ui:expression>
+			</render>
 		</PropColumn>
-		<PropColumn name="AverageOverdue2" type="string" label="=trdInvoiceAverageOverdue+2"
+		<PropColumn name="AverageOverdue2" type="string" label="Apmokėtų vėlavimas"
             		horizontalAlignment="right" />
 
 		<DataColumn name="Amount" />
