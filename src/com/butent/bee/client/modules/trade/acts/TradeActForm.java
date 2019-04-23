@@ -1018,7 +1018,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         StyleUtils.setColor(table.getCellFormatter().getElement(4, 1), "white");
         table.setText(5, 0, "Seniausia neapmokėta sąskaita:");
         table.setText(5, 1, oldestDate);
-        table.setText(6, 0, "Vidutinis vėlavimas d.");
+        table.setText(6, 0, "Apmokėtų vėlavimas d.");
         table.setText(6, 1, result.get(PROP_AVERAGE_OVERDUE));
         StyleUtils.setColor(table.getCellFormatter().getElement(6, 1), "red");
 
