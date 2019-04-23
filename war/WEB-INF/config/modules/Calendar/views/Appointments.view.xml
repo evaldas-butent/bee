@@ -152,8 +152,8 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <SimpleColumn name="TradeActService" />
-    <SimpleJoin name="TradeActService" joinType="LEFT">
+    <ExternalJoin name="Appointment" joinType="LEFT" source="TradeActServices">
+      <IdColumn name="TradeActService" />
       <SimpleColumn name="Supplier" />
       <SimpleJoin joinType="LEFT" name="Supplier">
         <SimpleColumn name="Name" alias="SupplierName" />
@@ -163,7 +163,7 @@
       <SimpleJoin name="Item" joinType="LEFT">
         <SimpleColumn name="Name" alias="ItemName" />
       </SimpleJoin>
-    </SimpleJoin>
+    </ExternalJoin>
 
     <SimpleColumn name="ServiceObject" />
     <SimpleJoin name="ServiceObject" joinType="LEFT">

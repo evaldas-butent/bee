@@ -1404,7 +1404,12 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
 
     if (oldRow != null && activeRow != null) {
       Long oldTradeActService = Data.getLong(VIEW_APPOINTMENTS, oldRow, COL_TRADE_ACT_SERVICE);
-      Long newTradeActService = getLongValue(COL_TRADE_ACT_SERVICE);
+      Long newTradeActService = null;
+
+      UnboundSelector serviceSelector = (UnboundSelector) getFormView().getWidgetByName(COL_TRADE_ACT_SERVICE);
+      if (serviceSelector != null) {
+        newTradeActService = serviceSelector.getRelatedId();
+      }
 
       if (newTradeActService != null) {
         List<String> columns = new ArrayList<>();
@@ -1435,7 +1440,7 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
           columns.add(ClassifierConstants.COL_DATE_FROM);
         }
 
-        if (!Objects.equals(oldTradeActService, newTradeActService) && DataUtils.isId(getActiveRowId())) {
+        if (!Objects.equals(oldTradeActService, newTradeActService)) {
           values.add(BeeUtils.toString(getActiveRowId()));
           columns.add(COL_APPOINTMENT);
         }

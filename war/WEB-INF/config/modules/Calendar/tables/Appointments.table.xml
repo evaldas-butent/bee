@@ -35,7 +35,6 @@
     <Relation name="Project" relation="Projects" label="=project" />
 
     <Relation name="TradeAct" relation="TradeActs" label="=tradeAct" />
-    <Relation name="TradeActService" relation="TradeActServices" label="=service" cascade="SET_NULL" />
 
     <Relation name="ServiceObject" relation="ServiceObjects" label="=svcDevice" />
     <Relation name="ServiceMaintenance" relation="ServiceMaintenance" label="=svcRepair" />

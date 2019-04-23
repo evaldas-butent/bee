@@ -6,6 +6,7 @@ import com.butent.bee.client.event.logical.DataReceivedEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.trade.acts.TradeActForm;
 import com.butent.bee.client.modules.trade.acts.TradeActServicesGrid;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -114,8 +115,6 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
 
         event.getSelector().setAdditionalFilter(filter);
       });
-    } else if (BeeUtils.same(editableWidget.getColumnId(), COL_TRADE_ACT_SERVICE) && widget instanceof DataSelector) {
-      ((DataSelector) widget).addSelectorHandler(this::setTradeActServiceFilter);
     }
 
     super.afterCreateEditableWidget(editableWidget, widget);
@@ -140,11 +139,19 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
           getFormView().notifySevere(Localized.dictionary().fieldRequired(Localized.dictionary().tradeAct()));
         }
       });
-    }
+    } else if (BeeUtils.same(name, COL_TRADE_ACT_SERVICE) && widget instanceof UnboundSelector) {
+        ((UnboundSelector) widget).addSelectorHandler(this::setTradeActServiceFilter);
+      }
 
     super.afterCreateWidget(name, widget, callback);
   }
 
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    updateTradeActService(null);
+
+    super.beforeRefresh(form, row);
+  }
 
   private void handleAndRefreshAppointment(Long tradeActID) {
     if (!DataUtils.isNewRow(getActiveRow())) {
@@ -173,21 +180,9 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
                         .findFirst().orElse(null);
 
                       if (serviceRow != null) {
-                        IsRow appointmentRow = AppointmentForm.this.getFormView().getActiveRow();
-                        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, appointmentRow, COL_TRADE_ACT_SERVICE,
-                          serviceRow.getId());
-
-                        for (String column : Arrays.asList(ALS_ITEM_NAME, COL_COST_AMOUNT, COL_DATE_FROM)) {
-                          Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, appointmentRow, column,
-                            Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, column));
-
-                          AppointmentForm.this.getFormView().refreshBySource(column);
-                        }
-
-                        AppointmentForm.this.getFormView().refreshBySource(COL_TRADE_ACT_SERVICE);
+                        updateTradeActService(serviceRow.getId());
                       }
                     }
-                    super.onDataReceived(event);
                   }
                 });
               }
@@ -229,21 +224,25 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
         }));
   }
 
-  private void changeTradeActBasedOnService(BeeRow serviceRow, Long oldTradeActID) {
-    IsRow activeRow = getActiveRow();
+  private static void clearTradeAct(IsRow row) {
+    Data.clearCell(CalendarConstants.VIEW_APPOINTMENTS, row, COL_TRADE_ACT);
+    Data.clearCell(CalendarConstants.VIEW_APPOINTMENTS, row, "TradeNumber");
+    Data.clearCell(CalendarConstants.VIEW_APPOINTMENTS, row, COL_SERIES_NAME);
+    Data.clearCell(CalendarConstants.VIEW_APPOINTMENTS, row, "TradeCompanyName");
+  }
 
-    if (serviceRow != null) {
-      Long newTradeActID = Data.getLong(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_TRADE_ACT);
+  private void updateSupplier(BeeRow serviceRow) {
+    Long supplier = serviceRow == null ? null : Data.getLong(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_TRADE_SUPPLIER);
+    ((UnboundSelector) getFormView().getWidgetByName("Suppliers")).setValue(supplier, true);
+  }
 
-      if (BeeUtils.isPositive(newTradeActID) && !Objects.equals(oldTradeActID, newTradeActID)) {
-        setTradeAct(activeRow, serviceRow, newTradeActID);
-      }
-    } else {
-      clearTradeAct(activeRow);
+  private void updateTradeActService(Long id) {
+    Long tradeActServiceID = id == null ? Data.getLong(CalendarConstants.VIEW_APPOINTMENTS, getActiveRow(), COL_TRADE_ACT_SERVICE) : id;
+    UnboundSelector serviceSelector = (UnboundSelector) getFormView().getWidgetByName(COL_TRADE_ACT_SERVICE);
+
+    if (serviceSelector != null) {
+      serviceSelector.setValue(tradeActServiceID, true);
     }
-
-    getFormView().refreshBySource(COL_TRADE_ACT);
-    maybeUpdateSupplier(serviceRow);
   }
 
   private static void setTradeAct(IsRow activeRow, BeeRow serviceRow, Long newTradeActID) {
@@ -259,18 +258,6 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
       Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, "TradeSeriesName"));
   }
 
-  private static void clearTradeAct(IsRow row) {
-    Data.clearCell(CalendarConstants.VIEW_APPOINTMENTS, row, COL_TRADE_ACT);
-    Data.clearCell(CalendarConstants.VIEW_APPOINTMENTS, row, "TradeNumber");
-    Data.clearCell(CalendarConstants.VIEW_APPOINTMENTS, row, COL_SERIES_NAME);
-    Data.clearCell(CalendarConstants.VIEW_APPOINTMENTS, row, "TradeCompanyName");
-  }
-
-  private void maybeUpdateSupplier(BeeRow serviceRow) {
-    Long supplier = serviceRow == null ? null : Data.getLong(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_TRADE_SUPPLIER);
-    ((UnboundSelector) getFormView().getWidgetByName("Suppliers")).setValue(supplier, true);
-  }
-
   private void setTradeActServiceFilter(SelectorEvent event) {
     Long tradeActID = getLongValue(COL_TRADE_ACT);
     Filter filter = BeeUtils.isPositive(tradeActID) ? Filter.equals(COL_TRADE_ACT, tradeActID) : null;
@@ -278,7 +265,33 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
     if (event.isOpened()) {
       event.getSelector().getOracle().setAdditionalFilter(filter, true);
     } else if (event.isChanged()) {
-      changeTradeActBasedOnService(event.getRelatedRow(), tradeActID);
+      refreshAppointmentBasedOnService(event.getRelatedRow(), tradeActID);
+    }
+  }
+
+  private void refreshAppointmentBasedOnService(BeeRow serviceRow, Long tradeActID) {
+    if (serviceRow != null) {
+
+    Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, getActiveRow(), COL_COST_AMOUNT,
+      Data.getDouble(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_COST_AMOUNT));
+
+    Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, getActiveRow(), COL_DATE_FROM,
+      Data.getDate(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_DATE_FROM));
+
+    Long newTradeActID = Data.getLong(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_TRADE_ACT);
+    if (BeeUtils.isPositive(newTradeActID) && !Objects.equals(tradeActID, newTradeActID)) {
+      setTradeAct(getActiveRow(), serviceRow, newTradeActID);
+    }
+
+    getFormView().refreshBySource(COL_COST_AMOUNT);
+    getFormView().refreshBySource(COL_DATE_FROM);
+    getFormView().refreshBySource(COL_TRADE_ACT);
+
+    updateSupplier(serviceRow);
+
+    } else {
+      clearTradeAct(getActiveRow());
+      getFormView().refreshBySource(COL_TRADE_ACT);
     }
   }
 }

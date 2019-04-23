@@ -438,26 +438,11 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
           }
           break;
       }
-    } else if (BeeUtils.same(CalendarConstants.COL_APPOINTMENT, column.getId())) {
+    } else if (BeeUtils.same(COL_APPOINTMENT, column.getId())) {
 
-      Long appointment = null;
-      List<String> columns = null;
-      List<String> values = null;
-
-      if (BeeUtils.isEmpty(oldValue) && newValue != null) {
-        appointment = BeeUtils.toLong(newValue);
-        columns = Arrays.asList(COL_TRADE_ACT_SERVICE, COL_TRADE_ACT);
-        values = Arrays.asList(BeeUtils.toString(getActiveRowId()), Data.getString(VIEW_TRADE_ACT_SERVICES,
-          getActiveRow(), COL_TRADE_ACT));
-
-      } else if (BeeUtils.isEmpty(newValue) && oldValue != null) {
-        appointment = BeeUtils.toLong(oldValue);
-        columns = Collections.singletonList(COL_TRADE_ACT_SERVICE);
-        values = Collections.singletonList(BeeConst.STRING_EMPTY);
-      }
-
-      if (values != null && !values.isEmpty()) {
-        Queries.update(CalendarConstants.VIEW_APPOINTMENTS, Filter.compareId(appointment), columns, values,
+      if (!BeeUtils.isEmpty(newValue)) {
+        Long tradeAct = Data.getLong(VIEW_TRADE_ACT_SERVICES, getActiveRow(), COL_TRADE_ACT);
+        Queries.update(VIEW_APPOINTMENTS, BeeUtils.toLong(newValue), COL_TRADE_ACT, new LongValue(tradeAct),
           r -> Data.refreshLocal(VIEW_APPOINTMENTS));
       }
     }
@@ -657,8 +642,11 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
       }
     }
 
-    if (!rowSet.isEmpty()) {
-      Queries.insertRows(rowSet, result -> Data.refreshLocal(VIEW_TRADE_ACT_SERVICES));
+    if (rowSet.getRows().size() == 1 && DataUtils.isId(rowSet.getLong(0, appointment))) {
+      Queries.update(VIEW_TRADE_ACT_SERVICES, Filter.equals(COL_APPOINTMENT, rowSet.getLong(0, appointment)),
+        COL_APPOINTMENT, LongValue.getNullValue(), result -> Queries.insertRows(rowSet, r -> Data.refreshLocal(VIEW_TRADE_ACT_SERVICES)));
+    } else if (!rowSet.isEmpty()) {
+      Queries.insertRows(rowSet);
     }
   }
 

@@ -4,6 +4,7 @@
   xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui" >
 
+  <IdColumn name="ActServiceID" />
   <DataColumn name="ItemOrdinal"/>
   <RelColumn name="Item" renderColumns="ItemName" choiceColumns="Name Article"
              editEnabled="true" label="=name" visible="true">

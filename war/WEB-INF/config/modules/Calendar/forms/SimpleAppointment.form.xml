@@ -40,14 +40,14 @@
                         choiceColumns="SeriesName Number CompanyName OperationName Date ActName ObjectName"
                         renderColumns="SeriesName TradeNumber TradeCompanyName" order="Id desc" newRowEnabled="false" />
 
-          <Label for="TradeActService" style="&absolute; left: 0px; top: 120px; width: 76px;" />
+          <Label for="TradeActService" text="=service" style="&absolute; left: 0px; top: 120px; width: 76px;" />
 
           <FaLabel name="NewActServiceLabel" style="&absolute; left: 330px; top: 125px;" class = "bee-Relations-newRel"
                    char="plus_circle"/>
 
-          <DataSelector source="TradeActService" style="&absolute; left: 80px; top: 120px; width: 240px;"
-                        choiceColumns="ActServiceID ItemName" renderColumns="TradeActService ItemName"
-                        newRowEnabled="false"/>
+          <UnboundSelector name="TradeActService" style="&absolute; left: 80px; top: 120px; width: 240px;"
+                           renderColumns="ActServiceID ItemName" choiceColumns="ActServiceID ItemName"
+                           viewName="TradeActServices"/>
 
           <Label for="ServiceObject" style="&absolute; left: 0px; top: 160px; width: 76px;" />
 
