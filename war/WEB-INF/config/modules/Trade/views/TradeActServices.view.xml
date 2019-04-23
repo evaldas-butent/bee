@@ -6,6 +6,7 @@
   caption="=tradeActServices"
   >
   <Columns>
+    <IdColumn name="ActServiceID" />
     <SimpleColumn name="TradeAct" />
     <SimpleJoin name="TradeAct" joinType="LEFT">
       <SimpleColumn name="ContinuousAct" />
@@ -18,6 +19,10 @@
       </SimpleJoin>
       <SimpleColumn name="Number" alias="TradeNumber" />
       <SimpleColumn name="Object" />
+
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn name="Name" alias="TradeCompanyName" />
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="RelRentAct" >

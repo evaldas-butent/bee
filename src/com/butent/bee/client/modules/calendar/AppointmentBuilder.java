@@ -1,8 +1,8 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.butent.bee.client.composite.UnboundSelector;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.trade.TradeConstants;
-import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.gwt.dom.client.Style.Visibility;
@@ -12,6 +12,9 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.VIEW_TRADE_ACT_SERVICES;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_COST_AMOUNT;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TRADE_ACT_SERVICE;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -1033,7 +1036,7 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
 
   private void disableWidgetEditing() {
     if (DataUtils.isNewRow(getActiveRow())) {
-      ((InputNumber) getFormView().getWidgetBySource(TradeActConstants.COL_COST_AMOUNT)).setEnabled(false);
+      ((InputNumber) getFormView().getWidgetBySource(COL_COST_AMOUNT)).setEnabled(false);
       ((UnboundSelector) getFormView().getWidgetByName("Suppliers")).setEnabled(false);
     }
   }
@@ -1398,41 +1401,54 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
   private void maybeUpdateTradeActService() {
     IsRow oldRow = getFormView().getOldRow();
     IsRow activeRow = getFormView().getActiveRow();
-    Long tradeActService = getLongValue("TradeActService");
 
-    if (tradeActService != null && oldRow != null && activeRow !=null) {
+    if (oldRow != null && activeRow != null) {
+      Long oldTradeActService = Data.getLong(VIEW_APPOINTMENTS, oldRow, COL_TRADE_ACT_SERVICE);
+      Long newTradeActService = getLongValue(COL_TRADE_ACT_SERVICE);
 
-      List<String> columns = new ArrayList<>();
-      List<String> values = new ArrayList<>();
+      if (newTradeActService != null) {
+        List<String> columns = new ArrayList<>();
+        List<String> values = new ArrayList<>();
 
-      Double costOld = Data.getDouble(VIEW_APPOINTMENTS, oldRow, TradeActConstants.COL_COST_AMOUNT);
-      Double costNew = Data.getDouble(VIEW_APPOINTMENTS, activeRow, TradeActConstants.COL_COST_AMOUNT);
+        Double costOld = Data.getDouble(VIEW_APPOINTMENTS, oldRow, COL_COST_AMOUNT);
+        Double costNew = Data.getDouble(VIEW_APPOINTMENTS, activeRow, COL_COST_AMOUNT);
 
-      if (!Objects.equals(costNew, costOld)) {
-        values.add(costNew == null ? "" : BeeUtils.toString(costNew));
-        columns.add(TradeActConstants.COL_COST_AMOUNT);
+        if (!Objects.equals(costNew, costOld)) {
+          values.add(costNew == null ? "" : BeeUtils.toString(costNew));
+          columns.add(COL_COST_AMOUNT);
+        }
+
+        Long supplierOld = Data.getLong(VIEW_APPOINTMENTS, oldRow, TradeConstants.COL_TRADE_SUPPLIER);
+        UnboundSelector selector = (UnboundSelector) getFormView().getWidgetByName("Suppliers");
+        Long supplier = selector.getRelatedId();
+
+        if (!Objects.equals(supplierOld, supplier)) {
+          values.add(supplier == null ? "" : BeeUtils.toString(supplier));
+          columns.add(TradeConstants.COL_TRADE_SUPPLIER);
+        }
+
+        JustDate oldDateFrom = Data.getDate(VIEW_APPOINTMENTS, oldRow, ClassifierConstants.COL_DATE_FROM);
+        JustDate newDateFrom = Data.getDate(VIEW_APPOINTMENTS, activeRow, ClassifierConstants.COL_DATE_FROM);
+
+        if (!Objects.equals(oldDateFrom, newDateFrom)) {
+          values.add(newDateFrom == null ? "" : BeeUtils.toString(newDateFrom.getDays()));
+          columns.add(ClassifierConstants.COL_DATE_FROM);
+        }
+
+        if (!Objects.equals(oldTradeActService, newTradeActService)) {
+          values.add(BeeUtils.toString(getActiveRowId()));
+          columns.add(COL_APPOINTMENT);
+        }
+
+        if (!values.isEmpty()) {
+         Queries.update(VIEW_TRADE_ACT_SERVICES, Filter.compareId(newTradeActService), columns,
+             values, result -> Data.refreshLocal(VIEW_TRADE_ACT_SERVICES));
+        }
       }
 
-      Long supplierOld = Data.getLong(VIEW_APPOINTMENTS, oldRow, TradeConstants.COL_TRADE_SUPPLIER);
-      UnboundSelector selector = (UnboundSelector) getFormView().getWidgetByName("Suppliers");
-      Long supplier = selector.getRelatedId();
-
-      if (!Objects.equals(supplierOld, supplier)) {
-        values.add(supplier == null ? "" : BeeUtils.toString(supplier));
-        columns.add(TradeConstants.COL_TRADE_SUPPLIER);
-      }
-
-      JustDate oldDateFrom = Data.getDate(VIEW_APPOINTMENTS, oldRow, ClassifierConstants.COL_DATE_FROM);
-      JustDate newDateFrom = Data.getDate(VIEW_APPOINTMENTS, activeRow, ClassifierConstants.COL_DATE_FROM);
-
-      if (!Objects.equals(oldDateFrom, newDateFrom)) {
-        values.add(newDateFrom == null ? "" : BeeUtils.toString(newDateFrom.getDays()));
-        columns.add(ClassifierConstants.COL_DATE_FROM);
-      }
-
-      if (!values.isEmpty()) {
-        Queries.update(TradeActConstants.VIEW_TRADE_ACT_SERVICES, Filter.compareId(tradeActService), columns,
-          values, result -> Data.refreshLocal(TradeActConstants.VIEW_TRADE_ACT_SERVICES));
+      if (DataUtils.isId(oldTradeActService) && !Objects.equals(oldTradeActService, newTradeActService)) {
+        Queries.update(VIEW_TRADE_ACT_SERVICES, oldTradeActService, COL_APPOINTMENT,
+          LongValue.getNullValue(), result -> Data.refreshLocal(VIEW_TRADE_ACT_SERVICES));
       }
     }
   }

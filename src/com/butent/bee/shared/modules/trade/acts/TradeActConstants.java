@@ -117,7 +117,7 @@ public final class TradeActConstants {
   public static final String COL_TA_INVOICE_TO = "DateTo";
 
   public static final String COL_TRADE_ACT_NAME = "ActName";
-
+  public static final String COL_TRADE_ACT_SERVICE = "TradeActService";
   public static final String COL_COST_AMOUNT = "CostAmount";
 
   public static final String ALS_RETURNED_QTY = "ReturnedQty";

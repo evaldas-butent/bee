@@ -15,6 +15,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_APPOINTMENT;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
@@ -254,7 +255,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     this.module = module;
 
     add(createSearch());
-    add(new Notification());
+    add(notification);
     add(itemPanel);
 
     itemPanel.addClickHandler(event -> {
@@ -625,6 +626,11 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
     save.addClickHandler(event -> {
       Map<Long, Double> quantities = getQuantities();
+      if (quantities.size() != 1 && lastRow.hasPropertyValue(COL_APPOINTMENT)) {
+        notification.severe("Pasirinkite tik vieną paslaugą");
+        return;
+      }
+
       if (!quantities.isEmpty()) {
         selectItems(quantities);
       }
@@ -973,6 +979,10 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     for (BeeRow item : items) {
       if (quantities.containsKey(item.getId())) {
         BeeRow row = DataUtils.cloneRow(item);
+
+        if (lastRow.hasPropertyValue(COL_APPOINTMENT)) {
+          row.setProperty(COL_APPOINTMENT, lastRow.getProperty(COL_APPOINTMENT));
+        }
         row.setProperty(PRP_QUANTITY, BeeUtils.toString(quantities.get(item.getId())));
 
         ItemPrice ip = selectedPrices.get(item.getId());

@@ -1,5 +1,13 @@
 package com.butent.bee.client.modules.calendar.view;
 
+import com.butent.bee.client.composite.UnboundSelector;
+import com.butent.bee.client.data.*;
+import com.butent.bee.client.event.logical.DataReceivedEvent;
+import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.modules.trade.acts.TradeActForm;
+import com.butent.bee.client.modules.trade.acts.TradeActServicesGrid;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
@@ -7,13 +15,14 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_SERIES_NAME;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_SUPPLIER;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.Relations;
-import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
 import com.butent.bee.client.ui.FormFactory;
@@ -28,7 +37,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -42,6 +50,7 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
 
   private DataSelector prjSelector;
   private static final String NEW_ACT_LABEL = "NewActLabel";
+  private static final String NEW_ACT_SERVICE_LABEL = "NewActServiceLabel";
 
   private class RelationsHandler implements SelectorEvent.Handler {
 
@@ -74,7 +83,7 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
           }
           RowFactory.createRelatedRow(formName, row, selector);
 
-        } else if (Objects.equals(viewName, TradeActConstants.TBL_TRADE_ACTS)) {
+        } else if (Objects.equals(viewName, TBL_TRADE_ACTS)) {
           event.consume();
           createTradeAct(event.getNewRowFormName(), event.getNewRow(), event.getSelector());
         }
@@ -105,6 +114,8 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
 
         event.getSelector().setAdditionalFilter(filter);
       });
+    } else if (BeeUtils.same(editableWidget.getColumnId(), COL_TRADE_ACT_SERVICE) && widget instanceof DataSelector) {
+      ((DataSelector) widget).addSelectorHandler(this::setTradeActServiceFilter);
     }
 
     super.afterCreateEditableWidget(editableWidget, widget);
@@ -118,11 +129,75 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
       ((Relations) widget).setSelectorHandler(new RelationsHandler());
     } else if (BeeUtils.same(NEW_ACT_LABEL, name)) {
       ((FaLabel) widget).addClickHandler(this);
+    } else if (BeeUtils.same(NEW_ACT_SERVICE_LABEL, name)) {
+      ((FaLabel) widget).addClickHandler(clickEvent -> {
+
+        Long tradeActID = getLongValue(COL_TRADE_ACT);
+
+        if (BeeUtils.isPositive(tradeActID)) {
+          handleAndRefreshAppointment(tradeActID);
+        } else {
+          getFormView().notifySevere(Localized.dictionary().fieldRequired(Localized.dictionary().tradeAct()));
+        }
+      });
     }
 
     super.afterCreateWidget(name, widget, callback);
   }
 
+
+  private void handleAndRefreshAppointment(Long tradeActID) {
+    if (!DataUtils.isNewRow(getActiveRow())) {
+
+      Queries.getRow(VIEW_TRADE_ACTS, tradeActID, new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow row) {
+          row.setProperty(CalendarConstants.COL_APPOINTMENT, getActiveRowId());
+
+          RowEditor.openForm(FORM_TRADE_ACT, Data.getDataInfo(VIEW_TRADE_ACTS), row, null, new TradeActForm(){
+
+            @Override
+            public void afterCreateWidget(String name, IdentifiableWidget widget, FormFactory.WidgetDescriptionCallback callback) {
+
+              if(BeeUtils.same(name, VIEW_TRADE_ACT_SERVICES) && widget instanceof ChildGrid) {
+                ((ChildGrid) widget).setGridInterceptor(new TradeActServicesGrid(){
+
+                  @Override
+                  public void onDataReceived(DataReceivedEvent event) {
+                    Long appointmentID = AppointmentForm.this.getFormView().getActiveRowId();
+
+                    if (DataUtils.isId(appointmentID) && event.getRows() != null && event.getRows().size() > 0) {
+                      IsRow serviceRow = event.getRows().stream()
+                        .filter(row -> Objects.equals(Data.getLong(VIEW_TRADE_ACT_SERVICES, row,
+                          CalendarConstants.COL_APPOINTMENT), appointmentID))
+                        .findFirst().orElse(null);
+
+                      if (serviceRow != null) {
+                        IsRow appointmentRow = AppointmentForm.this.getFormView().getActiveRow();
+                        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, appointmentRow, COL_TRADE_ACT_SERVICE,
+                          serviceRow.getId());
+
+                        for (String column : Arrays.asList(ALS_ITEM_NAME, COL_COST_AMOUNT, COL_DATE_FROM)) {
+                          Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, appointmentRow, column,
+                            Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, column));
+
+                          AppointmentForm.this.getFormView().refreshBySource(column);
+                        }
+
+                        AppointmentForm.this.getFormView().refreshBySource(COL_TRADE_ACT_SERVICE);
+                      }
+                    }
+                    super.onDataReceived(event);
+                  }
+                });
+              }
+              super.afterCreateWidget(name, widget, callback);
+            }
+          });
+        }
+      });
+    }
+  }
   @Override
   public FormInterceptor getInstance() {
     return new AppointmentForm();
@@ -130,12 +205,11 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
 
   @Override
   public void onClick(ClickEvent clickEvent) {
-    DataSelector tradeAct = (DataSelector) getFormView()
-        .getWidgetBySource(TradeActConstants.COL_TRADE_ACT);
+    DataSelector tradeAct = (DataSelector) getFormView().getWidgetBySource(COL_TRADE_ACT);
     DataInfo dataInfo = tradeAct.getOracle().getDataInfo();
 
     createTradeAct(tradeAct.getNewRowForm(), RowFactory.createEmptyRow(dataInfo, true),
-        (DataSelector) getFormView().getWidgetBySource(TradeActConstants.COL_TRADE_ACT));
+        (DataSelector) getFormView().getWidgetBySource(COL_TRADE_ACT));
   }
 
   public DataSelector getProjectSelector() {
@@ -153,5 +227,58 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
           TradeActKeeper.prepareNewTradeAct(row, kinds.get(value));
           RowFactory.createRelatedRow(formName, row, selector);
         }));
+  }
+
+  private void changeTradeActBasedOnService(BeeRow serviceRow, Long oldTradeActID) {
+    IsRow activeRow = getActiveRow();
+
+    if (serviceRow != null) {
+      Long newTradeActID = Data.getLong(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_TRADE_ACT);
+
+      if (BeeUtils.isPositive(newTradeActID) && !Objects.equals(oldTradeActID, newTradeActID)) {
+        setTradeAct(activeRow, serviceRow, newTradeActID);
+      }
+    } else {
+      clearTradeAct(activeRow);
+    }
+
+    getFormView().refreshBySource(COL_TRADE_ACT);
+    maybeUpdateSupplier(serviceRow);
+  }
+
+  private static void setTradeAct(IsRow activeRow, BeeRow serviceRow, Long newTradeActID) {
+    Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, activeRow, COL_TRADE_ACT, newTradeActID);
+
+    Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, activeRow, "TradeNumber",
+      Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, "TradeNumber"));
+
+    Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, activeRow, "TradeCompanyName",
+      Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, "TradeCompanyName"));
+
+    Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, activeRow, COL_SERIES_NAME,
+      Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, "TradeSeriesName"));
+  }
+
+  private static void clearTradeAct(IsRow row) {
+    Data.clearCell(CalendarConstants.VIEW_APPOINTMENTS, row, COL_TRADE_ACT);
+    Data.clearCell(CalendarConstants.VIEW_APPOINTMENTS, row, "TradeNumber");
+    Data.clearCell(CalendarConstants.VIEW_APPOINTMENTS, row, COL_SERIES_NAME);
+    Data.clearCell(CalendarConstants.VIEW_APPOINTMENTS, row, "TradeCompanyName");
+  }
+
+  private void maybeUpdateSupplier(BeeRow serviceRow) {
+    Long supplier = serviceRow == null ? null : Data.getLong(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_TRADE_SUPPLIER);
+    ((UnboundSelector) getFormView().getWidgetByName("Suppliers")).setValue(supplier, true);
+  }
+
+  private void setTradeActServiceFilter(SelectorEvent event) {
+    Long tradeActID = getLongValue(COL_TRADE_ACT);
+    Filter filter = BeeUtils.isPositive(tradeActID) ? Filter.equals(COL_TRADE_ACT, tradeActID) : null;
+
+    if (event.isOpened()) {
+      event.getSelector().getOracle().setAdditionalFilter(filter, true);
+    } else if (event.isChanged()) {
+      changeTradeActBasedOnService(event.getRelatedRow(), tradeActID);
+    }
   }
 }

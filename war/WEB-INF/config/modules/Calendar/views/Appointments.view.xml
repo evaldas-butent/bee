@@ -160,6 +160,9 @@
       </SimpleJoin>
       <SimpleColumn name="CostAmount" />
       <SimpleColumn name="DateFrom" />
+      <SimpleJoin name="Item" joinType="LEFT">
+        <SimpleColumn name="Name" alias="ItemName" />
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="ServiceObject" />

@@ -9,7 +9,7 @@
 
         name="SimpleAppointment" viewName="Appointments" caption="=calAppointment"
         disabledActions="add delete" enabledActions="save" width="790" height="535" >
-  <FlowPanel style="&relative; width: 780px; height: 510px;">
+  <FlowPanel style="&relative; width: 780px; height: 550px;">
     <TabbedPages resizable="false" style="height: 100%; margin-left: 10px;">
       <page>
         <text>=mainInformation</text>
@@ -40,14 +40,23 @@
                         choiceColumns="SeriesName Number CompanyName OperationName Date ActName ObjectName"
                         renderColumns="SeriesName TradeNumber TradeCompanyName" order="Id desc" newRowEnabled="false" />
 
-          <Label for="ServiceObject" style="&absolute; left: 0px; top: 120px; width: 76px;" />
+          <Label for="TradeActService" style="&absolute; left: 0px; top: 120px; width: 76px;" />
 
-          <DataSelector source="ServiceObject" style="&absolute; left: 80px; top: 120px; width: 240px;" />
+          <FaLabel name="NewActServiceLabel" style="&absolute; left: 330px; top: 125px;" class = "bee-Relations-newRel"
+                   char="plus_circle"/>
 
-          <Label for="ServiceMaintenance" style="&absolute; left: 0px; top: 160px; width: 76px;" />
+          <DataSelector source="TradeActService" style="&absolute; left: 80px; top: 120px; width: 240px;"
+                        choiceColumns="ActServiceID ItemName" renderColumns="TradeActService ItemName"
+                        newRowEnabled="false"/>
+
+          <Label for="ServiceObject" style="&absolute; left: 0px; top: 160px; width: 76px;" />
+
+          <DataSelector source="ServiceObject" style="&absolute; left: 80px; top: 160px; width: 240px;" />
+
+          <Label for="ServiceMaintenance" style="&absolute; left: 0px; top: 200px; width: 76px;" />
           <DataSelector source="ServiceMaintenance" newRowEnabled="false"
                         choiceColumns="ID Model ObjectName ObjectAddress"
-                        style="&absolute; left: 80px; top: 160px; width: 240px;" />
+                        style="&absolute; left: 80px; top: 200px; width: 240px;" />
 
           <Label for="Supplier" style="&absolute; left: 360px; top: 144px; width: 76px;" />
           <UnboundSelector name="Suppliers" viewName="Companies" renderColumns="Name" choiceColumns="Name" newRowEnabled="false"
@@ -63,61 +72,61 @@
                      style="&absolute; left: 360px; top: 55px; width: 400px;" />
 
           <InputDate name="StartDate" required="true" caption="=scheduledStartingTime"
-                     style="width: 8em;" d:size="188" d:unit="px" d:rootStyle="&absolute; left: 0; top: 200px;" />
+                     style="width: 8em;" d:size="188" d:unit="px" d:rootStyle="&absolute; left: 0; top: 240px;" />
           <InputTimeOfDay name="StartTime" step="30"
-                          style="&absolute; left: 300px; top: 200px; width: 5em;" />
+                          style="&absolute; left: 300px; top: 240px; width: 5em;" />
 
           <InputSpinner name="Hours" caption="=duration" minValue="0" maxValue="99"
                         style="width: 4em;"
-                        d:size="60" d:unit="px" d:rootStyle="&absolute; left: 380px; top: 200px;" />
+                        d:size="60" d:unit="px" d:rootStyle="&absolute; left: 380px; top: 240px;" />
           <InputSpinner name="Minutes" minValue="0" maxValue="60" step="5"
-                        style="&absolute; left: 500px; top: 200px; width: 4em;" />
+                        style="&absolute; left: 500px; top: 240px; width: 4em;" />
 
           <InputDate name="EndDate" caption="=scheduledEndingTime" style="width: 8em;"
-                     d:size="188" d:unit="px" d:rootStyle="&absolute; left: 0; top: 232px;" />
+                     d:size="188" d:unit="px" d:rootStyle="&absolute; left: 0; top: 272px;" />
           <InputTimeOfDay name="EndTime" step="30"
-                          style="&absolute; left: 300px; top: 232px; width: 5em;" options="60" />
+                          style="&absolute; left: 300px; top: 272px; width: 5em;" options="60" />
 
-          <FlowPanel name="Colors" style="&absolute; left: 380px; top: 232px; width: 380px;" />
+          <FlowPanel name="Colors" style="&absolute; left: 380px; top: 272px; width: 380px;" />
 
           <ListBox source="Status" caption="=calAppointmentStatus" style="width: 160px;"
-                   d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 280px;" />
-          <ListBox name="Reminder" caption="=calReminder" style="width: 160px;"
                    d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 320px;" />
+          <ListBox name="Reminder" caption="=calReminder" style="width: 160px;"
+                   d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 360px;" />
 
           <DataSelector source="AppointmentType" required="true" caption="=calAppointmentType"
                         style="width: 160px;" d:size="80" d:unit="px"
-                        d:rootStyle="&absolute; left: 0; top: 360px;" />
+                        d:rootStyle="&absolute; left: 0; top: 400px;" />
           <Radio source="Visibility" vertical="true"
-                 style="&absolute; left: 590px; top: 187px;" />
+                 style="&absolute; left: 590px; top: 215px;" />
 
-          <Label text="=company" style="&absolute; left: 380px; top: 280px; width: 76px;" />
+          <Label text="=company" style="&absolute; left: 380px; top: 320px; width: 76px;" />
 
           <DataSelector source="CompanyName" choiceColumns="Name Phone Email"
-                        style="&absolute; left: 460px; top: 280px; width: 300px;" />
+                        style="&absolute; left: 460px; top: 320px; width: 300px;" />
 
           <!-- Transrifus {-->
-          <Label for="CompanyPerson" style="&absolute; left: 380px; top: 320px; width: 76px;" />
+          <Label for="CompanyPerson" style="&absolute; left: 380px; top: 360px; width: 76px;" />
           <DataSelector source="CompanyPerson" renderColumns="PersonFirstName PersonLastName"
                         choiceColumns="FirstName LastName CompanyName" options="Company"
-                        style="&absolute; left: 460px; top: 320px; width: 300px;" />
+                        style="&absolute; left: 460px; top: 360px; width: 300px;" />
           <!-- } Transrifus -->
 
-          <Label for="Project" style="&absolute; left: 380px; top: 360px; width: 76px;" />
+          <Label for="Project" style="&absolute; left: 380px; top: 400px; width: 76px;" />
 
           <DataSelector source="Project" choiceColumns="Name"
-                        style="&absolute; left: 460px; top: 360px; width: 300px;" />
+                        style="&absolute; left: 460px; top: 400px; width: 300px;" />
 
-          <Label text="=responsiblePersons" style="&absolute; left: 380px; top: 400px; width: 76px;" />
+          <Label text="=responsiblePersons" style="&absolute; left: 380px; top: 440px; width: 76px;" />
 
           <MultiSelector name="Owners" property="AppointmentOwners" viewName="Users"
                          newRowEnabled="false" renderColumns="FirstName LastName"
                          choiceColumns="FirstName LastName CompanyName PositionName"
-                         style="&absolute; left: 460px; top: 400px; width: 300px;" />
+                         style="&absolute; left: 460px; top: 440px; width: 300px;" />
 
-          <Label text="=creator" style="&absolute; left: 380px; top: 440px; width: 76px;" />
+          <Label text="=creator" style="&absolute; left: 380px; top: 480px; width: 76px;" />
 
-          <DataSelector source="Creator" style="&absolute; left: 460px; top: 440px; width: 300px;"
+          <DataSelector source="Creator" style="&absolute; left: 460px; top: 480px; width: 300px;"
                         readOnly="true"/>
         </FlowPanel>
       </page>

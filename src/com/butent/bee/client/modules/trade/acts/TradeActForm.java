@@ -114,7 +114,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   private ChildGrid relTradeActServices;
   private TabbedPages tabbedPages;
 
-  TradeActForm() {
+  protected TradeActForm() {
   }
 
   @Override

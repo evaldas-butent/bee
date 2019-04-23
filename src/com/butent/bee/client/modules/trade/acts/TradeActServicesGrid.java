@@ -22,7 +22,9 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_APPOINTMENT;
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.TBL_APPOINTMENT_OWNERS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENTS;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_SERVICE_OBJECT;
 import static com.butent.bee.shared.modules.service.ServiceConstants.VIEW_SERVICE_DATES;
@@ -122,7 +124,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
   private final CheckBox hideFinishedServices = new CheckBox("Slėpti baigtas paslaugas");
   private final CheckBox hideCompletedServices = new CheckBox("Slėpti įvykdytas paslaugas");
 
-  TradeActServicesGrid() {
+  protected TradeActServicesGrid() {
   }
 
   @Override
@@ -439,24 +441,25 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     } else if (BeeUtils.same(CalendarConstants.COL_APPOINTMENT, column.getId())) {
 
       Long appointment = null;
-      List<String> columns = new ArrayList<>();
-      List<String> values = new ArrayList<>();
+      List<String> columns = null;
+      List<String> values = null;
 
       if (BeeUtils.isEmpty(oldValue) && newValue != null) {
         appointment = BeeUtils.toLong(newValue);
-        columns.add("TradeActService");
-        columns.add(COL_TRADE_ACT);
-
-        values.add(BeeUtils.toString(getActiveRowId()));
-        values.add(Data.getString(VIEW_TRADE_ACT_SERVICES, getActiveRow(), COL_TRADE_ACT));
+        columns = Arrays.asList(COL_TRADE_ACT_SERVICE, COL_TRADE_ACT);
+        values = Arrays.asList(BeeUtils.toString(getActiveRowId()), Data.getString(VIEW_TRADE_ACT_SERVICES,
+          getActiveRow(), COL_TRADE_ACT));
 
       } else if (BeeUtils.isEmpty(newValue) && oldValue != null) {
         appointment = BeeUtils.toLong(oldValue);
-        columns.add("TradeActService");
-        values.add("");
+        columns = Collections.singletonList(COL_TRADE_ACT_SERVICE);
+        values = Collections.singletonList(BeeConst.STRING_EMPTY);
       }
 
-      Queries.update(CalendarConstants.VIEW_APPOINTMENTS, Filter.compareId(appointment), columns, values, null);
+      if (values != null && !values.isEmpty()) {
+        Queries.update(CalendarConstants.VIEW_APPOINTMENTS, Filter.compareId(appointment), columns, values,
+          r -> Data.refreshLocal(VIEW_APPOINTMENTS));
+      }
     }
   }
 
@@ -569,7 +572,8 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
         Lists.newArrayList(COL_TRADE_ACT, COL_TA_ITEM,
             COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_VAT,
             COL_TRADE_VAT_PERC, COL_TA_SERVICE_TO, COL_TA_SERVICE_FROM, COL_TA_SERVICE_FROM,
-            COL_TA_SERVICE_TARIFF, COL_TRADE_DISCOUNT, COL_TA_SERVICE_DAYS, COL_TA_SERVICE_MIN, COL_TA_ITEM_VALUE);
+            COL_TA_SERVICE_TARIFF, COL_TRADE_DISCOUNT, COL_TA_SERVICE_DAYS, COL_TA_SERVICE_MIN, COL_TA_ITEM_VALUE,
+            COL_APPOINTMENT);
     BeeRowSet rowSet = new BeeRowSet(getViewName(), Data.getColumns(getViewName(), colNames));
 
     int actIndex = rowSet.getColumnIndex(COL_TRADE_ACT);
@@ -585,12 +589,17 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     int serviceDays = rowSet.getColumnIndex(COL_TA_SERVICE_DAYS);
     int serviceMinTerm = rowSet.getColumnIndex(COL_TA_SERVICE_MIN);
     int itemValue = rowSet.getColumnIndex(COL_TA_ITEM_VALUE);
+    int appointment = rowSet.getColumnIndex(COL_APPOINTMENT);
 
     for (BeeRow item : items) {
       Double qty = BeeUtils.toDoubleOrNull(item.getProperty(PRP_QUANTITY));
 
       if (BeeUtils.isDouble(qty)) {
         BeeRow row = DataUtils.createEmptyRow(rowSet.getNumberOfColumns());
+
+        if (item.hasPropertyValue(COL_APPOINTMENT)) {
+          row.setValue(appointment, item.getPropertyLong(COL_APPOINTMENT));
+        }
 
         row.setValue(actIndex, parentRow.getId());
         row.setValue(itemIndex, item.getId());
@@ -649,7 +658,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     }
 
     if (!rowSet.isEmpty()) {
-      Queries.insertRows(rowSet);
+      Queries.insertRows(rowSet, result -> Data.refreshLocal(VIEW_TRADE_ACT_SERVICES));
     }
   }
 
@@ -851,7 +860,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
 
   private void updateServiceObjectRun(Long serviceObject, String newValue, String oldRun) {
     Queries.getRowSet(VIEW_SERVICE_DATES, null,
-      Filter.equals("TradeActService", getActiveRowId()),null, (BeeRowSet rows) -> {
+      Filter.equals(COL_TRADE_ACT_SERVICE, getActiveRowId()),null, (BeeRowSet rows) -> {
 
       DataInfo info = Data.getDataInfo(VIEW_SERVICE_DATES);
       BeeRow dateRow;
@@ -859,7 +868,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
       if (rows.isEmpty()) {
         dateRow = RowFactory.createEmptyRow(info, true);
         Data.setValue(VIEW_SERVICE_DATES, dateRow, COL_SERVICE_OBJECT, serviceObject);
-        Data.setValue(VIEW_SERVICE_DATES, dateRow, "TradeActService", getActiveRowId());
+        Data.setValue(VIEW_SERVICE_DATES, dateRow, COL_TRADE_ACT_SERVICE, getActiveRowId());
         Data.setValue(VIEW_SERVICE_DATES, dateRow, COL_TA_RUN, newValue);
 
         RowFactory.createRow(info, dateRow, Opener.MODAL, (BeeRow result) -> {
@@ -883,19 +892,14 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     Consumer<BeeRow> initializer = eventRow -> {
       IsRow serviceRow = getActiveRow();
 
-      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, "TradeActService", getActiveRowId());
+      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_TRADE_ACT_SERVICE, getActiveRowId());
 
-      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_TRADE_SUPPLIER,
-        Data.getLong(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_TRADE_SUPPLIER));
+      for (String column : Arrays.asList(ALS_ITEM_NAME, COL_TRADE_SUPPLIER, ALS_SUPPLIER_NAME, COL_COST_AMOUNT,
+        COL_DATE_FROM) ) {
 
-      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, ALS_SUPPLIER_NAME,
-        Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, ALS_SUPPLIER_NAME));
-
-      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_COST_AMOUNT,
-        Data.getDouble(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_COST_AMOUNT));
-
-      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_DATE_FROM,
-        Data.getDate(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_DATE_FROM));
+        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, column, Data.getString(VIEW_TRADE_ACT_SERVICES,
+          serviceRow, column));
+      }
 
       String seriesName = Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, "TradeSeriesName");
       String itemName = Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, "ItemName");
@@ -938,9 +942,8 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
       }
     };
 
-    CalendarKeeper.createAppointment(initializer, null, appointment -> {
-      Queries.update(VIEW_TRADE_ACT_SERVICES, getActiveRowId(), CalendarConstants.COL_APPOINTMENT,
-        new LongValue(appointment.getId()), result -> Data.refreshLocal(getViewName()));
-    });
+    CalendarKeeper.createAppointment(initializer, null, appointment -> Queries.update(VIEW_TRADE_ACT_SERVICES,
+      getActiveRowId(), CalendarConstants.COL_APPOINTMENT, new LongValue(appointment.getId()),
+      result -> Data.refreshLocal(getViewName())));
   }
 }
