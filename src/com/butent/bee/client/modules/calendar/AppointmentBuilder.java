@@ -1435,7 +1435,7 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
           columns.add(ClassifierConstants.COL_DATE_FROM);
         }
 
-        if (!Objects.equals(oldTradeActService, newTradeActService)) {
+        if (!Objects.equals(oldTradeActService, newTradeActService) && DataUtils.isId(getActiveRowId())) {
           values.add(BeeUtils.toString(getActiveRowId()));
           columns.add(COL_APPOINTMENT);
         }
