@@ -57,6 +57,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.utils.SmsUtils;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
@@ -127,13 +128,6 @@ import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 
 @Stateless
 @LocalBean
@@ -2004,6 +1998,7 @@ public class ServiceModuleBean implements BeeModule {
                 .setValue(COL_CREATOR + MailConstants.COL_ACCOUNT, BeeUtils.toString(account));
           }
         }
+        ResponseObject result = ResponseObject.emptyResponse();
 
         boolean isSendEmail = false;
         boolean isSendSms = false;
@@ -2014,6 +2009,7 @@ public class ServiceModuleBean implements BeeModule {
         if (!BeeUtils.toBoolean(commentInfoRow.getValue(COL_SEND_EMAIL))) {
           ResponseObject mailResponse = informCustomerWithEmail(dic, dtfInfo, commentInfoRow);
           isSendEmail = !mailResponse.hasErrors();
+          result.addMessagesFrom(mailResponse);
         }
 
         String error = BeeConst.STRING_EMPTY;
@@ -2072,6 +2068,7 @@ public class ServiceModuleBean implements BeeModule {
           } else {
             ResponseObject smsResponse = informCustomerWithSms(dic, dtfInfo, commentInfoRow, from);
             isSendSms = !smsResponse.hasErrors();
+            result.addMessagesFrom(smsResponse);
           }
         }
 
@@ -2092,7 +2089,7 @@ public class ServiceModuleBean implements BeeModule {
 
         qs.updateData(updateQuery);
 
-        ResponseObject result = ResponseObject.response(updatableValues);
+        result.setResponse(updatableValues);
 
         if (!BeeUtils.isEmpty(error)) {
           result.addError(error);
@@ -2241,47 +2238,13 @@ public class ServiceModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(message) || BeeUtils.isEmpty(phone)) {
       return ResponseObject.error("message or phone is empty");
     }
+    logger.info("Sending message to", phone, ":", message);
+    ResponseObject response = SmsUtils.sendSmppMessage(message, phone);
 
-    String address = prm.getText(PRM_SMS_REQUEST_SERVICE_ADDRESS);
-    String userName = prm.getText(PRM_SMS_REQUEST_SERVICE_USER_NAME);
-    String password = prm.getText(PRM_SMS_REQUEST_SERVICE_PASSWORD);
-
-    if (BeeUtils.isEmpty(address)) {
-      logger.warning(BeeUtils.joinWords(PRM_SMS_REQUEST_SERVICE_ADDRESS, " is empty"));
-      return ResponseObject.error(PRM_SMS_REQUEST_SERVICE_ADDRESS + " is empty");
+    if (response.hasErrors()) {
+      response.log(logger);
     }
-    if (BeeUtils.isEmpty(userName)) {
-      logger.warning(BeeUtils.joinWords(PRM_SMS_REQUEST_SERVICE_USER_NAME, " is empty"));
-      return ResponseObject.error(PRM_SMS_REQUEST_SERVICE_USER_NAME + " is empty");
-    }
-    if (BeeUtils.isEmpty(password)) {
-      logger.warning(BeeUtils.joinWords(PRM_SMS_REQUEST_SERVICE_PASSWORD, " is empty"));
-      return ResponseObject.error(PRM_SMS_REQUEST_SERVICE_PASSWORD + " is empty");
-    }
-
-    Client client = ClientBuilder.newClient();
-    UriBuilder uriBuilder = UriBuilder.fromPath(address);
-
-    uriBuilder.queryParam("username", userName);
-    uriBuilder.queryParam("password", password);
-    uriBuilder.queryParam("message", message);
-    uriBuilder.queryParam("from", from);
-    uriBuilder.queryParam("to", phone);
-    WebTarget webtarget = client.target(uriBuilder);
-
-    Invocation.Builder builder = webtarget.request(MediaType.TEXT_PLAIN_TYPE)
-        .acceptEncoding(BeeConst.CHARSET_UTF8);
-
-    Response response = builder.get();
-    String smsResponseMessage = response.readEntity(String.class);
-
-    if (response.getStatus() == 200 && !BeeUtils.isEmpty(smsResponseMessage)
-        && BeeUtils.containsSame(smsResponseMessage, "OK")) {
-      return ResponseObject.emptyResponse();
-    }
-
-    logger.warning(BeeUtils.joinWords("Method informCustomerWithSms", smsResponseMessage));
-    return ResponseObject.error(smsResponseMessage);
+    return response;
   }
 
   private ResponseObject updateServiceMaintenanceObject(RequestInfo reqInfo) {
