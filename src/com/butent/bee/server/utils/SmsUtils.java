@@ -22,6 +22,7 @@ import org.jsmpp.session.BindParameter;
 import org.jsmpp.session.SMPPSession;
 import org.jsmpp.util.AbsoluteTimeFormatter;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 import javax.ws.rs.client.Client;
@@ -66,8 +67,8 @@ public final class SmsUtils {
           TypeOfNumber.INTERNATIONAL, NumberingPlanIndicator.UNKNOWN, to,
           new ESMClass(), (byte) 0, (byte) 1, new AbsoluteTimeFormatter().format(new Date()), null,
           new RegisteredDelivery(SMSCDeliveryReceipt.DEFAULT), (byte) 0,
-          new GeneralDataCoding(Alphabet.ALPHA_8_BIT, MessageClass.CLASS1, false), (byte) 0,
-          msg.getBytes());
+          new GeneralDataCoding(Alphabet.ALPHA_UCS2, MessageClass.CLASS1, false), (byte) 0,
+          msg.getBytes(StandardCharsets.UTF_16BE));
 
     } catch (Exception e) {
       return ResponseObject.error(e);
