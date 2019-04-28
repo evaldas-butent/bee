@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.trade.acts;
 
 import com.butent.bee.client.data.*;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
+import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.widget.CheckBox;
@@ -12,7 +13,6 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.google.common.collect.Lists;
@@ -23,7 +23,6 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_APPOINTMENT;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.TBL_APPOINTMENT_OWNERS;
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENTS;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_SERVICE_OBJECT;
@@ -877,61 +876,28 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
   }
 
   private void createAppointment() {
-    Consumer<BeeRow> initializer = eventRow -> {
-      IsRow serviceRow = getActiveRow();
-
-      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_TRADE_ACT_SERVICE, getActiveRowId());
-
-      for (String column : Arrays.asList(ALS_ITEM_NAME, COL_TRADE_SUPPLIER, ALS_SUPPLIER_NAME, COL_COST_AMOUNT,
-        COL_DATE_FROM) ) {
-
-        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, column, Data.getString(VIEW_TRADE_ACT_SERVICES,
-          serviceRow, column));
-      }
-
-      String seriesName = Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, "TradeSeriesName");
-      String itemName = Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, "ItemName");
-      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, CalendarConstants.COL_SUMMARY,
-        BeeUtils.joinWords(seriesName, itemName));
+    Consumer<BeeRow> initializer = appointment -> {
 
       FormView tradeActForm = ViewHelper.getForm(getGridView());
-      if (tradeActForm != null) {
-        Long company = tradeActForm.getLongValue(COL_COMPANY);
-        String companyName = tradeActForm.getStringValue(ALS_COMPANY_NAME);
-        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_COMPANY, company);
-        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, ALS_COMPANY_NAME, companyName);
+      if (tradeActForm != null && tradeActForm.getActiveRow() != null) {
 
-        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_COMPANY_PERSON,
-          tradeActForm.getLongValue(COL_CONTACT));
-        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, TaskConstants.ALS_PERSON_FIRST_NAME,
-          tradeActForm.getStringValue(ALS_CONTACT_FIRST_NAME));
-        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, TaskConstants.ALS_PERSON_LAST_NAME,
-          tradeActForm.getStringValue(ALS_CONTACT_LAST_NAME));
+        IsRow tradeAct = tradeActForm.getActiveRow();
+        IsRow serviceRow = getActiveRow();
 
-        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_TRADE_ACT, tradeActForm.getActiveRowId());
-        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, "TradeNumber",
-          tradeActForm.getStringValue(COL_TA_NUMBER));
-        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, "TradeCompanyName", companyName);
-        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_SERIES_NAME, seriesName);
+        CalendarUtils.setTradeActService(appointment, serviceRow);
+        CalendarUtils.setTradeAct(tradeAct, appointment);
+        CalendarUtils.setCompany(tradeAct, appointment);
+        CalendarUtils.setCompanyPerson(tradeAct, appointment);
+        CalendarUtils.setManager(tradeAct, appointment);
 
-        String tradeActName = tradeActForm.getStringValue(COL_TRADE_ACT_NAME);
-        String objectName = tradeActForm.getStringValue(COL_COMPANY_OBJECT_NAME);
-        String objectAddress = tradeActForm.getStringValue(COL_COMPANY_OBJECT_ADDRESS);
-
-        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, eventRow, COL_ITEM_DESCRIPTION,
-          BeeUtils.joinWords(objectName, objectAddress) + "\n" + BeeUtils.joinWords("Kontaktas:",
-            tradeActForm.getStringValue(ALS_CONTACT_FIRST_NAME), tradeActForm.getStringValue(ALS_CONTACT_LAST_NAME),
-            tradeActForm.getStringValue("ContactMobile")) + "\n" + tradeActName);
-
-        Long manager = tradeActForm.getLongValue(COL_TRADE_MANAGER);
-        if (manager != null) {
-          eventRow.setProperty(TBL_APPOINTMENT_OWNERS, manager);
-        }
+        Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, appointment, COL_ITEM_DESCRIPTION,
+          CalendarUtils.getDescription(tradeAct));
+        Data.setValue(VIEW_APPOINTMENTS, appointment, CalendarConstants.COL_SUMMARY, CalendarUtils.getSummary(serviceRow));
       }
     };
 
-    CalendarKeeper.createAppointment(initializer, null, appointment -> Queries.update(VIEW_TRADE_ACT_SERVICES,
-      getActiveRowId(), CalendarConstants.COL_APPOINTMENT, new LongValue(appointment.getId()),
-      result -> Data.refreshLocal(getViewName())));
+    CalendarKeeper.createAppointment(null, new DateTime(new JustDate(), 8, 0, 0, 0), "2", null, initializer,
+      appointment -> Queries.update(VIEW_TRADE_ACT_SERVICES, getActiveRowId(), CalendarConstants.COL_APPOINTMENT,
+        new LongValue(appointment.getId()), result -> Data.refreshLocal(getViewName())));
   }
 }

@@ -1,11 +1,15 @@
 package com.butent.bee.client.modules.calendar;
 
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
@@ -46,11 +50,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class CalendarUtils {
 
@@ -549,6 +549,69 @@ public final class CalendarUtils {
       itemWidget.addStyleName(CalendarStyleManager.COPY);
     } else {
       itemWidget.removeStyleName(CalendarStyleManager.COPY);
+    }
+  }
+
+  public static String getDescription(IsRow tradeAct) {
+    String tradeActName = Data.getString(VIEW_TRADE_ACTS, tradeAct, COL_TRADE_ACT_NAME);
+    String objectName = Data.getString(VIEW_TRADE_ACTS, tradeAct, COL_COMPANY_OBJECT_NAME);
+    String objectAddress = Data.getString(VIEW_TRADE_ACTS, tradeAct, COL_COMPANY_OBJECT_ADDRESS);
+    String lastName = Data.getString(VIEW_TRADE_ACTS, tradeAct, ALS_CONTACT_LAST_NAME);
+    String firstName = Data.getString(VIEW_TRADE_ACTS, tradeAct, ALS_CONTACT_FIRST_NAME);
+    String mobile = Data.getString(VIEW_TRADE_ACTS, tradeAct, "ContactMobile");
+
+    return BeeUtils.joinWords(objectName, objectAddress) + "\n" + BeeUtils.joinWords("Kontaktas:", firstName,
+      lastName, mobile) + "\n" + tradeActName;
+  }
+
+  public static String getSummary(IsRow row) {
+    String seriesName = Data.getString(VIEW_TRADE_ACT_SERVICES, row, "TradeSeriesName");
+    String itemName = Data.getString(VIEW_TRADE_ACT_SERVICES, row, "ItemName");
+
+    return BeeUtils.joinWords(seriesName, itemName, row.getId());
+  }
+
+  public static void setCompany(IsRow tradeAct, IsRow appointment) {
+    Long company = Data.getLong(VIEW_TRADE_ACTS, tradeAct, COL_COMPANY);
+    String companyName = Data.getString(VIEW_TRADE_ACTS, tradeAct, ALS_COMPANY_NAME);
+
+    Data.setValue(VIEW_APPOINTMENTS, appointment, COL_COMPANY, company);
+    Data.setValue(VIEW_APPOINTMENTS, appointment, ALS_COMPANY_NAME, companyName);
+    Data.setValue(VIEW_APPOINTMENTS, appointment, "TradeCompanyName", companyName);
+  }
+
+  public static void setCompanyPerson(IsRow tradeAct, IsRow appointment) {
+    Data.setValue(VIEW_APPOINTMENTS, appointment, COL_COMPANY_PERSON, Data.getLong(VIEW_TRADE_ACTS, tradeAct,
+      COL_CONTACT));
+    Data.setValue(VIEW_APPOINTMENTS, appointment, ALS_PERSON_FIRST_NAME, Data.getString(VIEW_TRADE_ACTS, tradeAct,
+      ALS_CONTACT_FIRST_NAME));
+    Data.setValue(VIEW_APPOINTMENTS, appointment, ALS_PERSON_LAST_NAME, Data.getString(VIEW_TRADE_ACTS, tradeAct,
+      ALS_CONTACT_LAST_NAME));
+  }
+
+  public static void setTradeAct(IsRow tradeAct, IsRow appointment) {
+    Data.setValue(VIEW_APPOINTMENTS, appointment, COL_TRADE_ACT, tradeAct.getId());
+    Data.setValue(VIEW_APPOINTMENTS, appointment, "TradeNumber", Data.getString(VIEW_TRADE_ACTS, tradeAct,
+      COL_TA_NUMBER));
+    Data.setValue(VIEW_APPOINTMENTS, appointment, COL_SERIES_NAME, Data.getString(VIEW_TRADE_ACT_SERVICES, tradeAct,
+      "TradeSeriesName"));
+  }
+
+  public static void setManager(IsRow tradeAct, IsRow appointment) {
+    Long manager = Data.getLong(VIEW_TRADE_ACTS, tradeAct, COL_TRADE_MANAGER);
+    if (manager != null) {
+      appointment.removeProperty(TBL_APPOINTMENT_OWNERS);
+      appointment.setProperty(TBL_APPOINTMENT_OWNERS, manager);
+    }
+  }
+
+  public static void setTradeActService(IsRow appointment, IsRow service) {
+    Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, appointment, COL_TRADE_ACT_SERVICE, service.getId());
+
+    for (String column : Arrays.asList(ALS_ITEM_NAME, COL_TRADE_SUPPLIER, ALS_SUPPLIER_NAME, COL_COST_AMOUNT,
+      COL_DATE_FROM) ) {
+      Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, appointment, column, Data.getString(VIEW_TRADE_ACT_SERVICES,
+        service, column));
     }
   }
 

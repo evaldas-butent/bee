@@ -4,6 +4,7 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.*;
 import com.butent.bee.client.event.logical.DataReceivedEvent;
 import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.trade.acts.TradeActForm;
 import com.butent.bee.client.modules.trade.acts.TradeActServicesGrid;
 import com.butent.bee.client.view.form.FormView;
@@ -13,6 +14,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_USER;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
@@ -115,6 +117,12 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
 
         event.getSelector().setAdditionalFilter(filter);
       });
+    } else if (BeeUtils.same(editableWidget.getColumnId(), COL_TRADE_ACT) && widget instanceof DataSelector) {
+      ((DataSelector) widget).addSelectorHandler(event -> {
+        if (event.isChanged()) {
+          refreshAppointmentBasedOnAct(event.getRelatedRow());
+        }
+      });
     }
 
     super.afterCreateEditableWidget(editableWidget, widget);
@@ -159,7 +167,7 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
       Queries.getRow(VIEW_TRADE_ACTS, tradeActID, new RowCallback() {
         @Override
         public void onSuccess(BeeRow row) {
-          row.setProperty(CalendarConstants.COL_APPOINTMENT, getActiveRowId());
+          row.setProperty(COL_APPOINTMENT, getActiveRowId());
 
           RowEditor.openForm(FORM_TRADE_ACT, Data.getDataInfo(VIEW_TRADE_ACTS), row, null, new TradeActForm(){
 
@@ -175,8 +183,8 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
 
                     if (DataUtils.isId(appointmentID) && event.getRows() != null && event.getRows().size() > 0) {
                       IsRow serviceRow = event.getRows().stream()
-                        .filter(row -> Objects.equals(Data.getLong(VIEW_TRADE_ACT_SERVICES, row,
-                          CalendarConstants.COL_APPOINTMENT), appointmentID))
+                        .filter(row -> Objects.equals(Data.getLong(VIEW_TRADE_ACT_SERVICES, row, COL_APPOINTMENT),
+                          appointmentID))
                         .findFirst().orElse(null);
 
                       if (serviceRow != null) {
@@ -225,10 +233,10 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
   }
 
   private static void clearTradeAct(IsRow row) {
-    Data.clearCell(CalendarConstants.VIEW_APPOINTMENTS, row, COL_TRADE_ACT);
-    Data.clearCell(CalendarConstants.VIEW_APPOINTMENTS, row, "TradeNumber");
-    Data.clearCell(CalendarConstants.VIEW_APPOINTMENTS, row, COL_SERIES_NAME);
-    Data.clearCell(CalendarConstants.VIEW_APPOINTMENTS, row, "TradeCompanyName");
+    Data.clearCell(VIEW_APPOINTMENTS, row, COL_TRADE_ACT);
+    Data.clearCell(VIEW_APPOINTMENTS, row, "TradeNumber");
+    Data.clearCell(VIEW_APPOINTMENTS, row, COL_SERIES_NAME);
+    Data.clearCell(VIEW_APPOINTMENTS, row, "TradeCompanyName");
   }
 
   private void updateSupplier(BeeRow serviceRow) {
@@ -237,7 +245,7 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
   }
 
   private void updateTradeActService(Long id) {
-    Long tradeActServiceID = id == null ? Data.getLong(CalendarConstants.VIEW_APPOINTMENTS, getActiveRow(), COL_TRADE_ACT_SERVICE) : id;
+    Long tradeActServiceID = id == null ? Data.getLong(VIEW_APPOINTMENTS, getActiveRow(), COL_TRADE_ACT_SERVICE) : id;
     UnboundSelector serviceSelector = (UnboundSelector) getFormView().getWidgetByName(COL_TRADE_ACT_SERVICE);
 
     if (serviceSelector != null) {
@@ -246,16 +254,16 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
   }
 
   private static void setTradeAct(IsRow activeRow, BeeRow serviceRow, Long newTradeActID) {
-    Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, activeRow, COL_TRADE_ACT, newTradeActID);
+    Data.setValue(VIEW_APPOINTMENTS, activeRow, COL_TRADE_ACT, newTradeActID);
 
-    Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, activeRow, "TradeNumber",
-      Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, "TradeNumber"));
+    Data.setValue(VIEW_APPOINTMENTS, activeRow, "TradeNumber", Data.getString(VIEW_TRADE_ACT_SERVICES,
+      serviceRow, "TradeNumber"));
 
-    Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, activeRow, "TradeCompanyName",
-      Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, "TradeCompanyName"));
+    Data.setValue(VIEW_APPOINTMENTS, activeRow, "TradeCompanyName", Data.getString(VIEW_TRADE_ACT_SERVICES,
+      serviceRow, "TradeCompanyName"));
 
-    Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, activeRow, COL_SERIES_NAME,
-      Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, "TradeSeriesName"));
+    Data.setValue(VIEW_APPOINTMENTS, activeRow, COL_SERIES_NAME, Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow,
+      "TradeSeriesName"));
   }
 
   private void setTradeActServiceFilter(SelectorEvent event) {
@@ -264,29 +272,50 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
 
     if (event.isOpened()) {
       event.getSelector().getOracle().setAdditionalFilter(filter, true);
-    } else if (event.isChanged()) {
+    } else if (event.isChanged() && event.getValue() > 0) {
       refreshAppointmentBasedOnService(event.getRelatedRow(), tradeActID);
+    }
+  }
+
+  private void refreshAppointmentBasedOnAct(BeeRow tradeAct) {
+    if (tradeAct != null) {
+      IsRow appointment = getActiveRow();
+
+      if (tradeAct != null) {
+        Data.setValue(VIEW_APPOINTMENTS, appointment, COL_ITEM_DESCRIPTION, CalendarUtils.getDescription(tradeAct));
+
+        CalendarUtils.setCompany(tradeAct, appointment);
+        CalendarUtils.setCompanyPerson(tradeAct, appointment);
+        CalendarUtils.setManager(tradeAct, appointment);
+
+        Data.clearCell(VIEW_APPOINTMENTS, appointment, COL_TRADE_ACT_SERVICE);
+        getFormView().refresh();
+      }
     }
   }
 
   private void refreshAppointmentBasedOnService(BeeRow serviceRow, Long tradeActID) {
     if (serviceRow != null) {
 
-    Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, getActiveRow(), COL_COST_AMOUNT,
-      Data.getDouble(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_COST_AMOUNT));
+    Data.setValue(VIEW_APPOINTMENTS, getActiveRow(), COL_COST_AMOUNT, Data.getDouble(VIEW_TRADE_ACT_SERVICES,
+      serviceRow, COL_COST_AMOUNT));
 
-    Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, getActiveRow(), COL_DATE_FROM,
-      Data.getDate(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_DATE_FROM));
+    Data.setValue(VIEW_APPOINTMENTS, getActiveRow(), COL_DATE_FROM, Data.getDate(VIEW_TRADE_ACT_SERVICES, serviceRow,
+      COL_DATE_FROM));
 
     Long newTradeActID = Data.getLong(VIEW_TRADE_ACT_SERVICES, serviceRow, COL_TRADE_ACT);
     if (BeeUtils.isPositive(newTradeActID) && !Objects.equals(tradeActID, newTradeActID)) {
       setTradeAct(getActiveRow(), serviceRow, newTradeActID);
+
+      Queries.getRow(VIEW_TRADE_ACTS, newTradeActID, this::refreshAppointmentBasedOnAct);
     }
+
+    Data.setValue(VIEW_APPOINTMENTS, getActiveRow(), CalendarConstants.COL_SUMMARY, CalendarUtils.getSummary(serviceRow));
 
     getFormView().refreshBySource(COL_COST_AMOUNT);
     getFormView().refreshBySource(COL_DATE_FROM);
     getFormView().refreshBySource(COL_TRADE_ACT);
-
+    getFormView().refreshBySource(CalendarConstants.COL_SUMMARY);
     updateSupplier(serviceRow);
 
     } else {

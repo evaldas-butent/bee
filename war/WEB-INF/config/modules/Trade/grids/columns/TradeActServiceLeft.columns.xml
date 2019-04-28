@@ -78,6 +78,6 @@
   <RelColumn name="ServiceObject" choiceColumns="Model Address" editEnabled="true" renderColumns="Model Address"
              flexGrow="0"/>
   <DataColumn name="Run" flexGrow="0" />
-  <RelColumn name="Appointment" newRowForm="SimpleAppointment" choiceColumns="Appointment Summary"
+  <RelColumn name="Appointment" newRowForm="SimpleAppointment" choiceColumns="Appointment Summary" order="Appointment desc"
              renderColumns="Appointment Summary" editEnabled="true" />
 </g:columns>
