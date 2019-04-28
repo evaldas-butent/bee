@@ -27,7 +27,7 @@
 
           <Image name="Overlap" resource="yellow" style="&absolute; left: 14px; top: 100px;" />
 
-          <MultiSelector name="Resources" viewName="Attendees" property="AppointmentAttendees" required="true"
+          <MultiSelector name="Resources" viewName="Attendees" property="AppointmentAttendees"
                          renderColumns="Name" choiceColumns="Name TypeName" newRowEnabled="false"
                          style="&absolute; left: 80px; top: 40px; width: 240px; max-height: 100px; height: 60px; overflow: auto;" />
 

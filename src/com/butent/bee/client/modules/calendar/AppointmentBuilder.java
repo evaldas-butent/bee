@@ -1638,6 +1638,12 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
       return false;
     }
 
+    final String attList = row.getProperty(TBL_APPOINTMENT_ATTENDEES);
+    if (BeeUtils.isEmpty(attList)) {
+      getFormView().notifySevere(Localized.dictionary().fieldRequired(Localized.dictionary().calAttendees()));
+      return false;
+    }
+
     if (isRequired(ClassifierConstants.COL_COMPANY)
         && CalendarUtils.isEmptyAppointmentColumn(row, ClassifierConstants.COL_COMPANY)) {
       getFormView().notifySevere(Localized.dictionary().calEnterClient());
