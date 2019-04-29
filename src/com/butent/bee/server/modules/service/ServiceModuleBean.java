@@ -2238,7 +2238,6 @@ public class ServiceModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(message) || BeeUtils.isEmpty(phone)) {
       return ResponseObject.error("message or phone is empty");
     }
-    logger.info("Sending message to", phone, ":", message);
     ResponseObject response = SmsUtils.sendSmppMessage(message, phone);
 
     if (response.hasErrors()) {
