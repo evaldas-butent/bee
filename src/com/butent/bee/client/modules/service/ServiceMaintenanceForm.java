@@ -617,8 +617,8 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
               getActiveRow().setValue(targetDataInfo.getColumnIndex(COL_CONTACT),
                   companyPersonRow.getId());
-              RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_PHONE, getActiveRow(),
-                  sourceDataInfo, COL_PHONE, companyPersonRow);
+              RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_MOBILE, getActiveRow(),
+                  sourceDataInfo, COL_MOBILE, companyPersonRow);
               RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_FIRST_NAME,
                   getActiveRow(), sourceDataInfo, COL_FIRST_NAME, companyPersonRow);
               RelationUtils.maybeUpdateColumn(targetDataInfo, ALS_CONTACT_LAST_NAME,
@@ -629,7 +629,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
                   sourceDataInfo, COL_ADDRESS, companyPersonRow);
 
               getFormView().refreshBySource(COL_CONTACT);
-              getFormView().refreshBySource(ALS_CONTACT_PHONE);
+              getFormView().refreshBySource(ALS_CONTACT_MOBILE);
               getFormView().refreshBySource(ALS_CONTACT_EMAIL);
               getFormView().refreshBySource(ALS_CONTACT_ADDRESS);
             }
@@ -1339,8 +1339,8 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
       case VIEW_COMPANY_PERSONS:
         row.setValue(form.getDataIndex(COL_CONTACT), eventRow.getId());
-        row.setValue(form.getDataIndex(ALS_CONTACT_PHONE),
-            eventRow.getValue(Data.getColumnIndex(viewName, COL_PHONE)));
+        row.setValue(form.getDataIndex(ALS_CONTACT_MOBILE),
+            eventRow.getValue(Data.getColumnIndex(viewName, COL_MOBILE)));
         row.setValue(form.getDataIndex(ALS_CONTACT_EMAIL),
             eventRow.getValue(Data.getColumnIndex(viewName, COL_EMAIL)));
         row.setValue(form.getDataIndex(ALS_CONTACT_ADDRESS),

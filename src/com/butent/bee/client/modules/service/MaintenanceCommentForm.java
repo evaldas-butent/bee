@@ -11,12 +11,12 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
-import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -27,9 +27,13 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
-import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MaintenanceCommentForm extends AbstractFormInterceptor
     implements SelectorEvent.Handler {
@@ -125,10 +129,10 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor
 
   @Override
   public void onDataSelector(SelectorEvent event) {
-   if (event.isChanged() && event.hasRelatedView(TBL_WARRANTY_TYPES)
-       && warrantyValidToDate != null) {
-     warrantyValidToDate.setText(Format.renderDate(ServiceUtils.calculateWarrantyDate(event)));
-   }
+    if (event.isChanged() && event.hasRelatedView(TBL_WARRANTY_TYPES)
+        && warrantyValidToDate != null) {
+      warrantyValidToDate.setText(Format.renderDate(ServiceUtils.calculateWarrantyDate(event)));
+    }
   }
 
   @Override
@@ -172,9 +176,16 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor
               stateProcessRow.getValue(processInfo.getColumnIndex(COL_ITEM_PRICE)));
           form.refreshBySource(COL_ITEM_PRICE);
         }
+        String repairer = BeeUtils.joinWords(Stream.of(COL_FIRST_NAME, COL_LAST_NAME, COL_MOBILE)
+            .map(col -> serviceMaintenance.getString(Data.getColumnIndex(TBL_SERVICE_MAINTENANCE,
+                COL_REPAIRER + col)))
+            .collect(Collectors.toList()));
 
+        if (!BeeUtils.isEmpty(repairer)) {
+          repairer = BeeUtils.joinWords(Localized.dictionary().svcMaster(), repairer);
+        }
         String commentValue = stateProcessRow.getString(processInfo.getColumnIndex(COL_MESSAGE));
-        row.setValue(getDataIndex(COL_COMMENT), commentValue);
+        row.setValue(getDataIndex(COL_COMMENT), BeeUtils.join("\n", commentValue, repairer));
         form.refreshBySource(COL_COMMENT);
 
         boolean notifyCustomer = stateProcessRow

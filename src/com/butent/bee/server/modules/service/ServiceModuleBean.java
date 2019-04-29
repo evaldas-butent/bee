@@ -1943,7 +1943,7 @@ public class ServiceModuleBean implements BeeModule {
               COL_PUBLISH_TIME, COL_EVENT_NOTE, COL_TERM, COL_SEND_EMAIL, COL_SEND_SMS)
           .addFields(TBL_EMAILS, COL_EMAIL)
           .addField(COL_CREATOR + TBL_CONTACTS, COL_EMAIL, COL_CREATOR + COL_EMAIL)
-          .addFields(TBL_CONTACTS, COL_PHONE)
+          .addFields(TBL_CONTACTS, COL_MOBILE)
           .addFields(TBL_PERSONS, COL_FIRST_NAME)
           .addFields(TBL_SERVICE_OBJECTS, COL_MODEL, COL_SERIAL_NO, COL_ARTICLE_NO)
           .addField(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME, ALS_MANUFACTURER_NAME)
@@ -2015,13 +2015,13 @@ public class ServiceModuleBean implements BeeModule {
         String error = BeeConst.STRING_EMPTY;
 
         if (!BeeUtils.toBoolean(commentInfoRow.getValue(COL_SEND_SMS))
-            && !BeeUtils.isEmpty(commentInfoRow.getValue(COL_PHONE))) {
+            && !BeeUtils.isEmpty(commentInfoRow.getValue(COL_MOBILE))) {
           String from = BeeConst.STRING_EMPTY;
 
           if (!BeeUtils.isEmpty(prm.getText(PRM_SMS_REQUEST_CONTACT_INFO_FROM))) {
             SqlSelect phoneFromSelect = new SqlSelect()
                 .addFrom(TBL_CONTACTS)
-                .addFields(TBL_CONTACTS, COL_PHONE);
+                .addFields(TBL_CONTACTS, COL_MOBILE);
 
             switch (prm.getText(PRM_SMS_REQUEST_CONTACT_INFO_FROM)) {
               case AdministrationConstants.VIEW_DEPARTMENTS:
@@ -2066,7 +2066,7 @@ public class ServiceModuleBean implements BeeModule {
             error = dic.svcEmptySmsFromError();
 
           } else {
-            ResponseObject smsResponse = informCustomerWithSms(dic, dtfInfo, commentInfoRow, from);
+            ResponseObject smsResponse = informCustomerWithSms(dic, dtfInfo, commentInfoRow);
             isSendSms = !smsResponse.hasErrors();
             result.addMessagesFrom(smsResponse);
           }
@@ -2195,7 +2195,6 @@ public class ServiceModuleBean implements BeeModule {
     doc.getBody().append(div().text("<br />"));
 
     doc.getBody().append(div().text(dic.svcMaintenanceEmailContent(
-        BeeUtils.notEmpty(commentInfoRow.getValue(COL_FIRST_NAME), ""),
         BeeUtils.notEmpty(commentInfoRow.getValue(COL_COMMENT), ""),
         externalServiceUrl)));
 
@@ -2215,9 +2214,9 @@ public class ServiceModuleBean implements BeeModule {
   }
 
   private ResponseObject informCustomerWithSms(Dictionary dic, DateTimeFormatInfo dtfInfo,
-      SimpleRow commentInfoRow, String from) {
+      SimpleRow commentInfoRow) {
 
-    String phone = commentInfoRow.getValue(COL_PHONE);
+    String phone = commentInfoRow.getValue(COL_MOBILE);
     phone = phone.replaceAll("\\D+", "");
 
     Long maintenanceId = commentInfoRow.getLong(COL_SERVICE_MAINTENANCE);
@@ -2229,11 +2228,13 @@ public class ServiceModuleBean implements BeeModule {
     }
 
     DateTime termValue = commentInfoRow.getDateTime(COL_TERM);
-    String message = BeeUtils.joinWords(dic.svcRepair(),
-        maintenanceId + BeeConst.STRING_COLON,
-        BeeUtils.notEmpty(commentInfoRow.getValue(COL_COMMENT), ""),
-        termValue != null ? BeeUtils.joinWords(dic.svcTerm() + BeeConst.STRING_COLON,
-            Formatter.renderDateTime(dtfInfo, termValue)) : "", externalServiceUrl);
+    String message = BeeUtils.join("\n",
+        BeeUtils.joinWords(dic.svcRepair(), maintenanceId),
+        BeeUtils.joinWords(dic.svcMaintenanceState(), commentInfoRow.getValue(COL_EVENT_NOTE)),
+        commentInfoRow.getValue(COL_COMMENT),
+        termValue != null
+            ? BeeUtils.joinWords(dic.svcTerm(), Formatter.renderDateTime(dtfInfo, termValue)) : "",
+        externalServiceUrl);
 
     if (BeeUtils.isEmpty(message) || BeeUtils.isEmpty(phone)) {
       return ResponseObject.error("message or phone is empty");

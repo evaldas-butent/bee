@@ -876,7 +876,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
       ComplexPanel panel = (ComplexPanel) widget;
 
       if (panel.getWidgetCount() > 0 && DomUtils.isVisible(panel.getParent())) {
-        final Widget last = panel.getWidget(panel.getWidgetCount() - 1);
+        final Widget last = panel.getWidget(0);
         Scheduler.get().scheduleDeferred(() -> DomUtils.scrollIntoView(last.getElement()));
       }
     }

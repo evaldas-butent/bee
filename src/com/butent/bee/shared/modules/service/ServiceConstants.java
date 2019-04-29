@@ -202,6 +202,7 @@ public final class ServiceConstants {
   public static final String ALS_CONTACT_ADDRESS = "ContactAddress";
   public static final String ALS_CONTACT_EMAIL = "ContactEmail";
   public static final String ALS_CONTACT_PHONE = "ContactPhone";
+  public static final String ALS_CONTACT_MOBILE = "ContactMobile";
 
   public static final String ALS_CUSTOMER_TYPE_NAME = "CustomerTypeName";
   public static final String ALS_DEPARTMENT_NAME = "DepartmentName";

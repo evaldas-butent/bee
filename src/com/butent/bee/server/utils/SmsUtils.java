@@ -11,8 +11,11 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import org.jsmpp.bean.AlertNotification;
 import org.jsmpp.bean.Alphabet;
 import org.jsmpp.bean.BindType;
+import org.jsmpp.bean.DataSm;
+import org.jsmpp.bean.DeliverSm;
 import org.jsmpp.bean.ESMClass;
 import org.jsmpp.bean.GSMSpecificFeature;
 import org.jsmpp.bean.GeneralDataCoding;
@@ -24,7 +27,10 @@ import org.jsmpp.bean.RegisteredDelivery;
 import org.jsmpp.bean.SMSCDeliveryReceipt;
 import org.jsmpp.bean.TypeOfNumber;
 import org.jsmpp.session.BindParameter;
+import org.jsmpp.session.DataSmResult;
+import org.jsmpp.session.MessageReceiverListener;
 import org.jsmpp.session.SMPPSession;
+import org.jsmpp.session.Session;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
@@ -81,6 +87,20 @@ public final class SmsUtils {
     int port = BeeUtils.toInt(ArrayUtils.getQuietly(split, 1));
 
     SMPPSession session = new SMPPSession();
+    session.setMessageReceiverListener(new MessageReceiverListener() {
+      @Override
+      public DataSmResult onAcceptDataSm(DataSm dataSm, Session source) {
+        return null;
+      }
+
+      @Override
+      public void onAcceptDeliverSm(DeliverSm deliverSm) {
+      }
+
+      @Override
+      public void onAcceptAlertNotification(AlertNotification alertNotification) {
+      }
+    });
     MessageClass messageClass = MessageClass.CLASS1;
 
     try {

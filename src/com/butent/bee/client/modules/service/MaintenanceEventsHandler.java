@@ -78,7 +78,7 @@ public class MaintenanceEventsHandler extends EventsBoard {
     if (customerSentCheckBox != null) {
       customerSentCheckBox.addValueChangeHandler(event -> {
           String phone = maintenanceRow.getString(Data
-              .getColumnIndex(TBL_SERVICE_MAINTENANCE, ALS_CONTACT_PHONE));
+              .getColumnIndex(TBL_SERVICE_MAINTENANCE, ALS_CONTACT_MOBILE));
           String email = maintenanceRow.getString(Data
               .getColumnIndex(TBL_SERVICE_MAINTENANCE, ALS_CONTACT_EMAIL));
 
@@ -192,7 +192,7 @@ public class MaintenanceEventsHandler extends EventsBoard {
 
   @Override
   protected Order getEventsDataOrder() {
-    return Order.ascending(getPublishTimeColumnName());
+    return new Order(getPublishTimeColumnName(), false);
   }
 
   @Override

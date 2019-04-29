@@ -5624,11 +5624,10 @@ public interface Dictionary {
 
   default String svcMaintenance() {return g("svcMaintenance");}
 
-  default String svcMaintenanceEmailContent(Object p0, Object p1, Object p2) {
+  default String svcMaintenanceEmailContent(Object p0, Object p1) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{0}", p0);
     _m.put("{1}", p1);
-    _m.put("{2}", p2);
     return Localized.format(g("svcMaintenanceEmailContent"), _m);
   }
 

@@ -90,6 +90,9 @@
           <SimpleColumn alias="RepairerFirstName" name="FirstName" />
           <SimpleColumn alias="RepairerLastName" name="LastName" />
         </SimpleJoin>
+        <SimpleJoin name="Contact" joinType="LEFT">
+          <SimpleColumn name="Mobile" alias="RepairerMobile" />
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
 
