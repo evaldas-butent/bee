@@ -671,8 +671,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           svc.price = row.getDouble(priceIndex);
 
           if (BeeUtils.isPositive(svc.tariff)) {
-            Double p = TradeActUtils.calculateServicePrice(svc.price, dateTo, act.itemTotal(),
-                svc.tariff, svc.quantity, priceScale);
+            Double p = TradeActUtils.calculateServicePrice(svc.price, TimeUtils.today(),
+                act.itemTotal(), svc.tariff, svc.quantity, priceScale);
             if (BeeUtils.isPositive(p)) {
               svc.price = p;
             }
