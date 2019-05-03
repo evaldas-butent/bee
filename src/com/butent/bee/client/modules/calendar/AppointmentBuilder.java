@@ -1404,14 +1404,12 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
 
     if (oldRow != null && activeRow != null) {
       Long oldTradeActService = Data.getLong(VIEW_APPOINTMENTS, oldRow, COL_TRADE_ACT_SERVICE);
-      Long newTradeActService = null;
 
       UnboundSelector serviceSelector = (UnboundSelector) getFormView().getWidgetByName(COL_TRADE_ACT_SERVICE);
-      if (serviceSelector != null) {
-        newTradeActService = serviceSelector.getRelatedId();
-      }
 
-      if (newTradeActService != null) {
+      if (serviceSelector != null && DataUtils.isId(serviceSelector.getRelatedId())) {
+        Long newTradeActService = serviceSelector.getRelatedId();
+
         List<String> columns = new ArrayList<>();
         List<String> values = new ArrayList<>();
 
@@ -1445,15 +1443,20 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
           columns.add(COL_APPOINTMENT);
         }
 
-        if (!values.isEmpty()) {
-         Queries.update(VIEW_TRADE_ACT_SERVICES, Filter.compareId(newTradeActService), columns,
-             values, result -> Data.refreshLocal(VIEW_TRADE_ACT_SERVICES));
-        }
-      }
+        Runnable runnable = () -> Queries.update(VIEW_TRADE_ACT_SERVICES, Filter.compareId(newTradeActService), columns,
+          values, result -> Data.refreshLocal(VIEW_TRADE_ACT_SERVICES));
 
-      if (DataUtils.isId(oldTradeActService) && !Objects.equals(oldTradeActService, newTradeActService)) {
-        Queries.update(VIEW_TRADE_ACT_SERVICES, oldTradeActService, COL_APPOINTMENT,
-          LongValue.getNullValue(), result -> Data.refreshLocal(VIEW_TRADE_ACT_SERVICES));
+        if (!values.isEmpty()) {
+          if (DataUtils.isId(oldTradeActService) && !Objects.equals(oldTradeActService, newTradeActService)) {
+            Queries.update(VIEW_TRADE_ACT_SERVICES, oldTradeActService, COL_APPOINTMENT,
+              LongValue.getNullValue(), result -> runnable.run());
+          } else {
+            runnable.run();
+          }
+        }
+      } else if (DataUtils.isId(oldTradeActService)) {
+          Queries.update(VIEW_TRADE_ACT_SERVICES, oldTradeActService, COL_APPOINTMENT,
+            LongValue.getNullValue(), result -> Data.refreshLocal(VIEW_TRADE_ACT_SERVICES));
       }
     }
   }
