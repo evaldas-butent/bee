@@ -88,14 +88,20 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor
       result.setProperty(COL_WARRANTY_TYPE, widgetTypeSelector.getValue());
     }
 
-    ServiceUtils.informClient((BeeRow) result);
+    ServiceUtils.informClient((BeeRow) result,
+        Data.getLong(TBL_SERVICE_MAINTENANCE, serviceMaintenance, COL_CONTACT),
+        Data.getLong(TBL_SERVICE_MAINTENANCE, serviceMaintenance,
+            COL_REPAIRER + COL_COMPANY_PERSON));
   }
 
   @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
     super.onSaveChanges(listener, event);
 
-    ServiceUtils.informClient((BeeRow) event.getNewRow());
+    ServiceUtils.informClient((BeeRow) event.getNewRow(),
+        Data.getLong(TBL_SERVICE_MAINTENANCE, serviceMaintenance, COL_CONTACT),
+        Data.getLong(TBL_SERVICE_MAINTENANCE, serviceMaintenance,
+            COL_REPAIRER + COL_COMPANY_PERSON));
 
     Long serviceMaintenanceId = event.getNewRow().getLong(getDataIndex(COL_SERVICE_MAINTENANCE));
 
@@ -113,6 +119,13 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor
   public void afterRefresh(FormView form, IsRow row) {
     updateTermVisibility(form, row);
 
+    Widget repairerSentWidget = form.getWidgetBySource(COL_REPAIRER_SENT);
+
+    if (repairerSentWidget instanceof InputBoolean) {
+      boolean isSendEmail = BeeUtils.toBoolean(row.getString(getDataIndex(COL_REPAIRER_SEND_EMAIL)));
+      boolean isSendSms = BeeUtils.toBoolean(row.getString(getDataIndex(COL_REPAIRER_SEND_SMS)));
+      ((InputBoolean) repairerSentWidget).setEnabled(!(isSendEmail && isSendSms));
+    }
     Widget customerSentWidget = form.getWidgetBySource(COL_CUSTOMER_SENT);
 
     if (customerSentWidget instanceof InputBoolean) {
@@ -187,6 +200,11 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor
         String commentValue = stateProcessRow.getString(processInfo.getColumnIndex(COL_MESSAGE));
         row.setValue(getDataIndex(COL_COMMENT), BeeUtils.join("\n", commentValue, repairer));
         form.refreshBySource(COL_COMMENT);
+
+        if (stateProcessRow.isTrue(processInfo.getColumnIndex(COL_NOTIFY_REPAIRER))) {
+          row.setValue(getDataIndex(COL_REPAIRER_SENT), true);
+          form.refreshBySource(COL_REPAIRER_SENT);
+        }
 
         boolean notifyCustomer = stateProcessRow
             .isTrue(processInfo.getColumnIndex(COL_NOTIFY_CUSTOMER));

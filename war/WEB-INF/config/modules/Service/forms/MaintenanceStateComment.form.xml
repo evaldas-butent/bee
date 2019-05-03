@@ -30,6 +30,10 @@
         <CheckBox source="CustomerSent" summarize="true" />
       </row>
       <row>
+        <text/>
+        <CheckBox source="RepairerSent" summarize="true" />
+      </row>
+      <row>
         <Label name="TermLabel" for="Term" />
         <InputDateTime source="Term" />
         <CheckBox name="Urgent" summarize="true" for="Urgent" data="ServiceMaintenance" text="=svcUrgent"/>

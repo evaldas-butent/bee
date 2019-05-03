@@ -11,6 +11,7 @@
     <RelColumn name="MaintenanceState" renderColumns="MaintenanceStateName" visible="true" />
     <DataColumn name="Initial" visible="true" />
     <DataColumn name="Finite" visible="true" />
+    <DataColumn name="NotifyRepairer" visible="true" />
     <DataColumn name="NotifyCustomer" visible="true" />
     <DataColumn name="ShowCustomer" visible="true" />
     <DataColumn name="Message" visible="true" />

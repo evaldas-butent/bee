@@ -3,8 +3,8 @@ package com.butent.bee.client.modules.service;
 import com.google.common.collect.Sets;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_BACKGROUND;
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_FOREGROUND;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -22,6 +22,7 @@ import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
@@ -33,8 +34,6 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 public class MaintenanceEventsHandler extends EventsBoard {
@@ -60,56 +59,37 @@ public class MaintenanceEventsHandler extends EventsBoard {
     Flow infoPanel = new Flow(STYLE_INFO_PANEL);
     infoPanel.addStyleName(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
 
+    CheckBox customerSentCheckBox = generateCheckBox(infoPanel, rs, row, COL_CUSTOMER_SENT,
+        !BeeUtils.unbox(row.getBoolean(rs.getColumnIndex(COL_CUSTOMER_SENT))),
+        LC.svcNotifyCustomer());
+
+    if (customerSentCheckBox != null) {
+      customerSentCheckBox.addValueChangeHandler(event -> {
+            Long contact = Data.getLong(TBL_SERVICE_MAINTENANCE, maintenanceRow, COL_CONTACT);
+
+            if (DataUtils.isId(contact)) {
+              row.setValue(Data.getColumnIndex(getEventsDataViewName(), COL_CUSTOMER_SENT),
+                  event.getValue());
+              ServiceUtils.informClient(row, contact, null);
+            } else {
+              Global.showError("Nenurodytas kontaktinis asmuo");
+              customerSentCheckBox.setChecked(false);
+            }
+          }
+      );
+    }
+    generateCheckBox(infoPanel, rs, row, COL_SEND_EMAIL, false, LC.svcSendEmail());
+    generateCheckBox(infoPanel, rs, row, COL_SEND_SMS, false, LC.svcSendSms());
+
     CheckBox customerShowCheckBox = generateCheckBox(infoPanel, rs, row, COL_SHOW_CUSTOMER, true,
         LC.svcShowCustomer());
 
     if (customerShowCheckBox != null) {
       customerShowCheckBox.addValueChangeHandler(event ->
           Queries.update(getEventsDataViewName(), row.getId(),
-          COL_SHOW_CUSTOMER, Value.getValue(event.getValue()),
+              COL_SHOW_CUSTOMER, Value.getValue(event.getValue()),
               result -> customerShowCheckBox.setChecked(event.getValue())));
     }
-
-    boolean isSendEmail = BeeUtils.toBoolean(row.getString(rs.getColumnIndex(COL_SEND_EMAIL)));
-    boolean isSendSms = BeeUtils.toBoolean(row.getString(rs.getColumnIndex(COL_SEND_SMS)));
-    CheckBox customerSentCheckBox = generateCheckBox(infoPanel, rs, row, COL_CUSTOMER_SENT,
-        !(isSendEmail && isSendSms), LC.svcInform());
-
-    if (customerSentCheckBox != null) {
-      customerSentCheckBox.addValueChangeHandler(event -> {
-          String phone = maintenanceRow.getString(Data
-              .getColumnIndex(TBL_SERVICE_MAINTENANCE, ALS_CONTACT_MOBILE));
-          String email = maintenanceRow.getString(Data
-              .getColumnIndex(TBL_SERVICE_MAINTENANCE, ALS_CONTACT_EMAIL));
-
-          if ((!isSendEmail && !BeeUtils.isEmpty(email))
-              || (!isSendSms && !BeeUtils.isEmpty(phone))) {
-            row.setValue(Data.getColumnIndex(getEventsDataViewName(), COL_CUSTOMER_SENT),
-                event.getValue());
-            ServiceUtils.informClient(row);
-
-          } else {
-            List<String> messages = new ArrayList<>();
-
-            if (BeeUtils.isEmpty(phone)) {
-              messages.add(BeeUtils.joinWords(LC.phone(), LC.valueRequired()));
-            }
-            if (BeeUtils.isEmpty(email)) {
-              messages.add(BeeUtils.joinWords(LC.email(), LC.valueRequired()));
-            }
-
-            if (!messages.isEmpty()) {
-              Global.showError(messages);
-            }
-            customerSentCheckBox.setChecked(false);
-          }
-        }
-      );
-    }
-
-    generateCheckBox(infoPanel, rs, row, COL_SEND_EMAIL, false, LC.svcSendEmail());
-    generateCheckBox(infoPanel, rs, row, COL_SEND_SMS, false, LC.svcSendSms());
-
     Flow rowCellTerm = createEventRowCell(infoPanel, COL_TERM, null, false);
     int idxColTerm = rs.getColumnIndex(COL_TERM);
     if (!BeeUtils.isNegative(idxColTerm)) {
@@ -140,6 +120,34 @@ public class MaintenanceEventsHandler extends EventsBoard {
 
       }
     }
+    widget.add(infoPanel);
+
+    infoPanel = new Flow(STYLE_INFO_PANEL);
+    infoPanel.addStyleName(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
+
+    CheckBox repairerSentCheckBox = generateCheckBox(infoPanel, rs, row, COL_REPAIRER_SENT,
+        !BeeUtils.unbox(row.getBoolean(rs.getColumnIndex(COL_REPAIRER_SENT))),
+        "Informuoti meistrą");
+
+    if (repairerSentCheckBox != null) {
+      repairerSentCheckBox.addValueChangeHandler(event -> {
+            Long repairer = Data.getLong(TBL_SERVICE_MAINTENANCE, maintenanceRow,
+                COL_REPAIRER + COL_COMPANY_PERSON);
+
+            if (DataUtils.isId(repairer)) {
+              row.setValue(Data.getColumnIndex(getEventsDataViewName(), COL_REPAIRER_SENT),
+                  event.getValue());
+              ServiceUtils.informClient(row, null, repairer);
+            } else {
+              Global.showError("Nenurodytas meistras");
+              repairerSentCheckBox.setChecked(false);
+            }
+          }
+      );
+    }
+    generateCheckBox(infoPanel, rs, row, COL_REPAIRER_SEND_EMAIL, false, LC.svcSendEmail());
+    generateCheckBox(infoPanel, rs, row, COL_REPAIRER_SEND_SMS, false, LC.svcSendSms());
+
     widget.add(infoPanel);
   }
 
@@ -176,7 +184,7 @@ public class MaintenanceEventsHandler extends EventsBoard {
   @Override
   public Set<Action> getDisabledActions() {
     if (!canCreate) {
-      return  Sets.newHashSet(Action.ADD);
+      return Sets.newHashSet(Action.ADD);
     }
     return super.getDisabledActions();
   }

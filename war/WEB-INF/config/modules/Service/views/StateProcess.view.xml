@@ -19,6 +19,7 @@
     </SimpleJoin>
     <SimpleColumn name="Initial"/>
     <SimpleColumn name="Finite"/>
+    <SimpleColumn name="NotifyRepairer"/>
     <SimpleColumn name="NotifyCustomer"/>
     <SimpleColumn name="ShowCustomer"/>
     <SimpleColumn name="Message"/>

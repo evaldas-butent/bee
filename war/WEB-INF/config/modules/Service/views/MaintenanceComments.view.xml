@@ -23,6 +23,7 @@
     <SimpleColumn name="Comment" />
     <SimpleColumn name="ShowCustomer" />
     <SimpleColumn name="Term" />
+    <SimpleColumn name="RepairerSent" />
     <SimpleColumn name="CustomerSent" />
     <SimpleColumn name="EventNote"/>
 
@@ -41,6 +42,9 @@
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
+
+    <SimpleColumn name="RepairerSentEmail"/>
+    <SimpleColumn name="RepairerSentSms"/>
 
     <SimpleColumn name="SentEmail"/>
     <SimpleColumn name="SentSms"/>

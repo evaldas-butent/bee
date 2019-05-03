@@ -92,7 +92,7 @@
   border: 1px solid #aaa;
   padding-left: 8px;
   padding-right: 8px;
-}  
+}
 .bee-svc-print-defect-items-header {
   text-align: center;
   padding-top: 8px;
@@ -124,6 +124,9 @@
 .bee-svc-Events-content-CustomerSent,
 .bee-svc-Events-content-SentEmail,
 .bee-svc-Events-content-SentSms,
+.bee-svc-Events-content-RepairerSent,
+.bee-svc-Events-content-RepairerSentEmail,
+.bee-svc-Events-content-RepairerSentSms,
 .bee-svc-Events-label {
   margin-right: 2vh;
 }

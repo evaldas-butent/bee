@@ -899,6 +899,11 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         BeeUtils.toString(Boolean.TRUE));
 
     if (stateProcessRow != null) {
+      if (Data.isTrue(TBL_STATE_PROCESS, stateProcessRow, COL_NOTIFY_REPAIRER)) {
+        columns.add(Data.getColumn(TBL_MAINTENANCE_COMMENTS, COL_REPAIRER_SENT));
+        values.add(Boolean.TRUE.toString());
+      }
+
       String notifyValue = stateProcessRow.
           getString(Data.getColumnIndex(TBL_STATE_PROCESS, COL_NOTIFY_CUSTOMER));
 
@@ -924,7 +929,9 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       }
     }
 
-    Queries.insert(TBL_MAINTENANCE_COMMENTS, columns, values, null, ServiceUtils::informClient);
+    Queries.insert(TBL_MAINTENANCE_COMMENTS, columns, values, null,
+        result -> ServiceUtils.informClient(result, row.getLong(getDataIndex(COL_CONTACT)),
+            row.getLong(getDataIndex(COL_REPAIRER + COL_COMPANY_PERSON))));
   }
 
   private void drawComments(IsRow row) {

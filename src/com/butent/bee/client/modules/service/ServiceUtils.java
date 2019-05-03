@@ -14,6 +14,7 @@ import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -30,10 +31,9 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.Arrays;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class ServiceUtils {
@@ -205,24 +205,34 @@ public final class ServiceUtils {
   private ServiceUtils() {
   }
 
-  public static void informClient(BeeRow commentRow) {
-    int informColIndex = Data.getColumnIndex(TBL_MAINTENANCE_COMMENTS, COL_CUSTOMER_SENT);
+  public static void informClient(BeeRow commentRow, Long contactPerson, Long repairerPerson) {
+    ParameterList params = ServiceKeeper.createArgs(SVC_INFORM_CUSTOMER);
 
-    if (BeeUtils.isTrue(commentRow.getBoolean(informColIndex))) {
-      ParameterList params = ServiceKeeper.createArgs(SVC_INFORM_CUSTOMER);
+    if (Data.isTrue(TBL_MAINTENANCE_COMMENTS, commentRow, COL_CUSTOMER_SENT)) {
+      if (DataUtils.isId(contactPerson)) {
+        params.addDataItem(COL_CONTACT, contactPerson);
+      } else {
+        Global.showError("Nenurodytas kontaktinis asmuo");
+      }
+    }
+    if (Data.isTrue(TBL_MAINTENANCE_COMMENTS, commentRow, COL_REPAIRER_SENT)) {
+      if (DataUtils.isId(repairerPerson)) {
+        params.addDataItem(COL_REPAIRER, repairerPerson);
+      } else {
+        Global.showError("Nenurodytas meistras");
+      }
+    }
+    if (!params.isEmpty()) {
       params.addDataItem(COL_COMMENT, commentRow.getId());
 
       BeeKeeper.getRpc().makePostRequest(params, response -> {
-        if (response.hasErrors()) {
-          Global.showError(Arrays.asList(response.getErrors()));
+        if (response.hasMessages()) {
+          Global.showInfo(response.getMessages().stream()
+              .map(ResponseMessage::getMessage).collect(Collectors.toList()));
         }
-
         if (!response.isEmpty()) {
-          for (Map.Entry<String, String> entry : Codec.deserializeHashMap(response
-              .getResponseAsString()).entrySet()) {
-            commentRow.setValue(Data.getColumnIndex(TBL_MAINTENANCE_COMMENTS, entry.getKey()),
-                entry.getValue());
-          }
+          Codec.deserializeHashMap(response.getResponseAsString())
+              .forEach((k, v) -> Data.setValue(TBL_MAINTENANCE_COMMENTS, commentRow, k, v));
 
           RowUpdateEvent.fire(BeeKeeper.getBus(), TBL_MAINTENANCE_COMMENTS, commentRow);
         }

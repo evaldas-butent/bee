@@ -12,7 +12,8 @@
     <Text name="Comment" label="=comment" />
     <Boolean name="ShowCustomer" label="=svcShowCustomer" />
     <DateTime name="Term" label="=svcTerm" />
-    <Boolean name="CustomerSent" label="=svcInform" />
+    <Boolean name="RepairerSent" label="Informuoti meistrą" />
+    <Boolean name="CustomerSent" label="=svcNotifyCustomer" />
     <Text name="EventNote" label="=properties" />
 
     <Relation name="MaintenanceState" relation="MaintenanceStates" label="=svcServiceState" />
@@ -20,6 +21,9 @@
     <Relation name="Item" relation="Items" label="=item" />
     <Numeric name="Price" precision="15" scale="2" label="=salePrice" />
     <Relation name="Currency" relation="Currencies" label="=currency" />
+
+    <Boolean name="RepairerSentEmail" label="=svcSendEmail" />
+    <Boolean name="RepairerSentSms" label="=svcSendSms" />
 
     <Boolean name="SentEmail" label="=svcSendEmail" />
     <Boolean name="SentSms" label="=svcSendSms" />

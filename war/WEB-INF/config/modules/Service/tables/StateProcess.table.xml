@@ -10,6 +10,7 @@
     <Relation name="MaintenanceState" relation="MaintenanceStates" notNull="true" label="=svcServiceState" />
     <Boolean name="Initial" label="=svcInitial" />
     <Boolean name="Finite" label="=svcFinal" />
+    <Boolean name="NotifyRepairer" label="Informuoti meistrą" />
     <Boolean name="NotifyCustomer" label="=svcNotifyCustomer" />
     <Boolean name="ShowCustomer" label="=svcShowCustomer" />
     <Text name="Message" label="=message" />

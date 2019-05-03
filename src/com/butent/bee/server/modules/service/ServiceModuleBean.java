@@ -1934,175 +1934,144 @@ public class ServiceModuleBean implements BeeModule {
   }
 
   private ResponseObject informCustomer(RequestInfo reqInfo) {
-    Long commentId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMMENT));
+    Long commentId = reqInfo.getParameterLong(COL_COMMENT);
 
-    if (DataUtils.isId(commentId)) {
+    SimpleRow commentInfoRow = qs.getRow(new SqlSelect()
+        .addFields(TBL_MAINTENANCE_COMMENTS, COL_SERVICE_MAINTENANCE, COL_COMMENT,
+            COL_PUBLISH_TIME, COL_EVENT_NOTE, COL_TERM, COL_SEND_EMAIL, COL_SEND_SMS,
+            COL_REPAIRER_SEND_EMAIL, COL_REPAIRER_SEND_SMS)
+        .addField(TBL_CONTACTS, COL_EMAIL, COL_CREATOR + COL_EMAIL)
+        .addEmptyLong(COL_CREATOR + MailConstants.COL_ACCOUNT)
+        .addFields(TBL_SERVICE_OBJECTS, COL_MODEL, COL_SERIAL_NO, COL_ARTICLE_NO)
+        .addField(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME, ALS_MANUFACTURER_NAME)
+        .addFields(TBL_SERVICE_MAINTENANCE, COL_DEPARTMENT, COL_EQUIPMENT,
+            COL_MAINTENANCE_DESCRIPTION)
+        .addField(TBL_SERVICE_TREE, COL_SERVICE_CATEGORY_NAME, ALS_CATEGORY_NAME)
+        .addFrom(TBL_MAINTENANCE_COMMENTS)
+        .addFromInner(TBL_SERVICE_MAINTENANCE, sys.joinTables(TBL_SERVICE_MAINTENANCE,
+            TBL_MAINTENANCE_COMMENTS, COL_SERVICE_MAINTENANCE))
+        .addFromInner(TBL_SERVICE_OBJECTS, sys.joinTables(TBL_SERVICE_OBJECTS,
+            TBL_SERVICE_MAINTENANCE, COL_SERVICE_OBJECT))
+        .addFromLeft(TBL_TCD_MANUFACTURERS,
+            sys.joinTables(TBL_TCD_MANUFACTURERS, TBL_SERVICE_OBJECTS, COL_MANUFACTURER))
+        .addFromLeft(VIEW_MAINTENANCE_STATES,
+            sys.joinTables(VIEW_MAINTENANCE_STATES, TBL_SERVICE_MAINTENANCE, COL_STATE))
+        .addFromLeft(TBL_SERVICE_TREE,
+            sys.joinTables(TBL_SERVICE_TREE, TBL_SERVICE_OBJECTS, COL_SERVICE_CATEGORY))
+        .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_SERVICE_MAINTENANCE, COL_CREATOR))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+        .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
+        .setWhere(sys.idEquals(TBL_MAINTENANCE_COMMENTS, commentId)));
 
-      SimpleRow commentInfoRow = qs.getRow(new SqlSelect()
-          .addFields(TBL_MAINTENANCE_COMMENTS, COL_SERVICE_MAINTENANCE, COL_COMMENT,
-              COL_PUBLISH_TIME, COL_EVENT_NOTE, COL_TERM, COL_SEND_EMAIL, COL_SEND_SMS)
-          .addFields(TBL_EMAILS, COL_EMAIL)
-          .addField(COL_CREATOR + TBL_CONTACTS, COL_EMAIL, COL_CREATOR + COL_EMAIL)
-          .addFields(TBL_CONTACTS, COL_MOBILE)
-          .addFields(TBL_PERSONS, COL_FIRST_NAME)
-          .addFields(TBL_SERVICE_OBJECTS, COL_MODEL, COL_SERIAL_NO, COL_ARTICLE_NO)
-          .addField(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME, ALS_MANUFACTURER_NAME)
-          .addEmptyLong(COL_CREATOR + MailConstants.COL_ACCOUNT)
-          .addFields(TBL_SERVICE_MAINTENANCE, COL_DEPARTMENT, COL_EQUIPMENT,
-              COL_MAINTENANCE_DESCRIPTION)
-          .addField(TBL_SERVICE_TREE, COL_SERVICE_CATEGORY_NAME, ALS_CATEGORY_NAME)
-          .addFrom(TBL_MAINTENANCE_COMMENTS)
-          .addFromInner(TBL_SERVICE_MAINTENANCE, sys.joinTables(TBL_SERVICE_MAINTENANCE,
-              TBL_MAINTENANCE_COMMENTS, COL_SERVICE_MAINTENANCE))
-          .addFromInner(TBL_SERVICE_OBJECTS, sys.joinTables(TBL_SERVICE_OBJECTS,
-              TBL_SERVICE_MAINTENANCE, COL_SERVICE_OBJECT))
-          .addFromLeft(TBL_TCD_MANUFACTURERS,
-              sys.joinTables(TBL_TCD_MANUFACTURERS, TBL_SERVICE_OBJECTS, COL_MANUFACTURER))
-          .addFromLeft(TBL_COMPANY_PERSONS,
-              sys.joinTables(TBL_COMPANY_PERSONS, TBL_SERVICE_MAINTENANCE, COL_CONTACT))
-          .addFromLeft(TBL_CONTACTS,
-              sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
-          .addFromLeft(TBL_EMAILS,
-              sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
-          .addFromLeft(TBL_PERSONS,
-              sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
-          .addFromLeft(VIEW_MAINTENANCE_STATES,
-              sys.joinTables(VIEW_MAINTENANCE_STATES, TBL_SERVICE_MAINTENANCE, COL_STATE))
-          .addFromLeft(TBL_SERVICE_TREE,
-              sys.joinTables(TBL_SERVICE_TREE, TBL_SERVICE_OBJECTS, COL_SERVICE_CATEGORY))
-          .addFromLeft(TBL_USERS, COL_CREATOR + TBL_USERS,
-              sys.joinTables(TBL_USERS, COL_CREATOR + TBL_USERS, TBL_SERVICE_MAINTENANCE,
-                  COL_CREATOR))
-          .addFromLeft(TBL_COMPANY_PERSONS, COL_CREATOR + TBL_COMPANY_PERSONS,
-              sys.joinTables(TBL_COMPANY_PERSONS, COL_CREATOR + TBL_COMPANY_PERSONS,
-                  COL_CREATOR + TBL_USERS,
-                  COL_COMPANY_PERSON))
-          .addFromLeft(TBL_CONTACTS, COL_CREATOR + TBL_CONTACTS,
-              sys.joinTables(TBL_CONTACTS, COL_CREATOR + TBL_CONTACTS,
-                  COL_CREATOR + TBL_COMPANY_PERSONS, COL_CONTACT))
-          .setWhere(sys.idEquals(TBL_MAINTENANCE_COMMENTS, commentId)));
+    if (commentInfoRow == null) {
+      return ResponseObject.emptyResponse();
+    }
+    String email = commentInfoRow.getValue(COL_CREATOR + COL_EMAIL);
 
-      if (commentInfoRow != null) {
-        String email = commentInfoRow.getValue(COL_CREATOR + COL_EMAIL);
+    if (!BeeUtils.isEmpty(email)) {
+      SqlSelect selectAccount = new SqlSelect()
+          .addField(MailConstants.TBL_ACCOUNTS, sys.getIdName(MailConstants.TBL_ACCOUNTS),
+              MailConstants.COL_ACCOUNT)
+          .addFrom(MailConstants.TBL_ACCOUNTS)
+          .setWhere(SqlUtils.equals(MailConstants.TBL_ACCOUNTS, COL_ADDRESS, email));
 
-        if (email != null && !email.trim().isEmpty()) {
-          SqlSelect selectAccount = new SqlSelect()
-              .addField(MailConstants.TBL_ACCOUNTS, sys.getIdName(MailConstants.TBL_ACCOUNTS),
-                  MailConstants.COL_ACCOUNT)
-              .addFrom(MailConstants.TBL_ACCOUNTS)
-              .setWhere(SqlUtils.equals(MailConstants.TBL_ACCOUNTS, COL_ADDRESS, email));
+      Long account = qs.getLong(selectAccount);
 
-          Long account = qs.getLong(selectAccount);
-          if (BeeUtils.isPositive(account)) {
-            commentInfoRow
-                .setValue(COL_CREATOR + MailConstants.COL_ACCOUNT, BeeUtils.toString(account));
-          }
-        }
-        ResponseObject result = ResponseObject.emptyResponse();
-
-        boolean isSendEmail = false;
-        boolean isSendSms = false;
-
-        Dictionary dic = usr.getDictionary();
-        DateTimeFormatInfo dtfInfo = usr.getDateTimeFormatInfo();
-
-        if (!BeeUtils.toBoolean(commentInfoRow.getValue(COL_SEND_EMAIL))) {
-          ResponseObject mailResponse = informCustomerWithEmail(dic, dtfInfo, commentInfoRow);
-          isSendEmail = !mailResponse.hasErrors();
-          result.addMessagesFrom(mailResponse);
-        }
-
-        String error = BeeConst.STRING_EMPTY;
-
-        if (!BeeUtils.toBoolean(commentInfoRow.getValue(COL_SEND_SMS))
-            && !BeeUtils.isEmpty(commentInfoRow.getValue(COL_MOBILE))) {
-          String from = BeeConst.STRING_EMPTY;
-
-          if (!BeeUtils.isEmpty(prm.getText(PRM_SMS_REQUEST_CONTACT_INFO_FROM))) {
-            SqlSelect phoneFromSelect = new SqlSelect()
-                .addFrom(TBL_CONTACTS)
-                .addFields(TBL_CONTACTS, COL_MOBILE);
-
-            switch (prm.getText(PRM_SMS_REQUEST_CONTACT_INFO_FROM)) {
-              case AdministrationConstants.VIEW_DEPARTMENTS:
-                Long departmentId = commentInfoRow.getLong(COL_DEPARTMENT);
-
-                if (DataUtils.isId(departmentId)) {
-                  phoneFromSelect.addFromLeft(AdministrationConstants.VIEW_DEPARTMENTS,
-                      sys.joinTables(TBL_CONTACTS, AdministrationConstants.VIEW_DEPARTMENTS,
-                          COL_CONTACT))
-                      .setWhere(sys.idEquals(AdministrationConstants.VIEW_DEPARTMENTS,
-                          commentInfoRow.getLong(COL_DEPARTMENT)));
-                } else {
-                  phoneFromSelect = null;
-                }
-                break;
-
-              case VIEW_COMPANIES:
-                phoneFromSelect.addFromLeft(TBL_COMPANIES,
-                    sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
-                    .addFromLeft(TBL_COMPANY_PERSONS,
-                        sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS, COL_COMPANY))
-                    .setWhere(sys.idEquals(TBL_COMPANY_PERSONS,
-                        usr.getCompanyPerson(usr.getCurrentUserId())));
-                break;
-
-              case VIEW_COMPANY_PERSONS:
-                phoneFromSelect.addFromLeft(TBL_COMPANY_PERSONS,
-                    sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
-                    .setWhere(sys.idEquals(TBL_COMPANY_PERSONS,
-                        usr.getCompanyPerson(usr.getCurrentUserId())));
-                break;
-            }
-
-            if (phoneFromSelect != null) {
-              from = qs.getValue(phoneFromSelect);
-            }
-          } else {
-            from = prm.getText(PRM_SMS_REQUEST_SERVICE_FROM);
-          }
-
-          if (BeeUtils.isEmpty(from)) {
-            error = dic.svcEmptySmsFromError();
-
-          } else {
-            ResponseObject smsResponse = informCustomerWithSms(dic, dtfInfo, commentInfoRow);
-            isSendSms = !smsResponse.hasErrors();
-            result.addMessagesFrom(smsResponse);
-          }
-        }
-
-        Map<String, Value> updatableValues = Maps.newHashMap();
-        updatableValues.put(COL_CUSTOMER_SENT, null);
-
-        if (isSendEmail) {
-          updatableValues.put(COL_SEND_EMAIL, Value.getValue(isSendEmail));
-        }
-
-        if (isSendSms) {
-          updatableValues.put(COL_SEND_SMS, Value.getValue(isSendSms));
-        }
-
-        SqlUpdate updateQuery = new SqlUpdate(TBL_MAINTENANCE_COMMENTS)
-            .setWhere(sys.idEquals(TBL_MAINTENANCE_COMMENTS, commentId));
-        updatableValues.forEach(updateQuery::addConstant);
-
-        qs.updateData(updateQuery);
-
-        result.setResponse(updatableValues);
-
-        if (!BeeUtils.isEmpty(error)) {
-          result.addError(error);
-        }
-        return result;
+      if (BeeUtils.isPositive(account)) {
+        commentInfoRow.setValue(COL_CREATOR + MailConstants.COL_ACCOUNT,
+            BeeUtils.toString(account));
       }
     }
+    ResponseObject result = ResponseObject.emptyResponse();
 
-    return ResponseObject.emptyResponse();
+    Map<String, Value> updatableValues = Maps.newHashMap();
+    updatableValues.put(COL_CUSTOMER_SENT, null);
+    updatableValues.put(COL_REPAIRER_SENT, null);
+
+    updatableValues.putAll(inform(commentInfoRow, reqInfo.getParameterLong(COL_CONTACT), result,
+        COL_SEND_EMAIL, COL_SEND_SMS, "KONTAKTINIS ASMUO:"));
+    updatableValues.putAll(inform(commentInfoRow, reqInfo.getParameterLong(COL_REPAIRER), result,
+        COL_REPAIRER_SEND_EMAIL, COL_REPAIRER_SEND_SMS, "MEISTRAS:"));
+
+    SqlUpdate updateQuery = new SqlUpdate(TBL_MAINTENANCE_COMMENTS)
+        .setWhere(sys.idEquals(TBL_MAINTENANCE_COMMENTS, commentId));
+
+    updatableValues.forEach(updateQuery::addConstant);
+
+    qs.updateData(updateQuery);
+
+    result.setResponse(updatableValues);
+
+    return result;
+  }
+
+  private Map<String, Value> inform(SimpleRow commentInfoRow, Long companyPerson,
+      ResponseObject result, String colSendEmail, String colSendSms, String prefix) {
+
+    Map<String, Value> updatableValues = Maps.newHashMap();
+
+    if (!DataUtils.isId(companyPerson)) {
+      return updatableValues;
+    }
+    SimpleRow row = qs.getRow(new SqlSelect()
+        .addFields(TBL_CONTACTS, COL_MOBILE)
+        .addFields(TBL_EMAILS, COL_EMAIL)
+        .addFrom(TBL_COMPANY_PERSONS)
+        .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
+        .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+        .setWhere(sys.idEquals(TBL_COMPANY_PERSONS, companyPerson)));
+
+    boolean isSendEmail = false;
+    boolean isSendSms = false;
+
+    Dictionary dic = usr.getDictionary();
+    DateTimeFormatInfo dtfInfo = usr.getDateTimeFormatInfo();
+    result.addInfo(prefix);
+
+    if (!commentInfoRow.isTrue(colSendEmail)) {
+      String email = row.getValue(COL_EMAIL);
+
+      if (BeeUtils.isEmpty(email)) {
+        result.addWarning("Nenurodytas email adresas");
+      } else {
+        ResponseObject mailResponse = informCustomerWithEmail(dic, dtfInfo, commentInfoRow, email);
+
+        if (mailResponse.hasErrors()) {
+          result.addMessagesFrom(mailResponse);
+        } else {
+          isSendEmail = true;
+          result.addInfo("Išsiųstas el.laiškas");
+        }
+      }
+    }
+    if (!commentInfoRow.isTrue(colSendSms)) {
+      String mobile = row.getValue(COL_MOBILE);
+
+      if (BeeUtils.isEmpty(mobile)) {
+        result.addWarning("Nenurodytas mobilaus telefono nr.");
+      } else {
+        ResponseObject smsResponse = informCustomerWithSms(dic, dtfInfo, commentInfoRow, mobile);
+
+        if (smsResponse.hasErrors()) {
+          result.addMessagesFrom(smsResponse);
+        } else {
+          isSendSms = true;
+          result.addInfo("Išsiųstas SMS");
+        }
+      }
+    }
+    if (isSendEmail) {
+      updatableValues.put(colSendEmail, Value.getValue(isSendEmail));
+    }
+    if (isSendSms) {
+      updatableValues.put(colSendSms, Value.getValue(isSendSms));
+    }
+    return updatableValues;
   }
 
   private ResponseObject informCustomerWithEmail(Dictionary dic, DateTimeFormatInfo dtfInfo,
-      SimpleRow commentInfoRow) {
+      SimpleRow commentInfoRow, String recipientEmail) {
 
     Long creatorAccount = commentInfoRow.getLong(COL_CREATOR + MailConstants.COL_ACCOUNT);
     Long accountId =
@@ -2111,8 +2080,6 @@ public class ServiceModuleBean implements BeeModule {
     if (!DataUtils.isId(accountId)) {
       return ResponseObject.error("No default account specified");
     }
-
-    String recipientEmail = commentInfoRow.getValue(COL_EMAIL);
 
     if (BeeUtils.isEmpty(recipientEmail)) {
       return ResponseObject.error("No recipient email specified");
@@ -2214,10 +2181,9 @@ public class ServiceModuleBean implements BeeModule {
   }
 
   private ResponseObject informCustomerWithSms(Dictionary dic, DateTimeFormatInfo dtfInfo,
-      SimpleRow commentInfoRow) {
+      SimpleRow commentInfoRow, String recipientPhone) {
 
-    String phone = commentInfoRow.getValue(COL_MOBILE);
-    phone = phone.replaceAll("\\D+", "");
+    String phone = recipientPhone.replaceAll("\\D+", "");
 
     Long maintenanceId = commentInfoRow.getLong(COL_SERVICE_MAINTENANCE);
     String externalLink = prm.getText(PRM_EXTERNAL_MAINTENANCE_URL);

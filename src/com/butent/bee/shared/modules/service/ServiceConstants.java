@@ -107,6 +107,7 @@ public final class ServiceConstants {
   public static final String COL_ARTICLE_NO = "ArticleNo";
   public static final String COL_CREATOR = "Creator";
   public static final String COL_COMMENT = "Comment";
+  public static final String COL_REPAIRER_SENT = "RepairerSent";
   public static final String COL_CUSTOMER_SENT = "CustomerSent";
   public static final String COL_DAYS_ACTIVE = "DaysActive";
   public static final String COL_ENDING_DATE = "EndingDate";
@@ -119,12 +120,15 @@ public final class ServiceConstants {
   public static final String COL_TYPE = "Type";
   public static final String COL_MAINTENANCE_STATE = "MaintenanceState";
   public static final String COL_MESSAGE = "Message";
+  public static final String COL_NOTIFY_REPAIRER = "NotifyRepairer";
   public static final String COL_NOTIFY_CUSTOMER = "NotifyCustomer";
   public static final String COL_PROHIBIT_EDIT = "ProhibitEdit";
   public static final String COL_REPAIRER = "Repairer";
   public static final String COL_SHOW_CUSTOMER = "ShowCustomer";
   public static final String COL_SEND_EMAIL = "SentEmail";
   public static final String COL_SEND_SMS = "SentSms";
+  public static final String COL_REPAIRER_SEND_EMAIL = "RepairerSentEmail";
+  public static final String COL_REPAIRER_SEND_SMS = "RepairerSentSms";
   public static final String COL_SERVICE_CATEGORY = "Category";
   public static final String COL_SERVICE_ADDRESS = "Address";
   public static final String COL_SERVICE_CUSTOMER = "Customer";
