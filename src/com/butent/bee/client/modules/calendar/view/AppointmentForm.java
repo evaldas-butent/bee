@@ -310,13 +310,17 @@ public class AppointmentForm extends AbstractFormInterceptor implements ClickHan
       Queries.getRow(VIEW_TRADE_ACTS, newTradeActID, this::refreshAppointmentBasedOnAct);
     }
 
-    Data.setValue(VIEW_APPOINTMENTS, getActiveRow(), CalendarConstants.COL_SUMMARY, CalendarUtils.getSummary(serviceRow));
-
     getFormView().refreshBySource(COL_COST_AMOUNT);
     getFormView().refreshBySource(COL_DATE_FROM);
     getFormView().refreshBySource(COL_TRADE_ACT);
-    getFormView().refreshBySource(CalendarConstants.COL_SUMMARY);
     updateSupplier(serviceRow);
+
+    if (!Objects.equals(serviceRow.getId(), Data.getLong(VIEW_APPOINTMENTS, getActiveRow(), COL_TRADE_ACT_SERVICE))
+      && !Objects.equals(getStringValue(CalendarConstants.COL_SUMMARY), CalendarUtils.getSummary(serviceRow))) {
+
+      Data.setValue(VIEW_APPOINTMENTS, getActiveRow(), CalendarConstants.COL_SUMMARY, CalendarUtils.getSummary(serviceRow));
+      getFormView().refreshBySource(CalendarConstants.COL_SUMMARY);
+    }
 
     } else {
       clearTradeAct(getActiveRow());
