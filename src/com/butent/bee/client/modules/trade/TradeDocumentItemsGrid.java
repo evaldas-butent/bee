@@ -30,12 +30,14 @@ import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Latch;
@@ -67,6 +69,7 @@ import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
+import com.butent.bee.shared.modules.trade.TradeVatMode;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -388,6 +391,53 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
 
     super.onDataReceived(event);
+  }
+
+  @Override
+  public void onEditStart(EditStartEvent event) {
+    if (Objects.equals(event.getColumnId(), VAR_TOTAL)) {
+      event.consume();
+      IsRow row = event.getRowValue();
+
+      InputNumber input = new InputNumber();
+      input.setValue(tdsSupplier.get().getItemTotal(row.getId()));
+
+      Global.inputWidget(Localized.dictionary().amount(), input, () -> {
+        Double amount = input.getNumber();
+        double price = 0;
+
+        if (BeeUtils.isPositive(amount)) {
+          if (tdsSupplier.get().getVatMode() == TradeVatMode.PLUS) {
+            Pair<Double, Boolean> vatInfo = tdsSupplier.get().getVatInfo(row.getId());
+            Double vat = vatInfo.getA();
+
+            if (BeeUtils.isPositive(vat)) {
+              if (BeeUtils.unbox(vatInfo.getB())) {
+                amount = amount / (1 + (vat / 100.0));
+              } else {
+                amount -= vat;
+              }
+            }
+          }
+          Pair<Double, Boolean> discountInfo = tdsSupplier.get().getDiscountInfo(row.getId());
+          Double discount = discountInfo.getA();
+
+          if (BeeUtils.isPositive(discount)) {
+            if (BeeUtils.unbox(discountInfo.getB())) {
+              amount = amount / (1 - (discount / 100.0));
+            } else {
+              amount += discount;
+            }
+          }
+          price = BeeUtils.round(amount / tdsSupplier.get().getQuantity(row.getId()), 4);
+        }
+        Queries.updateCellAndFire(getViewName(), row.getId(), row.getVersion(),
+            COL_TRADE_ITEM_PRICE, BeeUtils.toString(tdsSupplier.get().getPrice(row.getId())),
+            BeeUtils.toString(price));
+      });
+      return;
+    }
+    super.onEditStart(event);
   }
 
   @Override
