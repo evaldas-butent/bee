@@ -2,18 +2,18 @@ package com.butent.bee.client.output;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_DEPARTMENT;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_COMPANY_TYPE_NAME;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.finance.Dimensions.*;
 import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
-import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.COL_COMMENT;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.COL_EVENT_NOTE;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TRADE_ACT;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -890,7 +890,11 @@ public enum Report implements HasWidgetSupplier {
           new ReportTextItem(CalendarConstants.COL_ATTENDEE_TYPE, "Resurso tipas"),
           new ReportTextItem(COL_TRADE_ACT, "Aktas"),
           new ReportTextItem(COL_SERVICE_OBJECT, "Įrenginys"),
-          new ReportTextItem(COL_SERVICE_MAINTENANCE, "Remontas")
+          new ReportTextItem(COL_SERVICE_MAINTENANCE, "Remontas"),
+          new ReportTextItem(COL_ITEM, "Paslauga"),
+          new ReportTextItem(COL_DEFECT_SUPPLIER, "Tiekėjas"),
+          new ReportDateItem(COL_DATE_FROM, "Data nuo"),
+          new ReportNumericItem(COL_COST_AMOUNT, "Sav.suma").setPrecision(2)
       );
     }
 

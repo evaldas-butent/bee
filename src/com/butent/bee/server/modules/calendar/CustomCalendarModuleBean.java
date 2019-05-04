@@ -75,6 +75,10 @@ public class CustomCalendarModuleBean {
             "' '",
             SqlUtils.nvl(SqlUtils.field(TBL_COMPANY_OBJECTS, COL_COMPANY_OBJECT_ADDRESS),
                 "''")), COL_SERVICE_MAINTENANCE)
+        .addExpr(SqlUtils.concat(SqlUtils.field(TBL_TRADE_ACT_SERVICES, COL_ITEM), "' '",
+            SqlUtils.field(TBL_ITEMS, COL_ITEM_NAME)), COL_ITEM)
+        .addFields(TBL_TRADE_ACT_SERVICES, COL_DATE_FROM, COL_COST_AMOUNT)
+        .addField(TBL_COMPANIES + COL_DEFECT_SUPPLIER, COL_COMPANY_NAME, COL_DEFECT_SUPPLIER)
         .addFrom(TBL_APPOINTMENTS)
         .addFromInner(TBL_APPOINTMENT_TYPES,
             sys.joinTables(TBL_APPOINTMENT_TYPES, TBL_APPOINTMENTS, COL_APPOINTMENT_TYPE))
@@ -103,6 +107,12 @@ public class CustomCalendarModuleBean {
         .addFromLeft(TBL_SERVICE_OBJECTS, "SO",
             sys.joinTables(TBL_SERVICE_OBJECTS, "SO", TBL_SERVICE_MAINTENANCE, COL_SERVICE_OBJECT))
         .addFromLeft(TBL_COMPANY_OBJECTS, sys.joinTables(TBL_COMPANY_OBJECTS, "SO", COL_OBJECT))
+        .addFromLeft(TBL_TRADE_ACT_SERVICES,
+            sys.joinTables(TBL_APPOINTMENTS, TBL_TRADE_ACT_SERVICES, COL_APPOINTMENT))
+        .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_SERVICES, COL_ITEM))
+        .addFromLeft(TBL_COMPANIES, TBL_COMPANIES + COL_DEFECT_SUPPLIER,
+            sys.joinTables(TBL_COMPANIES, TBL_COMPANIES + COL_DEFECT_SUPPLIER,
+                TBL_TRADE_ACT_SERVICES, COL_DEFECT_SUPPLIER))
         .setWhere(clause)
     );
 
@@ -110,7 +120,8 @@ public class CustomCalendarModuleBean {
         Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)),
         report.getCondition(tmp, CalendarConstants.COL_CREATOR),
         report.getCondition(tmp, COL_TRADE_ACT),
-        report.getCondition(tmp, COL_SERVICE_MAINTENANCE)
+        report.getCondition(tmp, COL_SERVICE_MAINTENANCE),
+        report.getCondition(tmp, COL_ITEM)
     );
   }
 }

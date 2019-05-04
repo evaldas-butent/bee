@@ -16,6 +16,9 @@
         <SimpleColumn name="LastName" />
         <SimpleColumn name="DateOfBirth" />
       </SimpleJoin>
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleColumn name="Mobile" />
+      </SimpleJoin>
       <SimpleJoin name="Position" joinType="LEFT">
         <SimpleColumn name="Name" alias="PositionName" />
       </SimpleJoin>
