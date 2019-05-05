@@ -70,6 +70,8 @@ public class TradeActDataEventHandler implements DataEventHandler {
           .addField(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO, COL_STOCK_WAREHOUSE)
           .addSum(tbl, COL_TRADE_ITEM_QUANTITY)
           .addFrom(tbl)
+          .addFromInner(TBL_ITEMS, SqlUtils.and(sys.joinTables(TBL_ITEMS, tbl, COL_ITEM),
+              SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE)))
           .addFromInner(TBL_TRADE_ACTS, sys.joinTables(TBL_TRADE_ACTS, tbl, COL_TRADE_ACT))
           .addFromInner(TBL_TRADE_OPERATIONS,
               sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION))
@@ -89,6 +91,8 @@ public class TradeActDataEventHandler implements DataEventHandler {
           .addSum(SqlUtils.multiply(SqlUtils.field(tbl, COL_TRADE_ITEM_QUANTITY),
               SqlUtils.constant(-1)), COL_TRADE_ITEM_QUANTITY)
           .addFrom(tbl)
+          .addFromInner(TBL_ITEMS, SqlUtils.and(sys.joinTables(TBL_ITEMS, tbl, COL_ITEM),
+              SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE)))
           .addFromInner(TBL_TRADE_ACTS, sys.joinTables(TBL_TRADE_ACTS, tbl, COL_TRADE_ACT))
           .addFromInner(TBL_TRADE_OPERATIONS,
               sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION))
