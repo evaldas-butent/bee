@@ -3856,14 +3856,17 @@ public class TradeActBean implements HasTimerService {
     if (actsForApprove.isEmpty()) {
       return;
     }
+    Set<Long> actsWithItems = qs.getLongSet(new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT)
+        .addFrom(TBL_TRADE_ACT_ITEMS)
+        .setWhere(SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, actsForApprove)));
 
     SqlUpdate upd = new SqlUpdate(TBL_TRADE_ACTS)
         .addConstant(COL_TA_STATUS, apprId)
-        .setWhere(
-            SqlUtils.and(
-                SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_STATUS, retId),
-                SqlUtils.inList(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS), actsForApprove)
-            ));
+        .setWhere(SqlUtils.and(sys.idInList(TBL_TRADE_ACTS, actsForApprove),
+            SqlUtils.or(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_STATUS, retId),
+                BeeUtils.isEmpty(actsWithItems) ? SqlUtils.sqlTrue()
+                    : SqlUtils.not(sys.idInList(TBL_TRADE_ACTS, actsWithItems)))));
 
     qs.updateData(upd);
   }
