@@ -5,6 +5,7 @@ import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.COL_NOTE;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -77,7 +78,7 @@ public class CustomCalendarModuleBean {
                 "''")), COL_SERVICE_MAINTENANCE)
         .addExpr(SqlUtils.concat(SqlUtils.field(TBL_TRADE_ACT_SERVICES, COL_ITEM), "' '",
             SqlUtils.field(TBL_ITEMS, COL_ITEM_NAME)), COL_ITEM)
-        .addFields(TBL_TRADE_ACT_SERVICES, COL_DATE_FROM, COL_COST_AMOUNT)
+        .addFields(TBL_TRADE_ACT_SERVICES, COL_DATE_FROM, COL_COST_AMOUNT, COL_NOTE)
         .addField(TBL_COMPANIES + COL_DEFECT_SUPPLIER, COL_COMPANY_NAME, COL_DEFECT_SUPPLIER)
         .addFrom(TBL_APPOINTMENTS)
         .addFromInner(TBL_APPOINTMENT_TYPES,
