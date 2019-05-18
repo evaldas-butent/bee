@@ -166,7 +166,7 @@ public class DocumentsReminder extends DialogBox {
   private void createDateTimeWidget() {
     DateTime dataValue = reminderDataRow == null
         ? null : reminderDataRow.getDateTime(Data.getColumnIndex(VIEW_DOCUMENT_REMINDERS,
-        COL_DOCUMENT_REMINDER_DATE));
+            COL_REMINDER_DATE));
 
     dateInput = new InputDate();
     dateInput.addStyleName(STYLE_DIALOG_COMPONENT);
@@ -202,9 +202,9 @@ public class DocumentsReminder extends DialogBox {
         }
 
         final List<BeeColumn> columns = Data.getColumns(VIEW_DOCUMENT_REMINDERS,
-            Lists.newArrayList(COL_DOCUMENT_REMINDER_ISTASK, COL_DOCUMENT_REMINDER_USER,
+            Lists.newArrayList(COL_DOCUMENT_REMINDER_ISTASK, COL_USER_REMINDER_USER,
                 COL_DOCUMENT_REMINDER_TASK_TEMPLATE, COL_DOCUMENT, COL_DOCUMENT_REMINDER_EXECUTORS,
-                COL_DOCUMENT_REMINDER_DATE, COL_DOCUMENT_REMINDER_ACTIVE,
+                    COL_REMINDER_DATE, COL_USER_REMINDER_ACTIVE,
                 COL_DOCUMENT_REMINDER_USER_DATE));
 
         List<String> values = Lists.newArrayList(
@@ -265,7 +265,7 @@ public class DocumentsReminder extends DialogBox {
   private Button createSuspendReminderButton() {
     final Button suspendReminderButton = new Button(Localized.dictionary().userReminderSuspend(),
         event -> Queries.update(VIEW_DOCUMENT_REMINDERS, Filter.equals(COL_DOCUMENT, documentId),
-            COL_DOCUMENT_REMINDER_ACTIVE, BeeConst.STRING_FALSE, result -> {
+                COL_USER_REMINDER_ACTIVE, BeeConst.STRING_FALSE, result -> {
               close();
               BeeKeeper.getScreen().notifyInfo(Localized.dictionary().userReminderDisabled());
             }));
@@ -288,9 +288,9 @@ public class DocumentsReminder extends DialogBox {
             }
 
             final List<String> columns = Lists.newArrayList(COL_DOCUMENT_REMINDER_ISTASK,
-                COL_DOCUMENT_REMINDER_USER, COL_DOCUMENT_REMINDER_TASK_TEMPLATE,
-                COL_DOCUMENT_REMINDER_EXECUTORS, COL_DOCUMENT_REMINDER_DATE,
-                COL_DOCUMENT_REMINDER_ACTIVE, COL_DOCUMENT_REMINDER_USER_DATE);
+                    COL_USER_REMINDER_USER, COL_DOCUMENT_REMINDER_TASK_TEMPLATE,
+                COL_DOCUMENT_REMINDER_EXECUTORS, COL_REMINDER_DATE,
+                    COL_USER_REMINDER_ACTIVE, COL_DOCUMENT_REMINDER_USER_DATE);
 
             List<String> values = Lists.newArrayList(
                 radioTaskTmpl.isChecked() ? BeeConst.STRING_TRUE : null, mailSelector.getValue(),
@@ -388,7 +388,7 @@ public class DocumentsReminder extends DialogBox {
     mainPanel.add(infoPanel);
 
     calculateReminderTime(reminderDataRow != null
-        ? Data.getDateTime(VIEW_DOCUMENT_REMINDERS, reminderDataRow, COL_DOCUMENT_REMINDER_DATE)
+        ? Data.getDateTime(VIEW_DOCUMENT_REMINDERS, reminderDataRow, COL_REMINDER_DATE)
         : null);
 
     mailLabel = createTextLabelWidget(Localized.dictionary().recipient(), STYLE_DIALOG_TEXT);
@@ -431,7 +431,7 @@ public class DocumentsReminder extends DialogBox {
 
   private static boolean isActive(BeeRow dataRow) {
     return dataRow != null && BeeUtils.toBoolean(dataRow
-        .getString(Data.getColumnIndex(VIEW_DOCUMENT_REMINDERS, COL_DOCUMENT_REMINDER_ACTIVE)));
+        .getString(Data.getColumnIndex(VIEW_DOCUMENT_REMINDERS, COL_USER_REMINDER_ACTIVE)));
   }
 
   private void setTime() {
@@ -480,7 +480,7 @@ public class DocumentsReminder extends DialogBox {
 
       if (reminderDataRow != null) {
         Long userId = Data.getLong(VIEW_DOCUMENT_REMINDERS, reminderDataRow,
-            COL_DOCUMENT_REMINDER_USER);
+                COL_USER_REMINDER_USER);
         if (DataUtils.isId(userId)) {
           mailSelector.setValue(userId, true);
         }

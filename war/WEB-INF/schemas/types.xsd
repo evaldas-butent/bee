@@ -656,6 +656,7 @@
       <xs:enumeration value="TradeActNames" />
       <xs:enumeration value="TradeActs" />
       <xs:enumeration value="TradeActsAndItems" />
+      <xs:enumeration value="TradeActReminders"/>
       <xs:enumeration value="TradeActServices" />
       <xs:enumeration value="TradeActTemplates" />
       <xs:enumeration value="TradeActTmplItems" />

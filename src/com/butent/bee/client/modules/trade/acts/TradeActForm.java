@@ -95,6 +95,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   private static final String STYLE_NO_RPR_ACTS = STYLE_PREFIX + "no-rpr";
 
   private final Collection<HandlerRegistration> dataHandlerRegistry = new ArrayList<>();
+  private final TradeActReminder actReminder = new TradeActReminder();
 
   private TradeActKind lastKind;
 
@@ -257,6 +258,12 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
     HeaderView header = getHeaderView(form);
     header.clearCommandPanel();
+
+    header.addCommandItem(actReminder.getDialogAction());
+
+    actReminder.setTradeActId(row.getId());
+    actReminder.getDialogAction().setEnabled(false);
+    actReminder.loadData(r -> actReminder.getDialogAction().setEnabled(true));
 
     if (!DataUtils.isNewRow(row)) {
       commandCompose =

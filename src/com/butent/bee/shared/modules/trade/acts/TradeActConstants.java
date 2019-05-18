@@ -51,6 +51,8 @@ public final class TradeActConstants {
 
   public static final String TBL_TRADE_ACT_INVOICES = "TradeActInvoices";
 
+  public static final String TIMER_REMIND_TRADE_ACT = "timer_remind_trade_act_";
+
   public static final String VIEW_TRADE_ACTS = "TradeActs";
   public static final String VIEW_TRADE_ACT_FILES = "TradeActFiles";
   public static final String VIEW_TRADE_ACT_ITEMS = "TradeActItems";
@@ -62,6 +64,7 @@ public final class TradeActConstants {
   public static final String VIEW_TRADE_ACT_TMPL_SERVICES = "TradeActTmplServices";
 
   public static final String VIEW_TRADE_ACT_INVOICES = "TradeActInvoices";
+  public static final String VIEW_TRADE_ACT_REMINDERS = "TradeActReminders";
   public static final String VIEW_INVOICE_TRADE_ACTS = "InvoiceTradeActs";
 
   public static final String COL_TRADE_ACT = "TradeAct";

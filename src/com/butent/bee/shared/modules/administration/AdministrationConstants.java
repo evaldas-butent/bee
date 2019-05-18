@@ -333,6 +333,7 @@ public final class AdministrationConstants {
   public static final String COL_REMINDER_MODULE = "Module";
   public static final String COL_REMINDER_DATA_FIELD = "ReminderDateField";
   public static final String COL_REMINDER_DATA_INDICATOR = "ReminderDateIndicator";
+  public static final String COL_REMINDER_DATE = "ReminderDate";
 
   public static final String COL_COLOR = "Color";
   public static final String COL_COLOR_NAME = "Name";
