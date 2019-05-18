@@ -1,5 +1,9 @@
 package com.butent.bee.server.modules.trade;
 
+import com.butent.bee.shared.modules.trade.acts.TradeActKind;
+import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.google.common.eventbus.AllowConcurrentEvents;
@@ -144,16 +148,36 @@ public class TradeActDataEventHandler implements DataEventHandler {
         dateClause = SqlUtils.and(dateClause,
             SqlUtils.lessEqual(TBL_SALES, COL_TRADE_DATE, end));
       }
-      return SqlUtils.not(SqlUtils.in(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS),
-          new SqlSelect().setDistinctMode(true)
-              .addFields(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT)
-              .addFrom(TBL_TRADE_ACT_INVOICES)
-              .addFromInner(TBL_TRADE_ACT_SERVICES, sys.joinTables(TBL_TRADE_ACT_SERVICES,
-                  TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
-              .addFromInner(TBL_SALE_ITEMS, sys.joinTables(TBL_SALE_ITEMS, TBL_TRADE_ACT_INVOICES,
-                  COL_TA_INVOICE_ITEM))
-              .addFromInner(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
-              .setWhere(dateClause)));
+
+      IsCondition isCondition1 = /*SqlUtils.not(*/SqlUtils.in(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS),
+              new SqlSelect().setDistinctMode(true)
+                      .addFields(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT)
+                      .addFrom(TBL_TRADE_ACT_INVOICES)
+                      .addFromInner(TBL_TRADE_ACT_SERVICES, sys.joinTables(TBL_TRADE_ACT_SERVICES,
+                              TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
+                      .addFromInner(TBL_SALE_ITEMS, sys.joinTables(TBL_SALE_ITEMS, TBL_TRADE_ACT_INVOICES,
+                              COL_TA_INVOICE_ITEM))
+                      .addFromInner(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+                      .setWhere(dateClause));
+
+      IsCondition isCondition2 = /*SqlUtils.not(*/SqlUtils.in(
+              TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS),
+              new SqlSelect().setDistinctMode(true)
+              .addFields("RentPActs", sys.getIdName(TBL_TRADE_ACTS))
+                      .addFrom(TBL_TRADE_ACT_INVOICES)
+                      .addFromInner(TBL_TRADE_ACT_SERVICES, sys.joinTables(TBL_TRADE_ACT_SERVICES,
+                              TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
+                      .addFromInner(TBL_TRADE_ACTS,
+                              sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT))
+                      .addFromInner(TBL_TRADE_ACTS, "RentPActs",
+                              SqlUtils.join("RentPActs", sys.getIdName(TBL_TRADE_ACTS), TBL_TRADE_ACTS, COL_TA_RENT_PROJECT))
+                      .addFromInner(TBL_SALE_ITEMS, sys.joinTables(TBL_SALE_ITEMS, TBL_TRADE_ACT_INVOICES,
+                              COL_TA_INVOICE_ITEM))
+                      .addFromInner(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+              .setWhere(dateClause)
+      );
+
+      return SqlUtils.not(SqlUtils.or(isCondition1, isCondition2));
     });
 
     BeeView.registerConditionProvider(TBL_TRADE_ACT_ITEMS, (view, args) -> {
@@ -252,8 +276,49 @@ public class TradeActDataEventHandler implements DataEventHandler {
           .setWhere(SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, rowSet.getRowIds()))
           .addGroup(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT));
 
-      rowSet.forEach(beeRow -> beeRow.setProperty(LAST_INVOICE_DATE,
-          rs.getValueByKey(COL_TRADE_ACT, BeeUtils.toString(beeRow.getId()), COL_TRADE_DATE)));
+      SimpleRowSet rs1 = qs.getData(new SqlSelect()
+              .addField("RentPActs", sys.getIdName(TBL_TRADE_ACTS), COL_TA_RENT_PROJECT)
+              .addMax(TBL_SALES, COL_TRADE_DATE)
+              .addFrom(TBL_TRADE_ACT_INVOICES)
+              .addFromInner(TBL_TRADE_ACT_SERVICES, sys.joinTables(TBL_TRADE_ACT_SERVICES,
+                      TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
+              .addFromInner(TBL_TRADE_ACTS,
+                      sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT))
+              .addFromInner(TBL_TRADE_ACTS, "RentPActs",
+                      SqlUtils.join("RentPActs", sys.getIdName(TBL_TRADE_ACTS), TBL_TRADE_ACTS, COL_TA_RENT_PROJECT))
+              .addFromInner(TBL_SALE_ITEMS, sys.joinTables(TBL_SALE_ITEMS, TBL_TRADE_ACT_INVOICES,
+                      COL_TA_INVOICE_ITEM))
+              .addFromInner(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+              .setWhere(
+                      SqlUtils.or(
+                              SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, rowSet.getRowIds()),
+                              SqlUtils.inList("RentPActs", sys.getIdName(TBL_TRADE_ACTS), rowSet.getRowIds())
+                      )
+              )
+              .addGroup("RentPActs", sys.getIdName(TBL_TRADE_ACTS)));
+
+      rowSet.forEach(beeRow -> {
+        if (TradeActKind.RENT_PROJECT.ordinal() == beeRow.getInteger(rowSet.getColumnIndex(COL_TA_KIND))) {
+          DateTime dt = TimeUtils.toDateTimeOrNull(rs.getValueByKey(COL_TRADE_ACT,
+                  BeeUtils.toString(beeRow.getId()), COL_TRADE_DATE));
+          DateTime dt1 = TimeUtils.toDateTimeOrNull(rs1.getValueByKey(COL_TA_RENT_PROJECT,
+                  BeeUtils.toString(beeRow.getId()),COL_TRADE_DATE));
+
+          DateTime max = BeeUtils.max(dt, dt1);
+
+          if (max == dt) {
+            beeRow.setProperty(LAST_INVOICE_DATE,
+                    rs.getValueByKey(COL_TRADE_ACT, BeeUtils.toString(beeRow.getId()), COL_TRADE_DATE));
+          } else{
+            beeRow.setProperty(LAST_INVOICE_DATE,
+                    rs1.getValueByKey(COL_TA_RENT_PROJECT, BeeUtils.toString(beeRow.getId()), COL_TRADE_DATE));
+          }
+
+        } else {
+          beeRow.setProperty(LAST_INVOICE_DATE,
+                  rs.getValueByKey(COL_TRADE_ACT, BeeUtils.toString(beeRow.getId()), COL_TRADE_DATE));
+        }
+      });
 
       SimpleRowSet ret = qs.getData(new SqlSelect()
           .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT)
