@@ -44,8 +44,8 @@
       <footer aggregate="sum"/>
     </CalcColumn>
 
-    <RelColumn name="Supplier" newRowEnabled="false" caching="none" />
-    <DataColumn name="CostAmount" />
+    <RelColumn name="Supplier" newRowEnabled="false" caching="none" readOnly="true" />
+    <DataColumn name="CostAmount" readOnly="true"/>
     <DataColumn name="ItemValue" readOnly="true"/>
   </g:columns>
   <xi:include href="columns/TradeActVat.columns.xml" />

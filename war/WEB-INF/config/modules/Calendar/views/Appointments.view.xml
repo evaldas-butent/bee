@@ -152,18 +152,22 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <ExternalJoin name="Appointment" joinType="LEFT" source="TradeActServices">
-      <IdColumn name="TradeActService" />
-      <SimpleColumn name="Supplier" />
-      <SimpleJoin joinType="LEFT" name="Supplier">
-        <SimpleColumn name="Name" alias="SupplierName" />
-      </SimpleJoin>
-      <SimpleColumn name="CostAmount" />
-      <SimpleColumn name="DateFrom" />
+    <SimpleColumn name="TradeActService" />
+    <SimpleJoin name="TradeActService" joinType="LEFT">
       <SimpleJoin name="Item" joinType="LEFT">
         <SimpleColumn name="Name" alias="ItemName" />
+        <SimpleColumn name="Article" />
       </SimpleJoin>
-    </ExternalJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Supplier" />
+    <SimpleJoin name="Supplier" joinType="LEFT">
+      <SimpleColumn name="Name" alias="SupplierName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="CostAmount" />
+
+    <SimpleColumn name="DateFrom" />
 
     <SimpleColumn name="ServiceObject" />
     <SimpleJoin name="ServiceObject" joinType="LEFT">

@@ -45,9 +45,8 @@
           <FaLabel name="NewActServiceLabel" style="&absolute; left: 330px; top: 155px;" class = "bee-Relations-newRel"
                    char="plus_circle"/>
 
-          <UnboundSelector name="TradeActService" style="&absolute; left: 80px; top: 150px; width: 240px;"
-                           renderColumns="ActServiceID ItemName" choiceColumns="ActServiceID ItemName"
-                           viewName="TradeActServices"/>
+          <DataSelector source="TradeActService" style="&absolute; left: 80px; top: 150px; width: 240px;"
+                           renderColumns="TradeActService ItemName" choiceColumns="ActServiceID ItemName" />
 
           <Label for="ServiceObject" style="&absolute; left: 0px; top: 190px; width: 76px;" />
 
@@ -59,7 +58,7 @@
                         style="&absolute; left: 80px; top: 230px; width: 240px;" />
 
           <Label for="Supplier" style="&absolute; left: 360px; top: 144px; width: 76px;" />
-          <UnboundSelector name="Suppliers" viewName="Companies" renderColumns="Name" choiceColumns="Name" newRowEnabled="false"
+          <DataSelector source="Supplier" renderColumns="SupplierName" choiceColumns="Name" newRowEnabled="false"
                            style="&absolute; left: 360px; top: 160px; width: 235px;" />
 
           <Label for="CostAmount" style="&absolute; left: 598px; top: 145px; width: 76px;" />

@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.trade.acts;
 
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.*;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
@@ -23,6 +24,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_APPOINTMENT;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_VISIBILITY;
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENTS;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_SERVICE_OBJECT;
@@ -440,9 +442,45 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     } else if (BeeUtils.same(COL_APPOINTMENT, column.getId())) {
 
       if (!BeeUtils.isEmpty(newValue)) {
-        Long tradeAct = Data.getLong(VIEW_TRADE_ACT_SERVICES, getActiveRow(), COL_TRADE_ACT);
-        Queries.update(VIEW_APPOINTMENTS, BeeUtils.toLong(newValue), COL_TRADE_ACT, new LongValue(tradeAct),
-          r -> Data.refreshLocal(VIEW_APPOINTMENTS));
+
+        Map<String, String> map = new HashMap<>();
+        map.put(COL_TRADE_ACT_SERVICE, BeeUtils.toString(getActiveRowId()));
+        map.put(COL_DATE_FROM, Data.getString(VIEW_TRADE_ACT_SERVICES, getActiveRow(), COL_DATE_FROM));
+        map.put(COL_TRADE_ACT, Data.getString(VIEW_TRADE_ACT_SERVICES, getActiveRow(), COL_TRADE_ACT));
+
+        Runnable runQuery = () -> Queries.update(VIEW_APPOINTMENTS, Filter.compareId(BeeUtils.toLong(newValue)),
+          new ArrayList<>(map.keySet()), new ArrayList<>(map.values()), count -> Data.refreshLocal(VIEW_APPOINTMENTS));
+
+        Queries.getRow(VIEW_APPOINTMENTS, BeeUtils.toLong(newValue), appointment -> {
+          String dateFromSvc = map.get(COL_DATE_FROM);
+          String dateFromApp = Data.getString(VIEW_APPOINTMENTS, appointment, COL_DATE_FROM);
+
+          if (!Objects.equals(dateFromApp, dateFromSvc) && dateFromApp != null && dateFromSvc != null) {
+            Global.confirm("Įrašas jau egzistuoja. Bus pakeistas nauju.", runQuery::run);
+          } else {
+            map.remove(COL_DATE_FROM);
+            runQuery.run();
+          }
+        });
+      } else if (BeeUtils.isEmpty(newValue) && !BeeUtils.isEmpty(oldValue)){
+
+        Queries.update(VIEW_APPOINTMENTS, Filter.compareId(BeeUtils.toLong(oldValue)), COL_TRADE_ACT_SERVICE,
+          LongValue.getNullValue(), r -> {
+
+            Data.refreshLocal(VIEW_APPOINTMENTS);
+
+            Queries.update(VIEW_TRADE_ACT_SERVICES, Filter.compareId(getActiveRowId()),
+              Arrays.asList(COL_TRADE_SUPPLIER, COL_COST_AMOUNT), Arrays.asList(BeeConst.STRING_EMPTY,
+                BeeConst.STRING_EMPTY), row -> Data.refreshLocal(VIEW_TRADE_ACT_SERVICES));
+          });
+      }
+
+    } else if (BeeUtils.same(column.getId(), COL_DATE_FROM)) {
+
+      Long appointmentID = Data.getLong(VIEW_TRADE_ACT_SERVICES, getActiveRow(), COL_APPOINTMENT);
+      if (DataUtils.isId(appointmentID)) {
+        Queries.update(VIEW_APPOINTMENTS, Filter.compareId(appointmentID), column.getId(), newValue,
+          resultRow -> Data.refreshLocal(VIEW_APPOINTMENTS));
       }
     }
   }
@@ -884,7 +922,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
         IsRow tradeAct = tradeActForm.getActiveRow();
         IsRow serviceRow = getActiveRow();
 
-        CalendarUtils.setTradeActService(appointment, serviceRow);
+        CalendarUtils.setTradeActServiceValues(appointment, serviceRow);
         CalendarUtils.setTradeAct(tradeAct, appointment);
         CalendarUtils.setCompany(tradeAct, appointment);
         CalendarUtils.setCompanyPerson(tradeAct, appointment);
@@ -892,7 +930,9 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
 
         Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, appointment, COL_ITEM_DESCRIPTION,
           CalendarUtils.getDescription(tradeAct));
-        Data.setValue(VIEW_APPOINTMENTS, appointment, CalendarConstants.COL_SUMMARY, CalendarUtils.getSummary(serviceRow));
+        Data.setValue(VIEW_APPOINTMENTS, appointment, CalendarConstants.COL_SUMMARY,
+          CalendarUtils.getSummary(serviceRow));
+        Data.setValue(VIEW_APPOINTMENTS, appointment, COL_VISIBILITY, 2);
       }
     };
 

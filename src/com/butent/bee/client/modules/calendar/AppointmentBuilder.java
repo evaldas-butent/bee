@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.calendar;
 
-import com.butent.bee.client.composite.UnboundSelector;
+import com.butent.bee.client.dialog.*;
+import com.butent.bee.client.view.edit.EditableWidget;
+import com.butent.bee.shared.data.*;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.google.common.collect.HashMultimap;
@@ -27,12 +29,6 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.DecisionCallback;
-import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dialog.DialogConstants;
-import com.butent.bee.client.dialog.Icon;
-import com.butent.bee.client.dialog.InputBoxes;
-import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.shared.i18n.DateTimeFormat;
@@ -60,11 +56,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
@@ -82,12 +73,7 @@ import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handler {
 
@@ -402,6 +388,19 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
   }
 
   @Override
+  public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
+    if (BeeUtils.same(editableWidget.getColumnId(), TradeConstants.COL_TRADE_SUPPLIER)) {
+      ((DataSelector) widget).addSelectorHandler(event -> {
+        if (event.isChanged()) {
+          disableWidgetEditing(event.getValue());
+        }
+      });
+    }
+
+    super.afterCreateEditableWidget(editableWidget, widget);
+  }
+
+  @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
@@ -496,7 +495,9 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
     } else if (BeeUtils.same(name, ClassifierConstants.COL_DATE_FROM) && widget instanceof InputDate) {
       dateFrom = (InputDate) widget;
       dateFrom.addFocusHandler(focusEvent -> {
-        JustDate endDate = getDateTimeValue(COL_END_DATE_TIME).getDate();
+        JustDate endDate = getDateTimeValue(COL_END_DATE_TIME) == null
+          ? null : getDateTimeValue(COL_END_DATE_TIME).getDate();
+
         if (dateFrom.getDate() == null) {
           dateFrom.setDate(endDate);
           Data.setValue(VIEW_APPOINTMENTS, getActiveRow(), ClassifierConstants.COL_DATE_FROM, endDate);
@@ -530,13 +531,7 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
       getInputTime(getEndTimeWidgetId()).setTime(end);
     }
 
-    Long supplier = getFormView().getLongValue(TradeConstants.COL_TRADE_SUPPLIER);
-    if (BeeUtils.isPositive(supplier)) {
-      ((UnboundSelector) getFormView().getWidgetByName("Suppliers")).setValue(supplier, true);
-    }
-
-    setDateFromEditing(row);
-    disableWidgetEditing();
+    disableWidgetEditing(getLongValue(TradeConstants.COL_TRADE_SUPPLIER));
 
     checkOverlap(false);
   }
@@ -566,14 +561,6 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
   public boolean beforeCreateWidget(String name, Element description) {
     return isNew || BeeUtils.isEmpty(name)
         || !BeeUtils.inListSame(name, NAME_BUILD_SEPARATOR, NAME_BUILD, NAME_BUILD_INFO);
-  }
-
-  @Override
-  public void beforeRefresh(FormView form, IsRow row) {
-    setDateFromEditing(row);
-    disableWidgetEditing();
-
-    super.beforeRefresh(form, row);
   }
 
   @Override
@@ -1025,20 +1012,9 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
     return widget;
   }
 
-  private void setDateFromEditing(IsRow row) {
-    Long supplier = getFormView().getLongValue(TradeConstants.COL_TRADE_SUPPLIER);
-    if (!DataUtils.isNewRow(row) && dateFrom != null && BeeUtils.isPositive(supplier)) {
-      dateFrom.setEnabled(true);
-    } else {
-      dateFrom.setEnabled(false);
-    }
-  }
-
-  private void disableWidgetEditing() {
-    if (DataUtils.isNewRow(getActiveRow())) {
-      ((InputNumber) getFormView().getWidgetBySource(COL_COST_AMOUNT)).setEnabled(false);
-      ((UnboundSelector) getFormView().getWidgetByName("Suppliers")).setEnabled(false);
-    }
+  private void disableWidgetEditing(Long value) {
+      ((InputNumber) getFormView().getWidgetBySource(COL_COST_AMOUNT)).setEnabled(DataUtils.isId(value));
+      dateFrom.setEnabled(DataUtils.isId(value));
   }
 
   private boolean hasValue(String widgetId) {
@@ -1391,11 +1367,10 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
         serviceTypes), getSelectedId(getRepairTypeWidgetId(), repairTypes));
     final Long reminderType = getSelectedId(getReminderWidgetId(), reminderTypes);
 
-    maybeUpdateTradeActService();
+    Runnable run = this::maybeUpdateTradeActService;
 
     return CalendarUtils.saveAppointment(callback, isNew, this, getFormView().getActiveRow(),
-        getStart(), getEnd(getStart()), propList, reminderType, getFormView(), appointmentView);
-
+        getStart(), getEnd(getStart()), propList, reminderType, getFormView(), appointmentView, run);
   }
 
   private void maybeUpdateTradeActService() {
@@ -1404,59 +1379,90 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
 
     if (oldRow != null && activeRow != null) {
       Long oldTradeActService = Data.getLong(VIEW_APPOINTMENTS, oldRow, COL_TRADE_ACT_SERVICE);
+      Long newTradeActService = Data.getLong(VIEW_APPOINTMENTS, activeRow, COL_TRADE_ACT_SERVICE);
 
-      UnboundSelector serviceSelector = (UnboundSelector) getFormView().getWidgetByName(COL_TRADE_ACT_SERVICE);
+      if (DataUtils.isId(newTradeActService)) {
 
-      if (serviceSelector != null && DataUtils.isId(serviceSelector.getRelatedId())) {
-        Long newTradeActService = serviceSelector.getRelatedId();
+        Map<String, String> inputMap = new HashMap<>();
+        boolean needChoice = false;
 
-        List<String> columns = new ArrayList<>();
-        List<String> values = new ArrayList<>();
+        BeeRow serviceRow = ((DataSelector) getFormView().getWidgetBySource(COL_TRADE_ACT_SERVICE)).getRelatedRow();
 
-        Double costOld = Data.getDouble(VIEW_APPOINTMENTS, oldRow, COL_COST_AMOUNT);
-        Double costNew = Data.getDouble(VIEW_APPOINTMENTS, activeRow, COL_COST_AMOUNT);
-
-        if (!Objects.equals(costNew, costOld)) {
-          values.add(costNew == null ? "" : BeeUtils.toString(costNew));
-          columns.add(COL_COST_AMOUNT);
+        for (String column : Arrays.asList(COL_COST_AMOUNT, TradeConstants.COL_TRADE_SUPPLIER,
+          ClassifierConstants.COL_DATE_FROM)) {
+            inputMap.put(column, Data.getString(VIEW_APPOINTMENTS, activeRow, column));
         }
 
-        Long supplierOld = Data.getLong(VIEW_APPOINTMENTS, oldRow, TradeConstants.COL_TRADE_SUPPLIER);
-        UnboundSelector selector = (UnboundSelector) getFormView().getWidgetByName("Suppliers");
-        Long supplier = selector.getRelatedId();
-
-        if (!Objects.equals(supplierOld, supplier)) {
-          values.add(supplier == null ? "" : BeeUtils.toString(supplier));
-          columns.add(TradeConstants.COL_TRADE_SUPPLIER);
+        if (!Objects.equals(oldTradeActService, newTradeActService) && !DataUtils.isNewRow(getActiveRow())) {
+          inputMap.put(COL_APPOINTMENT, BeeUtils.toString(getActiveRowId()));
         }
 
-        JustDate oldDateFrom = Data.getDate(VIEW_APPOINTMENTS, oldRow, ClassifierConstants.COL_DATE_FROM);
-        JustDate newDateFrom = Data.getDate(VIEW_APPOINTMENTS, activeRow, ClassifierConstants.COL_DATE_FROM);
+        if (serviceRow != null) {
+          String valueFromApp = Data.getString(VIEW_APPOINTMENTS, activeRow, ClassifierConstants.COL_DATE_FROM);
+          String valueFromSvc = Data.getString(VIEW_TRADE_ACT_SERVICES, serviceRow, ClassifierConstants.COL_DATE_FROM);
 
-        if (!Objects.equals(oldDateFrom, newDateFrom)) {
-          values.add(newDateFrom == null ? "" : BeeUtils.toString(newDateFrom.getDays()));
-          columns.add(ClassifierConstants.COL_DATE_FROM);
-        }
-
-        if (!Objects.equals(oldTradeActService, newTradeActService)) {
-          values.add(BeeUtils.toString(getActiveRowId()));
-          columns.add(COL_APPOINTMENT);
-        }
-
-        Runnable runnable = () -> Queries.update(VIEW_TRADE_ACT_SERVICES, Filter.compareId(newTradeActService), columns,
-          values, result -> Data.refreshLocal(VIEW_TRADE_ACT_SERVICES));
-
-        if (!values.isEmpty()) {
-          if (DataUtils.isId(oldTradeActService) && !Objects.equals(oldTradeActService, newTradeActService)) {
-            Queries.update(VIEW_TRADE_ACT_SERVICES, oldTradeActService, COL_APPOINTMENT,
-              LongValue.getNullValue(), result -> runnable.run());
-          } else {
-            runnable.run();
+          if (!Objects.equals(valueFromApp, valueFromSvc) && !BeeUtils.isEmpty(valueFromApp)
+            && !BeeUtils.isEmpty(valueFromSvc)) {
+            needChoice = true;
           }
         }
+
+        Runnable runUpdateQuery = () -> Queries.update(VIEW_TRADE_ACT_SERVICES, Filter.compareId(newTradeActService),
+          new ArrayList<>(inputMap.keySet()), new ArrayList<>(inputMap.values()), new Queries.IntCallback() {
+            @Override
+            public void onSuccess(Integer result) {
+              if (DataUtils.isNewRow(getActiveRow())) {
+                Queries.getRow(VIEW_APPOINTMENTS, Filter.equals(COL_TRADE_ACT_SERVICE, newTradeActService),
+                  Collections.singletonList(COL_APPOINTMENT), new RowCallback() {
+                    @Override
+                    public void onSuccess(BeeRow appointment) {
+                      Queries.update(VIEW_TRADE_ACT_SERVICES, newTradeActService, COL_APPOINTMENT,
+                        new LongValue(appointment.getId()), r -> Data.refreshLocal(VIEW_TRADE_ACT_SERVICES));
+                    }
+                  });
+              } else {
+                Data.refreshLocal(VIEW_TRADE_ACT_SERVICES);
+              }
+            }
+          });
+
+        Runnable prepareUpdate = () -> {
+          if (!inputMap.isEmpty()) {
+            if (DataUtils.isId(oldTradeActService) && !Objects.equals(oldTradeActService, newTradeActService)) {
+
+              Queries.update(VIEW_TRADE_ACT_SERVICES, Filter.compareId(oldTradeActService),
+                Arrays.asList(COL_APPOINTMENT, COL_COST_AMOUNT, TradeConstants.COL_TRADE_SUPPLIER),
+                Arrays.asList(BeeConst.STRING_EMPTY, BeeConst.STRING_EMPTY, BeeConst.STRING_EMPTY),
+                result -> runUpdateQuery.run());
+            } else {
+              runUpdateQuery.run();
+            }
+          }
+        };
+
+        if (needChoice) {
+          Global.confirm("Įrašas jau egzistuoja. Bus pakeistas nauju.", new ConfirmationCallback() {
+            @Override
+            public void onConfirm() {
+              prepareUpdate.run();
+            }
+
+            @Override
+            public void onCancel() {
+              inputMap.remove(ClassifierConstants.COL_DATE_FROM);
+              prepareUpdate.run();
+            }
+          });
+        } else {
+          prepareUpdate.run();
+        }
+
       } else if (DataUtils.isId(oldTradeActService)) {
-          Queries.update(VIEW_TRADE_ACT_SERVICES, oldTradeActService, COL_APPOINTMENT,
-            LongValue.getNullValue(), result -> Data.refreshLocal(VIEW_TRADE_ACT_SERVICES));
+
+        Queries.update(VIEW_TRADE_ACT_SERVICES, Filter.compareId(oldTradeActService),
+          Arrays.asList(COL_APPOINTMENT, COL_COST_AMOUNT, TradeConstants.COL_TRADE_SUPPLIER),
+          Arrays.asList(BeeConst.STRING_EMPTY, BeeConst.STRING_EMPTY, BeeConst.STRING_EMPTY),
+          r -> Data.refreshLocal(VIEW_TRADE_ACT_SERVICES));
       }
     }
   }

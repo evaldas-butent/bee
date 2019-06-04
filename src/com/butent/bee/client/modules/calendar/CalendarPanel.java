@@ -834,7 +834,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
         appointment.getRow().getProperty(TBL_APPOINTMENT_REMINDERS));
 
     CalendarUtils.saveAppointment(null, true, null, appointment.getRow(), start, end,
-        propList, reminderType, BeeKeeper.getScreen(), null);
+        propList, reminderType, BeeKeeper.getScreen(), null, null);
   }
 
   private boolean updateAppointment(Appointment appointment, DateTime newStart, DateTime newEnd,
