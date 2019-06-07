@@ -1014,7 +1014,6 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
 
   private void disableWidgetEditing(Long value) {
       ((InputNumber) getFormView().getWidgetBySource(COL_COST_AMOUNT)).setEnabled(DataUtils.isId(value));
-      dateFrom.setEnabled(DataUtils.isId(value));
   }
 
   private boolean hasValue(String widgetId) {
