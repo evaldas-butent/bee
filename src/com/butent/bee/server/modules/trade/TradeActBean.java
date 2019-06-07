@@ -8,7 +8,7 @@ import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
-import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.*;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.Element;
@@ -17,6 +17,7 @@ import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Formatter;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
@@ -55,12 +56,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.SearchResult;
-import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.filter.CompoundFilter;
@@ -933,7 +928,28 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
       long newId = ((BeeRow) response.getResponse()).getId();
 
       qs.copyData(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, actId, newId);
-      qs.copyData(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, actId, newId);
+
+        BeeRowSet services = qs.getViewData(VIEW_TRADE_ACT_SERVICES, Filter.equals(COL_TRADE_ACT, actId));
+        if (!DataUtils.isEmpty(services)) {
+
+            int appointmentIdx = services.getColumnIndex(CalendarConstants.COL_APPOINTMENT);
+
+            for (BeeRow r : services.getRows()) {
+                if (BeeUtils.isPositive(r.getLong(appointmentIdx))) {
+                    r.clearCell(appointmentIdx);
+                    r.clearCell(services.getColumnIndex(COL_TRADE_SUPPLIER));
+                    r.clearCell(services.getColumnIndex(COL_COST_AMOUNT));
+                    r.clearCell(services.getColumnIndex(COL_DATE_FROM));
+                }
+
+                r.setValue(services.getColumnIndex(COL_TRADE_ACT), newId);
+            }
+
+            BeeRowSet insertServices = DataUtils.createRowSetForInsert(services);
+            for (int i = 0; i < insertServices.getNumberOfRows(); i++) {
+              deb.commitRow(insertServices, i, RowInfo.class);
+            }
+        }
     }
 
     return response;

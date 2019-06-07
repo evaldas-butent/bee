@@ -427,7 +427,7 @@ public final class CalendarUtils {
   public static boolean saveAppointment(final RowCallback callback, boolean isNew,
       AppointmentBuilder appointmentBuilder, IsRow originalRow,
       DateTime statDateTime, DateTime endDateTime, String propList, Long reminderType,
-      NotificationListener notificationListener, FormView appointmentView) {
+      NotificationListener notificationListener, FormView appointmentView, Runnable updateService) {
 
     BeeRow row = DataUtils.cloneRow(originalRow);
 
@@ -530,6 +530,10 @@ public final class CalendarUtils {
           if (callback != null) {
             callback.onSuccess(result);
           }
+
+          if (updateService != null) {
+            updateService.run();
+          }
         }
       }
       if (appointmentBuilder != null) {
@@ -566,9 +570,10 @@ public final class CalendarUtils {
 
   public static String getSummary(IsRow row) {
     String seriesName = Data.getString(VIEW_TRADE_ACT_SERVICES, row, "TradeSeriesName");
-    String itemName = Data.getString(VIEW_TRADE_ACT_SERVICES, row, "ItemName");
+    String article = Data.getString(VIEW_TRADE_ACT_SERVICES, row, COL_ITEM_ARTICLE);
+    String objectName = Data.getString(VIEW_TRADE_ACT_SERVICES, row, COL_COMPANY_OBJECT_NAME);
 
-    return BeeUtils.joinWords(seriesName, itemName, row.getId());
+    return BeeUtils.joinWords(seriesName, article, objectName, row.getId());
   }
 
   public static void setCompany(IsRow tradeAct, IsRow appointment) {
@@ -605,7 +610,7 @@ public final class CalendarUtils {
     }
   }
 
-  public static void setTradeActService(IsRow appointment, IsRow service) {
+  public static void setTradeActServiceValues(IsRow appointment, IsRow service) {
     Data.setValue(CalendarConstants.VIEW_APPOINTMENTS, appointment, COL_TRADE_ACT_SERVICE, service.getId());
 
     for (String column : Arrays.asList(ALS_ITEM_NAME, COL_TRADE_SUPPLIER, ALS_SUPPLIER_NAME, COL_COST_AMOUNT,

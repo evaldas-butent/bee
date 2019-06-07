@@ -18,7 +18,11 @@
         <SimpleColumn name="SeriesName" alias="TradeSeriesName" />
       </SimpleJoin>
       <SimpleColumn name="Number" alias="TradeNumber" />
+
       <SimpleColumn name="Object" />
+      <SimpleJoin name="Object" joinType="LEFT">
+        <SimpleColumn name="ObjectName" />
+      </SimpleJoin>
 
       <SimpleJoin name="Company" joinType="LEFT">
         <SimpleColumn name="Name" alias="TradeCompanyName" />

@@ -38,5 +38,10 @@
 
     <Relation name="ServiceObject" relation="ServiceObjects" label="=svcDevice" />
     <Relation name="ServiceMaintenance" relation="ServiceMaintenance" label="=svcRepair" />
+
+    <Relation name="TradeActService" relation="TradeActServices" label="=service" unique="true" />
+    <Relation name="Supplier" relation="Companies" label="=supplier" />
+    <Numeric name="CostAmount" precision="12" scale="2" label="Sav.suma" />
+    <Date name="DateFrom" label="=dateFrom" />
   </Fields>
 </Table>
