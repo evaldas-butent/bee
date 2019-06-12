@@ -573,7 +573,7 @@ public final class CalendarUtils {
     String article = Data.getString(VIEW_TRADE_ACT_SERVICES, row, COL_ITEM_ARTICLE);
     String objectName = Data.getString(VIEW_TRADE_ACT_SERVICES, row, COL_COMPANY_OBJECT_NAME);
 
-    return BeeUtils.joinWords(seriesName, article, objectName, row.getId());
+    return BeeUtils.joinWords(seriesName, article, objectName);
   }
 
   public static void setCompany(IsRow tradeAct, IsRow appointment) {

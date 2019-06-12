@@ -936,8 +936,10 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
       }
     };
 
-    CalendarKeeper.createAppointment(null, new DateTime(new JustDate(), 8, 0, 0, 0), "2", null, initializer,
-      appointment -> Queries.update(VIEW_TRADE_ACT_SERVICES, getActiveRowId(), CalendarConstants.COL_APPOINTMENT,
-        new LongValue(appointment.getId()), result -> Data.refreshLocal(getViewName())));
+    JustDate dateFrom = Data.getDate(VIEW_TRADE_ACT_SERVICES, getActiveRow(), COL_DATE_FROM);
+
+    CalendarKeeper.createAppointment(null, dateFrom == null ? null : new DateTime(dateFrom, 8, 0, 0, 0), "2", null,
+      initializer, appointment -> Queries.update(VIEW_TRADE_ACT_SERVICES, getActiveRowId(),
+        CalendarConstants.COL_APPOINTMENT, new LongValue(appointment.getId()), result -> Data.refreshLocal(getViewName())));
   }
 }

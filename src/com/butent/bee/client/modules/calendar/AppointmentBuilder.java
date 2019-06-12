@@ -1407,21 +1407,15 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
         }
 
         Runnable runUpdateQuery = () -> Queries.update(VIEW_TRADE_ACT_SERVICES, Filter.compareId(newTradeActService),
-          new ArrayList<>(inputMap.keySet()), new ArrayList<>(inputMap.values()), new Queries.IntCallback() {
-            @Override
-            public void onSuccess(Integer result) {
-              if (DataUtils.isNewRow(getActiveRow())) {
-                Queries.getRow(VIEW_APPOINTMENTS, Filter.equals(COL_TRADE_ACT_SERVICE, newTradeActService),
-                  Collections.singletonList(COL_APPOINTMENT), new RowCallback() {
-                    @Override
-                    public void onSuccess(BeeRow appointment) {
-                      Queries.update(VIEW_TRADE_ACT_SERVICES, newTradeActService, COL_APPOINTMENT,
-                        new LongValue(appointment.getId()), r -> Data.refreshLocal(VIEW_TRADE_ACT_SERVICES));
-                    }
-                  });
-              } else {
-                Data.refreshLocal(VIEW_TRADE_ACT_SERVICES);
-              }
+          new ArrayList<>(inputMap.keySet()), new ArrayList<>(inputMap.values()), result -> {
+
+            if (DataUtils.isNewRow(getActiveRow()) && !DataUtils.isId(oldTradeActService)) {
+              Queries.getRow(VIEW_APPOINTMENTS, Filter.equals(COL_TRADE_ACT_SERVICE, newTradeActService),
+                Collections.singletonList(COL_APPOINTMENT), appointment -> Queries.update(VIEW_TRADE_ACT_SERVICES,
+                  newTradeActService, COL_APPOINTMENT, new LongValue(appointment.getId()),
+                  r -> Data.refreshLocal(VIEW_TRADE_ACT_SERVICES)));
+            } else {
+              Data.refreshLocal(VIEW_TRADE_ACT_SERVICES);
             }
           });
 
