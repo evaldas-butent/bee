@@ -44,13 +44,11 @@ import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.view.grid.ColumnInfo;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.Pair;
@@ -942,86 +940,26 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
   }
 
   private void renderColumns(IsRow parentRow, GridView gridView, RenderingEvent event) {
-    Map<String, Boolean> showColumn = new HashMap<>();
-    Map<String, Boolean> columnVisible = new HashMap<>();
-
-    showColumn.put(COL_TA_PARENT,
-        (isContinuousAct(parentRow) || isParentActContinuous(parentRow) || isReturnAct(parentRow)));
-    showColumn.put(COLUMN_RETURNED_QTY,
-        getKind(parentRow) != null && getKind(parentRow).enableReturn() && !isContinuousAct(
-            parentRow));
-
-    showColumn.put(COL_TRADE_ACT, (isRentProjectAct(parentRow)));
-
-    columnVisible.put(COL_TA_PARENT, gridView.getGrid().isColumnVisible(COL_TA_PARENT));
-    columnVisible.put(COLUMN_RETURNED_QTY, gridView.getGrid().isColumnVisible(COLUMN_RETURNED_QTY));
-    columnVisible.put(COL_TRADE_ACT, gridView.getGrid().isColumnVisible(COL_TRADE_ACT));
-
     if (commandImportItems != null) {
       commandImportItems.setVisible((!hasContinuousAct(parentRow) && !isContinuousAct(parentRow))
           || isRentProjectAct(parentRow));
     }
+    Map<String, Boolean> showColumn = new HashMap<>();
 
-    if (showColumn.equals(columnVisible)) {
-      return;
-    }
+    showColumn.put(COL_TA_PARENT, (isContinuousAct(parentRow) || isParentActContinuous(parentRow)
+        || isReturnAct(parentRow)));
+    showColumn.put(COL_TRADE_ACT, (isRentProjectAct(parentRow)));
+    showColumn.put(COLUMN_RETURNED_QTY, getKind(parentRow) != null
+        && getKind(parentRow).enableReturn() && !isContinuousAct(parentRow));
+    showColumn.put(COLUMN_REMAINING_QTY, showColumn.get(COLUMN_RETURNED_QTY));
+
+    boolean changed = false;
 
     for (String col : showColumn.keySet()) {
-      List<ColumnInfo> predefinedColumns = gridView.getGrid().getPredefinedColumns();
-      List<Integer> visibleColumns = gridView.getGrid().getVisibleColumns();
-      List<Integer> showColumnResult = new ArrayList<>();
-
-      if (BeeUtils.isTrue(showColumn.get(col))) {
-        int qtyPosition = BeeConst.UNDEF;
-        int unitPosition = BeeConst.UNDEF;
-
-        for (int i = 0; i < visibleColumns.size(); i++) {
-          ColumnInfo columnInfo = predefinedColumns.get(visibleColumns.get(i));
-
-          if (columnInfo.is(COL_TRADE_ITEM_QUANTITY)) {
-            qtyPosition = i;
-          } else if (columnInfo.is(ALS_UNIT_NAME)) {
-            unitPosition = i;
-          }
-        }
-
-        int colIndex = BeeConst.UNDEF;
-        int remIndex = BeeConst.UNDEF;
-
-        for (int i = 0; i < predefinedColumns.size(); i++) {
-          ColumnInfo columnInfo = predefinedColumns.get(i);
-
-          if (columnInfo.is(col)) {
-            colIndex = i;
-          } else if (columnInfo.is(COLUMN_REMAINING_QTY)) {
-            remIndex = i;
-          }
-        }
-
-        showColumnResult.addAll(visibleColumns);
-
-        int pos = (unitPosition == qtyPosition + 1) ? unitPosition : qtyPosition;
-        if (!BeeConst.isUndef(colIndex) && !showColumnResult.contains(colIndex)) {
-          showColumnResult.add(pos + 1, colIndex);
-        }
-        if (!BeeConst.isUndef(colIndex) && !showColumnResult.contains(remIndex)) {
-          showColumnResult.add(pos + 2, remIndex);
-        }
-
-      } else {
-        for (int index : visibleColumns) {
-          if (!predefinedColumns.get(index).is(col)
-              && !predefinedColumns.get(index).is(COLUMN_REMAINING_QTY)) {
-            showColumnResult.add(index);
-          }
-        }
-      }
-
-      gridView.getGrid().overwriteVisibleColumns(showColumnResult);
-
-      if (event != null) {
-        event.setDataChanged();
-      }
+      changed |= gridView.getGrid().setColumnVisible(col, showColumn.get(col));
+    }
+    if (event != null && changed) {
+      event.setDataChanged();
     }
   }
 
