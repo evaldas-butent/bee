@@ -105,6 +105,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.ejb.*;
@@ -1201,12 +1202,10 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
 
     Long approvedStatusId = prm.getRelation(PRM_APPROVED_ACT_STATUS);
     Long returnedStatusId = prm.getRelation(PRM_RETURNED_ACT_STATUS);
+    Set<Long> acts = DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID_LIST));
 
-    if (DataUtils.isId(returnedStatusId) && DataUtils
-        .isId(approvedStatusId) && !BeeUtils
-        .isEmpty(reqInfo.getParameter(VAR_ID_LIST))) {
-
-      List<Long> acts = DataUtils.parseIdList(reqInfo.getParameter(VAR_ID_LIST));
+    if (DataUtils.isId(returnedStatusId) && DataUtils.isId(approvedStatusId)
+        && !BeeUtils.isEmpty(acts)) {
 
       maybeApproveTradeActs(returnedStatusId, approvedStatusId, acts);
     }
@@ -3269,34 +3268,43 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
     }
   }
 
-  private Range<JustDate> getMainRange(List<Long> acts) {
+  private Map<Long, Range<JustDate>> getMainRange(Set<Long> acts) {
+    Map<Long, Pair<DateTime, DateTime>> ranges = new HashMap<>();
     String colActId = sys.getIdName(TBL_TRADE_ACTS);
 
-    SqlSelect rangesSel = new SqlSelect()
-        .addMin(TBL_TRADE_ACTS, COL_TA_DATE, "ActLow")
-        .addMax(TBL_TRADE_ACTS, COL_TA_UNTIL, "ActHi")
-        .addMin(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM, "SvcLow")
-        .addMax(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO, "SvcHi")
+    SimpleRowSet validRanges = qs.getData(new SqlSelect()
+        .addFields(TBL_TRADE_ACTS, colActId)
+        .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM),
+            SqlUtils.field(TBL_TRADE_ACTS, COL_TA_DATE)), COL_DATE_FROM)
+        .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO),
+            SqlUtils.field(TBL_TRADE_ACTS, COL_TA_UNTIL)), COL_DATE_TO)
         .addFrom(TBL_TRADE_ACTS)
-        .addFromLeft(TBL_TRADE_ACT_SERVICES, sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_SERVICES,
-            COL_TRADE_ACT))
-        .setWhere(SqlUtils.inList(TBL_TRADE_ACTS, colActId, acts));
+        .addFromLeft(TBL_TRADE_ACT_SERVICES,
+            sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT))
+        .setWhere(SqlUtils.inList(TBL_TRADE_ACTS, colActId, acts)));
 
-    SimpleRowSet minMaxRanges = qs.getData(rangesSel);
+    for (SimpleRow row : validRanges) {
+      Long actId = row.getLong(colActId);
+      DateTime start = row.getDateTime(COL_DATE_FROM);
+      DateTime end = row.getDateTime(COL_DATE_TO);
 
-    DateTime start = BeeUtils.min(minMaxRanges.getDateTime(0, "ActLow"),
-        minMaxRanges.getDateTime(0, "SvcLow"));
+      if (ranges.containsKey(actId)) {
+        Pair<DateTime, DateTime> p = ranges.get(actId);
 
-    DateTime end = BeeUtils.max(minMaxRanges.getDateTime(0, "ActHi"), minMaxRanges.getDateTime(0,
-        "SvcHi"));
-
-    if (start == null || end == null || isMeq(start, end)) {
-      logger.warning("Invalid  main range for approve act", start, end);
-      return null;
+        if (p.noNulls() && BeeUtils.allNotNull(start, end)) {
+          ranges.put(actId, Pair.of(BeeUtils.min(p.getA(), start), BeeUtils.max(p.getB(), end)));
+        } else {
+          ranges.put(actId, Pair.empty());
+        }
+      } else {
+        ranges.put(actId, Pair.of(start, end));
+      }
     }
-
-    return Range.closedOpen(new JustDate(start), new JustDate(end));
-
+    return ranges.entrySet().stream()
+        .filter(e -> e.getValue().noNulls())
+        .collect(Collectors.toMap(Entry::getKey, e ->
+            Range.closedOpen(new JustDate(e.getValue().getA()),
+                new JustDate(e.getValue().getB()))));
   }
 
   private String getMovement(IsCondition actCondition, IsCondition itemCondition,
@@ -3982,11 +3990,10 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
     }
   }
 
-  private void maybeApproveTradeActs(Long retId, Long apprId, List<Long> acts) {
+  private void maybeApproveTradeActs(Long retId, Long apprId, Set<Long> acts) {
     if (!DataUtils.isId(retId) && !DataUtils.isId(apprId) && BeeUtils.isEmpty(acts)) {
       return;
     }
-
     String colActId = sys.getIdName(TBL_TRADE_ACTS);
 
     SqlSelect actDataSelect = new SqlSelect()
@@ -3995,87 +4002,71 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
         .setWhere(SqlUtils.inList(TBL_TRADE_ACTS, colActId, acts));
 
     SimpleRowSet actData = qs.getData(actDataSelect);
-
-    Range<JustDate> mainRange = getMainRange(acts);
-
-    if (mainRange == null) {
-      return;
-    }
-
-    Range<DateTime> builderRange = TradeActUtils.convertRange(mainRange);
-
-    Set<Long> actsForApprove = new HashSet<>();
-    actsForApprove.addAll(acts);
-
+    Map<Long, Range<JustDate>> mainRanges = getMainRange(acts);
+    Set<Long> actsForApprove = new HashSet<>(acts);
     BeeRowSet services = getServicesForInvoice(actsForApprove);
 
-    if (!services.isEmpty()) {
-      for (int i = 0; i < services.getNumberOfRows(); i++) {
-        if (!ArrayUtils.contains(actData.getLongColumn(colActId), services.getLong(i,
-            COL_TRADE_ACT))) {
-          continue;
+    for (int i = 0; i < services.getNumberOfRows(); i++) {
+      Long actId = services.getLong(i, COL_TRADE_ACT);
+      Range<JustDate> mainRange = mainRanges.get(actId);
+
+      if (mainRange == null) {
+        actsForApprove.remove(actId);
+        continue;
+      }
+      SimpleRow actRow = actData.getRowByKey(colActId, BeeUtils.toString(actId));
+      Range<DateTime> builderRange = TradeActUtils.convertRange(mainRange);
+
+      TradeActTimeUnit tu = EnumUtils.getEnumByIndex(TradeActTimeUnit.class,
+          services.getInteger(i, COL_TIME_UNIT));
+
+      JustDate dateFrom = services.getDate(i, COL_TA_SERVICE_FROM);
+      JustDate dateTo = services.getDate(i, COL_TA_SERVICE_TO);
+
+      Range<DateTime> actRange = TradeActUtils.createRange(actRow.getDateTime(COL_TA_DATE),
+          actRow.getDateTime(COL_TA_UNTIL));
+
+      Range<DateTime> serviceRange = TradeActUtils.createServiceRange(dateFrom, dateTo, tu,
+          builderRange, actRange);
+
+      if (serviceRange == null) {
+        continue;
+      }
+      List<Range<DateTime>> invoicesRanges = new ArrayList<>();
+      List<Integer> periods = BeeUtils.toInts(services.getRow(i).getProperty(PRP_INVOICE_PERIODS));
+
+      if (periods.size() >= 2) {
+        for (int j = 0; j < periods.size() - 1; j += 2) {
+          JustDate from = new JustDate(periods.get(j));
+          JustDate to = new JustDate(periods.get(j + 1));
+
+          invoicesRanges.add(TradeActUtils.createRange(from, to));
         }
+      }
+      List<Range<DateTime>> ranges = TradeActUtils.buildRanges(serviceRange, invoicesRanges, tu);
 
-        SimpleRow actRow = actData.getRowByKey(colActId, services.getString(i, COL_TRADE_ACT));
+      if (ranges.isEmpty()) {
+        continue;
+      }
+      boolean hasValidRange = false;
 
-        TradeActTimeUnit tu = EnumUtils.getEnumByIndex(TradeActTimeUnit.class, services.getInteger(
-            i, COL_TIME_UNIT));
-        JustDate dateFrom = services.getDate(i, COL_TA_SERVICE_FROM);
-        JustDate dateTo = services.getDate(i, COL_TA_SERVICE_TO);
+      for (Range<DateTime> r : ranges) {
+        if (tu == TradeActTimeUnit.MONTH) {
+          double mf = TradeActUtils.getMonthFactor(r, getHolidays());
 
-        Range<DateTime> actRange = TradeActUtils.createRange(actRow.getDateTime(COL_TA_DATE),
-            actRow.getDateTime(COL_TA_UNTIL));
-
-        Range<DateTime> serviceRange = TradeActUtils.createServiceRange(dateFrom, dateTo, tu,
-            builderRange, actRange);
-
-        if (serviceRange == null) {
-          continue;
-        }
-
-        List<Range<DateTime>> invoicesRanges = new ArrayList<>();
-
-        List<Integer> periods =
-            BeeUtils.toInts(services.getRow(i).getProperty(PRP_INVOICE_PERIODS));
-        if (periods.size() >= 2) {
-          for (int j = 0; j < periods.size() - 1; j += 2) {
-            JustDate from = new JustDate(periods.get(j));
-            JustDate to = new JustDate(periods.get(j + 1));
-
-            invoicesRanges.add(TradeActUtils.createRange(from, to));
-          }
-        }
-
-        List<Range<DateTime>> ranges = TradeActUtils.buildRanges(serviceRange, invoicesRanges, tu);
-
-        if (ranges.isEmpty()) {
-          continue;
-        }
-
-        boolean hasValidRange = false;
-
-        for (Range<DateTime> r : ranges) {
-
-          if (tu == TradeActTimeUnit.MONTH) {
-            double mf = TradeActUtils.getMonthFactor(r, getHolidays());
-
-            if (BeeUtils.isPositive(mf)) {
-              hasValidRange = true;
-              break;
-            }
-
-          } else {
+          if (BeeUtils.isPositive(mf)) {
             hasValidRange = true;
             break;
           }
-        }
-
-        if (hasValidRange) {
-          actsForApprove.remove(actRow.getLong(colActId));
+        } else {
+          hasValidRange = true;
+          break;
         }
       }
+      if (hasValidRange) {
+        actsForApprove.remove(actId);
+      }
     }
-
     if (actsForApprove.isEmpty()) {
       return;
     }
@@ -4084,14 +4075,56 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
         .addFrom(TBL_TRADE_ACT_ITEMS)
         .setWhere(SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, actsForApprove)));
 
-    SqlUpdate upd = new SqlUpdate(TBL_TRADE_ACTS)
-        .addConstant(COL_TA_STATUS, apprId)
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addField(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS), COL_TRADE_ACT)
+        .addFields(TBL_TRADE_ACTS, COL_TA_KIND)
+        .addFrom(TBL_TRADE_ACTS)
         .setWhere(SqlUtils.and(sys.idInList(TBL_TRADE_ACTS, actsForApprove),
             SqlUtils.or(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_STATUS, retId),
                 BeeUtils.isEmpty(actsWithItems) ? SqlUtils.sqlTrue()
-                    : SqlUtils.not(sys.idInList(TBL_TRADE_ACTS, actsWithItems)))));
+                    : SqlUtils.not(sys.idInList(TBL_TRADE_ACTS, actsWithItems))))));
 
-    qs.updateData(upd);
+    actsForApprove.clear();
+    Set<Long> rentProjectsForApprove = new HashSet<>();
+
+    for (SimpleRow row : rs) {
+      if (Objects.equals(row.getEnum(COL_TA_KIND, TradeActKind.class), TradeActKind.RENT_PROJECT)) {
+        rentProjectsForApprove.add(row.getLong(COL_TRADE_ACT));
+      } else {
+        actsForApprove.add(row.getLong(COL_TRADE_ACT));
+      }
+    }
+    if (!rentProjectsForApprove.isEmpty()) {
+      rentProjectsForApprove.removeAll(qs.getLongSet(new SqlSelect()
+          .addFields(TBL_TRADE_ACTS, COL_TA_RENT_PROJECT)
+          .addFrom(TBL_TRADE_ACTS)
+          .setWhere(SqlUtils.and(
+              SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_RENT_PROJECT, rentProjectsForApprove),
+              SqlUtils.not(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_STATUS, apprId))))));
+
+      if (!rentProjectsForApprove.isEmpty()) {
+        qs.updateData(new SqlUpdate(TBL_TRADE_ACTS)
+            .addConstant(COL_TA_STATUS, apprId)
+            .setWhere(SqlUtils.and(sys.idInList(TBL_TRADE_ACTS, rentProjectsForApprove))));
+      }
+    }
+    if (!actsForApprove.isEmpty()) {
+      qs.updateData(new SqlUpdate(TBL_TRADE_ACTS)
+          .addConstant(COL_TA_STATUS, apprId)
+          .setWhere(sys.idInList(TBL_TRADE_ACTS, actsForApprove)));
+
+      actsForApprove = qs.getLongSet(new SqlSelect().setDistinctMode(true)
+          .addFields(TBL_TRADE_ACTS, COL_TA_RENT_PROJECT)
+          .addFrom(TBL_TRADE_ACTS)
+          .setWhere(SqlUtils.and(sys.idInList(TBL_TRADE_ACTS, actsForApprove),
+              SqlUtils.notNull(TBL_TRADE_ACTS, COL_TA_RENT_PROJECT))));
+
+      actsForApprove.removeAll(rentProjectsForApprove);
+
+      if (!actsForApprove.isEmpty()) {
+        maybeApproveTradeActs(retId, apprId, actsForApprove);
+      }
+    }
   }
 
   private void prepareTransferReport(String tmp, Long startDate, Long endDate, String idName) {
