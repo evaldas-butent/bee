@@ -98,6 +98,7 @@ public final class TradeActConstants {
   public static final String COL_TA_RETURN = "ReturnAct";
   public static final String COL_TA_RENT_PROJECT = "RentProject";
   public static final String COL_TA_CONTINUOUS = "ContinuousAct";
+  public static final String COL_TA_FROM_RESERVE = "ActFromReserve";
 
   public static final String COL_TA_TEMPLATE_NAME = "Template";
 
@@ -162,6 +163,7 @@ public final class TradeActConstants {
   public static final String PRP_PARENT_ACT = "parent_act";
   public static final String PRP_ITEM_TOTAL = "item_total";
   public static final String PRP_RETURNED_QTY = "returned_qty";
+  public static final String PRP_RESERVE_RETURNED_QTY = "reserve_returned_qty";
   public static final String PRP_REMAINING_QTY = "remaining_qty";
   public static final String PRP_TA_SERVICE_FROM = "service_from";
   public static final String PRP_TA_SERVICE_TO = "service_to";

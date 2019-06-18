@@ -310,7 +310,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
         parentTaForm = (TradeActForm) parentInterceptor;
       }
       /* If trade act is Return */
-      if (isReturnAct(parentRow)) {
+      if (isReturnAct(parentRow) || isFromReserveAct(parentRow)) {
 
         if (!parentForm.validate(parentForm, true) || (parentTaForm != null
             && !parentTaForm.validateBeforeSave(parentForm, parentRow, false))) {
@@ -345,6 +345,18 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     getCustomUIBuilder().setEvent(event);
     getCustomUIBuilder().setGridView(gridView);
     super.afterRender(gridView, event);
+  }
+
+  @Override
+  public void beforeRender(GridView gridView, RenderingEvent event) {
+    IsRow parentRow = ViewHelper.getFormRow(gridView);
+
+    if (parentRow != null && isReserveAct(parentRow)) {
+      gridView.getGrid().setColumnVisible(PRP_RESERVE_RETURNED_QTY, true);
+      gridView.getGrid().setColumnVisible(PRP_RETURNED_QTY, false);
+    }
+
+    super.beforeRender(gridView, event);
   }
 
   @Override
@@ -897,6 +909,14 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
   private boolean isReturnAct(IsRow row) {
     return getKind(row) == TradeActKind.RETURN;
+  }
+
+  private boolean isReserveAct(IsRow row) {
+    return getKind(row) == TradeActKind.RESERVE;
+  }
+
+  private boolean isFromReserveAct(IsRow row) {
+    return Data.getBoolean(VIEW_TRADE_ACTS, row, COL_TA_FROM_RESERVE);
   }
 
   protected boolean isSaleTradeAct(IsRow row) {

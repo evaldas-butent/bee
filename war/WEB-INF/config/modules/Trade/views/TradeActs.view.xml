@@ -179,6 +179,7 @@
 
     <SimpleColumn name="RegistrationNo" />
     <SimpleColumn name="RemainItemQuantity" />
+    <SimpleColumn name="ActFromReserve" />
   </Columns>
 
   <Order>
