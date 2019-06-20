@@ -119,7 +119,7 @@ public enum TradeActKind implements HasLocalizedCaption {
 
   /* 6 */
   RESERVE(new String[] {COL_TA_OPERATION}, Option.ALTER_TO, Option.ALTER_FROM, Option.HAS_SERVICES,
-      Option.SHOW_STOCK, Option.ENABLE_RETURN) {
+      Option.SHOW_STOCK) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.taKindReserve();

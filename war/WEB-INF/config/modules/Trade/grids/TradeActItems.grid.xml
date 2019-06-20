@@ -41,14 +41,6 @@
       <footer aggregate="sum" />
     </PropColumn>
 
-    <PropColumn name="reserve_returned_qty" type="double" label="Išduota" visible="false">
-      <style>
-        <bodyStyle><ui:inline>color: red;</ui:inline></bodyStyle>
-        <footerStyle><ui:inline>color: red;</ui:inline></footerStyle>
-      </style>
-      <footer aggregate="sum" />
-    </PropColumn>
-
     <CalcColumn name="remaining_qty" type="double" label="=taQuantityRemained" visible="true">
       <render>
         <ui:expression>&qty;</ui:expression>

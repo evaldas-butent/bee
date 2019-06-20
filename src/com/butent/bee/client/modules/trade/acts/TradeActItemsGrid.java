@@ -308,7 +308,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
         parentTaForm = (TradeActForm) parentInterceptor;
       }
       /* If trade act is Return */
-      if (isReturnAct(parentRow) || isFromReserveAct(parentRow)) {
+      if (isReturnAct(parentRow)) {
 
         if (!parentForm.validate(parentForm, true) || (parentTaForm != null
             && !parentTaForm.validateBeforeSave(parentForm, parentRow, false))) {
@@ -895,14 +895,6 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
   private boolean isReturnAct(IsRow row) {
     return getKind(row) == TradeActKind.RETURN;
-  }
-
-  private boolean isReserveAct(IsRow row) {
-    return getKind(row) == TradeActKind.RESERVE;
-  }
-
-  private boolean isFromReserveAct(IsRow row) {
-    return Data.getBoolean(VIEW_TRADE_ACTS, row, COL_TA_FROM_RESERVE);
   }
 
   protected boolean isSaleTradeAct(IsRow row) {

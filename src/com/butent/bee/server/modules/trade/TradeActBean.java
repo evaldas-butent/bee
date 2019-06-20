@@ -3998,14 +3998,6 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
     }
   }
 
-  private boolean isActFromReserve(Long actId) {
-    if (DataUtils.isId(actId)) {
-      return getActKind(actId) == TradeActKind.RESERVE;
-    }
-
-    return false;
-  }
-
   private void maybeApproveTradeActs(Long retId, Long apprId, Set<Long> acts) {
     if (!DataUtils.isId(retId) && !DataUtils.isId(apprId) && BeeUtils.isEmpty(acts)) {
       return;
