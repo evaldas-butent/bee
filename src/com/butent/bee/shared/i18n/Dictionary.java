@@ -6917,8 +6917,6 @@ public interface Dictionary {
 
   default String tradeActReturnedCountShort() {return g("tradeActReturnedCountShort");}
 
-  default String tradeActRentFromReserveCountShort() {return g("tradeActRentFromReserveCountShort");}
-
   default String tradeActSaveAsTemplate() {return g("tradeActSaveAsTemplate");}
 
   default String tradeActServices() {return g("tradeActServices");}

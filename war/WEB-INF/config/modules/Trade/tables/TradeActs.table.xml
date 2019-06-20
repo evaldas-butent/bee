@@ -38,7 +38,6 @@
     <Relation name="ContinuousAct" relation="TradeActs" label="=taKindContinuous" cascade="SET_NULL"/>
     <Relation name="ReturnAct" relation="TradeActs" label="=taKindReturn" cascade="SET_NULL" />
     <Relation name="RentProject" relation="TradeActs" label="Nuomos projektas" />
-    <Boolean name="ActFromReserve" label="=taKindReserve" />
 
     <String name="RegistrationNo" label="=taRegistrationNo" precision="30" />
     <Numeric name="RemainItemQuantity" precision="12" scale="3" defValue="NULL" label="=taQuantityRemained" />

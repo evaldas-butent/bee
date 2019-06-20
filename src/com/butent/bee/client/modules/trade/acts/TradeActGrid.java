@@ -7,7 +7,6 @@ import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.*;
-import com.butent.bee.shared.ui.ColumnDescription;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -97,7 +96,6 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
   private Button templateCommand;
   private Button toRentProjectCommand;
   private Button removeFromRentCommand;
-  private Button rentFromReserveCommand;
 
   private Supplier<Filter> filterSupplier;
 
@@ -123,7 +121,6 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
         presenter.getHeader().addCommandItem(ensureSupplementCommand());
         presenter.getHeader().addCommandItem(ensureReturnCommand());
         presenter.getHeader().addCommandItem(ensureToRentProject());
-        presenter.getHeader().addCommandItem(ensureToRentFromReserve());
       }
 
       presenter.getHeader().addCommandItem(ensureAlterCommand());
@@ -229,18 +226,6 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
     } else {
       return super.beforeAddRow(presenter, copy);
     }
-  }
-
-  @Override
-  public ColumnDescription beforeCreateColumn(GridView gridView, ColumnDescription columnDescription) {
-
-    if (gridView.getGridKey().contains("reserve") && BeeUtils.same(columnDescription.getId(), ALS_RETURNED_COUNT)) {
-      columnDescription.setLabel(Localized.dictionary().tradeActRentFromReserveCountShort());
-      columnDescription.setCaption(Localized.dictionary().tradeActRentFromReserveCountShort());
-
-    }
-
-    return super.beforeCreateColumn(gridView, columnDescription);
   }
 
   @Override
@@ -586,23 +571,6 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
     return removeFromRentCommand;
   }
 
-  private Button ensureToRentFromReserve() {
-
-    if (rentFromReserveCommand != null) {
-      return rentFromReserveCommand;
-    }
-
-    rentFromReserveCommand = new Button("Nuomoti", clickEvent -> {
-      IsRow row = getActiveRow();
-      checkItemsBeforeReturn(row);
-    });
-
-    TradeActKeeper.addCommandStyle(rentFromReserveCommand, "rentFromReserveCommand");
-    TradeActKeeper.setCommandEnabled(rentFromReserveCommand, false);
-
-    return rentFromReserveCommand;
-  }
-
   private Button ensureToRentProject() {
     if (toRentProjectCommand != null) {
       return toRentProjectCommand;
@@ -804,8 +772,7 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
       Assert.untouchable();
     }
 
-    String method = isReserveAct(parent) ? SVC_GET_NEXT_ACT_NUMBER : SVC_GET_NEXT_RETURN_ACT_NUMBER;
-    ParameterList prm = TradeActKeeper.createArgs(method);
+    ParameterList prm = TradeActKeeper.createArgs(SVC_GET_NEXT_RETURN_ACT_NUMBER);
 
     if (DataUtils.isId(parent.getLong(getDataIndex(COL_TA_SERIES)))) {
       prm.addDataItem(COL_TA_SERIES, parent.getLong(getDataIndex(COL_TA_SERIES)));
@@ -842,13 +809,11 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
 
       switch (colId) {
         case COL_TA_KIND:
-          int k = isReserveAct(parent) ? TradeActKind.SALE.ordinal() : TradeActKind.RETURN.ordinal();
-          newRow.setValue(i, k);
+          newRow.setValue(i, TradeActKind.RETURN.ordinal());
           break;
 
         case COL_TA_DATE:
-          DateTime date = isReserveAct(parent) ? new DateTime() : null;
-          newRow.setValue(i, date);
+          newRow.setValue(i, (DateTime) null);
           break;
 
         case COL_TA_PARENT:
@@ -858,19 +823,12 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
           newRow.setValue(i, parent.getId());
           break;
 
-        case COL_TA_FROM_RESERVE:
-          if (isReserveAct(parent)) {
-            newRow.setValue(i, true);
-          }
-          break;
-
         case COL_TA_NUMBER:
           if (parent == null || BeeUtils.isEmpty(number)) {
             break;
           }
-
-          number = isReserveAct(parent) ? number : parent.getString(i) + "-" + number;
-          newRow.setValue(i, number);
+          newRow.setValue(i, parent.getString(i) + "-"
+              + number);
           break;
 
         case COL_TA_SERIES:
@@ -959,8 +917,7 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
           parentItems)));
     }
 
-    TradeActKind taKind = isReserveAct(parent) ? TradeActKind.SALE : TradeActKind.RETURN;
-    TradeActKeeper.setDefaultOperation(newRow, taKind);
+    TradeActKeeper.setDefaultOperation(newRow, TradeActKind.RETURN);
 
     RowFactory.createRow(viewTradeActs, newRow, Opener.MODAL, result -> {
       getGridView().ensureRow(result, true);
@@ -1080,10 +1037,6 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
 
   private boolean isRentProjectAct(IsRow row) {
     return TradeActKind.RENT_PROJECT == getKind(row);
-  }
-
-  private boolean isReserveAct(IsRow row) {
-    return TradeActKind.RESERVE == getKind(row);
   }
 
   private void multiReturnContinuousAct(final Collection<IsRow> ctActs) {
@@ -1300,10 +1253,9 @@ public class TradeActGrid extends AbstractGridInterceptor implements SelectionCo
     TradeActKeeper.setCommandEnabled(alterCommand, row != null && k != null && k.enableAlter() && !multipleSelection);
     TradeActKeeper.setCommandEnabled(copyCommand, row != null && k != null && k.enableCopy() && !multipleSelection);
     TradeActKeeper.setCommandEnabled(templateCommand, row != null && k != null && k.enableTemplate() && !multipleSelection);
-    TradeActKeeper.setCommandEnabled(removeFromRentCommand, BeeKeeper.getUser().canCreateData(VIEW_TRADE_ACTS)
+    TradeActKeeper
+        .setCommandEnabled(removeFromRentCommand, BeeKeeper.getUser().canCreateData(VIEW_TRADE_ACTS)
             && row != null && DataUtils.isId(getRentProject(row)));
-    TradeActKeeper.setCommandEnabled(rentFromReserveCommand, row != null && k != null && isReserveAct(getActiveRow())
-      && !multipleSelection);
   }
 
   private void saveAsTemplate(String name) {
