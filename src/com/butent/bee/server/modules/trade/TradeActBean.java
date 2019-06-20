@@ -546,7 +546,6 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
 
                     if (BeeUtils.isPositive(qty)) {
                       row.setProperty(PRP_RETURNED_QTY, BeeUtils.toString(qty, qtyScale));
-                      row.setProperty(PRP_RESERVE_RETURNED_QTY, BeeUtils.toString(qty, qtyScale));
                     }
                   }
                 }
@@ -2768,15 +2767,7 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
 
   private Map<Pair<Long, Long>, Double> getReturnedItems(Long... actId) {
     Map<Pair<Long, Long>, Double> result = new HashMap<>();
-    IsCondition filterKind;
 
-    boolean isActFromReserve = isActFromReserve(actId[0]);
-
-    if (isActFromReserve) {
-      filterKind = SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.SALE.ordinal());
-    } else {
-      filterKind = SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.RETURN.ordinal());
-    }
     SqlSelect query =
         new SqlSelect()
             .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT, COL_TA_ITEM)
@@ -2785,8 +2776,8 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
             .addFromInner(TBL_TRADE_ACT_ITEMS,
                 sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
             .setWhere(
-                SqlUtils.and(SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT, Lists
-                        .newArrayList(actId)), filterKind))
+                SqlUtils.and(SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT, Lists.newArrayList(actId)),
+                        SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.RETURN.ordinal())))
             .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT, COL_TA_ITEM);
 
     SimpleRowSet data = qs.getData(query);
