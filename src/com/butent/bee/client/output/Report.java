@@ -895,7 +895,9 @@ public enum Report implements HasWidgetSupplier {
           new ReportTextItem(COL_DEFECT_SUPPLIER, "Tiekėjas"),
           new ReportDateItem(COL_DATE_FROM, "Data nuo"),
           new ReportTextItem(COL_NOTE, "Pastaba"),
-          new ReportNumericItem(COL_COST_AMOUNT, "Sav.suma").setPrecision(2)
+          new ReportTextItem(COL_SERIES_NAME, "Paslaugos serija"),
+          new ReportNumericItem(COL_COST_AMOUNT, "Sav.suma").setPrecision(2),
+          new ReportNumericItem(COL_AMOUNT, "Suma").setPrecision(2)
       );
     }
 

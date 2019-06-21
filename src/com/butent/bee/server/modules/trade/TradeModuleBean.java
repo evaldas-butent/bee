@@ -671,6 +671,16 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         discount, SqlUtils.multiply(SqlUtils.divide(amount, 100), discount));
   }
 
+  public static IsExpression getDiscountExpression(String tblName) {
+    return getDiscountExpression(tblName, getAmountExpression(tblName));
+  }
+
+  public static IsExpression getDiscountExpression(String tblName, IsExpression amount) {
+    IsExpression discount = SqlUtils.field(tblName, COL_TRADE_DISCOUNT);
+
+    return SqlUtils.multiply(SqlUtils.divide(amount, 100), discount);
+  }
+
   @Override
   public Module getModule() {
     return Module.TRADE;
@@ -997,7 +1007,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   }
 
   public static IsExpression getTotalExpression(String tblName, IsExpression amount) {
-    return SqlUtils.plus(amount,
+    return SqlUtils.plus(SqlUtils.minus(amount, SqlUtils.nvl(getDiscountExpression(tblName), 0)),
         SqlUtils.sqlIf(SqlUtils.isNull(tblName, COL_TRADE_VAT_PLUS), 0,
             getVatExpression(tblName, amount)));
   }
@@ -1023,14 +1033,15 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   }
 
   public static IsExpression getVatExpression(String tblName, IsExpression amount) {
+    IsExpression total = SqlUtils.minus(amount, SqlUtils.nvl(getDiscountExpression(tblName), 0));
+    IsExpression vat = SqlUtils.field(tblName, COL_TRADE_VAT);
+
     return SqlUtils.sqlCase(null,
         SqlUtils.isNull(tblName, COL_TRADE_VAT), 0,
-        SqlUtils.isNull(tblName, COL_TRADE_VAT_PERC), SqlUtils.field(tblName, COL_TRADE_VAT),
-        SqlUtils.notNull(tblName, COL_TRADE_VAT_PLUS), SqlUtils.multiply(SqlUtils
-            .divide(amount, 100), SqlUtils.field(tblName, COL_TRADE_VAT)),
-        SqlUtils.multiply(
-            SqlUtils.divide(amount, SqlUtils.plus(100, SqlUtils.field(tblName, COL_TRADE_VAT))),
-            SqlUtils.field(tblName, COL_TRADE_VAT)));
+        SqlUtils.isNull(tblName, COL_TRADE_VAT_PERC), vat,
+        SqlUtils.notNull(tblName, COL_TRADE_VAT_PLUS),
+        SqlUtils.multiply(SqlUtils.divide(total, 100), vat),
+        SqlUtils.multiply(SqlUtils.divide(total, SqlUtils.plus(100, vat)), vat));
   }
 
   public static IsExpression getWithoutVatExpression(String tblName) {
@@ -1038,9 +1049,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   }
 
   public static IsExpression getWithoutVatExpression(String tblName, IsExpression amount) {
-    return SqlUtils.minus(amount,
-        SqlUtils.sqlIf(SqlUtils.notNull(tblName, COL_TRADE_VAT_PLUS), 0,
-            getVatExpression(tblName, amount)));
+    return SqlUtils.minus(getTotalExpression(tblName, amount), getVatExpression(tblName, amount));
   }
 
   @Override
