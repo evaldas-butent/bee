@@ -204,8 +204,8 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
                             @Override
                             public void onSuccess(BeeRow result) {
                               Data.refreshLocal(VIEW_SALE_FILES);
-                              form.updateCell("IsSentToEmail", BeeConst.STRING_TRUE);
-                              form.refreshBySource("IsSentToEmail");
+                              form.updateCell(COL_SENT_TO_EMAIL, BeeConst.STRING_TRUE);
+                              form.refreshBySource(COL_SENT_TO_EMAIL);
                               form.getViewPresenter().handleAction(Action.SAVE);
                               super.onSuccess(result);
                             }

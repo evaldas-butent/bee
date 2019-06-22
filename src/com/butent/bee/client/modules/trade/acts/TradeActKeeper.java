@@ -177,8 +177,8 @@ public final class TradeActKeeper {
                               public void onSuccess(BeeRow result) {
                                 Data.onTableChange(info.getTableName(),
                                     DataChangeEvent.RESET_REFRESH);
-                                form.updateCell("IsSentToEmail", BeeConst.STRING_TRUE);
-                                form.refreshBySource("IsSentToEmail");
+                                form.updateCell(COL_SENT_TO_EMAIL, BeeConst.STRING_TRUE);
+                                form.refreshBySource(COL_SENT_TO_EMAIL);
                                 form.getViewPresenter().handleAction(Action.SAVE);
                                 super.onSuccess(result);
                               }

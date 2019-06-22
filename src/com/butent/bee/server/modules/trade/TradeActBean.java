@@ -4122,6 +4122,7 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
           .addFrom(TBL_TRADE_ACTS)
           .setWhere(SqlUtils.and(
               SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_RENT_PROJECT, rentProjectsForApprove),
+              SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.SALE),
               SqlUtils.not(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_STATUS, apprId))))));
 
       if (!rentProjectsForApprove.isEmpty()) {

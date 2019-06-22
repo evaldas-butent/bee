@@ -5,7 +5,9 @@ import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.TBL_RELATIONS;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.mail.MailConstants.COL_MESSAGE;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
@@ -310,10 +312,15 @@ public class TradeDocumentForm extends PrintFormInterceptor {
         TradeActUtils.getInvoiceEmails(getFormView().getLongValue(COL_TRADE_CUSTOMER), emails ->
             NewMailMessage.create(emails, null, null, "Sąskaita", null,
                 Collections.singleton(fileInfo), null, false, (messageId, saveMode) -> {
+                  Queries.insertAndFire(TBL_RELATIONS, Data.getColumns(TBL_RELATIONS,
+                      Queries.asList(COL_TRADE_DOCUMENT, COL_MESSAGE)),
+                      Queries.asList(getActiveRowId(), messageId));
+
                   Queries.insert(GRID_TRADE_DOCUMENT_FILES,
-                      Data.getColumns(GRID_TRADE_DOCUMENT_FILES, Queries.asList(COL_TRADE_DOCUMENT,
-                          AdministrationConstants.COL_FILE)), Queries.asList(getActiveRowId(),
-                          fileInfo.getId()), null, result -> getFormView().refresh());
+                      Data.getColumns(GRID_TRADE_DOCUMENT_FILES,
+                          Queries.asList(COL_TRADE_DOCUMENT, AdministrationConstants.COL_FILE)),
+                      Queries.asList(getActiveRowId(), fileInfo.getId()), null,
+                      result -> Data.refreshLocal(GRID_TRADE_DOCUMENT_FILES));
                 },
                 Global.getParameterText(PRM_INVOICE_MAIL_SIGNATURE)));
       }

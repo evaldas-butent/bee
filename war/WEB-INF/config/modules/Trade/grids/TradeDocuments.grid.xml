@@ -68,6 +68,7 @@
   <g:columns>
     <DataColumn name="Notes" visible="false" />
     <DataColumn name="Exported" />
+    <PropColumn name="IsSentToEmail" type="boolean" label="=tradeSentToEmail" />
   </g:columns>
 
   <g:rowMessage>

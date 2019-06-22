@@ -318,6 +318,8 @@ public final class TradeConstants {
   public static final String COL_ITEM_ANALOG_1 = "Item1";
   public static final String COL_ITEM_ANALOG_2 = "Item2";
 
+  public static final String COL_SENT_TO_EMAIL = "IsSentToEmail";
+
   public static final String ALS_TRADE_BOL_SERIES = "BoLSeriesName";
   public static final String ALS_TRADE_BOL_DRIVER_TAB_NO = "DriverTabNo";
   public static final String ALS_TRADE_BOL_DRIVER_EMPLOYEES = "DriverEmployees";

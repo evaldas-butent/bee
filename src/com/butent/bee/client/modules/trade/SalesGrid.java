@@ -149,7 +149,7 @@ public class SalesGrid extends InvoicesGrid {
                   row.setValue(files.getColumnIndex(MailConstants.COL_MESSAGE), messageId);
                 });
                 Queries.insertRows(files, result -> Queries.update(view.getViewName(),
-                    Filter.idIn(invoices.keySet()), "IsSentToEmail", BeeConst.STRING_TRUE,
+                    Filter.idIn(invoices.keySet()), COL_SENT_TO_EMAIL, BeeConst.STRING_TRUE,
                     res -> Data.resetLocal(view.getViewName())));
               }, Global.getParameterText(PRM_INVOICE_MAIL_SIGNATURE))));
     });

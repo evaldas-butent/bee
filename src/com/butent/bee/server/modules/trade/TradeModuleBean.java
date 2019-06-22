@@ -1707,6 +1707,23 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           }
         }
       }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void setEmailSent(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_TRADE_DOCUMENTS) && event.hasData()) {
+          BeeRowSet rowSet = event.getRowset();
+
+          Set<Long> set = qs.getLongSet(new SqlSelect().setDistinctMode(true)
+              .addFields(TBL_RELATIONS, COL_TRADE_DOCUMENT)
+              .addFrom(TBL_RELATIONS)
+              .setWhere(SqlUtils.and(
+                  SqlUtils.inList(TBL_RELATIONS, COL_TRADE_DOCUMENT, rowSet.getRowIds()),
+                  SqlUtils.notNull(TBL_RELATIONS, COL_MESSAGE))));
+
+          rowSet.forEach(row -> row.setProperty(COL_SENT_TO_EMAIL, set.contains(row.getId())));
+        }
+      }
     });
 
     MenuService.TRADE_DOCUMENTS.setTransformer(input -> {
@@ -3472,7 +3489,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           .addConstant(COL_NOTES, TimeUtils.nowMinutes().toString()));
 
       qs.updateData(new SqlUpdate(TBL_SALES)
-          .addConstant("IsSentToEmail", true)
+          .addConstant(COL_SENT_TO_EMAIL, true)
           .setWhere(sys.idEquals(TBL_SALES, invoiceId)));
       count++;
 

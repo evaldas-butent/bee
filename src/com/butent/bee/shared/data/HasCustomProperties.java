@@ -113,6 +113,11 @@ public interface HasCustomProperties {
     setProperty(key, s);
   }
 
+  default void setProperty(String key, Boolean value) {
+    String s = (value == null) ? null : BeeUtils.toString(value);
+    setProperty(key, s);
+  }
+
   void setProperty(String key, String value);
 
   default void setProperty(String key, Long userId, Double value) {
