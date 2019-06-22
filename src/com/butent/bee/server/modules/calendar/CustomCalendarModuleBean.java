@@ -121,7 +121,7 @@ public class CustomCalendarModuleBean {
                 TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT))
         .addFromLeft(TBL_TRADE_SERIES, TBL_TRADE_ACT_SERVICES + TBL_TRADE_SERIES,
             sys.joinTables(TBL_TRADE_SERIES, TBL_TRADE_ACT_SERVICES + TBL_TRADE_SERIES,
-                TBL_TRADE_ACTS, COL_TA_SERIES))
+                TBL_TRADE_ACT_SERVICES + TBL_TRADE_ACTS, COL_TA_SERIES))
         .setWhere(clause)
     );
 

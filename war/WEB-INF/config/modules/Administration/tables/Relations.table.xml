@@ -28,5 +28,6 @@
     <Relation name="TradeAct" relation="TradeActs" label="=tradeAct" cascade="DELETE" />
     <Relation name="Sale" relation="Sales" label="=trdInvoice" cascade="DELETE" />
     <Relation name="CompanyObject" relation="CompanyObjects" label="=object" cascade="DELETE" />
+    <Relation name="TradeDocument" relation="TradeDocuments" label="=trdDocument" cascade="DELETE" />
   </Fields>
 </Table>

@@ -28,5 +28,6 @@
     <SimpleColumn name="Sale" />
     <SimpleColumn name="TradeAct" />
     <SimpleColumn name="CompanyObject" />
+    <SimpleColumn name="TradeDocument" />
  </Columns>
 </View>

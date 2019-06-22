@@ -6,7 +6,10 @@
       editForm="TradeDocument" newRowForm="TradeDocument"
       rowCaption="Series Number"
 >
+  <Relation choiceColumns="Id Series Number OperationName Date SuppierName CustomerName"
+            renderColumns="Id Series Number OperationName Date" newRowEnabled="false" order="Date desc"/>
   <Columns>
+    <IdColumn name="Id" />
     <SimpleColumn name="Date" />
 
     <SimpleColumn name="Series" />
