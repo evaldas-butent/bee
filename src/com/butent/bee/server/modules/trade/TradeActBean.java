@@ -91,6 +91,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.webservice.ButentWS;
+import org.apache.poi.ss.formula.functions.Rows;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -789,6 +790,75 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
             .setWhere(SqlUtils.equals(VIEW_TRADE_ACT_REMINDERS, COL_TRADE_ACT, tradeAct)));
   }
 
+
+  private Map<Long, Double> getItemRentalAmount(BeeRowSet items) {
+    Map<Long, Double> result = new HashMap<>();
+
+    if (items == null) {
+      return result;
+    }
+
+    for (int i = 0; i < items.getNumberOfRows(); i++) {
+      long actId = BeeUtils.unbox(items.getLong(i, COL_TRADE_ACT));
+      double qty = BeeUtils.unbox(items.getDouble(i, COL_TRADE_ITEM_QUANTITY));
+      double rp = BeeUtils.unbox(items.getDouble(i, COL_ITEM_RENTAL_PRICE));
+      Double irp = items.getDouble(i, "ItemRentalPrice");
+
+      double rentalAmount = BeeUtils.isDouble(irp) ? qty * irp : qty * rp;
+
+      if (!result.containsKey(actId)) {
+        result.put(actId, BeeConst.DOUBLE_ZERO);
+      }
+
+      result.put(actId, rentalAmount + result.get(actId));
+    }
+
+    return result;
+  }
+
+  private Double getItemValue(BeeRowSet items, Map<Long, Double> details) {
+    if (items == null) {
+      return null;
+    }
+
+    Double itemValue = BeeConst.DOUBLE_ZERO;
+
+    for (BeeRow row : items) {
+      long actId = BeeUtils.unbox(row.getLong(items.getColumnIndex(COL_TRADE_ACT)));
+      double price = BeeUtils.unbox(row.getDouble(items.getColumnIndex(COL_ITEM_PRICE)));
+      double qty = BeeUtils.unbox(row.getDouble(items.getColumnIndex("Quantity")));/*-
+                (row.hasPropertyValue("returned_qty") ? BeeUtils.unbox(row.getPropertyDouble("returned_qty")) : 0D)*/;
+
+      double sum = price * qty;
+      double dscSum =
+              sum / 100 * BeeUtils.unbox(row.getDouble(items.getColumnIndex(COL_TRADE_DISCOUNT)));
+      double vat = BeeUtils.unbox(row.getDouble(items.getColumnIndex(COL_TRADE_VAT)));
+
+      sum -= dscSum;
+
+      if (BeeUtils.unbox(row.getBoolean(items.getColumnIndex(COL_TRADE_VAT_PLUS)))) {
+        if (BeeUtils.unbox(row.getBoolean(items.getColumnIndex(COL_TRADE_VAT_PERC)))) {
+          vat = sum / 100 * vat;
+        }
+      } else {
+        if (BeeUtils.unbox(row.getBoolean(items.getColumnIndex(COL_TRADE_VAT_PERC)))) {
+          vat = sum - (sum / (1 + vat / 100));
+        }
+        sum -= vat;
+      }
+
+      itemValue += sum;
+
+      if (!details.containsKey(actId)) {
+        details.put(actId, BeeConst.DOUBLE_ZERO);
+      }
+
+      details.put(actId, sum + vat + details.get(actId));
+    }
+
+    return itemValue;
+  }
+
   private Map<String, Long> getReferences(String tableName, String keyName) {
     return getReferences(tableName, keyName, null);
   }
@@ -1480,47 +1550,34 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
 
     BeeRowSet items = getRemainingItems(actIds.toArray(new Long[actIds.size()]));
     List<Long> contServices = new ArrayList<>();
-    double itemValue = 0.0;
+    Map<Long, Double> remainItemValue = new HashMap();
+    Map<Long, Double> rentalAmount = getItemRentalAmount(items);
+    Double itemValue = getItemValue(items, remainItemValue);
 
     if (!DataUtils.isEmpty(items)) {
-      for (BeeRow row : items) { //!Null pointer exception !!!
-        double price = BeeUtils.unbox(row.getDouble(items.getColumnIndex(COL_ITEM_PRICE)));
-        double qty = BeeUtils.unbox(row.getDouble(items.getColumnIndex("Quantity"))) /*-
-                (row.hasPropertyValue("returned_qty") ? BeeUtils.unbox(row.getPropertyDouble("returned_qty")) : 0D)*/;
-
-        double sum = price * qty;
-        double dscSum =
-            sum / 100 * BeeUtils.unbox(row.getDouble(items.getColumnIndex(COL_TRADE_DISCOUNT)));
-        double vat = BeeUtils.unbox(row.getDouble(items.getColumnIndex(COL_TRADE_VAT)));
-
-        sum -= dscSum;
-
-        if (BeeUtils.unbox(row.getBoolean(items.getColumnIndex(COL_TRADE_VAT_PLUS)))) {
-          if (BeeUtils.unbox(row.getBoolean(items.getColumnIndex(COL_TRADE_VAT_PERC)))) {
-            vat = sum / 100 * vat;
-          }
-        } else {
-          if (BeeUtils.unbox(row.getBoolean(items.getColumnIndex(COL_TRADE_VAT_PERC)))) {
-            vat = sum - (sum / (1 + vat / 100));
-          }
-          sum -= vat;
-        }
-
-        itemValue += sum;
-      }
-
       Set<Long> notReturnedActs = items.getDistinctLongs(items.getColumnIndex(COL_TRADE_ACT));
 
       for (BeeColumn col : services.getColumns()) {
-        if (BeeUtils.inListSame(col.getId(), COL_TRADE_ACT, COL_TA_SERVICE_FROM)) {
+        if (BeeUtils.inListSame(col.getId(), COL_TRADE_ACT, COL_TA_SERVICE_FROM, COL_TA_ITEM_VALUE,
+                COL_TA_SERVICE_TARIFF, COL_TRADE_ITEM_PRICE)) {
           continue;
         }
         colData.add(col);
       }
 
       for (BeeRow service : services) {
+        Long svcActId = service.getLong(services.getColumnIndex(COL_TRADE_ACT));
+        Double tariff = service.getDouble(services.getColumnIndex(COL_TA_SERVICE_TARIFF));
+        Double quantity = service.getDouble(services.getColumnIndex(COL_TRADE_ITEM_QUANTITY));
+        JustDate dateTo = service.getDate(services.getColumnIndex(COL_TA_SERVICE_TO));
+        Double price = service.getDouble(services.getColumnIndex(COL_ITEM_PRICE));
+        Double rItemValue = remainItemValue.containsKey(svcActId) ? remainItemValue.get(svcActId) : null;
+        Integer tu = service.getInteger(services.getColumnIndex(COL_TRADE_TIME_UNIT));
 
-        if (!notReturnedActs.contains(service.getLong(services.getColumnIndex(COL_TRADE_ACT)))) {
+        boolean isApplyTariff = BeeUtils.unbox(service.getBoolean(services.getColumnIndex(COL_IS_ITEM_APPLY_TARIFF)));
+        boolean isApplyRent = BeeUtils.unbox(service.getBoolean(services.getColumnIndex(COL_IS_ITEM_RENTAL_PRICE)));
+
+        if (!notReturnedActs.contains(svcActId)) {
           continue;
         }
 
@@ -1529,6 +1586,31 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
 
         if (!BeeUtils.isEmpty(service.getString(services.getColumnIndex(COL_TIME_UNIT)))) {
           svcInsert.addConstant(COL_TA_SERVICE_FROM, svcTimes);
+        }
+
+        if(BeeUtils.isPositive(rItemValue) && tu != null) {
+          svcInsert.addConstant(COL_TA_ITEM_VALUE, remainItemValue.get(svcActId));
+        }
+
+        if (isApplyTariff) {
+          Double p =  TradeActUtils.calculateServicePrice(price, dateTo, rItemValue, tariff, quantity,
+                  sys.getFieldScale(TBL_TRADE_ACT_SERVICES, COL_TRADE_ITEM_PRICE));
+
+          svcInsert.addConstant(COL_TRADE_ITEM_PRICE, BeeUtils.isPositive(p) ? p : price);
+          svcInsert.addConstant(COL_TA_SERVICE_TARIFF, tariff);
+        } else {
+          if (isApplyRent && BeeUtils.isPositive(quantity)) {
+            price = BeeUtils.unbox(rentalAmount.get(svcActId)) / quantity;
+          }
+
+          if (tu != null) {
+            Double t = BeeUtils.isDouble(price) && BeeUtils.isDouble(quantity) && BeeUtils.isDouble(rItemValue)
+                ? price * 100 * quantity / rItemValue
+                : null;
+            svcInsert.addConstant(COL_TA_SERVICE_TARIFF, t);
+          }
+
+          svcInsert.addConstant(COL_TRADE_ITEM_PRICE, price);
         }
 
         appendInsertConstants(svcInsert, services, service.getId(), colData);
@@ -1564,12 +1646,12 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
     }
 
     if (!BeeUtils.isEmpty(contServices)) {
-
+      /*Updates continoius service item values*/
       SqlUpdate updateService = new SqlUpdate(TBL_TRADE_ACT_SERVICES)
           .addConstant(COL_TA_SERVICE_TO, svcTimes);
 
       if (BeeUtils.isPositive(itemValue)) {
-        updateService.addConstant("ItemValue", itemValue);
+        updateService.addConstant(COL_TA_ITEM_VALUE, itemValue);
       }
       updateService.setWhere(SqlUtils.and(
           SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, actIds),
