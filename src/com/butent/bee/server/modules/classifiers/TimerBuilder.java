@@ -32,7 +32,7 @@ public abstract class TimerBuilder implements ConcurrencyBean.HasTimerService {
     @Override
     public void ejbTimeout(Timer timer) {
         if (!isRegistered(timer)) {
-            logger.debug("Timer", timer.getInfo(), "not registered");
+            logger.warning("Timer", timer.getInfo(), "not registered");
             return;
         }
 
@@ -104,7 +104,7 @@ public abstract class TimerBuilder implements ConcurrencyBean.HasTimerService {
 
             for (Timer timer : timers) {
                 try {
-                    logger.debug("Canceled timer:", timer.getInfo());
+                    logger.info("Canceled timer:", timer.getInfo());
                     timer.cancel();
                 } catch (NoSuchObjectLocalException e) {
                     logger.warning(e);
@@ -120,6 +120,7 @@ public abstract class TimerBuilder implements ConcurrencyBean.HasTimerService {
                 registry.put(timerIdentifier, HashMultimap.create());
             }
             registry.get(timerIdentifier).put(timerInfo, createdTimer);
+            logger.info("Created timer:", timerInfo, "on", createdTimer.getNextTimeout());
         }
 
     }

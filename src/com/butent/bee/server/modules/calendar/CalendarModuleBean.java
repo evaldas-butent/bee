@@ -100,6 +100,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -321,27 +322,26 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
           .addFromInner(TBL_APPOINTMENT_REMINDERS,
               sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
           .addFromInner(TBL_REMINDER_TYPES,
-              sys.joinTables(TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS,
-                  COL_REMINDER_TYPE))
+              sys.joinTables(TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS, COL_REMINDER_TYPE))
           .setWhere(SqlUtils.and(wh,
               SqlUtils.more(TBL_APPOINTMENTS, COL_START_DATE_TIME, System.currentTimeMillis()),
-              SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS,
-                  AppointmentStatus.CANCELED.ordinal()))));
+              SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS, AppointmentStatus.CANCELED))));
 
       for (SimpleRow row : data) {
         Long start = row.getLong(COL_SCHEDULED);
 
         if (start == null) {
+          start = BeeUtils.unbox(row.getLong(COL_START_DATE_TIME));
+
           long offset = BeeUtils.unbox(row.getInt(COL_HOURS)) * TimeUtils.MILLIS_PER_HOUR
               + BeeUtils.unbox(row.getInt(COL_MINUTES)) * TimeUtils.MILLIS_PER_MINUTE;
 
           if (offset == 0) {
             offset = BeeUtils.unbox(row.getInt(COL_ALIAS_DEF_HOURS)) * TimeUtils.MILLIS_PER_HOUR
-                + BeeUtils.unbox(row.getInt(COL_ALIAS_DEL_MINUTES))
-                * TimeUtils.MILLIS_PER_MINUTE;
+                + BeeUtils.unbox(row.getInt(COL_ALIAS_DEL_MINUTES)) * TimeUtils.MILLIS_PER_MINUTE;
           }
           if (offset != 0) {
-            start = BeeUtils.unbox(row.getLong(COL_START_DATE_TIME)) - offset;
+            start -= offset;
           }
         }
         if (start != null) {
@@ -353,18 +353,13 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
             int current = TimeUtils.minutesSinceDayStarted(time) * TimeUtils.MILLIS_PER_MINUTE;
 
             if (current < from || current > until) {
-              time =
-                  new DateTime((current < from) ? TimeUtils.previousDay(time) : time.getDate());
+              time = new DateTime((current < from) ? TimeUtils.previousDay(time) : time.getDate());
               time.setTime(time.getTime() + until);
             }
           }
           if (time.getTime() > System.currentTimeMillis()) {
-            Timer timer = timerService.createSingleActionTimer(time.getJava(),
-                new TimerConfig(TIMER_REMIND_CALENDAR_EVENTS + row.getLong(reminderIdName), false));
-
-            if (timer != null) {
-              timersList.add(timer);
-            }
+            timersList.add(getTimerService().createSingleActionTimer(time.getJava(),
+                new TimerConfig(timerIdentifier + row.getLong(reminderIdName), false)));
           }
         }
       }
@@ -376,41 +371,24 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
   protected Pair<IsCondition, List<String>> getConditionAndTimerIdForUpdate(String timerIdentifier,
       String viewName, Long relationId) {
     if (BeeUtils.same(timerIdentifier, TIMER_REMIND_CALENDAR_EVENTS)) {
-      IsCondition wh;
-      String idName = viewName;
-      Long id = relationId;
-      String reminderIdName = sys.getIdName(TBL_APPOINTMENT_REMINDERS);
+      switch (viewName) {
+        case TBL_APPOINTMENTS:
+          IsCondition wh = SqlUtils.equals(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, relationId);
 
-      if (BeeUtils.same(idName, TBL_APPOINTMENTS)) {
-        wh = SqlUtils.equals(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, id);
+          List<Long> timerIds = qs.getLongList(new SqlSelect()
+              .addFields(TBL_APPOINTMENT_REMINDERS, sys.getIdName(TBL_APPOINTMENT_REMINDERS))
+              .addFrom(TBL_APPOINTMENT_REMINDERS)
+              .addFromInner(TBL_APPOINTMENTS,
+                  sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
+              .setWhere(wh));
 
-        SimpleRowSet data = qs.getData(new SqlSelect()
-            .addFields(TBL_APPOINTMENT_REMINDERS, reminderIdName)
-            .addFrom(TBL_APPOINTMENT_REMINDERS)
-            .addFromInner(TBL_APPOINTMENTS,
-                sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
-            .setWhere(SqlUtils.and(wh,
-                SqlUtils.more(TBL_APPOINTMENTS,
-                    COL_START_DATE_TIME, System.currentTimeMillis()),
-                SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS,
-                    AppointmentStatus.CANCELED.ordinal()))));
+          return Pair.of(wh,
+              timerIds.stream().map(id -> timerIdentifier + id).collect(Collectors.toList()));
 
-        List<String> timerIdentifiersIds = new ArrayList<>();
-        if (data != null) {
-          for (SimpleRow row : data) {
-            timerIdentifiersIds.add(
-                timerIdentifier + row.getLong(data.getColumnIndex(reminderIdName)));
-          }
-        }
-
-        return Pair.of(wh, timerIdentifiersIds);
-
-      } else if (BeeUtils.same(idName, TBL_APPOINTMENT_REMINDERS)) {
-        wh = SqlUtils.equals(TBL_APPOINTMENT_REMINDERS, reminderIdName, id);
-
-        List<String> timerIdentifiersIds = new ArrayList<>();
-        timerIdentifiersIds.add(timerIdentifier + id);
-        return Pair.of(wh, timerIdentifiersIds);
+        case TBL_APPOINTMENT_REMINDERS:
+          return Pair.of(SqlUtils.equals(TBL_APPOINTMENT_REMINDERS,
+              sys.getIdName(TBL_APPOINTMENT_REMINDERS), relationId),
+              Collections.singletonList(timerIdentifier + relationId));
       }
     }
     return null;
@@ -1686,9 +1664,8 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
   @Override
   public void onTimeout(String timerInfo) {
     if (BeeUtils.isPrefix(timerInfo, TIMER_REMIND_CALENDAR_EVENTS)) {
-      Long reminderId = BeeUtils.toLong(
-          BeeUtils.removePrefix(timerInfo, TIMER_REMIND_CALENDAR_EVENTS));
-      logger.debug("Fired timer:", reminderId);
+      Long reminderId = BeeUtils.toLong(BeeUtils.removePrefix(timerInfo,
+          TIMER_REMIND_CALENDAR_EVENTS));
 
       if (DataUtils.isId(reminderId)) {
         generateAppointmentEmails(reminderId);
