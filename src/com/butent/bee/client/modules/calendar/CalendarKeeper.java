@@ -360,7 +360,9 @@ public final class CalendarKeeper {
   public static void register() {
     FormFactory.registerFormInterceptor(FORM_APPOINTMENT, new AppointmentForm());
 
-    GridFactory.registerGridInterceptor(GRID_CALENDAR_EXECUTORS,
+    GridFactory.registerGridInterceptor(VIEW_CALENDARS, new CalendarsGrid());
+
+        GridFactory.registerGridInterceptor(GRID_CALENDAR_EXECUTORS,
         UniqueChildInterceptor.forUsers(Localized.dictionary().calAddExecutors(),
             COL_CALENDAR, COL_EXECUTOR_USER));
 

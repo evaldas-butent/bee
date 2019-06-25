@@ -20,7 +20,7 @@
     <Numeric name="MinTerm" precision="3" label="=taMinTerm" />
 
     <Numeric name="Quantity" precision="12" scale="3" label="=quantity" notNull="true" />
-    <Numeric name="Price" precision="12" scale="2" label="=price" />
+    <Numeric name="Price" precision="12" scale="3" label="=price" />
 
     <Boolean name="IsRentalPrice" defValue="false" />
     <Boolean name="IsApplyTariff" defValue="false" />

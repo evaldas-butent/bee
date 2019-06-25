@@ -3,7 +3,6 @@
 
   name="Calendars" viewName="Calendars" caption="=calendars" newRowCaption="=calNewCalendar"
   newRowForm="Calendar" editForm="Calendar" favorite="Name" flexGrow="1"
-  filter="!(IsService) and (!(Owner) or Owner {u} or !(Visibility) or Visibility != 1)"
   >
   <g:columns>
     <IdColumn name="Id" flexGrow="0" />

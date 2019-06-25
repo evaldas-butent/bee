@@ -231,7 +231,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
       initialize(ucAttendees);
     }
 
-    this.attSelector = createSelector();
+    this.attSelector = BeeKeeper.getUser().isAdministrator() ? createSelector() : null;
 
     createUi();
     setDatePickerOpen(true);
