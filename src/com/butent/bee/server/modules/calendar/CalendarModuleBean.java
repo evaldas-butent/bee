@@ -16,6 +16,7 @@ import static com.butent.bee.shared.modules.cars.CarsConstants.COL_SERVICE_EVENT
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.server.communication.ChatBean;
+import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
@@ -535,6 +536,38 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
         }
       }
     });
+
+    QueryServiceBean.registerViewDataProvider(VIEW_CALENDARS,
+        new QueryServiceBean.ViewDataProvider() {
+          @Override
+          public BeeRowSet getViewData(BeeView view, SqlSelect query, Filter filter) {
+            if (!usr.isAdministrator()) {
+              Long userId = usr.getCurrentUserId();
+
+              query.setWhere(SqlUtils.and(query.getWhere(),
+                  SqlUtils.or(SqlUtils.equals(VIEW_CALENDARS, COL_CALENDAR_OWNER, userId),
+                      SqlUtils.in(VIEW_CALENDARS, sys.getIdName(VIEW_CALENDARS),
+                          new SqlSelect()
+                              .addFields(TBL_CALENDAR_USERS, COL_CALENDAR)
+                              .addFrom(TBL_CALENDAR_USERS)
+                              .setWhere(SqlUtils.equals(TBL_CALENDAR_USERS, COL_USER, userId))
+                              .addUnion(new SqlSelect()
+                                  .addFields(TBL_CAL_USER_GROUPS, COL_CALENDAR)
+                                  .addFrom(TBL_CAL_USER_GROUPS)
+                                  .addFromInner(TBL_USER_GROUPS,
+                                      SqlUtils.joinUsing(TBL_CAL_USER_GROUPS, TBL_USER_GROUPS,
+                                          COL_UG_GROUP))
+                                  .setWhere(SqlUtils.equals(TBL_USER_GROUPS, COL_USER, userId)))
+                      ))));
+            }
+            return qs.getViewData(query, view, true, null);
+          }
+
+          @Override
+          public int getViewSize(BeeView view, SqlSelect query, Filter filter) {
+            return getViewData(view, query, filter).getNumberOfRows();
+          }
+        });
 
     news.registerUsageQueryProvider(Feed.APPOINTMENTS_MY, new UsageQueryProvider() {
       @Override

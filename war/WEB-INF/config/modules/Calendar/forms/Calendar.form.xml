@@ -106,7 +106,31 @@
         <text>=settings</text>
         <xi:include href="widgets/Settings.widget.xml" />
       </page>
+
+      <page>
+        <text>Naudotojai</text>
+        <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+          <row data="CalUserGroups">
+            <Label text="Naudotojų grupės" />
+            <ChildSelector childTable="CalUserGroups" viewName="UserGroupSettings"
+                           targetRelColumn="Calendar" sourceRelColumn="Group"
+                           newRowEnabled="false"
+                           filter="Owner {u} OR Visibility = 1"
+                           renderColumns="Name" choiceColumns="TypeName Name" style="&chld;"
+                           summarize="true" />
+          </row>
+
+          <row data="CalendarUsers">
+            <Label text="Naudotojai" />
+            <ChildSelector childTable="CalendarUsers" viewName="Users"
+                           targetRelColumn="Calendar" sourceRelColumn="User"
+                           newRowEnabled="false"
+                           choiceColumns="FirstName LastName CompanyName PositionName"
+                           renderColumns="FirstName LastName" style="&chld;" summarize="true" />
+          </row>
+        </Table>
+      </page>
     </TabbedPages>
 
   </FlowPanel>
-</f:Form>  
+</f:Form>

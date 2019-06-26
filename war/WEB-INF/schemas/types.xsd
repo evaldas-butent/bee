@@ -271,7 +271,9 @@
       <xs:enumeration value="CalendarAttendees" />
       <xs:enumeration value="CalendarExecutors" />
       <xs:enumeration value="Calendars" />
+      <xs:enumeration value="CalendarUsers" />
       <xs:enumeration value="CalExecutorGroups" />
+      <xs:enumeration value="CalUserGroups" />
       <xs:enumeration value="CarBundleItems" />
       <xs:enumeration value="CarBundles" />
       <xs:enumeration value="CarEmissionStandards" />

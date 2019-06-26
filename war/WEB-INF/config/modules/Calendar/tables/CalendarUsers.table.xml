@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="CalendarUsers"
+       idName="CalendarUserID"
+>
+  <Fields>
+    <Relation name="Calendar" notNull="true" relation="Calendars" cascade="DELETE"
+              label="=calendar" />
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="Calendar User" />
+  </Constraints>
+</Table>

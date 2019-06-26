@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="CalUserGroups" source="CalUserGroups" caption="Kalendoriaus naudotojų grupės"
+>
+  <Columns>
+    <SimpleColumn name="Calendar" />
+
+    <SimpleColumn name="Group" />
+    <SimpleJoin name="Group" joinType="INNER">
+      <SimpleColumn alias="GroupName" name="Name" />
+    </SimpleJoin>
+  </Columns>
+
+  <Order>
+    <OrderBy column="GroupName" />
+  </Order>
+</View>

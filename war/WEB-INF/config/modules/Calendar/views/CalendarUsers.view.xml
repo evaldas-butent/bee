@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="CalendarUsers" source="CalendarUsers" caption="Kalendoriaus naudotojai"
+>
+  <Columns>
+    <SimpleColumn name="Calendar" />
+    <SimpleColumn name="User" />
+
+    <SimpleJoin name="User" joinType="INNER">
+      <SimpleColumn name="CompanyPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleColumn name="Person" />
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" />
+          <SimpleColumn name="LastName" />
+        </SimpleJoin>
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="PositionName" />
+        </SimpleJoin>
+        <SimpleJoin name="Company" joinType="LEFT">
+          <SimpleColumn name="Name" alias="CompanyName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+
+  <Order>
+    <OrderBy column="LastName" />
+    <OrderBy column="FirstName" />
+  </Order>
+</View>

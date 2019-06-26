@@ -225,6 +225,9 @@ public final class CalendarConstants {
   public static final String TBL_CALENDAR_EXECUTORS = "CalendarExecutors";
   public static final String TBL_CAL_EXECUTOR_GROUPS = "CalExecutorGroups";
 
+  public static final String TBL_CALENDAR_USERS = "CalendarUsers";
+  public static final String TBL_CAL_USER_GROUPS = "CalUserGroups";
+
   public static final String VIEW_CALENDARS = "Calendars";
   public static final String VIEW_USER_CALENDARS = "UserCalendars";
   public static final String VIEW_USER_CAL_ATTENDEES = "UserCalAttendees";
