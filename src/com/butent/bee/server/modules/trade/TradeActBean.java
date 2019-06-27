@@ -19,9 +19,7 @@ import static com.butent.bee.shared.time.TimeUtils.*;
 
 import com.butent.bee.server.communication.ChatBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
-import com.butent.bee.server.data.BeeView;
-import com.butent.bee.server.data.DataEditorBean;
-import com.butent.bee.server.data.DataEvent;
+import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
@@ -101,7 +99,6 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.webservice.ButentWS;
-import org.apache.poi.ss.formula.functions.Rows;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -834,9 +831,10 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
     return result;
   }
 
-  private Double getItemValue(BeeRowSet items, Map<Long, Double> details) {
+  private Map<Long, Double> getItemValues(BeeRowSet items) {
+    Map<Long, Double> details = new HashMap<>();
     if (items == null) {
-      return null;
+      return details;
     }
 
     Double itemValue = BeeConst.DOUBLE_ZERO;
@@ -874,7 +872,7 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
       details.put(actId, sum + vat + details.get(actId));
     }
 
-    return itemValue;
+    return details;
   }
 
   private Map<String, Long> getReferences(String tableName, String keyName) {
@@ -1573,12 +1571,10 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
     int idxSvcActs = services.getColumnIndex(COL_TRADE_ACT);
 
     Set<Long> actIds = services.getDistinctLongs(idxSvcActs);
-
     BeeRowSet items = getRemainingItems(actIds.toArray(new Long[actIds.size()]));
     List<Long> contServices = new ArrayList<>();
-    Map<Long, Double> remainItemValue = new HashMap();
     Map<Long, Double> rentalAmount = getItemRentalAmount(items);
-    Double itemValue = getItemValue(items, remainItemValue);
+    Map<Long, Double> remainItemValue = getItemValues(items);
 
     if (!DataUtils.isEmpty(items)) {
       Set<Long> notReturnedActs = items.getDistinctLongs(items.getColumnIndex(COL_TRADE_ACT));
@@ -1676,9 +1672,6 @@ public class TradeActBean extends TimerBuilder /*implements HasTimerService*/ {
       SqlUpdate updateService = new SqlUpdate(TBL_TRADE_ACT_SERVICES)
           .addConstant(COL_TA_SERVICE_TO, svcTimes);
 
-      if (BeeUtils.isPositive(itemValue)) {
-        updateService.addConstant(COL_TA_ITEM_VALUE, itemValue);
-      }
       updateService.setWhere(SqlUtils.and(
           SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, actIds),
           SqlUtils.isNull(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO),
